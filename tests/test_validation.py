@@ -1079,6 +1079,34 @@ class TestEmptyGroupOnlyObject:
         # Guards the derivation itself: an empty set would make every test below vacuous.
         assert all(_group_only_types(version) for version in ENERGYPLUS_VERSIONS)
 
+    @pytest.mark.parametrize(
+        ("version", "expected"),
+        [
+            # Output:Diagnostics had two fixed fields before 9.4, so it is not group-only there.
+            (
+                (9, 3, 0),
+                {"Output:Table:SummaryReports", "OutdoorAir:NodeList", "EnergyManagementSystem:GlobalVariable"},
+            ),
+            (
+                (24, 1, 0),
+                {
+                    "Output:Diagnostics",
+                    "Output:Table:SummaryReports",
+                    "OutdoorAir:NodeList",
+                    "EnergyManagementSystem:GlobalVariable",
+                },
+            ),
+        ],
+    )
+    def test_the_documented_types_are_reported(self, version: tuple[int, int, int], expected: set[str]) -> None:
+        # Pinned by name, as the changelog and the agent references name them: the derivation the
+        # other tests share with the check cannot catch a type both of them stop finding.
+        doc = new_document(version=version)
+        for obj_type in expected:
+            doc.add(obj_type, "")
+
+        assert {f.obj_type for f in _w004(doc)} == expected
+
     @pytest.mark.parametrize(("version", "obj_type", "wrapper"), _CASES)
     def test_an_empty_one_is_reported(self, version: tuple[int, int, int], obj_type: str, wrapper: str) -> None:
         doc = new_document(version=version)
@@ -1131,11 +1159,36 @@ class TestEmptyGroupOnlyObject:
     def test_add_still_accepts_one_to_be_filled_in_later(self) -> None:
         doc = new_document(version=(24, 1, 0))
         node_list = doc.add("OutdoorAir:NodeList", "")
-        assert validate_object(node_list, doc.schema) == []  # type: ignore[arg-type]
+        assert doc.schema is not None
+        assert validate_object(node_list, doc.schema) == []
 
         node_list.nodes = [{"node_or_nodelist_name": "OA Node"}]
 
         assert _w004(doc) == []
+
+    def test_one_whose_groups_are_all_blank_is_reported(self) -> None:
+        # Written to IDF, blank groups trim to the same `OutdoorAir:NodeList,;` that EnergyPlus refuses.
+        doc = new_document(version=(24, 1, 0))
+        node_list = doc.add("OutdoorAir:NodeList", "", nodes=[{"node_or_nodelist_name": "OA Node"}])
+        node_list.nodes = [{}]
+        doc.addidfobject(
+            IDFObject(
+                obj_type="EnergyManagementSystem:GlobalVariable",
+                name="",
+                data={"variables": [{"erl_variable_name": ""}]},
+            )
+        )
+
+        assert sorted(f.obj_type for f in _w004(doc)) == [
+            "EnergyManagementSystem:GlobalVariable",
+            "OutdoorAir:NodeList",
+        ]
+
+    def test_the_message_names_the_required_field_for_a_miscased_type(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.addidfobject(IDFObject(obj_type="OUTDOORAIR:NODELIST", name="", data={}))
+
+        assert "refuses because 'node_or_nodelist_name' is required" in _w004(doc)[0].message
 
     def test_check_required_false_skips_it(self) -> None:
         doc = new_document(version=(24, 1, 0))
@@ -1189,8 +1242,12 @@ class TestEmptyGroupOnlyObjectInEnergyPlus:
         ]
         assert refused
 
+        example = energyplus.install_dir / "ExampleFiles" / "1ZoneUncontrolled.idf"
+        if not example.is_file():
+            pytest.skip(f"Example IDF not found at {example}")
+
         for obj_type in refused:
-            model = load_idf(str(energyplus.install_dir / "ExampleFiles" / "1ZoneUncontrolled.idf"))
+            model = load_idf(str(example))
             empty = model.add(obj_type, "")
             name = obj_type.replace(":", "_")
 

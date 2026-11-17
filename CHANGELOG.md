@@ -25,15 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([#253](https://github.com/idfkit/idfkit/pull/253)).
 - Free-threaded CPython 3.14 (`python3.14t`, GIL disabled) became a tested build: a CI job runs the test suite on it with the GIL off and fails if importing any idfkit module re-enables the GIL, and the package declares the `Free Threading :: 2 - Beta` classifier. The threading contract is now stated in the bundled agent references (`threading.md`): the schema manager and module-level caches are safe from any number of threads, separate documents are independent, and one document may be read from many threads but must not be mutated by several at once. Of the optional extras, only `pandas` before 3.0 re-enables the GIL on import. `benchmarks/bench_free_threading.py` measures thread scaling: on 4 CPUs, four threads parse IDF files 2.6 times faster than one thread on the regular build, and other workloads gain 1.0 to 1.6 times ([#254](https://github.com/idfkit/idfkit/pull/254)).
 - `idfkit.weather.designday.sanitize_ddy_bytes()`, the in-memory form of `sanitize_ddy_file()`, which blanks placeholder values in DDY content before it is written anywhere ([#254](https://github.com/idfkit/idfkit/pull/254)).
-- `validate_document` reports `W004`, a warning, for an `Output:Diagnostics`,
+- `validate_document` began reporting `W004`, a warning, for an `Output:Diagnostics`,
   `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable`
-  with no entries in its extensible group. Such an object does nothing in EnergyPlus, which runs it
-  in epJSON exactly as it runs the model without it, and IDF cannot carry it: it is written
-  `Type,;`, which EnergyPlus reads as one blank entry and refuses for `OutdoorAir:NodeList` and
-  `EnergyManagementSystem:GlobalVariable`, whose entries have a required field. It passed validation
-  with no findings. The message names that field where there is one. `add()` and `validate_object`
-  still accept the object, so it can be filled in after it is added.
-  ([#279](https://github.com/idfkit/idfkit/pull/279))
+  with no entries, or only blank ones, in its extensible group. Such an object does nothing in
+  EnergyPlus, which runs it in epJSON exactly as it runs the model without it, and IDF cannot carry
+  it: it is written `Type,;`, which EnergyPlus reads as one blank entry and refuses for
+  `OutdoorAir:NodeList` and `EnergyManagementSystem:GlobalVariable`, whose entries have a required
+  field. It used to pass validation with no findings. The message names that field where there is
+  one. `add()` and `validate_object` still accepted the object, so it could be filled in after it
+  was added ([#279](https://github.com/idfkit/idfkit/pull/279)).
 
 ### Changed
 
