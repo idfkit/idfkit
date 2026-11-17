@@ -505,8 +505,8 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         low-level HVAC equivalents and returns a **new** document.  The
         current document is not mutated.
 
-        If the document contains no expandable objects, a copy is returned
-        immediately without invoking the preprocessor.
+        If the document contains no expandable objects, a copy with no
+        ``filepath`` is returned immediately without invoking the preprocessor.
 
         Args:
             energyplus: Pre-configured EnergyPlus installation.  If ``None``,
@@ -516,6 +516,7 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
 
         Returns:
             A new [IDFDocument][idfkit.document.IDFDocument] with all template objects expanded.
+            Its ``filepath`` is ``None``: save it to an explicit path.
 
         Raises:
             EnergyPlusNotFoundError: If no EnergyPlus installation is found.

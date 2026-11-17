@@ -180,6 +180,8 @@ expanded = expand_objects(doc)
 
 Equivalent to `doc.expand()`. Useful if you prefer free functions to methods.
 
+All three return a new document whose `filepath` is `None`, even when there was nothing to expand, so a bare `expanded.save()` raises `ValueError` rather than overwriting the source: save it with `save_idf(expanded, path)` or `expanded.save(path)`.
+
 All three require EnergyPlus to be installed (`ExpandObjects` is a C++ binary that ships with EnergyPlus). Discovery is automatic via `$ENERGYPLUS_DIR`, `$PATH`, or standard install locations.
 
 ## Enumerating templates already in a model

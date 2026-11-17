@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
+from ._reparse import parse_migrated_idf
 from ._typing import StrictT
 from .async_subprocess_backend import AsyncSubprocessMigrator
 from .chain import normalize_target, plan_migration_chain, resolve_source_version
@@ -101,7 +102,9 @@ async def async_migrate(
         keep_work_dir: Preserve intermediate files for inspection.
 
     Returns:
-        A [MigrationReport][idfkit.migration.report.MigrationReport].
+        A [MigrationReport][idfkit.migration.report.MigrationReport]. As with
+        [migrate][idfkit.migration.migrate], the migrated document has no
+        ``filepath``; save it to an explicit path.
 
     Raises:
         idfkit.exceptions.UnsupportedVersionError: For an unsupported target, or a
@@ -177,7 +180,6 @@ async def _run_chain_async(
     target: tuple[int, int, int],
 ) -> MigrationReport[AnyIDFDocument[bool]]:
     """Drive every step in *chain* through an async migrator."""
-    from ..idf_parser import parse_idf
     from ..writers import save_idf
 
     initial_idf = work_root / "step_0_input.idf"
@@ -254,7 +256,7 @@ async def _run_chain_async(
     )
     final_idf = work_root / "migrated.idf"
     await asyncio.to_thread(final_idf.write_text, current_text, "latin-1")
-    migrated = await asyncio.to_thread(parse_idf, final_idf, version=target, strict=model.strict)
+    migrated = await asyncio.to_thread(parse_migrated_idf, final_idf, version=target, strict=model.strict)
     verify_migration_output(
         model,
         migrated,
