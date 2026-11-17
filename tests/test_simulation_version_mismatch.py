@@ -7,9 +7,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from idfkit import new_document
-from idfkit.exceptions import SimulationError, VersionMismatchError
-from idfkit.simulation._common import resolve_version_mismatch
+from idfkit import load_idf, new_document
+from idfkit.document import IDFDocument
+from idfkit.exceptions import SimulationError, UnsupportedVersionError, VersionMismatchError
+from idfkit.migration.report import MigrationReport
+from idfkit.simulation._common import async_resolve_version_mismatch, resolve_version_mismatch
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.runner import simulate
 
@@ -61,6 +63,94 @@ class TestResolveVersionMismatch:
 
         assert exc_info.value.direction == "backward"
         assert exc_info.value.migration_chain == ()
+
+
+def _config_at(tmp_path: Path, version: tuple[int, int, int]) -> EnergyPlusConfig:
+    exe = tmp_path / "energyplus"
+    exe.touch()
+    exe.chmod(0o755)
+    idd = tmp_path / "Energy+.idd"
+    idd.write_text(f"!IDD_Version {version[0]}.{version[1]}.{version[2]}\n")
+    return EnergyPlusConfig(executable=exe, version=version, install_dir=tmp_path, idd_path=idd)
+
+
+def _load_two_component_9_0(tmp_path: Path) -> IDFDocument:
+    """A document loaded from a file headed ``Version, 9.0;``: it reads as 9.0.0, the release is 9.0.1."""
+    path = tmp_path / "v9_0.idf"
+    path.write_text("Version,\n  9.0;\n", encoding="latin-1")
+    doc = load_idf(path)
+    assert doc.version == (9, 0, 0)
+    return doc
+
+
+class TestTwoComponentModelVersion:
+    """A ``Version, 9.0;`` model is matched to the 9.0.1 release, as schema selection matches it."""
+
+    def test_matches_installed_release(self, tmp_path: Path) -> None:
+        model = _load_two_component_9_0(tmp_path)
+        result, report = resolve_version_mismatch(
+            model=model, config=_config_at(tmp_path, (9, 0, 1)), auto_migrate=False
+        )
+        assert result is model
+        assert report is None
+
+    @pytest.mark.asyncio
+    async def test_matches_installed_release_async(self, tmp_path: Path) -> None:
+        model = _load_two_component_9_0(tmp_path)
+        result, report = await async_resolve_version_mismatch(
+            model=model, config=_config_at(tmp_path, (9, 0, 1)), auto_migrate=False
+        )
+        assert result is model
+        assert report is None
+
+    def test_mismatch_reports_the_release_chain(self, tmp_path: Path) -> None:
+        model = _load_two_component_9_0(tmp_path)
+        with pytest.raises(VersionMismatchError) as exc_info:
+            resolve_version_mismatch(model=model, config=_config_at(tmp_path, (9, 2, 0)), auto_migrate=False)
+
+        err = exc_info.value
+        assert err.current == (9, 0, 1)
+        assert err.target == (9, 2, 0)
+        assert err.migration_chain == (((9, 0, 1), (9, 1, 0)), ((9, 1, 0), (9, 2, 0)))
+        assert "Model version 9.0.1" in str(err)
+
+    @patch("idfkit.migration.runner.migrate")
+    def test_auto_migrate_migrates_from_the_release(self, mock_migrate: MagicMock, tmp_path: Path) -> None:
+        migrated = new_document(version=(9, 2, 0))
+        mock_migrate.return_value = MagicMock(spec=MigrationReport, migrated_model=migrated)
+        model = _load_two_component_9_0(tmp_path)
+        config = _config_at(tmp_path, (9, 2, 0))
+
+        result, report = resolve_version_mismatch(model=model, config=config, auto_migrate=True)
+
+        assert result is migrated
+        assert report is mock_migrate.return_value
+        mock_migrate.assert_called_once_with(model, target_version=(9, 2, 0), energyplus=config)
+
+    @pytest.mark.asyncio
+    @patch("idfkit.migration.async_runner.async_migrate")
+    async def test_auto_migrate_migrates_from_the_release_async(self, mock_migrate: MagicMock, tmp_path: Path) -> None:
+        migrated = new_document(version=(9, 2, 0))
+        mock_migrate.return_value = MagicMock(spec=MigrationReport, migrated_model=migrated)
+        model = _load_two_component_9_0(tmp_path)
+        config = _config_at(tmp_path, (9, 2, 0))
+
+        result, _ = await async_resolve_version_mismatch(model=model, config=config, auto_migrate=True)
+
+        assert result is migrated
+        mock_migrate.assert_called_once_with(model, target_version=(9, 2, 0), energyplus=config)
+
+    def test_unsupported_model_version_still_raises(self, ep_config: EnergyPlusConfig) -> None:
+        model = IDFDocument(version=(8, 8, 0))
+        with pytest.raises(UnsupportedVersionError):
+            resolve_version_mismatch(model=model, config=ep_config, auto_migrate=True)
+
+    def test_newer_unsupported_model_is_a_backward_mismatch(self, ep_config: EnergyPlusConfig) -> None:
+        model = IDFDocument(version=(27, 1, 0))
+        with pytest.raises(VersionMismatchError) as exc_info:
+            resolve_version_mismatch(model=model, config=ep_config, auto_migrate=True)
+        assert exc_info.value.current == (27, 1, 0)
+        assert exc_info.value.direction == "backward"
 
 
 class TestSimulateRaisesOnMismatch:

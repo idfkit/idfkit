@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any, overload
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
 from ._typing import StrictT
 from .async_subprocess_backend import AsyncSubprocessMigrator
-from .chain import normalize_target, plan_migration_chain
+from .chain import normalize_target, plan_migration_chain, resolve_source_version
 from .diff import document_diff, verify_migration_output
 from .progress import MigrationProgress
 from .report import MigrationDiff, MigrationReport, MigrationStep
@@ -104,7 +104,8 @@ async def async_migrate(
         A [MigrationReport][idfkit.migration.report.MigrationReport].
 
     Raises:
-        idfkit.exceptions.UnsupportedVersionError: For an unsupported version.
+        idfkit.exceptions.UnsupportedVersionError: For an unsupported target, or a
+            model whose version names no supported release.
         TypeError: If *target_version* is a type that names no single release.
         ValueError: If the target is older than ``model.version``.
         idfkit.exceptions.MigrationError: On any transition-step failure; the
@@ -113,7 +114,7 @@ async def async_migrate(
             and no EnergyPlus installation can be discovered.
     """
     target = normalize_target(target_version)
-    source = model.version
+    source = resolve_source_version(model.version)
 
     await _emit(on_progress, MigrationProgress(phase="planning", message="Planning migration chain"))
     chain = plan_migration_chain(source, target)

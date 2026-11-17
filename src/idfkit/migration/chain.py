@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, cast
 from .._document_types import is_type_form, release_of
 from ..exceptions import UnsupportedVersionError
 from ..simulation.config import normalize_version
-from ..versions import ENERGYPLUS_VERSIONS, is_supported_version
+from ..versions import ENERGYPLUS_VERSIONS, find_release, is_supported_version
 
 if TYPE_CHECKING:
     from ..document import AnyIDFDocument
@@ -58,6 +58,32 @@ def normalize_target(
     if not is_supported_version(normalized):
         raise UnsupportedVersionError(normalized, ENERGYPLUS_VERSIONS)
     return normalized
+
+
+def resolve_source_version(version: tuple[int, int, int]) -> tuple[int, int, int]:
+    """Resolve a model's version to the supported release a migration starts from.
+
+    An IDF file states its version with two components, so a document loaded from
+    a file headed ``Version, 9.0;`` carries ``(9, 0, 0)`` while the release is
+    9.0.1. The rest of idfkit (schema selection, ``as_version``) matches the
+    version to its release line; a migration does the same, with
+    [find_release][idfkit.versions.find_release]. Unlike schema selection, a
+    version newer than every supported release is not snapped to the latest: a
+    model of an unknown release cannot be migrated from a neighbouring one.
+
+    Examples:
+        >>> resolve_source_version((9, 0, 0))
+        (9, 0, 1)
+        >>> resolve_source_version((24, 1, 0))
+        (24, 1, 0)
+
+    Raises:
+        UnsupportedVersionError: If no supported release has *version*'s major and minor.
+    """
+    release = find_release(version)
+    if release is None:
+        raise UnsupportedVersionError(version, ENERGYPLUS_VERSIONS)
+    return release
 
 
 def plan_migration_chain(
