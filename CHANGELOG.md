@@ -14,9 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `MigrationReport[IDFDocumentV24_1]`, and `migrate(doc, IDFDocument)` migrated to the latest
   release with the result typed for it. A type that named no single release, such as
   `AnyIDFDocument` or a union or tuple of document types, raised `TypeError`; pyright and mypy
-  reported `AnyIDFDocument`, and mypy a union. ([1dee6f8](https://github.com/idfkit/idfkit/commit/1dee6f8), [6a86d3c](https://github.com/idfkit/idfkit/commit/6a86d3c))
+  reported `AnyIDFDocument`, and mypy a union. ([#285](https://github.com/idfkit/idfkit/pull/285))
 - `idfkit.versioned.ReleaseDocumentT`, a type variable constrained to the release document types,
-  for code generic over exactly one release, as `migrate()` is. ([6a86d3c](https://github.com/idfkit/idfkit/commit/6a86d3c))
+  for code generic over exactly one release, as `migrate()` is. ([#285](https://github.com/idfkit/idfkit/pull/285))
 
 ### Changed
 
@@ -28,12 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   returned a report typed `AnyIDFDocument | None`, as strict as the source. Code that passed the
   result where an `IDFDocument` was expected stopped type-checking; it can name the target as a
   document type (above) or narrow with `as_version`. A bare `MigrationReport` annotation accepted a
-  report of any release. ([1dee6f8](https://github.com/idfkit/idfkit/commit/1dee6f8), [6a86d3c](https://github.com/idfkit/idfkit/commit/6a86d3c))
+  report of any release. ([#285](https://github.com/idfkit/idfkit/pull/285))
 
 ### Fixed
 
 - A migrated document kept the source's `strict` setting, as `copy()` and `expand_objects()` do;
-  before, it was always strict, so a model loaded with `strict=False` came back strict. ([6a86d3c](https://github.com/idfkit/idfkit/commit/6a86d3c))
+  before, it was always strict, so a model loaded with `strict=False` came back strict. ([#285](https://github.com/idfkit/idfkit/pull/285))
 
 ## [1.3.0-rc.1] - 2026-11-14
 
