@@ -7,9 +7,10 @@ and its version is a value read from the file. The stand-ins here connect the tw
 against one holds exactly for a document of its version, which is what
 :func:`as_version` checks before it hands a document back under that type.
 
-That ``isinstance`` is this module's mechanism, not the public way to check a release. Pyright
-rejects ``isinstance`` against a document type, and the latest release's type has no stand-in:
-it is ``IDFDocument``, which every document is an instance of. :func:`as_version` is the check.
+That ``isinstance`` is this module's mechanism, not the public way to check a release. The
+latest release's type has no stand-in: it is ``IDFDocument``, which every document is an
+instance of, so ``isinstance(doc, IDFDocument)`` holds for a document of any release while a type
+checker then types it as the latest one. :func:`as_version` is the check.
 
 A document's version is matched to a release the way its schema is chosen,
 by :func:`~idfkit.versions.find_closest_version`: a file states its version with two components
@@ -43,10 +44,9 @@ class DocumentTypeMeta(type):
     def __instancecheck__(cls, instance: object) -> bool:
         from .document import IDFDocument
 
-        # IDFDocument is a TypedDict-backed class to a type checker, which isinstance refuses.
-        if not isinstance(instance, cast("type", IDFDocument)):
+        if not isinstance(instance, IDFDocument):
             return False
-        version = cast("IDFDocument", instance).version
+        version = instance.version
         return cls._energyplus_version is None or find_closest_version(version) == cls._energyplus_version
 
     def __call__(cls, *args: Any, **kwargs: Any) -> NoReturn:

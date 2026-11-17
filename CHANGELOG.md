@@ -43,6 +43,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when the code runs, so once idfkit supported a newer release, a tuple ending in it no longer
   covered the previous latest, and `as_version` raised `TypeError` on a model of that release
   ([#282](https://github.com/idfkit/idfkit/pull/282)).
+- **Breaking:** for type checking only, the document types stopped being `TypedDict`s to a type
+  checker. `IDFDocument`, `IDFDocumentAllVersions` and every `IDFDocumentV<major>_<minor>` came to
+  type `doc["Zone"]` with one `__getitem__` overload per object type, and every one of them came to
+  derive from `IDFDocumentAllVersions`, which `AnyIDFDocument` now names alone rather than as a
+  union with `IDFDocument`. pyright narrowed a `TypedDict` on `"Space" in doc` by its own rules,
+  which are not what the test means at run time (whether the model holds a `Space`), so it could
+  give a document the wrong type or skip a branch unchecked (see Fixed). Code that type-checked
+  before and fails since:
+  - a lookup with a non-literal `str`, `doc[obj_type]`, which was typed `Unknown` and became an
+    error, including inside `cast(...)`; use `doc.get_collection(obj_type)`, which is typed
+    `IDFCollection[IDFObject]`;
+  - a release-specific lookup guarded by `in`, such as `if "Space" in doc: doc["Space"]` through
+    `AnyIDFDocument`; branch on `doc.version` and narrow with `as_version`;
+  - the body of `if "Zone" not in doc:`, which pyright skipped as unreachable and came to check;
+  - `doc.get(...)`, `doc.setdefault(...)`, `doc.pop(...)`, `doc | {...}`, `del doc[...]` and
+    `match doc: case {...}`, which raise or never match at run time;
+  - `dict(doc)`, `{**doc}`, and passing a document where a `Mapping` is expected, which work at
+    run time but were typed only because a `TypedDict` is a `Mapping`; use `doc.collections`.
+
+  An unknown object type came to be reported as `No overloads for "__getitem__"` under
+  `reportCallIssue` and `reportArgumentType`, naming the parameter type
+  `_NotAnObjectTypeOfEnergyPlus9_4` (or `_NotAnObjectTypeOfEveryRelease` through
+  `AnyIDFDocument`), instead of `"Space" is not a defined key in ...` under
+  `reportGeneralTypeIssues`, so a `# pyright: ignore[reportGeneralTypeIssues]` on such a lookup
+  no longer silences it; mypy lists every accepted type name under the error. pyright came to
+  accept `isinstance(doc, IDFDocument)` and `case IDFDocument():`, which it rejected for a
+  `TypedDict`, and to narrow an `AnyIDFDocument` to the latest release on them, though every
+  document passes them at run time; narrow with `as_version` instead. `reveal_type` of an
+  `AnyIDFDocument` shows `IDFDocumentAllVersions`, and `doc["Zone"]` through it became
+  `IDFCollection[AnyZone]` rather than `IDFCollection[Zone] | IDFCollection[AnyZone]`. Each older
+  release's document type was moved to its own stub module under `idfkit/_versioned/`, still
+  imported from `idfkit.versioned`, so a file reads only the releases it names. pyright took about
+  as long as before on a file using `new_document()` or `AnyIDFDocument` (2.1 to 2.4 s), and less
+  on one naming `IDFDocumentV9_4` (2.5 s, from 2.8 to 3.0 s). Each lookup costs time in proportion to its type's place among the overloads, which follow the schema's order, so a file with hundreds of lookups of a type listed late took longer: 300 lookups of `Output:Variable` took 3.8 s, from 1.9 s ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
 
 ### Fixed
 
@@ -54,6 +88,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Floor:Detailed`, `RoofCeiling:Detailed` and the simple surfaces such as `Wall:Exterior`, `Roof`
   and `Floor:GroundContact`. `get_referencing()` was left returning every object that names the zone.
   ([#289](https://github.com/idfkit/idfkit/pull/289))
+- `if "Space" in doc:` stopped retyping an `AnyIDFDocument` as the latest release under pyright.
+  The test is true for a 9.6 or 22.1 model that holds a `Space`, where `space.ceiling_height = 3.0`
+  type-checked and raised `InvalidFieldError`, since the field arrived in 22.2. The same held for
+  `"OutputControl:Files"`, the `if "Space" not in doc: return` form, a `TypeVar` bound to
+  `AnyIDFDocument`, and a condition stored in a variable first ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+- The body of `if "Zone" not in doc:`, and of any `in` test on a type every release has, became
+  type-checked again. pyright treated it as unreachable, on `IDFDocument` and every
+  `IDFDocumentV*` as well as `AnyIDFDocument`, though an empty model of any release takes it; so
+  did `"DistrictHeating" in doc`, which 8.9 to 23.1 models reach ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+- After `d = as_version(doc, (IDFDocumentV9_4, IDFDocumentV9_6, IDFDocument))`, the `else` of
+  `if "Space" in d:` stopped being typed as `IDFDocumentV9_4` alone, so 9.4-only field names became
+  reported there; 9.6 and 26.2 models without a `Space` take that branch too ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+- `doc.get("Space")` and the other `dict` methods pyright gave a document (`setdefault`, `pop`,
+  `|`, `del`, mapping `match` patterns) became reported, rather than type-checking and raising
+  `AccessorAttributeError` or `TypeError`. The eppy batch update,
+  `doc.update({"Zone.Office.x_origin": 1.0})`, came to type-check; the `TypedDict`'s own `update`
+  used to shadow it, under pyright and mypy alike ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+- mypy came to see a document's methods, properties and accessors: it reported `doc.add`,
+  `doc.version` and `doc.zones` as missing, because it does not accept a class that derives from
+  both a `TypedDict` and an ordinary class ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
 
 ## [1.3.0-rc.1] - 2026-11-14
 

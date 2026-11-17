@@ -51,7 +51,7 @@ def release_specific(doc: IDFDocumentV9_4) -> None:
 
 def any_release(doc: AnyIDFDocument) -> None:
     for surface in doc["BuildingSurface:Detailed"].referencing("Office"):
-        assert_type(surface, AnyBuildingSurfaceDetailed | BuildingSurfaceDetailed)
+        assert_type(surface, AnyBuildingSurfaceDetailed)
         zone_name: str | None = surface.zone_name
         print(zone_name)
 

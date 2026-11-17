@@ -74,7 +74,7 @@ from .geometry import Polygon3D, Vector3D, _get_vertices  # pyright: ignore[repo
 
 if TYPE_CHECKING:
     from .document import AnyIDFDocument
-    from .objects import IDFCollection, IDFObject
+    from .objects import IDFObject
     from .schema import EpJSONSchema
 
 __all__ = [
@@ -308,7 +308,7 @@ def _objects(doc: AnyIDFDocument, object_type: str) -> list[IDFObject]:
     """Every object of one type, or nothing when the document holds none of them."""
     if object_type not in doc:
         return []
-    return list(cast("IDFCollection[IDFObject]", doc[object_type]))
+    return list(doc.get_collection(object_type))
 
 
 def _first(doc: AnyIDFDocument, object_type: str) -> IDFObject | None:

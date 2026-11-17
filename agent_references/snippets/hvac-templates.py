@@ -116,7 +116,7 @@ for tmpl in doc.hvac_templates:
     print(tmpl.obj_type, tmpl.name)
 # or
 for tmpl_type in [t for t in doc.collections if t.startswith("HVACTemplate:")]:
-    for tmpl in doc[tmpl_type]:
+    for tmpl in doc.get_collection(tmpl_type):
         print(tmpl_type, tmpl.name)
 # --8<-- [end:enumerate]
 
