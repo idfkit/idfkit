@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `validate_document` began reporting `W004`, a warning, for an `Output:Diagnostics`,
+  `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable`
+  with no entries, or only blank ones, in its extensible group. Such an object does nothing in
+  EnergyPlus, which runs it in epJSON exactly as it runs the model without it, and IDF cannot carry
+  it: it is written `Type,;`, which EnergyPlus reads as one blank entry and refuses for
+  `OutdoorAir:NodeList` and `EnergyManagementSystem:GlobalVariable`, whose entries have a required
+  field. It used to pass validation with no findings. The message names that field where there is
+  one. `add()` and `validate_object` still accepted the object, so it could be filled in after it
+  was added ([#279](https://github.com/idfkit/idfkit/pull/279)).
 - `migrate()` and `async_migrate()` took the target release's document type as `target_version`,
   as `as_version` takes one: `migrate(doc, IDFDocumentV24_1)` migrated to 24.1.0 and returned a
   `MigrationReport[IDFDocumentV24_1]`, and `migrate(doc, IDFDocument)` migrated to the latest

@@ -12,6 +12,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
 
+from .objects import is_blank_slot
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -112,7 +114,8 @@ def validate_document(  # noqa: C901
         doc: The document to validate
         schema: Schema to validate against (uses doc's schema if not provided)
         check_references: Check reference integrity
-        check_required: Check required fields
+        check_required: Check required fields, and report a group-only object such as
+            ``OutdoorAir:NodeList`` that has no entries (``W004``)
         check_types: Check field types
         check_ranges: Check numeric ranges
         check_singletons: Check singleton (maxProperties) constraints
@@ -190,6 +193,11 @@ def validate_document(  # noqa: C901
         if obj_type not in doc.collections:
             continue
 
+        # W004 is checked here and not in `_validate_object`: `add()` refuses any finding that
+        # function makes, and an empty group-only object is a normal step in building one up. Only
+        # the finished model is wrong to hold it. Whether the type is group-only is read once.
+        group_only = _group_only_type(schema, obj_type) if check_required else None
+
         for obj in doc.get_collection(obj_type):
             obj_errors = _validate_object(
                 obj,
@@ -198,6 +206,10 @@ def validate_document(  # noqa: C901
                 check_types=check_types,
                 check_ranges=check_ranges,
             )
+            if group_only is not None:
+                empty = _empty_group_only_object(obj, group_only)
+                if empty is not None:
+                    obj_errors.append(empty)
 
             for err in obj_errors:
                 if err.severity == Severity.ERROR:
@@ -352,6 +364,83 @@ def _validate_object(  # noqa: C901
             errors.append(error)
 
     return errors
+
+
+@dataclass(frozen=True, slots=True)
+class _GroupOnly:
+    """What ``W004`` needs from a group-only type.
+
+    Attributes:
+        wrapper: The epJSON key of the type's extensible group.
+        required: The first field every entry of the group must give, or None when none is required.
+    """
+
+    wrapper: str
+    required: str | None
+
+
+def _group_only_type(schema: EpJSONSchema, obj_type: str) -> _GroupOnly | None:
+    """The group of *obj_type* when it is a group-only type, or ``None``.
+
+    A group-only type is a nameless type whose only field is an extensible group:
+    ``Output:Diagnostics``, ``Output:Table:SummaryReports``, ``OutdoorAir:NodeList`` and
+    ``EnergyManagementSystem:GlobalVariable``.
+    """
+    cache = schema.get_parsing_cache(obj_type)
+    # ``all_field_names`` lists the fixed fields only; the wrapper is an epJSON key and never one.
+    if cache is None or cache.has_name or not cache.ext_wrapper_key or cache.all_field_names:
+        return None
+    wrapper = cache.ext_wrapper_key
+    # Resolved, since the parsing cache is case-insensitive and the schema lookups are not.
+    canonical = schema.resolve_type_name(obj_type) or obj_type
+    props: dict[str, Any] = (schema.get_inner_schema(canonical) or {}).get("properties", {})
+    items: dict[str, Any] = props.get(wrapper, {}).get("items", {})
+    required: list[str] = items.get("required", [])
+    return _GroupOnly(wrapper=wrapper, required=required[0] if required else None)
+
+
+def _holds_a_value(group: Any) -> bool:
+    """Whether an extensible *group* gives anything: a dict whose slots are all blank gives nothing."""
+    if not isinstance(group, dict):
+        return True
+    return not all(map(is_blank_slot, cast("dict[str, Any]", group).values()))
+
+
+def _empty_group_only_object(obj: IDFObject, group_only: _GroupOnly) -> ValidationError | None:
+    """``W004`` for a group-only object with no entry that gives a value, or ``None``.
+
+    Holding no entries, or only blank ones, a group-only object says nothing. EnergyPlus runs it in
+    epJSON exactly as it runs the model without it, so it is almost always a model left unfinished or
+    a group given under a key the type does not have.
+
+    It is also an object IDF cannot carry. The writer spells it ``Type,;``, since ``Type;`` would run
+    on into the next object, and EnergyPlus reads that as one blank group: a warning for
+    ``Output:Diagnostics``, a Severe for ``Output:Table:SummaryReports``, and refused input for the
+    two types whose group has a required field. A list of blank groups is written the same way, as
+    the writer trims the blank values, so it is reported too.
+    """
+    wrapper = group_only.wrapper
+    groups = obj.data.get(wrapper)
+    if groups and not isinstance(groups, list):
+        return None  # Not a list at all, which the type check reports.
+    if any(map(_holds_a_value, cast("list[Any]", groups or []))):
+        return None
+    message = (
+        f"'{obj.obj_type}' has no '{wrapper}' entries, so it does nothing in EnergyPlus. Give it at "
+        "least one entry or remove it. Written to IDF it becomes one blank entry, which EnergyPlus "
+    )
+    if group_only.required:
+        message += f"refuses because '{group_only.required}' is required."
+    else:
+        message += "warns about or reports as invalid."
+    return ValidationError(
+        severity=Severity.WARNING,
+        obj_type=obj.obj_type,
+        obj_name=obj.name,
+        field=wrapper,
+        message=message,
+        code="W004",
+    )
 
 
 def _validate_field(  # pyright: ignore[reportUnusedFunction]
