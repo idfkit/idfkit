@@ -8,6 +8,7 @@ promise that the stubs describe every supported version exactly, today and after
 from __future__ import annotations
 
 import re
+import typing
 from pathlib import Path
 from typing import Annotated, Any, Literal, get_origin, get_type_hints
 
@@ -107,6 +108,14 @@ class TestNewDocument:
         for argument in (bool, Any, Literal[True, False], Literal[1]):
             assert new_document(versioned.IDFDocumentV9_4[argument]).strict is True
 
+    @pytest.mark.skipif(not hasattr(typing, "TypeAliasType"), reason="typing.TypeAliasType is new in 3.12")
+    def test_a_type_alias_argument_states_the_strictness(self) -> None:
+        # pyright reads IDFDocumentV9_4[Lax] as IDFDocumentV9_4[Literal[False]], so the document must be lax.
+        alias_type: Any = vars(typing)["TypeAliasType"]
+        lax: Any = alias_type("Lax", Literal[False])
+        assert new_document(versioned.IDFDocumentV9_4[lax]).strict is False
+        assert new_document(versioned.IDFDocumentV9_4[Annotated[lax, "lax"]]).strict is False
+
     def test_strict_from_an_untyped_caller(self) -> None:
         # The type overload takes no strict; at run time it applies, unless the type contradicts it.
         untyped: Any = new_document
@@ -122,9 +131,14 @@ class TestNewDocument:
         # Every document's run-time class is IDFDocument, whatever its release: new_document(type(doc))
         # must not create a latest-release document typed as doc's release.
         legacy = new_document(versioned.IDFDocumentV9_4)
-        for document_type in (type(legacy), IDFDocument, IDFDocument[Literal[False]]):
+        latest_name = f"IDFDocumentV{LATEST_VERSION[0]}_{LATEST_VERSION[1]}"
+        latest_type = getattr(versioned, latest_name)
+        for document_type in (type(legacy), IDFDocument, IDFDocument[Literal[False]], latest_type):
             with pytest.raises(TypeError, match=r"Call new_document\(\) for the latest release"):
                 new_document(document_type)
+        # A caller who passed the latest release's own type is told that it is IDFDocument.
+        with pytest.raises(TypeError, match=f"{latest_name}, which is IDFDocument"):
+            new_document(latest_type)
 
     def test_refuses_what_names_no_single_release(self) -> None:
         with pytest.raises(TypeError, match="names 2"):
@@ -138,6 +152,9 @@ class TestNewDocument:
 
         with pytest.raises(TypeError, match="subclass of a release type"):
             new_document(Lax)
+        # Instantiating the subclass points to the release's type, which new_document takes, not to Lax.
+        with pytest.raises(TypeError, match=r"new_document\(IDFDocumentV9_4\)"):
+            Lax()
         with pytest.raises(TypeError, match="not a document type"):
             new_document(dict)  # pyright: ignore[reportArgumentType, reportCallIssue]
         with pytest.raises(TypeError, match="not a document type"):

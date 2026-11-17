@@ -455,9 +455,11 @@ def new_document(
             that type; a non-strict one is asked for by the type,
             ``IDFDocumentV9_4[Literal[False]]``. Given a tuple, it is typed for the
             latest release whatever the version, since a type checker does not read
-            the tuple. ``IDFDocument`` is refused, being the run-time class of every
-            document: ``new_document(type(doc))`` would create a document of the
-            latest release whatever ``doc``'s.
+            the tuple. ``IDFDocument`` is refused, and so is the latest release's
+            type in :mod:`idfkit.versioned`, which is ``IDFDocument``: it is the
+            run-time class of every document, so ``new_document(type(doc))`` would
+            create a document of the latest release whatever ``doc``'s. Call
+            ``new_document()`` for the latest release.
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
             of returning ``None``.

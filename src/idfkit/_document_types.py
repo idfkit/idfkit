@@ -59,10 +59,12 @@ class DocumentTypeMeta(type):
 
     def __call__(cls, *args: Any, **kwargs: Any) -> NoReturn:
         # AnyIDFDocument stands for no single release, so new_document refuses it: point to the tuple form.
+        # new_document also refuses a subclass of a release's type, so name the release's type it derives from.
+        stand_in = next((base for base in cls.__mro__ if "_energyplus_version" in vars(base)), cls)
         create = (
             "idfkit.new_document(version=...)"
             if cls._energyplus_version is None
-            else f"idfkit.new_document({cls.__name__})"
+            else f"idfkit.new_document({stand_in.__name__})"
         )
         msg = f"{cls.__name__} is a type for type checkers and is not instantiated; create a document with {create} or load one"
         raise TypeError(msg)
@@ -128,10 +130,13 @@ def release_for_new_document(version: object, strict: bool) -> tuple[tuple[int, 
     if origin is IDFDocument:
         # IDFDocument is also the run-time class of every document, so new_document(type(doc)) would pass
         # it and create a latest-release document typed as doc's release, whatever that release is.
+        latest_type = f"IDFDocumentV{LATEST_VERSION[0]}_{LATEST_VERSION[1]}"
         msg = (
-            "new_document does not take IDFDocument: it is the run-time class of every document, so it names "
+            "new_document does not take IDFDocument, nor the latest release's type, "
+            f"{latest_type}, which is IDFDocument: it is the run-time class of every document, so it names "
             "no release here (new_document(type(doc)) would create a latest-release document whatever doc's "
-            "release). Call new_document() for the latest release, or pass a release's type from idfkit.versioned"
+            "release). Call new_document() for the latest release, or pass an older release's type from "
+            "idfkit.versioned"
         )
         raise TypeError(msg)
     if release is None or "_energyplus_version" not in vars(origin):
@@ -150,8 +155,9 @@ def release_for_new_document(version: object, strict: bool) -> tuple[tuple[int, 
 def _stated_strictness(document_type: object) -> bool | None:
     """The strictness a parametrized document type states, as in ``IDFDocumentV9_4[Literal[False]]``, if any.
 
-    ``Annotated`` is looked through. A type argument that is not one literal ``bool`` (``bool``, ``Any``,
-    ``Literal[True, False]``) states none.
+    ``Annotated`` and type aliases (``type Lax = Literal[False]``, or ``TypeAliasType``) are looked through,
+    as a type checker looks through them. A type argument that is not one literal ``bool`` (``bool``,
+    ``Any``, ``Literal[True, False]``) states none.
 
     Raises:
         TypeError: If the type argument is a string, which is not evaluated at run time.
@@ -160,8 +166,15 @@ def _stated_strictness(document_type: object) -> bool | None:
     if len(args) != 1:
         return None
     argument = args[0]
-    if get_origin(argument) is Annotated:
-        argument = get_args(argument)[0]
+    # Bounded, as `type A = A` is its own value.
+    for _ in range(32):
+        if get_origin(argument) is Annotated:
+            argument = get_args(argument)[0]
+        elif type(argument).__name__ == "TypeAliasType" and hasattr(argument, "__value__"):
+            # typing.TypeAliasType (3.12+) or typing_extensions'; matched by name, which needs neither.
+            argument = argument.__value__
+        else:
+            break
     if isinstance(argument, (str, ForwardRef)):
         msg = f"{document_type!r}: write the strictness unquoted, as Literal[False]; a string is not read at run time"
         raise TypeError(msg)
