@@ -465,7 +465,7 @@ def new_document(
     """
     _check_version(version)
     schema = get_schema(version)
-    doc = IDFDocument(version=version, schema=schema, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
+    doc = IDFDocument(version=version, schema=schema, strict=strict)  # type: ignore[reportCallIssue]  # the stub types IDFDocument as a TypedDict, whose synthesized constructor pyright checks instead
 
     # Seed core singleton objects for a minimal baseline model.
     version_identifier = f"{version[0]}.{version[1]}"
