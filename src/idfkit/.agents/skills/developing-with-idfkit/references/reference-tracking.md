@@ -33,6 +33,7 @@ doc.rename("Zone", "Office", "Open_Office")
 |---|---|
 | `doc.get_referencing(name)` | All `IDFObject`s whose fields point at `name`, of every type, untyped. |
 | `doc["Type"].referencing(name_or_obj)` | The objects of one type that point at a name (or object's name), typed as that type. |
+| `doc.get_zone_surfaces(zone_name)` | Only the heat-transfer surfaces whose own `zone_name` is that zone (`BuildingSurface:Detailed`, `Wall:Exterior`, `Floor:Detailed`, ...). Not loads, equipment, fenestration, `InternalMass`, or another zone's surface that uses this zone as its outside boundary. |
 | `doc.get_references(obj)` | All names referenced by `obj`'s fields. |
 | `doc.rename(obj_type, old, new)` | Rename an object and cascade through every reference. |
 | `obj.name = "new"` | Equivalent to `doc.rename(obj.obj_type, obj.name, "new")`. |
