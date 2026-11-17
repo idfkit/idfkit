@@ -41,6 +41,8 @@ from .versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, find_closest_version,
 if TYPE_CHECKING:
     from typing import TypeAlias
 
+    from typing_extensions import TypeIs
+
     from .document import AnyIDFDocument
 
     # What since= and before= take: a release's document type, its number, or its version tuple.
@@ -120,31 +122,33 @@ def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
     raise TypeError(msg)
 
 
-def release_for_new_document(version: object, strict: bool) -> tuple[tuple[int, int, int], bool]:
-    """The release and strictness of the document :func:`idfkit.new_document` creates for *version*.
+def is_type_form(value: object) -> TypeIs[type[Any]]:
+    """Whether *value* names a type (a class, a parametrized one such as ``IDFDocumentV9_4[bool]``, or a union)
+    rather than a version value, for the functions that take either: :func:`idfkit.new_document` and ``migrate``.
 
-    *version* is a release's document type, such as ``IDFDocumentV9_4`` or ``IDFDocumentV9_4[Literal[False]]``:
-    the release is the one the type stands for, and the strictness the one its type argument states, else
-    *strict*. Anything that is not a class or a parametrized one is handed back as it is, for
-    ``new_document`` to report as an unsupported version the way it always has.
+    A union is not itself a class; the narrowing serves the other branch, where the value is a version.
+    """
+    return isinstance(value, (type, types.UnionType)) or get_origin(value) is not None
+
+
+def release_for_new_document(document_type: object, strict: bool) -> tuple[tuple[int, int, int], bool]:
+    """The release and strictness of the document :func:`idfkit.new_document` creates for *document_type*.
+
+    The release is the one :func:`release_of` resolves; the strictness the one the type argument states
+    (``IDFDocumentV9_4[Literal[False]]``), else *strict*. On top of :func:`release_of`, ``IDFDocument`` is
+    refused: it is the run-time class of every document, so ``new_document(type(doc))`` would create a
+    latest-release document typed as ``doc``'s release. So is a subclass of a release type, which
+    ``new_document`` would type as the subclass while returning an ``IDFDocument``.
 
     Raises:
-        TypeError: If *version* names several releases (a union), no single release (``AnyIDFDocument``),
-            ``IDFDocument``, a class that is not one of the release types, or a strictness that contradicts
-            *strict*.
+        TypeError: As :func:`release_of` does, for ``IDFDocument`` or a subclass of a release type, and for a
+            strictness that contradicts *strict*.
     """
     from .document import IDFDocument
 
-    if not isinstance(version, type) and get_origin(version) is None:
-        return cast("tuple[int, int, int]", version), strict
-    candidates = _candidates(version)
-    if len(candidates) != 1:
-        msg = f"new_document creates a document of one release, and {version!r} names {len(candidates)}"
-        raise TypeError(msg)
-    origin, release = _resolve(version)
+    release = release_of(document_type)
+    origin, _ = _resolve(document_type)
     if origin is IDFDocument:
-        # IDFDocument is also the run-time class of every document, so new_document(type(doc)) would pass
-        # it and create a latest-release document typed as doc's release, whatever that release is.
         latest_type = f"IDFDocumentV{LATEST_VERSION[0]}_{LATEST_VERSION[1]}"
         msg = (
             "new_document does not take IDFDocument, nor the latest release's type, "
@@ -154,15 +158,14 @@ def release_for_new_document(version: object, strict: bool) -> tuple[tuple[int, 
             "idfkit.versioned"
         )
         raise TypeError(msg)
-    if release is None or "_energyplus_version" not in vars(origin):
-        what = "stands for no single EnergyPlus release" if release is None else "is a subclass of a release type"
-        msg = f"{origin.__name__} {what}; pass a release's type from idfkit.versioned, such as IDFDocumentV9_4"
+    if "_energyplus_version" not in vars(origin):
+        msg = f"{origin.__name__} is a subclass of a release type; pass a release's type from idfkit.versioned"
         raise TypeError(msg)
-    stated = _stated_strictness(version)
+    stated = _stated_strictness(document_type)
     if stated is None:
         return release, strict
     if stated and not strict:
-        msg = f"strict=False contradicts the document type {version!r}; pass the type alone"
+        msg = f"strict=False contradicts the document type {document_type!r}; pass the type alone"
         raise TypeError(msg)
     return release, stated
 
@@ -202,15 +205,15 @@ def release_of(document_type: object) -> tuple[int, int, int]:
 
     Raises:
         TypeError: If *document_type* is not a document type, or names no single release:
-            ``AnyIDFDocument``, or a tuple or union of several types.
+            ``AnyIDFDocument``, or a union of several types.
     """
     candidates = _candidates(document_type)
     if len(candidates) != 1:
-        msg = f"{document_type!r} names several releases; name one, such as IDFDocumentV24_1"
+        msg = f"{document_type!r} names {len(candidates)} releases; name one, such as IDFDocumentV9_4"
         raise TypeError(msg)
-    _, release = _resolve(candidates[0])
+    origin, release = _resolve(candidates[0])
     if release is None:
-        msg = f"{document_type!r} stands for every release, not one; name one, such as IDFDocumentV24_1"
+        msg = f"{origin.__name__} stands for no single EnergyPlus release; name one, such as IDFDocumentV9_4"
         raise TypeError(msg)
     return release
 

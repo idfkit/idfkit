@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import types
-from typing import TYPE_CHECKING, Any, get_origin
+from typing import TYPE_CHECKING, Any, cast
 
-from .._document_types import release_of
+from .._document_types import is_type_form, release_of
 from ..exceptions import UnsupportedVersionError
 from ..simulation.config import normalize_version
 from ..versions import ENERGYPLUS_VERSIONS, is_supported_version
@@ -36,19 +35,20 @@ def normalize_target(
         UnsupportedVersionError: If the parsed version is not in
             `ENERGYPLUS_VERSIONS`.
     """
-    if _is_type(target_version):
+    if is_type_form(target_version):
         return release_of(target_version)
     # A tuple of document types is what as_version takes for several releases. A migration reaches
     # one, so it is refused whatever its length, a one-member tuple included. A tuple none of whose
     # items is a type is a version and goes to normalize_version as it always has, whatever its
     # items are (numpy integers included).
-    if isinstance(target_version, tuple) and any(_is_type(part) for part in target_version):
+    if isinstance(target_version, tuple) and any(is_type_form(part) for part in target_version):
         msg = (
             f"{target_version!r} is a tuple of document types, which as_version takes for several releases;"
             " a migration reaches one, so name one, such as IDFDocumentV24_1"
         )
         raise TypeError(msg)
-    if not isinstance(target_version, (str, tuple)):
+    # Typed callers cannot get here (is_type_form narrowed the types away); untyped ones pass anything.
+    if not isinstance(cast("object", target_version), (str, tuple)):
         msg = (
             "target_version must be a (major, minor, patch) tuple, a dotted string or a document type such as"
             f" IDFDocumentV24_1, not {target_version!r}"
@@ -58,11 +58,6 @@ def normalize_target(
     if not is_supported_version(normalized):
         raise UnsupportedVersionError(normalized, ENERGYPLUS_VERSIONS)
     return normalized
-
-
-def _is_type(value: object) -> bool:
-    """Whether *value* is a class, a subscripted generic such as ``IDFDocumentV9_4[bool]``, or a union."""
-    return isinstance(value, (type, types.UnionType)) or get_origin(value) is not None
 
 
 def plan_migration_chain(

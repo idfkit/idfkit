@@ -502,9 +502,11 @@ def new_document(
         False
     """
     if not isinstance(version, tuple):
-        from ._document_types import release_for_new_document
+        from ._document_types import is_type_form, release_for_new_document
 
-        version, strict = release_for_new_document(version, strict)
+        # Anything else is left to the version check, which reports it as an unsupported version.
+        if is_type_form(version):
+            version, strict = release_for_new_document(version, strict)
     _check_version(version)
     schema = get_schema(version)
     doc = IDFDocument(version=version, schema=schema, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
