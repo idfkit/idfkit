@@ -67,6 +67,50 @@ if TYPE_CHECKING:
     from .fs import AsyncFileSystem, FileSystem
 
 
+def _migration_target(
+    *,
+    model: AnyIDFDocument,
+    config: EnergyPlusConfig,
+    auto_migrate: bool,
+) -> tuple[int, int, int] | None:
+    """Decide whether *model* must be migrated to run on *config*, shared by both resolvers.
+
+    Both versions are matched to their release line first, the way schema selection
+    and ``as_version`` match a document's version: a file headed ``Version, 9.0;``
+    loads as ``(9, 0, 0)``, and the 9.0 release (and its install) is 9.0.1. A version
+    with no supported release line is compared as it is, so a model newer than the
+    installed EnergyPlus still raises ``VersionMismatchError`` and an unsupported one
+    still raises ``UnsupportedVersionError`` from the chain planner.
+
+    Returns:
+        ``None`` when the model already matches the installed release, else the
+        release to migrate it to.
+
+    Raises:
+        VersionMismatchError: If the model is newer than the installed EnergyPlus, or
+            a migration is needed and *auto_migrate* is ``False``.
+        UnsupportedVersionError: If a migration is needed from or to a version with
+            no supported release.
+    """
+    from ..exceptions import VersionMismatchError
+    from ..migration.chain import plan_migration_chain
+    from ..versions import find_release
+
+    source = find_release(model.version) or model.version
+    target = find_release(config.version) or config.version
+
+    if source == target:
+        return None
+
+    if source > target:
+        raise VersionMismatchError(current=source, target=target)
+
+    chain = plan_migration_chain(source, target)
+    if not auto_migrate:
+        raise VersionMismatchError(current=source, target=target, migration_chain=chain)
+    return target
+
+
 def resolve_version_mismatch(
     *,
     model: AnyIDFDocument,
@@ -88,26 +132,15 @@ def resolve_version_mismatch(
         SimulationError: If migration completes without producing a migrated
             model (should not happen in practice).
     """
-    from ..exceptions import SimulationError, VersionMismatchError
-    from ..migration.chain import plan_migration_chain
+    from ..exceptions import SimulationError
 
-    if model.version == config.version:
+    target = _migration_target(model=model, config=config, auto_migrate=auto_migrate)
+    if target is None:
         return model, None
-
-    if model.version > config.version:
-        raise VersionMismatchError(current=model.version, target=config.version)
-
-    chain = plan_migration_chain(model.version, config.version)
-    if not auto_migrate:
-        raise VersionMismatchError(
-            current=model.version,
-            target=config.version,
-            migration_chain=chain,
-        )
 
     from ..migration.runner import migrate
 
-    report = migrate(model, target_version=config.version, energyplus=config)
+    report = migrate(model, target_version=target, energyplus=config)
     migrated = report.migrated_model
     if migrated is None:  # pragma: no cover -- chain is non-empty, so migrate() returns a model
         msg = "Migration completed without producing a migrated model"
@@ -127,25 +160,14 @@ async def async_resolve_version_mismatch(
     [async_migrate()][idfkit.migration.async_runner.async_migrate] so it does
     not block the event loop.
     """
-    from ..exceptions import SimulationError, VersionMismatchError
+    from ..exceptions import SimulationError
     from ..migration.async_runner import async_migrate
-    from ..migration.chain import plan_migration_chain
 
-    if model.version == config.version:
+    target = _migration_target(model=model, config=config, auto_migrate=auto_migrate)
+    if target is None:
         return model, None
 
-    if model.version > config.version:
-        raise VersionMismatchError(current=model.version, target=config.version)
-
-    chain = plan_migration_chain(model.version, config.version)
-    if not auto_migrate:
-        raise VersionMismatchError(
-            current=model.version,
-            target=config.version,
-            migration_chain=chain,
-        )
-
-    report = await async_migrate(model, target_version=config.version, energyplus=config)
+    report = await async_migrate(model, target_version=target, energyplus=config)
     migrated = report.migrated_model
     if migrated is None:  # pragma: no cover -- chain is non-empty, so async_migrate() returns a model
         msg = "Migration completed without producing a migrated model"

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `idfkit.versions.find_release(version)` was added: the supported release a version names, matched
+  on its major and minor as `find_closest_version` matches it, but `None` for a version newer than
+  every supported release instead of the latest one ([#292](https://github.com/idfkit/idfkit/pull/292)).
 - `validate_document` began reporting `W004`, a warning, for an `Output:Diagnostics`,
   `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable`
   with no entries, or only blank ones, in its extensible group. Such an object does nothing in
@@ -157,6 +160,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `migrate()`, `async_migrate()`, `plan_migration_chain()` and `simulate(..., auto_migrate=True)` matched a model's version to
+  its release the way schema selection and `as_version` do. A model loaded from a file headed
+  `Version, 9.0;` reads as 9.0.0 while the release is 9.0.1, so migrating it raised
+  `UnsupportedVersionError: EnergyPlus version 9.0.0 is not supported` whatever the target, and
+  `simulate()` reported it as mismatching an installed 9.0.1; it now migrates from 9.0.1, and a
+  version with no supported release line still raises ([#292](https://github.com/idfkit/idfkit/pull/292)).
 - `idfkit check --sarif` reported idfkit's version as the tool version instead of `0.1.0`, and the
   `idfkit-check` pre-commit hook's description said how to pass targets ([#287](https://github.com/idfkit/idfkit/pull/287)).
 - A migrated document kept the source's `strict` setting, as `copy()` and `expand_objects()` do;

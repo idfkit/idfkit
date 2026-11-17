@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
 from ._typing import StrictT
-from .chain import normalize_target, plan_migration_chain
+from .chain import normalize_target, plan_migration_chain, resolve_source_version
 from .diff import document_diff, verify_migration_output
 from .progress import MigrationProgress
 from .report import MigrationDiff, MigrationReport, MigrationStep
@@ -116,9 +116,11 @@ def migrate(
         result.
 
     Raises:
-        idfkit.exceptions.UnsupportedVersionError: If either the source or
-            target version is not in
-            `ENERGYPLUS_VERSIONS`.
+        idfkit.exceptions.UnsupportedVersionError: If the target version is
+            not in `ENERGYPLUS_VERSIONS`, or no supported release shares the
+            model's major and minor version. A two-component version read from
+            a file (``Version, 9.0;`` as ``(9, 0, 0)``) resolves to its
+            release (9.0.1), as schema selection does.
         TypeError: If *target_version* is a type that names no single release,
             such as ``AnyIDFDocument`` or a union or tuple of document types,
             or is neither a version nor a type.
@@ -131,7 +133,7 @@ def migrate(
             and no EnergyPlus installation can be discovered.
     """
     target = normalize_target(target_version)
-    source = model.version
+    source = resolve_source_version(model.version)
 
     _emit(on_progress, MigrationProgress(phase="planning", message="Planning migration chain"))
     chain = plan_migration_chain(source, target)

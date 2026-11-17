@@ -12,13 +12,14 @@ from pathlib import Path
 
 import pytest
 
-from idfkit import new_document
+from idfkit import IDFDocument, load_idf, new_document
 from idfkit.exceptions import MigrationError, UnsupportedVersionError
 from idfkit.migration.async_runner import async_migrate
 from idfkit.migration.progress import MigrationProgress
 from idfkit.migration.protocol import MigrationStepResult
 from idfkit.migration.report import MigrationReport
-from idfkit.versioned import IDFDocumentV24_2, as_version
+from idfkit.versioned import IDFDocumentV9_0, IDFDocumentV24_2, as_version
+from idfkit.versions import LATEST_VERSION
 
 
 class _AsyncStubMigrator:
@@ -111,6 +112,49 @@ async def test_unsupported_target_raises() -> None:
     doc = new_document(version=(24, 1, 0))
     with pytest.raises(UnsupportedVersionError):
         await async_migrate(doc, target_version=(99, 0, 0), migrator=_AsyncStubMigrator([]))
+
+
+def _load_two_component_9_0(tmp_path: Path) -> IDFDocument:
+    """A document loaded from a file headed ``Version, 9.0;``: it reads as 9.0.0, the release is 9.0.1."""
+    path = tmp_path / "v9_0.idf"
+    path.write_text("Version,\n  9.0;\n", encoding="latin-1")
+    doc = load_idf(path)
+    assert doc.version == (9, 0, 0)
+    return doc
+
+
+@pytest.mark.asyncio
+async def test_two_component_source_to_its_own_release_is_a_noop(tmp_path: Path) -> None:
+    doc = _load_two_component_9_0(tmp_path)
+    migrator = _AsyncStubMigrator([])
+    report = await async_migrate(doc, IDFDocumentV9_0, migrator=migrator)
+
+    assert migrator.calls == []
+    assert report.migrated_model is None
+    assert report.source_version == report.target_version == (9, 0, 1)
+
+
+@pytest.mark.asyncio
+async def test_two_component_source_migrates_from_its_release(tmp_path: Path) -> None:
+    doc = _load_two_component_9_0(tmp_path)
+    migrator = _AsyncStubMigrator([(9, 1, 0), (9, 2, 0)])
+    report = await async_migrate(doc, target_version=(9, 2, 0), migrator=migrator)
+
+    assert migrator.calls == [((9, 0, 1), (9, 1, 0)), ((9, 1, 0), (9, 2, 0))]
+    assert report.source_version == (9, 0, 1)
+    assert report.migrated_model is not None
+    assert report.migrated_model.version == (9, 2, 0)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("version", [(8, 8, 0), (27, 1, 0)], ids=["older-than-all", "newer-than-all"])
+async def test_unsupported_source_raises(version: tuple[int, int, int]) -> None:
+    doc = IDFDocument(version=version)
+    migrator = _AsyncStubMigrator([])
+    with pytest.raises(UnsupportedVersionError) as exc_info:
+        await async_migrate(doc, target_version=LATEST_VERSION, migrator=migrator)
+    assert exc_info.value.version == version
+    assert migrator.calls == []
 
 
 @pytest.mark.asyncio

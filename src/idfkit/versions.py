@@ -86,6 +86,37 @@ def version_dirname(version: tuple[int, int, int]) -> str:
     return f"V{version[0]}-{version[1]}-{version[2]}"
 
 
+def find_release(version: tuple[int, int, int]) -> tuple[int, int, int] | None:
+    """
+    Find the supported release a version names, without any fallback.
+
+    This is the release-line half of :func:`find_closest_version`: the version
+    itself when it is a supported release, else the highest supported release of
+    the same major and minor (a file headed ``Version, 9.0;`` reads as
+    ``(9, 0, 0)`` and names the 9.0.1 release). Unlike
+    :func:`find_closest_version`, a version newer than every supported release is
+    not snapped to the latest one, which is what a migration source needs: a
+    model of a release idfkit does not know cannot be migrated from a neighbour.
+
+    Returns:
+        The supported release, or None if no release of that line is supported.
+
+    Examples:
+        >>> find_release((9, 0, 0))
+        (9, 0, 1)
+        >>> find_release((24, 1, 0))
+        (24, 1, 0)
+        >>> find_release((27, 1, 0)) is None
+        True
+        >>> find_release((8, 8, 0)) is None
+        True
+    """
+    if version in _VERSION_SET:
+        return version
+    same_line = [v for v in ENERGYPLUS_VERSIONS if v[:2] == version[:2]]
+    return max(same_line) if same_line else None
+
+
 def find_closest_version(version: tuple[int, int, int]) -> tuple[int, int, int] | None:
     """
     Find the supported version to use for a version read from a file.
@@ -119,12 +150,9 @@ def find_closest_version(version: tuple[int, int, int]) -> tuple[int, int, int] 
         >>> find_closest_version((10, 0, 0)) is None
         True
     """
-    if version in ENERGYPLUS_VERSIONS:
-        return version
-
-    same_line = [v for v in ENERGYPLUS_VERSIONS if v[:2] == version[:2]]
-    if same_line:
-        return max(same_line)
+    release = find_release(version)
+    if release is not None:
+        return release
 
     if version > ENERGYPLUS_VERSIONS[-1]:
         return ENERGYPLUS_VERSIONS[-1]
