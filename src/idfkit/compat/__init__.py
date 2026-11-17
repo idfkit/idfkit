@@ -19,9 +19,13 @@ Quick start -- library API::
 
 Quick start -- CLI::
 
-    idfkit check my_script.py --from 24.2 --to 25.1
-    idfkit check my_script.py --targets 24.2,25.1,25.2 --json
+    idfkit check src/ --targets all
+    idfkit check src/ --since 9.4 --json
     idfkit check my_script.py --from 24.2 --to 25.1 --sarif
+    idfkit check            # settings from [tool.idfkit.check] in pyproject.toml
+
+A line is silenced with ``# idfkit: ignore[C001]``; a lookup on ``as_version(doc, ...)`` or inside
+``if doc.version >= (9, 4, 0):`` is checked only against the releases it can run on.
 """
 
 from __future__ import annotations
@@ -29,10 +33,11 @@ from __future__ import annotations
 from ._checker import check_compatibility, resolve_version
 from ._diff import SchemaDiff, SchemaIndex, build_schema_index, diff_schemas
 from ._extract import extract_literals
-from ._models import DIAGNOSTIC_CODES, CompatSeverity, Diagnostic, ExtractedLiteral, LiteralKind
+from ._models import DEFAULT_RULES, DIAGNOSTIC_CODES, CompatSeverity, Diagnostic, ExtractedLiteral, LiteralKind
 from ._sarif import format_sarif
 
 __all__ = [
+    "DEFAULT_RULES",
     "DIAGNOSTIC_CODES",
     "CompatSeverity",
     "Diagnostic",

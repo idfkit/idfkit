@@ -391,6 +391,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         Same lookup as ``model[obj_type]``, including the case-insensitive
         match and the refusal to store anything on a miss.
+
+        The result is an untyped ``IDFCollection[IDFObject]`` whatever
+        *obj_type* is, and a type checker does not check the name. Use this
+        for a name held in a variable; for a literal one, ``model["Zone"]``
+        is typed and checked. ``idfkit check`` reports literal names passed
+        here (rules ``C003`` and ``C004``).
         """
         return self[obj_type]
 
@@ -484,6 +490,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         way [__getitem__][idfkit.document.IDFDocument.__getitem__] does, so
         ``"zone" in model`` and ``len(model["zone"]) > 0`` can never disagree.
         An unrecognised type name answers False rather than raising.
+
+        A type checker does not narrow the document's type on this test.
+        False does not mean the release lacks the type, only that the document
+        holds none of it, and True does not say which release the document is
+        of. To reach an object type only some releases have, narrow with
+        [as_version][idfkit.versioned.as_version] instead.
 
         Examples:
             Check whether the model contains any zones or materials:
@@ -1494,7 +1506,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> len(variant) == len(baseline) + 1
             True
         """
-        new_doc: IDFDocument[bool] = IDFDocument(  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
+        new_doc: IDFDocument[bool] = IDFDocument(
             version=self._version,
             schema=self._schema,
             filepath=self.filepath,

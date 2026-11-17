@@ -902,12 +902,12 @@ class TestCheckerEdgeCases:
 class TestFilterDiagnosticsAndFormatText:
     """Tests for _filter_diagnostics and _format_text edge cases."""
 
-    def test_filter_diagnostics_select_skips_non_matching(self) -> None:
-        """_filter_diagnostics skips diagnostics whose code is not in select set."""
+    def test_filter_diagnostics_keeps_only_errors_for_severity_error(self) -> None:
+        """_filter_diagnostics applies --severity; rule codes are selected in check_compatibility."""
         from idfkit.compat._cli import _filter_diagnostics  # pyright: ignore[reportPrivateUsage]
         from idfkit.compat._models import CompatSeverity, Diagnostic
 
-        d_c001 = Diagnostic(
+        warning = Diagnostic(
             code="C001",
             message="Missing type",
             severity=CompatSeverity.WARNING,
@@ -918,10 +918,10 @@ class TestFilterDiagnosticsAndFormatText:
             from_version="24.1.0",
             to_version="25.1.0",
         )
-        d_c002 = Diagnostic(
-            code="C002",
-            message="Missing choice",
-            severity=CompatSeverity.WARNING,
+        error = Diagnostic(
+            code="C003",
+            message="No such type",
+            severity=CompatSeverity.ERROR,
             filename="t.py",
             line=2,
             col=0,
@@ -929,9 +929,8 @@ class TestFilterDiagnosticsAndFormatText:
             from_version="24.1.0",
             to_version="25.1.0",
         )
-        result = _filter_diagnostics([d_c001, d_c002], select={"C001"}, ignore=None, severity=None)
-        assert len(result) == 1
-        assert result[0].code == "C001"
+        assert _filter_diagnostics([warning, error], severity="error") == [error]
+        assert _filter_diagnostics([warning, error], severity=None) == [warning, error]
 
     def test_format_text_with_diagnostics(self) -> None:
         """_format_text produces diagnostic lines when diagnostics are non-empty."""
@@ -994,3 +993,104 @@ class TestMainDispatch:
         args = argparse.Namespace(command="unknown")
         monkeypatch.setattr(cli_module, "_build_parser", lambda: _FakeParser(args))  # pyright: ignore[reportPrivateUsage]
         cli_module.main([])  # Should return normally (no sys.exit)
+
+
+# ---------------------------------------------------------------------------
+# get_collection literals (C001, C003, C004)
+# ---------------------------------------------------------------------------
+
+_V94 = (9, 4, 0)
+_V262 = (26, 2, 0)
+_IMP = "import idfkit\n"
+_WITH_C004 = ["C001", "C002", "C003", "C004", "C005"]
+
+
+class TestGetCollectionLiterals:
+    """``get_collection`` is typed for dynamic names, so ``idfkit check`` is what sees its literals."""
+
+    def test_release_specific_type_reports_c001(self) -> None:
+        diagnostics = check_compatibility(_IMP + 'doc.get_collection("Space")\n', "t.py", targets=[_V94, _V262])
+        c001 = [d for d in diagnostics if d.code == "C001"]
+        assert len(c001) == 1
+        assert c001[0].to_version == "9.4.0"
+
+    def test_misspelled_type_reports_c003_with_suggestion(self) -> None:
+        diagnostics = check_compatibility(_IMP + 'doc.get_collection("Zoen")\n', "t.py", targets=[_V94, _V262])
+        assert [d.code for d in diagnostics] == ["C003"]
+        d = diagnostics[0]
+        assert d.severity == CompatSeverity.ERROR
+        assert "did you mean 'Zone'" in d.message
+        assert d.suggested_fix == 'doc.get_collection("Zone")'
+        assert (d.from_version, d.to_version) == ("9.4.0", "26.2.0")
+
+    def test_unrecognisable_type_reports_c003_without_suggestion(self) -> None:
+        diagnostics = check_compatibility(_IMP + 'doc.get_collection("Qqqqqqqq")\n', "t.py", targets=[_V94, _V262])
+        assert [d.code for d in diagnostics] == ["C003"]
+        assert diagnostics[0].suggested_fix is None
+
+    def test_add_of_unknown_type_is_not_c003(self) -> None:
+        """``add`` raises on an unknown type at run time, and ``set.add("x")`` shares the name."""
+        diagnostics = check_compatibility(_IMP + 'names.add("Zoen", "x")\n', "t.py", targets=[_V94, _V262])
+        assert diagnostics == []
+
+    def test_known_type_reports_c004_with_typed_spelling(self) -> None:
+        diagnostics = check_compatibility(
+            _IMP + 'm.get_collection("zone")\n', "t.py", targets=[_V94, _V262], select=_WITH_C004
+        )
+        assert [d.code for d in diagnostics] == ["C004"]
+        d = diagnostics[0]
+        assert d.severity == CompatSeverity.WARNING
+        assert d.suggested_fix == 'm["Zone"]'
+        assert "C001 lists" not in d.message
+        assert "AnyIDFDocument" in d.message
+
+    def test_c004_for_release_specific_type_mentions_narrowing(self) -> None:
+        diagnostics = check_compatibility(
+            _IMP + 'm.get_collection("Space")\n', "t.py", targets=[_V94, _V262], select=_WITH_C004
+        )
+        assert [d.code for d in diagnostics] == ["C001", "C004"]
+        assert "as_version" in diagnostics[1].message
+
+    def test_dynamic_names_are_not_reported(self) -> None:
+        source = _IMP + 'TYPES = ("Zone", "Space")\nfor t in TYPES:\n    doc.get_collection(t)\n'
+        assert check_compatibility(source, "t.py", targets=[_V94, _V262]) == []
+
+    def test_cli_ignore_c004(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        p = tmp_path / "s.py"
+        p.write_text(_IMP + 'doc.get_collection("Zone")\ndoc.get_collection("Zoen")\n')
+        with pytest.raises(SystemExit) as exc_info:
+            main(["check", str(p), "--targets", "9.4,26.2", "--extend-select", "C004", "--ignore", "C004"])
+        assert exc_info.value.code == 1
+        out = capsys.readouterr().out
+        assert "C003" in out
+        assert "C004" not in out
+
+    def test_sarif_lists_new_rules_at_their_severity(self) -> None:
+        data = json.loads(format_sarif([]))
+        levels = {
+            rule["id"]: rule["defaultConfiguration"]["level"] for rule in data["runs"][0]["tool"]["driver"]["rules"]
+        }
+        assert levels["C003"] == "error"
+        assert levels["C004"] == "warning"
+
+    def test_group_filter_keeps_c003(self) -> None:
+        """A misspelled name is in no group, so a group filter must not hide it."""
+        diagnostics = check_compatibility(
+            _IMP + 'doc.get_collection("Zoen")\ndoc.get_collection("Material")\n',
+            "t.py",
+            targets=[_V94, _V262],
+            include_groups={"Thermal Zones and Surfaces"},
+        )
+        assert [(d.line, d.code) for d in diagnostics] == [(2, "C003")]
+
+    def test_group_filter_still_drops_unknown_names_outside_get_collection(self) -> None:
+        diagnostics = check_compatibility(
+            _IMP + 'doc.add("Zoen", "x")\n',
+            "t.py",
+            targets=[_V94, _V262],
+            include_groups={"Thermal Zones and Surfaces"},
+        )
+        assert diagnostics == []
+
+    def test_no_idfkit_import_no_get_collection_diagnostics(self) -> None:
+        assert check_compatibility('db.get_collection("users")\n', "t.py", targets=[_V94, _V262]) == []

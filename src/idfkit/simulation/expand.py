@@ -174,10 +174,7 @@ def _control_enables(model: AnyIDFDocument, field: str) -> bool:
     preprocessor input when the control object is absent, so only an
     explicit ``Yes`` enables a preprocessor.
     """
-    return any(
-        str(getattr(obj, field, None) or "").casefold() == "yes"
-        for obj in model.get_collection("GroundHeatTransfer:Control")
-    )
+    return any(str(getattr(obj, field, None) or "").casefold() == "yes" for obj in model["GroundHeatTransfer:Control"])
 
 
 def enabled_ground_heat_object_types(model: AnyIDFDocument) -> list[str]:

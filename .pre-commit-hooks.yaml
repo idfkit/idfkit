@@ -3,7 +3,9 @@
   language: python
   entry: idfkit check
   types: [python]
+  # One process, so the schemas of the target releases are loaded once rather than per batch.
   require_serial: true
   description: >
     Lint Python files for EnergyPlus cross-version compatibility issues.
-    Requires --from/--to or --targets in additional_dependencies args.
+    Reads targets and rules from [tool.idfkit.check] in pyproject.toml; without that table,
+    pass the targets as hook args (e.g. args: [--targets, all]).

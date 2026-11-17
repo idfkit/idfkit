@@ -12,7 +12,8 @@ install: ## Install the virtual environment and install the pre-commit hooks
 check-stubs: ## Verify generated type stubs are up-to-date
 	@echo "🚀 Checking type stub consistency"
 	@uv run python -m idfkit.codegen.generate_stubs
-	@git diff --exit-code src/idfkit/_generated_types.pyi src/idfkit/document.pyi src/idfkit/versioned.pyi src/idfkit/versioned.py || \
+	@git diff --exit-code src/idfkit/_generated_types.pyi src/idfkit/document.pyi src/idfkit/versioned.pyi src/idfkit/versioned.py src/idfkit/_versioned && \
+		test -z "$$(git ls-files --others --exclude-standard src/idfkit/_versioned)" || \
 		(echo "❌ Generated stubs are out of date. Run: uv run python -m idfkit.codegen.generate_stubs" && exit 1)
 
 .PHONY: check-conformance-level
@@ -90,6 +91,8 @@ check: check-stubs check-conformance-level check-epw-sentinels check-doc-locatio
 	@uv run pre-commit run -a
 	@echo "🚀 Static type checking: Running pyright"
 	@uv run pyright src/ agent_references/snippets tests/type_checks
+	@echo "🚀 Linting object types across EnergyPlus releases: Running idfkit check"
+	@uv run idfkit check
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
 	@uv run deptry src
 
