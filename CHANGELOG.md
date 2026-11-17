@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `idfkit.versions.releases_between(since, before)` was added: every supported release from
+  `since` (inclusive) to `before` (exclusive), the range `as_version(doc, since=..., before=...)`
+  accepts ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
 - `idfkit.versions.find_release(version)` was added: the supported release a version names, matched
   on its major and minor as `find_closest_version` matches it, but `None` for a version newer than
   every supported release instead of the latest one ([#292](https://github.com/idfkit/idfkit/pull/292)).
@@ -100,6 +103,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `idfkit migrate --to` refused a release line idfkit does not support, such as
+  `27.1`, as `idfkit check` and `migrate()` do. It used to migrate to the latest release without
+  saying so ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
 - **Breaking:** `idfkit check` refused a target release idfkit does not support with exit status
   2, where it used to check the closest one instead: `--to 27.1` checked 26.2. `9.0` and `9.0.0`
   still named 9.0.1 ([#287](https://github.com/idfkit/idfkit/pull/287)).
