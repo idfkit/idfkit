@@ -32,8 +32,8 @@ def normalize_target(
             type of a single release (``AnyIDFDocument``, a union, a class
             of its own), a tuple of document types (even of one), or neither
             a version nor a type.
-        UnsupportedVersionError: If the parsed version is not in
-            `ENERGYPLUS_VERSIONS`.
+        UnsupportedVersionError: If the parsed version names no release line in
+            `ENERGYPLUS_VERSIONS` (``"9.0"`` names 9.0.1).
     """
     if is_type_form(target_version):
         return release_of(target_version)
@@ -55,9 +55,11 @@ def normalize_target(
         )
         raise TypeError(msg)
     normalized = normalize_version(target_version)
-    if not is_supported_version(normalized):
+    # Matched to its release line as the source is, so "9.0" and a 9.0 file's (9, 0, 0) name 9.0.1.
+    release = find_release(normalized)
+    if release is None:
         raise UnsupportedVersionError(normalized, ENERGYPLUS_VERSIONS)
-    return normalized
+    return release
 
 
 def resolve_source_version(version: tuple[int, int, int]) -> tuple[int, int, int]:

@@ -20,7 +20,10 @@ not (9.0.1).
 
 from __future__ import annotations
 
+import functools
+import operator
 import types
+from functools import lru_cache
 from typing import (
     TYPE_CHECKING,
     Annotated,
@@ -359,7 +362,22 @@ def release_union(*members: type) -> Any:
     """The run-time value of a generated range alias, such as ``IDFDocumentSince9_6``: the union of *members*.
 
     A type checker reads the alias from ``versioned.pyi``; this only has to exist when imported.
-    One member is that member, as ``Union`` makes it.
+    One member is that member.
+
+    ``IDFDocument`` stands for the latest release, but every document is an instance of it, so it
+    is replaced by a stand-in for the latest release: ``isinstance(doc, IDFDocumentSince9_4)``
+    then holds only for a document of 9.4 or later, as ``as_version`` reads the alias.
     """
-    union: Any = Union
-    return union[members]
+    from .document import IDFDocument
+
+    # Joined with ``|`` rather than ``Union[...]``: a ``typing.Union`` checks ``isinstance`` by the
+    # instance's class, which skips the stand-ins' version check, while ``types.UnionType`` asks each
+    # member, so ``isinstance(doc, IDFDocumentBefore9_4)`` holds for a 9.1 document.
+    return functools.reduce(operator.or_, (_latest_release_type() if m is IDFDocument else m for m in members))
+
+
+@lru_cache(maxsize=1)
+def _latest_release_type() -> type:
+    """A stand-in for the latest release that, unlike ``IDFDocument``, an older document is not an instance of."""
+    major, minor, _ = LATEST_VERSION
+    return document_type(f"IDFDocumentV{major}_{minor}", LATEST_VERSION)

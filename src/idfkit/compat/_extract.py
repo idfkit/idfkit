@@ -102,12 +102,36 @@ class _LiteralVisitor(ast.NodeVisitor):
     # ------------------------------------------------------------------
     # Scopes and version guards
     # ------------------------------------------------------------------
-    def _visit_scope(self, node: ast.AST) -> None:
-        """Visit a function, lambda or class body in its own scope, outside every enclosing guard."""
+    def _visit_scope(self, node: ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda | ast.ClassDef) -> None:
+        """Visit a function, lambda or class body in its own scope, outside every enclosing guard.
+
+        Decorators, argument defaults, annotations, class bases and keywords are evaluated where
+        the definition runs, so they are visited first, in the enclosing scope and under its guards.
+        """
+        outer: list[ast.AST]
+        inner: list[ast.AST]
+        if isinstance(node, ast.ClassDef):
+            outer = [*node.decorator_list, *node.bases, *node.keywords]
+            inner = list(node.body)
+        else:
+            args = node.args
+            all_args = [*args.posonlyargs, *args.args, *args.kwonlyargs, args.vararg, args.kwarg]
+            outer = [*args.defaults, *(d for d in args.kw_defaults if d is not None)]
+            if isinstance(node, ast.Lambda):
+                inner = [node.body]
+            else:
+                outer[:0] = node.decorator_list
+                outer += [a.annotation for a in all_args if a is not None and a.annotation is not None]
+                if node.returns is not None:
+                    outer.append(node.returns)
+                inner = list(node.body)
+        for child in outer:
+            self.visit(child)
         saved_scope, saved_guards = self._scope, self._guards
         self._scope, self._guards = self._table.scope_for(node, saved_scope), []
         try:
-            self.generic_visit(node)
+            for child in inner:
+                self.visit(child)
         finally:
             self._scope, self._guards = saved_scope, saved_guards
 

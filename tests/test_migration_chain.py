@@ -81,3 +81,8 @@ class TestPlanMigrationChain:
     def test_unsupported_target_raises(self) -> None:
         with pytest.raises(UnsupportedVersionError):
             plan_migration_chain((24, 1, 0), (99, 0, 0))
+
+
+@pytest.mark.parametrize("target", ["9.0", "9.0.0", (9, 0, 0)])
+def test_target_is_matched_to_its_release_line(target: Any) -> None:
+    assert normalize_target(target) == (9, 0, 1)

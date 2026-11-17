@@ -156,7 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   release's document type was moved to its own stub module under `idfkit/_versioned/`, still
   imported from `idfkit.versioned`, so a file reads only the releases it names. pyright took about
   as long as before on a file using `new_document()` or `AnyIDFDocument` (2.1 to 2.4 s), and less
-  on one naming `IDFDocumentV9_4` (2.5 s, from 2.8 to 3.0 s). Each lookup costs time in proportion to its type's place among the overloads, which follow the schema's order, so a file with hundreds of lookups of a type listed late took longer: 300 lookups of `Output:Variable` took 3.8 s, from 1.9 s ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+  on one naming `IDFDocumentV9_4` (2.5 s, from 2.8 to 3.0 s). Each lookup costs time in proportion to its type's place among the overloads, which follow the schema's order, so a file with hundreds of lookups of a type listed late took longer: 300 lookups of `Output:Variable` took 3.8 s, from 1.9 s ([#286](https://github.com/idfkit/idfkit/pull/286)).
 
 ### Fixed
 
@@ -165,7 +165,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Version, 9.0;` reads as 9.0.0 while the release is 9.0.1, so migrating it raised
   `UnsupportedVersionError: EnergyPlus version 9.0.0 is not supported` whatever the target, and
   `simulate()` reported it as mismatching an installed 9.0.1; it now migrates from 9.0.1, and a
-  version with no supported release line still raises ([#292](https://github.com/idfkit/idfkit/pull/292)).
+  version with no supported release line still raises. A target is matched the same way, so
+  `migrate(model, "9.0")` and `migrate(model, other.version)` for a 9.0 file reach 9.0.1 ([#292](https://github.com/idfkit/idfkit/pull/292)).
 - `idfkit check --sarif` reported idfkit's version as the tool version instead of `0.1.0`, and the
   `idfkit-check` pre-commit hook's description said how to pass targets ([#287](https://github.com/idfkit/idfkit/pull/287)).
 - A migrated document kept the source's `strict` setting, as `copy()` and `expand_objects()` do;
@@ -189,22 +190,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The test is true for a 9.6 or 22.1 model that holds a `Space`, where `space.ceiling_height = 3.0`
   type-checked and raised `InvalidFieldError`, since the field arrived in 22.2. The same held for
   `"OutputControl:Files"`, the `if "Space" not in doc: return` form, a `TypeVar` bound to
-  `AnyIDFDocument`, and a condition stored in a variable first ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+  `AnyIDFDocument`, and a condition stored in a variable first ([#286](https://github.com/idfkit/idfkit/pull/286)).
 - The body of `if "Zone" not in doc:`, and of any `in` test on a type every release has, became
   type-checked again. pyright treated it as unreachable, on `IDFDocument` and every
   `IDFDocumentV*` as well as `AnyIDFDocument`, though an empty model of any release takes it; so
-  did `"DistrictHeating" in doc`, which 8.9 to 23.1 models reach ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+  did `"DistrictHeating" in doc`, which 8.9 to 23.1 models reach ([#286](https://github.com/idfkit/idfkit/pull/286)).
 - After `d = as_version(doc, (IDFDocumentV9_4, IDFDocumentV9_6, IDFDocument))`, the `else` of
   `if "Space" in d:` stopped being typed as `IDFDocumentV9_4` alone, so 9.4-only field names became
-  reported there; 9.6 and 26.2 models without a `Space` take that branch too ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+  reported there; 9.6 and 26.2 models without a `Space` take that branch too ([#286](https://github.com/idfkit/idfkit/pull/286)).
 - `doc.get("Space")` and the other `dict` methods pyright gave a document (`setdefault`, `pop`,
   `|`, `del`, mapping `match` patterns) became reported, rather than type-checking and raising
   `AccessorAttributeError` or `TypeError`. The eppy batch update,
   `doc.update({"Zone.Office.x_origin": 1.0})`, came to type-check; the `TypedDict`'s own `update`
-  used to shadow it, under pyright and mypy alike ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+  used to shadow it, under pyright and mypy alike ([#286](https://github.com/idfkit/idfkit/pull/286)).
 - mypy came to see a document's methods, properties and accessors: it reported `doc.add`,
   `doc.version` and `doc.zones` as missing, because it does not accept a class that derives from
-  both a `TypedDict` and an ordinary class ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+  both a `TypedDict` and an ordinary class ([#286](https://github.com/idfkit/idfkit/pull/286)).
 
 ## [1.3.0-rc.1] - 2026-11-14
 

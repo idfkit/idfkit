@@ -26,8 +26,7 @@ from dataclasses import dataclass, field
 from pathlib import Path, PurePath
 from typing import Any, cast
 
-from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, MINIMUM_VERSION, version_string
-from ._narrow import release_for_line
+from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, MINIMUM_VERSION, find_release, version_string
 
 Release = tuple[int, int, int]
 
@@ -75,10 +74,10 @@ def parse_release(spec: str) -> Release:
     """
     text = spec.strip()
     parts = text.split(".")
-    if len(parts) not in {2, 3} or not all(p.isdigit() for p in parts):
+    if len(parts) not in {2, 3} or not all(p.isdecimal() for p in parts):
         msg = f"Invalid version specifier: '{spec}'. Expected MAJOR.MINOR or MAJOR.MINOR.PATCH."
         raise ConfigError(msg)
-    release = release_for_line(int(parts[0]), int(parts[1]))
+    release = find_release((int(parts[0]), int(parts[1]), 0))
     if release is None:
         msg = f"EnergyPlus {text} is not a release idfkit supports ({_supported()})"
         raise ConfigError(msg)
@@ -151,7 +150,7 @@ def find_config(start: Path) -> Path | None:
     """
     for directory in [start, *start.parents]:
         candidate = directory / "pyproject.toml"
-        if candidate.is_file() and _TABLE_RE.search(candidate.read_text(encoding="utf-8")):
+        if candidate.is_file() and _TABLE_RE.search(candidate.read_text(encoding="utf-8", errors="replace")):
             return candidate
         if (directory / ".git").exists():
             return None
@@ -187,7 +186,7 @@ def load_config(path: Path) -> CheckConfig:
     """
     try:
         text = path.read_text(encoding="utf-8")
-    except OSError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         msg = f"cannot read {path}: {exc}"
         raise ConfigError(msg) from exc
     data = _toml_loads(text, path)
@@ -303,6 +302,19 @@ def matches(relative: str, pattern: str) -> bool:
     (``conftest.py``, ``migrations``).
     """
     pattern = pattern.strip().removeprefix("./").rstrip("/")
-    if fnmatch.fnmatchcase(relative, pattern) or fnmatch.fnmatchcase(relative, pattern + "/*"):
-        return True
+    for variant in _zero_depth_variants(pattern):
+        if fnmatch.fnmatchcase(relative, variant) or fnmatch.fnmatchcase(relative, variant + "/*"):
+            return True
     return "/" not in pattern and any(fnmatch.fnmatchcase(part, pattern) for part in PurePath(relative).parts)
+
+
+def _zero_depth_variants(pattern: str) -> set[str]:
+    """*pattern* with each ``**/`` kept or dropped, so that ``**/`` also matches no directory at all.
+
+    ``fnmatch`` reads ``**/`` as "something, then a slash", so ``**/conftest.py`` would miss a
+    top-level ``conftest.py`` and ``tests/**/*.py`` a file directly in ``tests``, unlike ruff.
+    """
+    head, sep, tail = pattern.partition("**/")
+    if not sep:
+        return {pattern}
+    return {head + keep + rest for rest in _zero_depth_variants(tail) for keep in ("**/", "")}

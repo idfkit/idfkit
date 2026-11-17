@@ -45,6 +45,7 @@ for obj, field in doc.references.get_referencing_with_fields("Office"):
 # --8<-- [start:typed-referencing]
 # Ask the collection of the type you want: the same graph lookup, typed as that
 # type's objects (for the document's release, or Any<Class> via AnyIDFDocument).
+# Any reference field counts: a neighbour's interzone wall naming "Office" is included.
 for surface in doc["BuildingSurface:Detailed"].referencing("Office"):
     print(surface.name, surface.zone_name, surface.construction_name)  # checked fields
     for window in doc["FenestrationSurface:Detailed"].referencing(surface):  # name or object

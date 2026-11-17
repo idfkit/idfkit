@@ -892,6 +892,13 @@ class TestGetReferencesAndSurfaces:
         assert "TestWall" in names
         assert "TestFloor" in names
 
+    def test_get_zone_surfaces_keeps_a_surface_added_under_another_spelling(self) -> None:
+        doc = new_document()
+        doc.add("Zone", "Z")
+        wall = IDFObject("BUILDINGSURFACE:DETAILED", "W", data={"surface_type": "Wall", "zone_name": "Z"})
+        doc.addidfobject(wall)
+        assert [s.name for s in doc.get_zone_surfaces("Z")] == ["W"]
+
     def test_get_zone_surfaces_excludes_non_surfaces(self) -> None:
         doc = new_document()
         doc.add("Zone", "Z")

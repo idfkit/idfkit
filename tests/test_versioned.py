@@ -16,6 +16,7 @@ import pytest
 
 import idfkit.versioned as versioned
 from idfkit import load_idf, new_document, write_idf
+from idfkit._document_types import release_of
 from idfkit.codegen import generate_stubs as gen
 from idfkit.codegen.verify_stubs import verify
 from idfkit.document import AnyIDFDocument, IDFDocument
@@ -346,12 +347,20 @@ class TestRangeAliases:
         for i, version in enumerate(ENERGYPLUS_VERSIONS):
             tag = f"{version[0]}_{version[1]}"
             since = getattr(versioned, f"IDFDocumentSince{tag}")
-            assert (get_args(since) or (since,)) == tuple(types[i:])
+            # The latest release is a stand-in, not IDFDocument, which every document is an instance of.
+            assert [release_of(t) for t in get_args(since) or (since,)] == list(ENERGYPLUS_VERSIONS[i:])
             assert f"IDFDocumentSince{tag}" in versioned.__all__
             if i:
                 before = getattr(versioned, f"IDFDocumentBefore{tag}")
                 assert (get_args(before) or (before,)) == tuple(types[:i])
                 assert f"IDFDocumentBefore{tag}" in versioned.__all__
+
+    def test_isinstance_checks_the_release(self) -> None:
+        old, latest = new_document(version=(9, 1, 0)), new_document()
+        assert not isinstance(old, versioned.IDFDocumentSince9_4)
+        assert isinstance(latest, versioned.IDFDocumentSince9_4)
+        assert isinstance(old, versioned.IDFDocumentBefore9_4)
+        assert not isinstance(latest, versioned.IDFDocumentBefore9_4)
 
     def test_an_alias_accepts_its_releases_at_run_time(self) -> None:
         doc = new_document(version=(23, 2, 0))

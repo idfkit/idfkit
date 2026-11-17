@@ -39,7 +39,7 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
+from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, find_release
 
 Release = tuple[int, int, int]
 Releases = frozenset[Release]
@@ -49,6 +49,7 @@ ALL_RELEASES: Releases = frozenset(ENERGYPLUS_VERSIONS)
 
 _MAX_DEPTH = 8
 _DOC_TYPE_RE = re.compile(r"^IDFDocumentV(\d+)_(\d+)$")
+_RANGE_TYPE_RE = re.compile(r"^IDFDocument(Since|Before)(\d+)_(\d+)$")
 _ROOT_RE = re.compile(r"^[A-Za-z_]\w*")
 _COMPARE_OPS: dict[type[ast.cmpop], Callable[[Any, Any], bool]] = {
     ast.Lt: operator.lt,
@@ -62,7 +63,7 @@ _COMPARE_OPS: dict[type[ast.cmpop], Callable[[Any, Any], bool]] = {
 
 def release_for_line(major: int, minor: int) -> Release | None:
     """The supported release of the ``major.minor`` line (``9.0`` is 9.0.1), or ``None``."""
-    return next((v for v in ENERGYPLUS_VERSIONS if v[:2] == (major, minor)), None)
+    return find_release((major, minor, 0))
 
 
 # ---------------------------------------------------------------------------
@@ -333,6 +334,15 @@ class Narrower:
         if match:
             release = release_for_line(int(match.group(1)), int(match.group(2)))
             return frozenset({release}) if release is not None else None
+        match = _RANGE_TYPE_RE.match(name)
+        if match:
+            # The generated range aliases of idfkit.versioned: since inclusive, before exclusive.
+            bound = release_for_line(int(match.group(2)), int(match.group(3)))
+            if bound is None:
+                return None
+            if match.group(1) == "Since":
+                return frozenset(v for v in ENERGYPLUS_VERSIONS if v >= bound)
+            return frozenset(v for v in ENERGYPLUS_VERSIONS if v < bound)
         if isinstance(expr, ast.Name):
             bound = self.table.value_of(expr.id, scope)
             if bound is not None:
@@ -345,7 +355,7 @@ class Narrower:
             return None
         if isinstance(expr, ast.Constant) and isinstance(expr.value, str):
             parts = expr.value.strip().split(".")
-            if len(parts) in {2, 3} and all(p.isdigit() for p in parts):
+            if len(parts) in {2, 3} and all(p.isdecimal() for p in parts):
                 return release_for_line(int(parts[0]), int(parts[1]))
             return None
         numbers = _int_tuple(expr)

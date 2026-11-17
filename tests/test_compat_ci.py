@@ -527,7 +527,7 @@ class TestReleases:
         with pytest.raises(ConfigError, match="not a release idfkit supports"):
             parse_release(spec)
 
-    @pytest.mark.parametrize("spec", ["24", "24.x", "24..1", ""])
+    @pytest.mark.parametrize("spec", ["24", "24.x", "24..1", "", "9.\u00b2"])
     def test_malformed_is_an_error(self, spec: str) -> None:
         with pytest.raises(ConfigError, match="Invalid version specifier"):
             parse_release(spec)
@@ -778,6 +778,10 @@ class TestPatterns:
             ("src/a/conftest.py", "src/conftest.py", False),
             ("src/app/migrations/m.py", "migrations", True),
             ("src/app/migrations_old/m.py", "migrations", False),
+            ("conftest.py", "**/conftest.py", True),
+            ("tests/a.py", "tests/**/*.py", True),
+            ("tests/x/a.py", "tests/**/*.py", True),
+            ("src/a.py", "tests/**/*.py", False),
         ],
     )
     def test_matches(self, path: str, pattern: str, expected: bool) -> None:
@@ -853,3 +857,36 @@ class TestCliDiscoveryAndOutput:
         code, out, _ = _run(["check", "a.py", "--since", "9.6"], capsys)
         assert code == 1
         assert "C005" in out
+
+
+_NARROW_TARGETS = [_V94, (24, 1, 0)]
+
+
+class TestNarrowingKeepsDefiniteMisses:
+    """A literal no release in scope has, but another target has, is reported, not skipped."""
+
+    def test_version_guard(self) -> None:
+        source = _src('def f(doc):\n    if doc.version < (9, 6, 0):\n        doc.add("Space", "S")\n')
+        assert [d.code for d in check_compatibility(source, "t.py", _NARROW_TARGETS)] == ["C001"]
+
+    def test_as_version(self) -> None:
+        source = _src('def f(doc):\n    legacy = as_version(doc, IDFDocumentV9_4)\n    legacy.add("Space", "S")\n')
+        assert [d.code for d in check_compatibility(source, "t.py", _NARROW_TARGETS)] == ["C001"]
+
+    def test_get_collection_is_c001_not_a_misspelling(self) -> None:
+        source = _src('def f(doc):\n    if doc.version < (9, 6, 0):\n        doc.get_collection("Space")\n')
+        assert [d.code for d in check_compatibility(source, "t.py", _NARROW_TARGETS)] == ["C001"]
+
+    def test_range_alias_narrows(self) -> None:
+        source = (
+            "from idfkit.versioned import IDFDocumentSince9_2, as_version\n"
+            'def f(doc):\n    as_version(doc, IDFDocumentSince9_2)["Construction:AirBoundary"]\n'
+        )
+        assert check_compatibility(source, "t.py", [(9, 1, 0), _V94]) == []
+
+    def test_default_is_read_in_the_enclosing_scope(self) -> None:
+        source = _src(
+            'legacy = doc\ndef f(x=legacy["Construction:AirBoundary"]):\n    legacy = as_version(x, IDFDocumentV9_4)\n'
+        )
+        (literal,) = extract_literals(source, "t.py")
+        assert literal.releases is None

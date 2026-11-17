@@ -54,6 +54,9 @@ def parse_suppressions(source: str) -> dict[int, Suppression]:
     reported by the caller.
     """
     found: dict[int, Suppression] = {}
+    if "idfkit:" not in source:
+        # Every comment the pattern matches contains this text, so most files skip tokenizing.
+        return found
     try:
         tokens = list(tokenize.generate_tokens(io.StringIO(source).readline))
     except (tokenize.TokenError, SyntaxError):
