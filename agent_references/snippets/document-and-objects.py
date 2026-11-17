@@ -166,11 +166,12 @@ def use_natural_gas(doc: AnyIDFDocument) -> None:
 # --8<-- [start:versioned-range]
 from typing import TypeVar
 
-from idfkit.versioned import IDFDocumentV26_1, IDFDocumentV26_2
+from idfkit.versioned import IDFDocumentSince26_1, IDFDocumentV26_1
 
-# A function for 26.1 and later. The TypeVar hands the caller's own type back: a plain
+# A function for 26.1 and later. IDFDocumentSince26_1 is IDFDocumentV26_1 | IDFDocumentV26_2, and
+# grows when idfkit adds a release. The TypeVar hands the caller's own type back: a plain
 # load_idf() result (IDFDocument, which is IDFDocumentV26_2) comes back as IDFDocument.
-Since26_1 = TypeVar("Since26_1", bound="IDFDocumentV26_1 | IDFDocumentV26_2")
+Since26_1 = TypeVar("Since26_1", bound=IDFDocumentSince26_1)
 
 
 def use_district_steam(doc: Since26_1) -> Since26_1:
@@ -186,34 +187,15 @@ older = use_district_steam(as_version(load_idf("older.idf"), IDFDocumentV26_1)) 
 
 
 # --8<-- [start:versioned-exhaustive]
-from typing import TypeAlias
-
 from typing_extensions import assert_never
 
-from idfkit import IDFDocument
-from idfkit.versioned import (
-    IDFDocumentV23_2,
-    IDFDocumentV24_1,
-    IDFDocumentV24_2,
-    IDFDocumentV25_1,
-    IDFDocumentV25_2,
-)
+from idfkit.versioned import IDFDocumentSince23_2
+
 
 # Through this range heater_fuel_type reads as 12 known choices (or None), so the checker can
 # prove every one is handled. Through AnyIDFDocument it reads as str | None (8.9 to 9.2 accept any
 # string), and no match over it can be exhaustive.
-Since23_2: TypeAlias = (
-    IDFDocumentV23_2
-    | IDFDocumentV24_1
-    | IDFDocumentV24_2
-    | IDFDocumentV25_1
-    | IDFDocumentV25_2
-    | IDFDocumentV26_1
-    | IDFDocument
-)
-
-
-def is_district_heated(doc: Since23_2, heater_name: str) -> bool:
+def is_district_heated(doc: IDFDocumentSince23_2, heater_name: str) -> bool:
     fuel = doc["WaterHeater:Mixed"][heater_name].heater_fuel_type
     match fuel:
         case "DistrictHeatingWater" | "DistrictHeatingSteam":
@@ -249,54 +231,17 @@ blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
 
 
 # --8<-- [start:versioned-renamed-field]
-from idfkit.versioned import (
-    IDFDocumentV8_9,
-    IDFDocumentV9_0,
-    IDFDocumentV9_1,
-    IDFDocumentV9_2,
-    IDFDocumentV9_3,
-    IDFDocumentV9_5,
-    IDFDocumentV9_6,
-    IDFDocumentV22_1,
-    IDFDocumentV22_2,
-    IDFDocumentV23_1,
-)
-
-# A tuple of release types, as isinstance takes one: as_version accepts a document of any of them.
-BEFORE_9_6 = (
-    IDFDocumentV8_9,
-    IDFDocumentV9_0,
-    IDFDocumentV9_1,
-    IDFDocumentV9_2,
-    IDFDocumentV9_3,
-    IDFDocumentV9_4,
-    IDFDocumentV9_5,
-)
-SINCE_9_6 = (
-    IDFDocumentV9_6,
-    IDFDocumentV22_1,
-    IDFDocumentV22_2,
-    IDFDocumentV23_1,
-    IDFDocumentV23_2,
-    IDFDocumentV24_1,
-    IDFDocumentV24_2,
-    IDFDocumentV25_1,
-    IDFDocumentV25_2,
-    IDFDocumentV26_1,
-    IDFDocument,
-)
-
-
 def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
     """Set a People object's zone, whatever the model's release.
 
     The field was renamed in 9.6, so AnyIDFDocument offers neither name. Each branch narrows the
-    model to the releases that use one name, and update() is checked against all of them.
+    model to the releases that use one name, and update() is checked against all of them. The
+    ranges are the releases idfkit supports, so since="9.6" takes every later release as it is added.
     """
     if doc.version < (9, 6, 0):
-        as_version(doc, BEFORE_9_6)["People"][people].update(zone_or_zonelist_name=zone)
+        as_version(doc, before="9.6")["People"][people].update(zone_or_zonelist_name=zone)
     else:
-        as_version(doc, SINCE_9_6)["People"][people].update(zone_or_zonelist_or_space_or_spacelist_name=zone)
+        as_version(doc, since="9.6")["People"][people].update(zone_or_zonelist_or_space_or_spacelist_name=zone)
 
 
 # --8<-- [end:versioned-renamed-field]

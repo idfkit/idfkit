@@ -7,7 +7,7 @@ DO NOT EDIT — regenerate with:
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, Literal, TypeVar, overload
+from typing import Any, Literal, TypeAlias, TypeVar, overload
 
 from typing_extensions import TypedDict, Unpack
 
@@ -21632,14 +21632,382 @@ IDFDocumentV26_2 = IDFDocument
 
 _D = TypeVar("_D", bound=AnyIDFDocument)
 
+# Ranges of releases: a type to annotate with, and the as_version overloads that narrow to one.
+# Each lists the releases this idfkit supports, so a range from a release on grows when one is added.
+
+IDFDocumentSince8_9: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince9_0: TypeAlias = (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince9_1: TypeAlias = (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince9_2: TypeAlias = (
+    IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince9_3: TypeAlias = (
+    IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince9_4: TypeAlias = (
+    IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince9_5: TypeAlias = (
+    IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince9_6: TypeAlias = (
+    IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince22_1: TypeAlias = (
+    IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince22_2: TypeAlias = (
+    IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince23_1: TypeAlias = (
+    IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince23_2: TypeAlias = (
+    IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+IDFDocumentSince24_1: TypeAlias = (
+    IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1 | IDFDocument
+)
+IDFDocumentSince24_2: TypeAlias = (
+    IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1 | IDFDocument
+)
+IDFDocumentSince25_1: TypeAlias = IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1 | IDFDocument
+IDFDocumentSince25_2: TypeAlias = IDFDocumentV25_2 | IDFDocumentV26_1 | IDFDocument
+IDFDocumentSince26_1: TypeAlias = IDFDocumentV26_1 | IDFDocument
+IDFDocumentSince26_2: TypeAlias = IDFDocument
+IDFDocumentBefore9_0: TypeAlias = IDFDocumentV8_9
+IDFDocumentBefore9_1: TypeAlias = IDFDocumentV8_9 | IDFDocumentV9_0
+IDFDocumentBefore9_2: TypeAlias = IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1
+IDFDocumentBefore9_3: TypeAlias = IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2
+IDFDocumentBefore9_4: TypeAlias = (
+    IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3
+)
+IDFDocumentBefore9_5: TypeAlias = (
+    IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4
+)
+IDFDocumentBefore9_6: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+)
+IDFDocumentBefore22_1: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+)
+IDFDocumentBefore22_2: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+)
+IDFDocumentBefore23_1: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+)
+IDFDocumentBefore23_2: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+)
+IDFDocumentBefore24_1: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+)
+IDFDocumentBefore24_2: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+)
+IDFDocumentBefore25_1: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+)
+IDFDocumentBefore25_2: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+)
+IDFDocumentBefore26_1: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+)
+IDFDocumentBefore26_2: TypeAlias = (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+)
+
 @overload
 def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D:
     """Type *doc* as a document of the EnergyPlus version *document_type* stands for.
 
     Returns *doc* itself. A document's version is read from its file, so a type checker cannot
     know it; this states it, and checks it at run time. Given a tuple of document types, as
-    ``isinstance`` takes one, it accepts a document of any of them and types it as their union:
-    a range of releases, such as those that have ``Space``.
+    ``isinstance`` takes one, it accepts a document of any of them and types it as their union.
+
+    For a range of releases, such as those that have ``Space``, give ``since=`` and/or ``before=``
+    instead of *document_type*: it accepts a document of any release idfkit supports from *since* on
+    and before *before*, and types it as their union. Each bound is a release's document type, its
+    number or its version tuple: ``since=IDFDocumentV9_6``, ``since="9.6"`` or ``since=(9, 6, 0)``.
+    The range is computed from the releases idfkit supports, so it grows when idfkit adds one, and no
+    list of releases needs maintaining. ``IDFDocumentSince9_6`` and ``IDFDocumentBefore9_6`` are the
+    same ranges as types, to annotate with; pass ``since=``, not the alias, to this function.
+
+    A type checker reads a range only from a release's type or a string literal. A bound held in a
+    variable, an optional bound or a version tuple types the document as ``AnyIDFDocument``, and so
+    does a literal no supported release has (``since="27.1"``) or a range with no release in it;
+    those raise ``ValueError`` when the call runs.
+
+    Name a bound by its release, ``"26.2"`` or ``IDFDocumentV26_2``, not ``IDFDocument``: as a bound,
+    ``IDFDocument`` stands for the latest release when the code runs, so ``since=IDFDocument`` stops
+    accepting a model of today's latest release once idfkit adopts the next one.
 
     Check a release with this function, not ``isinstance``: at run time ``IDFDocumentV26_2`` is
     ``IDFDocument`` itself, which every document is an instance of, so
@@ -21647,29 +22015,2017 @@ def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D:
     types it as the latest one. Nothing needs passing to reach ``AnyIDFDocument``: a document of any
     release already is one.
 
+    In a tuple, name every release by its own type, the latest included: ``IDFDocumentV26_2``, not
+    ``IDFDocument``. ``IDFDocument`` stands for whichever release is latest when the code runs, so
+    once idfkit supports a newer release, a model of the release that was latest when the tuple was
+    written matches nothing in it, and this raises ``TypeError``. A range given by ``since=`` has
+    neither problem.
+
     Args:
         doc: A document of any supported version.
         document_type: ``IDFDocument`` for the latest release, or one of the
             ``IDFDocumentV<major>_<minor>`` types of this module, or a tuple of them.
+        since: The first release of a range: its document type, ``"major.minor"`` or a version tuple.
+        before: The release a range stops before, the same way.
 
     Returns:
-        *doc*, typed as *document_type*, or as the union of the types in the tuple.
+        *doc*, typed as *document_type*, or as the union of the releases in the tuple or range.
 
     Raises:
-        TypeError: If *doc* is not a document of that version, or of any version in the tuple.
+        TypeError: If *doc* is not a document of that version, or of any version in the tuple or
+            range; or if both *document_type* and a range are given, or neither.
+        ValueError: If *since* or *before* names no supported release, or the range holds none.
 
     Examples:
         ```python
-        from idfkit import IDFDocument, load_idf
-        from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV9_6, IDFDocumentV26_1, as_version
+        from idfkit import load_idf
+        from idfkit.versioned import IDFDocumentV9_4, as_version
 
         model = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)
         model["Zone"].first()  # typed as Zone was declared in 9.4
 
-        recent = as_version(load_idf("model.idf"), (IDFDocumentV9_6, IDFDocumentV26_1, IDFDocument))
+        recent = as_version(load_idf("model.idf"), since="9.6")  # 9.6, 22.1, ... and the latest
         recent["Space"].first()  # typed in each of those releases
         ```
     """
 
 @overload
 def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]]) -> _D: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"]
+) -> IDFDocumentSince8_9: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"]
+) -> IDFDocumentSince9_0: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"]
+) -> IDFDocumentSince9_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"]
+) -> IDFDocumentSince9_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"]
+) -> IDFDocumentSince9_3: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"]
+) -> IDFDocumentSince9_4: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"]
+) -> IDFDocumentSince9_5: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"]
+) -> IDFDocumentSince9_6: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"]
+) -> IDFDocumentSince22_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"]
+) -> IDFDocumentSince22_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"]
+) -> IDFDocumentSince23_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"]
+) -> IDFDocumentSince23_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"]
+) -> IDFDocumentSince24_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"]
+) -> IDFDocumentSince24_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"]
+) -> IDFDocumentSince25_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"]
+) -> IDFDocumentSince25_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"]
+) -> IDFDocumentSince26_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, since: type[IDFDocument] | Literal["26.2", "26.2.0"]
+) -> IDFDocumentSince26_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"]
+) -> IDFDocumentBefore9_0: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"]
+) -> IDFDocumentBefore9_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"]
+) -> IDFDocumentBefore9_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"]
+) -> IDFDocumentBefore9_3: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"]
+) -> IDFDocumentBefore9_4: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"]
+) -> IDFDocumentBefore9_5: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"]
+) -> IDFDocumentBefore9_6: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"]
+) -> IDFDocumentBefore22_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"]
+) -> IDFDocumentBefore22_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"]
+) -> IDFDocumentBefore23_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"]
+) -> IDFDocumentBefore23_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"]
+) -> IDFDocumentBefore24_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"]
+) -> IDFDocumentBefore24_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"]
+) -> IDFDocumentBefore25_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"]
+) -> IDFDocumentBefore25_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"]
+) -> IDFDocumentBefore26_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[IDFDocument] | Literal["26.2", "26.2.0"]
+) -> IDFDocumentBefore26_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+) -> IDFDocumentV8_9: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+) -> IDFDocumentV8_9 | IDFDocumentV9_0: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV8_9
+    | IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+) -> IDFDocumentV9_0: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+) -> IDFDocumentV9_0 | IDFDocumentV9_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV9_0
+    | IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+) -> IDFDocumentV9_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+) -> IDFDocumentV9_1 | IDFDocumentV9_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+) -> (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV9_1
+    | IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+) -> IDFDocumentV9_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+) -> IDFDocumentV9_2 | IDFDocumentV9_3: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> (
+    IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> (
+    IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> (
+    IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> (
+    IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> (
+    IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV9_2
+    | IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+) -> IDFDocumentV9_3: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+) -> IDFDocumentV9_3 | IDFDocumentV9_4: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> (
+    IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> (
+    IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> (
+    IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> (
+    IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV9_3
+    | IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+) -> IDFDocumentV9_4: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+) -> IDFDocumentV9_4 | IDFDocumentV9_5: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> (
+    IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> (
+    IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> (
+    IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV9_4
+    | IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+) -> IDFDocumentV9_5: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+) -> IDFDocumentV9_5 | IDFDocumentV9_6: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> (
+    IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> (
+    IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV9_5
+    | IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+) -> IDFDocumentV9_6: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+) -> IDFDocumentV9_6 | IDFDocumentV22_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> (
+    IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV9_6
+    | IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+    before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+) -> IDFDocumentV22_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> IDFDocumentV22_1 | IDFDocumentV22_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> (
+    IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV22_1
+    | IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+    before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+) -> IDFDocumentV22_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> IDFDocumentV22_2 | IDFDocumentV23_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> (
+    IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV22_2
+    | IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+    before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+) -> IDFDocumentV23_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> IDFDocumentV23_1 | IDFDocumentV23_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> (
+    IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV23_1
+    | IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+    before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+) -> IDFDocumentV23_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> IDFDocumentV23_2 | IDFDocumentV24_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> (
+    IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1
+): ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+    before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+) -> IDFDocumentV24_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> IDFDocumentV24_1 | IDFDocumentV24_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+    before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+) -> IDFDocumentV24_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> IDFDocumentV24_2 | IDFDocumentV25_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+    before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+) -> IDFDocumentV25_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> IDFDocumentV25_1 | IDFDocumentV25_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+    before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+) -> IDFDocumentV25_2: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> IDFDocumentV25_2 | IDFDocumentV26_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
+    before: type[IDFDocument] | Literal["26.2", "26.2.0"],
+) -> IDFDocumentV26_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None,
+    before: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None = None,
+) -> AnyIDFDocument: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None
+) -> AnyIDFDocument: ...

@@ -7,8 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `as_version(doc, since=..., before=...)` was added, to narrow a document to a range of releases
+  without listing them: `since="9.6"` accepts a model of 9.6 or any later release idfkit supports,
+  `before="9.6"` one of any earlier release, and the two together bound a range (`since`
+  inclusive, `before` exclusive). A bound is a release's number (`"9.6"` or `"9.6.0"`), its
+  document type (`IDFDocumentV9_6`) or its version tuple (`(9, 6, 0)`, as `doc.version` is). The
+  range is computed from the supported releases, so it grows when idfkit adopts one, where a
+  hand-listed tuple had to be edited, and failed with `TypeError` on the previous latest release
+  if it relied on `IDFDocument`. Given a release type or a string literal, pyright and mypy type the
+  document as the exact union of the releases in the range, which mypy does not for a tuple; given
+  a variable, an optional or a tuple, they type it as `AnyIDFDocument`. A bound idfkit does not
+  support, or a range with no release in it, raises `ValueError`. `idfkit.versioned` gained the
+  same ranges as types to annotate with, `IDFDocumentSince<release>` and
+  `IDFDocumentBefore<release>` (`IDFDocumentSince9_6`, `IDFDocumentBefore23_2`, ...), generated
+  for every supported release, and `verify_stubs` checks each against the releases it names. The
+  bundled agent reference was changed to use them for the renamed-field, range and
+  exhaustive-`match` examples ([#283](https://github.com/idfkit/idfkit/pull/283)).
+- `IDFCollection.referencing(name_or_object)` was added. It returned the objects of the collection's
+  type that reference a name, typed as the collection's objects: `doc["BuildingSurface:Detailed"].referencing(zone)`
+  was a `list[BuildingSurfaceDetailed]`, a list of the release's own class through a versioned
+  document such as `IDFDocumentV9_4`, and read as `AnyBuildingSurfaceDetailed` through
+  `AnyIDFDocument`. A zone's surfaces or a surface's windows were read with checked fields, without
+  filtering `get_referencing` on `obj_type` and looking each object up again. It was the same
+  reference-graph lookup as `get_referencing`, which was unchanged, with no scan of the collection
+  or model; it added nothing to the type stubs, so type-checking time was unchanged
+  ([#284](https://github.com/idfkit/idfkit/pull/284)).
+
 ### Changed
 
+- The `as_version` docstring and the bundled agent reference (`document-and-objects.md`) gained a
+  warning that a tuple or union of release types must name the latest release by its own type
+  (`IDFDocumentV26_2`), not `IDFDocument`. `IDFDocument` stands for whichever release is latest
+  when the code runs, so once idfkit supported a newer release, a tuple ending in it no longer
+  covered the previous latest, and `as_version` raised `TypeError` on a model of that release
+  ([#282](https://github.com/idfkit/idfkit/pull/282)).
 - **Breaking:** for type checking only, the document types stopped being `TypedDict`s to a type
   checker. `IDFDocument`, `IDFDocumentAllVersions` and every `IDFDocumentV<major>_<minor>` came to
   type `doc["Zone"]` with one `__getitem__` overload per object type, and every one of them came to
@@ -46,6 +80,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `IDFDocument.get_zone_surfaces()` returned every object that named the zone, not only its
+  surfaces: a `Lights` or `People` object, a `ZoneHVAC:EquipmentConnections`, and a surface of
+  another zone whose `outside_boundary_condition_object` was this zone all came back as surfaces.
+  It was changed to return only the heat-transfer surfaces whose own `zone_name` is the zone, of
+  the types the schema lists as providing `SurfaceNames`: `BuildingSurface:Detailed`, `Wall:Detailed`,
+  `Floor:Detailed`, `RoofCeiling:Detailed` and the simple surfaces such as `Wall:Exterior`, `Roof`
+  and `Floor:GroundContact`. `get_referencing()` was left returning every object that names the zone.
+  ([#289](https://github.com/idfkit/idfkit/pull/289))
 - `if "Space" in doc:` stopped retyping an `AnyIDFDocument` as the latest release under pyright.
   The test is true for a 9.6 or 22.1 model that holds a `Space`, where `space.ceiling_height = 3.0`
   type-checked and raised `InvalidFieldError`, since the field arrived in 22.2. The same held for

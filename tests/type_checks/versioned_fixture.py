@@ -26,6 +26,9 @@ from idfkit.objects import IDFCollection, IDFObject
 from idfkit.simulation import expand_objects
 from idfkit.versioned import (
     AnyIDFDocument,
+    IDFDocumentBefore9_6,
+    IDFDocumentSince9_6,
+    IDFDocumentSince26_1,
     IDFDocumentV8_9,
     IDFDocumentV9_4,
     IDFDocumentV9_6,
@@ -121,6 +124,31 @@ def classify_spaces(doc: AnyIDFDocument) -> int:
     return len(recent["Space"])
 
 
+def narrow_by_range(doc: AnyIDFDocument, first: str, until: str | None) -> None:
+    """since= and before= type a document as the union of the supported releases in the range."""
+    assert_type(as_version(doc, since="26.1"), IDFDocumentSince26_1)
+    assert_type(as_version(doc, since=IDFDocumentV26_1), IDFDocumentV26_1[bool] | IDFDocument[bool])
+    assert_type(as_version(doc, since="26.1.0"), IDFDocumentSince26_1)
+    assert_type(as_version(doc, since=IDFDocumentV26_2), IDFDocument[bool])
+    assert_type(as_version(doc, before="9.0"), IDFDocumentV8_9[bool])
+    assert_type(as_version(doc, since=IDFDocumentV9_6, before="22.1"), IDFDocumentV9_6[bool])
+    # A bound the checker cannot read as one release types the document as any release's.
+    assert_type(as_version(doc, since=first), AnyIDFDocument)
+    assert_type(as_version(doc, since="9.6", before=until), AnyIDFDocument)
+    assert_type(as_version(doc, before=until), AnyIDFDocument)
+    assert_type(as_version(doc, since=(9, 6, 0)), AnyIDFDocument)
+    assert_type(as_version(doc, since=doc.version), AnyIDFDocument)
+    assert_type(as_version(doc, since="27.1"), AnyIDFDocument)  # no such release: ValueError when run
+    assert_type(as_version(doc, since="26.1", before="9.6"), AnyIDFDocument)  # empty: ValueError when run
+    # A renamed field: each branch narrowed to the releases that use one name.
+    if doc.version < (9, 6, 0):
+        before: IDFDocumentBefore9_6 = as_version(doc, before="9.6")
+        before["People"]["Office"].update(zone_or_zonelist_name="Office")
+    else:
+        since: IDFDocumentSince9_6 = as_version(doc, since="9.6")
+        since["People"]["Office"].update(zone_or_zonelist_or_space_or_spacelist_name="Office")
+
+
 def write_safe_fuel(doc: AnyIDFDocument) -> None:
     heater = doc["WaterHeater:Mixed"]["Heater"]
     fuel = heater.heater_fuel_type  # whatever the document's version holds, DistrictHeating included
@@ -176,5 +204,9 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     zone_height(legacy["Material"]["Brick"])  # pyright: ignore[reportArgumentType]  (not a zone)
     table: AnyOutputTableAnnual = any_doc["Output:Table:Annual"]["Annual"]
     table.variable_details[0].digits_after_decimal = 2.5  # pyright: ignore[reportAttributeAccessIssue]  (an int from 22.2 on)
-    as_version(any_doc, _Since9_6)  # pyright: ignore[reportCallIssue, reportArgumentType]  (an alias is not a class; pass a tuple)
+    as_version(any_doc, _Since9_6)  # pyright: ignore[reportCallIssue, reportArgumentType]  (an alias is no class)
+    as_version(any_doc)  # pyright: ignore[reportCallIssue]  (a type or a range is needed)
+    as_version(any_doc, since=1.5)  # pyright: ignore[reportCallIssue, reportArgumentType]  (not a release)
+    as_version(any_doc, IDFDocument, since="9.6")  # pyright: ignore[reportCallIssue]  (a type or a range, not both)
+    as_version(any_doc, before="9.6")["Space"]  # pyright: ignore[reportCallIssue, reportArgumentType]  (Space is new in 9.6)
     any_doc["Zone"]["Office"].update(x_orign=1.0)  # pyright: ignore[reportCallIssue]  (a typo, also through AnyIDFDocument)

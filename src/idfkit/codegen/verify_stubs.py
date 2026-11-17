@@ -17,7 +17,10 @@ than repeated:
 * a version's document has exactly the version's attribute accessors, each typed with the class
   of its object type in that version;
 * ``AnyIDFDocument`` offers exactly the types every version has, each with exactly the fields
-  every version has, and each field's type admits every version's values.
+  every version has, and each field's type admits every version's values;
+* every ``IDFDocumentSince``/``IDFDocumentBefore`` alias is exactly its range's releases, and every
+  ``as_version`` overload for ``since=``/``before=`` is typed with exactly the releases its bounds
+  name, one overload for each non-empty range.
 
 ``generate_stubs`` runs this after writing and fails if anything is reported, so adopting an
 EnergyPlus release cannot regenerate stubs that misdescribe a version. The tests run it too,
@@ -361,15 +364,107 @@ def verify(
             one ``IDFDocument`` is typed for. Passed rather than read from the generator, which may
             be running as ``__main__``, a second copy of its module.
     """
+    sources = list(versioned_sources)
     module = _read(document_source, _read(types_source))
-    for source in versioned_sources:
+    for source in sources:
         module = _read(source, module)
     problems: list[str] = []
     for ver in versions:
         _check_version(module, ver, ver == versions[-1], problems)
     _check_any_document(module, versions, problems)
     _check_any_names(module, versions[-1], problems)
+    _check_ranges(module, sources, versions, problems)
     return problems
+
+
+@dataclasses.dataclass(frozen=True)
+class _Ranges:
+    """The supported releases, as the range aliases and overloads of ``versioned.pyi`` name them."""
+
+    module: _Module
+    versions: tuple[Version, ...]
+
+    def name(self, ver: Version) -> str:
+        return "IDFDocument" if ver == self.versions[-1] else f"IDFDocumentV{ver[0]}_{ver[1]}"
+
+    def release(self, name: str) -> Version | None:
+        return next((ver for ver in self.versions if self.name(ver) == name), None)
+
+    def members(self, low: Version | None, high: Version | None) -> frozenset[str]:
+        """The class names of the releases from *low* (inclusive) to *high* (exclusive)."""
+        return frozenset(
+            self.name(v) for v in self.versions if (low is None or v >= low) and (high is None or v < high)
+        )
+
+    def union(self, annotation: str) -> frozenset[str]:
+        """The classes an annotation names, with range aliases resolved."""
+        resolved: set[str] = set()
+        for part in annotation.split("|"):
+            name = part.strip()
+            alias = self.module.aliases.get(name)
+            resolved |= self.union(alias) if alias is not None and name.startswith("IDFDocument") else {name}
+        return frozenset(resolved)
+
+
+def _check_ranges(
+    module: _Module, versioned_sources: list[str], versions: tuple[Version, ...], problems: list[str]
+) -> None:
+    """The range aliases and the ``since=``/``before=`` overloads of ``as_version`` name the right releases."""
+    ranges = _Ranges(module, versions)
+    for i, ver in enumerate(versions):
+        _check_range_alias(ranges, f"IDFDocumentSince{ver[0]}_{ver[1]}", ranges.members(ver, None), problems)
+        if i:
+            _check_range_alias(ranges, f"IDFDocumentBefore{ver[0]}_{ver[1]}", ranges.members(None, ver), problems)
+    seen: set[tuple[Version | None, Version | None]] = set()
+    nodes = [node for source in versioned_sources for node in ast.parse(source).body]
+    for node in nodes:
+        if isinstance(node, ast.FunctionDef) and node.name == "as_version" and node.args.kwonlyargs:
+            key = _check_range_overload(ranges, node, problems)
+            if key is None:
+                continue
+            if key in seen:
+                problems.append(f"as_version(since={key[0]}, before={key[1]}): more than one overload")
+            seen.add(key)
+    bounds = (None, *versions)
+    wanted = {(low, high) for low in bounds for high in bounds if (low, high) != (None, None)}
+    for low, high in sorted(wanted - seen, key=str):
+        if ranges.members(low, high):
+            problems.append(f"as_version(since={low}, before={high}): no overload")
+
+
+def _check_range_alias(ranges: _Ranges, alias: str, expected: frozenset[str], problems: list[str]) -> None:
+    value = ranges.module.aliases.get(alias)
+    if value is None:
+        problems.append(f"{alias}: missing")
+    elif ranges.union(value) != expected:
+        problems.append(f"{alias}: names {sorted(ranges.union(value))}, not {sorted(expected)}")
+
+
+def _check_range_overload(
+    ranges: _Ranges, node: ast.FunctionDef, problems: list[str]
+) -> tuple[Version | None, Version | None] | None:
+    """Check one keyword-only overload; its ``(since, before)``, or ``None`` for a fallback overload."""
+    bounds: dict[str, Version | None] = {"since": None, "before": None}
+    for arg in node.args.kwonlyargs:
+        parts = [part.strip() for part in ast.unparse(arg.annotation).split("|")] if arg.annotation else []
+        classes = [part[len("type[") : -1] for part in parts if part.startswith("type[")]
+        literals = [part for part in parts if part.startswith("Literal[")]
+        ver = ranges.release(classes[0]) if len(classes) == 1 else None
+        if ver is None or len(literals) != 1:
+            return None  # a fallback: any document type, any string, a tuple
+        expected = f"Literal['{ver[0]}.{ver[1]}', '{ver[0]}.{ver[1]}.{ver[2]}']"
+        if literals[0] != expected:
+            problems.append(f"as_version({arg.arg}={classes[0]}): typed {literals[0]}, not {expected}")
+        bounds[arg.arg] = ver
+    key = (bounds["since"], bounds["before"])
+    where = f"as_version(since={key[0]}, before={key[1]})"
+    expected_members = ranges.members(*key)
+    returned = ranges.union(ast.unparse(node.returns)) if node.returns is not None else frozenset[str]()
+    if not expected_members:
+        problems.append(f"{where}: an overload for an empty range")
+    elif returned != expected_members:
+        problems.append(f"{where}: returns {sorted(returned)}, not {sorted(expected_members)}")
+    return key
 
 
 def _check_any_names(module: _Module, latest: Version, problems: list[str]) -> None:
