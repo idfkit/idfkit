@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the types the schema lists as providing `SurfaceNames`: `BuildingSurface:Detailed`, `Wall:Detailed`,
   `Floor:Detailed`, `RoofCeiling:Detailed` and the simple surfaces such as `Wall:Exterior`, `Roof`
   and `Floor:GroundContact`. `get_referencing()` was left returning every object that names the zone.
-  ([f09d196](https://github.com/idfkit/idfkit/commit/f09d196))
+  ([#289](https://github.com/idfkit/idfkit/pull/289))
 
 ## [1.3.0-rc.1] - 2026-11-14
 
