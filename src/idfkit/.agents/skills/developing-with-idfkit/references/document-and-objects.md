@@ -40,7 +40,7 @@ save_idf(doc, "out.idf")
 | `doc.version` | `tuple[int, int, int]` — e.g. `(25, 2, 0)`. |
 | `doc.schema` | `EpJSONSchema` for the document's version. |
 | `doc[obj_type]` | The `IDFCollection` for the type. Type names are case-insensitive, as they are in EnergyPlus, so `doc["zone"]` and `doc["Zone"]` are the same collection. Never raises: an absent or misspelled type gives an empty collection that is detached from the document, so reading a type never inserts it. Typed for a literal type name of the document's release, in the schema's spelling (`doc["Zone"]` is `IDFCollection[Zone]`); any other key, a plain `str` variable included, is a type error. |
-| `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys: use it for a type name known only at run time. It delegates to `doc[obj_type]`; there is no behavioural difference. |
+| `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys: it returns an untyped `IDFCollection[IDFObject]` whatever the name. It delegates to `doc[obj_type]`; there is no behavioural difference. Use it when the name is a variable (`for t in TYPES: doc.get_collection(t)`); for a literal name write `doc["Zone"]`, which is typed and checked. |
 | `doc.<attr>` | Typed attribute accessor for any schema type: the `snake_case` plural (`doc.air_loop_hvacs` is `IDFCollection[AirLoopHVAC]`). Hand-written shorthands also resolve and keep their meaning (`doc.building_surfaces` → `BuildingSurface:Detailed`, `doc.ideal_loads` → `ZoneHVAC:IdealLoadsAirSystem`). A typo raises `AttributeError` naming the closest matches. |
 | `doc.add(obj_type, name="", **fields)` | Create and insert an object. Returns the new `IDFObject`. Leave `name` empty for a type without a Name field. |
 | `doc.rename(obj_type, old, new)` | Rename + cascade updates through every reference. |
@@ -365,8 +365,9 @@ Up to idfkit 1.3.0rc1, the document types were `TypedDict` subclasses to pyright
 They catch different mistakes, so code meant for several releases should run both:
 
 - **pyright** (or Pylance, mypy) checks *types*: release-typed lookups (`legacy["Space"]`), attribute reads and assignments (`heater.heater_fuel_type = "Steam"`), `update()` keywords. It cannot see into string-keyed calls: `doc.add("Space", ...)` and its keyword values are untyped.
-- **`idfkit check`** lints *string literals* in Python source against the releases you name, with no annotations needed: object type names (rule `C001`, e.g. `doc.add("Space", ...)`, `legacy["Space"]`) and choice values in calls (rule `C002`, e.g. `add(..., heater_fuel_type="DistrictHeating")`). It does not check attribute assignments.
-- Neither checks `doc.get_collection("Space")` or item access (`obj["field"]`).
+- **`idfkit check`** lints *string literals* in Python source against the releases you name, with no annotations needed: object type names (rule `C001`, e.g. `doc.add("Space", ...)`, `legacy["Space"]`, `doc.get_collection("Space")`) and choice values in calls (rule `C002`, e.g. `add(..., heater_fuel_type="DistrictHeating")`). It does not check attribute assignments.
+- **`get_collection` with a literal name is for `idfkit check`, not pyright.** pyright types it as `IDFCollection[IDFObject]` whatever the name, and checks nothing. `idfkit check`, in a file that imports idfkit, reports a name no target release has (rule `C003`, an error, with the closest real name: at run time a misspelled `get_collection("Zoen")` silently returns an empty collection) and every other literal name (rule `C004`, a warning suggesting `doc["Zone"]`, which is typed and which pyright checks). Pass `--ignore C004` to keep literal `get_collection` calls deliberately. Variable names (`doc.get_collection(t)`) are not reported.
+- Neither checks item access on an object (`obj["field"]`).
 
 ```bash
 uv run pyright src/

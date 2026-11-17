@@ -44,14 +44,14 @@ doc["Coil:Cooling:Water"]["AHU-1 Cooling Coil"].name = "AHU-1 Cooling Coil A"
 
 # --8<-- [start:branch-branchlist]
 # All branches in the model
-for branch in doc.get_collection("Branch"):
+for branch in doc["Branch"]:
     print(branch.name)
     # Each Branch has an extensible list of components
     for comp in branch.components:
         print("  ", comp.component_object_type, comp.component_name)
 
 # All BranchLists, and which branches they reference
-for bl in doc.get_collection("BranchList"):
+for bl in doc["BranchList"]:
     print(bl.name)
     for branch_name in doc.get_references(bl):
         print("  branch:", branch_name)
@@ -131,7 +131,7 @@ for obj in doc.all_objects:
     for text in set(strings(obj.to_dict())):
         mentions.setdefault(text, []).append(obj)
 
-for coil in doc.get_collection("Coil:Cooling:Water"):
+for coil in doc["Coil:Cooling:Water"]:
     for node in (coil.air_inlet_node_name, coil.air_outlet_node_name):
         others = [o for o in mentions.get(str(node).upper(), []) if o is not coil]
         assert others, f"Coil {coil.name}: no other object names node {node!r}"

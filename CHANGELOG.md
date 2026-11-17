@@ -52,9 +52,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   types raised `TypeError`. The tuple form was unchanged, in its types (an argument typed `Any`
   included) and in the time pyright takes over it.
   ([#290](https://github.com/idfkit/idfkit/pull/290))
+- `idfkit check` started reading string literals passed to `get_collection` in files that import
+  idfkit, a call pyright types as `IDFCollection[IDFObject]` whatever the name. A name some target
+  release lacks was reported under `C001`, as for `add()` and `doc[...]`. Two rules were added.
+  `C003` (error) reported a name that no target release has, with the closest real name as the
+  fix, because `doc.get_collection("Zoen")` returns an empty collection at run time instead of
+  raising; a `--group` filter does not hide it. `C004` (warning) reported any other literal name
+  and suggested `doc["Zone"]`, which is typed and which pyright checks. Names held in variables
+  were not reported. Neither rule added anything to type-checking time
+  ([#288](https://github.com/idfkit/idfkit/pull/288)).
 
 ### Changed
 
+- **Breaking:** `idfkit check` started exiting with status 1 on a file that passes a literal
+  object type to `get_collection`, because of the new `C004` warning. `--ignore C004` keeps such
+  calls ([#288](https://github.com/idfkit/idfkit/pull/288)).
 - **Breaking:** for type checking only, a migration's result was no longer typed for the latest
   release whatever release it was migrated to. `MigrationReport.migrated_model` had been
   `IDFDocument | None`, so a model migrated to 24.1 was checked against 26.2's object types and

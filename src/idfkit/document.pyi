@@ -157,6 +157,12 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
 
         Same lookup as ``model[obj_type]``, including the case-insensitive
         match and the refusal to store anything on a miss.
+
+        The result is an untyped ``IDFCollection[IDFObject]`` whatever
+        *obj_type* is, and a type checker does not check the name. Use this
+        for a name held in a variable; for a literal one, ``model["Zone"]``
+        is typed and checked. ``idfkit check`` reports literal names passed
+        here (rules ``C003`` and ``C004``).
         """
     def __contains__(self, obj_type: str) -> bool:
         """Check if document has objects of a type.

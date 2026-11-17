@@ -249,3 +249,50 @@ class TestExtractAddEdgeCases:
         source = "doc.add()\n"
         literals = extract_literals(source)
         assert len(literals) == 0
+
+
+class TestExtractGetCollection:
+    """Tests for extracting ``get_collection("ObjectType")`` literals."""
+
+    IMPORT = "from idfkit import IDFDocument\n"
+
+    def test_positional_literal(self) -> None:
+        literals = extract_literals(self.IMPORT + 'zones = doc.get_collection("Zone")\n')
+        assert len(literals) == 1
+        lit = literals[0]
+        assert lit.kind == LiteralKind.OBJECT_TYPE
+        assert lit.value == "Zone"
+        assert lit.call == "get_collection"
+        assert lit.receiver == "doc"
+        assert (lit.line, lit.col, lit.end_col) == (2, 27, 33)
+
+    def test_keyword_literal(self) -> None:
+        literals = extract_literals(self.IMPORT + 'zones = state.model.get_collection(obj_type="Zone")\n')
+        assert [(lit.value, lit.receiver) for lit in literals] == [("Zone", "state.model")]
+
+    def test_receiver_keeps_source_text(self) -> None:
+        literals = extract_literals(self.IMPORT + 'docs["a"].get_collection("Zone")\n')
+        assert [lit.receiver for lit in literals if lit.call == "get_collection"] == ['docs["a"]']
+
+    def test_requires_idfkit_import(self) -> None:
+        """pymongo and others have a ``get_collection`` too, so a file must import idfkit."""
+        assert extract_literals('db.get_collection("users")\n') == []
+
+    def test_type_checking_import_counts(self) -> None:
+        source = (
+            "from typing import TYPE_CHECKING\nif TYPE_CHECKING:\n    from idfkit import IDFDocument\n"
+            'def f(doc):\n    return doc.get_collection("Zone")\n'
+        )
+        assert [lit.value for lit in extract_literals(source)] == ["Zone"]
+
+    def test_dynamic_argument_ignored(self) -> None:
+        source = self.IMPORT + 'for t in ("Zone", "Space"):\n    doc.get_collection(t)\ndoc.get_collection(f"{t}")\n'
+        assert extract_literals(source) == []
+
+    def test_no_argument_ignored(self) -> None:
+        assert extract_literals(self.IMPORT + "doc.get_collection()\n") == []
+
+    def test_add_literal_records_call(self) -> None:
+        literals = extract_literals('doc.add("Zone", "Z")\n')
+        assert literals[0].call == "add"
+        assert literals[0].receiver is None

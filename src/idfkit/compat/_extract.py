@@ -17,6 +17,9 @@ def extract_literals(source: str, filename: str = "<unknown>") -> list[Extracted
       potential choice values for that object type.
     * ``something.add("ObjectType", "Name", {"field": "value"})`` -- string values
       in a dict literal third argument are potential choice values.
+    * ``something.get_collection("ObjectType")`` -- the argument (positional or
+      ``obj_type=``) is an object type (only when the file imports from ``idfkit``:
+      other libraries, pymongo among them, have a ``get_collection`` too).
     * ``something["ObjectType"]`` -- subscript access (only when the file imports
       from ``idfkit``).
 
@@ -31,7 +34,7 @@ def extract_literals(source: str, filename: str = "<unknown>") -> list[Extracted
     """
     tree = ast.parse(source, filename)
     has_import = _has_idfkit_import(tree)
-    visitor = _LiteralVisitor(has_idfkit_import=has_import)
+    visitor = _LiteralVisitor(source, has_idfkit_import=has_import)
     visitor.visit(tree)
     return visitor.literals
 
@@ -65,8 +68,9 @@ def _end_col(node: ast.expr) -> int:
 class _LiteralVisitor(ast.NodeVisitor):
     """AST visitor that collects idfkit-relevant string literals."""
 
-    def __init__(self, *, has_idfkit_import: bool) -> None:
+    def __init__(self, source: str, *, has_idfkit_import: bool) -> None:
         self.literals: list[ExtractedLiteral] = []
+        self._source = source
         self._has_idfkit_import = has_idfkit_import
 
     # ------------------------------------------------------------------
@@ -75,7 +79,31 @@ class _LiteralVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         if isinstance(node.func, ast.Attribute) and node.func.attr == "add":
             self._handle_add_call(node)
+        elif self._has_idfkit_import and isinstance(node.func, ast.Attribute) and node.func.attr == "get_collection":
+            self._handle_get_collection_call(node, node.func)
         self.generic_visit(node)
+
+    # ------------------------------------------------------------------
+    # Pattern: something.get_collection("ObjectType")
+    # ------------------------------------------------------------------
+    def _handle_get_collection_call(self, node: ast.Call, func: ast.Attribute) -> None:
+        arg: ast.expr | None = node.args[0] if node.args else None
+        if arg is None:
+            arg = next((kw.value for kw in node.keywords if kw.arg == "obj_type"), None)
+        if not (isinstance(arg, ast.Constant) and isinstance(arg.value, str)):
+            return
+        self.literals.append(
+            ExtractedLiteral(
+                value=arg.value,
+                kind=LiteralKind.OBJECT_TYPE,
+                line=arg.lineno,
+                col=arg.col_offset,
+                end_col=_end_col(arg),
+                call="get_collection",
+                # The receiver as the author wrote it, so a suggested fix reads like their code.
+                receiver=ast.get_source_segment(self._source, func.value) or ast.unparse(func.value),
+            )
+        )
 
     def _handle_add_call(self, node: ast.Call) -> None:
         if not node.args:
@@ -93,6 +121,7 @@ class _LiteralVisitor(ast.NodeVisitor):
                 line=first_arg.lineno,
                 col=first_arg.col_offset,
                 end_col=_end_col(first_arg),
+                call="add",
             )
         )
 

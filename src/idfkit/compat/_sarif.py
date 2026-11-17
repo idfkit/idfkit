@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from ._models import DIAGNOSTIC_CODES, CompatSeverity, Diagnostic
+from ._models import DIAGNOSTIC_CODES, RULE_SEVERITIES, CompatSeverity, Diagnostic
 
 _SARIF_VERSION = "2.1.0"
 _SARIF_SCHEMA = "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json"
@@ -30,7 +30,7 @@ def _build_rules() -> list[dict[str, Any]]:
         rules.append({
             "id": code,
             "shortDescription": {"text": description},
-            "defaultConfiguration": {"level": "warning"},
+            "defaultConfiguration": {"level": _SEVERITY_MAP[RULE_SEVERITIES[code]]},
         })
     return rules
 

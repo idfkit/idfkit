@@ -33,6 +33,10 @@ class ExtractedLiteral:
         end_col: 0-based column offset of the literal end.
         obj_type: For CHOICE_VALUE, the object type context (e.g. ``"Material"``).
         field_name: For CHOICE_VALUE, the field name context (e.g. ``"roughness"``).
+        call: The method the literal is an argument of (``"add"`` or ``"get_collection"``), or
+            ``None`` for a subscript.
+        receiver: Source text of the object the method was called on (``"doc"`` for
+            ``doc.get_collection("Zone")``), or ``None``.
     """
 
     value: str
@@ -42,6 +46,8 @@ class ExtractedLiteral:
     end_col: int
     obj_type: str | None = None
     field_name: str | None = None
+    call: str | None = None
+    receiver: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,8 +62,10 @@ class Diagnostic:
         line: 1-based line number.
         col: 0-based column offset.
         end_col: 0-based end column offset.
-        from_version: Version string where the literal is valid.
-        to_version: Version string where the literal is invalid.
+        from_version: Version string where the literal is valid. For a rule that is not about a
+            difference between versions (``C003``, ``C004``), the lowest target version.
+        to_version: Version string where the literal is invalid. For a rule that is not about a
+            difference between versions, the highest target version.
         suggested_fix: Optional suggested replacement or action.
     """
 
@@ -94,4 +102,14 @@ class Diagnostic:
 DIAGNOSTIC_CODES: dict[str, str] = {
     "C001": "Object type exists in one schema version but not another",
     "C002": "Enumerated choice value for a field exists in one version but not another",
+    "C003": "Object type passed to get_collection exists in none of the target versions",
+    "C004": "Literal object type passed to get_collection, whose result is untyped; index the document instead",
 }
+
+RULE_SEVERITIES: dict[str, CompatSeverity] = {
+    "C001": CompatSeverity.WARNING,
+    "C002": CompatSeverity.WARNING,
+    "C003": CompatSeverity.ERROR,
+    "C004": CompatSeverity.WARNING,
+}
+"""The severity each rule reports at, keyed like :data:`DIAGNOSTIC_CODES`."""
