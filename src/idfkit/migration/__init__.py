@@ -31,7 +31,13 @@ Example:
     model = load_idf("old.idf")              # v22.1.0
     config = find_energyplus()               # e.g. 25.2.0 installed
     report = migrate(model, target_version=config.version, energyplus=config)
-    report.migrated_model  # fresh IDFDocument at 25.2.0
+    report.migrated_model  # fresh document at 25.2.0, typed AnyIDFDocument
+
+    # Name the target's document type to get the result typed for that release:
+    from idfkit.versioned import IDFDocumentV25_2
+
+    report = migrate(model, IDFDocumentV25_2, energyplus=config)
+    report.migrated_model  # IDFDocumentV25_2 | None
     ```
 """
 

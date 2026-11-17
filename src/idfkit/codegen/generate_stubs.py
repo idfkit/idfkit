@@ -1382,6 +1382,10 @@ def generate_versioned_pyi() -> str:
     parts.append("")
     parts.append('_D = TypeVar("_D", bound=AnyIDFDocument)')
     parts.append("")
+    releases = ", ".join([*(_document_class_name(ver) for ver in older), "IDFDocument"])
+    parts.append(f'ReleaseDocumentT = TypeVar("ReleaseDocumentT", {releases})')
+    parts.extend(_RELEASE_DOCUMENT_T_DOC)
+    parts.append("")
     # The aliases come first: mypy reads only the first run of overloads, so they must be contiguous.
     aliases, overloads = _range_typing([*older, SUPPORTED.latest])
     parts.extend(aliases)
@@ -1587,7 +1591,7 @@ def generate_versioned_py() -> str:
         "",
         "from __future__ import annotations",
         "",
-        "from ._document_types import as_version, document_type, release_union",
+        "from ._document_types import as_version, document_type, release_type_var, release_union",
         "from .document import AnyIDFDocument, IDFDocument",
         "",
         "__all__ = [",
@@ -1596,6 +1600,7 @@ def generate_versioned_py() -> str:
         *(f'    "{_range_alias("Before", ver)}",' for ver in versions[1:]),
         *(f'    "{_range_alias("Since", ver)}",' for ver in versions),
         *(f'    "{name}",' for name in names),
+        '    "ReleaseDocumentT",',
         '    "as_version",',
         "]",
         "",
@@ -1606,6 +1611,14 @@ def generate_versioned_py() -> str:
         else:
             lines.append(f'{_document_class_name(ver)} = document_type("{_document_class_name(ver)}", {ver!r})')
     lines.append("")
+    lines.extend([
+        "ReleaseDocumentT = release_type_var(",
+        '    "ReleaseDocumentT",',
+        *(f"    {name}," for name in names),
+        ")",
+    ])
+    lines.extend(_RELEASE_DOCUMENT_T_DOC)
+    lines.append("")
     lines.append("# Ranges of releases, typed in versioned.pyi. At run time each is the union of its releases.")
     # One member per line, with a trailing comma, so the output is already as ruff formats it.
     for i, ver in enumerate(versions):
@@ -1614,6 +1627,19 @@ def generate_versioned_py() -> str:
         lines.extend([f"{_range_alias('Before', ver)} = release_union(", *(f"    {n}," for n in names[:i]), ")"])
     lines.append("")
     return "\n".join(lines)
+
+
+# The docstring of ReleaseDocumentT, written into both halves of the module.
+_RELEASE_DOCUMENT_T_DOC = (
+    '"""A type variable that is exactly one release\'s document type.',
+    "",
+    "Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one",
+    "release's type and refuses ``AnyIDFDocument``, which names no single release. A union of release",
+    "types names none either: mypy refuses it, but pyright tries each member against the constraints",
+    "and accepts it, so check at run time too. :func:`idfkit.migration.migrate` takes its target this",
+    "way, and raises ``TypeError`` for a union.",
+    '"""',
+)
 
 
 _AS_VERSION_DOC = """Type *doc* as a document of the EnergyPlus version *document_type* stands for.

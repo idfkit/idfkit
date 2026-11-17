@@ -21632,6 +21632,36 @@ IDFDocumentV26_2 = IDFDocument
 
 _D = TypeVar("_D", bound=AnyIDFDocument)
 
+ReleaseDocumentT = TypeVar(
+    "ReleaseDocumentT",
+    IDFDocumentV8_9,
+    IDFDocumentV9_0,
+    IDFDocumentV9_1,
+    IDFDocumentV9_2,
+    IDFDocumentV9_3,
+    IDFDocumentV9_4,
+    IDFDocumentV9_5,
+    IDFDocumentV9_6,
+    IDFDocumentV22_1,
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+    IDFDocumentV26_1,
+    IDFDocument,
+)
+"""A type variable that is exactly one release's document type.
+
+Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one
+release's type and refuses ``AnyIDFDocument``, which names no single release. A union of release
+types names none either: mypy refuses it, but pyright tries each member against the constraints
+and accepts it, so check at run time too. :func:`idfkit.migration.migrate` takes its target this
+way, and raises ``TypeError`` for a union.
+"""
+
 # Ranges of releases: a type to annotate with, and the as_version overloads that narrow to one.
 # Each lists the releases this idfkit supports, so a range from a release on grows when one is added.
 

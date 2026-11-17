@@ -9,7 +9,7 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from ._document_types import as_version, document_type, release_union
+from ._document_types import as_version, document_type, release_type_var, release_union
 from .document import AnyIDFDocument, IDFDocument
 
 __all__ = [
@@ -67,6 +67,7 @@ __all__ = [
     "IDFDocumentV25_2",
     "IDFDocumentV26_1",
     "IDFDocumentV26_2",
+    "ReleaseDocumentT",
     "as_version",
 ]
 
@@ -88,6 +89,36 @@ IDFDocumentV25_1 = document_type("IDFDocumentV25_1", (25, 1, 0))
 IDFDocumentV25_2 = document_type("IDFDocumentV25_2", (25, 2, 0))
 IDFDocumentV26_1 = document_type("IDFDocumentV26_1", (26, 1, 0))
 IDFDocumentV26_2 = IDFDocument
+
+ReleaseDocumentT = release_type_var(
+    "ReleaseDocumentT",
+    IDFDocumentV8_9,
+    IDFDocumentV9_0,
+    IDFDocumentV9_1,
+    IDFDocumentV9_2,
+    IDFDocumentV9_3,
+    IDFDocumentV9_4,
+    IDFDocumentV9_5,
+    IDFDocumentV9_6,
+    IDFDocumentV22_1,
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+    IDFDocumentV26_1,
+    IDFDocumentV26_2,
+)
+"""A type variable that is exactly one release's document type.
+
+Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one
+release's type and refuses ``AnyIDFDocument``, which names no single release. A union of release
+types names none either: mypy refuses it, but pyright tries each member against the constraints
+and accepts it, so check at run time too. :func:`idfkit.migration.migrate` takes its target this
+way, and raises ``TypeError`` for a union.
+"""
 
 # Ranges of releases, typed in versioned.pyi. At run time each is the union of its releases.
 IDFDocumentSince8_9 = release_union(

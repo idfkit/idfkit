@@ -12,17 +12,18 @@ from idfkit.migration import (
     SubprocessMigrator,
 )
 from idfkit.simulation import SimulationResult, simulate
+from idfkit.versioned import AnyIDFDocument
 
 doc: IDFDocument = ...  # type: ignore[assignment]
 old_doc: IDFDocument = ...  # type: ignore[assignment]
-new_doc: IDFDocument = ...  # type: ignore[assignment]
+edited_doc: IDFDocument = ...  # type: ignore[assignment]
+new_doc: AnyIDFDocument | None = ...  # type: ignore[assignment]
 doc_v22: IDFDocument = ...  # type: ignore[assignment]
-doc_v25: IDFDocument = ...  # type: ignore[assignment]
+doc_v25: AnyIDFDocument | None = ...  # type: ignore[assignment]
 report: MigrationReport = ...  # type: ignore[assignment]
 diff: MigrationDiff = ...  # type: ignore[assignment]
 step: MigrationStep = ...  # type: ignore[assignment]
 change: object = ...  # type: ignore[assignment]
-chain: list[MigrationStep] = ...  # type: ignore[assignment]
 result: SimulationResult = ...  # type: ignore[assignment]
 migrator: Migrator = ...  # type: ignore[assignment]
 async_migrator: AsyncMigrator = ...  # type: ignore[assignment]
@@ -38,7 +39,7 @@ doc = load_idf("legacy_v22.idf")  # version (22, 1, 0)
 config = find_energyplus()  # e.g. (25, 2, 0)
 
 report = migrate(doc, target_version=config.version, energyplus=config)
-new_doc = report.migrated_model  # fresh IDFDocument at (25, 2, 0)
+new_doc = report.migrated_model  # fresh document at (25, 2, 0), typed AnyIDFDocument | None
 # --8<-- [end:quickstart]
 
 
@@ -66,19 +67,19 @@ from idfkit.migration import plan_migration_chain
 chain = plan_migration_chain(
     source=(22, 1, 0),
     target=(25, 2, 0),
-)
-for step in chain:
-    print(step.from_version, "->", step.to_version, step.binary)
+)  # tuple of (from_version, to_version) pairs
+for from_version, to_version in chain:
+    print(from_version, "->", to_version)  # one Transition-V<from>-to-V<to> binary each
 # --8<-- [end:chain]
 
 
 # --8<-- [start:report]
 report = migrate(doc, target_version=(25, 2, 0))
 
-report.migrated_model  # IDFDocument
+report.migrated_model  # AnyIDFDocument | None (None only when source == target)
 report.source_version  # (22, 1, 0)
 report.target_version  # (25, 2, 0)
-report.steps  # list[MigrationStep]
+report.steps  # tuple[MigrationStep, ...]
 report.diff  # MigrationDiff (structural changes)
 report.summary()  # human-readable rollup
 
@@ -89,6 +90,23 @@ for step in report.steps:
     print(step.audit_text)  # contents of the transition audit file
     print(step.runtime_seconds)
 # --8<-- [end:report]
+
+
+# --8<-- [start:typed-result]
+from idfkit import IDFDocument
+from idfkit.versioned import IDFDocumentV24_1
+
+report_v24 = migrate(doc, IDFDocumentV24_1)  # MigrationReport[IDFDocumentV24_1]
+model_v24 = report_v24.migrated_model  # IDFDocumentV24_1 | None
+if model_v24 is not None:
+    for zone in model_v24.zones:  # 24.1's object types and fields
+        print(zone.name)
+
+latest = migrate(doc, IDFDocument).migrated_model  # IDFDocument | None: the latest release
+
+# A version known only at run time (an installed EnergyPlus) gives AnyIDFDocument, as strict as doc:
+any_release = migrate(doc, target_version=config.version).migrated_model  # AnyIDFDocument | None
+# --8<-- [end:typed-result]
 
 
 # --8<-- [start:inspect-diff]
@@ -151,7 +169,7 @@ migrate(doc, target_version=(25, 2, 0), migrator=MyMigrator())
 # --8<-- [start:document-diff]
 from idfkit.migration import document_diff
 
-diff = document_diff(old_doc, new_doc)
+diff = document_diff(old_doc, edited_doc)  # any two documents, of any releases
 if diff.is_empty:
     print("No structural changes")
 else:
@@ -175,7 +193,8 @@ migrate(doc, target_version=(25, 2, 0), energyplus=config)
 
 # --8<-- [start:mistake-automigrate-good]
 report = migrate(doc, target_version=config.version)
-new_doc = report.migrated_model  # IDFDocument at the target version
+new_doc = report.migrated_model  # AnyIDFDocument at the target version
+assert new_doc is not None  # None only when the model was already at config.version
 save_idf(new_doc, "migrated.idf")
 result = simulate(new_doc, "weather.epw")
 # --8<-- [end:mistake-automigrate-good]

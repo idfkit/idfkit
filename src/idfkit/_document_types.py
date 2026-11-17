@@ -78,6 +78,16 @@ def document_type(name: str, version: tuple[int, int, int]) -> type:
     return types.new_class(name, (generic[Strict],), {"metaclass": DocumentTypeMeta}, fill)
 
 
+def release_type_var(name: str, *releases: type) -> Any:
+    """Create the run-time ``ReleaseDocumentT``: a type variable constrained to the release types.
+
+    Spelled through ``Any`` for the reason ``document_type`` is: the stand-ins are values here, not
+    classes a type checker can see, and the type variable only has to exist at run time.
+    """
+    factory: Any = TypeVar
+    return factory(name, *releases)
+
+
 def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
     """The class *document_type* names, with or without type arguments, and the release it requires."""
     from .document import IDFDocument
@@ -90,6 +100,24 @@ def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
         return origin, origin.energyplus_version
     msg = f"{document_type!r} is not a document type of idfkit.versioned or idfkit.document"
     raise TypeError(msg)
+
+
+def release_of(document_type: object) -> tuple[int, int, int]:
+    """The one release *document_type* stands for, as :func:`as_version` resolves it.
+
+    Raises:
+        TypeError: If *document_type* is not a document type, or names no single release:
+            ``AnyIDFDocument``, or a tuple or union of several types.
+    """
+    candidates = _candidates(document_type)
+    if len(candidates) != 1:
+        msg = f"{document_type!r} names several releases; name one, such as IDFDocumentV24_1"
+        raise TypeError(msg)
+    _, release = _resolve(candidates[0])
+    if release is None:
+        msg = f"{document_type!r} stands for every release, not one; name one, such as IDFDocumentV24_1"
+        raise TypeError(msg)
+    return release
 
 
 def _candidates(document_type: object) -> tuple[object, ...]:

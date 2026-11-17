@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `migrate()` and `async_migrate()` took the target release's document type as `target_version`,
+  as `as_version` takes one: `migrate(doc, IDFDocumentV24_1)` migrated to 24.1.0 and returned a
+  `MigrationReport[IDFDocumentV24_1]`, and `migrate(doc, IDFDocument)` migrated to the latest
+  release with the result typed for it. A type that named no single release, such as
+  `AnyIDFDocument` or a union or tuple of document types, raised `TypeError`; pyright and mypy
+  reported `AnyIDFDocument`, and mypy a union. ([#285](https://github.com/idfkit/idfkit/pull/285))
+- `idfkit.versioned.ReleaseDocumentT`, a type variable constrained to the release document types,
+  for code generic over exactly one release, as `migrate()` is. ([#285](https://github.com/idfkit/idfkit/pull/285))
 - `as_version(doc, since=..., before=...)` was added, to narrow a document to a range of releases
   without listing them: `since="9.6"` accepts a model of 9.6 or any later release idfkit supports,
   `before="9.6"` one of any earlier release, and the two together bound a range (`since`
@@ -37,6 +45,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** for type checking only, a migration's result was no longer typed for the latest
+  release whatever release it was migrated to. `MigrationReport.migrated_model` had been
+  `IDFDocument | None`, so a model migrated to 24.1 was checked against 26.2's object types and
+  fields. `MigrationReport` became generic in the type of `migrated_model`, and `migrate()` and
+  `async_migrate()` given a version tuple or string, whose release a type checker cannot know,
+  returned a report typed `AnyIDFDocument | None`, as strict as the source. Code that passed the
+  result where an `IDFDocument` was expected stopped type-checking; it can name the target as a
+  document type (above) or narrow with `as_version`. A bare `MigrationReport` annotation accepted a
+  report of any release. ([#285](https://github.com/idfkit/idfkit/pull/285))
 - The `as_version` docstring and the bundled agent reference (`document-and-objects.md`) gained a
   warning that a tuple or union of release types must name the latest release by its own type
   (`IDFDocumentV26_2`), not `IDFDocument`. `IDFDocument` stands for whichever release is latest
@@ -80,6 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A migrated document kept the source's `strict` setting, as `copy()` and `expand_objects()` do;
+  before, it was always strict, so a model loaded with `strict=False` came back strict. ([#285](https://github.com/idfkit/idfkit/pull/285))
 - `IDFDocument.get_zone_surfaces()` returned every object that named the zone, not only its
   surfaces: a `Lights` or `People` object, a `ZoneHVAC:EquipmentConnections`, and a surface of
   another zone whose `outside_boundary_condition_object` was this zone all came back as surfaces.
