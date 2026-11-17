@@ -276,7 +276,7 @@ class EppyDocumentMixin:
             For new code, iterate and remove directly:
 
                 ```python
-                for obj in list(doc[obj_type]):
+                for obj in list(doc.get_collection(obj_type)):
                     doc.removeidfobject(obj)
                 ```
 

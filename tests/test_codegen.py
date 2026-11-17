@@ -30,8 +30,8 @@ from idfkit.codegen.generate_stubs import (
     _field_docstring,  # pyright: ignore[reportPrivateUsage]
     _format_constraints,  # pyright: ignore[reportPrivateUsage]
     _generate_attr_properties,  # pyright: ignore[reportPrivateUsage]
+    _generate_getitem,  # pyright: ignore[reportPrivateUsage]
     _generate_object_class,  # pyright: ignore[reportPrivateUsage]
-    _generate_object_type_map,  # pyright: ignore[reportPrivateUsage]
     _sanitize_docstring,  # pyright: ignore[reportPrivateUsage]
     _schema_type_to_python,  # pyright: ignore[reportPrivateUsage]
     _to_class_name,  # pyright: ignore[reportPrivateUsage]
@@ -463,13 +463,14 @@ class TestGenerateObjectClass:
         assert "class BuildingSurfaceDetailedVerticesGroup(_TypedExtensibleGroup):" in text
 
 
-class TestGenerateObjectTypeMap:
-    def test_generates_typed_dict(self, schema: EpJSONSchema) -> None:
-        lines = _generate_object_type_map(schema)
+class TestGenerateGetitem:
+    def test_one_overload_per_object_type_then_one_matching_nothing(self) -> None:
+        lines = _generate_getitem([("Zone", "Zone"), ("Material", "Material")], "EnergyPlus24_1")
         text = "\n".join(lines)
-        assert "_ObjectTypeMap" in text
-        assert "TypedDict" in text
-        assert '"Zone": IDFCollection[Zone]' in text
+        assert 'def __getitem__(self, obj_type: Literal["Zone"], /) -> IDFCollection[Zone]: ...' in text
+        assert text.count("@overload") == 3
+        assert lines[-1] == "    def __getitem__(self, obj_type: _NotAnObjectTypeOfEnergyPlus24_1, /) -> Never: ..."
+        assert "TypedDict" not in text
 
 
 class TestGenerateAttrProperties:
@@ -540,11 +541,13 @@ class TestGenerateStubs:
         assert "def __getattr__(self, key: Never) -> object: ..." in content
         assert "class _TypedExtensibleGroup(ExtensibleGroup):" in content
         assert "def __setattr__(self, name: Never, value: Never) -> None: ..." in content
-        assert "from typing_extensions import Never, ReadOnly, Unpack" in content
+        # ReadOnly typed the entries of the TypedDict maps, which are gone; nothing else uses it.
+        assert "from typing_extensions import Never, Unpack" in content
         # A trailing-underscore field is declared under both spellings the runtime accepts.
         assert "    cond_flag_is_the_basement_conditioned_: " in content
         assert "    cond_flag_is_the_basement_conditioned: " in content
-        assert "_ObjectTypeMap" in content
+        # The document types are not TypedDicts (see TestGenerateGetitem), so no map is generated.
+        assert "_ObjectTypeMap" not in content
         assert "from __future__ import annotations" in content
         # Validate that the output is syntactically valid Python
         ast.parse(content)
@@ -573,7 +576,9 @@ def _preserve_generated_stubs() -> Iterator[tuple[Path, Path]]:
     real_base = Path(stubs_mod.__file__).resolve().parent.parent
     types_file = real_base / "_generated_types.pyi"
     doc_file = real_base / "document.pyi"
+    documents_dir = real_base / "_versioned"
     generated = [types_file, doc_file, real_base / "versioned.pyi", real_base / "versioned.py"]
+    generated += sorted(documents_dir.glob("*.pyi"))
     backups = {path: path.read_text(encoding="utf-8") if path.exists() else None for path in generated}
 
     yield types_file, doc_file
@@ -582,6 +587,10 @@ def _preserve_generated_stubs() -> Iterator[tuple[Path, Path]]:
         if backup is not None:
             path.write_text(backup, encoding="utf-8")
         elif path.exists():
+            path.unlink()
+    # A generation for an older release writes modules the committed set does not have.
+    for path in documents_dir.glob("*.pyi"):
+        if path not in backups:
             path.unlink()
 
 
@@ -603,6 +612,10 @@ class TestStubsMain:
         assert doc_file.exists()
         assert types_file.stat().st_size > 0
         assert doc_file.stat().st_size > 0
+        # One module per release older than the one generated for.
+        assert (tmp_path / "_versioned" / "__init__.pyi").exists()
+        assert (tmp_path / "_versioned" / "v23_2.pyi").exists()
+        assert not (tmp_path / "_versioned" / "v24_1.pyi").exists()
 
     def test_main_default_version(self, tmp_path: Path) -> None:
         """Cover main() with no version argument."""
