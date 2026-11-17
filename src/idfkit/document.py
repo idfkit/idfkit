@@ -1500,7 +1500,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> len(variant) == len(baseline) + 1
             True
         """
-        new_doc: IDFDocument[bool] = IDFDocument(  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
+        new_doc: IDFDocument[bool] = IDFDocument(
             version=self._version,
             schema=self._schema,
             filepath=self.filepath,
