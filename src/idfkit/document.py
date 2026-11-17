@@ -1442,6 +1442,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         Returns:
             A new [IDFDocument][idfkit.document.IDFDocument] with all template objects expanded.
+            Its ``filepath`` is ``None``: save it to an explicit path.
 
         Raises:
             EnergyPlusNotFoundError: If no EnergyPlus installation is found.

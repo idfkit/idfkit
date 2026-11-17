@@ -45,7 +45,7 @@ from idfkit.migration import (
 )
 ```
 
-`migrate` always takes a parsed `IDFDocument` and returns a `MigrationReport` whose `migrated_model` attribute is the new document. The input is never mutated.
+`migrate` always takes a parsed `IDFDocument` and returns a `MigrationReport` whose `migrated_model` attribute is the new document. The input is never mutated. The migrated document has no `filepath` (it is `None`), so a bare `new_doc.save()` raises `ValueError`: save it to a path you name, with `save_idf(new_doc, path)` or `new_doc.save(path)`. It is not tied to the source's path, because a bare save would overwrite the original file with a model at another version.
 
 ## Top-level signature
 

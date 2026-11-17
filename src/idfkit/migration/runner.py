@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
+from ._reparse import parse_migrated_idf
 from ._typing import StrictT
 from .chain import normalize_target, plan_migration_chain, resolve_source_version
 from .diff import document_diff, verify_migration_output
@@ -114,6 +115,12 @@ def migrate(
         ``migrated_model`` is ``None`` only for a no-op migration (source
         equals target) — in that case the caller's original *model* is the
         result.
+        The migrated document has no ``filepath`` (it is ``None``): it was
+        read from a scratch file in the work directory, and the source's path
+        would make a bare ``save()`` overwrite the original with a model at
+        another version. Save it to an explicit path, e.g.
+        ``save_idf(report.migrated_model, path)`` or
+        ``report.migrated_model.save(path)``.
 
     Raises:
         idfkit.exceptions.UnsupportedVersionError: If the target version is
@@ -200,7 +207,6 @@ def _run_chain(
     On failure, raises :class:`~idfkit.exceptions.MigrationError` carrying the
     prefix of successfully-completed steps.
     """
-    from ..idf_parser import parse_idf
     from ..writers import save_idf
 
     initial_idf = work_root / "step_0_input.idf"
@@ -277,7 +283,7 @@ def _run_chain(
     )
     final_idf = work_root / "migrated.idf"
     final_idf.write_text(current_text, encoding="latin-1")
-    migrated = parse_idf(final_idf, version=target, strict=model.strict)
+    migrated = parse_migrated_idf(final_idf, version=target, strict=model.strict)
     verify_migration_output(
         model,
         migrated,

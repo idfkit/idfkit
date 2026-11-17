@@ -103,7 +103,10 @@ class MigrationReport(Generic[DocumentT_co]):
     Attributes:
         migrated_model: The new document, at ``target_version`` (``None``
             only on a no-op migration where source equals target — in that
-            case the caller's original model is the result).
+            case the caller's original model is the result). Its
+            ``filepath`` is ``None``, so a bare ``save()`` raises
+            ``ValueError``; save it to an explicit path, e.g.
+            ``save_idf(report.migrated_model, path)``.
         source_version: The version the model started at.
         target_version: The version the model was migrated to. On a partial
             failure this is the last successfully reached version, which may

@@ -386,7 +386,23 @@ def _parse_expanded(run_dir: Path, model: _DocT) -> _DocT:
 
     # The file carries the model's version line, so the result has the model's version. Strictness
     # is not in the file, so it is carried over, as model.copy() does when there is nothing to expand.
-    return cast("_DocT", parse_idf(run_dir / "expanded.idf", strict=model.strict))
+    doc = parse_idf(run_dir / "expanded.idf", strict=model.strict)
+    # parse_idf records the scratch file as the document's filepath, and *run_dir* is deleted as
+    # soon as the caller returns. See _detached_copy for why the result has no filepath at all.
+    doc.filepath = None
+    return cast("_DocT", doc)
+
+
+def _detached_copy(model: _DocT) -> _DocT:
+    """Copy *model* for a preprocessor that had nothing to do, with no ``filepath``.
+
+    A preprocessed document is a different model from its source, so it gets no path: a bare
+    ``save()`` would otherwise replace the user's file with the expanded model. The no-op result
+    follows the same rule, so ``filepath`` does not depend on whether there was anything to expand.
+    """
+    doc = model.copy()
+    doc.filepath = None
+    return doc
 
 
 def _append_file(target: Path, source: Path) -> None:
@@ -510,7 +526,8 @@ def run_preprocessing(
 
     Returns:
         A new [IDFDocument][idfkit.document.IDFDocument] with all
-        preprocessing applied.
+        preprocessing applied. Its ``filepath`` is ``None``: save it
+        to an explicit path, e.g. ``save_idf(doc, path)`` or ``doc.save(path)``.
 
     Raises:
         EnergyPlusNotFoundError: If no EnergyPlus installation is found.
@@ -558,7 +575,8 @@ def expand_objects(
 
     Returns:
         A new [IDFDocument][idfkit.document.IDFDocument] containing the expanded
-        objects.
+        objects. Its ``filepath`` is ``None``: save it
+        to an explicit path, e.g. ``save_idf(doc, path)`` or ``doc.save(path)``.
 
     Raises:
         EnergyPlusNotFoundError: If no EnergyPlus installation (and therefore
@@ -567,7 +585,7 @@ def expand_objects(
             from the installation or the preprocessor exits with an error.
     """
     if not _needs_expansion(model):
-        return model.copy()
+        return _detached_copy(model)
 
     config = energyplus if energyplus is not None else find_energyplus()
     run_dir = _prepare_run_dir(model)
@@ -612,14 +630,15 @@ def run_slab_preprocessor(
 
     Returns:
         A new [IDFDocument][idfkit.document.IDFDocument] with slab ground
-        temperatures appended.
+        temperatures appended. Its ``filepath`` is ``None``: save it
+        to an explicit path, e.g. ``save_idf(doc, path)`` or ``doc.save(path)``.
 
     Raises:
         EnergyPlusNotFoundError: If no EnergyPlus installation is found.
         ExpandObjectsError: If any preprocessor step fails.
     """
     if not _has_slab_objects(model):
-        return model.copy()
+        return _detached_copy(model)
 
     config = energyplus if energyplus is not None else find_energyplus()
     run_dir = _prepare_run_dir(model, weather=weather)
@@ -675,14 +694,15 @@ def run_basement_preprocessor(
 
     Returns:
         A new [IDFDocument][idfkit.document.IDFDocument] with basement ground
-        temperatures appended.
+        temperatures appended. Its ``filepath`` is ``None``: save it
+        to an explicit path, e.g. ``save_idf(doc, path)`` or ``doc.save(path)``.
 
     Raises:
         EnergyPlusNotFoundError: If no EnergyPlus installation is found.
         ExpandObjectsError: If any preprocessor step fails.
     """
     if not _has_basement_objects(model):
-        return model.copy()
+        return _detached_copy(model)
 
     config = energyplus if energyplus is not None else find_energyplus()
     run_dir = _prepare_run_dir(model, weather=weather)

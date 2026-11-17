@@ -329,3 +329,28 @@ async def test_returns_migration_report() -> None:
         migrator=_AsyncStubMigrator([(24, 2, 0)]),
     )
     assert isinstance(report, MigrationReport)
+
+
+@pytest.mark.asyncio
+async def test_migrated_model_has_no_filepath(tmp_path: Path) -> None:
+    """The migrated document is not tied to the deleted scratch file, nor to the source's path."""
+    doc = new_document(version=(24, 1, 0))
+    doc.filepath = tmp_path / "source.idf"
+    report = await async_migrate(doc, target_version=(24, 2, 0), migrator=_AsyncStubMigrator([(24, 2, 0)]))
+    assert report.migrated_model is not None
+    assert report.migrated_model.filepath is None
+    with pytest.raises(ValueError, match="No filepath set"):
+        report.migrated_model.save()
+
+
+@pytest.mark.asyncio
+async def test_migrated_model_has_no_filepath_with_custom_work_dir(tmp_path: Path) -> None:
+    doc = new_document(version=(24, 1, 0))
+    report = await async_migrate(
+        doc,
+        target_version=(24, 2, 0),
+        migrator=_AsyncStubMigrator([(24, 2, 0)]),
+        work_dir=tmp_path / "work",
+    )
+    assert report.migrated_model is not None
+    assert report.migrated_model.filepath is None

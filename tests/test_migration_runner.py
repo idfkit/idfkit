@@ -297,3 +297,36 @@ def test_migration_report_type() -> None:
     doc = new_document(version=(24, 1, 0))
     report = migrate(doc, target_version=(24, 2, 0), migrator=_StubMigrator([(24, 2, 0)]))
     assert isinstance(report, MigrationReport)
+
+
+def test_migrated_model_has_no_filepath(tmp_path: Path) -> None:
+    """The migrated document is not tied to the deleted scratch file, nor to the source's path."""
+    source = tmp_path / "source.idf"
+    doc = new_document(version=(24, 1, 0))
+    doc.filepath = source
+    report = migrate(doc, target_version=(24, 2, 0), migrator=_StubMigrator([(24, 2, 0)]))
+    assert report.migrated_model is not None
+    assert report.migrated_model.filepath is None
+
+
+def test_migrated_model_has_no_filepath_with_custom_work_dir(tmp_path: Path) -> None:
+    work = tmp_path / "work"
+    doc = new_document(version=(24, 1, 0))
+    report = migrate(doc, target_version=(24, 2, 0), migrator=_StubMigrator([(24, 2, 0)]), work_dir=work)
+    assert report.migrated_model is not None
+    assert report.migrated_model.filepath is None
+
+
+def test_migrated_model_save_without_path_raises_value_error(tmp_path: Path) -> None:
+    """A bare ``save()`` asks for a destination instead of writing into the deleted work dir."""
+    doc = new_document(version=(24, 1, 0))
+    report = migrate(doc, target_version=(24, 2, 0), migrator=_StubMigrator([(24, 2, 0)]))
+    migrated = report.migrated_model
+    assert migrated is not None
+    with pytest.raises(ValueError, match="No filepath set"):
+        migrated.save()
+
+    out = tmp_path / "migrated.idf"
+    migrated.save(out)
+    assert out.is_file()
+    assert migrated.filepath == out
