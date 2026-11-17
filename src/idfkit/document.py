@@ -1103,6 +1103,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         way to find all surfaces in a zone, all objects using a schedule,
         or all surfaces assigned to a construction.
 
+        The objects come back as plain ``IDFObject``, of whatever types refer
+        to *name*.  When you want one type, ask its collection instead:
+        ``model["BuildingSurface:Detailed"].referencing(name)`` does the same
+        lookup, keeps that type, and is typed as its objects (see
+        [IDFCollection.referencing][idfkit.objects.IDFCollection.referencing]).
+
         Examples:
             Find every surface that belongs to a zone:
 
