@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `as_version(doc, since=..., before=...)` was added, to narrow a document to a range of releases
+  without listing them: `since="9.6"` accepts a model of 9.6 or any later release idfkit supports,
+  `before="9.6"` one of any earlier release, and the two together bound a range (`since`
+  inclusive, `before` exclusive). A bound is a release's number (`"9.6"` or `"9.6.0"`), its
+  document type (`IDFDocumentV9_6`) or its version tuple (`(9, 6, 0)`, as `doc.version` is). The
+  range is computed from the supported releases, so it grows when idfkit adopts one, where a
+  hand-listed tuple had to be edited, and failed with `TypeError` on the previous latest release
+  if it relied on `IDFDocument`. Given a release type or a string literal, pyright and mypy type the
+  document as the exact union of the releases in the range, which mypy does not for a tuple; given
+  a variable, an optional or a tuple, they type it as `AnyIDFDocument`. A bound idfkit does not
+  support, or a range with no release in it, raises `ValueError`. `idfkit.versioned` gained the
+  same ranges as types to annotate with, `IDFDocumentSince<release>` and
+  `IDFDocumentBefore<release>` (`IDFDocumentSince9_6`, `IDFDocumentBefore23_2`, ...), generated
+  for every supported release, and `verify_stubs` checks each against the releases it names. The
+  bundled agent reference was changed to use them for the renamed-field, range and
+  exhaustive-`match` examples ([#283](https://github.com/idfkit/idfkit/pull/283)).
 - `IDFCollection.referencing(name_or_object)` was added. It returned the objects of the collection's
   type that reference a name, typed as the collection's objects: `doc["BuildingSurface:Detailed"].referencing(zone)`
   was a `list[BuildingSurfaceDetailed]`, a list of the release's own class through a versioned
@@ -25,8 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   warning that a tuple or union of release types must name the latest release by its own type
   (`IDFDocumentV26_2`), not `IDFDocument`. `IDFDocument` stands for whichever release is latest
   when the code runs, so once idfkit supported a newer release, a tuple ending in it no longer
-  covered the previous latest, and `as_version` raised `TypeError` on a model of that release. The
-  docstring's example was changed to name `IDFDocumentV26_2`
+  covered the previous latest, and `as_version` raised `TypeError` on a model of that release
   ([#282](https://github.com/idfkit/idfkit/pull/282)).
 
 ### Fixed
