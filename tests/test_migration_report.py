@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from idfkit.migration.report import FieldDelta, MigrationDiff, MigrationReport, MigrationStep
+from idfkit.versioned import IDFDocumentV24_1
 
 
 def test_migration_diff_is_empty() -> None:
@@ -57,3 +58,17 @@ def test_field_delta_defaults_empty() -> None:
     delta = FieldDelta()
     assert delta.added == ()
     assert delta.removed == ()
+
+
+def test_migration_report_constructs_through_a_subscripted_alias() -> None:
+    """``MigrationReport[X](...)`` works on every supported Python, 3.10 included."""
+    report = MigrationReport[IDFDocumentV24_1](
+        migrated_model=None,
+        source_version=(24, 1, 0),
+        target_version=(24, 1, 0),
+        requested_target=(24, 1, 0),
+    )
+    assert report.success is True
+    assert report == MigrationReport(
+        migrated_model=None, source_version=(24, 1, 0), target_version=(24, 1, 0), requested_target=(24, 1, 0)
+    )
