@@ -18,6 +18,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   field. It used to pass validation with no findings. The message names that field where there is
   one. `add()` and `validate_object` still accepted the object, so it could be filled in after it
   was added ([#279](https://github.com/idfkit/idfkit/pull/279)).
+- `IDFCollection.referencing(name_or_object)` was added. It returned the objects of the collection's
+  type that reference a name, typed as the collection's objects: `doc["BuildingSurface:Detailed"].referencing(zone)`
+  was a `list[BuildingSurfaceDetailed]`, a list of the release's own class through a versioned
+  document such as `IDFDocumentV9_4`, and read as `AnyBuildingSurfaceDetailed` through
+  `AnyIDFDocument`. A zone's surfaces or a surface's windows were read with checked fields, without
+  filtering `get_referencing` on `obj_type` and looking each object up again. It was the same
+  reference-graph lookup as `get_referencing`, which was unchanged, with no scan of the collection
+  or model; it added nothing to the type stubs, so type-checking time was unchanged
+  ([#284](https://github.com/idfkit/idfkit/pull/284)).
+
+### Fixed
+
+- `IDFDocument.get_zone_surfaces()` returned every object that named the zone, not only its
+  surfaces: a `Lights` or `People` object, a `ZoneHVAC:EquipmentConnections`, and a surface of
+  another zone whose `outside_boundary_condition_object` was this zone all came back as surfaces.
+  It was changed to return only the heat-transfer surfaces whose own `zone_name` is the zone, of
+  the types the schema lists as providing `SurfaceNames`: `BuildingSurface:Detailed`, `Wall:Detailed`,
+  `Floor:Detailed`, `RoofCeiling:Detailed` and the simple surfaces such as `Wall:Exterior`, `Roof`
+  and `Floor:GroundContact`. `get_referencing()` was left returning every object that names the zone.
+  ([#289](https://github.com/idfkit/idfkit/pull/289))
 
 ## [1.3.0-rc.1] - 2026-11-14
 
