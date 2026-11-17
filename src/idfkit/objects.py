@@ -1431,6 +1431,86 @@ class IDFCollection(Generic[_T_co]):
             return self._items[0] if self._items else default
         return self._by_name.get(name.upper(), default)
 
+    def referencing(self, target: str | IDFObject) -> list[_T_co]:
+        """The objects of this collection's type that reference *target*.
+
+        The typed form of [IDFDocument.get_referencing][idfkit.document.IDFDocument.get_referencing]:
+        the same reference-graph lookup, kept to this collection's type, and typed as its objects.
+        Read through ``model["BuildingSurface:Detailed"]`` the result is a list of
+        ``BuildingSurfaceDetailed`` for the latest release, and of that release's class through a
+        versioned document such as ``IDFDocumentV9_4``. Through ``AnyIDFDocument`` it is a list of
+        ``AnyBuildingSurfaceDetailed`` or of ``BuildingSurfaceDetailed``, whose items read as
+        ``AnyBuildingSurfaceDetailed``. Either way ``surface.zone_name`` is checked without a
+        second lookup.
+
+        It costs what ``get_referencing`` costs: the objects referencing the name are found in the
+        graph and each is kept or dropped on its type, so neither this collection nor the model is
+        scanned.
+
+        Args:
+            target: The referenced name (matched case-insensitively, as EnergyPlus does) or the
+                referenced object, whose name is used. References are by name only, so two
+                objects sharing a name in different object lists are not told apart.
+
+        Returns:
+            The referencing objects held by this collection, each once however many of its fields
+            name *target*, in no particular order (as ``get_referencing``'s set has none). Empty
+            when the collection's objects belong to no document, as nothing tracks their
+            references.
+
+        Examples:
+            Find a zone's surfaces, then each surface's windows:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> zone = model.add("Zone", "Perimeter_ZN_1")
+            >>> wall = model.add("BuildingSurface:Detailed", "South_Wall",
+            ...     surface_type="Wall", construction_name="",
+            ...     zone_name="Perimeter_ZN_1",
+            ...     outside_boundary_condition="Outdoors",
+            ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+            ...     validate=False)
+            >>> model.add("Lights", "Perimeter_ZN_1_Lights",
+            ...     zone_or_zonelist_or_space_or_spacelist_name="Perimeter_ZN_1",
+            ...     validate=False)  # doctest: +ELLIPSIS
+            Lights('Perimeter_ZN_1_Lights')
+            >>> [s.name for s in model["BuildingSurface:Detailed"].referencing(zone)]
+            ['South_Wall']
+            >>> model["FenestrationSurface:Detailed"].referencing(wall)
+            []
+        """
+        name = target if isinstance(target, str) else target.name
+        if not name or not self._items:
+            return []
+        # Every object of a collection belongs to the same document, which owns the graph. Nothing
+        # is stored for it here, so a collection unpickled from any idfkit version can answer.
+        doc = self._items[0].theidf
+        if doc is None:
+            return []
+        obj_type = self._type
+        type_upper = obj_type.upper()
+        # The document files each object under its own type, so when this is the document's own
+        # collection a referrer of exactly its type is a member. Any other collection (a subset
+        # built by hand) is asked by identity.
+        owned = doc.collections.get(obj_type) is self
+        found: list[IDFObject] = []
+        for obj in doc.references.get_referencing(name):
+            other_type = obj.obj_type
+            if other_type == obj_type and owned:
+                found.append(obj)
+            elif other_type.upper() == type_upper and self._holds(obj):
+                # Also an object added under another spelling (addidfobject keeps it as given).
+                found.append(obj)
+        return cast("list[_T_co]", found)
+
+    def _holds(self, obj: IDFObject) -> bool:
+        """Whether *obj* itself is filed in this collection, by identity."""
+        obj_name = obj.name
+        if obj_name:
+            return self._by_name.get(obj_name.upper()) is obj
+        # Unnamed objects are not indexed by name.
+        return any(item is obj for item in self._items)
+
     def first(self) -> _T_co | None:
         """Get the first object or None.
 

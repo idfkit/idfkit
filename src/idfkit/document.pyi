@@ -386,6 +386,12 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         way to find all surfaces in a zone, all objects using a schedule,
         or all surfaces assigned to a construction.
 
+        The objects come back as plain ``IDFObject``, of whatever types refer
+        to *name*.  When you want one type, ask its collection instead:
+        ``model["BuildingSurface:Detailed"].referencing(name)`` does the same
+        lookup, keeps that type, and is typed as its objects (see
+        [IDFCollection.referencing][idfkit.objects.IDFCollection.referencing]).
+
         Examples:
             Find every surface that belongs to a zone:
 
@@ -441,7 +447,41 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         Uses the reference graph for O(1) lookup per schedule.
         """
     def get_zone_surfaces(self, zone_name: str) -> list[IDFObject]:
-        """Get all surfaces belonging to a zone."""
+        """Get the heat-transfer surfaces that belong to a zone.
+
+        A surface belongs to a zone when its own ``zone_name`` field names it. The surface types
+        come from the schema: every type whose name provides the ``SurfaceNames`` reference list,
+        which is ``BuildingSurface:Detailed``, ``Wall:Detailed``, ``Floor:Detailed``,
+        ``RoofCeiling:Detailed`` and the simple surfaces (``Wall:Exterior``, ``Roof``,
+        ``Floor:GroundContact``, ...).
+
+        Other objects that name the zone are not returned: loads such as ``Lights`` or
+        ``People``, equipment connections, and a surface in another zone whose
+        ``outside_boundary_condition_object`` is this zone. Neither are fenestration, which
+        names its host surface rather than the zone, and ``InternalMass``, which the schema
+        does not list as a ``SurfaceNames`` provider. Use
+        [get_referencing][idfkit.document.IDFDocument.get_referencing] for every object that
+        names the zone.
+
+        The lookup goes through the reference graph, so its cost does not grow with the
+        size of the model. The order of the returned list is not specified.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+            Zone('Office')
+            >>> model.add("BuildingSurface:Detailed", "Office_Floor",
+            ...     surface_type="Floor", construction_name="", zone_name="Office",
+            ...     outside_boundary_condition="Ground", validate=False)  # doctest: +ELLIPSIS
+            BuildingSurface:Detailed('Office_Floor')
+            >>> model.add("Lights", "Office_Lights",
+            ...     zone_or_zonelist_or_space_or_spacelist_name="Office",
+            ...     validate=False)  # doctest: +ELLIPSIS
+            Lights('Office_Lights')
+            >>> model.get_zone_surfaces("Office")
+            [BuildingSurface:Detailed('Office_Floor')]
+        """
     @property
     def all_objects(self) -> Iterator[IDFObject]:
         """Iterate over all objects in the document."""
