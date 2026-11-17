@@ -98,12 +98,12 @@ from idfkit.migration import plan_migration_chain
 chain = plan_migration_chain(
     source=(22, 1, 0),
     target=(25, 2, 0),
-)
-for step in chain:
-    print(step.from_version, "->", step.to_version, step.binary)
+)  # tuple of (from_version, to_version) pairs
+for from_version, to_version in chain:
+    print(from_version, "->", to_version)  # one Transition-V<from>-to-V<to> binary each
 ```
 
-A four-step chain (22.1 → 22.2 → 23.1 → 23.2 → 24.1 → 24.2 → 25.1 → 25.2) is normal — each step is a separate binary invocation.
+A seven-step chain (22.1 → 22.2 → 23.1 → 23.2 → 24.1 → 24.2 → 25.1 → 25.2) is normal — each step is a separate binary invocation.
 
 ## What `MigrationReport` contains
 
@@ -113,7 +113,7 @@ report = migrate(doc, target_version=(25, 2, 0))
 report.migrated_model  # AnyIDFDocument | None (None only when source == target)
 report.source_version  # (22, 1, 0)
 report.target_version  # (25, 2, 0)
-report.steps  # list[MigrationStep]
+report.steps  # tuple[MigrationStep, ...]
 report.diff  # MigrationDiff (structural changes)
 report.summary()  # human-readable rollup
 

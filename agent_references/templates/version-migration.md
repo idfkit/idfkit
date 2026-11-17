@@ -63,7 +63,7 @@ EnergyPlus ships one `Transition-VX-to-VY` binary per version step. idfkit plans
 --8<-- "agent_references/snippets/version-migration.py:chain"
 ```
 
-A four-step chain (22.1 → 22.2 → 23.1 → 23.2 → 24.1 → 24.2 → 25.1 → 25.2) is normal — each step is a separate binary invocation.
+A seven-step chain (22.1 → 22.2 → 23.1 → 23.2 → 24.1 → 24.2 → 25.1 → 25.2) is normal — each step is a separate binary invocation.
 
 ## What `MigrationReport` contains
 

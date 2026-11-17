@@ -24,7 +24,6 @@ report: MigrationReport = ...  # type: ignore[assignment]
 diff: MigrationDiff = ...  # type: ignore[assignment]
 step: MigrationStep = ...  # type: ignore[assignment]
 change: object = ...  # type: ignore[assignment]
-chain: list[MigrationStep] = ...  # type: ignore[assignment]
 result: SimulationResult = ...  # type: ignore[assignment]
 migrator: Migrator = ...  # type: ignore[assignment]
 async_migrator: AsyncMigrator = ...  # type: ignore[assignment]
@@ -68,9 +67,9 @@ from idfkit.migration import plan_migration_chain
 chain = plan_migration_chain(
     source=(22, 1, 0),
     target=(25, 2, 0),
-)
-for step in chain:
-    print(step.from_version, "->", step.to_version, step.binary)
+)  # tuple of (from_version, to_version) pairs
+for from_version, to_version in chain:
+    print(from_version, "->", to_version)  # one Transition-V<from>-to-V<to> binary each
 # --8<-- [end:chain]
 
 
@@ -80,7 +79,7 @@ report = migrate(doc, target_version=(25, 2, 0))
 report.migrated_model  # AnyIDFDocument | None (None only when source == target)
 report.source_version  # (22, 1, 0)
 report.target_version  # (25, 2, 0)
-report.steps  # list[MigrationStep]
+report.steps  # tuple[MigrationStep, ...]
 report.diff  # MigrationDiff (structural changes)
 report.summary()  # human-readable rollup
 

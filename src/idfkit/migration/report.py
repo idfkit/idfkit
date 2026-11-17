@@ -4,29 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic
+from typing import Generic
 
-if TYPE_CHECKING:
-    # ``default=`` is in ``typing.TypeVar`` only from Python 3.13; type checkers always have
-    # ``typing_extensions``, and the run-time type variable below needs no default.
-    from typing import Any
-
-    from typing_extensions import TypeVar
-
-    from ..document import AnyIDFDocument
-
-    DocumentT_co = TypeVar(
-        "DocumentT_co",
-        bound=AnyIDFDocument[Any],
-        covariant=True,
-        default=AnyIDFDocument,
-    )
-    """The type of a report's ``migrated_model``: the target release's document type when the
-    caller named it, else ``AnyIDFDocument``. A bare ``MigrationReport`` means any of them."""
-else:
-    from typing import TypeVar
-
-    DocumentT_co = TypeVar("DocumentT_co", covariant=True)
+from ._typing import DocumentT_co
 
 
 def _empty_count_delta() -> dict[str, int]:
@@ -115,7 +95,7 @@ class MigrationReport(Generic[DocumentT_co]):
 
     Generic in the type of ``migrated_model``. [migrate][idfkit.migration.migrate]
     given a document type as its target, such as ``IDFDocumentV24_1`` from
-    [idfkit.versioned][], returns a report typed for that release;
+    ``idfkit.versioned``, returns a report typed for that release;
     given a version tuple or string, whose release a type checker cannot know,
     it returns one typed with ``AnyIDFDocument``, as a bare ``MigrationReport``
     annotation also is.

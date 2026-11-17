@@ -1429,7 +1429,7 @@ def generate_versioned_pyi() -> str:
     parts.append("")
     releases = ", ".join([*(_document_class_name(ver) for ver in older), "IDFDocument"])
     parts.append(f'ReleaseDocumentT = TypeVar("ReleaseDocumentT", {releases})')
-    parts.extend(f"{line}" if line else "" for line in _RELEASE_DOCUMENT_T_DOC)
+    parts.extend(_RELEASE_DOCUMENT_T_DOC)
     parts.append("")
     parts.extend([
         "@overload",
@@ -1503,8 +1503,10 @@ _RELEASE_DOCUMENT_T_DOC = (
     '"""A type variable that is exactly one release\'s document type.',
     "",
     "Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one",
-    "release's type and refuses ``AnyIDFDocument`` and unions of release types, which name no single",
-    "release. :func:`idfkit.migration.migrate` takes its target this way.",
+    "release's type and refuses ``AnyIDFDocument``, which names no single release. A union of release",
+    "types names none either: mypy refuses it, but pyright tries each member against the constraints",
+    "and accepts it, so check at run time too. :func:`idfkit.migration.migrate` takes its target this",
+    "way, and raises ``TypeError`` for a union.",
     '"""',
 )
 

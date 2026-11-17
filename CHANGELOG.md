@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking (type checking only):** a migration's result was no longer typed for the latest
+- **Breaking:** for type checking only, a migration's result was no longer typed for the latest
   release whatever release it was migrated to. `MigrationReport.migrated_model` had been
   `IDFDocument | None`, so a model migrated to 24.1 was checked against 26.2's object types and
   fields. `MigrationReport` became generic in the type of `migrated_model`, and `migrate()` and

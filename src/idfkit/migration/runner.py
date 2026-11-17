@@ -88,7 +88,7 @@ def migrate(
         model: The document to migrate. Its ``version`` defines the source.
         target_version: A ``(major, minor, patch)`` tuple, a dotted string
             (e.g. ``"25.2.0"``), or the document type of the target release,
-            such as ``IDFDocumentV24_1`` from [idfkit.versioned][] or
+            such as ``IDFDocumentV24_1`` from ``idfkit.versioned`` or
             ``IDFDocument`` for the latest. A document type also types the
             report: ``migrated_model`` is then typed for that release, while a
             tuple or string, whose release a type checker cannot know, gives
@@ -120,7 +120,8 @@ def migrate(
             target version is not in
             `ENERGYPLUS_VERSIONS`.
         TypeError: If *target_version* is a type that names no single release,
-            such as ``AnyIDFDocument`` or a union of document types.
+            such as ``AnyIDFDocument`` or a union or tuple of document types,
+            or is neither a version nor a type.
         ValueError: If *target_version* is older than ``model.version``
             (backward migration is not supported).
         idfkit.exceptions.MigrationError: If any transition step fails. The

@@ -24,6 +24,16 @@ class TestNormalizeTarget:
         with pytest.raises(TypeError, match="several releases"):
             normalize_target(cast("Any", (IDFDocumentV9_0, IDFDocumentV24_1)))
 
+    def test_a_one_member_tuple_of_document_types_is_refused_too(self) -> None:
+        """A tuple is how as_version spells several releases, so a migration refuses one of any length."""
+        with pytest.raises(TypeError, match="tuple of document types"):
+            normalize_target(cast("Any", (IDFDocumentV24_1,)))
+
+    @pytest.mark.parametrize("target", [[24, 1, 0], 24, None], ids=["list", "int", "none"])
+    def test_a_value_that_is_neither_a_version_nor_a_type_is_refused(self, target: object) -> None:
+        with pytest.raises(TypeError, match="must be a"):
+            normalize_target(cast("Any", target))
+
     def test_a_tuple_of_int_likes_is_still_a_version(self) -> None:
         """A version tuple of numpy integers goes where it always went, not to the document-type path."""
         np = pytest.importorskip("numpy")

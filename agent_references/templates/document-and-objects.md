@@ -78,7 +78,7 @@ The type stubs describe the latest supported release, and every document is type
 
 | The code works on | Annotate with |
 |---|---|
-| Models of the latest release (you create them with `new_document()`, or migrated them to it) | `IDFDocument` |
+| Models of the latest release (you create them with `new_document()`, or migrated them to it with `migrate(doc, IDFDocument)`) | `IDFDocument` |
 | Models of any supported release (a reusable function, a library module) | `AnyIDFDocument`; an object from it as `AnyZone`, `AnyMaterial`, ... |
 | Models of one release | `IDFDocumentV9_4` and so on, reached with `as_version` |
 | Models of a range of releases (9.6 and later, before 23.2, ...) | a union of release types, with a `TypeVar` to return the caller's type |

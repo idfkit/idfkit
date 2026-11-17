@@ -25293,8 +25293,10 @@ ReleaseDocumentT = TypeVar(
 """A type variable that is exactly one release's document type.
 
 Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one
-release's type and refuses ``AnyIDFDocument`` and unions of release types, which name no single
-release. :func:`idfkit.migration.migrate` takes its target this way.
+release's type and refuses ``AnyIDFDocument``, which names no single release. A union of release
+types names none either: mypy refuses it, but pyright tries each member against the constraints
+and accepts it, so check at run time too. :func:`idfkit.migration.migrate` takes its target this
+way, and raises ``TypeError`` for a union.
 """
 
 @overload
