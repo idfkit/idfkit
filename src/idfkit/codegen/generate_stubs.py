@@ -1429,7 +1429,11 @@ def generate_versioned_pyi() -> str:
     parts.append("")
     parts.extend([
         "@overload",
-        *_format_def_with_doc("def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D", _AS_VERSION_DOC),
+        *_format_def_with_doc(
+            "def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D",
+            # The latest release's type by name, so the advice moves on when a release is adopted.
+            _AS_VERSION_DOC.replace("{latest}", _document_class_name(SUPPORTED.latest)),
+        ),
         "@overload",
         # Non-empty: an empty tuple raises at run time, so the checker reports it.
         "def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]]) -> _D: ...",
@@ -1493,9 +1497,14 @@ know it; this states it, and checks it at run time. Given a tuple of document ty
 a range of releases, such as those that have ``Space``.
 
 Check a release with this function, not ``isinstance``: pyright rejects ``isinstance`` against
-a document type, and at run time ``IDFDocumentV26_2`` is ``IDFDocument`` itself, which every
+a document type, and at run time ``{latest}`` is ``IDFDocument`` itself, which every
 document is an instance of. Nothing needs passing to reach ``AnyIDFDocument``: a document of
 any release already is one.
+
+In a tuple, name every release by its own type, the latest included: ``{latest}``, not
+``IDFDocument``. ``IDFDocument`` stands for whichever release is latest when the code runs, so
+once idfkit supports a newer release, a model of the release that was latest when the tuple was
+written matches nothing in it, and this raises ``TypeError``.
 
 Args:
     doc: A document of any supported version.
@@ -1510,13 +1519,13 @@ Raises:
 
 Examples:
     ```python
-    from idfkit import IDFDocument, load_idf
-    from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV9_6, IDFDocumentV26_1, as_version
+    from idfkit import load_idf
+    from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV9_6, IDFDocumentV26_1, {latest}, as_version
 
     model = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)
     model["Zone"].first()  # typed as Zone was declared in 9.4
 
-    recent = as_version(load_idf("model.idf"), (IDFDocumentV9_6, IDFDocumentV26_1, IDFDocument))
+    recent = as_version(load_idf("model.idf"), (IDFDocumentV9_6, IDFDocumentV26_1, {latest}))
     recent["Space"].first()  # typed in each of those releases
     ```
 """

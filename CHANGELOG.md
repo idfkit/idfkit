@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or model; it added nothing to the type stubs, so type-checking time was unchanged
   ([#284](https://github.com/idfkit/idfkit/pull/284)).
 
+### Changed
+
+- The `as_version` docstring and the bundled agent reference (`document-and-objects.md`) gained a
+  warning that a tuple or union of release types must name the latest release by its own type
+  (`IDFDocumentV26_2`), not `IDFDocument`. `IDFDocument` stands for whichever release is latest
+  when the code runs, so once idfkit supported a newer release, a tuple ending in it no longer
+  covered the previous latest, and `as_version` raised `TypeError` on a model of that release. The
+  docstring's example was changed to name `IDFDocumentV26_2`
+  ([#282](https://github.com/idfkit/idfkit/pull/282)).
+
 ### Fixed
 
 - `IDFDocument.get_zone_surfaces()` returned every object that named the zone, not only its
