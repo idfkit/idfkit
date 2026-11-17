@@ -454,7 +454,7 @@ class IDFParser:
             schema = get_schema(version)
 
         # Create document
-        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict)  # type: ignore[reportCallIssue]  # the stub types IDFDocument as a TypedDict, whose synthesized constructor pyright checks instead
+        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict)
 
         # Parse objects
         self._parse_objects(content, doc, schema)
