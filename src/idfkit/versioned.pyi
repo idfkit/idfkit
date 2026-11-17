@@ -21641,10 +21641,11 @@ def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D:
     ``isinstance`` takes one, it accepts a document of any of them and types it as their union:
     a range of releases, such as those that have ``Space``.
 
-    Check a release with this function, not ``isinstance``: pyright rejects ``isinstance`` against
-    a document type, and at run time ``IDFDocumentV26_2`` is ``IDFDocument`` itself, which every
-    document is an instance of. Nothing needs passing to reach ``AnyIDFDocument``: a document of
-    any release already is one.
+    Check a release with this function, not ``isinstance``: at run time ``IDFDocumentV26_2`` is
+    ``IDFDocument`` itself, which every document is an instance of, so
+    ``isinstance(doc, IDFDocument)`` holds for a document of any release while a type checker then
+    types it as the latest one. Nothing needs passing to reach ``AnyIDFDocument``: a document of any
+    release already is one.
 
     Args:
         doc: A document of any supported version.

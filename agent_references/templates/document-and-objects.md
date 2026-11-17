@@ -215,6 +215,16 @@ Some object types have repeated field groups — vertices on a surface, branches
     --8<-- "agent_references/snippets/document-and-objects.py:versioned-containment"
     ```
 
+!!! failure "narrowing with `isinstance(doc, IDFDocument)`"
+
+    ```python
+    if isinstance(doc, IDFDocument):  # true for a document of every release at run time
+        for space in doc["Space"]:  # pyright now types doc as the latest release here
+            space.ceiling_height = 3.0  # raises InvalidFieldError on a 9.6 or 22.1 model
+    ```
+
+    `IDFDocument` is the only document class at run time, so every document passes the test, while a type checker narrows to the latest release on it. Use `as_version`, as above.
+
 !!! failure "mutating a list of extensibles in place"
 
     ```python

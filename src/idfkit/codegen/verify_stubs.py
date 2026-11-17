@@ -55,10 +55,9 @@ class _Class:
 
 @dataclasses.dataclass
 class _Module:
-    """The classes and functional ``TypedDict`` assignments of the generated sources."""
+    """The classes and type aliases of the generated sources."""
 
     classes: dict[str, _Class] = dataclasses.field(default_factory=dict[str, _Class])
-    typed_dicts: dict[str, dict[str, str]] = dataclasses.field(default_factory=dict[str, dict[str, str]])
     # Module-level ``Name: TypeAlias = Target``: the alias and the class it names.
     aliases: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
 
@@ -117,31 +116,11 @@ def _read_class(node: ast.ClassDef) -> _Class:
     return cls
 
 
-def _read_typed_dict(node: ast.Assign) -> dict[str, str]:
-    """The entries of a functional ``TypedDict(...)`` assignment."""
-    assert isinstance(node.value, ast.Call)  # noqa: S101 - the caller checked the shape
-    entries: dict[str, str] = {}
-    mapping = node.value.args[1]
-    assert isinstance(mapping, ast.Dict)  # noqa: S101 - the caller checked the shape
-    for key, value in zip(mapping.keys, mapping.values, strict=True):
-        assert isinstance(key, ast.Constant)  # noqa: S101 - generated maps have string keys
-        entries[str(key.value)] = _norm(ast.unparse(value))
-    return entries
-
-
 def _read(source: str, module: _Module | None = None) -> _Module:
     module = module if module is not None else _Module()
     for node in ast.parse(source).body:
         if isinstance(node, ast.ClassDef):
             module.classes[node.name] = _read_class(node)
-        elif (
-            isinstance(node, ast.Assign)
-            and isinstance(node.value, ast.Call)
-            and ast.unparse(node.value.func) == "TypedDict"
-            and len(node.value.args) == 2
-            and isinstance(node.value.args[1], ast.Dict)
-        ):
-            module.typed_dicts[ast.unparse(node.targets[0])] = _read_typed_dict(node)
         elif (
             isinstance(node, ast.AnnAssign)
             and isinstance(node.target, ast.Name)
@@ -160,8 +139,8 @@ def _linearise(module: _Module, name: str) -> list[str]:
     """
     order: list[str] = []
     for base in reversed(module.classes[name].bases):
-        if base in module.classes or base in module.typed_dicts:
-            for item in _linearise(module, base) if base in module.classes else [base]:
+        if base in module.classes:
+            for item in _linearise(module, base):
                 if item not in order:
                     order.append(item)
     order.append(name)

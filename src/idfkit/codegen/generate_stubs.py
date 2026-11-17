@@ -1,15 +1,12 @@
 """Generate type stubs from EnergyPlus epJSON schemas.
 
-This module generates ``_generated_types.pyi`` containing:
-- Typed subclasses of IDFObject for every EnergyPlus object type
-- A ``TypedDict`` mapping for ``__getitem__`` dispatch on IDFDocument
-- Typed attribute accessors for IDFDocument
+This module generates ``_generated_types.pyi`` containing typed subclasses of IDFObject for every
+EnergyPlus object type, and ``document.pyi``, ``versioned.pyi`` and ``_versioned/`` containing the
+document types: each types ``doc["Zone"]`` with one ``__getitem__`` overload per object type
+(:func:`_generate_getitem`) and carries typed attribute accessors.
 
-The TypedDict approach gives pyright O(1) per-key type resolution instead
-of O(n) overload matching, yielding ~3x faster type-checking.
-
-The generated file is designed to be committed and shipped with the package.
-The ``.pyi`` file is a stub — it has zero runtime cost by design.
+The generated files are designed to be committed and shipped with the package.
+The ``.pyi`` files are stubs — they have zero runtime cost by design.
 
 Usage::
 
@@ -1537,10 +1534,11 @@ know it; this states it, and checks it at run time. Given a tuple of document ty
 ``isinstance`` takes one, it accepts a document of any of them and types it as their union:
 a range of releases, such as those that have ``Space``.
 
-Check a release with this function, not ``isinstance``: pyright rejects ``isinstance`` against
-a document type, and at run time ``IDFDocumentV26_2`` is ``IDFDocument`` itself, which every
-document is an instance of. Nothing needs passing to reach ``AnyIDFDocument``: a document of
-any release already is one.
+Check a release with this function, not ``isinstance``: at run time ``IDFDocumentV26_2`` is
+``IDFDocument`` itself, which every document is an instance of, so
+``isinstance(doc, IDFDocument)`` holds for a document of any release while a type checker then
+types it as the latest one. Nothing needs passing to reach ``AnyIDFDocument``: a document of any
+release already is one.
 
 Args:
     doc: A document of any supported version.
@@ -1616,7 +1614,7 @@ def _generate_types_module() -> str:
     parts.append("from collections.abc import Mapping")
     parts.append("from typing import Any, Literal, TypeAlias, TypedDict")
     parts.append("")
-    parts.append("from typing_extensions import Never, ReadOnly, Unpack")
+    parts.append("from typing_extensions import Never, Unpack")
     parts.append("")
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
     parts.append("")

@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Literal, TypeAlias, TypedDict
 
-from typing_extensions import Never, ReadOnly, Unpack
+from typing_extensions import Never, Unpack
 
 from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
 
