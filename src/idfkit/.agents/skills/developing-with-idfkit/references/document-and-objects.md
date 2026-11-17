@@ -144,7 +144,7 @@ def count_people(doc: AnyIDFDocument) -> int:
 |---|---|
 | Models of the latest release (you create them with `new_document()`, or migrated them to it with `migrate(doc, IDFDocument)`) | `IDFDocument` |
 | Models of any supported release (a reusable function, a library module) | `AnyIDFDocument`; an object from it as `AnyZone`, `AnyMaterial`, ... |
-| Models of one release | `IDFDocumentV9_4` and so on, reached with `as_version` |
+| Models of one release | `IDFDocumentV9_4` and so on, created with `new_document(IDFDocumentV9_4)` or reached with `as_version` |
 | Models of a range of releases (9.6 and later, before 23.2, ...) | `IDFDocumentSince9_6`, `IDFDocumentBefore23_2`, ..., reached with `as_version(doc, since=...)`; a `TypeVar` bound to one returns the caller's type |
 
 ### Annotating a parameter with an object class
@@ -271,14 +271,16 @@ def is_district_heated(doc: IDFDocumentSince23_2, heater_name: str) -> bool:
 
 ### A model created for an older release
 
-`new_document(version=...)` is typed for the latest release, whatever version it is given. Type it for its release with `as_version`, as for a loaded model; a test fixture that skips this is checked against the wrong release:
+Pass `new_document` the release's document type: `new_document(IDFDocumentV9_4)` creates a 9.4.0 model typed as `IDFDocumentV9_4`, so the release is named once and the type and the version cannot disagree. For a non-strict model, parametrize the type, `new_document(IDFDocumentV9_4[Literal[False]])`, typed `IDFDocumentV9_4[Literal[False]]`; this form takes no `strict=`. Given a version tuple instead, `new_document` is typed for the latest release whatever the version, so a test fixture built with `new_document(version=(9, 4, 0))` is checked against the wrong release. For the latest release keep `new_document()`: `IDFDocument`, and so the latest release's own type `IDFDocumentV26_2` (which is `IDFDocument`), is refused (`TypeError`, though pyright accepts the call), because it is the run-time class of every document and `new_document(type(doc))` would otherwise create a latest-release model whatever `doc`'s release; `AnyIDFDocument` and unions of release types are refused too (a union, like `IDFDocument`, only when the call runs). A model whose version comes from a file is typed with `as_version`, as above.
 
 ```python
+from typing import Literal
+
 from idfkit import new_document
 
-blank = new_document(version=(9, 4, 0))  # still typed IDFDocument, the latest release
-blank_94 = as_version(new_document(version=(9, 4, 0)), IDFDocumentV9_4)  # typed for 9.4
+blank_94 = new_document(IDFDocumentV9_4)  # version (9, 4, 0), typed IDFDocumentV9_4
 blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
+lax_94 = new_document(IDFDocumentV9_4[Literal[False]])  # non-strict, typed IDFDocumentV9_4[Literal[False]]
 ```
 
 ### A field renamed between releases

@@ -42,6 +42,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reference-graph lookup as `get_referencing`, which was unchanged, with no scan of the collection
   or model; it added nothing to the type stubs, so type-checking time was unchanged
   ([#284](https://github.com/idfkit/idfkit/pull/284)).
+- `new_document()` accepted a release's document type from `idfkit.versioned` in place of a version
+  tuple: `new_document(IDFDocumentV9_4)` created an EnergyPlus 9.4.0 model typed as `IDFDocumentV9_4`,
+  naming the release once, where `new_document(version=(9, 4, 0))` stayed typed for the latest
+  release and needed `as_version()` to be typed for its own. A non-strict model was asked for by
+  the type, `new_document(IDFDocumentV9_4[Literal[False]])`, typed `IDFDocumentV9_4[Literal[False]]`.
+  `IDFDocument` (the run-time class of every document, so `new_document(type(doc))` would have
+  created a latest-release model whatever `doc`'s release), `AnyIDFDocument` and unions of release
+  types raised `TypeError`. The tuple form was unchanged, in its types (an argument typed `Any`
+  included) and in the time pyright takes over it.
+  ([#290](https://github.com/idfkit/idfkit/pull/290))
 
 ### Changed
 

@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 
 from typing_extensions import assert_type
 
-from idfkit import IDFDocument, load_idf, save_idf
+from idfkit import IDFDocument, load_idf, new_document, save_idf
 from idfkit.migration import MigrationReport, async_migrate, migrate
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.simulation import expand_objects
@@ -185,6 +185,22 @@ def correct_calls() -> None:
     print(objects)
 
 
+def new_documents(any_version: Any, versions: list[tuple[int, int, int]]) -> None:
+    """A document created for a release, typed for it: the release is named once, by the type."""
+    assert_type(new_document(IDFDocumentV9_4), IDFDocumentV9_4)
+    # The strictness is stated by the type, and kept: a per-release annotation checks it.
+    strict_94: IDFDocumentV9_4[Literal[True]] = new_document(IDFDocumentV9_4[Literal[True]])
+    lax_94: IDFDocumentV9_4[Literal[False]] = new_document(IDFDocumentV9_4[Literal[False]])
+    print(strict_94, lax_94)
+    # The tuple form is unchanged, an untyped version included, and so is new_document as a callable.
+    assert_type(new_document(), IDFDocument[Literal[True]])
+    assert_type(new_document(version=(9, 4, 0)), IDFDocument[Literal[True]])
+    assert_type(new_document((9, 4, 0), strict=False), IDFDocument[Literal[False]])
+    assert_type(new_document(any_version), IDFDocument[Literal[True]])
+    assert_type(new_document(any_version, strict=False), IDFDocument[Literal[False]])
+    assert_type(list(map(new_document, versions)), list[IDFDocument[Literal[True]]])
+
+
 async def migrated_documents(old: IDFDocumentV8_9) -> None:
     """A migration names its target's document type to get a report typed for that release."""
     report = migrate(old, IDFDocumentV9_4)
@@ -230,6 +246,10 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     as_version(any_doc, IDFDocument, since="9.6")  # pyright: ignore[reportCallIssue]  (a type or a range, not both)
     as_version(any_doc, before="9.6")["Space"]  # pyright: ignore[reportCallIssue, reportArgumentType]  (Space is new in 9.6)
     any_doc["Zone"]["Office"].update(x_orign=1.0)  # pyright: ignore[reportCallIssue]  (a typo, also through AnyIDFDocument)
+    new_document(dict)  # pyright: ignore[reportArgumentType, reportCallIssue]  (not a document type)
+    new_document(IDFDocumentV9_4, strict=False)  # pyright: ignore[reportArgumentType, reportCallIssue]  (the type states it: [Literal[False]])
+    lax: IDFDocumentV9_4[Literal[False]] = new_document(IDFDocumentV9_4)  # pyright: ignore[reportAssignmentType]  (strict)
+    print(lax)
     migrated = migrate(legacy, (24, 1, 0)).migrated_model
     assert migrated is not None
     latest_only(migrated)  # pyright: ignore[reportArgumentType]  (a version tuple names no release a checker knows)

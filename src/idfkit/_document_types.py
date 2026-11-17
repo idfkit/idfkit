@@ -21,12 +21,27 @@ not (9.0.1).
 from __future__ import annotations
 
 import types
-from typing import TYPE_CHECKING, Any, NoReturn, TypeVar, Union, cast, get_args, get_origin, overload
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    ForwardRef,
+    Literal,
+    NoReturn,
+    TypeVar,
+    Union,
+    cast,
+    get_args,
+    get_origin,
+    overload,
+)
 
 from .versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, find_closest_version, version_string
 
 if TYPE_CHECKING:
     from typing import TypeAlias
+
+    from typing_extensions import TypeIs
 
     from .document import AnyIDFDocument
 
@@ -50,10 +65,15 @@ class DocumentTypeMeta(type):
         return cls._energyplus_version is None or find_closest_version(version) == cls._energyplus_version
 
     def __call__(cls, *args: Any, **kwargs: Any) -> NoReturn:
-        msg = (
-            f"{cls.__name__} is a type for type checkers and is not instantiated; "
-            "create a document with idfkit.new_document(version=...) or load one"
+        # AnyIDFDocument stands for no single release, so new_document refuses it: point to the tuple form.
+        # new_document also refuses a subclass of a release's type, so name the release's type it derives from.
+        stand_in = next((base for base in cls.__mro__ if "_energyplus_version" in vars(base)), cls)
+        create = (
+            "idfkit.new_document(version=...)"
+            if cls._energyplus_version is None
+            else f"idfkit.new_document({stand_in.__name__})"
         )
+        msg = f"{cls.__name__} is a type for type checkers and is not instantiated; create a document with {create} or load one"
         raise TypeError(msg)
 
     @property
@@ -102,20 +122,98 @@ def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
     raise TypeError(msg)
 
 
+def is_type_form(value: object) -> TypeIs[type[Any]]:
+    """Whether *value* names a type (a class, a parametrized one such as ``IDFDocumentV9_4[bool]``, or a union)
+    rather than a version value, for the functions that take either: :func:`idfkit.new_document` and ``migrate``.
+
+    A union is not itself a class; the narrowing serves the other branch, where the value is a version.
+    """
+    return isinstance(value, (type, types.UnionType)) or get_origin(value) is not None
+
+
+def release_for_new_document(document_type: object, strict: bool) -> tuple[tuple[int, int, int], bool]:
+    """The release and strictness of the document :func:`idfkit.new_document` creates for *document_type*.
+
+    The release is the one :func:`release_of` resolves; the strictness the one the type argument states
+    (``IDFDocumentV9_4[Literal[False]]``), else *strict*. On top of :func:`release_of`, ``IDFDocument`` is
+    refused: it is the run-time class of every document, so ``new_document(type(doc))`` would create a
+    latest-release document typed as ``doc``'s release. So is a subclass of a release type, which
+    ``new_document`` would type as the subclass while returning an ``IDFDocument``.
+
+    Raises:
+        TypeError: As :func:`release_of` does, for ``IDFDocument`` or a subclass of a release type, and for a
+            strictness that contradicts *strict*.
+    """
+    from .document import IDFDocument
+
+    release = release_of(document_type)
+    origin, _ = _resolve(document_type)
+    if origin is IDFDocument:
+        latest_type = f"IDFDocumentV{LATEST_VERSION[0]}_{LATEST_VERSION[1]}"
+        msg = (
+            "new_document does not take IDFDocument, nor the latest release's type, "
+            f"{latest_type}, which is IDFDocument: it is the run-time class of every document, so it names "
+            "no release here (new_document(type(doc)) would create a latest-release document whatever doc's "
+            "release). Call new_document() for the latest release, or pass an older release's type from "
+            "idfkit.versioned"
+        )
+        raise TypeError(msg)
+    if "_energyplus_version" not in vars(origin):
+        msg = f"{origin.__name__} is a subclass of a release type; pass a release's type from idfkit.versioned"
+        raise TypeError(msg)
+    stated = _stated_strictness(document_type)
+    if stated is None:
+        return release, strict
+    if stated and not strict:
+        msg = f"strict=False contradicts the document type {document_type!r}; pass the type alone"
+        raise TypeError(msg)
+    return release, stated
+
+
+def _stated_strictness(document_type: object) -> bool | None:
+    """The strictness a parametrized document type states, as in ``IDFDocumentV9_4[Literal[False]]``, if any.
+
+    ``Annotated`` and type aliases (``type Lax = Literal[False]``, or ``TypeAliasType``) are looked through,
+    as a type checker looks through them. A type argument that is not one literal ``bool`` (``bool``,
+    ``Any``, ``Literal[True, False]``) states none.
+
+    Raises:
+        TypeError: If the type argument is a string, which is not evaluated at run time.
+    """
+    args = get_args(document_type)
+    if len(args) != 1:
+        return None
+    argument = args[0]
+    # Bounded, as `type A = A` is its own value.
+    for _ in range(32):
+        if get_origin(argument) is Annotated:
+            argument = get_args(argument)[0]
+        elif type(argument).__name__ == "TypeAliasType" and hasattr(argument, "__value__"):
+            # typing.TypeAliasType (3.12+) or typing_extensions'; matched by name, which needs neither.
+            argument = argument.__value__
+        else:
+            break
+    if isinstance(argument, (str, ForwardRef)):
+        msg = f"{document_type!r}: write the strictness unquoted, as Literal[False]; a string is not read at run time"
+        raise TypeError(msg)
+    values = get_args(argument) if get_origin(argument) is Literal else ()
+    return values[0] if len(values) == 1 and isinstance(values[0], bool) else None
+
+
 def release_of(document_type: object) -> tuple[int, int, int]:
     """The one release *document_type* stands for, as :func:`as_version` resolves it.
 
     Raises:
         TypeError: If *document_type* is not a document type, or names no single release:
-            ``AnyIDFDocument``, or a tuple or union of several types.
+            ``AnyIDFDocument``, or a union of several types.
     """
     candidates = _candidates(document_type)
     if len(candidates) != 1:
-        msg = f"{document_type!r} names several releases; name one, such as IDFDocumentV24_1"
+        msg = f"{document_type!r} names {len(candidates)} releases; name one, such as IDFDocumentV9_4"
         raise TypeError(msg)
-    _, release = _resolve(candidates[0])
+    origin, release = _resolve(candidates[0])
     if release is None:
-        msg = f"{document_type!r} stands for every release, not one; name one, such as IDFDocumentV24_1"
+        msg = f"{origin.__name__} stands for no single EnergyPlus release; name one, such as IDFDocumentV9_4"
         raise TypeError(msg)
     return release
 
