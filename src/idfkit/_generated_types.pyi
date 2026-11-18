@@ -147,8 +147,8 @@ class _NotAFieldOfThisObjectType:
 class _NotAFieldOfThisExtensibleGroup:
     """No name is one: a type checker reports an undeclared field of a typed group against this type."""
 
-_PassFieldsAsKeywords: TypeAlias = Never
-"""No value is one: a type checker reports a name given to a type without a Name field against this."""
+class _PassFieldsAsKeywords:
+    """No value is one: a type checker reports a name given to a type without a Name field against this."""
 
 class _TypedIDFObject(IDFObject):
     """Stub-only base: an undeclared field name is a type error on a typed object."""

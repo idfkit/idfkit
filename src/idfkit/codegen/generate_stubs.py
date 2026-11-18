@@ -306,9 +306,10 @@ _TYPED_GROUP_BASE = "_TypedExtensibleGroup"
 _NOT_A_FIELD = "_NotAFieldOfThisObjectType"
 _NOT_A_GROUP_FIELD = "_NotAFieldOfThisExtensibleGroup"
 # A type without a Name field takes no name. Its creation signature has a positional-only parameter
-# typed with this alias of ``Never``, which nothing satisfies, so a name passed by mistake
+# typed with this class, which no value is, so a name passed by mistake
 # (``doc.output_variables.add("*", ...)``) reads ``parameter "this_type_has_no_name_field" of type
-# "_PassFieldsAsKeywords"`` under pyright, and ``expected "Never"`` under mypy, where both used to
+# "_PassFieldsAsKeywords"`` under pyright, and ``expected "_PassFieldsAsKeywords"`` under mypy (a class
+# rather than an alias of ``Never``, which mypy printed as ``expected "Never"``), where both used to
 # report the arguments instead (``Expected 0 positional arguments``; mypy's ``gets multiple values
 # for keyword argument``, naming a field the call did pass).
 _NO_NAME_FIELD = "_PassFieldsAsKeywords"
@@ -329,8 +330,8 @@ def _generate_typed_bases() -> list[str]:
         f"class {_NOT_A_GROUP_FIELD}:",
         '    """No name is one: a type checker reports an undeclared field of a typed group against this type."""',
         "",
-        f"{_NO_NAME_FIELD}: TypeAlias = Never",
-        '"""No value is one: a type checker reports a name given to a type without a Name field against this."""',
+        f"class {_NO_NAME_FIELD}:",
+        '    """No value is one: a type checker reports a name given to a type without a Name field against this."""',
         "",
         f"class {_TYPED_OBJECT_BASE}(IDFObject):",
         '    """Stub-only base: an undeclared field name is a type error on a typed object."""',

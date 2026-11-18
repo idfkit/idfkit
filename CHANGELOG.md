@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   it is a `ValidationFailedError` (E001) at run time, and so was a name for a type without a Name
   field (`doc["Output:SQLite"].add("x")`, an `InvalidFieldError` at run time). Such a name was reported against
   a parameter named for the mistake, `this_type_has_no_name_field` of type `_PassFieldsAsKeywords`
-  (mypy: `expected "Never"`), rather than as `Expected 0 positional arguments`, or, under mypy, as
+  (mypy: `expected "_PassFieldsAsKeywords"`), rather than as `Expected 0 positional arguments`, or, under mypy, as
   `gets multiple values for keyword argument` naming a field the call did pass:
   `doc.output_variables.add("*", variable_name=...)` pointed at the parameter, and the fix is
   `key_value="*"`. The required fields
@@ -206,7 +206,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   pyright no longer rejects the meaningless `doc[[]]`. A misspelled field assigned to under mypy
   read `variable has type "_NotAFieldOfThisObjectType"` rather than `variable has type "Never"`:
   the type is a class no value is, where it was an alias of `Never`, and pyright's messages are
-  unchanged ([#302](https://github.com/idfkit/idfkit/pull/302)).
+  unchanged. `_PassFieldsAsKeywords` became a class for the same reason ([#302](https://github.com/idfkit/idfkit/pull/302)).
 - **Breaking:** for type checking only, a typed extensible group's snapshot was typed by its item
   type: `ExtensibleList.as_list()` returned `list[BuildingSurfaceDetailedVerticesItem]` where it
   returned `list[dict[str, Any]]`, and the group's `as_dict()` the item where it returned
