@@ -68,6 +68,9 @@ dev = [
     "tox-uv>=1.11.3",
     "deptry>=0.23.0",
     "pyright>=1.1.389",
+    # Checks tests/type_checks/collection_add_validate_fixture.py (tests/test_collection_add_validate.py):
+    # the generated stubs are written for mypy as well as pyright.
+    "mypy>=1.13",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.0.0",
     "ruff>=0.11.5",
@@ -115,14 +118,7 @@ level = "conformance-2026.21"
 # same reason: the declaration and the pin stay a single fact. A gate must refuse to run against a
 # copy that declares no level.
 [tool.idfkit.governance]
-level = "governance-2026.33"
-
-# idfkit check, run by `make check`: the string literals idfkit's own code passes to add(),
-# get_collection() and doc[...] must exist in every supported release, or be guarded.
-[tool.idfkit.check]
-targets = "all"
-paths = ["src"]
-extend-select = ["C004"]
+level = "governance-2026.34"
 
 [tool.pyright]
 pythonVersion = "3.10"

@@ -34,6 +34,7 @@ class AnySizingPeriodWeatherFileDays:
         | None = "Monday",
         use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
         use_weather_file_rain_and_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SizingPeriod:WeatherFileDays`` and add it to the document.
 
@@ -51,6 +52,7 @@ class SurfacePropertySolarIncidentInside:
         surface_name: str,
         construction_name: str,
         inside_surface_incident_sun_solar_radiation_schedule_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:SolarIncidentInside`` and add it to the document.
 
@@ -69,6 +71,7 @@ class ExteriorWaterEquipment:
         design_level: float,
         fuel_use_type: Literal["Water"] | None = "Water",
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Exterior:WaterEquipment`` and add it to the document.
 
@@ -139,6 +142,7 @@ class ZoneHVACVentilatedSlab:
         cold_water_inlet_node_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:VentilatedSlab`` and add it to the document.
 
@@ -175,6 +179,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         fan_delay_time: float | None = 60,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -219,6 +224,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAir:
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         dx_heating_coil_sizing_ratio: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir`` and add it to the document.
 
@@ -248,6 +254,7 @@ class SolarCollectorPerformancePhotovoltaicThermalBIPVT:
         glass_thickness: float | None = 0.002,
         glass_refraction_index: float | None = 1.526,
         glass_extinction_coefficient: float | None = 4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollectorPerformance:PhotovoltaicThermal:BIPVT`` and add it to the document.
 
@@ -293,6 +300,7 @@ class CoolingTowerVariableSpeed:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:VariableSpeed`` and add it to the document.
 
@@ -314,6 +322,7 @@ class RefrigerationCondenserCascade:
         condenser_refrigerant_operating_charge_inventory: float | None = ...,
         condensate_receiver_refrigerant_inventory: float | None = ...,
         condensate_piping_refrigerant_inventory: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:Condenser:Cascade`` and add it to the document.
 
@@ -335,6 +344,7 @@ class FaultModelHumidistatOffset:
         severity_schedule_name: str | None = ...,
         reference_humidistat_offset: float | None = 5,
         related_thermostat_offset_fault_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:HumidistatOffset`` and add it to the document.
 
@@ -401,6 +411,7 @@ class AnyPythonPluginOutputVariable:
         ]
         | None = ...,
         end_use_subcategory: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:OutputVariable`` and add it to the document.
 
@@ -471,6 +482,7 @@ class PythonPluginOutputVariable:
         ]
         | None = ...,
         end_use_subcategory: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:OutputVariable`` and add it to the document.
 

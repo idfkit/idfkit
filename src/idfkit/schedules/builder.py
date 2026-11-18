@@ -14,11 +14,30 @@ from __future__ import annotations
 import calendar
 from collections.abc import Sequence
 from datetime import date
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Literal, cast
 
 if TYPE_CHECKING:
     from ..document import AnyIDFDocument
     from ..objects import IDFObject
+
+# The choices of ScheduleTypeLimits' Numeric Type and Unit Type, in every supported release.
+_NumericType = Literal["Continuous", "Discrete"]
+_UnitType = Literal[
+    "ActivityLevel",
+    "Angle",
+    "Availability",
+    "Capacity",
+    "Control",
+    "ConvectionCoefficient",
+    "DeltaTemperature",
+    "Dimensionless",
+    "Mode",
+    "Percent",
+    "Power",
+    "PrecipitationRate",
+    "Temperature",
+    "Velocity",
+]
 
 
 def create_schedule_type_limits(
@@ -42,14 +61,15 @@ def create_schedule_type_limits(
     Returns:
         The created ``ScheduleTypeLimits`` object.
     """
-    kwargs: dict[str, Any] = {
-        "lower_limit_value": lower,
-        "upper_limit_value": upper,
-        "numeric_type": numeric_type,
-    }
-    if unit_type:
-        kwargs["unit_type"] = unit_type
-    return doc.add("ScheduleTypeLimits", name, **kwargs)
+    # add() validates both choices against the schema at run time, as doc.add() did, so the casts
+    # only defer to that check; a blank unit_type leaves the field unset.
+    return doc["ScheduleTypeLimits"].add(
+        name,
+        lower_limit_value=lower,
+        upper_limit_value=upper,
+        numeric_type=cast("_NumericType", numeric_type),
+        unit_type=cast("_UnitType | None", unit_type or None),
+    )
 
 
 def create_constant_schedule(
@@ -70,10 +90,8 @@ def create_constant_schedule(
     Returns:
         The created ``Schedule:Constant`` object.
     """
-    kwargs: dict[str, Any] = {"hourly_value": value}
-    if type_limits:
-        kwargs["schedule_type_limits_name"] = type_limits
-    return doc.add("Schedule:Constant", name, **kwargs)
+    # A blank type_limits leaves the field unset.
+    return doc["Schedule:Constant"].add(name, hourly_value=value, schedule_type_limits_name=type_limits or None)
 
 
 def create_compact_schedule_from_values(
@@ -157,12 +175,15 @@ def create_compact_schedule_from_values(
 
     # 4. Create the Schedule:Compact object using the canonical extensible
     #    wrapper shape: data=[{"field": ...}, {"field": ...}, ...].
-    kwargs: dict[str, Any] = {}
+    schedules = doc["Schedule:Compact"]
     if type_limits:
-        kwargs["schedule_type_limits_name"] = type_limits
-    kwargs["data"] = [{"field": field_val} for field_val in fields]
-
-    return doc.add("Schedule:Compact", name, validate=False, **kwargs)
+        return schedules.add(
+            name,
+            schedule_type_limits_name=type_limits,
+            data=[{"field": field_val} for field_val in fields],
+            validate=False,
+        )
+    return schedules.add(name, data=[{"field": field_val} for field_val in fields], validate=False)
 
 
 # ---------------------------------------------------------------------------

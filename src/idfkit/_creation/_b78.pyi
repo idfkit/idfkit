@@ -26,6 +26,7 @@ class ScheduleYearRules:
         holiday_schedule_name: str | None = ...,
         custom_day_1_schedule_name: str | None = ...,
         custom_day_2_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Year:Rules`` and add it to the document.
 
@@ -102,6 +103,7 @@ class SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections:
         ]
         | None = "WaltonUnstableHorizontalOrTilt",
         natural_convection_unstable_horizontal_equation_user_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Outside:AdaptiveModelSelections`` and add it to the document.
 
@@ -119,6 +121,7 @@ class AnyAirflowNetworkDistributionComponentFan:
         fan_name: str,
         supply_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"]
         | None = "Fan:ConstantVolume",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Fan`` and add it to the document.
 
@@ -141,6 +144,7 @@ class AirflowNetworkDistributionComponentHeatExchanger:
         ],
         air_path_length: float,
         air_path_hydraulic_diameter: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:HeatExchanger`` and add it to the document.
 
@@ -212,6 +216,7 @@ class HVACTemplateZonePTHP:
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:PTHP`` and add it to the document.
 
@@ -366,6 +371,7 @@ class HVACTemplateSystemDualDuct:
             "VariableSpeedMotorPressureReset",
         ]
         | None = "InletVaneDampers",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:DualDuct`` and add it to the document.
 
@@ -389,6 +395,7 @@ class ZoneHVACBaseboardRadiantConvectiveWaterDesign:
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         convergence_tolerance: float | None = 0.001,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Water:Design`` and add it to the document.
 
@@ -440,6 +447,7 @@ class ChillerElectric:
         end_use_subcategory: str | None = "General",
         thermosiphon_capacity_fraction_curve_name: str | None = ...,
         thermosiphon_minimum_temperature_difference: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric`` and add it to the document.
 
@@ -499,6 +507,7 @@ class CoolingTowerVariableSpeedMerkel:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:VariableSpeed:Merkel`` and add it to the document.
 
@@ -526,6 +535,7 @@ class AnyThermalStorageIceDetailed:
         tank_loss_coefficient: float | None = ...,
         freezing_temperature_of_storage_medium: float | None = 0,
         thaw_process_indicator: Literal["InsideMelt", "OutsideMelt"] | None = "OutsideMelt",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:Ice:Detailed`` and add it to the document.
 
@@ -564,6 +574,7 @@ class RefrigerationCondenserEvaporativeCooled:
         condenser_refrigerant_operating_charge_inventory: float | None = 0,
         condensate_receiver_refrigerant_inventory: float | None = 0,
         condensate_piping_refrigerant_inventory: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:Condenser:EvaporativeCooled`` and add it to the document.
 
@@ -579,6 +590,7 @@ class ParametricSetValueForRun:
         /,
         *,
         values: Sequence[_g.ParametricSetValueForRunValuesItem | _g.ParametricSetValueForRunValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Parametric:SetValueForRun`` and add it to the document.
 
@@ -596,6 +608,7 @@ class AnyOutputTableSummaryReports:
         reports: Sequence[
             _g.AnyOutputTableSummaryReportsReportsItem | _g.AnyOutputTableSummaryReportsReportsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:SummaryReports`` and add it to the document.
 
@@ -617,6 +630,7 @@ class AnyOutputTableTimeBins:
         interval_count: int | None = ...,
         schedule_name: str | None = ...,
         variable_type: Literal["Energy", "Power", "Temperature", "VolumetricFlow"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:TimeBins`` and add it to the document.
 

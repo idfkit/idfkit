@@ -28,6 +28,7 @@ class FloorInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Interzone`` and add it to the document.
 
@@ -78,6 +79,7 @@ class AnyZoneHVACPackagedTerminalHeatPump:
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
 
@@ -115,6 +117,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow:
         cooling_low_control_temperature_schedule_name: str | None = ...,
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
 
@@ -134,6 +137,7 @@ class AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheat:
         maximum_air_flow_rate: float | Literal["Autosize"],
         zone_minimum_air_flow_fraction: float,
         availability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat`` and add it to the document.
 
@@ -165,6 +169,7 @@ class AnyAirTerminalSingleDuctParallelPIUReheat:
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ParallelPIU:Reheat`` and add it to the document.
 
@@ -217,6 +222,7 @@ class AnyCoilCoolingDXTwoSpeed:
         low_speed_sensible_heat_ratio_function_of_temperature_curve_name: str | None = ...,
         low_speed_sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:TwoSpeed`` and add it to the document.
 
@@ -256,6 +262,7 @@ class DehumidifierDesiccantSystem:
         exhaust_fan_maximum_flow_rate: float | None = ...,
         exhaust_fan_maximum_power: float | None = ...,
         exhaust_fan_power_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Dehumidifier:Desiccant:System`` and add it to the document.
 
@@ -302,6 +309,7 @@ class AirLoopHVACUnitaryHeatCool:
         ]
         | None = ...,
         reheat_coil_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatCool`` and add it to the document.
 
@@ -345,6 +353,7 @@ class AnyAirLoopHVACUnitaryHeatPumpAirToAir:
         fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir`` and add it to the document.
 
@@ -361,6 +370,7 @@ class AirLoopHVACZoneMixer:
         *,
         outlet_node_name: str,
         nodes: Sequence[_g.AirLoopHVACZoneMixerNodesItem | _g.AirLoopHVACZoneMixerNodesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:ZoneMixer`` and add it to the document.
 
@@ -462,6 +472,7 @@ class AnyPlantEquipmentOperationSchemes:
         | None = ...,
         control_scheme_8_name: str | None = ...,
         control_scheme_8_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperationSchemes`` and add it to the document.
 
@@ -487,6 +498,7 @@ class AnyLifeCycleCostRecurringCosts:
         repeat_period_years: int | None = 1,
         repeat_period_months: int | None = 0,
         annual_escalation_rate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:RecurringCosts`` and add it to the document.
 

@@ -58,6 +58,7 @@ class ThermalStorageChilledWaterStratified_v22_2_to_v25_1:
         node_8_additional_loss_coefficient: float | None = 0,
         node_9_additional_loss_coefficient: float | None = 0,
         node_10_additional_loss_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:ChilledWater:Stratified`` and add it to the document.
 
@@ -74,6 +75,7 @@ class ZoneAirHeatBalanceAlgorithm_v8_9_to_v22_2:
         *,
         algorithm: Literal["AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"]
         | None = "ThirdOrderBackwardDifference",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneAirHeatBalanceAlgorithm`` and add it to the document.
 

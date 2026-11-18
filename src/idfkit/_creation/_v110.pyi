@@ -36,6 +36,7 @@ class ExteriorFuelEquipment_v8_9_to_v9_2:
         schedule_name: str,
         design_level: float,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Exterior:FuelEquipment`` and add it to the document.
 
@@ -71,6 +72,7 @@ class LifeCycleCostUseAdjustment_v9_3_to_v23_1:
         multipliers: Sequence[
             _g.LifeCycleCostUseAdjustmentMultipliersItem | _g.LifeCycleCostUseAdjustmentMultipliersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:UseAdjustment`` and add it to the document.
 
@@ -102,6 +104,7 @@ class PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1:
             _g.PipingSystemUndergroundPipeCircuitPipeSegmentsItem
             | _g.PipingSystemUndergroundPipeCircuitPipeSegmentsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PipingSystem:Underground:PipeCircuit`` and add it to the document.
 
@@ -168,6 +171,7 @@ class HVACTemplateSystemVRF_v8_9_to_v9_2:
         | None = "Electricity",
         minimum_outdoor_temperature_in_heat_recovery_mode: float | None = -15,
         maximum_outdoor_temperature_in_heat_recovery_mode: float | None = 45,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:VRF`` and add it to the document.
 
@@ -198,6 +202,7 @@ class MeterCustom_v9_3:
         ]
         | None = ...,
         variable_details: Sequence[_g.MeterCustomVariableDetailsItem | _g.MeterCustomVariableDetailsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:Custom`` and add it to the document.
 
@@ -230,6 +235,7 @@ class CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1:
         waste_heat_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:Speed`` and add it to the document.
 

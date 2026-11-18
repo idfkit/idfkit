@@ -192,16 +192,16 @@ def _find_day_schedule(doc: AnyIDFDocument, name: str) -> IDFObject | None:
     Returns:
         The day schedule object, or None if not found.
     """
-    day_types = [
+    day_types = (
         "Schedule:Day:Hourly",
         "Schedule:Day:Interval",
         "Schedule:Day:List",
         "Schedule:Constant",
-    ]
+    )
 
     name_upper = name.upper()
     for sched_type in day_types:
-        for obj in doc.get_collection(sched_type):
+        for obj in doc[sched_type]:
             if obj.name and obj.name.upper() == name_upper:
                 return obj
 

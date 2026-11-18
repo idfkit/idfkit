@@ -30,6 +30,7 @@ class MaterialPropertyPhaseChangeHysteresis:
         high_temperature_difference_of_freezing_curve: float,
         peak_freezing_temperature: float,
         low_temperature_difference_of_freezing_curve: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:PhaseChangeHysteresis`` and add it to the document.
 
@@ -46,6 +47,7 @@ class ZoneMRTCalculation:
         *,
         zone_name: str,
         people_names: Sequence[_g.ZoneMRTCalculationPeopleNamesItem | _g.ZoneMRTCalculationPeopleNamesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneMRTCalculation`` and add it to the document.
 
@@ -55,7 +57,9 @@ class ZoneMRTCalculation:
         """
 
 class ExternalInterfaceSchedule:
-    def __call__(self, name: str, /, *, initial_value: float, schedule_type_limits_name: str | None = ...) -> None:
+    def __call__(
+        self, name: str, /, *, initial_value: float, schedule_type_limits_name: str | None = ..., validate: bool = True
+    ) -> None:
         """Create a new ``ExternalInterface:Schedule`` and add it to the document.
 
         A ExternalInterface:Schedule contains only one value, which is used during the warm-up period and the system sizing.
@@ -89,6 +93,7 @@ class AnyGeneratorInternalCombustionEngine:
         heat_recovery_outlet_node_name: str | None = ...,
         fuel_type: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None = "Diesel",
         heat_recovery_maximum_temperature: float | None = 80,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:InternalCombustionEngine`` and add it to the document.
 
@@ -119,6 +124,7 @@ class CurveCubicLinear:
         input_unit_type_for_y: Literal["Dimensionless", "Temperature"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:CubicLinear`` and add it to the document.
 
@@ -141,6 +147,7 @@ class ComponentCostReference:
         reference_building_permits_bonding_and_insurance: float | None = ...,
         reference_building_commissioning_fee: float | None = ...,
         reference_building_regional_adjustment_factor: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComponentCost:Reference`` and add it to the document.
 
@@ -208,6 +215,7 @@ class LifeCycleCostParameters:
             "StraightLine-40year",
         ]
         | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:Parameters`` and add it to the document.
 

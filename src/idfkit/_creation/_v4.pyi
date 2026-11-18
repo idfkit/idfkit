@@ -116,6 +116,7 @@ class SurfacePropertyConvectionCoefficients_v8_9_to_v9_4:
         convection_coefficient_2: float | None = 0.1,
         convection_coefficient_2_schedule_name: str | None = ...,
         convection_coefficient_2_user_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:ConvectionCoefficients`` and add it to the document.
 
@@ -146,6 +147,7 @@ class RunPeriod_v8_9:
         number_of_times_runperiod_to_be_repeated: float | None = 1,
         increment_day_of_week_on_repeat: Literal["No", "Yes"] | None = "Yes",
         start_year: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 
@@ -174,6 +176,7 @@ class Building_v8_9_to_v22_1:
         | None = "FullExterior",
         maximum_number_of_warmup_days: float | None = 25,
         minimum_number_of_warmup_days: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Building`` and add it to the document.
 
@@ -196,6 +199,7 @@ class ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1:
         high_temperature: float,
         fraction_radiant: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneBaseboard:OutdoorTemperatureControlled`` and add it to the document.
 

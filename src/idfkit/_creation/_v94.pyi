@@ -51,6 +51,7 @@ class PhotovoltaicPerformanceSandia_v22_2_to_v25_2:
         sandia_database_parameter_ixx0: float | None = ...,
         sandia_database_parameter_c6: float | None = ...,
         sandia_database_parameter_c7: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:Sandia`` and add it to the document.
 

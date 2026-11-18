@@ -24,10 +24,11 @@ import re
 import sys
 import textwrap
 import zlib
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Hashable, Iterable, Iterator, Mapping
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any, NamedTuple, TypeAlias, TypeVar
 
+from idfkit._accessors import deprecated_plural_message
 from idfkit.docs import io_reference_url
 from idfkit.schema import EpJSONSchema, get_schema, trailing_underscore_aliases
 from idfkit.versions import ENERGYPLUS_VERSIONS, version_string
@@ -83,6 +84,7 @@ def _clear_version_caches() -> None:
         _creation_pieces,
         _piece_classes,
         read_required,
+        read_required_groups,
     ):
         cached.cache_clear()
 
@@ -527,7 +529,12 @@ def _generate_object_class(
     group_cls_name: str | None = None
     if wrapper_key and ext_inner_props:
         group_cls_name = _group_class_name(obj_type, wrapper_key, suffix)
-        lines.extend(_generate_group_class(group_cls_name, cls_name, wrapper_key, ext_inner_props, indent, group_base))
+        required_keys = read_required_groups().get(obj_type, frozenset())
+        lines.extend(
+            _generate_group_class(
+                group_cls_name, cls_name, wrapper_key, ext_inner_props, indent, group_base, required_keys
+            )
+        )
 
     lines.append(f"{indent}class {cls_name}({base}):")
 
@@ -616,20 +623,31 @@ def _group_items(group_cls: str, prefix: str = "") -> str:
     return f"Sequence[{prefix}{_group_item_name(group_cls)} | {prefix}{group_cls}]"
 
 
-def _group_item_class(group_cls: str, fields: Iterable[tuple[str, str]], indent: str = "") -> list[str]:
-    """One group of *group_cls* as a dict: a ``TypedDict`` of its fields, each optional.
+def _group_item_class(
+    group_cls: str, fields: Iterable[tuple[str, str]], indent: str = "", required: frozenset[str] = frozenset()
+) -> list[str]:
+    """One group of *group_cls* as a dict: a ``TypedDict`` of its fields.
 
     It is public, so code that builds groups ahead of a call can annotate them
     (``points: list[BuildingSurfaceDetailedVerticesItem]``). *fields* are the group's fields with
-    the value type writing one accepts.
+    the value type writing one accepts. A key in *required* (:func:`read_required_groups`) is
+    ``Required`` and takes its value type alone: ``as_list()`` never gives a group without it, and
+    ``add()`` and ``update()`` refuse one. The others may be left out, or given ``None`` to leave
+    them unset.
     """
     fields = list(fields)
     lines = [
         f"{indent}class {_group_item_name(group_cls)}(TypedDict, total=False):",
-        f'{indent}    """One group of :class:`{group_cls}` as a dict, as ``add()`` and ``update()`` take it."""',
+        f'{indent}    """One group of :class:`{group_cls}` as a dict, as ``as_list()`` gives it and ``add()`` and'
+        f' ``update()`` take it."""',
         "",
     ]
-    lines += [f"{indent}    {name}: {_or_none(value_type)}" for name, value_type in fields]
+    lines += [
+        f"{indent}    {name}: Required[{value_type}]"
+        if name in required
+        else f"{indent}    {name}: {_or_none(value_type)}"
+        for name, value_type in fields
+    ]
     lines.append("")
     return lines
 
@@ -641,8 +659,12 @@ def _generate_group_class(
     inner_props: dict[str, Any],
     indent: str,
     group_base: str = _TYPED_GROUP_BASE,
+    required: frozenset[str] = frozenset(),
 ) -> list[str]:
-    """Generate the :class:`ExtensibleGroup` subclass of one extensible group, with its inner fields."""
+    """Generate the :class:`ExtensibleGroup` subclass of one extensible group, with its inner fields.
+
+    A field in *required* (:func:`read_required_groups`) reads as its value type, without ``None``.
+    """
     lines = [
         f"{indent}class {group_cls_name}({group_base}):",
         f'{indent}    """One {wrapper_key} group inside :class:`{cls_name}`."""',
@@ -653,11 +675,11 @@ def _generate_group_class(
             continue
         has_any_of = "anyOf" in inner_schema
         py_type = _schema_type_to_python(inner_schema, _schema_field_type(inner_schema), has_any_of)
-        lines.append(f"{indent}    {inner_name}: {py_type} | None")
+        lines.append(f"{indent}    {inner_name}: {py_type if inner_name in required else py_type + ' | None'}")
         item_fields.append((inner_name, py_type))
     lines.append(f"{indent}    def as_dict(self) -> {_group_item_name(group_cls_name)}: ...  # type: ignore[override]")
     lines.append("")
-    lines += _group_item_class(group_cls_name, item_fields, indent)
+    lines += _group_item_class(group_cls_name, item_fields, indent, required)
     return lines
 
 
@@ -889,12 +911,15 @@ def _generate_attr_properties(
     python_to_idf: dict[str, str],
     schema: EpJSONSchema,
     indent: str = "    ",
+    deprecated: dict[str, tuple[str, str | None]] | None = None,
 ) -> list[str]:
     """Generate typed ``@property`` accessors for IDFDocument.
 
     These are the names the attribute resolver accepts as canonical: one
-    ``snake_case`` plural per object type, plus the shorthands in
-    ``_PYTHON_TO_IDF``.
+    ``snake_case`` name per object type (the singular for a type a model holds at
+    most one of, the plural for every other), plus the shorthands in
+    ``_PYTHON_TO_IDF``. Each name in *deprecated*, the plural such a type had before
+    singular names existed, is declared too, marked ``@deprecated``.
     Skips every name that is a real member of ``IDFDocument``. That is the same
     set the attribute resolver treats as reserved, so the stub and the runtime
     cannot disagree about which of the two a name reaches.
@@ -921,6 +946,24 @@ def _generate_attr_properties(
             decorators=("@property",),
             indent=indent,
         )
+    for py_name, (idf_type, replacement) in (deprecated or {}).items():
+        message = deprecated_plural_message(py_name, idf_type, replacement)
+        _emit_method(
+            lines,
+            f"def {py_name}(self) -> IDFCollection[{_to_class_name(idf_type)}]",
+            None,
+            decorators=("@property", f"@deprecated({message!r})"),
+            indent=indent,
+        )
+    return lines
+
+
+def _accessor_lines(name: str, accessor: _Accessor, indent: str = "    ") -> list[str]:
+    """The stub lines of one accessor property: ``@deprecated`` too, when it is a deprecated plural."""
+    lines = [f"{indent}@property"]
+    if accessor.deprecated is not None:
+        lines.append(f"{indent}@deprecated({accessor.deprecated!r})")
+    lines.append(f"{indent}def {name}(self) -> IDFCollection[{accessor.cls}]: ...")
     return lines
 
 
@@ -1067,6 +1110,49 @@ def read_required() -> dict[str, frozenset[str]]:
     }
 
 
+def _release_group_required(schema: EpJSONSchema, obj_type: str) -> tuple[frozenset[str], frozenset[str]] | None:
+    """The identifier keys of *obj_type*'s extensible group in *schema*: required ones, then the others.
+
+    A key is required when the group's ``items`` lists it under ``required`` and gives it no
+    default. ``None`` when the type has no extensible group in this release.
+    """
+    pc = schema.get_parsing_cache(obj_type)
+    if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
+        return None
+    inner: dict[str, Any] = schema.get_inner_schema(obj_type) or {}
+    items: dict[str, Any] = inner.get("properties", {}).get(pc.ext_wrapper_key, {}).get("items", {})
+    listed = set(items.get("required", []))
+    keys = [name for name in pc.ext_inner_props if name.isidentifier()]
+    required = frozenset(k for k in keys if k in listed and "default" not in pc.ext_inner_props[k])
+    return required, frozenset(keys) - required
+
+
+@functools.cache
+def read_required_groups() -> dict[str, frozenset[str]]:
+    """The extensible group keys reading gives a value for, by object type, as :func:`read_required`.
+
+    A key is in it when every supported release whose group has the key requires it with no default
+    (``vertex_x_coordinate`` of ``BuildingSurface:Detailed``). It reads as its value type on the
+    group class, is ``Required`` in the group's item ``TypedDict`` (what ``as_list()`` gives and
+    ``add()`` takes), and the run time raises
+    :class:`~idfkit.exceptions.MissingRequiredFieldError` for a group that lacks it.
+    """
+    required: dict[str, set[str]] = {}
+    optional: dict[str, set[str]] = {}
+    for ver in SUPPORTED.versions:
+        schema = get_schema(ver)
+        for obj_type in schema.object_types:
+            keys = _release_group_required(schema, obj_type)
+            if keys is not None:
+                required.setdefault(obj_type, set()).update(keys[0])
+                optional.setdefault(obj_type, set()).update(keys[1])
+    return {
+        obj_type: frozenset(keys - optional.get(obj_type, set()))
+        for obj_type, keys in sorted(required.items())
+        if keys - optional.get(obj_type, set())
+    }
+
+
 @functools.cache
 def _release_creation(ver: Version, obj_type: str) -> _Creation:
     """:func:`_creation_info` of *obj_type* in release *ver*, computed once per generation."""
@@ -1167,6 +1253,12 @@ def _strip_none(annotation: str) -> str:
 
 # The parameter a creation signature requires when no call can satisfy every release it serves.
 _NARROW_FIRST = "narrow_with_as_version_first"
+
+# The keyword every creation signature ends with, as IDFDocument.add takes it: validate=False skips
+# value, required-field and range checks (an unknown key is still refused). PEP 612 allows no
+# keyword beside the ParamSpec IDFCollection.add takes the signature through, so each signature
+# declares it. No field of any bundled schema is named so; _creation_lines asserts it stays that way.
+_VALIDATE_PARAM = "validate: bool = True"
 
 
 # A group wrapper's annotation, as _group_items writes it.
@@ -1337,7 +1429,11 @@ def _creation_lines(
     the type has one; a type without one takes ``this_type_has_no_name_field`` there instead, typed
     with an alias of ``Never`` so that a name passed by mistake is reported as such. The fields follow, keyword-only: the required ones without a default and with
     ``None`` taken out (leaving one empty is what makes it missing), then the others with their
-    schema default where the annotation admits it, and ``...`` otherwise.
+    schema default where the annotation admits it, and ``...`` otherwise. Last comes
+    ``validate: bool = True``, the switch ``IDFDocument.add`` takes, which ``IDFCollection.add``
+    passes through: PEP 612 lets ``add`` declare no keyword of its own beside the signature it
+    takes. ``validate=False`` relaxes no required field here: it is for loading data already
+    known good, not for leaving fields out, so a call that leaves one out stays a type error.
 
     A required field the class cannot be given a value for (one ``Any<Class>`` does not declare,
     because a release names it differently, or whose only value safe in every release is ``None``),
@@ -1376,9 +1472,12 @@ def _creation_lines(
         default = defaults.get(name)
         shown = default if default is not None and _admits(_split_union(value_type), default) else "..."
         optional.append(f"{name}: {annotation} = {shown}")
-    if required or optional:
-        params.append("*")
-    params += required + optional
+    if any(name.rstrip("_") == "validate" for name, _ in fields):
+        # IDFDocument.add takes validate= for itself too, so such a field could be set by neither.
+        msg = f"{obj_type} has a field named validate, which add() takes as its validation switch"
+        raise ValueError(msg)
+    params.append("*")
+    params += [*required, *optional, _VALIDATE_PARAM]
     doc = _creation_docstring(schema, obj_type, narrow_first=narrow_first)
     # Each class's signature is its own, unrelated to its base's: an override mypy reports as an
     # incompatible assignment (pyright does not), as the generated update and as_dict overrides are.
@@ -1682,24 +1781,27 @@ def _merged_groups() -> dict[str, _MergedGroup]:
     return merged
 
 
-def _generate_merged_group(group: _MergedGroup, owner: str) -> list[str]:
-    """The group class of a :class:`_MergedGroup`: reads give the union, writes the intersection."""
+def _generate_merged_group(group: _MergedGroup, owner: str, required: frozenset[str] = frozenset()) -> list[str]:
+    """The group class of a :class:`_MergedGroup`: reads give the union, writes the intersection.
+
+    A field in *required* (:func:`read_required_groups`) reads without ``None``, as in every version.
+    """
     lines = [
         f"class {group.cls_name}({_TYPED_GROUP_BASE}):",
         f'    """One {group.wrapper} group inside :class:`{owner}`, as every supported version declares it."""',
     ]
     for name, read, write in group.fields:
         if read == write:
-            lines.append(f"    {name}: {read} | None")
+            lines.append(f"    {name}: {read if name in required else read + ' | None'}")
         else:
-            lines += _property_lines(name, read, write, "    ")
+            lines += _property_lines(name, read, write, "    ", name in required)
     # Typed with the item, so as_list() passes back to add() and update() through AnyIDFDocument as
     # it does through a release's document. The item types what writing accepts, every release's
     # values; reading one of the few fields whose releases accept different values can give another.
     lines.append(f"    def as_dict(self) -> {_group_item_name(group.cls_name)}: ...  # type: ignore[override]")
     lines.append("")
     # A dict written into a document of any release holds only what every release accepts.
-    lines += _group_item_class(group.cls_name, [(name, write) for name, _, write in group.fields])
+    lines += _group_item_class(group.cls_name, [(name, write) for name, _, write in group.fields], "", required)
     return lines
 
 
@@ -1767,7 +1869,7 @@ def _generate_base_class(
     lines.append("")
     merged_group = _merged_groups().get(obj_type)
     if merged_group is not None:
-        lines += _generate_merged_group(merged_group, base)
+        lines += _generate_merged_group(merged_group, base, read_required_groups().get(obj_type, frozenset()))
     lines += _generate_object_class(
         schema,
         obj_type,
@@ -1848,6 +1950,14 @@ def _common_object_types() -> list[str]:
 
 
 Span = tuple[Version, Version]
+_V = TypeVar("_V", bound=Hashable)
+
+
+class _Accessor(NamedTuple):
+    """One typed accessor property: its collection's class, and its ``@deprecated`` message if it has one."""
+
+    cls: str
+    deprecated: str | None = None
 
 
 def _span_name(prefix: str, span: Span) -> str:
@@ -1858,15 +1968,15 @@ def _span_name(prefix: str, span: Span) -> str:
     return f"{prefix}_v{_version_tag(first)}_to_v{_version_tag(last)}"
 
 
-def _group_by_span(per_version: dict[Version, dict[str, str]]) -> dict[Span, dict[str, str]]:
+def _group_by_span(per_version: dict[Version, dict[str, _V]]) -> dict[Span, dict[str, _V]]:
     """File every ``(key, value)`` pair under each maximal run of consecutive versions holding it.
 
     This is the endpoint encoding: a pair that holds from 8.9 to 9.4 is written once, under
     ``(8.9, 9.4)``, rather than once per version. A pair that stops and starts again is filed
     under each run, so the result is right whether or not every range is contiguous.
     """
-    spans: dict[Span, dict[str, str]] = {}
-    started: dict[tuple[str, str], Version] = {}
+    spans: dict[Span, dict[str, _V]] = {}
+    started: dict[tuple[str, _V], Version] = {}
     previous: Version | None = None
     for ver in SUPPORTED.versions:
         pairs = set(per_version.get(ver, {}).items())
@@ -2035,11 +2145,15 @@ def _update_entries(schema: EpJSONSchema, obj_type: str, run: tuple[Version, ...
     return entries
 
 
-def _accessors(ver: Version) -> dict[str, str]:
-    """The typed attribute accessors of a document of *ver*: name -> object type."""
+def _all_accessors(ver: Version) -> dict[str, tuple[str, str | None]]:
+    """Every accessor of a document of *ver*, deprecated ones too: name -> (object type, message or ``None``)."""
     from idfkit.document import _build_resolver  # pyright: ignore[reportPrivateUsage]
 
-    return _build_resolver(get_schema(ver)).accessors()
+    resolver = _build_resolver(get_schema(ver))
+    out: dict[str, tuple[str, str | None]] = {name: (t, None) for name, t in resolver.accessors().items()}
+    for name, (obj_type, replacement) in resolver.deprecated_accessors().items():
+        out[name] = (obj_type, deprecated_plural_message(name, obj_type, replacement))
+    return dict(sorted(out.items()))
 
 
 def _document_class_name(ver: Version) -> str:
@@ -2094,7 +2208,7 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         "from collections.abc import Mapping, Sequence",
         "from typing import Any, Literal, TypeAlias, TypeVar, overload",
         "",
-        "from typing_extensions import TypedDict, Unpack",
+        "from typing_extensions import Required, TypedDict, Unpack, deprecated",
         "",
         "from . import _generated_types as _g",
         *sink.imports(),
@@ -2137,9 +2251,8 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         if span[0] == SUPPORTED.latest:
             continue  # only the latest release holds it, and IDFDocument declares its own accessors
         parts.append(f"class {_span_name('_Accessors', span)}:")
-        for name, cls in entries.items():
-            parts.append("    @property")
-            parts.append(f"    def {name}(self) -> IDFCollection[{cls}]: ...")
+        for name, accessor in entries.items():
+            parts.extend(_accessor_lines(name, accessor))
         parts.append("")
 
     parts.append(f"{_document_class_name(SUPPORTED.latest)} = IDFDocument")
@@ -2176,11 +2289,12 @@ def _versioned_module(ver: Version) -> str:
 
 
 @functools.cache
-def _accessor_spans() -> dict[Span, dict[str, str]]:
-    """Every version's typed attribute accessors, name -> class, filed under the range holding each."""
+def _accessor_spans() -> dict[Span, dict[str, _Accessor]]:
+    """Every version's typed attribute accessors, deprecated ones too, filed under the range holding each."""
     class_for, _ = _class_assignment()
     return _group_by_span({
-        ver: {name: class_for[(t, ver)] for name, t in _accessors(ver).items()} for ver in SUPPORTED.versions
+        ver: {name: _Accessor(class_for[(t, ver)], message) for name, (t, message) in _all_accessors(ver).items()}
+        for ver in SUPPORTED.versions
     })
 
 
@@ -2350,13 +2464,21 @@ class _Loader:
 
 
 _LOADERS = (
-    _Loader("load_idf", ("strict_parsing: bool = ...", "strict: {strict}", "preserve_formatting: bool = ...")),
+    _Loader(
+        "load_idf",
+        (
+            "strict_parsing: bool = ...",
+            "strict: {strict}",
+            "preserve_formatting: bool = ...",
+            "normalize_choices: bool = ...",
+        ),
+    ),
     _Loader(
         "load_idf_with_diagnostics",
-        ("strict: {strict}", "preserve_formatting: bool = ..."),
+        ("strict: {strict}", "preserve_formatting: bool = ...", "normalize_choices: bool = ..."),
         "ParseResult[{}]",
     ),
-    _Loader("load_epjson", ("strict: {strict}", "preserve_formatting: bool = ...")),
+    _Loader("load_epjson", ("strict: {strict}", "preserve_formatting: bool = ...", "normalize_choices: bool = ...")),
 )
 
 _LOADERS_DOC = '''"""Types of the public loaders, whose run-time half is ``_loaders.py``.
@@ -2659,7 +2781,7 @@ def _generate_types_module(sink: _CreationModules | None = None) -> str:
     parts.append("from collections.abc import Mapping, Sequence")
     parts.append("from typing import Any, Literal, TypeAlias, TypedDict")
     parts.append("")
-    parts.append("from typing_extensions import Unpack")
+    parts.append("from typing_extensions import Required, Unpack")
     parts.append("")
     parts.extend(sink.imports())
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
@@ -2740,23 +2862,29 @@ only that release has.
 """
 
 
-def _any_accessor_types() -> dict[str, str]:
-    """Each ``AnyIDFDocument`` accessor, a name that reaches the same type in every version, and its class."""
-    per_version = [_accessors(ver) for ver in SUPPORTED.versions]
+def _any_accessor_types() -> dict[str, _Accessor]:
+    """Each ``AnyIDFDocument`` accessor and its class: a name every version gives the same meaning.
+
+    A name is declared where every version resolves it to the same type and either every version
+    holds it as its accessor or every version holds it as the same deprecated plural. A type unique
+    in one release and not in another is named in the singular in the one and the plural in the
+    other, so neither name is the accessor of every release: it is left out, and reached through
+    ``doc["Type"]``, which every release types, or through ``as_version``.
+    """
+    per_version = [_all_accessors(ver) for ver in SUPPORTED.versions]
     common = set(_common_object_types())
     return {
-        name: _shared_class_name(obj_type)
-        for name, obj_type in per_version[-1].items()
-        if obj_type in common and all(accessors.get(name) == obj_type for accessors in per_version)
+        name: _Accessor(_shared_class_name(obj_type), message)
+        for name, (obj_type, message) in per_version[-1].items()
+        if obj_type in common and all(accessors.get(name) == (obj_type, message) for accessors in per_version)
     }
 
 
 def _generate_any_accessors() -> list[str]:
     """Typed accessors of ``AnyIDFDocument``: names that reach the same type in every version."""
     lines: list[str] = []
-    for name, cls in _any_accessor_types().items():
-        lines.append("    @property")
-        lines.append(f"    def {name}(self) -> IDFCollection[{cls}]: ...")
+    for name, accessor in _any_accessor_types().items():
+        lines.extend(_accessor_lines(name, accessor))
     return lines
 
 
@@ -2804,7 +2932,7 @@ def _generate_document_module() -> str:
     lines.append("from pathlib import Path")
     lines.append("from typing import Any, Generic, Literal, TypeAlias, TypeVar, overload")
     lines.append("")
-    lines.append("from typing_extensions import Self")
+    lines.append("from typing_extensions import Self, deprecated")
     lines.append("")
     lines.append("from ._accessors import AccessorResolver")
     lines.append("from ._compat import EppyDocumentMixin")
@@ -2857,6 +2985,7 @@ def _generate_document_module() -> str:
     # Properties
     emit("def version(self) -> tuple[int, int, int]", "IDFDocument.version", decorators=("@property",))
     emit("def strict(self) -> Strict", "IDFDocument.strict", decorators=("@property",))
+    emit("def normalize_choices(self) -> bool", "IDFDocument.normalize_choices", decorators=("@property",))
     emit("def schema(self) -> EpJSONSchema | None", "IDFDocument.schema", decorators=("@property",))
     emit("def cst(self) -> DocumentCST | None", "IDFDocument.cst", decorators=("@property",))
     emit("def raw_text(self) -> str | None", "IDFDocument.raw_text", decorators=("@property",))
@@ -2892,6 +3021,7 @@ def _generate_document_module() -> str:
         "IDFDocument.add",
     )
     emit("def addidfobject(self, obj: IDFObject) -> IDFObject", "IDFDocument.addidfobject")
+    emit("def _adopt(self, obj: IDFObject) -> IDFObject", "IDFDocument._adopt")
     emit("def removeidfobject(self, obj: IDFObject) -> None", "IDFDocument.removeidfobject")
     emit("def rename(self, obj_type: str, old_name: str, new_name: str) -> None", "IDFDocument.rename")
     emit(
@@ -2970,6 +3100,7 @@ def _generate_document_module() -> str:
     lines.append("        filepath: Path | str | None = ...,")
     lines.append("        *,")
     lines.append("        strict: Strict = ...,")
+    lines.append("        normalize_choices: bool = ...,")
     if init_doc:
         lines.append("    ) -> None:")
         lines.extend(_format_docstring_for_stub(init_doc, "        "))
@@ -2993,7 +3124,12 @@ def _generate_document_module() -> str:
     lines.append("")
 
     # Attribute accessor properties, one per object type plus the shorthands, with memo docstrings
-    lines.extend(_generate_attr_properties(_build_resolver(schema).accessors(), schema, indent="    "))
+    resolver = _build_resolver(schema)
+    lines.extend(
+        _generate_attr_properties(
+            resolver.accessors(), schema, indent="    ", deprecated=resolver.deprecated_accessors()
+        )
+    )
     lines.append("")
 
     return "\n".join(lines)
@@ -3015,7 +3151,7 @@ checks an ``add()`` call on one of its classes.
 def generate_read_required_py() -> str:
     """The run-time table of :func:`read_required`: ``_read_required.py``."""
     lines = [
-        '"""The fields reading gives a value for, by object type. GENERATED by idfkit.codegen.generate_stubs.',
+        '"""The fields and group keys reading gives a value for, by object type. GENERATED by idfkit.codegen.generate_stubs.',
         "",
         "A field is listed when every supported release that has it requires it with no default. Its",
         "read type is not optional, and reading it from an object that lacks it raises",
@@ -3029,7 +3165,47 @@ def generate_read_required_py() -> str:
     ]
     for obj_type, fields in read_required().items():
         lines.append(f"    {obj_type!r}: {tuple(sorted(fields))!r},")
+    lines += [
+        "}",
+        "",
+        "# The same for the keys of each type's extensible group (``vertex_x_coordinate``): a group that",
+        "# lacks one raises on reading it, and on as_dict() and as_list(), which type it as present.",
+        "GROUP_READ_REQUIRED: dict[str, tuple[str, ...]] = {",
+    ]
+    for obj_type, keys in read_required_groups().items():
+        lines.append(f"    {obj_type!r}: {tuple(sorted(keys))!r},")
     lines += ["}", ""]
+    return "\n".join(lines)
+
+
+def generate_object_types_py() -> str:
+    """The run-time table of every object type any bundled release has: ``_object_types.py``.
+
+    Taken over every bundled schema, not :data:`SUPPORTED`, so generating stubs for an older
+    release does not shrink it: it answers whether a name exists in *any* release idfkit ships.
+    A type spelt differently only in case across releases is listed once, in the newest release's
+    spelling, so the name a misspelling is pointed at is the current one.
+    """
+    by_folded: dict[str, str] = {}
+    for ver in ENERGYPLUS_VERSIONS:  # oldest first, so the newest spelling wins
+        for name in get_schema(ver).object_types:
+            by_folded[name.casefold()] = name
+    lines = [
+        '"""Every object type any bundled EnergyPlus release has. GENERATED by idfkit.codegen.generate_stubs.',
+        "",
+        "Read by ``IDFDocument.__getitem__`` to tell a misspelt type name, which no release has and",
+        "which it warns about, from a real type the document's own release lacks, which it does not.",
+        "Answering that from a constant spares loading every bundled schema. A type spelt differently",
+        "only in case across releases is listed once, in the newest release's spelling.",
+        '"""',
+        "",
+        "from __future__ import annotations",
+        "",
+        "# A tuple of string literals is a constant of the compiled module: importing it builds no set.",
+        "ALL_OBJECT_TYPES: tuple[str, ...] = (",
+    ]
+    lines += [f"    {name!r}," for name in sorted(by_folded.values())]
+    lines += [")", ""]
     return "\n".join(lines)
 
 
@@ -3068,6 +3244,8 @@ def _write_stubs(base_path: Path) -> None:
 
     loaders_path = base_path / "_loaders.pyi"
     loaders_path.write_text(generate_loaders_pyi(), encoding="utf-8")
+    object_types_path = base_path / "_object_types.py"
+    object_types_path.write_text(generate_object_types_py(), encoding="utf-8")
 
     # One stub per older release. A module left from a release that has since become the latest (or
     # stopped being supported) is removed, or it would still define a type versioned.pyi no longer has.
@@ -3106,6 +3284,7 @@ def _write_stubs(base_path: Path) -> None:
             str(versioned_runtime_path),
             str(required_path),
             str(loaders_path),
+            str(object_types_path),
             *(str(path) for path in document_paths),
             *(str(path) for path in creation_paths),
         ],

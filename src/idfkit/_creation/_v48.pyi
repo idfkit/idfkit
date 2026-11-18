@@ -31,6 +31,7 @@ class Lights_v9_6_to_v23_2:
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
         return_air_heat_gain_node_name: str | None = ...,
         exhaust_air_heat_gain_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Lights`` and add it to the document.
 
@@ -68,6 +69,7 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1:
         source_side_heat_transfer_coefficient: float | None = ...,
         source_side_heat_transfer_resistance1: float | None = ...,
         source_side_heat_transfer_resistance2: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
 
@@ -78,7 +80,13 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1:
 
 class PythonPluginTrendVariable_v9_3_to_v22_1:
     def __call__(
-        self, name: str, /, *, name_of_a_python_plugin_variable: str, number_of_timesteps_to_be_logged: float
+        self,
+        name: str,
+        /,
+        *,
+        name_of_a_python_plugin_variable: str,
+        number_of_timesteps_to_be_logged: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:TrendVariable`` and add it to the document.
 
@@ -107,6 +115,7 @@ class RunPeriod_v9_2_to_v9_5:
         use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
         use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
         treat_weather_as_actual: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 

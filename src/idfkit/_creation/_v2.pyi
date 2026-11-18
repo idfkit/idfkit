@@ -34,6 +34,7 @@ class ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1:
         maximum_outdoor_temperature: float | None = 100,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_wind_speed: float | None = 40,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneVentilation:WindandStackOpenArea`` and add it to the document.
 
@@ -55,6 +56,7 @@ class WindowPropertyStormWindow_v8_9_to_v22_1:
         month_that_storm_glass_layer_is_taken_off: float,
         day_of_month_that_storm_glass_layer_is_taken_off: float,
         distance_between_storm_glass_layer_and_adjacent_glass: float | None = 0.05,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowProperty:StormWindow`` and add it to the document.
 
@@ -99,6 +101,7 @@ class OutputDiagnostics_v8_9_to_v9_3:
             "ReportDuringWarmup",
         ]
         | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Diagnostics`` and add it to the document.
 

@@ -31,6 +31,7 @@ class RunPeriodCustomRange_v8_9:
         apply_weekend_holiday_rule: Literal["No", "Yes"] | None = "No",
         use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
         use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RunPeriod:CustomRange`` and add it to the document.
 
@@ -63,6 +64,7 @@ class FenestrationSurfaceDetailed_v9_0_to_v26_1:
         vertex_4_x_coordinate: float | None = ...,
         vertex_4_y_coordinate: float | None = ...,
         vertex_4_z_coordinate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FenestrationSurface:Detailed`` and add it to the document.
 
@@ -82,6 +84,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2:
         maximum_air_flow_rate: float | Literal["Autosize"],
         zone_minimum_air_flow_fraction: float,
         availability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat`` and add it to the document.
 
@@ -102,6 +105,7 @@ class PerformancePrecisionTradeoffs_v9_4_to_v9_5:
         | None = "Normal",
         maxzonetempdiff: float | None = 0.3,
         maxalloweddeltemp: float | None = 0.002,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
 

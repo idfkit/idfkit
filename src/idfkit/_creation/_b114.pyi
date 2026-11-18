@@ -23,6 +23,7 @@ class SimulationControl:
         run_simulation_for_weather_file_run_periods: Literal["No", "Yes"] | None = "Yes",
         do_hvac_sizing_simulation_for_sizing_periods: Literal["No", "Yes"] | None = "No",
         maximum_number_of_hvac_sizing_simulation_passes: int | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SimulationControl`` and add it to the document.
 
@@ -44,6 +45,7 @@ class ZoneAirMassFlowConservation:
         infiltration_balancing_method: Literal["AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
         | None = "AddInfiltrationFlow",
         infiltration_balancing_zones: Literal["AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneAirMassFlowConservation`` and add it to the document.
 
@@ -53,7 +55,9 @@ class ZoneAirMassFlowConservation:
         """
 
 class ScheduleFileShading:
-    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, file_name: str) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, file_name: str, validate: bool = True
+    ) -> None:
         """Create a new ``Schedule:File:Shading`` and add it to the document.
 
         A Schedule:File:Shading points to a CSV file that has 8760-8784 hours of sunlit fraction data for all or some of the exterior surfaces.
@@ -62,7 +66,9 @@ class ScheduleFileShading:
         """
 
 class GroundHeatTransferBasementYFACE:
-    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, validate: bool = True
+    ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:YFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) YFACE: Y Direction cell face coordinates: m
@@ -80,6 +86,7 @@ class ConnectorList:
         connector_1_name: str,
         connector_2_object_type: Literal["Connector:Mixer", "Connector:Splitter"] | None = ...,
         connector_2_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ConnectorList`` and add it to the document.
 
@@ -110,6 +117,7 @@ class ChillerConstantCOP:
         basin_heater_operating_schedule_name: str | None = ...,
         thermosiphon_capacity_fraction_curve_name: str | None = ...,
         thermosiphon_minimum_temperature_difference: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:ConstantCOP`` and add it to the document.
 
@@ -131,6 +139,7 @@ class ExternalInterfaceFunctionalMockupUnitImportToActuator:
         fmu_instance_name: str,
         fmu_variable_name: str,
         initial_value: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport:To:Actuator`` and add it to the document.
 
@@ -157,6 +166,7 @@ class CurveSigmoid:
         input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Sigmoid`` and add it to the document.
 
@@ -176,6 +186,7 @@ class OutputMeterMeterFileOnly:
             "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Meter:MeterFileOnly`` and add it to the document.
 

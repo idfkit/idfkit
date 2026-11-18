@@ -126,7 +126,9 @@ def extensible_groups(doc: IDFDocument[Any], old: IDFDocumentV9_4) -> None:
     )
     # as_list() is typed by the group, so a copy passes back checked; so does an annotated list.
     assert_type(wall.vertices.as_list(), list[BuildingSurfaceDetailedVerticesItem])
-    points: list[BuildingSurfaceDetailedVerticesItem] = [{"vertex_x_coordinate": 1.0}]
+    points: list[BuildingSurfaceDetailedVerticesItem] = [
+        {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0}
+    ]
     wall.update(vertices=points)
     doc.building_surfaces.add(
         "Copy",

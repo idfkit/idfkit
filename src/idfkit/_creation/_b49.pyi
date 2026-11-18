@@ -17,6 +17,7 @@ class SurfacePropertyUnderwater:
         distance_from_surface_centroid_to_leading_edge_of_boundary_layer: float,
         free_stream_water_temperature_schedule: str,
         free_stream_water_velocity_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:Underwater`` and add it to the document.
 
@@ -64,6 +65,7 @@ class AnyZoneHVACWaterToAirHeatPump:
         availability_manager_list_name: str | None = ...,
         heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
 
@@ -115,6 +117,7 @@ class ZoneHVACWaterToAirHeatPump:
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
         dx_heating_coil_sizing_ratio: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
 
@@ -157,6 +160,7 @@ class BoilerHotWater:
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
         off_cycle_parasitic_fuel_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Boiler:HotWater`` and add it to the document.
 
@@ -213,6 +217,7 @@ class AnyHeatPumpAirToWaterFuelFiredHeating:
         auxiliary_electric_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:AirToWater:FuelFired:Heating`` and add it to the document.
 
@@ -223,7 +228,15 @@ class AnyHeatPumpAirToWaterFuelFiredHeating:
 
 class ExternalInterfaceFunctionalMockupUnitImportToVariable:
     def __call__(
-        self, name: str, /, *, fmu_file_name: str, fmu_instance_name: str, fmu_variable_name: str, initial_value: float
+        self,
+        name: str,
+        /,
+        *,
+        fmu_file_name: str,
+        fmu_instance_name: str,
+        fmu_variable_name: str,
+        initial_value: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport:To:Variable`` and add it to the document.
 
@@ -243,6 +256,7 @@ class FaultModelTemperatureSensorOffsetReturnAir:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         temperature_sensor_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:TemperatureSensorOffset:ReturnAir`` and add it to the document.
 

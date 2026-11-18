@@ -41,6 +41,7 @@ class WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1:
         infrared_transmittance_applies_to_front_and_back_: float | None = 0,
         front_side_infrared_emissivity: float | None = 0.84,
         back_side_infrared_emissivity: float | None = 0.84,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Glazing:EquivalentLayer`` and add it to the document.
 
@@ -93,6 +94,7 @@ class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1:
         minimum_outlet_air_temperature_during_cooling_operation: float | None = 8,
         maximum_outlet_air_temperature_during_heating_operation: float | None = 50,
         dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`` and add it to the document.
 
@@ -110,6 +112,7 @@ class AirflowNetworkDistributionComponentReliefAirFlow_v8_9:
         air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float,
         air_mass_flow_exponent_when_no_outdoor_air_flow: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:ReliefAirFlow`` and add it to the document.
 
@@ -119,7 +122,9 @@ class AirflowNetworkDistributionComponentReliefAirFlow_v8_9:
         """
 
 class InternalMass_v8_9_to_v9_1:
-    def __call__(self, name: str, /, *, construction_name: str, zone_name: str, surface_area: float) -> None:
+    def __call__(
+        self, name: str, /, *, construction_name: str, zone_name: str, surface_area: float, validate: bool = True
+    ) -> None:
         """Create a new ``InternalMass`` and add it to the document.
 
         Used to describe internal zone surface area that does not need to be part of geometric representation. This should be the total surface area exposed to the zone air.

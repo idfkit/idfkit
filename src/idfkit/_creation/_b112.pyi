@@ -70,6 +70,7 @@ class WindowShadingControl:
         fenestration_surfaces: Sequence[
             _g.WindowShadingControlFenestrationSurfacesItem | _g.WindowShadingControlFenestrationSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowShadingControl`` and add it to the document.
 
@@ -188,6 +189,7 @@ class SurfacePropertyConvectionCoefficients:
         convection_coefficient_2: float | None = 0.1,
         convection_coefficient_2_schedule_name: str | None = ...,
         convection_coefficient_2_user_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:ConvectionCoefficients`` and add it to the document.
 
@@ -241,6 +243,7 @@ class ZoneHVACPackagedTerminalHeatPump:
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
         dx_heating_coil_sizing_ratio: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
 
@@ -287,6 +290,7 @@ class ZoneHVACUnitVentilator:
         cooling_convergence_tolerance: float | None = 0.001,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:UnitVentilator`` and add it to the document.
 
@@ -327,6 +331,7 @@ class AirTerminalSingleDuctConstantVolumeFourPipeBeam:
         beam_heating_capacity_temperature_difference_modification_factor_curve_name: str | None = ...,
         beam_heating_capacity_air_flow_modification_factor_curve_name: str | None = ...,
         beam_heating_capacity_hot_water_flow_modification_factor_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam`` and add it to the document.
 
@@ -372,6 +377,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         fan_delay_time: float | None = 60,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
 
@@ -415,6 +421,7 @@ class DehumidifierDesiccantNoFans:
         regeneration_velocity_function_of_entering_dry_bulb_and_humidity_ratio_curve_name: str | None = ...,
         regeneration_velocity_function_of_air_velocity_curve_name: str | None = ...,
         nominal_regeneration_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Dehumidifier:Desiccant:NoFans`` and add it to the document.
 

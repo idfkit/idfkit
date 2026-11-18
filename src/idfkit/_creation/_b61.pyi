@@ -19,6 +19,7 @@ class MaterialPropertyPhaseChange:
         *,
         temperature_coefficient_for_thermal_conductivity: float | None = 0,
         values: Sequence[_g.MaterialPropertyPhaseChangeValuesItem | _g.MaterialPropertyPhaseChangeValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:PhaseChange`` and add it to the document.
 
@@ -36,6 +37,7 @@ class MaterialPropertyHeatAndMoistureTransferSettings:
         material_name: str,
         porosity: float,
         initial_water_content_ratio: float | None = 0.2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Settings`` and add it to the document.
 
@@ -63,6 +65,7 @@ class SteamEquipment:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SteamEquipment`` and add it to the document.
 
@@ -82,6 +85,7 @@ class AirLoopHVACReturnPlenum:
         outlet_node_name: str,
         induced_air_outlet_node_or_nodelist_name: str | None = ...,
         nodes: Sequence[_g.AirLoopHVACReturnPlenumNodesItem | _g.AirLoopHVACReturnPlenumNodesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:ReturnPlenum`` and add it to the document.
 
@@ -91,7 +95,7 @@ class AirLoopHVACReturnPlenum:
         """
 
 class ExternalInterfaceFunctionalMockupUnitExportToVariable:
-    def __call__(self, name: str, /, *, fmu_variable_name: str, initial_value: float) -> None:
+    def __call__(self, name: str, /, *, fmu_variable_name: str, initial_value: float, validate: bool = True) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitExport:To:Variable`` and add it to the document.
 
         Declares Erl variable as having global scope No spaces allowed in names used for Erl variables
@@ -111,6 +115,7 @@ class SetpointManagerFollowOutdoorAirTemperature:
         offset_temperature_difference: float | None = ...,
         maximum_setpoint_temperature: float | None = ...,
         minimum_setpoint_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:FollowOutdoorAirTemperature`` and add it to the document.
 
@@ -144,6 +149,7 @@ class WaterUseStorage:
         tank_surface_area: float | None = ...,
         tank_u_value: float | None = ...,
         tank_outside_surface_material_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterUse:Storage`` and add it to the document.
 
@@ -168,6 +174,7 @@ class FaultModelTemperatureSensorOffsetCondenserSupplyWater:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         reference_sensor_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:TemperatureSensorOffset:CondenserSupplyWater`` and add it to the document.
 

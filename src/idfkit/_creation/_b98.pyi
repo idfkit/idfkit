@@ -21,6 +21,7 @@ class AnyRoomAirNodeAirflowNetworkInternalGains:
             _g.AnyRoomAirNodeAirflowNetworkInternalGainsGainsItem
             | _g.AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork:InternalGains`` and add it to the document.
 
@@ -39,6 +40,7 @@ class SurfaceContaminantSourceAndSinkGenericPressureDriven:
         generation_schedule_name: str,
         design_generation_rate_coefficient: float | None = ...,
         generation_exponent: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceContaminantSourceAndSink:Generic:PressureDriven`` and add it to the document.
 
@@ -60,6 +62,7 @@ class ZoneInfiltrationFlowCoefficient:
         shelter_factor: float,
         schedule_name: str | None = ...,
         pressure_exponent: float | None = 0.67,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:FlowCoefficient`` and add it to the document.
 
@@ -78,6 +81,7 @@ class AirflowNetworkIntraZoneLinkage:
         node_2_name: str,
         component_name: str | None = ...,
         airflownetwork_multizone_surface_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:IntraZone:Linkage`` and add it to the document.
 
@@ -153,6 +157,7 @@ class HVACTemplateSystemDedicatedOutdoorAir:
         humidifier_constant_setpoint: float | None = 0.003,
         dehumidification_setpoint_schedule_name: str | None = ...,
         humidifier_setpoint_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:DedicatedOutdoorAir`` and add it to the document.
 
@@ -182,6 +187,7 @@ class ZoneControlThermostatOperativeTemperature:
             "None",
         ]
         | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:Thermostat:OperativeTemperature`` and add it to the document.
 
@@ -210,6 +216,7 @@ class ZoneHVACEnergyRecoveryVentilatorController:
         humidistat_control_zone_name: str | None = ...,
         high_humidity_outdoor_air_flow_ratio: float | None = 1,
         control_high_indoor_humidity_based_on_outdoor_humidity_ratio: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EnergyRecoveryVentilator:Controller`` and add it to the document.
 
@@ -248,6 +255,7 @@ class CoilCoolingDXTwoStageWithHumidityControlMode:
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` and add it to the document.
 
@@ -281,6 +289,7 @@ class PumpVariableSpeedCondensate:
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pump:VariableSpeed:Condensate`` and add it to the document.
 
@@ -338,6 +347,7 @@ class CoolingTowerPerformanceCoolTools:
         coefficient_33: float,
         coefficient_34: float,
         coefficient_35: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTowerPerformance:CoolTools`` and add it to the document.
 
@@ -365,6 +375,7 @@ class AnyCoilUserDefined:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:UserDefined`` and add it to the document.
 

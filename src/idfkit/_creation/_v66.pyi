@@ -20,6 +20,7 @@ class OutputTableSummaryReports_v9_3:
         reports: Sequence[
             _vd.OutputTableSummaryReportsReportsItem_v9_3 | _vd.OutputTableSummaryReportsReportsGroup_v9_3
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:SummaryReports`` and add it to the document.
 
@@ -37,6 +38,7 @@ class MatrixTwoDimension_v8_9_to_v22_1:
         number_of_rows: float,
         number_of_columns: float,
         values: Sequence[_g.MatrixTwoDimensionValuesItem | _g.MatrixTwoDimensionValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Matrix:TwoDimension`` and add it to the document.
 

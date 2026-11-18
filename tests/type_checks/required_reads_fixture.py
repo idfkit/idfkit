@@ -76,3 +76,49 @@ def stale_guard(doc: IDFDocument[Any]) -> float:
     if mat.thickness is None:  # pyright: ignore[reportUnnecessaryComparison]  (it reads a float or raises)
         raise ValueError(mat.name)
     return mat.thickness
+
+
+# Extensible groups: a key every release requires reads as its value type, on the group and in the
+# dict as_list() gives, and a group that lacks one raises MissingRequiredFieldError at run time.
+
+
+def highest_vertex(doc: AnyIDFDocument) -> float:
+    zs: list[float] = []
+    for surface in doc["BuildingSurface:Detailed"]:
+        zs += [p["vertex_z_coordinate"] for p in surface.vertices.as_list()]
+        zs += [vertex.vertex_z_coordinate for vertex in surface.vertices]
+    return max(zs)
+
+
+def group_reads(doc: IDFDocument[Any], old: IDFDocumentV9_4) -> None:
+    surface = doc["BuildingSurface:Detailed"]["Wall"]
+    assert_type(surface.vertices[0].vertex_x_coordinate, float)
+    point = surface.vertices.as_list()[0]
+    assert_type(point["vertex_x_coordinate"], float)
+    assert_type(point.get("vertex_x_coordinate", 0.0), float)
+    assert_type(old["BuildingSurface:Detailed"]["Wall"].vertices[0].vertex_y_coordinate, float)
+    assert_type(doc["ZoneList"]["All"].zones[0].zone_name, str)
+    # A key some release leaves optional still reads | None.
+    equipment = doc["ZoneHVAC:EquipmentList"]["E"].equipment[0]
+    assert_type(equipment.zone_equipment_sequential_cooling_fraction_schedule_name, str | None)
+
+
+def group_writes(doc: IDFDocument[Any]) -> None:
+    surface = doc["BuildingSurface:Detailed"]["Wall"]
+    surface.vertices[0].vertex_z_coordinate = None  # pyright: ignore[reportAttributeAccessIssue]  (EnergyPlus refuses it)
+    surface.update(
+        vertices=[{"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0}]  # pyright: ignore[reportArgumentType]  (no z)
+    )
+    surface.update(
+        vertices=[{"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": None}]  # pyright: ignore[reportArgumentType]
+    )
+    surface.update(vertices=[{"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0}])
+    # The untyped read still asks whether the key is set.
+    print(surface.vertices[0].get("vertex_z_coordinate"))
+
+
+def stale_group_guard(doc: AnyIDFDocument) -> float:
+    vertex = doc["BuildingSurface:Detailed"]["Wall"].vertices[0]
+    if vertex.vertex_x_coordinate is None:  # pyright: ignore[reportUnnecessaryComparison]  (a float or raises)
+        raise ValueError(vertex.group_index)
+    return vertex.vertex_x_coordinate

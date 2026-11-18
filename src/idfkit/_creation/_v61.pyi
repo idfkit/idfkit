@@ -23,6 +23,7 @@ class ScheduleFile_v22_1:
         interpolate_to_timestep: Literal["No", "Yes"] | None = "No",
         minutes_per_item: float | None = 60,
         adjust_schedule_for_daylight_savings: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:File`` and add it to the document.
 
@@ -58,6 +59,7 @@ class HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4:
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
         companion_cooling_heat_pump_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:EquationFit:Heating`` and add it to the document.
 
@@ -77,6 +79,7 @@ class ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1:
         effective_air_leakage_area: float,
         stack_coefficient: float,
         wind_coefficient: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:EffectiveLeakageArea`` and add it to the document.
 
@@ -105,6 +108,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolReheat_v8_9_to_v9_2:
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
         maximum_reheat_air_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat`` and add it to the document.
 
@@ -159,6 +163,7 @@ class ThermalStorageChilledWaterStratified_v8_9_to_v22_1:
         node_8_additional_loss_coefficient: float | None = 0,
         node_9_additional_loss_coefficient: float | None = 0,
         node_10_additional_loss_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:ChilledWater:Stratified`` and add it to the document.
 

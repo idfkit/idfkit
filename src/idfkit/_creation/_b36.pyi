@@ -27,6 +27,7 @@ class AnyMaterial:
         thermal_absorptance: float | None = 0.9,
         solar_absorptance: float | None = 0.7,
         visible_absorptance: float | None = 0.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Material`` and add it to the document.
 
@@ -93,6 +94,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferThermalConductivity:
         thermal_conductivity_24: float | None = ...,
         moisture_content_25: float | None = ...,
         thermal_conductivity_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity`` and add it to the document.
 
@@ -102,7 +104,15 @@ class AnyMaterialPropertyHeatAndMoistureTransferThermalConductivity:
         """
 
 class DuctLossMakeupAir:
-    def __call__(self, name: str, /, *, airloophvac_name: str, airflownetwork_distribution_linkage_name: str) -> None:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        airloophvac_name: str,
+        airflownetwork_distribution_linkage_name: str,
+        validate: bool = True,
+    ) -> None:
         """Create a new ``Duct:Loss:MakeupAir`` and add it to the document.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-airflow-network/#ductlossmakeupair
@@ -170,6 +180,7 @@ class AnySizingSystem:
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = ...,
         central_cooling_capacity_control_method: Literal["Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:System`` and add it to the document.
 
@@ -196,6 +207,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveWater:
             _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Water`` and add it to the document.
 
@@ -218,6 +230,7 @@ class PipeOutdoor:
         ambient_temperature_outdoor_air_node_name: str | None = ...,
         pipe_inside_diameter: float | None = ...,
         pipe_length: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pipe:Outdoor`` and add it to the document.
 
@@ -258,6 +271,7 @@ class BoilerSteam:
         steam_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Boiler:Steam`` and add it to the document.
 
@@ -279,6 +293,7 @@ class SetpointManagerWarmestTemperatureFlow:
         maximum_setpoint_temperature: float | None = 18,
         strategy: Literal["FlowFirst", "TemperatureFirst"] | None = "TemperatureFirst",
         minimum_turndown_ratio: float | None = 0.2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:WarmestTemperatureFlow`` and add it to the document.
 
@@ -303,6 +318,7 @@ class RefrigerationCompressor:
         mode_of_operation: Literal["Subcritical", "Transcritical"] | None = "Subcritical",
         transcritical_compressor_power_curve_name: str | None = ...,
         transcritical_compressor_capacity_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:Compressor`` and add it to the document.
 
@@ -329,6 +345,7 @@ class OutputPreprocessorMessage:
         message_line_8: str | None = ...,
         message_line_9: str | None = ...,
         message_line_10: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:PreprocessorMessage`` and add it to the document.
 

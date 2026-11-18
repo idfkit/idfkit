@@ -25,6 +25,7 @@ class SiteSpectrumData:
         wavelength_1: float | None = ...,
         spectrum_2: float | None = ...,
         extensions: Sequence[_g.SiteSpectrumDataExtensionsItem | _g.SiteSpectrumDataExtensionsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:SpectrumData`` and add it to the document.
 
@@ -41,6 +42,7 @@ class ScheduleCompact:
         *,
         schedule_type_limits_name: str | None = ...,
         data: Sequence[_g.ScheduleCompactDataItem | _g.ScheduleCompactDataGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Compact`` and add it to the document.
 
@@ -80,6 +82,7 @@ class AnyZoneVentilationDesignFlowRate:
         maximum_outdoor_temperature: float | None = 100,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_wind_speed: float | None = 40,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneVentilation:DesignFlowRate`` and add it to the document.
 
@@ -108,6 +111,7 @@ class SetpointManagerFollowGroundTemperature:
         offset_temperature_difference: float | None = ...,
         maximum_setpoint_temperature: float | None = ...,
         minimum_setpoint_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:FollowGroundTemperature`` and add it to the document.
 
@@ -145,6 +149,7 @@ class AnyGeneratorCombustionTurbine:
         fuel_type: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None = "NaturalGas",
         heat_recovery_maximum_temperature: float | None = 80,
         outdoor_air_inlet_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:CombustionTurbine`` and add it to the document.
 
@@ -193,6 +198,7 @@ class GeneratorCombustionTurbine:
         | None = "NaturalGas",
         heat_recovery_maximum_temperature: float | None = 80,
         outdoor_air_inlet_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:CombustionTurbine`` and add it to the document.
 
@@ -228,6 +234,7 @@ class ElectricLoadCenterStorageLiIonNMCBattery:
         fraction_of_cell_capacity_removed_at_the_end_of_nominal_zone: float | None = 0.976875,
         charge_rate_at_which_voltage_vs_capacity_curve_was_generated: float | None = 1,
         battery_cell_internal_electrical_resistance: float | None = 0.09,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Storage:LiIonNMCBattery`` and add it to the document.
 
@@ -289,6 +296,7 @@ class AnyFuelFactors:
         nuclear_high_level_emission_factor_schedule_name: str | None = ...,
         nuclear_low_level_emission_factor: float | None = ...,
         nuclear_low_level_emission_factor_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FuelFactors`` and add it to the document.
 

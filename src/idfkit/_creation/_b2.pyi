@@ -32,6 +32,7 @@ class Building:
         maximum_number_of_warmup_days: int | None = 25,
         minimum_number_of_warmup_days: int | None = 1,
         construction_assignment_set_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Building`` and add it to the document.
 
@@ -64,6 +65,7 @@ class AnyZone:
         ]
         | None = ...,
         part_of_total_floor_area: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Zone`` and add it to the document.
 
@@ -85,6 +87,7 @@ class AirflowNetworkZoneControlPressureController:
         control_object_name: str,
         pressure_setpoint_schedule_name: str,
         pressure_control_availability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:ZoneControl:PressureController`` and add it to the document.
 
@@ -166,6 +169,7 @@ class AnyZoneHVACHybridUnitaryHVAC:
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
         modes: Sequence[_g.ZoneHVACHybridUnitaryHVACModesItem | _g.ZoneHVACHybridUnitaryHVACModesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:HybridUnitaryHVAC`` and add it to the document.
 
@@ -176,7 +180,14 @@ class AnyZoneHVACHybridUnitaryHVAC:
 
 class GroundHeatExchangerVerticalSingle:
     def __call__(
-        self, name: str, /, *, ghe_vertical_properties_object_name: str, x_location: float, y_location: float
+        self,
+        name: str,
+        /,
+        *,
+        ghe_vertical_properties_object_name: str,
+        x_location: float,
+        y_location: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Vertical:Single`` and add it to the document.
 
@@ -219,6 +230,7 @@ class PlantEquipmentOperationOutdoorDewpoint:
         dewpoint_temperature_range_10_lower_limit: float | None = ...,
         dewpoint_temperature_range_10_upper_limit: float | None = ...,
         range_10_equipment_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:OutdoorDewpoint`` and add it to the document.
 
@@ -238,6 +250,7 @@ class OutputTableAnnual:
         variable_details: Sequence[
             _g.OutputTableAnnualVariableDetailsItem | _g.OutputTableAnnualVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:Annual`` and add it to the document.
 
@@ -248,7 +261,13 @@ class OutputTableAnnual:
 
 class PythonPluginTrendVariable:
     def __call__(
-        self, name: str, /, *, name_of_a_python_plugin_variable: str, number_of_timesteps_to_be_logged: int
+        self,
+        name: str,
+        /,
+        *,
+        name_of_a_python_plugin_variable: str,
+        number_of_timesteps_to_be_logged: int,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:TrendVariable`` and add it to the document.
 

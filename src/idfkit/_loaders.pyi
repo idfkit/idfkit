@@ -87,6 +87,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> AnyIDFDocument[Literal[True]]:
     """Load an IDF file and return its document.
 
@@ -116,7 +117,15 @@ def load_idf(
         preserve_formatting: When ``True``, build a Concrete Syntax Tree
             (CST) so that :func:`write_idf` and :func:`save_idf`
             reproduce the original
-            formatting, comments, and whitespace for unmodified objects.
+            formatting, comments, and whitespace for unmodified objects. Choice
+            normalization does not affect this: an unmodified object is written as read.
+        normalize_choices: When ``True`` (the default), each choice value is stored in the
+            spelling its schema declares, whatever case the file used: a surface the file
+            calls ``WALL`` has ``surface_type == "Wall"``, as its ``Literal`` type says, so an
+            exhaustive ``match`` holds on models you did not write. EnergyPlus reads choices
+            case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
+            a choice field's ``Literal`` type then does not hold; see
+            :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
 
     Returns:
         The parsed document: an ``AnyIDFDocument``, or typed as ``as_type=`` or the
@@ -175,6 +184,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: Literal[False],
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> AnyIDFDocument[Literal[False]]: ...
 @overload
 def load_idf(
@@ -185,6 +195,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> _D: ...
 @overload
 def load_idf(
@@ -195,6 +206,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> _D: ...
 @overload
 def load_idf(
@@ -205,6 +217,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince8_9: ...
 @overload
 def load_idf(
@@ -215,6 +228,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_0: ...
 @overload
 def load_idf(
@@ -225,6 +239,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_1: ...
 @overload
 def load_idf(
@@ -235,6 +250,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_2: ...
 @overload
 def load_idf(
@@ -245,6 +261,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_3: ...
 @overload
 def load_idf(
@@ -255,6 +272,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_4: ...
 @overload
 def load_idf(
@@ -265,6 +283,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_5: ...
 @overload
 def load_idf(
@@ -275,6 +294,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_6: ...
 @overload
 def load_idf(
@@ -285,6 +305,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince22_1: ...
 @overload
 def load_idf(
@@ -295,6 +316,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince22_2: ...
 @overload
 def load_idf(
@@ -305,6 +327,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince23_1: ...
 @overload
 def load_idf(
@@ -315,6 +338,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince23_2: ...
 @overload
 def load_idf(
@@ -325,6 +349,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince24_1: ...
 @overload
 def load_idf(
@@ -335,6 +360,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince24_2: ...
 @overload
 def load_idf(
@@ -345,6 +371,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince25_1: ...
 @overload
 def load_idf(
@@ -355,6 +382,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince25_2: ...
 @overload
 def load_idf(
@@ -365,6 +393,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince26_1: ...
 @overload
 def load_idf(
@@ -375,6 +404,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince26_2: ...
 @overload
 def load_idf(
@@ -385,6 +415,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_0: ...
 @overload
 def load_idf(
@@ -395,6 +426,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_1: ...
 @overload
 def load_idf(
@@ -405,6 +437,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_2: ...
 @overload
 def load_idf(
@@ -415,6 +448,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_3: ...
 @overload
 def load_idf(
@@ -425,6 +459,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_4: ...
 @overload
 def load_idf(
@@ -435,6 +470,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_5: ...
 @overload
 def load_idf(
@@ -445,6 +481,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_6: ...
 @overload
 def load_idf(
@@ -455,6 +492,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore22_1: ...
 @overload
 def load_idf(
@@ -465,6 +503,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore22_2: ...
 @overload
 def load_idf(
@@ -475,6 +514,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore23_1: ...
 @overload
 def load_idf(
@@ -485,6 +525,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore23_2: ...
 @overload
 def load_idf(
@@ -495,6 +536,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore24_1: ...
 @overload
 def load_idf(
@@ -505,6 +547,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore24_2: ...
 @overload
 def load_idf(
@@ -515,6 +558,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore25_1: ...
 @overload
 def load_idf(
@@ -525,6 +569,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore25_2: ...
 @overload
 def load_idf(
@@ -535,6 +580,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore26_1: ...
 @overload
 def load_idf(
@@ -545,6 +591,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore26_2: ...
 @overload
 def load_idf(
@@ -556,6 +603,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9: ...
 @overload
 def load_idf(
@@ -567,6 +615,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0: ...
 @overload
 def load_idf(
@@ -578,6 +627,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1: ...
 @overload
 def load_idf(
@@ -589,6 +639,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2: ...
 @overload
 def load_idf(
@@ -600,6 +651,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3: ...
 @overload
 def load_idf(
@@ -611,6 +663,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_idf(
@@ -622,6 +675,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -641,6 +695,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -661,6 +716,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -682,6 +738,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -704,6 +761,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -727,6 +785,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -751,6 +810,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -776,6 +836,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -802,6 +863,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -829,6 +891,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -857,6 +920,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -886,6 +950,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0: ...
 @overload
 def load_idf(
@@ -897,6 +962,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1: ...
 @overload
 def load_idf(
@@ -908,6 +974,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2: ...
 @overload
 def load_idf(
@@ -919,6 +986,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3: ...
 @overload
 def load_idf(
@@ -930,6 +998,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_idf(
@@ -941,6 +1010,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_idf(
@@ -952,6 +1022,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -971,6 +1042,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -991,6 +1063,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -1012,6 +1085,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -1034,6 +1108,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -1057,6 +1132,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -1081,6 +1157,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -1106,6 +1183,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -1132,6 +1210,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -1159,6 +1238,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -1187,6 +1267,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1: ...
 @overload
 def load_idf(
@@ -1198,6 +1279,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2: ...
 @overload
 def load_idf(
@@ -1209,6 +1291,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3: ...
 @overload
 def load_idf(
@@ -1220,6 +1303,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_idf(
@@ -1231,6 +1315,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_idf(
@@ -1242,6 +1327,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_idf(
@@ -1253,6 +1339,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -1272,6 +1359,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -1292,6 +1380,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -1313,6 +1402,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -1335,6 +1425,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -1358,6 +1449,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -1382,6 +1474,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -1407,6 +1500,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -1433,6 +1527,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -1460,6 +1555,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2: ...
 @overload
 def load_idf(
@@ -1471,6 +1567,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3: ...
 @overload
 def load_idf(
@@ -1482,6 +1579,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_idf(
@@ -1493,6 +1591,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_idf(
@@ -1504,6 +1603,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_idf(
@@ -1515,6 +1615,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_idf(
@@ -1526,6 +1627,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -1545,6 +1647,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -1565,6 +1668,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -1586,6 +1690,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -1608,6 +1713,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -1631,6 +1737,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -1655,6 +1762,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -1680,6 +1788,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -1706,6 +1815,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3: ...
 @overload
 def load_idf(
@@ -1717,6 +1827,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_idf(
@@ -1728,6 +1839,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_idf(
@@ -1739,6 +1851,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_idf(
@@ -1750,6 +1863,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_idf(
@@ -1761,6 +1875,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_idf(
@@ -1772,6 +1887,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -1791,6 +1907,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -1811,6 +1928,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -1832,6 +1950,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -1854,6 +1973,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -1877,6 +1997,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -1901,6 +2022,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -1926,6 +2048,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4: ...
 @overload
 def load_idf(
@@ -1937,6 +2060,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_idf(
@@ -1948,6 +2072,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_idf(
@@ -1959,6 +2084,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_idf(
@@ -1970,6 +2096,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_idf(
@@ -1981,6 +2108,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_idf(
@@ -1992,6 +2120,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -2011,6 +2140,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -2031,6 +2161,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -2052,6 +2183,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -2074,6 +2206,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -2097,6 +2230,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -2121,6 +2255,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5: ...
 @overload
 def load_idf(
@@ -2132,6 +2267,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_idf(
@@ -2143,6 +2279,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_idf(
@@ -2154,6 +2291,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_idf(
@@ -2165,6 +2303,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_idf(
@@ -2176,6 +2315,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_idf(
@@ -2187,6 +2327,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -2206,6 +2347,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -2226,6 +2368,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -2247,6 +2390,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -2269,6 +2413,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -2292,6 +2437,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6: ...
 @overload
 def load_idf(
@@ -2303,6 +2449,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_idf(
@@ -2314,6 +2461,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_idf(
@@ -2325,6 +2473,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_idf(
@@ -2336,6 +2485,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_idf(
@@ -2347,6 +2497,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_idf(
@@ -2358,6 +2509,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -2377,6 +2529,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -2397,6 +2550,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -2418,6 +2572,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -2440,6 +2595,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1: ...
 @overload
 def load_idf(
@@ -2451,6 +2607,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_idf(
@@ -2462,6 +2619,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_idf(
@@ -2473,6 +2631,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_idf(
@@ -2484,6 +2643,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_idf(
@@ -2495,6 +2655,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2
 ): ...
@@ -2508,6 +2669,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_1
     | IDFDocumentV22_2
@@ -2527,6 +2689,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_1
     | IDFDocumentV22_2
@@ -2547,6 +2710,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_1
     | IDFDocumentV22_2
@@ -2568,6 +2732,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2: ...
 @overload
 def load_idf(
@@ -2579,6 +2744,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_idf(
@@ -2590,6 +2756,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_idf(
@@ -2601,6 +2768,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_idf(
@@ -2612,6 +2780,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2: ...
 @overload
 def load_idf(
@@ -2623,6 +2792,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1
 ): ...
@@ -2636,6 +2806,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_2
     | IDFDocumentV23_1
@@ -2655,6 +2826,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_2
     | IDFDocumentV23_1
@@ -2675,6 +2847,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1: ...
 @overload
 def load_idf(
@@ -2686,6 +2859,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_idf(
@@ -2697,6 +2871,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_idf(
@@ -2708,6 +2883,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2: ...
 @overload
 def load_idf(
@@ -2719,6 +2895,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1: ...
 @overload
 def load_idf(
@@ -2730,6 +2907,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2
 ): ...
@@ -2743,6 +2921,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV23_1
     | IDFDocumentV23_2
@@ -2762,6 +2941,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2: ...
 @overload
 def load_idf(
@@ -2773,6 +2953,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_idf(
@@ -2784,6 +2965,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2: ...
 @overload
 def load_idf(
@@ -2795,6 +2977,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1: ...
 @overload
 def load_idf(
@@ -2806,6 +2989,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2: ...
 @overload
 def load_idf(
@@ -2817,6 +3001,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1
 ): ...
@@ -2830,6 +3015,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1: ...
 @overload
 def load_idf(
@@ -2841,6 +3027,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1 | IDFDocumentV24_2: ...
 @overload
 def load_idf(
@@ -2852,6 +3039,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1: ...
 @overload
 def load_idf(
@@ -2863,6 +3051,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2: ...
 @overload
 def load_idf(
@@ -2874,6 +3063,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1: ...
 @overload
 def load_idf(
@@ -2885,6 +3075,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_2: ...
 @overload
 def load_idf(
@@ -2896,6 +3087,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_2 | IDFDocumentV25_1: ...
 @overload
 def load_idf(
@@ -2907,6 +3099,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2: ...
 @overload
 def load_idf(
@@ -2918,6 +3111,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1: ...
 @overload
 def load_idf(
@@ -2929,6 +3123,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_1: ...
 @overload
 def load_idf(
@@ -2940,6 +3135,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_1 | IDFDocumentV25_2: ...
 @overload
 def load_idf(
@@ -2951,6 +3147,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1: ...
 @overload
 def load_idf(
@@ -2962,6 +3159,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_2: ...
 @overload
 def load_idf(
@@ -2973,6 +3171,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_2 | IDFDocumentV26_1: ...
 @overload
 def load_idf(
@@ -2984,6 +3183,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV26_1: ...
 @overload
 def load_idf(
@@ -2995,6 +3195,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> AnyIDFDocument: ...
 @overload
 def load_idf(
@@ -3005,6 +3206,7 @@ def load_idf(
     strict_parsing: bool = ...,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> AnyIDFDocument: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3016,6 +3218,7 @@ def load_idf_with_diagnostics(
     before: None = ...,
     strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[AnyIDFDocument[Literal[True]]]:
     """Load an IDF file, keeping the findings that did not stop the parse.
 
@@ -3046,6 +3249,13 @@ def load_idf_with_diagnostics(
             of returning ``None``.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree (CST) so that
             :func:`write_idf` and :func:`save_idf` reproduce the original formatting.
+        normalize_choices: When ``True`` (the default), each choice value is stored in the
+            spelling its schema declares, whatever case the file used: a surface the file
+            calls ``WALL`` has ``surface_type == "Wall"``, as its ``Literal`` type says, so an
+            exhaustive ``match`` holds on models you did not write. EnergyPlus reads choices
+            case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
+            a choice field's ``Literal`` type then does not hold; see
+            :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
 
     Returns:
         A :class:`~idfkit.idf_parser.ParseResult`: the document, and the recoverable findings.
@@ -3077,6 +3287,7 @@ def load_idf_with_diagnostics(
     before: None = ...,
     strict: Literal[False],
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[AnyIDFDocument[Literal[False]]]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3086,6 +3297,7 @@ def load_idf_with_diagnostics(
     as_type: type[_D],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[_D]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3095,6 +3307,7 @@ def load_idf_with_diagnostics(
     as_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[_D]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3104,6 +3317,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince8_9]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3113,6 +3327,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince9_0]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3122,6 +3337,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince9_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3131,6 +3347,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince9_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3140,6 +3357,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince9_3]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3149,6 +3367,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince9_4]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3158,6 +3377,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince9_5]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3167,6 +3387,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince9_6]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3176,6 +3397,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince22_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3185,6 +3407,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince22_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3194,6 +3417,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince23_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3203,6 +3427,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince23_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3212,6 +3437,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince24_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3221,6 +3447,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince24_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3230,6 +3457,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince25_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3239,6 +3467,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince25_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3248,6 +3477,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince26_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3257,6 +3487,7 @@ def load_idf_with_diagnostics(
     since: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentSince26_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3266,6 +3497,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore9_0]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3275,6 +3507,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore9_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3284,6 +3517,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore9_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3293,6 +3527,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore9_3]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3302,6 +3537,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore9_4]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3311,6 +3547,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore9_5]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3320,6 +3557,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore9_6]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3329,6 +3567,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore22_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3338,6 +3577,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore22_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3347,6 +3587,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore23_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3356,6 +3597,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore23_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3365,6 +3607,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore24_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3374,6 +3617,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore24_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3383,6 +3627,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore25_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3392,6 +3637,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore25_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3401,6 +3647,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore26_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3410,6 +3657,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentBefore26_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3420,6 +3668,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV8_9]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3430,6 +3679,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV8_9 | IDFDocumentV9_0]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3440,6 +3690,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3450,6 +3701,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3460,6 +3712,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3470,6 +3723,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4
 ]: ...
@@ -3482,6 +3736,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3500,6 +3755,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3519,6 +3775,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3539,6 +3796,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3560,6 +3818,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3582,6 +3841,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3605,6 +3865,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3629,6 +3890,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3654,6 +3916,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3680,6 +3943,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3707,6 +3971,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -3735,6 +4000,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_0]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3745,6 +4011,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_0 | IDFDocumentV9_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3755,6 +4022,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3765,6 +4033,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3775,6 +4044,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -3785,6 +4055,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5
 ]: ...
@@ -3797,6 +4068,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -3815,6 +4087,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -3834,6 +4107,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -3854,6 +4128,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -3875,6 +4150,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -3897,6 +4173,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -3920,6 +4197,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -3944,6 +4222,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -3969,6 +4248,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -3995,6 +4275,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -4022,6 +4303,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4032,6 +4314,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_1 | IDFDocumentV9_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4042,6 +4325,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4052,6 +4336,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4062,6 +4347,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4072,6 +4358,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6
 ]: ...
@@ -4084,6 +4371,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -4102,6 +4390,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -4121,6 +4410,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -4141,6 +4431,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -4162,6 +4453,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -4184,6 +4476,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -4207,6 +4500,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -4231,6 +4525,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -4256,6 +4551,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -4282,6 +4578,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4292,6 +4589,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_2 | IDFDocumentV9_3]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4302,6 +4600,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4312,6 +4611,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4322,6 +4622,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4332,6 +4633,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1
 ]: ...
@@ -4344,6 +4646,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -4362,6 +4665,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -4381,6 +4685,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -4401,6 +4706,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -4422,6 +4728,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -4444,6 +4751,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -4467,6 +4775,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -4491,6 +4800,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -4516,6 +4826,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_3]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4526,6 +4837,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_3 | IDFDocumentV9_4]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4536,6 +4848,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4546,6 +4859,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4556,6 +4870,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4566,6 +4881,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2
 ]: ...
@@ -4578,6 +4894,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -4596,6 +4913,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -4615,6 +4933,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -4635,6 +4954,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -4656,6 +4976,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -4678,6 +4999,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -4701,6 +5023,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -4725,6 +5048,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_4]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4735,6 +5059,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_4 | IDFDocumentV9_5]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4745,6 +5070,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4755,6 +5081,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4765,6 +5092,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4775,6 +5103,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1
 ]: ...
@@ -4787,6 +5116,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -4805,6 +5135,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -4824,6 +5155,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -4844,6 +5176,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -4865,6 +5198,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -4887,6 +5221,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -4910,6 +5245,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_5]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4920,6 +5256,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_5 | IDFDocumentV9_6]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4930,6 +5267,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4940,6 +5278,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4950,6 +5289,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -4960,6 +5300,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2
 ]: ...
@@ -4972,6 +5313,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -4990,6 +5332,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -5009,6 +5352,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -5029,6 +5373,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -5050,6 +5395,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -5072,6 +5418,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_6]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5082,6 +5429,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_6 | IDFDocumentV22_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5092,6 +5440,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5102,6 +5451,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5112,6 +5462,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5122,6 +5473,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1
 ]: ...
@@ -5134,6 +5486,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -5152,6 +5505,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -5171,6 +5525,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -5191,6 +5546,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -5212,6 +5568,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5222,6 +5579,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_1 | IDFDocumentV22_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5232,6 +5590,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5242,6 +5601,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5252,6 +5612,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5262,6 +5623,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2
 ]: ...
@@ -5274,6 +5636,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV22_1
     | IDFDocumentV22_2
@@ -5292,6 +5655,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV22_1
     | IDFDocumentV22_2
@@ -5311,6 +5675,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV22_1
     | IDFDocumentV22_2
@@ -5331,6 +5696,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5341,6 +5707,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_2 | IDFDocumentV23_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5351,6 +5718,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5361,6 +5729,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5371,6 +5740,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5381,6 +5751,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1
 ]: ...
@@ -5393,6 +5764,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV22_2
     | IDFDocumentV23_1
@@ -5411,6 +5783,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV22_2
     | IDFDocumentV23_1
@@ -5430,6 +5803,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5440,6 +5814,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_1 | IDFDocumentV23_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5450,6 +5825,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5460,6 +5836,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5470,6 +5847,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5480,6 +5858,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2
 ]: ...
@@ -5492,6 +5871,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV23_1
     | IDFDocumentV23_2
@@ -5510,6 +5890,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5520,6 +5901,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_2 | IDFDocumentV24_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5530,6 +5912,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5540,6 +5923,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5550,6 +5934,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5560,6 +5945,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[
     IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1
 ]: ...
@@ -5572,6 +5958,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV24_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5582,6 +5969,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV24_1 | IDFDocumentV24_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5592,6 +5980,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5602,6 +5991,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5612,6 +6002,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5622,6 +6013,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV24_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5632,6 +6024,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV24_2 | IDFDocumentV25_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5642,6 +6035,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5652,6 +6046,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5662,6 +6057,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV25_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5672,6 +6068,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV25_1 | IDFDocumentV25_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5682,6 +6079,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5692,6 +6090,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV25_2]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5702,6 +6101,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV25_2 | IDFDocumentV26_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5712,6 +6112,7 @@ def load_idf_with_diagnostics(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[IDFDocumentV26_1]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5722,6 +6123,7 @@ def load_idf_with_diagnostics(
     before: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None = None,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[AnyIDFDocument]: ...
 @overload
 def load_idf_with_diagnostics(
@@ -5731,6 +6133,7 @@ def load_idf_with_diagnostics(
     before: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> ParseResult[AnyIDFDocument]: ...
 @overload
 def load_epjson(
@@ -5742,6 +6145,7 @@ def load_epjson(
     before: None = ...,
     strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> AnyIDFDocument[Literal[True]]:
     """Load an epJSON file and return its document.
 
@@ -5762,6 +6166,13 @@ def load_epjson(
             that :func:`write_epjson` and :func:`save_epjson` can
             reproduce it byte-for-byte
             when no objects have been modified.
+        normalize_choices: When ``True`` (the default), each choice value is stored in the
+            spelling its schema declares, whatever case the file used: a surface the file
+            calls ``WALL`` has ``surface_type == "Wall"``, as its ``Literal`` type says, so an
+            exhaustive ``match`` holds on models you did not write. EnergyPlus reads choices
+            case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
+            a choice field's ``Literal`` type then does not hold; see
+            :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
 
     Returns:
         The parsed document: an ``AnyIDFDocument``, or typed as ``as_type=`` or the
@@ -5805,6 +6216,7 @@ def load_epjson(
     before: None = ...,
     strict: Literal[False],
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> AnyIDFDocument[Literal[False]]: ...
 @overload
 def load_epjson(
@@ -5814,6 +6226,7 @@ def load_epjson(
     as_type: type[_D],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> _D: ...
 @overload
 def load_epjson(
@@ -5823,6 +6236,7 @@ def load_epjson(
     as_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> _D: ...
 @overload
 def load_epjson(
@@ -5832,6 +6246,7 @@ def load_epjson(
     since: type[IDFDocumentV8_9] | Literal["8.9", "8.9.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince8_9: ...
 @overload
 def load_epjson(
@@ -5841,6 +6256,7 @@ def load_epjson(
     since: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_0: ...
 @overload
 def load_epjson(
@@ -5850,6 +6266,7 @@ def load_epjson(
     since: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_1: ...
 @overload
 def load_epjson(
@@ -5859,6 +6276,7 @@ def load_epjson(
     since: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_2: ...
 @overload
 def load_epjson(
@@ -5868,6 +6286,7 @@ def load_epjson(
     since: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_3: ...
 @overload
 def load_epjson(
@@ -5877,6 +6296,7 @@ def load_epjson(
     since: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_4: ...
 @overload
 def load_epjson(
@@ -5886,6 +6306,7 @@ def load_epjson(
     since: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_5: ...
 @overload
 def load_epjson(
@@ -5895,6 +6316,7 @@ def load_epjson(
     since: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince9_6: ...
 @overload
 def load_epjson(
@@ -5904,6 +6326,7 @@ def load_epjson(
     since: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince22_1: ...
 @overload
 def load_epjson(
@@ -5913,6 +6336,7 @@ def load_epjson(
     since: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince22_2: ...
 @overload
 def load_epjson(
@@ -5922,6 +6346,7 @@ def load_epjson(
     since: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince23_1: ...
 @overload
 def load_epjson(
@@ -5931,6 +6356,7 @@ def load_epjson(
     since: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince23_2: ...
 @overload
 def load_epjson(
@@ -5940,6 +6366,7 @@ def load_epjson(
     since: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince24_1: ...
 @overload
 def load_epjson(
@@ -5949,6 +6376,7 @@ def load_epjson(
     since: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince24_2: ...
 @overload
 def load_epjson(
@@ -5958,6 +6386,7 @@ def load_epjson(
     since: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince25_1: ...
 @overload
 def load_epjson(
@@ -5967,6 +6396,7 @@ def load_epjson(
     since: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince25_2: ...
 @overload
 def load_epjson(
@@ -5976,6 +6406,7 @@ def load_epjson(
     since: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince26_1: ...
 @overload
 def load_epjson(
@@ -5985,6 +6416,7 @@ def load_epjson(
     since: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentSince26_2: ...
 @overload
 def load_epjson(
@@ -5994,6 +6426,7 @@ def load_epjson(
     before: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_0: ...
 @overload
 def load_epjson(
@@ -6003,6 +6436,7 @@ def load_epjson(
     before: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_1: ...
 @overload
 def load_epjson(
@@ -6012,6 +6446,7 @@ def load_epjson(
     before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_2: ...
 @overload
 def load_epjson(
@@ -6021,6 +6456,7 @@ def load_epjson(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_3: ...
 @overload
 def load_epjson(
@@ -6030,6 +6466,7 @@ def load_epjson(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_4: ...
 @overload
 def load_epjson(
@@ -6039,6 +6476,7 @@ def load_epjson(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_5: ...
 @overload
 def load_epjson(
@@ -6048,6 +6486,7 @@ def load_epjson(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore9_6: ...
 @overload
 def load_epjson(
@@ -6057,6 +6496,7 @@ def load_epjson(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore22_1: ...
 @overload
 def load_epjson(
@@ -6066,6 +6506,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore22_2: ...
 @overload
 def load_epjson(
@@ -6075,6 +6516,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore23_1: ...
 @overload
 def load_epjson(
@@ -6084,6 +6526,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore23_2: ...
 @overload
 def load_epjson(
@@ -6093,6 +6536,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore24_1: ...
 @overload
 def load_epjson(
@@ -6102,6 +6546,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore24_2: ...
 @overload
 def load_epjson(
@@ -6111,6 +6556,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore25_1: ...
 @overload
 def load_epjson(
@@ -6120,6 +6566,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore25_2: ...
 @overload
 def load_epjson(
@@ -6129,6 +6576,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore26_1: ...
 @overload
 def load_epjson(
@@ -6138,6 +6586,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentBefore26_2: ...
 @overload
 def load_epjson(
@@ -6148,6 +6597,7 @@ def load_epjson(
     before: type[IDFDocumentV9_0] | Literal["9.0", "9.0.1"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9: ...
 @overload
 def load_epjson(
@@ -6158,6 +6608,7 @@ def load_epjson(
     before: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0: ...
 @overload
 def load_epjson(
@@ -6168,6 +6619,7 @@ def load_epjson(
     before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1: ...
 @overload
 def load_epjson(
@@ -6178,6 +6630,7 @@ def load_epjson(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2: ...
 @overload
 def load_epjson(
@@ -6188,6 +6641,7 @@ def load_epjson(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3: ...
 @overload
 def load_epjson(
@@ -6198,6 +6652,7 @@ def load_epjson(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV8_9 | IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_epjson(
@@ -6208,6 +6663,7 @@ def load_epjson(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6226,6 +6682,7 @@ def load_epjson(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6245,6 +6702,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6265,6 +6723,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6286,6 +6745,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6308,6 +6768,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6331,6 +6792,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6355,6 +6817,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6380,6 +6843,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6406,6 +6870,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6433,6 +6898,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV8_9
     | IDFDocumentV9_0
@@ -6461,6 +6927,7 @@ def load_epjson(
     before: type[IDFDocumentV9_1] | Literal["9.1", "9.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0: ...
 @overload
 def load_epjson(
@@ -6471,6 +6938,7 @@ def load_epjson(
     before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1: ...
 @overload
 def load_epjson(
@@ -6481,6 +6949,7 @@ def load_epjson(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2: ...
 @overload
 def load_epjson(
@@ -6491,6 +6960,7 @@ def load_epjson(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3: ...
 @overload
 def load_epjson(
@@ -6501,6 +6971,7 @@ def load_epjson(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_epjson(
@@ -6511,6 +6982,7 @@ def load_epjson(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_0 | IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_epjson(
@@ -6521,6 +6993,7 @@ def load_epjson(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6539,6 +7012,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6558,6 +7032,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6578,6 +7053,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6599,6 +7075,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6621,6 +7098,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6644,6 +7122,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6668,6 +7147,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6693,6 +7173,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6719,6 +7200,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_0
     | IDFDocumentV9_1
@@ -6746,6 +7228,7 @@ def load_epjson(
     before: type[IDFDocumentV9_2] | Literal["9.2", "9.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1: ...
 @overload
 def load_epjson(
@@ -6756,6 +7239,7 @@ def load_epjson(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2: ...
 @overload
 def load_epjson(
@@ -6766,6 +7250,7 @@ def load_epjson(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3: ...
 @overload
 def load_epjson(
@@ -6776,6 +7261,7 @@ def load_epjson(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_epjson(
@@ -6786,6 +7272,7 @@ def load_epjson(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_epjson(
@@ -6796,6 +7283,7 @@ def load_epjson(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_1 | IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_epjson(
@@ -6806,6 +7294,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -6824,6 +7313,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -6843,6 +7333,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -6863,6 +7354,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -6884,6 +7376,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -6906,6 +7399,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -6929,6 +7423,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -6953,6 +7448,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -6978,6 +7474,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_1
     | IDFDocumentV9_2
@@ -7004,6 +7501,7 @@ def load_epjson(
     before: type[IDFDocumentV9_3] | Literal["9.3", "9.3.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2: ...
 @overload
 def load_epjson(
@@ -7014,6 +7512,7 @@ def load_epjson(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3: ...
 @overload
 def load_epjson(
@@ -7024,6 +7523,7 @@ def load_epjson(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_epjson(
@@ -7034,6 +7534,7 @@ def load_epjson(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_epjson(
@@ -7044,6 +7545,7 @@ def load_epjson(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_epjson(
@@ -7054,6 +7556,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_2 | IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_epjson(
@@ -7064,6 +7567,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -7082,6 +7586,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -7101,6 +7606,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -7121,6 +7627,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -7142,6 +7649,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -7164,6 +7672,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -7187,6 +7696,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -7211,6 +7721,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_2
     | IDFDocumentV9_3
@@ -7236,6 +7747,7 @@ def load_epjson(
     before: type[IDFDocumentV9_4] | Literal["9.4", "9.4.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3: ...
 @overload
 def load_epjson(
@@ -7246,6 +7758,7 @@ def load_epjson(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4: ...
 @overload
 def load_epjson(
@@ -7256,6 +7769,7 @@ def load_epjson(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_epjson(
@@ -7266,6 +7780,7 @@ def load_epjson(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_epjson(
@@ -7276,6 +7791,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_epjson(
@@ -7286,6 +7802,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_3 | IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_epjson(
@@ -7296,6 +7813,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -7314,6 +7832,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -7333,6 +7852,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -7353,6 +7873,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -7374,6 +7895,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -7396,6 +7918,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -7419,6 +7942,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_3
     | IDFDocumentV9_4
@@ -7443,6 +7967,7 @@ def load_epjson(
     before: type[IDFDocumentV9_5] | Literal["9.5", "9.5.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4: ...
 @overload
 def load_epjson(
@@ -7453,6 +7978,7 @@ def load_epjson(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5: ...
 @overload
 def load_epjson(
@@ -7463,6 +7989,7 @@ def load_epjson(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_epjson(
@@ -7473,6 +8000,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_epjson(
@@ -7483,6 +8011,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_epjson(
@@ -7493,6 +8022,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_4 | IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_epjson(
@@ -7503,6 +8033,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -7521,6 +8052,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -7540,6 +8072,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -7560,6 +8093,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -7581,6 +8115,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -7603,6 +8138,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_4
     | IDFDocumentV9_5
@@ -7626,6 +8162,7 @@ def load_epjson(
     before: type[IDFDocumentV9_6] | Literal["9.6", "9.6.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5: ...
 @overload
 def load_epjson(
@@ -7636,6 +8173,7 @@ def load_epjson(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6: ...
 @overload
 def load_epjson(
@@ -7646,6 +8184,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_epjson(
@@ -7656,6 +8195,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_epjson(
@@ -7666,6 +8206,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_epjson(
@@ -7676,6 +8217,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_5 | IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_epjson(
@@ -7686,6 +8228,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -7704,6 +8247,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -7723,6 +8267,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -7743,6 +8288,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -7764,6 +8310,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_5
     | IDFDocumentV9_6
@@ -7786,6 +8333,7 @@ def load_epjson(
     before: type[IDFDocumentV22_1] | Literal["22.1", "22.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6: ...
 @overload
 def load_epjson(
@@ -7796,6 +8344,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1: ...
 @overload
 def load_epjson(
@@ -7806,6 +8355,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_epjson(
@@ -7816,6 +8366,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_epjson(
@@ -7826,6 +8377,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_epjson(
@@ -7836,6 +8388,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV9_6 | IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_epjson(
@@ -7846,6 +8399,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -7864,6 +8418,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -7883,6 +8438,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -7903,6 +8459,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV9_6
     | IDFDocumentV22_1
@@ -7924,6 +8481,7 @@ def load_epjson(
     before: type[IDFDocumentV22_2] | Literal["22.2", "22.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1: ...
 @overload
 def load_epjson(
@@ -7934,6 +8492,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1 | IDFDocumentV22_2: ...
 @overload
 def load_epjson(
@@ -7944,6 +8503,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_epjson(
@@ -7954,6 +8514,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_epjson(
@@ -7964,6 +8525,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_epjson(
@@ -7974,6 +8536,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_1 | IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2
 ): ...
@@ -7986,6 +8549,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_1
     | IDFDocumentV22_2
@@ -8004,6 +8568,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_1
     | IDFDocumentV22_2
@@ -8023,6 +8588,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_1
     | IDFDocumentV22_2
@@ -8043,6 +8609,7 @@ def load_epjson(
     before: type[IDFDocumentV23_1] | Literal["23.1", "23.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2: ...
 @overload
 def load_epjson(
@@ -8053,6 +8620,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2 | IDFDocumentV23_1: ...
 @overload
 def load_epjson(
@@ -8063,6 +8631,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_epjson(
@@ -8073,6 +8642,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_epjson(
@@ -8083,6 +8653,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2: ...
 @overload
 def load_epjson(
@@ -8093,6 +8664,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_2 | IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1
 ): ...
@@ -8105,6 +8677,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_2
     | IDFDocumentV23_1
@@ -8123,6 +8696,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV22_2
     | IDFDocumentV23_1
@@ -8142,6 +8716,7 @@ def load_epjson(
     before: type[IDFDocumentV23_2] | Literal["23.2", "23.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1: ...
 @overload
 def load_epjson(
@@ -8152,6 +8727,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1 | IDFDocumentV23_2: ...
 @overload
 def load_epjson(
@@ -8162,6 +8738,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_epjson(
@@ -8172,6 +8749,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2: ...
 @overload
 def load_epjson(
@@ -8182,6 +8760,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1: ...
 @overload
 def load_epjson(
@@ -8192,6 +8771,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV23_1 | IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2
 ): ...
@@ -8204,6 +8784,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV23_1
     | IDFDocumentV23_2
@@ -8222,6 +8803,7 @@ def load_epjson(
     before: type[IDFDocumentV24_1] | Literal["24.1", "24.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2: ...
 @overload
 def load_epjson(
@@ -8232,6 +8814,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2 | IDFDocumentV24_1: ...
 @overload
 def load_epjson(
@@ -8242,6 +8825,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2: ...
 @overload
 def load_epjson(
@@ -8252,6 +8836,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1: ...
 @overload
 def load_epjson(
@@ -8262,6 +8847,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2: ...
 @overload
 def load_epjson(
@@ -8272,6 +8858,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> (
     IDFDocumentV23_2 | IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1
 ): ...
@@ -8284,6 +8871,7 @@ def load_epjson(
     before: type[IDFDocumentV24_2] | Literal["24.2", "24.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1: ...
 @overload
 def load_epjson(
@@ -8294,6 +8882,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1 | IDFDocumentV24_2: ...
 @overload
 def load_epjson(
@@ -8304,6 +8893,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1: ...
 @overload
 def load_epjson(
@@ -8314,6 +8904,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2: ...
 @overload
 def load_epjson(
@@ -8324,6 +8915,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_1 | IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1: ...
 @overload
 def load_epjson(
@@ -8334,6 +8926,7 @@ def load_epjson(
     before: type[IDFDocumentV25_1] | Literal["25.1", "25.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_2: ...
 @overload
 def load_epjson(
@@ -8344,6 +8937,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_2 | IDFDocumentV25_1: ...
 @overload
 def load_epjson(
@@ -8354,6 +8948,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2: ...
 @overload
 def load_epjson(
@@ -8364,6 +8959,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV24_2 | IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1: ...
 @overload
 def load_epjson(
@@ -8374,6 +8970,7 @@ def load_epjson(
     before: type[IDFDocumentV25_2] | Literal["25.2", "25.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_1: ...
 @overload
 def load_epjson(
@@ -8384,6 +8981,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_1 | IDFDocumentV25_2: ...
 @overload
 def load_epjson(
@@ -8394,6 +8992,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_1 | IDFDocumentV25_2 | IDFDocumentV26_1: ...
 @overload
 def load_epjson(
@@ -8404,6 +9003,7 @@ def load_epjson(
     before: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_2: ...
 @overload
 def load_epjson(
@@ -8414,6 +9014,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV25_2 | IDFDocumentV26_1: ...
 @overload
 def load_epjson(
@@ -8424,6 +9025,7 @@ def load_epjson(
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> IDFDocumentV26_1: ...
 @overload
 def load_epjson(
@@ -8434,6 +9036,7 @@ def load_epjson(
     before: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None = None,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> AnyIDFDocument: ...
 @overload
 def load_epjson(
@@ -8443,4 +9046,5 @@ def load_epjson(
     before: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None,
     strict: bool = ...,
     preserve_formatting: bool = ...,
+    normalize_choices: bool = ...,
 ) -> AnyIDFDocument: ...

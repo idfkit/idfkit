@@ -20,6 +20,7 @@ class WindowGapDeflectionState:
         deflected_thickness: float | None = 0,
         initial_temperature: float | None = 25,
         initial_pressure: float | None = 101325,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowGap:DeflectionState`` and add it to the document.
 
@@ -51,6 +52,7 @@ class GroundHeatTransferSlabBldgProps:
         tin12_december_indoor_average_temperature_setpoint: float | None = 22,
         tinamp_daily_indoor_sine_wave_variation_amplitude: float | None = 0,
         convtol_convergence_tolerance: float | None = 0.1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:BldgProps`` and add it to the document.
 
@@ -70,6 +72,7 @@ class GroundHeatTransferBasementBldgData:
         dgravxy_width_of_gravel_pit_beside_basement_wall: float | None = 0.3,
         dgravzn_gravel_depth_extending_above_the_floor_slab: float | None = 0.2,
         dgravzp_gravel_depth_below_the_floor_slab: float | None = 0.1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:BldgData`` and add it to the document.
 
@@ -92,6 +95,7 @@ class ElectricEquipmentDefinition:
         fraction_latent: float | None = 0,
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment:Definition`` and add it to the document.
 
@@ -109,6 +113,7 @@ class AirflowNetworkMultiZoneComponentZoneExhaustFan:
         air_mass_flow_coefficient_when_the_zone_exhaust_fan_is_off_at_reference_conditions: float,
         air_mass_flow_exponent_when_the_zone_exhaust_fan_is_off: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Component:ZoneExhaustFan`` and add it to the document.
 
@@ -195,6 +200,7 @@ class HVACTemplatePlantChilledWaterLoop:
             "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
         ]
         | None = "SequentialLoad",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:ChilledWaterLoop`` and add it to the document.
 
@@ -233,6 +239,7 @@ class CoilCoolingDXCurveFitPerformance:
         | None = "Electricity",
         alternative_operating_mode_1: str | None = ...,
         alternative_operating_mode_2: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:Performance`` and add it to the document.
 
@@ -293,6 +300,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl:
             _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem
             | _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl`` and add it to the document.
 
@@ -311,6 +319,7 @@ class SetpointManagerMultiZoneHumidityMaximum:
         setpoint_node_or_nodelist_name: str,
         minimum_setpoint_humidity_ratio: float | None = 0.008,
         maximum_setpoint_humidity_ratio: float | None = 0.015,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:MultiZone:Humidity:Maximum`` and add it to the document.
 
@@ -358,6 +367,7 @@ class OutputControlFiles:
         output_extshd: Literal["No", "Yes"] | None = "Yes",
         output_tarcog: Literal["No", "Yes"] | None = "Yes",
         output_plant_component_sizing: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Files`` and add it to the document.
 
@@ -374,6 +384,7 @@ class OutputControlTimestamp:
         *,
         iso_8601_format: Literal["No", "Yes"] | None = "No",
         timestamp_at_beginning_of_interval: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Timestamp`` and add it to the document.
 
@@ -383,7 +394,9 @@ class OutputControlTimestamp:
         """
 
 class AnyOutputDiagnostics:
-    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, validate: bool = True
+    ) -> None:
         """Create a new ``Output:Diagnostics`` and add it to the document.
 
         Special keys to produce certain warning messages or effect certain simulation characteristics.

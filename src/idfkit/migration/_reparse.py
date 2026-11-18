@@ -10,7 +10,9 @@ if TYPE_CHECKING:
     from ..document import IDFDocument
 
 
-def parse_migrated_idf(path: Path, *, version: tuple[int, int, int], strict: bool) -> IDFDocument:
+def parse_migrated_idf(
+    path: Path, *, version: tuple[int, int, int], strict: bool, normalize_choices: bool = True
+) -> IDFDocument:
     """Parse the migrated IDF at *path*, detached from the file it was read from.
 
     *path* lives in the migration's work directory, which is normally a temporary directory
@@ -22,6 +24,6 @@ def parse_migrated_idf(path: Path, *, version: tuple[int, int, int], strict: boo
     """
     from ..idf_parser import parse_idf
 
-    doc = parse_idf(path, version=version, strict=strict)
+    doc = parse_idf(path, version=version, strict=strict, normalize_choices=normalize_choices)
     doc.filepath = None
     return doc

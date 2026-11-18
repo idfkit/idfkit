@@ -58,6 +58,7 @@ from .geometry_builders import (
     link_horizontal_surfaces,
     split_horizontal_surface_by_regions,
 )
+from .versioned import as_version
 from .versions import version_string
 
 if TYPE_CHECKING:
@@ -752,7 +753,7 @@ def _build_story_surfaces(
         zone_names_this_story.append(zone_name)
 
         # --- Zone ---
-        zone = doc.add("Zone", zone_name, validate=False)
+        zone = doc.zones.add(zone_name, validate=False)
         created.append(zone)
 
         fp = zf.polygon
@@ -780,8 +781,7 @@ def _build_story_surfaces(
                 sun = "SunExposed"
                 wind = "WindExposed"
 
-            wall = doc.add(
-                "BuildingSurface:Detailed",
+            wall = doc["BuildingSurface:Detailed"].add(
                 wall_name,
                 surface_type="Wall",
                 construction_name="",
@@ -818,8 +818,7 @@ def _build_story_surfaces(
             floor_bc = "Surface"
             floor_bc_obj = f"{below_zone} Ceiling"
 
-        floor_srf = doc.add(
-            "BuildingSurface:Detailed",
+        floor_srf = doc["BuildingSurface:Detailed"].add(
             floor_name,
             surface_type="Floor",
             construction_name="",
@@ -852,8 +851,7 @@ def _build_story_surfaces(
             ceil_sun = "NoSun"
             ceil_wind = "NoWind"
 
-        ceil_srf = doc.add(
-            "BuildingSurface:Detailed",
+        ceil_srf = doc["BuildingSurface:Detailed"].add(
             ceil_name,
             surface_type=ceil_type,
             construction_name="",
@@ -944,10 +942,11 @@ def _apply_air_boundaries(doc: AnyIDFDocument, created: list[IDFObject]) -> None
     """
     air_name = "Air Boundary"
     # Construction:AirBoundary exists from EnergyPlus 9.2 on, so through AnyIDFDocument it is a key
-    # that may be missing. ZonedBlock.build refuses an older model before anything reaches here,
-    # which idfkit check cannot see from this function, hence the suppressions.
-    if not list(doc.get_collection("Construction:AirBoundary")):  # idfkit: ignore[C001, C004]
-        doc.add("Construction:AirBoundary", air_name, validate=False)  # idfkit: ignore[C001]
+    # that may be missing. ZonedBlock.build refuses an older model before anything reaches here, so
+    # narrowing to 9.2 and later only restates that guard where the type checker can see it.
+    air = as_version(doc, since="9.2")
+    if not air["Construction:AirBoundary"]:
+        doc.add("Construction:AirBoundary", air_name, validate=False)
 
     for obj in created:
         if obj.obj_type != "BuildingSurface:Detailed":

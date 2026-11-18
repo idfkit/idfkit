@@ -49,6 +49,7 @@ class OtherEquipment_v9_6_to_v23_1:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OtherEquipment`` and add it to the document.
 
@@ -94,6 +95,7 @@ class OtherEquipment_v23_2:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OtherEquipment`` and add it to the document.
 
@@ -193,6 +195,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1:
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
         modes: Sequence[_g.ZoneHVACHybridUnitaryHVACModesItem | _g.ZoneHVACHybridUnitaryHVACModesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:HybridUnitaryHVAC`` and add it to the document.
 
@@ -263,6 +266,7 @@ class SizingSystem_v8_9_to_v9_5:
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = ...,
         central_cooling_capacity_control_method: Literal["Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:System`` and add it to the document.
 
@@ -288,6 +292,7 @@ class ElectricEquipment_v8_9_to_v9_5:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment`` and add it to the document.
 
@@ -424,6 +429,7 @@ class CoilCoolingDXVariableSpeed_v8_9_to_v22_1:
         speed_10_total_cooling_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:VariableSpeed`` and add it to the document.
 
@@ -442,6 +448,7 @@ class RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4:
             _vd.RoomAirNodeAirflowNetworkInternalGainsGainsItem_v8_9_to_v9_4
             | _vd.RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork:InternalGains`` and add it to the document.
 

@@ -160,6 +160,7 @@ class PlantEquipmentOperationSchemes_v9_0_to_v23_1:
         | None = ...,
         control_scheme_8_name: str | None = ...,
         control_scheme_8_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperationSchemes`` and add it to the document.
 
@@ -374,6 +375,7 @@ class ComfortViewFactorAngles_v24_1_to_v25_1:
         angle_factor_99: float | None = ...,
         surface_100_name: str | None = ...,
         angle_factor_100: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComfortViewFactorAngles`` and add it to the document.
 
@@ -404,6 +406,7 @@ class MeterCustom_v8_9_to_v9_2:
         ]
         | None = ...,
         variable_details: Sequence[_g.MeterCustomVariableDetailsItem | _g.MeterCustomVariableDetailsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:Custom`` and add it to the document.
 
@@ -432,6 +435,7 @@ class HeatPumpPlantLoopEIRCooling_v9_3_to_v23_1:
         reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:PlantLoop:EIR:Cooling`` and add it to the document.
 

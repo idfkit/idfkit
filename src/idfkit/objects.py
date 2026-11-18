@@ -15,9 +15,9 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
-from ._read_required import READ_REQUIRED
+from ._read_required import GROUP_READ_REQUIRED, READ_REQUIRED
 from .exceptions import InvalidFieldError, MissingRequiredFieldError, RefusedEntry, format_refused
-from .schema import trailing_underscore_aliases
+from .schema import NO_CHOICE_SPELLINGS, canonical_choice, trailing_underscore_aliases
 
 __all__ = [
     "ExtensibleGroup",
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from typing import ParamSpec
 
     from .document import AnyIDFDocument
-    from .schema import ParsingCache
+    from .schema import ChoiceSpellings, ParsingCache
 
     _P = ParamSpec("_P")
 
@@ -52,7 +52,9 @@ if TYPE_CHECKING:
     class _ObjectFactory(Protocol):
         """The document a collection creates its objects through (``IDFDocument``)."""
 
-        def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject: ...
+        def _create_in(
+            self, collection: IDFCollection[Any], name: str, fields: dict[str, Any], validate: bool
+        ) -> IDFObject: ...
 
         def _holds(self, collection: IDFCollection[Any]) -> bool: ...
 
@@ -191,8 +193,32 @@ class ExtensibleGroup:
         return cast("dict[str, Any]", items[self._group_index - 1])
 
     def __getattr__(self, name: str) -> Any:
+        """Read one key of the group; unset, ``None``.
+
+        A key every supported release requires (``vertex_x_coordinate``) is typed as always set, so
+        reading it unset raises :class:`~idfkit.exceptions.MissingRequiredFieldError`, an
+        ``AttributeError``; ``group.get(name)`` gives ``None`` for it instead.
+        """
         if name.startswith("_"):
             raise AttributeError(name)
+        # Inlined _stored(): every typed group read passes through here.
+        if name not in self._inner_names:
+            raise AttributeError(  # noqa: TRY003
+                f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
+            )
+        items = self._owner.data.get(self._wrapper_key)
+        if items and self._group_index <= len(items):
+            value = cast("dict[str, Any]", items[self._group_index - 1]).get(name)
+            if value is not None:
+                return value
+        # Only the miss path pays for the required-key lookup.
+        required = GROUP_READ_REQUIRED.get(self._owner.obj_type)
+        if required is not None and name in required:
+            raise self._missing(name)
+        return None
+
+    def _stored(self, name: str) -> Any:
+        """The value stored under *name*, a known inner field, or ``None``; never raises for a missing one."""
         if name not in self._inner_names:
             raise AttributeError(  # noqa: TRY003
                 f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
@@ -202,6 +228,21 @@ class ExtensibleGroup:
             return None
         return cast("dict[str, Any]", items[self._group_index - 1]).get(name)
 
+    def _missing(self, name: str) -> MissingRequiredFieldError:
+        """The error for *name*, a key every release requires, which the group does not hold."""
+        owner = self._owner
+        return MissingRequiredFieldError(owner.obj_type, owner.name, name, group=(self._wrapper_key, self._group_index))
+
+    def get(self, name: str, default: Any = None) -> Any:
+        """The value of *name*, or *default* when it is unset.
+
+        Unlike attribute access, this never raises for an unset required key, so it is the way to
+        ask whether one is set. A name that is not a key of the group still raises
+        ``AttributeError``.
+        """
+        value = self._stored(name)
+        return default if value is None else value
+
     def __setattr__(self, name: str, value: Any) -> None:
         if name.startswith("_"):
             object.__setattr__(self, name, value)
@@ -210,7 +251,7 @@ class ExtensibleGroup:
             raise AttributeError(  # noqa: TRY003
                 f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
             )
-        assign_slot(self._slot(), name, value)
+        assign_slot(self._slot(), name, self._owner._canonical_slot_value(name, value))  # pyright: ignore[reportPrivateUsage]
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def __getitem__(self, key: str) -> Any:
@@ -230,19 +271,33 @@ class ExtensibleGroup:
         return self._inner_names
 
     def values(self) -> list[Any]:
-        """Return the values for each inner field, in schema order."""
-        return [self.__getattr__(n) for n in self._inner_names]
+        """Return the values for each inner field, in schema order (``None`` for an unset one)."""
+        return [self._stored(n) for n in self._inner_names]
 
     def items(self) -> list[tuple[str, Any]]:
-        """Return ``(field_name, value)`` pairs for the inner fields."""
-        return [(n, self.__getattr__(n)) for n in self._inner_names]
+        """Return ``(field_name, value)`` pairs for the inner fields (``None`` for an unset one)."""
+        return [(n, self._stored(n)) for n in self._inner_names]
 
-    def as_dict(self) -> dict[str, Any]:
-        """Snapshot the group as a plain dict (does not track future mutations)."""
+    def _snapshot(self) -> dict[str, Any]:
+        """The keys the group holds, as a new dict, whether or not it lacks a required one."""
         items = self._owner.data.get(self._wrapper_key)
         if not items or self._group_index > len(items):
             return {}
         return dict(cast("dict[str, Any]", items[self._group_index - 1]))
+
+    def as_dict(self) -> dict[str, Any]:
+        """Snapshot the group as a plain dict (does not track future mutations).
+
+        The dict holds the keys that are set. A typed group gives its item ``TypedDict``, whose
+        required keys (those every supported release requires) are always present: a group that
+        lacks one raises :class:`~idfkit.exceptions.MissingRequiredFieldError` rather than give a
+        dict that contradicts its type.
+        """
+        snapshot = self._snapshot()
+        for name in GROUP_READ_REQUIRED.get(self._owner.obj_type, ()):
+            if name not in snapshot and name in self._inner_names:
+                raise self._missing(name)
+        return snapshot
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update one or more inner fields atomically (matches dict.update)."""
@@ -263,25 +318,23 @@ class ExtensibleGroup:
                     f"{k!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
                 )
         slot = self._slot()
-        for name, value in merged.items():
+        for name, value in self._owner._canonical_slots(merged).items():  # pyright: ignore[reportPrivateUsage]
             assign_slot(slot, name, value)
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, ExtensibleGroup):
-            return self.as_dict() == other.as_dict()
+            return self._snapshot() == other._snapshot()
         if isinstance(other, dict):
             other_dict = cast("dict[str, Any]", other)
-            return self.as_dict() == other_dict
+            return self._snapshot() == other_dict
         return NotImplemented
 
     def __hash__(self) -> int:
         return id(self)
 
     def __repr__(self) -> str:
-        return (
-            f"ExtensibleGroup({self._owner.obj_type}.{self._wrapper_key}[{self._group_index - 1}], {self.as_dict()!r})"
-        )
+        return f"ExtensibleGroup({self._owner.obj_type}.{self._wrapper_key}[{self._group_index - 1}], {self._snapshot()!r})"
 
 
 GroupT_co = TypeVar("GroupT_co", bound=ExtensibleGroup, covariant=True)
@@ -355,15 +408,18 @@ class ExtensibleList(Generic[GroupT_co]):
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def _coerce_item(self, item: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
+        """A new dict for one group: blank slots dropped, choices in their schema's spelling."""
         if item is not None and kwargs:
             raise TypeError("pass either a dict/group OR keyword arguments, not both")  # noqa: TRY003
         if isinstance(item, ExtensibleGroup):
-            return without_blank_slots(item.as_dict())
-        if isinstance(item, dict):
-            return without_blank_slots(cast("dict[str, Any]", item))
-        if item is None:
-            return without_blank_slots(kwargs)
-        raise TypeError(f"expected dict, ExtensibleGroup, or kwargs; got {type(item).__name__}")  # noqa: TRY003
+            group = without_blank_slots(item._snapshot())  # pyright: ignore[reportPrivateUsage]
+        elif isinstance(item, dict):
+            group = without_blank_slots(cast("dict[str, Any]", item))
+        elif item is None:
+            group = without_blank_slots(kwargs)
+        else:
+            raise TypeError(f"expected dict, ExtensibleGroup, or kwargs; got {type(item).__name__}")  # noqa: TRY003
+        return self._owner._canonical_slots(group)  # pyright: ignore[reportPrivateUsage]
 
     def _validate_inner(self, item: dict[str, Any]) -> None:
         unknown = [k for k in item if k not in self._inner_names]
@@ -443,15 +499,25 @@ class ExtensibleList(Generic[GroupT_co]):
     # an untyped ExtensibleGroup gives dict[str, Any]. Python has no way to also say the element is
     # an ExtensibleGroup, as every list's element already is.
     def as_list(self: ExtensibleList[_Snapshot[_ItemT]]) -> list[_ItemT]:  # pyright: ignore[reportInvalidTypeArguments]
-        """Snapshot the wrapper as a plain list of plain dicts."""
+        """Snapshot the wrapper as a plain list of plain dicts.
+
+        Each dict is the group's ``as_dict()``, so a group that lacks a key every supported release
+        requires raises :class:`~idfkit.exceptions.MissingRequiredFieldError`. ``obj.data`` holds
+        the stored groups as they are.
+        """
         return [g.as_dict() for g in self]
+
+    def _snapshots(self) -> list[dict[str, Any]]:
+        """Each group as a new dict of the keys it holds, whether or not one lacks a required key."""
+        return [dict(item) for item in self._items_or_empty()]
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, ExtensibleList):
-            return self.as_list() == other.as_list()
+            return self._snapshots() == cast("ExtensibleList[ExtensibleGroup]", other)._snapshots()
         if isinstance(other, list):
-            return self.as_list() == [
-                (g.as_dict() if isinstance(g, ExtensibleGroup) else g) for g in cast("list[Any]", other)
+            return self._snapshots() == [
+                (g._snapshot() if isinstance(g, ExtensibleGroup) else g)  # pyright: ignore[reportPrivateUsage]
+                for g in cast("list[Any]", other)
             ]
         return NotImplemented
 
@@ -459,7 +525,7 @@ class ExtensibleList(Generic[GroupT_co]):
         return id(self)
 
     def __repr__(self) -> str:
-        return f"ExtensibleList({self._owner.obj_type}.{self._wrapper_key}, {self.as_list()!r})"
+        return f"ExtensibleList({self._owner.obj_type}.{self._wrapper_key}, {self._snapshots()!r})"
 
 
 @lru_cache(maxsize=2048)
@@ -857,7 +923,9 @@ class IDFObject(EppyObjectMixin):
                 items = self._data.setdefault(self._wrapper_key, [])
                 while len(items) < group_idx:
                     items.append({})
-                assign_slot(cast("list[dict[str, Any]]", items)[group_idx - 1], base, value)
+                assign_slot(
+                    cast("list[dict[str, Any]]", items)[group_idx - 1], base, self._canonical_slot_value(base, value)
+                )
                 self._bump_version()
                 return
 
@@ -990,6 +1058,37 @@ class IDFObject(EppyObjectMixin):
             return
         doc.references.reindex_extensible(self, wrapper_key, ext_ref_fields)
 
+    def _choice_tables(self, *, extensible: bool) -> Mapping[str, ChoiceSpellings]:
+        """The choice spelling tables writes to this object are normalized with, keyed by field.
+
+        Empty unless the object belongs to a document that normalizes choices and has a schema for
+        its type: a detached object has no document to say which spelling is canonical.
+        """
+        doc = self._document
+        if doc is None or not doc.normalize_choices:
+            return NO_CHOICE_SPELLINGS
+        schema = doc.schema
+        pc = schema.get_parsing_cache(self._type) if schema is not None else None
+        if pc is None:
+            return NO_CHOICE_SPELLINGS
+        return pc.ext_choice_spellings if extensible else pc.choice_spellings
+
+    def _canonical_slot_value(self, name: str, value: Any) -> Any:
+        """*value* for the extensible slot *name*, in its schema's spelling when it is a choice."""
+        if not isinstance(value, str):
+            return value
+        return canonical_choice(self._choice_tables(extensible=True).get(name), value)
+
+    def _canonical_slots(self, slots: Mapping[str, Any]) -> dict[str, Any]:
+        """A copy of one extensible group's *slots*, each choice in its schema's spelling.
+
+        The tables are resolved once for the whole group rather than once per slot.
+        """
+        tables = self._choice_tables(extensible=True)
+        if not tables:
+            return dict(slots)
+        return {name: canonical_choice(tables.get(name), value) for name, value in slots.items()}
+
     def _set_field(self, python_key: str, value: Any) -> None:
         """Centralized data-field write with reference graph notification.
 
@@ -1009,6 +1108,8 @@ class IDFObject(EppyObjectMixin):
         over a field that is already unset is therefore not a change either, so
         ``obj.f = obj.f`` on a blank field leaves the object untouched.
         """
+        if isinstance(value, str):
+            value = canonical_choice(self._choice_tables(extensible=False).get(python_key), value)
         data = self._data
         blank = is_blank_slot(value)
         if python_key in data:
@@ -1539,10 +1640,16 @@ class IDFCollection(Generic[_T_co]):
             ``as_version`` first. A field whose key is not a Python name (``100_outdoor_air_in_cooling``)
             is not a keyword here; set it with ``IDFDocument.add`` or after creation.
 
-            The object is always validated, as ``IDFDocument.add`` validates by default; for
-            unvalidated bulk loading use ``doc.add(obj_type, ..., validate=False)``. Fields are passed
-            by keyword only; extensible groups go under their wrapper key (``vertices=[{...}, ...]``),
-            as with ``IDFDocument.add``.
+            The object is validated unless ``validate=False`` is passed, as with ``IDFDocument.add``:
+            then its values, required fields and ranges are not checked, which suits bulk loading of
+            data already known good, but a key the schema does not name still raises
+            ``InvalidFieldError``. This form is meant to replace the string-keyed
+            ``doc.add(obj_type, ...)``, so it takes the same switch; it used to validate always.
+            ``validate=False`` relaxes no required field for the type checker: a call that leaves
+            one out is still a type error, as it is without the switch. (Type-checking a call does
+            not stand in for validation: a value out of range, ``multiplier=-3``, type-checks.)
+            Fields are passed by keyword only; extensible groups go under their wrapper
+            key (``vertices=[{...}, ...]``), as with ``IDFDocument.add``.
 
             This method used to take an existing object and file it in the collection without
             validating it or linking it to the document. That form still runs, with a
@@ -1560,18 +1667,23 @@ class IDFCollection(Generic[_T_co]):
             Args:
                 *args: The object's name, the only positional argument; none for a type without a
                     Name field (``doc["Output:SQLite"].add(option_type="SimpleAndTabular")``).
-                **fields: Field values, by their Python field names.
+                **fields: Field values, by their Python field names, and ``validate``: ``False`` to
+                    skip validation as ``IDFDocument.add(..., validate=False)`` does (default
+                    ``True``).
 
             Returns:
                 The new object, typed as this collection's objects.
 
             Raises:
                 TypeError: If the collection belongs to no document (one constructed directly), a
-                    field is passed positionally, or the name is passed as ``name=``.
+                    field is passed positionally, the name is passed as ``name=``, or ``validate`` is
+                    not a bool.
                 UnknownObjectTypeError: If the collection's type is in no schema
                     (``doc.get_collection("Zoen")``).
                 ValidationFailedError: If validation fails (unknown fields, missing required fields,
                     invalid values).
+                InvalidFieldError: If a name is passed for a type without a Name field, in either
+                    mode; and, with ``validate=False``, if a field is not one of the type's.
                 DuplicateObjectError: If an object of the type already has the name, or the type is
                     a singleton that already has one.
 
@@ -1601,6 +1713,10 @@ class IDFCollection(Generic[_T_co]):
         if isinstance(legacy, IDFObject):
             # add(obj=...), the keyword spelling of the deprecated form.
             return self._append_deprecated(legacy)
+        validate = fields.pop("validate", True)
+        if not isinstance(validate, bool):
+            msg = f"add() takes validate=True or validate=False, not {validate!r}"
+            raise TypeError(msg)
         if "name" in fields:
             msg = f"add() takes the object's name positionally: add({fields['name']!r}, ...), not add(name=...)"
             raise TypeError(msg)
@@ -1620,7 +1736,7 @@ class IDFCollection(Generic[_T_co]):
             msg = f"add() takes 1 positional argument (the name) but {len(args)} were given; pass fields by keyword"
             raise TypeError(msg)
         name = cast("str", first) if args else ""
-        return document._create_in(self, name, fields)  # pyright: ignore[reportPrivateUsage]
+        return document._create_in(self, name, fields, validate)  # pyright: ignore[reportPrivateUsage]
 
     def _append_deprecated(self, obj: IDFObject) -> Any:
         """The deprecated ``add(obj)``: file an existing object as ``add`` used to, with a warning."""

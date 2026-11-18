@@ -41,6 +41,7 @@ class _FakePC:
     ext_field_names: list[str] = dc_field(default_factory=list)
     field_types: dict[str, str | None] = dc_field(default_factory=dict)
     ext_wrapper_key: str | None = "data"
+    ext_choice_spellings: dict[str, dict[str, str]] = dc_field(default_factory=dict)
 
 
 @pytest.fixture

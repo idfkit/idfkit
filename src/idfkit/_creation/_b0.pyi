@@ -19,6 +19,7 @@ class AnyZoneAirHeatBalanceAlgorithm:
         *,
         algorithm: Literal["AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"]
         | None = "ThirdOrderBackwardDifference",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneAirHeatBalanceAlgorithm`` and add it to the document.
 
@@ -43,6 +44,7 @@ class FloorAdiabatic:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Adiabatic`` and add it to the document.
 
@@ -68,6 +70,7 @@ class SurfacePropertyHeatTransferAlgorithmSurfaceList:
             _g.SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceItem
             | _g.SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:HeatTransferAlgorithm:SurfaceList`` and add it to the document.
 
@@ -95,6 +98,7 @@ class SurfacePropertyOtherSideCoefficients:
         previous_other_side_temperature_coefficient: float | None = 0,
         minimum_other_side_temperature_limit: float | None = ...,
         maximum_other_side_temperature_limit: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:OtherSideCoefficients`` and add it to the document.
 
@@ -111,6 +115,7 @@ class GroundHeatTransferBasementSimParameters:
         *,
         f_multiplier_for_the_adi_solution: float | None = ...,
         iyrs_maximum_number_of_yearly_iterations_: float | None = 15,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:SimParameters`` and add it to the document.
 
@@ -136,6 +141,7 @@ class OtherEquipmentDefinition:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``OtherEquipment:Definition`` and add it to the document.
 
@@ -172,6 +178,7 @@ class AirTerminalSingleDuctVAVReheat:
         maximum_reheat_air_temperature: float | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:Reheat`` and add it to the document.
 
@@ -217,6 +224,7 @@ class PlantEquipmentOperationOutdoorDewpointDifference:
         dewpoint_temperature_difference_range_10_lower_limit: float | None = ...,
         dewpoint_temperature_difference_range_10_upper_limit: float | None = ...,
         range_10_equipment_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:OutdoorDewpointDifference`` and add it to the document.
 
@@ -226,7 +234,9 @@ class PlantEquipmentOperationOutdoorDewpointDifference:
         """
 
 class EnergyManagementSystemTrendVariable:
-    def __call__(self, name: str, /, *, ems_variable_name: str, number_of_timesteps_to_be_logged: int) -> None:
+    def __call__(
+        self, name: str, /, *, ems_variable_name: str, number_of_timesteps_to_be_logged: int, validate: bool = True
+    ) -> None:
         """Create a new ``EnergyManagementSystem:TrendVariable`` and add it to the document.
 
         This object sets up an EMS trend variable from an Erl variable A trend variable logs values across timesteps
@@ -256,6 +266,7 @@ class AvailabilityManagerOptimumStart:
         initial_temperature_gradient_during_heating: float | None = ...,
         constant_start_time: float | None = ...,
         number_of_previous_days: int | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AvailabilityManager:OptimumStart`` and add it to the document.
 
@@ -280,6 +291,7 @@ class DemandManagerElectricEquipment:
         equipment: Sequence[
             _g.DemandManagerElectricEquipmentEquipmentItem | _g.DemandManagerElectricEquipmentEquipmentGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:ElectricEquipment`` and add it to the document.
 
@@ -313,6 +325,7 @@ class GeneratorPhotovoltaic:
         | None = "Decoupled",
         number_of_series_strings_in_parallel: float | None = 1,
         number_of_modules_in_series: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:Photovoltaic`` and add it to the document.
 
@@ -340,6 +353,7 @@ class CurveQuadratic:
         | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Quadratic`` and add it to the document.
 
@@ -365,6 +379,7 @@ class TableLookup:
         external_file_column_number: int | None = ...,
         external_file_starting_row_number: int | None = ...,
         values: Sequence[_g.TableLookupValuesItem | _g.TableLookupValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:Lookup`` and add it to the document.
 

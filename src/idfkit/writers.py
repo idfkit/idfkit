@@ -977,9 +977,10 @@ class EpJSONWriter:
         """Convert object to epJSON dict (excluding name).
 
         Drops blank values, writes each choice in the spelling its schema declares and each sizing
-        sentinel as the one its field declares (idfkit#180, idfkit#181). This happens here rather
-        than at parse because only the epJSON reader is strict about it: the IDF writer keeps the
-        author's text, which EnergyPlus reads either way, as in idfkit-js#60.
+        sentinel as the one its field declares (idfkit#180, idfkit#181). A document read or built
+        with ``normalize_choices=True``, the default, already holds that spelling; this also covers
+        one that opted out, since only the epJSON reader is strict about it. The IDF writer writes
+        what the document holds, which EnergyPlus reads in any case, as in idfkit-js#60.
         """
         wrapper_key = pc.ext_wrapper_key if pc is not None else None
         choice_spellings: Mapping[str, ChoiceSpellings] = pc.choice_spellings if pc is not None else {}

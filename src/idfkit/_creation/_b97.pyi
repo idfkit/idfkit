@@ -31,6 +31,7 @@ class SiteGroundTemperatureDeep:
         october_deep_ground_temperature: float | None = 16,
         november_deep_ground_temperature: float | None = 16,
         december_deep_ground_temperature: float | None = 16,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundTemperature:Deep`` and add it to the document.
 
@@ -49,6 +50,7 @@ class RoomAirNodeAirflowNetworkAdjacentSurfaceList:
             _g.RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesItem
             | _g.RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork:AdjacentSurfaceList`` and add it to the document.
 
@@ -65,6 +67,7 @@ class AnyAirflowNetworkDistributionComponentOutdoorAirFlow:
         air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float,
         air_mass_flow_exponent_when_no_outdoor_air_flow: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:OutdoorAirFlow`` and add it to the document.
 
@@ -189,6 +192,7 @@ class HVACTemplateSystemUnitarySystem:
         return_fan_delta_pressure: float | None = 300,
         return_fan_motor_efficiency: float | None = 0.9,
         return_fan_motor_in_air_stream_fraction: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:UnitarySystem`` and add it to the document.
 
@@ -215,6 +219,7 @@ class AirTerminalSingleDuctConstantVolumeReheat:
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
         maximum_reheat_air_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:Reheat`` and add it to the document.
 
@@ -240,6 +245,7 @@ class FanOnOff:
         fan_power_ratio_function_of_speed_ratio_curve_name: str | None = ...,
         fan_efficiency_ratio_function_of_speed_ratio_curve_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Fan:OnOff`` and add it to the document.
 
@@ -355,6 +361,7 @@ class CoilCoolingDXMultiSpeed:
         speed_4_evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
         speed_4_rated_evaporative_condenser_pump_power_consumption: float | Literal["Autosize"] | None = ...,
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:MultiSpeed`` and add it to the document.
 
@@ -378,6 +385,7 @@ class CoilCoolingDXVariableRefrigerantFlow:
         coil_air_outlet_node: str,
         availability_schedule_name: str | None = ...,
         name_of_water_storage_tank_for_condensate_collection: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:VariableRefrigerantFlow`` and add it to the document.
 
@@ -425,6 +433,7 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir:
         dehumidification_control_type: Literal["CoolReheat", "None"] | None = "None",
         heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         dx_heating_coil_sizing_ratio: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` and add it to the document.
 
@@ -448,6 +457,7 @@ class AnyGroundHeatExchangerSurface:
         surface_length: float | None = ...,
         surface_width: float | None = ...,
         lower_surface_environment: Literal["Exposed", "Ground"] | None = "Ground",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Surface`` and add it to the document.
 
@@ -471,6 +481,7 @@ class GroundHeatExchangerSurface:
         surface_length: float | None = ...,
         surface_width: float | None = ...,
         lower_surface_environment: Literal["Exposed", "Ground"] | None = "Ground",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Surface`` and add it to the document.
 
@@ -509,6 +520,7 @@ class GroundHeatExchangerHorizontalTrench:
         soil_moisture_content_percent: float | None = 30,
         soil_moisture_content_percent_at_saturation: float | None = 50,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:HorizontalTrench`` and add it to the document.
 
@@ -539,6 +551,7 @@ class ZoneHVACForcedAirUserDefined:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:ForcedAir:UserDefined`` and add it to the document.
 
@@ -569,6 +582,7 @@ class RefrigerationCondenserWaterCooled:
         condenser_refrigerant_operating_charge_inventory: float | None = ...,
         condensate_receiver_refrigerant_inventory: float | None = ...,
         condensate_piping_refrigerant_inventory: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:Condenser:WaterCooled`` and add it to the document.
 
@@ -600,6 +614,7 @@ class UtilityCostChargeSimple:
         ],
         cost_per_unit_value_or_variable_name: float | str,
         season: Literal["Annual", "Fall", "Spring", "Summer", "Winter"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UtilityCost:Charge:Simple`` and add it to the document.
 
@@ -618,6 +633,7 @@ class OutputTableMonthly:
         variable_details: Sequence[
             _g.OutputTableMonthlyVariableDetailsItem | _g.OutputTableMonthlyVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:Monthly`` and add it to the document.
 
@@ -635,6 +651,7 @@ class PythonPluginVariables:
         global_py_vars: Sequence[
             _g.PythonPluginVariablesGlobalPyVarsItem | _g.PythonPluginVariablesGlobalPyVarsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:Variables`` and add it to the document.
 

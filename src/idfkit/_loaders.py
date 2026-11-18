@@ -59,6 +59,7 @@ def load_idf(
     strict_parsing: bool = True,
     strict: bool = True,
     preserve_formatting: bool = False,
+    normalize_choices: bool = True,
 ) -> AnyIDFDocument:
     """
     Load an IDF file and return its document.
@@ -89,7 +90,15 @@ def load_idf(
         preserve_formatting: When ``True``, build a Concrete Syntax Tree
             (CST) so that :func:`write_idf` and :func:`save_idf`
             reproduce the original
-            formatting, comments, and whitespace for unmodified objects.
+            formatting, comments, and whitespace for unmodified objects. Choice
+            normalization does not affect this: an unmodified object is written as read.
+        normalize_choices: When ``True`` (the default), each choice value is stored in the
+            spelling its schema declares, whatever case the file used: a surface the file
+            calls ``WALL`` has ``surface_type == "Wall"``, as its ``Literal`` type says, so an
+            exhaustive ``match`` holds on models you did not write. EnergyPlus reads choices
+            case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
+            a choice field's ``Literal`` type then does not hold; see
+            :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
 
     Returns:
         The parsed document: an ``AnyIDFDocument``, or typed as ``as_type=`` or the
@@ -146,6 +155,7 @@ def load_idf(
         strict_parsing=strict_parsing,
         strict=strict,
         preserve_formatting=preserve_formatting,
+        normalize_choices=normalize_choices,
     )
     return _narrow(doc, path, as_type, since, before)
 
@@ -159,6 +169,7 @@ def load_idf_with_diagnostics(
     before: _Bound = None,
     strict: bool = True,
     preserve_formatting: bool = False,
+    normalize_choices: bool = True,
 ) -> ParseResult[AnyIDFDocument]:
     """
     Load an IDF file, keeping the findings that did not stop the parse.
@@ -190,6 +201,13 @@ def load_idf_with_diagnostics(
             of returning ``None``.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree (CST) so that
             :func:`write_idf` and :func:`save_idf` reproduce the original formatting.
+        normalize_choices: When ``True`` (the default), each choice value is stored in the
+            spelling its schema declares, whatever case the file used: a surface the file
+            calls ``WALL`` has ``surface_type == "Wall"``, as its ``Literal`` type says, so an
+            exhaustive ``match`` holds on models you did not write. EnergyPlus reads choices
+            case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
+            a choice field's ``Literal`` type then does not hold; see
+            :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
 
     Returns:
         A :class:`~idfkit.idf_parser.ParseResult`: the document, and the recoverable findings.
@@ -228,6 +246,7 @@ def load_idf_with_diagnostics(
         version=version,
         strict=strict,
         preserve_formatting=preserve_formatting,
+        normalize_choices=normalize_choices,
     )
     _narrow(result.document, path, as_type, since, before)
     return result
@@ -242,6 +261,7 @@ def load_epjson(
     before: _Bound = None,
     strict: bool = True,
     preserve_formatting: bool = False,
+    normalize_choices: bool = True,
 ) -> AnyIDFDocument:
     """
     Load an epJSON file and return its document.
@@ -263,6 +283,13 @@ def load_epjson(
             that :func:`write_epjson` and :func:`save_epjson` can
             reproduce it byte-for-byte
             when no objects have been modified.
+        normalize_choices: When ``True`` (the default), each choice value is stored in the
+            spelling its schema declares, whatever case the file used: a surface the file
+            calls ``WALL`` has ``surface_type == "Wall"``, as its ``Literal`` type says, so an
+            exhaustive ``match`` holds on models you did not write. EnergyPlus reads choices
+            case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
+            a choice field's ``Literal`` type then does not hold; see
+            :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
 
     Returns:
         The parsed document: an ``AnyIDFDocument``, or typed as ``as_type=`` or the
@@ -299,5 +326,11 @@ def load_epjson(
     strict = target_strictness(as_type, strict)
     if version is not None:
         check_supported_version(version)
-    doc = parse_epjson(Path(path), version=version, strict=strict, preserve_formatting=preserve_formatting)
+    doc = parse_epjson(
+        Path(path),
+        version=version,
+        strict=strict,
+        preserve_formatting=preserve_formatting,
+        normalize_choices=normalize_choices,
+    )
     return _narrow(doc, path, as_type, since, before)

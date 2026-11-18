@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any, Literal, TypeAlias, TypeVar, overload
 
-from typing_extensions import TypedDict, Unpack
+from typing_extensions import Required, TypedDict, Unpack, deprecated
 
 from . import _generated_types as _g
 from ._creation import _v0 as _cv0
@@ -3709,21 +3709,21 @@ class _ScheduleYear_v8_9Fields(_g._ScheduleYearCommonFields, total=False):
 class ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1(_g._TypedExtensibleGroup):
     """One schedule_weeks group inside :class:`ScheduleYear_v9_0_to_v22_1`."""
 
-    schedule_week_name: str | None
-    start_month: float | None
-    start_day: float | None
-    end_month: float | None
-    end_day: float | None
+    schedule_week_name: str
+    start_month: float
+    start_day: float
+    end_month: float
+    end_day: float
     def as_dict(self) -> ScheduleYearScheduleWeeksItem_v9_0_to_v22_1: ...  # type: ignore[override]
 
 class ScheduleYearScheduleWeeksItem_v9_0_to_v22_1(TypedDict, total=False):
-    """One group of :class:`ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    schedule_week_name: str | None
-    start_month: float | None
-    start_day: float | None
-    end_month: float | None
-    end_day: float | None
+    schedule_week_name: Required[str]
+    start_month: Required[float]
+    start_day: Required[float]
+    end_month: Required[float]
+    end_day: Required[float]
 
 class ScheduleYear_v9_0_to_v22_1(_g.AnyScheduleYear):
     """``Schedule:Year`` as declared in EnergyPlus 9.0.1 to 22.1.0. A Schedule:Year contains from 1 to 52 week schedules"""
@@ -4348,15 +4348,15 @@ class _ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields(_g._ZoneHVACHybridUnitaryHV
 class DaylightingControlsControlDataGroup_v8_9_to_v9_5(_g.AnyDaylightingControlsControlDataGroup):
     """One control_data group inside :class:`DaylightingControls_v8_9_to_v9_5`."""
 
-    daylighting_reference_point_name: str | None
+    daylighting_reference_point_name: str
     fraction_of_zone_controlled_by_reference_point: float | None
     illuminance_setpoint_at_reference_point: float | None
     def as_dict(self) -> DaylightingControlsControlDataItem_v8_9_to_v9_5: ...  # type: ignore[override]
 
 class DaylightingControlsControlDataItem_v8_9_to_v9_5(TypedDict, total=False):
-    """One group of :class:`DaylightingControlsControlDataGroup_v8_9_to_v9_5` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`DaylightingControlsControlDataGroup_v8_9_to_v9_5` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    daylighting_reference_point_name: str | None
+    daylighting_reference_point_name: Required[str]
     fraction_of_zone_controlled_by_reference_point: float | None
     illuminance_setpoint_at_reference_point: float | None
 
@@ -4383,15 +4383,15 @@ class _DaylightingControls_v8_9_to_v9_5Fields(_g._DaylightingControlsCommonField
 class DaylightingControlsControlDataGroup_v9_6_to_v22_1(_g.AnyDaylightingControlsControlDataGroup):
     """One control_data group inside :class:`DaylightingControls_v9_6_to_v22_1`."""
 
-    daylighting_reference_point_name: str | None
+    daylighting_reference_point_name: str
     fraction_of_lights_controlled_by_reference_point: float | None
     illuminance_setpoint_at_reference_point: float | None
     def as_dict(self) -> DaylightingControlsControlDataItem_v9_6_to_v22_1: ...  # type: ignore[override]
 
 class DaylightingControlsControlDataItem_v9_6_to_v22_1(TypedDict, total=False):
-    """One group of :class:`DaylightingControlsControlDataGroup_v9_6_to_v22_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`DaylightingControlsControlDataGroup_v9_6_to_v22_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    daylighting_reference_point_name: str | None
+    daylighting_reference_point_name: Required[str]
     fraction_of_lights_controlled_by_reference_point: float | None
     illuminance_setpoint_at_reference_point: float | None
 
@@ -4663,7 +4663,7 @@ class OutputTableAnnualVariableDetailsGroup_v8_9_to_v22_1(_g.AnyOutputTableAnnua
     def as_dict(self) -> OutputTableAnnualVariableDetailsItem_v8_9_to_v22_1: ...  # type: ignore[override]
 
 class OutputTableAnnualVariableDetailsItem_v8_9_to_v22_1(TypedDict, total=False):
-    """One group of :class:`OutputTableAnnualVariableDetailsGroup_v8_9_to_v22_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`OutputTableAnnualVariableDetailsGroup_v8_9_to_v22_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     variable_or_meter_or_ems_variable_or_field_name: str | None
     aggregation_type_for_variable_or_meter: (
@@ -6197,7 +6197,7 @@ class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1(_g._
     def as_dict(self) -> ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v8_9_to_v9_1: ...  # type: ignore[override]
 
 class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v8_9_to_v9_1(TypedDict, total=False):
-    """One group of :class:`ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     from_surface: str | None
     to_surface: str | None
@@ -6233,7 +6233,7 @@ class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v9_2_to_v9_3(_g._
     def as_dict(self) -> ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v9_2_to_v9_3: ...  # type: ignore[override]
 
 class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v9_2_to_v9_3(TypedDict, total=False):
-    """One group of :class:`ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v9_2_to_v9_3` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v9_2_to_v9_3` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     from_surface: str | None
     to_surface: str | None
@@ -7416,7 +7416,7 @@ class OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2(_g.AnyOutputTableSummar
     def as_dict(self) -> OutputTableSummaryReportsReportsItem_v8_9_to_v9_2: ...  # type: ignore[override]
 
 class OutputTableSummaryReportsReportsItem_v8_9_to_v9_2(TypedDict, total=False):
-    """One group of :class:`OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     report_name: str | None
 
@@ -7544,7 +7544,7 @@ class OutputTableSummaryReportsReportsGroup_v9_3(_g.AnyOutputTableSummaryReports
     def as_dict(self) -> OutputTableSummaryReportsReportsItem_v9_3: ...  # type: ignore[override]
 
 class OutputTableSummaryReportsReportsItem_v9_3(TypedDict, total=False):
-    """One group of :class:`OutputTableSummaryReportsReportsGroup_v9_3` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`OutputTableSummaryReportsReportsGroup_v9_3` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     report_name: (
         Literal[
@@ -7775,7 +7775,7 @@ class OutputTableSummaryReportsReportsGroup_v9_4(_g.AnyOutputTableSummaryReports
     def as_dict(self) -> OutputTableSummaryReportsReportsItem_v9_4: ...  # type: ignore[override]
 
 class OutputTableSummaryReportsReportsItem_v9_4(TypedDict, total=False):
-    """One group of :class:`OutputTableSummaryReportsReportsGroup_v9_4` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`OutputTableSummaryReportsReportsGroup_v9_4` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     report_name: (
         Literal[
@@ -10713,15 +10713,15 @@ class ControllerMechanicalVentilationZoneSpecificationsGroup_v8_9_to_v9_2(
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation_v8_9_to_v9_2`."""
 
     design_specification_outdoor_air_object_name: str | None
-    zone_name: str | None
+    zone_name: str
     design_specification_zone_air_distribution_object_name: str | None
     def as_dict(self) -> ControllerMechanicalVentilationZoneSpecificationsItem_v8_9_to_v9_2: ...  # type: ignore[override]
 
 class ControllerMechanicalVentilationZoneSpecificationsItem_v8_9_to_v9_2(TypedDict, total=False):
-    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v8_9_to_v9_2` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v8_9_to_v9_2` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     design_specification_outdoor_air_object_name: str | None
-    zone_name: str | None
+    zone_name: Required[str]
     design_specification_zone_air_distribution_object_name: str | None
 
 class ControllerMechanicalVentilation_v8_9_to_v9_2(_g.AnyControllerMechanicalVentilation):
@@ -10775,15 +10775,15 @@ class ControllerMechanicalVentilationZoneSpecificationsGroup_v9_3_to_v9_4(
 ):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation_v9_3_to_v9_4`."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
     def as_dict(self) -> ControllerMechanicalVentilationZoneSpecificationsItem_v9_3_to_v9_4: ...  # type: ignore[override]
 
 class ControllerMechanicalVentilationZoneSpecificationsItem_v9_3_to_v9_4(TypedDict, total=False):
-    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v9_3_to_v9_4` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v9_3_to_v9_4` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: Required[str]
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
 
@@ -10838,15 +10838,15 @@ class ControllerMechanicalVentilationZoneSpecificationsGroup_v9_5(
 ):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation_v9_5`."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
     def as_dict(self) -> ControllerMechanicalVentilationZoneSpecificationsItem_v9_5: ...  # type: ignore[override]
 
 class ControllerMechanicalVentilationZoneSpecificationsItem_v9_5(TypedDict, total=False):
-    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v9_5` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v9_5` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: Required[str]
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
 
@@ -11551,15 +11551,15 @@ class _EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1Fields(
 class TableOneIndependentVariableValuesGroup_v8_9(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableOneIndependentVariable_v8_9`."""
 
-    output_value_1: float | None
-    x_value_1: float | None
+    output_value_1: float
+    x_value_1: float
     def as_dict(self) -> TableOneIndependentVariableValuesItem_v8_9: ...  # type: ignore[override]
 
 class TableOneIndependentVariableValuesItem_v8_9(TypedDict, total=False):
-    """One group of :class:`TableOneIndependentVariableValuesGroup_v8_9` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableOneIndependentVariableValuesGroup_v8_9` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    output_value_1: float | None
-    x_value_1: float | None
+    output_value_1: Required[float]
+    x_value_1: Required[float]
 
 class TableOneIndependentVariable_v8_9(_g._TypedIDFObject):
     """``Table:OneIndependentVariable`` as declared in EnergyPlus 8.9.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
@@ -11612,15 +11612,15 @@ class _TableOneIndependentVariable_v8_9Fields(TypedDict, total=False):
 class TableOneIndependentVariableValuesGroup_v9_0_to_v9_1(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableOneIndependentVariable_v9_0_to_v9_1`."""
 
-    output_value_1: float | None
-    x_value_1: float | None
+    output_value_1: float
+    x_value_1: float
     def as_dict(self) -> TableOneIndependentVariableValuesItem_v9_0_to_v9_1: ...  # type: ignore[override]
 
 class TableOneIndependentVariableValuesItem_v9_0_to_v9_1(TypedDict, total=False):
-    """One group of :class:`TableOneIndependentVariableValuesGroup_v9_0_to_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableOneIndependentVariableValuesGroup_v9_0_to_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    output_value_1: float | None
-    x_value_1: float | None
+    output_value_1: Required[float]
+    x_value_1: Required[float]
 
 class TableOneIndependentVariable_v9_0_to_v9_1(_g._TypedIDFObject):
     """``Table:OneIndependentVariable`` as declared in EnergyPlus 9.0.1 to 9.1.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
@@ -12643,54 +12643,51 @@ class _CentralHeatPumpSystem_v22_2_to_v26_1Fields(_g._CentralHeatPumpSystemCommo
 class ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0(_g.AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v8_9_to_v9_0`."""
 
-    zone_equipment_object_type: (
-        Literal[
-            "AirLoopHVAC:UnitarySystem",
-            "AirTerminal:SingleDuct:Uncontrolled",
-            "Fan:ZoneExhaust",
-            "HeatExchanger:AirToAir:FlatPlate",
-            "WaterHeater:HeatPump:PumpedCondenser",
-            "WaterHeater:HeatPump:WrappedCondenser",
-            "ZoneHVAC:AirDistributionUnit",
-            "ZoneHVAC:Baseboard:Convective:Electric",
-            "ZoneHVAC:Baseboard:Convective:Water",
-            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
-            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
-            "ZoneHVAC:Baseboard:RadiantConvective:Water",
-            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
-            "ZoneHVAC:Dehumidifier:DX",
-            "ZoneHVAC:EnergyRecoveryVentilator",
-            "ZoneHVAC:EvaporativeCoolerUnit",
-            "ZoneHVAC:ForcedAir:UserDefined",
-            "ZoneHVAC:FourPipeFanCoil",
-            "ZoneHVAC:HighTemperatureRadiant",
-            "ZoneHVAC:HybridUnitaryHVAC",
-            "ZoneHVAC:IdealLoadsAirSystem",
-            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
-            "ZoneHVAC:LowTemperatureRadiant:Electric",
-            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
-            "ZoneHVAC:OutdoorAirUnit",
-            "ZoneHVAC:PackagedTerminalAirConditioner",
-            "ZoneHVAC:PackagedTerminalHeatPump",
-            "ZoneHVAC:RefrigerationChillerSet",
-            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
-            "ZoneHVAC:UnitHeater",
-            "ZoneHVAC:UnitVentilator",
-            "ZoneHVAC:VentilatedSlab",
-            "ZoneHVAC:WaterToAirHeatPump",
-            "ZoneHVAC:WindowAirConditioner",
-        ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
-    zone_equipment_cooling_sequence: float | None
-    zone_equipment_name: str | None
+    zone_equipment_object_type: Literal[
+        "AirLoopHVAC:UnitarySystem",
+        "AirTerminal:SingleDuct:Uncontrolled",
+        "Fan:ZoneExhaust",
+        "HeatExchanger:AirToAir:FlatPlate",
+        "WaterHeater:HeatPump:PumpedCondenser",
+        "WaterHeater:HeatPump:WrappedCondenser",
+        "ZoneHVAC:AirDistributionUnit",
+        "ZoneHVAC:Baseboard:Convective:Electric",
+        "ZoneHVAC:Baseboard:Convective:Water",
+        "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+        "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+        "ZoneHVAC:Baseboard:RadiantConvective:Water",
+        "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+        "ZoneHVAC:Dehumidifier:DX",
+        "ZoneHVAC:EnergyRecoveryVentilator",
+        "ZoneHVAC:EvaporativeCoolerUnit",
+        "ZoneHVAC:ForcedAir:UserDefined",
+        "ZoneHVAC:FourPipeFanCoil",
+        "ZoneHVAC:HighTemperatureRadiant",
+        "ZoneHVAC:HybridUnitaryHVAC",
+        "ZoneHVAC:IdealLoadsAirSystem",
+        "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+        "ZoneHVAC:LowTemperatureRadiant:Electric",
+        "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+        "ZoneHVAC:OutdoorAirUnit",
+        "ZoneHVAC:PackagedTerminalAirConditioner",
+        "ZoneHVAC:PackagedTerminalHeatPump",
+        "ZoneHVAC:RefrigerationChillerSet",
+        "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+        "ZoneHVAC:UnitHeater",
+        "ZoneHVAC:UnitVentilator",
+        "ZoneHVAC:VentilatedSlab",
+        "ZoneHVAC:WaterToAirHeatPump",
+        "ZoneHVAC:WindowAirConditioner",
+    ]
+    zone_equipment_heating_or_no_load_sequence: float
+    zone_equipment_cooling_sequence: float
+    zone_equipment_name: str
     def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0: ...  # type: ignore[override]
 
 class ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0(TypedDict, total=False):
-    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_equipment_object_type: (
+    zone_equipment_object_type: Required[
         Literal[
             "AirLoopHVAC:UnitarySystem",
             "AirTerminal:SingleDuct:Uncontrolled",
@@ -12727,11 +12724,10 @@ class ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0(TypedDict, total=False):
             "ZoneHVAC:WaterToAirHeatPump",
             "ZoneHVAC:WindowAirConditioner",
         ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
-    zone_equipment_cooling_sequence: float | None
-    zone_equipment_name: str | None
+    ]
+    zone_equipment_heating_or_no_load_sequence: Required[float]
+    zone_equipment_cooling_sequence: Required[float]
+    zone_equipment_name: Required[str]
 
 class ZoneHVACEquipmentList_v8_9_to_v9_0(_g.AnyZoneHVACEquipmentList):
     """``ZoneHVAC:EquipmentList`` as declared in EnergyPlus 8.9.0 to 9.0.1. List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit or AirTerminal:SingleDuct:Uncontrolled ..."""
@@ -12751,59 +12747,56 @@ class _ZoneHVACEquipmentList_v8_9_to_v9_0Fields(_g._ZoneHVACEquipmentListCommonF
 class ZoneHVACEquipmentListEquipmentGroup_v9_1(_g.AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v9_1`."""
 
-    zone_equipment_cooling_sequence: float | None
+    zone_equipment_cooling_sequence: float
     zone_equipment_sequential_heating_fraction: float | None
-    zone_equipment_name: str | None
-    zone_equipment_object_type: (
-        Literal[
-            "AirLoopHVAC:UnitarySystem",
-            "AirTerminal:SingleDuct:Uncontrolled",
-            "Fan:ZoneExhaust",
-            "HeatExchanger:AirToAir:FlatPlate",
-            "WaterHeater:HeatPump:PumpedCondenser",
-            "WaterHeater:HeatPump:WrappedCondenser",
-            "ZoneHVAC:AirDistributionUnit",
-            "ZoneHVAC:Baseboard:Convective:Electric",
-            "ZoneHVAC:Baseboard:Convective:Water",
-            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
-            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
-            "ZoneHVAC:Baseboard:RadiantConvective:Water",
-            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
-            "ZoneHVAC:Dehumidifier:DX",
-            "ZoneHVAC:EnergyRecoveryVentilator",
-            "ZoneHVAC:EvaporativeCoolerUnit",
-            "ZoneHVAC:ForcedAir:UserDefined",
-            "ZoneHVAC:FourPipeFanCoil",
-            "ZoneHVAC:HighTemperatureRadiant",
-            "ZoneHVAC:HybridUnitaryHVAC",
-            "ZoneHVAC:IdealLoadsAirSystem",
-            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
-            "ZoneHVAC:LowTemperatureRadiant:Electric",
-            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
-            "ZoneHVAC:OutdoorAirUnit",
-            "ZoneHVAC:PackagedTerminalAirConditioner",
-            "ZoneHVAC:PackagedTerminalHeatPump",
-            "ZoneHVAC:RefrigerationChillerSet",
-            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
-            "ZoneHVAC:UnitHeater",
-            "ZoneHVAC:UnitVentilator",
-            "ZoneHVAC:VentilatedSlab",
-            "ZoneHVAC:WaterToAirHeatPump",
-            "ZoneHVAC:WindowAirConditioner",
-        ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
+    zone_equipment_name: str
+    zone_equipment_object_type: Literal[
+        "AirLoopHVAC:UnitarySystem",
+        "AirTerminal:SingleDuct:Uncontrolled",
+        "Fan:ZoneExhaust",
+        "HeatExchanger:AirToAir:FlatPlate",
+        "WaterHeater:HeatPump:PumpedCondenser",
+        "WaterHeater:HeatPump:WrappedCondenser",
+        "ZoneHVAC:AirDistributionUnit",
+        "ZoneHVAC:Baseboard:Convective:Electric",
+        "ZoneHVAC:Baseboard:Convective:Water",
+        "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+        "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+        "ZoneHVAC:Baseboard:RadiantConvective:Water",
+        "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+        "ZoneHVAC:Dehumidifier:DX",
+        "ZoneHVAC:EnergyRecoveryVentilator",
+        "ZoneHVAC:EvaporativeCoolerUnit",
+        "ZoneHVAC:ForcedAir:UserDefined",
+        "ZoneHVAC:FourPipeFanCoil",
+        "ZoneHVAC:HighTemperatureRadiant",
+        "ZoneHVAC:HybridUnitaryHVAC",
+        "ZoneHVAC:IdealLoadsAirSystem",
+        "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+        "ZoneHVAC:LowTemperatureRadiant:Electric",
+        "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+        "ZoneHVAC:OutdoorAirUnit",
+        "ZoneHVAC:PackagedTerminalAirConditioner",
+        "ZoneHVAC:PackagedTerminalHeatPump",
+        "ZoneHVAC:RefrigerationChillerSet",
+        "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+        "ZoneHVAC:UnitHeater",
+        "ZoneHVAC:UnitVentilator",
+        "ZoneHVAC:VentilatedSlab",
+        "ZoneHVAC:WaterToAirHeatPump",
+        "ZoneHVAC:WindowAirConditioner",
+    ]
+    zone_equipment_heating_or_no_load_sequence: float
     zone_equipment_sequential_cooling_fraction: float | None
     def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem_v9_1: ...  # type: ignore[override]
 
 class ZoneHVACEquipmentListEquipmentItem_v9_1(TypedDict, total=False):
-    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_equipment_cooling_sequence: float | None
+    zone_equipment_cooling_sequence: Required[float]
     zone_equipment_sequential_heating_fraction: float | None
-    zone_equipment_name: str | None
-    zone_equipment_object_type: (
+    zone_equipment_name: Required[str]
+    zone_equipment_object_type: Required[
         Literal[
             "AirLoopHVAC:UnitarySystem",
             "AirTerminal:SingleDuct:Uncontrolled",
@@ -12840,9 +12833,8 @@ class ZoneHVACEquipmentListEquipmentItem_v9_1(TypedDict, total=False):
             "ZoneHVAC:WaterToAirHeatPump",
             "ZoneHVAC:WindowAirConditioner",
         ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
+    ]
+    zone_equipment_heating_or_no_load_sequence: Required[float]
     zone_equipment_sequential_cooling_fraction: float | None
 
 class ZoneHVACEquipmentList_v9_1(_g.AnyZoneHVACEquipmentList):
@@ -12861,60 +12853,57 @@ class _ZoneHVACEquipmentList_v9_1Fields(_g._ZoneHVACEquipmentListCommonFields, t
 class ZoneHVACEquipmentListEquipmentGroup_v9_2(_g.AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v9_2`."""
 
-    zone_equipment_cooling_sequence: float | None
+    zone_equipment_cooling_sequence: float
     zone_equipment_sequential_cooling_fraction_schedule_name: str | None
     zone_equipment_sequential_heating_fraction_schedule_name: str | None
-    zone_equipment_name: str | None
-    zone_equipment_object_type: (
-        Literal[
-            "AirLoopHVAC:UnitarySystem",
-            "AirTerminal:SingleDuct:Uncontrolled",
-            "Fan:ZoneExhaust",
-            "HeatExchanger:AirToAir:FlatPlate",
-            "WaterHeater:HeatPump:PumpedCondenser",
-            "WaterHeater:HeatPump:WrappedCondenser",
-            "ZoneHVAC:AirDistributionUnit",
-            "ZoneHVAC:Baseboard:Convective:Electric",
-            "ZoneHVAC:Baseboard:Convective:Water",
-            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
-            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
-            "ZoneHVAC:Baseboard:RadiantConvective:Water",
-            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
-            "ZoneHVAC:Dehumidifier:DX",
-            "ZoneHVAC:EnergyRecoveryVentilator",
-            "ZoneHVAC:EvaporativeCoolerUnit",
-            "ZoneHVAC:ForcedAir:UserDefined",
-            "ZoneHVAC:FourPipeFanCoil",
-            "ZoneHVAC:HighTemperatureRadiant",
-            "ZoneHVAC:HybridUnitaryHVAC",
-            "ZoneHVAC:IdealLoadsAirSystem",
-            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
-            "ZoneHVAC:LowTemperatureRadiant:Electric",
-            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
-            "ZoneHVAC:OutdoorAirUnit",
-            "ZoneHVAC:PackagedTerminalAirConditioner",
-            "ZoneHVAC:PackagedTerminalHeatPump",
-            "ZoneHVAC:RefrigerationChillerSet",
-            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
-            "ZoneHVAC:UnitHeater",
-            "ZoneHVAC:UnitVentilator",
-            "ZoneHVAC:VentilatedSlab",
-            "ZoneHVAC:WaterToAirHeatPump",
-            "ZoneHVAC:WindowAirConditioner",
-        ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
+    zone_equipment_name: str
+    zone_equipment_object_type: Literal[
+        "AirLoopHVAC:UnitarySystem",
+        "AirTerminal:SingleDuct:Uncontrolled",
+        "Fan:ZoneExhaust",
+        "HeatExchanger:AirToAir:FlatPlate",
+        "WaterHeater:HeatPump:PumpedCondenser",
+        "WaterHeater:HeatPump:WrappedCondenser",
+        "ZoneHVAC:AirDistributionUnit",
+        "ZoneHVAC:Baseboard:Convective:Electric",
+        "ZoneHVAC:Baseboard:Convective:Water",
+        "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+        "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+        "ZoneHVAC:Baseboard:RadiantConvective:Water",
+        "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+        "ZoneHVAC:Dehumidifier:DX",
+        "ZoneHVAC:EnergyRecoveryVentilator",
+        "ZoneHVAC:EvaporativeCoolerUnit",
+        "ZoneHVAC:ForcedAir:UserDefined",
+        "ZoneHVAC:FourPipeFanCoil",
+        "ZoneHVAC:HighTemperatureRadiant",
+        "ZoneHVAC:HybridUnitaryHVAC",
+        "ZoneHVAC:IdealLoadsAirSystem",
+        "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+        "ZoneHVAC:LowTemperatureRadiant:Electric",
+        "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+        "ZoneHVAC:OutdoorAirUnit",
+        "ZoneHVAC:PackagedTerminalAirConditioner",
+        "ZoneHVAC:PackagedTerminalHeatPump",
+        "ZoneHVAC:RefrigerationChillerSet",
+        "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+        "ZoneHVAC:UnitHeater",
+        "ZoneHVAC:UnitVentilator",
+        "ZoneHVAC:VentilatedSlab",
+        "ZoneHVAC:WaterToAirHeatPump",
+        "ZoneHVAC:WindowAirConditioner",
+    ]
+    zone_equipment_heating_or_no_load_sequence: float
     def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem_v9_2: ...  # type: ignore[override]
 
 class ZoneHVACEquipmentListEquipmentItem_v9_2(TypedDict, total=False):
-    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_2` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_2` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_equipment_cooling_sequence: float | None
+    zone_equipment_cooling_sequence: Required[float]
     zone_equipment_sequential_cooling_fraction_schedule_name: str | None
     zone_equipment_sequential_heating_fraction_schedule_name: str | None
-    zone_equipment_name: str | None
-    zone_equipment_object_type: (
+    zone_equipment_name: Required[str]
+    zone_equipment_object_type: Required[
         Literal[
             "AirLoopHVAC:UnitarySystem",
             "AirTerminal:SingleDuct:Uncontrolled",
@@ -12951,9 +12940,8 @@ class ZoneHVACEquipmentListEquipmentItem_v9_2(TypedDict, total=False):
             "ZoneHVAC:WaterToAirHeatPump",
             "ZoneHVAC:WindowAirConditioner",
         ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
+    ]
+    zone_equipment_heating_or_no_load_sequence: Required[float]
 
 class ZoneHVACEquipmentList_v9_2(_g.AnyZoneHVACEquipmentList):
     """``ZoneHVAC:EquipmentList`` as declared in EnergyPlus 9.2.0. List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit or AirTerminal:SingleDuct:Uncontrolled ..."""
@@ -12971,55 +12959,52 @@ class _ZoneHVACEquipmentList_v9_2Fields(_g._ZoneHVACEquipmentListCommonFields, t
 class ZoneHVACEquipmentListEquipmentGroup_v9_3_to_v22_1(_g.AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v9_3_to_v22_1`."""
 
-    zone_equipment_object_type: (
-        Literal[
-            "AirLoopHVAC:UnitarySystem",
-            "Fan:ZoneExhaust",
-            "HeatExchanger:AirToAir:FlatPlate",
-            "WaterHeater:HeatPump:PumpedCondenser",
-            "WaterHeater:HeatPump:WrappedCondenser",
-            "ZoneHVAC:AirDistributionUnit",
-            "ZoneHVAC:Baseboard:Convective:Electric",
-            "ZoneHVAC:Baseboard:Convective:Water",
-            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
-            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
-            "ZoneHVAC:Baseboard:RadiantConvective:Water",
-            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
-            "ZoneHVAC:Dehumidifier:DX",
-            "ZoneHVAC:EnergyRecoveryVentilator",
-            "ZoneHVAC:EvaporativeCoolerUnit",
-            "ZoneHVAC:ForcedAir:UserDefined",
-            "ZoneHVAC:FourPipeFanCoil",
-            "ZoneHVAC:HighTemperatureRadiant",
-            "ZoneHVAC:HybridUnitaryHVAC",
-            "ZoneHVAC:IdealLoadsAirSystem",
-            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
-            "ZoneHVAC:LowTemperatureRadiant:Electric",
-            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
-            "ZoneHVAC:OutdoorAirUnit",
-            "ZoneHVAC:PackagedTerminalAirConditioner",
-            "ZoneHVAC:PackagedTerminalHeatPump",
-            "ZoneHVAC:RefrigerationChillerSet",
-            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
-            "ZoneHVAC:UnitHeater",
-            "ZoneHVAC:UnitVentilator",
-            "ZoneHVAC:VentilatedSlab",
-            "ZoneHVAC:WaterToAirHeatPump",
-            "ZoneHVAC:WindowAirConditioner",
-        ]
-        | None
-    )
-    zone_equipment_name: str | None
-    zone_equipment_cooling_sequence: float | None
-    zone_equipment_heating_or_no_load_sequence: float | None
+    zone_equipment_object_type: Literal[
+        "AirLoopHVAC:UnitarySystem",
+        "Fan:ZoneExhaust",
+        "HeatExchanger:AirToAir:FlatPlate",
+        "WaterHeater:HeatPump:PumpedCondenser",
+        "WaterHeater:HeatPump:WrappedCondenser",
+        "ZoneHVAC:AirDistributionUnit",
+        "ZoneHVAC:Baseboard:Convective:Electric",
+        "ZoneHVAC:Baseboard:Convective:Water",
+        "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+        "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+        "ZoneHVAC:Baseboard:RadiantConvective:Water",
+        "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+        "ZoneHVAC:Dehumidifier:DX",
+        "ZoneHVAC:EnergyRecoveryVentilator",
+        "ZoneHVAC:EvaporativeCoolerUnit",
+        "ZoneHVAC:ForcedAir:UserDefined",
+        "ZoneHVAC:FourPipeFanCoil",
+        "ZoneHVAC:HighTemperatureRadiant",
+        "ZoneHVAC:HybridUnitaryHVAC",
+        "ZoneHVAC:IdealLoadsAirSystem",
+        "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+        "ZoneHVAC:LowTemperatureRadiant:Electric",
+        "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+        "ZoneHVAC:OutdoorAirUnit",
+        "ZoneHVAC:PackagedTerminalAirConditioner",
+        "ZoneHVAC:PackagedTerminalHeatPump",
+        "ZoneHVAC:RefrigerationChillerSet",
+        "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+        "ZoneHVAC:UnitHeater",
+        "ZoneHVAC:UnitVentilator",
+        "ZoneHVAC:VentilatedSlab",
+        "ZoneHVAC:WaterToAirHeatPump",
+        "ZoneHVAC:WindowAirConditioner",
+    ]
+    zone_equipment_name: str
+    zone_equipment_cooling_sequence: float
+    zone_equipment_heating_or_no_load_sequence: float
     zone_equipment_sequential_cooling_fraction_schedule_name: str | None
     zone_equipment_sequential_heating_fraction_schedule_name: str | None
     def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem_v9_3_to_v22_1: ...  # type: ignore[override]
 
 class ZoneHVACEquipmentListEquipmentItem_v9_3_to_v22_1(TypedDict, total=False):
-    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_3_to_v22_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_3_to_v22_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_equipment_object_type: (
+    zone_equipment_object_type: Required[
         Literal[
             "AirLoopHVAC:UnitarySystem",
             "Fan:ZoneExhaust",
@@ -13055,11 +13040,10 @@ class ZoneHVACEquipmentListEquipmentItem_v9_3_to_v22_1(TypedDict, total=False):
             "ZoneHVAC:WaterToAirHeatPump",
             "ZoneHVAC:WindowAirConditioner",
         ]
-        | None
-    )
-    zone_equipment_name: str | None
-    zone_equipment_cooling_sequence: float | None
-    zone_equipment_heating_or_no_load_sequence: float | None
+    ]
+    zone_equipment_name: Required[str]
+    zone_equipment_cooling_sequence: Required[float]
+    zone_equipment_heating_or_no_load_sequence: Required[float]
     zone_equipment_sequential_cooling_fraction_schedule_name: str | None
     zone_equipment_sequential_heating_fraction_schedule_name: str | None
 
@@ -13311,7 +13295,7 @@ class TableMultiVariableLookupValuesGroup_v8_9(_g._TypedExtensibleGroup):
     def as_dict(self) -> TableMultiVariableLookupValuesItem_v8_9: ...  # type: ignore[override]
 
 class TableMultiVariableLookupValuesItem_v8_9(TypedDict, total=False):
-    """One group of :class:`TableMultiVariableLookupValuesGroup_v8_9` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableMultiVariableLookupValuesGroup_v8_9` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     field_determined_by_the_number_of_independent_variables: float | None
 
@@ -13476,7 +13460,7 @@ class TableMultiVariableLookupValuesGroup_v9_0_to_v9_1(_g._TypedExtensibleGroup)
     def as_dict(self) -> TableMultiVariableLookupValuesItem_v9_0_to_v9_1: ...  # type: ignore[override]
 
 class TableMultiVariableLookupValuesItem_v9_0_to_v9_1(TypedDict, total=False):
-    """One group of :class:`TableMultiVariableLookupValuesGroup_v9_0_to_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableMultiVariableLookupValuesGroup_v9_0_to_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     field_determined_by_the_number_of_independent_variables: float | None
 
@@ -14836,7 +14820,7 @@ class TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1(_g._TypedExtensibleGr
     def as_dict(self) -> TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1: ...  # type: ignore[override]
 
 class TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1(TypedDict, total=False):
-    """One group of :class:`TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     output_value_1: float | None
     y_value_1: float | None
@@ -16515,7 +16499,7 @@ class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v8_9_to_v9_2
     def as_dict(self) -> RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v8_9_to_v9_2: ...  # type: ignore[override]
 
 class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v8_9_to_v9_2(TypedDict, total=False):
-    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v8_9_to_v9_2` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v8_9_to_v9_2` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     fraction_of_output_or_supply_air_from_hvac_equipment: float | None
     fraction_of_input_or_return_air_to_hvac_equipment: float | None
@@ -16637,7 +16621,7 @@ class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v9_3_to_v24_
     def as_dict(self) -> RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v9_3_to_v24_1: ...  # type: ignore[override]
 
 class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v9_3_to_v24_1(TypedDict, total=False):
-    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v9_3_to_v24_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v9_3_to_v24_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     zonehvac_or_air_terminal_equipment_object_type: (
         Literal[
@@ -17589,7 +17573,7 @@ class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4(
     def as_dict(self) -> RoomAirNodeAirflowNetworkInternalGainsGainsItem_v8_9_to_v9_4: ...  # type: ignore[override]
 
 class RoomAirNodeAirflowNetworkInternalGainsGainsItem_v8_9_to_v9_4(TypedDict, total=False):
-    """One group of :class:`RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     internal_gain_object_type: (
         Literal[
@@ -18273,7 +18257,7 @@ class PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6(_g._TypedExtensible
     def as_dict(self) -> PythonPluginSearchPathsPySearchPathsItem_v9_4_to_v9_6: ...  # type: ignore[override]
 
 class PythonPluginSearchPathsPySearchPathsItem_v9_4_to_v9_6(TypedDict, total=False):
-    """One group of :class:`PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     search_path: str | None
 
@@ -19107,10 +19091,24 @@ class _ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1Fields(
 
 class _Accessors_v8_9:
     @property
+    def airflow_network_distribution_component_outdoor_air_flow(
+        self,
+    ) -> IDFCollection[AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_distribution_component_outdoor_air_flows is deprecated: a model holds at most one AirflowNetwork:Distribution:Component:OutdoorAirFlow, so its accessor is doc.airflow_network_distribution_component_outdoor_air_flow"
+    )
     def airflow_network_distribution_component_outdoor_air_flows(
         self,
     ) -> IDFCollection[AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9]: ...
     @property
+    def airflow_network_distribution_component_relief_air_flow(
+        self,
+    ) -> IDFCollection[AirflowNetworkDistributionComponentReliefAirFlow_v8_9]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_distribution_component_relief_air_flows is deprecated: a model holds at most one AirflowNetwork:Distribution:Component:ReliefAirFlow, so its accessor is doc.airflow_network_distribution_component_relief_air_flow"
+    )
     def airflow_network_distribution_component_relief_air_flows(
         self,
     ) -> IDFCollection[AirflowNetworkDistributionComponentReliefAirFlow_v8_9]: ...
@@ -19329,6 +19327,11 @@ class _Accessors_v8_9_to_v9_2:
         self,
     ) -> IDFCollection[RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2]: ...
     @property
+    def shadow_calculation(self) -> IDFCollection[ShadowCalculation_v8_9_to_v9_2]: ...
+    @property
+    @deprecated(
+        "doc.shadow_calculations is deprecated: a model holds at most one ShadowCalculation, so its accessor is doc.shadow_calculation"
+    )
     def shadow_calculations(self) -> IDFCollection[ShadowCalculation_v8_9_to_v9_2]: ...
     @property
     def water_heater_mixeds(self) -> IDFCollection[WaterHeaterMixed_v8_9_to_v9_2]: ...
@@ -19349,6 +19352,11 @@ class _Accessors_v8_9_to_v9_3:
     @property
     def curve_double_exponential_decays(self) -> IDFCollection[CurveDoubleExponentialDecay_v8_9_to_v9_3]: ...
     @property
+    def output_debugging_data(self) -> IDFCollection[OutputDebuggingData_v8_9_to_v9_3]: ...
+    @property
+    @deprecated(
+        "doc.output_debugging_datas is deprecated: a model holds at most one Output:DebuggingData, so its accessor is doc.output_debugging_data"
+    )
     def output_debugging_datas(self) -> IDFCollection[OutputDebuggingData_v8_9_to_v9_3]: ...
     @property
     def output_diagnostics(self) -> IDFCollection[OutputDiagnostics_v8_9_to_v9_3]: ...
@@ -19367,6 +19375,11 @@ class _Accessors_v8_9_to_v9_3:
 
 class _Accessors_v8_9_to_v9_4:
     @property
+    def airflow_network_simulation_control(self) -> IDFCollection[AirflowNetworkSimulationControl_v8_9_to_v9_4]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_simulation_controls is deprecated: a model holds at most one AirflowNetwork:SimulationControl, so its accessor is doc.airflow_network_simulation_control"
+    )
     def airflow_network_simulation_controls(self) -> IDFCollection[AirflowNetworkSimulationControl_v8_9_to_v9_4]: ...
     @property
     def coil_cooling_water_to_air_heat_pump_equation_fits(
@@ -19387,6 +19400,11 @@ class _Accessors_v8_9_to_v9_4:
         self,
     ) -> IDFCollection[HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4]: ...
     @property
+    def output_sqlite(self) -> IDFCollection[OutputSQLite_v8_9_to_v9_4]: ...
+    @property
+    @deprecated(
+        "doc.output_sqlites is deprecated: a model holds at most one Output:SQLite, so its accessor is doc.output_sqlite"
+    )
     def output_sqlites(self) -> IDFCollection[OutputSQLite_v8_9_to_v9_4]: ...
     @property
     def people(self) -> IDFCollection[People_v8_9_to_v9_4]: ...
@@ -19395,6 +19413,11 @@ class _Accessors_v8_9_to_v9_4:
         self,
     ) -> IDFCollection[RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4]: ...
     @property
+    def surface_convection_algorithm_inside(self) -> IDFCollection[SurfaceConvectionAlgorithmInside_v8_9_to_v9_4]: ...
+    @property
+    @deprecated(
+        "doc.surface_convection_algorithm_insides is deprecated: a model holds at most one SurfaceConvectionAlgorithm:Inside, so its accessor is doc.surface_convection_algorithm_inside"
+    )
     def surface_convection_algorithm_insides(self) -> IDFCollection[SurfaceConvectionAlgorithmInside_v8_9_to_v9_4]: ...
     @property
     def surface_property_convection_coefficients(
@@ -19407,6 +19430,11 @@ class _Accessors_v8_9_to_v9_4:
     @property
     def utility_cost_variables(self) -> IDFCollection[UtilityCostVariable_v8_9_to_v9_4]: ...
     @property
+    def zone_air_mass_flow_conservation(self) -> IDFCollection[ZoneAirMassFlowConservation_v8_9_to_v9_4]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_mass_flow_conservations is deprecated: a model holds at most one ZoneAirMassFlowConservation, so its accessor is doc.zone_air_mass_flow_conservation"
+    )
     def zone_air_mass_flow_conservations(self) -> IDFCollection[ZoneAirMassFlowConservation_v8_9_to_v9_4]: ...
     @property
     def zone_hvac_baseboard_radiant_convective_steams(
@@ -19533,6 +19561,7 @@ class _Accessors_v8_9_to_v22_1:
     @property
     def building(self) -> IDFCollection[Building_v8_9_to_v22_1]: ...
     @property
+    @deprecated("doc.buildings is deprecated: a model holds at most one Building, so its accessor is doc.building")
     def buildings(self) -> IDFCollection[Building_v8_9_to_v22_1]: ...
     @property
     def central_heat_pump_systems(self) -> IDFCollection[CentralHeatPumpSystem_v8_9_to_v22_1]: ...
@@ -19635,6 +19664,11 @@ class _Accessors_v8_9_to_v22_1:
         self,
     ) -> IDFCollection[GroundHeatExchangerVerticalArray_v8_9_to_v22_1]: ...
     @property
+    def hvac_system_root_finding_algorithm(self) -> IDFCollection[HVACSystemRootFindingAlgorithm_v8_9_to_v22_1]: ...
+    @property
+    @deprecated(
+        "doc.hvac_system_root_finding_algorithms is deprecated: a model holds at most one HVACSystemRootFindingAlgorithm, so its accessor is doc.hvac_system_root_finding_algorithm"
+    )
     def hvac_system_root_finding_algorithms(self) -> IDFCollection[HVACSystemRootFindingAlgorithm_v8_9_to_v22_1]: ...
     @property
     def hvac_template_system_unitary_systems(self) -> IDFCollection[HVACTemplateSystemUnitarySystem_v8_9_to_v22_1]: ...
@@ -19723,6 +19757,9 @@ class _Accessors_v8_9_to_v22_1:
     @property
     def simulation_control(self) -> IDFCollection[SimulationControl_v8_9_to_v22_1]: ...
     @property
+    @deprecated(
+        "doc.simulation_controls is deprecated: a model holds at most one SimulationControl, so its accessor is doc.simulation_control"
+    )
     def simulation_controls(self) -> IDFCollection[SimulationControl_v8_9_to_v22_1]: ...
     @property
     def site_ground_domain_basements(self) -> IDFCollection[SiteGroundDomainBasement_v8_9_to_v22_1]: ...
@@ -19753,6 +19790,7 @@ class _Accessors_v8_9_to_v22_1:
     @property
     def timestep(self) -> IDFCollection[Timestep_v8_9_to_v22_1]: ...
     @property
+    @deprecated("doc.timesteps is deprecated: a model holds at most one Timestep, so its accessor is doc.timestep")
     def timesteps(self) -> IDFCollection[Timestep_v8_9_to_v22_1]: ...
     @property
     def unitary_system_performance_multispeeds(
@@ -19803,6 +19841,11 @@ class _Accessors_v8_9_to_v22_1:
 
 class _Accessors_v8_9_to_v22_2:
     @property
+    def zone_air_heat_balance_algorithm(self) -> IDFCollection[ZoneAirHeatBalanceAlgorithm_v8_9_to_v22_2]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_heat_balance_algorithms is deprecated: a model holds at most one ZoneAirHeatBalanceAlgorithm, so its accessor is doc.zone_air_heat_balance_algorithm"
+    )
     def zone_air_heat_balance_algorithms(self) -> IDFCollection[ZoneAirHeatBalanceAlgorithm_v8_9_to_v22_2]: ...
 
 class _Accessors_v8_9_to_v23_1:
@@ -19855,6 +19898,11 @@ class _Accessors_v8_9_to_v23_2:
         self,
     ) -> IDFCollection[HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2]: ...
     @property
+    def output_control_table_style(self) -> IDFCollection[OutputControlTableStyle_v8_9_to_v23_2]: ...
+    @property
+    @deprecated(
+        "doc.output_control_table_styles is deprecated: a model holds at most one OutputControl:Table:Style, so its accessor is doc.output_control_table_style"
+    )
     def output_control_table_styles(self) -> IDFCollection[OutputControlTableStyle_v8_9_to_v23_2]: ...
 
 class _Accessors_v8_9_to_v24_1:
@@ -19883,6 +19931,9 @@ class _Accessors_v8_9_to_v24_1:
     @property
     def site_location(self) -> IDFCollection[SiteLocation_v8_9_to_v24_1]: ...
     @property
+    @deprecated(
+        "doc.site_locations is deprecated: a model holds at most one Site:Location, so its accessor is doc.site_location"
+    )
     def site_locations(self) -> IDFCollection[SiteLocation_v8_9_to_v24_1]: ...
     @property
     def zone_cool_tower_showers(self) -> IDFCollection[ZoneCoolTowerShower_v8_9_to_v24_1]: ...
@@ -20063,6 +20114,13 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.AirflowNetworkOccupantVentilationControl]: ...
     @property
+    def airflow_network_zone_control_pressure_controller(
+        self,
+    ) -> IDFCollection[_g.AirflowNetworkZoneControlPressureController]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_zone_control_pressure_controllers is deprecated: a model holds at most one AirflowNetwork:ZoneControl:PressureController, so its accessor is doc.airflow_network_zone_control_pressure_controller"
+    )
     def airflow_network_zone_control_pressure_controllers(
         self,
     ) -> IDFCollection[_g.AirflowNetworkZoneControlPressureController]: ...
@@ -20147,6 +20205,11 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.ComplexFenestrationPropertySolarAbsorbedLayers]: ...
     @property
+    def compliance_building(self) -> IDFCollection[_g.ComplianceBuilding]: ...
+    @property
+    @deprecated(
+        "doc.compliance_buildings is deprecated: a model holds at most one Compliance:Building, so its accessor is doc.compliance_building"
+    )
     def compliance_buildings(self) -> IDFCollection[_g.ComplianceBuilding]: ...
     @property
     def component_cost_adjustments(self) -> IDFCollection[_g.ComponentCostAdjustments]: ...
@@ -20181,6 +20244,11 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def cooling_tower_performance_york_calcs(self) -> IDFCollection[_g.CoolingTowerPerformanceYorkCalc]: ...
     @property
+    def currency_type(self) -> IDFCollection[_g.CurrencyType]: ...
+    @property
+    @deprecated(
+        "doc.currency_types is deprecated: a model holds at most one CurrencyType, so its accessor is doc.currency_type"
+    )
     def currency_types(self) -> IDFCollection[_g.CurrencyType]: ...
     @property
     def curve_bicubics(self) -> IDFCollection[_g.CurveBicubic]: ...
@@ -20455,6 +20523,11 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def generator_wind_turbines(self) -> IDFCollection[_g.GeneratorWindTurbine]: ...
     @property
+    def geometry_transform(self) -> IDFCollection[_g.GeometryTransform]: ...
+    @property
+    @deprecated(
+        "doc.geometry_transforms is deprecated: a model holds at most one GeometryTransform, so its accessor is doc.geometry_transform"
+    )
     def geometry_transforms(self) -> IDFCollection[_g.GeometryTransform]: ...
     @property
     def glazed_door_interzones(self) -> IDFCollection[_g.GlazedDoorInterzone]: ...
@@ -20521,8 +20594,20 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def ground_heat_transfer_slab_zfaces(self) -> IDFCollection[_g.GroundHeatTransferSlabZFACE]: ...
     @property
+    def heat_balance_algorithm(self) -> IDFCollection[_g.HeatBalanceAlgorithm]: ...
+    @property
+    @deprecated(
+        "doc.heat_balance_algorithms is deprecated: a model holds at most one HeatBalanceAlgorithm, so its accessor is doc.heat_balance_algorithm"
+    )
     def heat_balance_algorithms(self) -> IDFCollection[_g.HeatBalanceAlgorithm]: ...
     @property
+    def heat_balance_settings_conduction_finite_difference(
+        self,
+    ) -> IDFCollection[_g.HeatBalanceSettingsConductionFiniteDifference]: ...
+    @property
+    @deprecated(
+        "doc.heat_balance_settings_conduction_finite_differences is deprecated: a model holds at most one HeatBalanceSettings:ConductionFiniteDifference, so its accessor is doc.heat_balance_settings_conduction_finite_difference"
+    )
     def heat_balance_settings_conduction_finite_differences(
         self,
     ) -> IDFCollection[_g.HeatBalanceSettingsConductionFiniteDifference]: ...
@@ -20551,6 +20636,11 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.HVACTemplatePlantBoilerObjectReference]: ...
     @property
+    def hvac_template_plant_chilled_water_loop(self) -> IDFCollection[_g.HVACTemplatePlantChilledWaterLoop]: ...
+    @property
+    @deprecated(
+        "doc.hvac_template_plant_chilled_water_loops is deprecated: a model holds at most one HVACTemplate:Plant:ChilledWaterLoop, so its accessor is doc.hvac_template_plant_chilled_water_loop"
+    )
     def hvac_template_plant_chilled_water_loops(self) -> IDFCollection[_g.HVACTemplatePlantChilledWaterLoop]: ...
     @property
     def hvac_template_plant_chiller_object_references(
@@ -20559,8 +20649,18 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def hvac_template_plant_chillers(self) -> IDFCollection[_g.HVACTemplatePlantChiller]: ...
     @property
+    def hvac_template_plant_hot_water_loop(self) -> IDFCollection[_g.HVACTemplatePlantHotWaterLoop]: ...
+    @property
+    @deprecated(
+        "doc.hvac_template_plant_hot_water_loops is deprecated: a model holds at most one HVACTemplate:Plant:HotWaterLoop, so its accessor is doc.hvac_template_plant_hot_water_loop"
+    )
     def hvac_template_plant_hot_water_loops(self) -> IDFCollection[_g.HVACTemplatePlantHotWaterLoop]: ...
     @property
+    def hvac_template_plant_mixed_water_loop(self) -> IDFCollection[_g.HVACTemplatePlantMixedWaterLoop]: ...
+    @property
+    @deprecated(
+        "doc.hvac_template_plant_mixed_water_loops is deprecated: a model holds at most one HVACTemplate:Plant:MixedWaterLoop, so its accessor is doc.hvac_template_plant_mixed_water_loop"
+    )
     def hvac_template_plant_mixed_water_loops(self) -> IDFCollection[_g.HVACTemplatePlantMixedWaterLoop]: ...
     @property
     def hvac_template_plant_tower_object_references(
@@ -20639,14 +20739,29 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def output_constructions(self) -> IDFCollection[_g.OutputConstructions]: ...
     @property
+    def output_control_illuminance_map_style(self) -> IDFCollection[_g.OutputControlIlluminanceMapStyle]: ...
+    @property
+    @deprecated(
+        "doc.output_control_illuminance_map_styles is deprecated: a model holds at most one OutputControl:IlluminanceMap:Style, so its accessor is doc.output_control_illuminance_map_style"
+    )
     def output_control_illuminance_map_styles(self) -> IDFCollection[_g.OutputControlIlluminanceMapStyle]: ...
     @property
     def output_control_reporting_tolerances(self) -> IDFCollection[_g.OutputControlReportingTolerances]: ...
     @property
+    def output_control_sizing_style(self) -> IDFCollection[_g.OutputControlSizingStyle]: ...
+    @property
+    @deprecated(
+        "doc.output_control_sizing_styles is deprecated: a model holds at most one OutputControl:Sizing:Style, so its accessor is doc.output_control_sizing_style"
+    )
     def output_control_sizing_styles(self) -> IDFCollection[_g.OutputControlSizingStyle]: ...
     @property
     def output_daylight_factors(self) -> IDFCollection[_g.OutputDaylightFactors]: ...
     @property
+    def output_energy_management_system(self) -> IDFCollection[_g.OutputEnergyManagementSystem]: ...
+    @property
+    @deprecated(
+        "doc.output_energy_management_systems is deprecated: a model holds at most one Output:EnergyManagementSystem, so its accessor is doc.output_energy_management_system"
+    )
     def output_energy_management_systems(self) -> IDFCollection[_g.OutputEnergyManagementSystem]: ...
     @property
     def output_environmental_impact_factors(self) -> IDFCollection[_g.OutputEnvironmentalImpactFactors]: ...
@@ -20669,10 +20784,25 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def output_variables(self) -> IDFCollection[_g.OutputVariable]: ...
     @property
+    def parametric_file_name_suffix(self) -> IDFCollection[_g.ParametricFileNameSuffix]: ...
+    @property
+    @deprecated(
+        "doc.parametric_file_name_suffixes is deprecated: a model holds at most one Parametric:FileNameSuffix, so its accessor is doc.parametric_file_name_suffix"
+    )
     def parametric_file_name_suffixes(self) -> IDFCollection[_g.ParametricFileNameSuffix]: ...
     @property
+    def parametric_logic(self) -> IDFCollection[_g.ParametricLogic]: ...
+    @property
+    @deprecated(
+        "doc.parametric_logics is deprecated: a model holds at most one Parametric:Logic, so its accessor is doc.parametric_logic"
+    )
     def parametric_logics(self) -> IDFCollection[_g.ParametricLogic]: ...
     @property
+    def parametric_run_control(self) -> IDFCollection[_g.ParametricRunControl]: ...
+    @property
+    @deprecated(
+        "doc.parametric_run_controls is deprecated: a model holds at most one Parametric:RunControl, so its accessor is doc.parametric_run_control"
+    )
     def parametric_run_controls(self) -> IDFCollection[_g.ParametricRunControl]: ...
     @property
     def parametric_set_value_for_runs(self) -> IDFCollection[_g.ParametricSetValueForRun]: ...
@@ -20801,6 +20931,11 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def room_air_temperature_pattern_user_defineds(self) -> IDFCollection[_g.RoomAirTemperaturePatternUserDefined]: ...
     @property
+    def run_period_control_daylight_saving_time(self) -> IDFCollection[_g.RunPeriodControlDaylightSavingTime]: ...
+    @property
+    @deprecated(
+        "doc.run_period_control_daylight_saving_times is deprecated: a model holds at most one RunPeriodControl:DaylightSavingTime, so its accessor is doc.run_period_control_daylight_saving_time"
+    )
     def run_period_control_daylight_saving_times(self) -> IDFCollection[_g.RunPeriodControlDaylightSavingTime]: ...
     @property
     def run_period_control_special_days(self) -> IDFCollection[_g.RunPeriodControlSpecialDays]: ...
@@ -20813,6 +20948,11 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def schedule_day_intervals(self) -> IDFCollection[_g.ScheduleDayInterval]: ...
     @property
+    def schedule_file_shading(self) -> IDFCollection[_g.ScheduleFileShading]: ...
+    @property
+    @deprecated(
+        "doc.schedule_file_shadings is deprecated: a model holds at most one Schedule:File:Shading, so its accessor is doc.schedule_file_shading"
+    )
     def schedule_file_shadings(self) -> IDFCollection[_g.ScheduleFileShading]: ...
     @property
     def schedule_type_limits(self) -> IDFCollection[_g.ScheduleTypeLimits]: ...
@@ -20947,16 +21087,41 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def shading_zone_detaileds(self) -> IDFCollection[_g.ShadingZoneDetailed]: ...
     @property
+    def site_ground_reflectance(self) -> IDFCollection[_g.SiteGroundReflectance]: ...
+    @property
     def site_ground_reflectance_snow_modifiers(self) -> IDFCollection[_g.SiteGroundReflectanceSnowModifier]: ...
     @property
+    @deprecated(
+        "doc.site_ground_reflectances is deprecated: a model holds at most one Site:GroundReflectance, so its accessor is doc.site_ground_reflectance"
+    )
     def site_ground_reflectances(self) -> IDFCollection[_g.SiteGroundReflectance]: ...
     @property
+    def site_ground_temperature_building_surface(self) -> IDFCollection[_g.SiteGroundTemperatureBuildingSurface]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_building_surfaces is deprecated: a model holds at most one Site:GroundTemperature:BuildingSurface, so its accessor is doc.site_ground_temperature_building_surface"
+    )
     def site_ground_temperature_building_surfaces(self) -> IDFCollection[_g.SiteGroundTemperatureBuildingSurface]: ...
     @property
+    def site_ground_temperature_deep(self) -> IDFCollection[_g.SiteGroundTemperatureDeep]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_deeps is deprecated: a model holds at most one Site:GroundTemperature:Deep, so its accessor is doc.site_ground_temperature_deep"
+    )
     def site_ground_temperature_deeps(self) -> IDFCollection[_g.SiteGroundTemperatureDeep]: ...
     @property
+    def site_ground_temperature_fcfactor_method(self) -> IDFCollection[_g.SiteGroundTemperatureFCfactorMethod]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_fcfactor_methods is deprecated: a model holds at most one Site:GroundTemperature:FCfactorMethod, so its accessor is doc.site_ground_temperature_fcfactor_method"
+    )
     def site_ground_temperature_fcfactor_methods(self) -> IDFCollection[_g.SiteGroundTemperatureFCfactorMethod]: ...
     @property
+    def site_ground_temperature_shallow(self) -> IDFCollection[_g.SiteGroundTemperatureShallow]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_shallows is deprecated: a model holds at most one Site:GroundTemperature:Shallow, so its accessor is doc.site_ground_temperature_shallow"
+    )
     def site_ground_temperature_shallows(self) -> IDFCollection[_g.SiteGroundTemperatureShallow]: ...
     @property
     def site_ground_temperature_undisturbed_finite_differences(
@@ -20967,16 +21132,36 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.SiteGroundTemperatureUndisturbedKusudaAchenbach]: ...
     @property
+    def site_height_variation(self) -> IDFCollection[_g.SiteHeightVariation]: ...
+    @property
+    @deprecated(
+        "doc.site_height_variations is deprecated: a model holds at most one Site:HeightVariation, so its accessor is doc.site_height_variation"
+    )
     def site_height_variations(self) -> IDFCollection[_g.SiteHeightVariation]: ...
     @property
     def site_precipitations(self) -> IDFCollection[_g.SitePrecipitation]: ...
     @property
+    def site_solar_and_visible_spectrum(self) -> IDFCollection[_g.SiteSolarAndVisibleSpectrum]: ...
+    @property
+    @deprecated(
+        "doc.site_solar_and_visible_spectrums is deprecated: a model holds at most one Site:SolarAndVisibleSpectrum, so its accessor is doc.site_solar_and_visible_spectrum"
+    )
     def site_solar_and_visible_spectrums(self) -> IDFCollection[_g.SiteSolarAndVisibleSpectrum]: ...
     @property
     def site_spectrum_datas(self) -> IDFCollection[_g.SiteSpectrumData]: ...
     @property
+    def site_variable_location(self) -> IDFCollection[_g.SiteVariableLocation]: ...
+    @property
+    @deprecated(
+        "doc.site_variable_locations is deprecated: a model holds at most one Site:VariableLocation, so its accessor is doc.site_variable_location"
+    )
     def site_variable_locations(self) -> IDFCollection[_g.SiteVariableLocation]: ...
     @property
+    def site_weather_station(self) -> IDFCollection[_g.SiteWeatherStation]: ...
+    @property
+    @deprecated(
+        "doc.site_weather_stations is deprecated: a model holds at most one Site:WeatherStation, so its accessor is doc.site_weather_station"
+    )
     def site_weather_stations(self) -> IDFCollection[_g.SiteWeatherStation]: ...
     @property
     def sizing_period_weather_file_condition_types(self) -> IDFCollection[_g.SizingPeriodWeatherFileConditionType]: ...
@@ -21025,6 +21210,8 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.SurfaceConvectionAlgorithmInsideUserCurve]: ...
     @property
+    def surface_convection_algorithm_outside(self) -> IDFCollection[_g.SurfaceConvectionAlgorithmOutside]: ...
+    @property
     def surface_convection_algorithm_outside_adaptive_model_selections(
         self,
     ) -> IDFCollection[_g.SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections]: ...
@@ -21033,6 +21220,9 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.SurfaceConvectionAlgorithmOutsideUserCurve]: ...
     @property
+    @deprecated(
+        "doc.surface_convection_algorithm_outsides is deprecated: a model holds at most one SurfaceConvectionAlgorithm:Outside, so its accessor is doc.surface_convection_algorithm_outside"
+    )
     def surface_convection_algorithm_outsides(self) -> IDFCollection[_g.SurfaceConvectionAlgorithmOutside]: ...
     @property
     def surface_properties_vapor_coefficients(self) -> IDFCollection[_g.SurfacePropertiesVaporCoefficients]: ...
@@ -21115,6 +21305,7 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def utility_cost_tariffs(self) -> IDFCollection[_g.UtilityCostTariff]: ...
     @property
+    @deprecated('doc.versions is deprecated: a model holds at most one Version, so use doc["Version"]')
     def versions(self) -> IDFCollection[_g.Version]: ...
     @property
     def water_heater_heat_pump_pumped_condensers(self) -> IDFCollection[_g.WaterHeaterHeatPumpPumpedCondenser]: ...
@@ -21181,6 +21372,11 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def zone_air_balance_outdoor_airs(self) -> IDFCollection[_g.ZoneAirBalanceOutdoorAir]: ...
     @property
+    def zone_air_contaminant_balance(self) -> IDFCollection[_g.ZoneAirContaminantBalance]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_contaminant_balances is deprecated: a model holds at most one ZoneAirContaminantBalance, so its accessor is doc.zone_air_contaminant_balance"
+    )
     def zone_air_contaminant_balances(self) -> IDFCollection[_g.ZoneAirContaminantBalance]: ...
     @property
     def zone_capacitance_multiplier_research_specials(
@@ -21361,6 +21557,11 @@ class _Accessors_v9_1_to_v22_1:
 
 class _Accessors_v9_1_to_v25_1:
     @property
+    def output_json(self) -> IDFCollection[OutputJSON_v9_1_to_v25_1]: ...
+    @property
+    @deprecated(
+        "doc.output_jsons is deprecated: a model holds at most one Output:JSON, so its accessor is doc.output_json"
+    )
     def output_jsons(self) -> IDFCollection[OutputJSON_v9_1_to_v25_1]: ...
 
 class _Accessors_v9_1_to_v26_2:
@@ -21519,6 +21720,11 @@ class _Accessors_v9_3_to_v22_1:
     @property
     def python_plugin_trend_variables(self) -> IDFCollection[PythonPluginTrendVariable_v9_3_to_v22_1]: ...
     @property
+    def shadow_calculation(self) -> IDFCollection[ShadowCalculation_v9_3_to_v22_1]: ...
+    @property
+    @deprecated(
+        "doc.shadow_calculations is deprecated: a model holds at most one ShadowCalculation, so its accessor is doc.shadow_calculation"
+    )
     def shadow_calculations(self) -> IDFCollection[ShadowCalculation_v9_3_to_v22_1]: ...
     @property
     def sizing_period_design_days(self) -> IDFCollection[SizingPeriodDesignDay_v9_3_to_v22_1]: ...
@@ -21663,6 +21869,11 @@ class _Accessors_v9_4_to_v26_2:
         self,
     ) -> IDFCollection[_g.EnergyManagementSystemProgramCallingManager]: ...
     @property
+    def output_debugging_data(self) -> IDFCollection[_g.OutputDebuggingData]: ...
+    @property
+    @deprecated(
+        "doc.output_debugging_datas is deprecated: a model holds at most one Output:DebuggingData, so its accessor is doc.output_debugging_data"
+    )
     def output_debugging_datas(self) -> IDFCollection[_g.OutputDebuggingData]: ...
     @property
     def output_diagnostics(self) -> IDFCollection[_g.OutputDiagnostics]: ...
@@ -21687,6 +21898,11 @@ class _Accessors_v9_5_to_v9_6:
 
 class _Accessors_v9_5_to_v22_1:
     @property
+    def airflow_network_simulation_control(self) -> IDFCollection[AirflowNetworkSimulationControl_v9_5_to_v22_1]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_simulation_controls is deprecated: a model holds at most one AirflowNetwork:SimulationControl, so its accessor is doc.airflow_network_simulation_control"
+    )
     def airflow_network_simulation_controls(self) -> IDFCollection[AirflowNetworkSimulationControl_v9_5_to_v22_1]: ...
     @property
     def coil_cooling_water_to_air_heat_pump_equation_fits(
@@ -21709,6 +21925,11 @@ class _Accessors_v9_5_to_v22_1:
 
 class _Accessors_v9_5_to_v23_2:
     @property
+    def output_sqlite(self) -> IDFCollection[OutputSQLite_v9_5_to_v23_2]: ...
+    @property
+    @deprecated(
+        "doc.output_sqlites is deprecated: a model holds at most one Output:SQLite, so its accessor is doc.output_sqlite"
+    )
     def output_sqlites(self) -> IDFCollection[OutputSQLite_v9_5_to_v23_2]: ...
 
 class _Accessors_v9_5_to_v25_1:
@@ -21757,6 +21978,11 @@ class _Accessors_v9_5_to_v26_2:
         self,
     ) -> IDFCollection[_g.RoomAirNodeAirflowNetworkInternalGains]: ...
     @property
+    def surface_convection_algorithm_inside(self) -> IDFCollection[_g.SurfaceConvectionAlgorithmInside]: ...
+    @property
+    @deprecated(
+        "doc.surface_convection_algorithm_insides is deprecated: a model holds at most one SurfaceConvectionAlgorithm:Inside, so its accessor is doc.surface_convection_algorithm_inside"
+    )
     def surface_convection_algorithm_insides(self) -> IDFCollection[_g.SurfaceConvectionAlgorithmInside]: ...
     @property
     def surface_property_convection_coefficients_multiple_surfaces(
@@ -21765,6 +21991,11 @@ class _Accessors_v9_5_to_v26_2:
     @property
     def utility_cost_variables(self) -> IDFCollection[_g.UtilityCostVariable]: ...
     @property
+    def zone_air_mass_flow_conservation(self) -> IDFCollection[_g.ZoneAirMassFlowConservation]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_mass_flow_conservations is deprecated: a model holds at most one ZoneAirMassFlowConservation, so its accessor is doc.zone_air_mass_flow_conservation"
+    )
     def zone_air_mass_flow_conservations(self) -> IDFCollection[_g.ZoneAirMassFlowConservation]: ...
     @property
     def zone_hvac_baseboard_radiant_convective_steam_designs(
@@ -22061,6 +22292,7 @@ class _Accessors_v22_2_to_v26_1:
     @property
     def building(self) -> IDFCollection[Building_v22_2_to_v26_1]: ...
     @property
+    @deprecated("doc.buildings is deprecated: a model holds at most one Building, so its accessor is doc.building")
     def buildings(self) -> IDFCollection[Building_v22_2_to_v26_1]: ...
     @property
     def central_heat_pump_systems(self) -> IDFCollection[CentralHeatPumpSystem_v22_2_to_v26_1]: ...
@@ -22091,12 +22323,22 @@ class _Accessors_v22_2_to_v26_2:
     @property
     def air_terminal_single_duct_user_defineds(self) -> IDFCollection[_g.AirTerminalSingleDuctUserDefined]: ...
     @property
+    def airflow_network_distribution_duct_sizing(self) -> IDFCollection[_g.AirflowNetworkDistributionDuctSizing]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_distribution_duct_sizings is deprecated: a model holds at most one AirflowNetwork:Distribution:DuctSizing, so its accessor is doc.airflow_network_distribution_duct_sizing"
+    )
     def airflow_network_distribution_duct_sizings(self) -> IDFCollection[_g.AirflowNetworkDistributionDuctSizing]: ...
     @property
     def airflow_network_multi_zone_component_detailed_openings(
         self,
     ) -> IDFCollection[_g.AirflowNetworkMultiZoneComponentDetailedOpening]: ...
     @property
+    def airflow_network_simulation_control(self) -> IDFCollection[_g.AirflowNetworkSimulationControl]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_simulation_controls is deprecated: a model holds at most one AirflowNetwork:SimulationControl, so its accessor is doc.airflow_network_simulation_control"
+    )
     def airflow_network_simulation_controls(self) -> IDFCollection[_g.AirflowNetworkSimulationControl]: ...
     @property
     def availability_manager_optimum_starts(self) -> IDFCollection[_g.AvailabilityManagerOptimumStart]: ...
@@ -22179,6 +22421,11 @@ class _Accessors_v22_2_to_v26_2:
     @property
     def headered_pumps_variable_speeds(self) -> IDFCollection[_g.HeaderedPumpsVariableSpeed]: ...
     @property
+    def hvac_system_root_finding_algorithm(self) -> IDFCollection[_g.HVACSystemRootFindingAlgorithm]: ...
+    @property
+    @deprecated(
+        "doc.hvac_system_root_finding_algorithms is deprecated: a model holds at most one HVACSystemRootFindingAlgorithm, so its accessor is doc.hvac_system_root_finding_algorithm"
+    )
     def hvac_system_root_finding_algorithms(self) -> IDFCollection[_g.HVACSystemRootFindingAlgorithm]: ...
     @property
     def hvac_template_system_unitary_systems(self) -> IDFCollection[_g.HVACTemplateSystemUnitarySystem]: ...
@@ -22269,10 +22516,18 @@ class _Accessors_v22_2_to_v26_2:
     @property
     def schedules_year(self) -> IDFCollection[_g.ScheduleYear]: ...
     @property
+    def shadow_calculation(self) -> IDFCollection[_g.ShadowCalculation]: ...
+    @property
+    @deprecated(
+        "doc.shadow_calculations is deprecated: a model holds at most one ShadowCalculation, so its accessor is doc.shadow_calculation"
+    )
     def shadow_calculations(self) -> IDFCollection[_g.ShadowCalculation]: ...
     @property
     def simulation_control(self) -> IDFCollection[_g.SimulationControl]: ...
     @property
+    @deprecated(
+        "doc.simulation_controls is deprecated: a model holds at most one SimulationControl, so its accessor is doc.simulation_control"
+    )
     def simulation_controls(self) -> IDFCollection[_g.SimulationControl]: ...
     @property
     def site_ground_domain_basements(self) -> IDFCollection[_g.SiteGroundDomainBasement]: ...
@@ -22305,6 +22560,7 @@ class _Accessors_v22_2_to_v26_2:
     @property
     def timestep(self) -> IDFCollection[_g.Timestep]: ...
     @property
+    @deprecated("doc.timesteps is deprecated: a model holds at most one Timestep, so its accessor is doc.timestep")
     def timesteps(self) -> IDFCollection[_g.Timestep]: ...
     @property
     def unitary_system_performance_multispeeds(self) -> IDFCollection[_g.UnitarySystemPerformanceMultispeed]: ...
@@ -22357,12 +22613,22 @@ class _Accessors_v23_1_to_v26_1:
 
 class _Accessors_v23_1_to_v26_2:
     @property
+    def output_control_timestamp(self) -> IDFCollection[_g.OutputControlTimestamp]: ...
+    @property
+    @deprecated(
+        "doc.output_control_timestamps is deprecated: a model holds at most one OutputControl:Timestamp, so its accessor is doc.output_control_timestamp"
+    )
     def output_control_timestamps(self) -> IDFCollection[_g.OutputControlTimestamp]: ...
     @property
     def solar_collector_performance_photovoltaic_thermal_bipvts(
         self,
     ) -> IDFCollection[_g.SolarCollectorPerformancePhotovoltaicThermalBIPVT]: ...
     @property
+    def zone_air_heat_balance_algorithm(self) -> IDFCollection[_g.ZoneAirHeatBalanceAlgorithm]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_heat_balance_algorithms is deprecated: a model holds at most one ZoneAirHeatBalanceAlgorithm, so its accessor is doc.zone_air_heat_balance_algorithm"
+    )
     def zone_air_heat_balance_algorithms(self) -> IDFCollection[_g.ZoneAirHeatBalanceAlgorithm]: ...
 
 class _Accessors_v23_2:
@@ -22523,8 +22789,18 @@ class _Accessors_v24_1_to_v25_1:
     @property
     def comfort_view_factor_angles(self) -> IDFCollection[ComfortViewFactorAngles_v24_1_to_v25_1]: ...
     @property
+    def output_control_table_style(self) -> IDFCollection[OutputControlTableStyle_v24_1_to_v25_1]: ...
+    @property
+    @deprecated(
+        "doc.output_control_table_styles is deprecated: a model holds at most one OutputControl:Table:Style, so its accessor is doc.output_control_table_style"
+    )
     def output_control_table_styles(self) -> IDFCollection[OutputControlTableStyle_v24_1_to_v25_1]: ...
     @property
+    def output_sqlite(self) -> IDFCollection[OutputSQLite_v24_1_to_v25_1]: ...
+    @property
+    @deprecated(
+        "doc.output_sqlites is deprecated: a model holds at most one Output:SQLite, so its accessor is doc.output_sqlite"
+    )
     def output_sqlites(self) -> IDFCollection[OutputSQLite_v24_1_to_v25_1]: ...
     @property
     def zone_hvac_packaged_terminal_heat_pumps(
@@ -22621,6 +22897,9 @@ class _Accessors_v24_2_to_v26_2:
     @property
     def site_location(self) -> IDFCollection[_g.SiteLocation]: ...
     @property
+    @deprecated(
+        "doc.site_locations is deprecated: a model holds at most one Site:Location, so its accessor is doc.site_location"
+    )
     def site_locations(self) -> IDFCollection[_g.SiteLocation]: ...
     @property
     def space_hvac_zone_return_mixers(self) -> IDFCollection[_g.SpaceHVACZoneReturnMixer]: ...
@@ -22757,10 +23036,25 @@ class _Accessors_v25_2_to_v26_2:
     @property
     def output_control_files(self) -> IDFCollection[_g.OutputControlFiles]: ...
     @property
+    def output_control_table_style(self) -> IDFCollection[_g.OutputControlTableStyle]: ...
+    @property
+    @deprecated(
+        "doc.output_control_table_styles is deprecated: a model holds at most one OutputControl:Table:Style, so its accessor is doc.output_control_table_style"
+    )
     def output_control_table_styles(self) -> IDFCollection[_g.OutputControlTableStyle]: ...
     @property
+    def output_json(self) -> IDFCollection[_g.OutputJSON]: ...
+    @property
+    @deprecated(
+        "doc.output_jsons is deprecated: a model holds at most one Output:JSON, so its accessor is doc.output_json"
+    )
     def output_jsons(self) -> IDFCollection[_g.OutputJSON]: ...
     @property
+    def output_sqlite(self) -> IDFCollection[_g.OutputSQLite]: ...
+    @property
+    @deprecated(
+        "doc.output_sqlites is deprecated: a model holds at most one Output:SQLite, so its accessor is doc.output_sqlite"
+    )
     def output_sqlites(self) -> IDFCollection[_g.OutputSQLite]: ...
     @property
     def output_table_report_periods(self) -> IDFCollection[_g.OutputTableReportPeriod]: ...

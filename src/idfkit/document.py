@@ -11,6 +11,8 @@ Provides:
 from __future__ import annotations
 
 import contextlib
+import difflib
+import functools
 import logging
 import sys
 import warnings
@@ -18,11 +20,18 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
-from ._accessors import AccessorAttributeError, AccessorResolver
+from ._accessors import AccessorAttributeError, AccessorResolver, deprecated_plural_message
 from ._compat import EppyDocumentMixin
 from ._document_types import DocumentTypeMeta
+from ._object_types import ALL_OBJECT_TYPES
 from .cst import CSTNode, DocumentCST, SourceSpan
-from .exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeError, ValidationFailedError
+from .exceptions import (
+    DuplicateObjectError,
+    InvalidFieldError,
+    UnknownObjectTypeError,
+    UnknownObjectTypeWarning,
+    ValidationFailedError,
+)
 from .introspection import ObjectDescription, describe_object_type
 from .objects import (
     IDFCollection,
@@ -32,6 +41,7 @@ from .objects import (
     refuse_unknown_fields_for_add,
 )
 from .references import ReferenceGraph
+from .schema import canonicalize_choices
 from .validation import validate_object
 from .versions import LATEST_VERSION
 
@@ -117,9 +127,47 @@ _PYTHON_TO_IDF = {
 _IDF_TO_PYTHON = {v.upper(): k for k, v in _PYTHON_TO_IDF.items()}
 
 
+@functools.cache
+def _object_types_by_folded_name() -> dict[str, str]:
+    """Every object type of every bundled release, keyed by its case-folded name."""
+    return {name.casefold(): name for name in ALL_OBJECT_TYPES}
+
+
+@functools.lru_cache(maxsize=256)
+def _closest_object_type(obj_type: str) -> str | None:
+    """The bundled object type closest to *obj_type*, or ``None`` if none is close.
+
+    Cached because it runs on every miss, before ``warnings.warn`` can tell whether the warning
+    will be shown (``warn`` formats the message before it consults the filters), and a long name
+    costs difflib milliseconds: a loop probing one misspelt name pays that once.
+    """
+    by_folded = _object_types_by_folded_name()
+    close = difflib.get_close_matches(obj_type.casefold(), by_folded.keys(), n=1, cutoff=0.6)
+    return by_folded[close[0]] if close else None
+
+
+def _warn_if_unknown_object_type(obj_type: str, *, stacklevel: int) -> None:
+    """Warn [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning] if no bundled release has *obj_type*.
+
+    Judged against every bundled release, never the document's own schema, so the answer is the
+    same with or without a schema, and probing a real type this release lacks stays silent.
+    *stacklevel* is counted as :func:`warnings.warn` counts it, from this function's caller.
+    """
+    if obj_type.casefold() in _object_types_by_folded_name():
+        return
+    warnings.warn(UnknownObjectTypeWarning(obj_type, _closest_object_type(obj_type)), stacklevel=stacklevel + 1)
+
+
 def _build_resolver(schema: EpJSONSchema) -> AccessorResolver:
-    """Build the attribute resolver for *schema*; cached on the schema itself."""
-    return AccessorResolver(schema.object_types, shorthands=_PYTHON_TO_IDF, reserved=_RESERVED)
+    """Build the attribute resolver for *schema*; cached on the schema itself.
+
+    A type the schema caps at one object per model (``"maxProperties": 1``) is named in the
+    singular, every other type in the plural. Uniqueness is read from *schema*, so it follows
+    the release: a type unique in one release and not in another is named for each release.
+    """
+    types = schema.object_types
+    unique = [t for t in types if (schema.get_object_schema(t) or {}).get("maxProperties") == 1]
+    return AccessorResolver(types, shorthands=_PYTHON_TO_IDF, reserved=_RESERVED, unique=unique)
 
 
 class IDFDocument(EppyDocumentMixin, Generic[Strict]):
@@ -138,6 +186,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         "_collections",
         "_count_at_read",
         "_cst",
+        "_normalize_choices",
         "_raw_text",
         "_references",
         "_schedules_cache",
@@ -154,6 +203,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _references: ReferenceGraph
     _schedules_cache: dict[str, IDFObject] | None
     _strict: bool
+    _normalize_choices: bool
     _cst: DocumentCST | None
     _spans: dict[IDFObject, tuple[SourceSpan, CSTNode]] | None
     _raw_text: str | None
@@ -173,6 +223,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         filepath: Path | str | None = None,
         *,
         strict: bool = True,
+        normalize_choices: bool = True,
     ) -> None:
         """
         Initialize an IDFDocument.
@@ -186,6 +237,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
                 typos early.  This value is immutable after construction.
+            normalize_choices: When ``True`` (the default), a choice value added or assigned
+                through this document is stored in the spelling its schema declares, whatever
+                its case: ``surface_type="WALL"`` reads back ``"Wall"``, so the ``Literal``
+                types of the stubs hold. ``False`` stores values as given. The loaders take
+                the same flag for values read from a file. Immutable after construction.
         """
         self._version = version or LATEST_VERSION
         self.filepath = Path(filepath) if filepath else None
@@ -194,6 +250,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._references = ReferenceGraph()
         self._schedules_cache: dict[str, IDFObject] | None = None
         self._strict = strict
+        self._normalize_choices = normalize_choices
         self._cst: DocumentCST | None = None
         # Built once on the first ask. The retained tree does not change after the read.
         self._spans: dict[IDFObject, tuple[SourceSpan, CSTNode]] | None = None
@@ -210,6 +267,26 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         This property is read-only; set it via the constructor.
         """
         return self._strict
+
+    @property
+    def normalize_choices(self) -> bool:
+        """Whether choice values are stored in the spelling the schema declares.
+
+        When ``True`` (the default), a choice field holds its schema's spelling whatever case the
+        file, ``add()`` or an assignment used: a surface read from a file that says ``WALL``
+        has ``surface_type == "Wall"``, which is what its ``Literal["Wall", ...]`` type
+        promises. EnergyPlus matches choices case-insensitively, so this changes no simulation.
+
+        When ``False``, values are kept as written, and a choice field's ``Literal`` type does
+        not hold for a value read from a file or assigned in another case; compare such values
+        with ``str.casefold()``.
+
+        This property is read-only; set it via the loader or the constructor. A document pickled
+        by a release before the setting existed holds its values as written, and reports ``False``.
+        """
+        # Read with a default rather than restored by a __setstate__ hook: unpickling builds the
+        # object without __init__, and an older pickle has no such slot.
+        return getattr(self, "_normalize_choices", False)
 
     @property
     def version(self) -> tuple[int, int, int]:
@@ -265,7 +342,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         [removeidfobject][idfkit.document.IDFDocument.removeidfobject] all agree
         with this one.
 
-        Returns an empty collection if no objects of that type exist yet.
+        Returns an empty collection if no objects of that type exist yet, and
+        warns [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning]
+        if no bundled EnergyPlus release has the type at all.
 
         !!! note "Why an unknown type name returns empty rather than raising"
 
@@ -288,6 +367,20 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             [describe][idfkit.document.IDFDocument.describe] raises for a name it
             cannot look up.  To ask the question directly, use
             ``model.schema.resolve_type_name(name) is not None``.
+
+            The read itself does not stay silent, though: a name that *no
+            bundled EnergyPlus release* has warns
+            [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning],
+            naming the closest real type, and still returns the empty
+            collection.  A warning meets all three objections.  It is judged
+            against every bundled release, never this document's schema, so a
+            document with no schema answers the same way, and probing a real
+            type this release lacks (``model["Space"]`` on 9.4) stays silent.
+            ``"Foo" in model`` does not warn, because asking is not a misspelt
+            read.  And probing code keeps working unchanged; it can silence the
+            warning by class.  [get_collection][idfkit.document.IDFDocument.get_collection],
+            ``idfobjects[...]``, [getobject][idfkit._compat.EppyDocumentMixin.getobject],
+            ``popidfobject`` and ``removeallidfobjects`` warn the same way.
 
             What this method must never do, and no longer does, is *store* the
             empty collection it returns.  A read that mutates the document is
@@ -324,10 +417,15 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> model["Zone"]["Perimeter_ZN_1"].name
             'Perimeter_ZN_1'
 
-            An unknown type name is empty, and reading it leaves no trace:
+            An unknown type name is empty, warns, and reading it leaves no trace:
 
-            >>> len(model["Zoen"])
+            >>> import warnings
+            >>> with warnings.catch_warnings(record=True) as caught:
+            ...     warnings.simplefilter("always")
+            ...     len(model["Zoen"])
             0
+            >>> print(caught[0].message)
+            Object type 'Zoen' is in no bundled EnergyPlus release; the collection is empty. Did you mean 'Zone'?
             >>> "Zoen" in model.collections
             False
         """
@@ -337,7 +435,24 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         collection = self._collections.get(obj_type)
         if collection is not None:
             return collection
-        return self._lookup_collection(obj_type)
+        return self._read_collection(obj_type, stacklevel=2)
+
+    def _read_collection(self, obj_type: str, *, stacklevel: int) -> IDFCollection[IDFObject]:
+        """Look *obj_type* up for a caller that named it, warning if no bundled release has it.
+
+        Every public name-keyed read ([__getitem__][idfkit.document.IDFDocument.__getitem__],
+        [get_collection][idfkit.document.IDFDocument.get_collection] and the eppy ones) comes
+        here; ``__getitem__`` only after its own one-dict-hit hot path has missed. *stacklevel* is
+        counted as :func:`warnings.warn` counts it, from the public method that called this one,
+        so ``2`` points the warning at that method's caller.
+        """
+        collection = self._collections.get(obj_type)
+        if collection is not None:
+            return collection
+        collection = self._lookup_collection(obj_type)
+        if not collection:
+            _warn_if_unknown_object_type(obj_type, stacklevel=stacklevel + 1)
+        return collection
 
     def _lookup_collection(self, obj_type: str) -> IDFCollection[IDFObject]:
         """Resolve *obj_type* and return its stored collection, or a detached empty one.
@@ -406,16 +521,22 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         for a name held in a variable; for a literal one, ``model["Zone"]``
         is typed and checked. ``idfkit check`` reports literal names passed
         here (rules ``C003`` and ``C004``).
+
+        A name no bundled release has warns
+        [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning],
+        as ``model[obj_type]`` does.
         """
-        return self[obj_type]
+        return self._read_collection(obj_type, stacklevel=2)
 
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
         """
         Get collection by Python-style attribute name.
 
         Every object type in the document's schema is reachable this way as its
-        ``snake_case`` plural (``model.air_loop_hvacs``), which the stub types as
-        ``IDFCollection`` of the generated class. Hand-written shorthands in
+        ``snake_case`` plural (``model.air_loop_hvacs``), or, for a type a model holds
+        at most one of, its singular (``model.output_sqlite``, ``model.building``). The
+        stub types either as ``IDFCollection`` of the generated class. The plural of such
+        a type (``model.output_sqlites``) still resolves, with a ``DeprecationWarning``. Hand-written shorthands in
         ``_PYTHON_TO_IDF`` (e.g. ``building_surfaces`` -> ``BuildingSurface:Detailed``,
         ``ideal_loads`` -> ``ZoneHVAC:IdealLoadsAirSystem``) also resolve, and keep
         their meaning where one coincides with a derived name. The raw type name, with
@@ -456,6 +577,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if resolver is not None:
             resolved = resolver.resolve(name)
             if resolved is not None:
+                old = resolver.deprecated.get(name)
+                if old is not None:
+                    message = deprecated_plural_message(name, *old)
+                    warnings.warn(f"{message}. The plural will be removed.", DeprecationWarning, stacklevel=2)
                 return self[resolved]
             raise AccessorAttributeError(type(self).__name__, name, resolver)
 
@@ -498,7 +623,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Matched case-insensitively and resolved against the schema, the same
         way [__getitem__][idfkit.document.IDFDocument.__getitem__] does, so
         ``"zone" in model`` and ``len(model["zone"]) > 0`` can never disagree.
-        An unrecognised type name answers False rather than raising.
+        An unrecognised type name answers False rather than raising, and
+        never warns: asking is not a misspelt read.
 
         A type checker does not narrow the document's type on this test.
         False does not mean the release lacks the type, only that the document
@@ -522,7 +648,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> "Zoen" in model
             False
         """
-        return len(self[obj_type]) > 0
+        # Not through ``__getitem__``: asking whether a type is present is not a misspelt read, so it never warns.
+        collection = self._collections.get(obj_type)
+        if collection is None:
+            collection = self._lookup_collection(obj_type)
+        return len(collection) > 0
 
     def __iter__(self) -> Iterator[str]:
         """Iterate over object type names."""
@@ -838,13 +968,15 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """Whether *collection* is the one this document stores its type's objects in."""
         return self._collections.get(collection.obj_type) is collection
 
-    def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject:
+    def _create_in(
+        self, collection: IDFCollection[Any], name: str, fields: dict[str, Any], validate: bool
+    ) -> IDFObject:
         """Create an object for [IDFCollection.add][idfkit.objects.IDFCollection.add].
 
-        Validated as ``add()`` validates by default. *collection* is the one the caller holds: if it
-        is the detached empty collection read for an absent type, it becomes the stored one.
+        Validated or not by *validate*, as ``add()`` is. *collection* is the one the caller holds: if
+        it is the detached empty collection read for an absent type, it becomes the stored one.
         """
-        return self._add(collection.obj_type, name, fields, True, collection)
+        return self._add(collection.obj_type, name, fields, validate, collection)
 
     def _add(
         self,
@@ -896,6 +1028,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         # A blank under a key the type does not name is kept, so the unknown-key check below refuses it.
         known = parsing_cache.known_keys if parsing_cache is not None else frozenset[str]()
         field_data = {key: value for key, value in field_data.items() if key not in known or not is_blank_slot(value)}
+        # A choice is stored in its schema's spelling, so `surface_type="WALL"` reads back the "Wall"
+        # its Literal type promises. `field_data` is this call's own dict; groups are copied on change.
+        if parsing_cache is not None and self.normalize_choices:
+            canonicalize_choices(field_data, parsing_cache)
 
         # Create object
         obj = IDFObject(
@@ -943,6 +1079,23 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Overrides the eppy-compatibility method from
         :class:`~idfkit._compat.EppyDocumentMixin` to keep ``_version`` in sync
         when a ``Version`` object is added (e.g. during parsing or copy).
+
+        In a document that normalizes choices (the default), the object's choice
+        values are rewritten in the spelling its schema declares, as ``add()``
+        stores them, so an object built elsewhere or copied from a document that
+        opted out holds what its ``Literal`` types say.
+        """
+        if self.normalize_choices and self._schema is not None:
+            pc = self._schema.get_parsing_cache(obj.obj_type)
+            if pc is not None:
+                canonicalize_choices(obj.data, pc)
+        return self._adopt(obj)
+
+    def _adopt(self, obj: IDFObject) -> IDFObject:
+        """File *obj* as :meth:`addidfobject` does, with its values taken as they are.
+
+        For objects already in this document's spelling: the parsers', which normalize while
+        they read, and the twins :meth:`copy` makes of a document with the same setting.
         """
         result = super().addidfobject(obj)
         if obj.obj_type.upper() == "VERSION":
@@ -1527,9 +1680,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         :meth:`render_object` answer for its objects.
 
         ``copy.deepcopy`` and ``pickle`` give the same result through the
-        default machinery, which needs no hooks here: every slot of a document
-        copies correctly on its own, and the schema travels by version (see
+        default machinery: every slot of a document copies correctly on its
+        own, and the schema travels by version (see
         :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
+        A document pickled by an earlier release has no ``normalize_choices``
+        slot, and reads it as ``False``.
         This method is the faster of the two, as it rebuilds the model
         object by object instead of walking every field through the memo.
 
@@ -1554,6 +1709,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             schema=self._schema,
             filepath=self.filepath,
             strict=self._strict,
+            normalize_choices=self.normalize_choices,
         )
 
         # Keyed by the object: IDFObject hashes by identity, and the tree below needs
@@ -1567,7 +1723,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 # copied document is the object as read, and this is the writer's clean/dirty flag:
                 # `None` would make a preserving write reformat every object the copy holds.
                 object.__setattr__(new_obj, "_source_text", obj.source_text)
-            new_doc.addidfobject(new_obj)
+            # A twin already holds the spelling this document's setting gives, and the copy shares it.
+            new_doc._adopt(new_obj)
             twins[obj] = new_obj
 
         # The tree ties to the original only through `node.obj`. Re-pointing each anchor at

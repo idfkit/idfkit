@@ -8,7 +8,14 @@ from __future__ import annotations
 
 class InternalMass_v9_2_to_v9_5:
     def __call__(
-        self, name: str, /, *, construction_name: str, zone_or_zonelist_name: str, surface_area: float
+        self,
+        name: str,
+        /,
+        *,
+        construction_name: str,
+        zone_or_zonelist_name: str,
+        surface_area: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``InternalMass`` and add it to the document.
 
@@ -32,6 +39,7 @@ class WallExterior_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Exterior`` and add it to the document.
 

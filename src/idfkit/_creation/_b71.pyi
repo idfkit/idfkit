@@ -12,7 +12,15 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class DuctLossLeakage:
-    def __call__(self, name: str, /, *, airloophvac_name: str, airflownetwork_distribution_linkage_name: str) -> None:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        airloophvac_name: str,
+        airflownetwork_distribution_linkage_name: str,
+        validate: bool = True,
+    ) -> None:
         """Create a new ``Duct:Loss:Leakage`` and add it to the document.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-airflow-network/#ductlossleakage
@@ -59,6 +67,7 @@ class ZoneHVACEvaporativeCoolerUnit:
         second_evaporative_cooler_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
         shut_off_relative_humidity: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EvaporativeCoolerUnit`` and add it to the document.
 
@@ -105,6 +114,7 @@ class AirLoopHVACUnitaryFurnaceHeatCool:
         ]
         | None = ...,
         reheat_coil_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:Unitary:Furnace:HeatCool`` and add it to the document.
 
@@ -137,6 +147,7 @@ class AnyPumpVariableSpeedCondensate:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pump:VariableSpeed:Condensate`` and add it to the document.
 
@@ -156,6 +167,7 @@ class ExternalInterfaceFunctionalMockupUnitImportToSchedule:
         fmu_variable_name: str,
         initial_value: float,
         schedule_type_limits_names: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport:To:Schedule`` and add it to the document.
 
@@ -165,7 +177,7 @@ class ExternalInterfaceFunctionalMockupUnitImportToSchedule:
         """
 
 class AvailabilityManagerHighTemperatureTurnOn:
-    def __call__(self, name: str, /, *, sensor_node_name: str, temperature: float) -> None:
+    def __call__(self, name: str, /, *, sensor_node_name: str, temperature: float, validate: bool = True) -> None:
         """Create a new ``AvailabilityManager:HighTemperatureTurnOn`` and add it to the document.
 
         Overrides fan/pump schedules depending on temperature at sensor node.
@@ -186,6 +198,7 @@ class SetpointManagerSystemNodeResetTemperature:
         high_reference_temperature: float,
         reference_node_name: str,
         setpoint_node_or_nodelist_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:SystemNodeReset:Temperature`` and add it to the document.
 
@@ -203,6 +216,7 @@ class MatrixTwoDimension:
         number_of_rows: int,
         number_of_columns: int,
         values: Sequence[_g.MatrixTwoDimensionValuesItem | _g.MatrixTwoDimensionValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Matrix:TwoDimension`` and add it to the document.
 

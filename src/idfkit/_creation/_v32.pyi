@@ -35,6 +35,7 @@ class CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1:
         speed_8_name: str | None = ...,
         speed_9_name: str | None = ...,
         speed_10_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:OperatingMode`` and add it to the document.
 

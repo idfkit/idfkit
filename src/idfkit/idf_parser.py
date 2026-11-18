@@ -266,6 +266,7 @@ def parse_idf(
     strict: bool = True,
     *,
     preserve_formatting: bool = False,
+    normalize_choices: bool = True,
 ) -> IDFDocument:
     """
     Parse an IDF file into an IDFDocument.
@@ -283,6 +284,10 @@ def parse_idf(
             so that writing the document back preserves original formatting,
             comments, and whitespace for unmodified objects.  The default
             code path is unchanged — no performance penalty when ``False``.
+        normalize_choices: When ``True`` (the default), each choice value is stored in the
+            spelling its schema declares, whatever case the file used: ``WALL`` reads back
+            ``"Wall"``, as the field's ``Literal`` type says. ``False`` keeps the file's text.
+            Either way, a ``preserve_formatting=True`` write emits unmodified objects verbatim.
 
     Returns:
         Parsed IDFDocument
@@ -322,7 +327,9 @@ def parse_idf(
         raise FileNotFoundError(f"IDF file not found: {filepath}")  # noqa: TRY003
 
     parser = IDFParser(filepath, schema, encoding, strict_parsing=strict_parsing)
-    return parser.parse(version, strict=strict, preserve_formatting=preserve_formatting)
+    return parser.parse(
+        version, strict=strict, preserve_formatting=preserve_formatting, normalize_choices=normalize_choices
+    )
 
 
 def parse_idf_with_diagnostics(
@@ -333,6 +340,7 @@ def parse_idf_with_diagnostics(
     *,
     strict: bool = True,
     preserve_formatting: bool = False,
+    normalize_choices: bool = True,
 ) -> ParseResult[IDFDocument]:
     """Parse an IDF file, keeping the findings that did not stop the parse.
 
@@ -345,6 +353,8 @@ def parse_idf_with_diagnostics(
 
     Every logging announcement fires exactly as it does today. A caller with a handler installed
     sees no change (FR-014); this is a second way to reach the same findings, not a replacement.
+
+    `normalize_choices` is the flag of :func:`parse_idf`.
     """
     filepath = Path(filepath)
 
@@ -352,7 +362,9 @@ def parse_idf_with_diagnostics(
         raise FileNotFoundError(f"IDF file not found: {filepath}")  # noqa: TRY003
 
     parser = IDFParser(filepath, schema, encoding, strict_parsing=False)
-    document = parser.parse(version, strict=strict, preserve_formatting=preserve_formatting)
+    document = parser.parse(
+        version, strict=strict, preserve_formatting=preserve_formatting, normalize_choices=normalize_choices
+    )
     return ParseResult(document=document, diagnostics=parser.diagnostics)
 
 
@@ -363,7 +375,15 @@ class IDFParser:
     Uses memory mapping for large files and regex for tokenization.
     """
 
-    __slots__ = ("_content", "_diagnostics", "_encoding", "_filepath", "_schema", "_strict_parsing")
+    __slots__ = (
+        "_content",
+        "_diagnostics",
+        "_encoding",
+        "_filepath",
+        "_normalize_choices",
+        "_schema",
+        "_strict_parsing",
+    )
 
     _filepath: Path
     _schema: EpJSONSchema | None
@@ -371,6 +391,8 @@ class IDFParser:
     _content: bytes | None
     _strict_parsing: bool
     _diagnostics: list[ParseDiagnostic]
+    #: Whether the parse in progress stores choices in their schema's spelling; set by :meth:`parse`.
+    _normalize_choices: bool
 
     def __init__(
         self,
@@ -383,6 +405,7 @@ class IDFParser:
         self._schema = schema
         self._encoding = encoding
         self._strict_parsing = strict_parsing
+        self._normalize_choices = True
         self._content: bytes | None = None
         # Recoverable findings from the last parse: the ones that did not stop it.
         #
@@ -436,6 +459,7 @@ class IDFParser:
         *,
         strict: bool = True,
         preserve_formatting: bool = False,
+        normalize_choices: bool = True,
     ) -> IDFDocument:
         """
         Parse the IDF file into an IDFDocument.
@@ -444,6 +468,7 @@ class IDFParser:
             version: Optional version override
             strict: Enforce strict field access on the resulting document.
             preserve_formatting: Build a CST for lossless round-tripping.
+            normalize_choices: Store each choice value in the spelling its schema declares.
 
         Returns:
             Parsed IDFDocument
@@ -451,6 +476,7 @@ class IDFParser:
         t0 = time.perf_counter()
         # A parser may be reused, and findings belong to one parse rather than to its whole life.
         self._diagnostics = []
+        self._normalize_choices = normalize_choices
         logger.debug("Parsing IDF file %s", self._filepath)
 
         # Load content (with mmap for large files)
@@ -469,7 +495,13 @@ class IDFParser:
             schema = get_schema(version)
 
         # Create document
-        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict)
+        doc = IDFDocument(
+            version=version,
+            schema=schema,
+            filepath=self._filepath,
+            strict=strict,
+            normalize_choices=normalize_choices,
+        )
 
         # Parse objects
         self._parse_objects(content, doc, schema)
@@ -542,7 +574,8 @@ class IDFParser:
         type_cache: dict[str, ParsingCache | None] = {}
         canonical_cache: dict[str, str] = {}
         encoding = self._encoding
-        addidfobject = doc.addidfobject
+        # Values are normalized while the fields are read, so objects are filed as they are.
+        addidfobject = doc._adopt  # pyright: ignore[reportPrivateUsage]
         skipped_types: set[str] = set()
 
         # Every match ends at a `;`, so nothing past the last one can match. Bounding the scan there
@@ -738,10 +771,15 @@ class IDFParser:
 
         Whether such a value is actually wrong is not decided here. A numeric field routinely
         accepts ``autosize``; that question needs the schema and is asked on the reporting path.
+
+        A value left a string is, when it folds to one of its field's choices, stored in the
+        spelling the schema declares, so the field's ``Literal`` type holds for any file. The
+        same identity test confines that lookup to strings: a coerced number never pays for it.
         """
         data: dict[str, Any] = {}
         field_types = pc.field_types
         num_named = len(field_names)
+        choices = pc.choice_spellings if self._normalize_choices else None
 
         # zip stops at the named fields: the extensible tail is bucketed below, not walked here.
         for i, (field_name, value) in enumerate(zip(field_names, remaining_fields, strict=False)):
@@ -751,9 +789,12 @@ class IDFParser:
             if value:
                 field_type = field_types.get(field_name)
                 coerced = _coerce_value_fast(field_type, value)
+                if coerced is value:
+                    if invalid is not None and field_type in _NUMERIC_FIELD_TYPES:
+                        invalid.append((i, field_name, value))
+                    if choices and (table := choices.get(field_name)) is not None:
+                        coerced = table.get(value.casefold(), value)
                 data[field_name] = coerced
-                if invalid is not None and coerced is value and field_type in _NUMERIC_FIELD_TYPES:
-                    invalid.append((i, field_name, value))
 
         if len(remaining_fields) > num_named:
             extra = remaining_fields[num_named:]
@@ -808,6 +849,7 @@ class IDFParser:
         num_ext = len(ext_names)
         ext_types = tuple(field_types.get(name) for name in ext_names)
         wrapper_key = pc.ext_wrapper_key
+        ext_choices = pc.ext_choice_spellings if self._normalize_choices else None
 
         items: list[dict[str, Any]] = []
         for group_start in range(0, len(extra), ext_size):
@@ -821,6 +863,11 @@ class IDFParser:
             # Drop all-empty groups (e.g. an extra "," at the end of the extensible block).
             # Keeping them would emit phantom vertices.
             if item:
+                if ext_choices:
+                    for name, value in item.items():
+                        table = ext_choices.get(name)
+                        if table is not None and type(value) is str:
+                            item[name] = table.get(value.casefold(), value)
                 items.append(item)
 
         if items and wrapper_key is not None:

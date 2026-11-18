@@ -33,6 +33,7 @@ class FoundationKiva_v8_9_to_v9_1:
         footing_material_name: str | None = ...,
         footing_depth: float | None = 0.3,
         blocks: Sequence[_g.FoundationKivaBlocksItem | _g.FoundationKivaBlocksGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Foundation:Kiva`` and add it to the document.
 
@@ -67,6 +68,7 @@ class AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2:
         ],
         air_path_length: float,
         air_path_hydraulic_diameter: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Coil`` and add it to the document.
 
@@ -117,6 +119,7 @@ class ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1:
         design_specification_zonehvac_sizing_object_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
 
@@ -231,6 +234,7 @@ class CoilCoolingDXMultiSpeed_v22_2_to_v23_1:
         speed_4_evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
         speed_4_rated_evaporative_condenser_pump_power_consumption: float | Literal["Autosize"] | None = ...,
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:MultiSpeed`` and add it to the document.
 
@@ -256,6 +260,7 @@ class TableIndependentVariable_v9_2_to_v22_1:
         external_file_column_number: float | None = ...,
         external_file_starting_row_number: float | None = ...,
         values: Sequence[_g.TableIndependentVariableValuesItem | _g.TableIndependentVariableValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:IndependentVariable`` and add it to the document.
 

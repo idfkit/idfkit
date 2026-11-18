@@ -675,3 +675,128 @@ class TestAsyncAccessors:
     async def test_async_find_output_file_local_none(self, tmp_path: Path) -> None:
         path = await _make_result(tmp_path)._async_find_output_file(".err")  # pyright: ignore[reportPrivateUsage]
         assert path is None
+
+
+# ---------------------------------------------------------------------------
+# Output file naming: every --output-suffix style, auxiliary files skipped
+# ---------------------------------------------------------------------------
+
+#: The files each ``--output-suffix`` style writes with ``-p eplus`` and
+#: ``Output:SQLite``, as observed from EnergyPlus 26.1. The auxiliary file is
+#: listed first so a lookup that trusts listing order picks it.
+_STYLE_FILES: dict[str, tuple[str, ...]] = {
+    "C": ("eplusSqlite.err", "eplus.err", "eplusMeter.csv", "eplusTable.csv", "eplus.csv", "eplusTable.htm"),
+    "L": ("sqlite.err", "eplusout.err", "eplusmtr.csv", "eplustbl.csv", "eplusout.csv", "eplustbl.htm"),
+    "D": ("eplus-sqlite.err", "eplus.err", "eplus-meter.csv", "eplus-table.csv", "eplus.csv", "eplus-table.htm"),
+}
+_STYLE_EXPECTED: dict[str, tuple[str, str, str]] = {
+    "C": ("eplus.err", "eplus.csv", "eplusTable.htm"),
+    "L": ("eplusout.err", "eplusout.csv", "eplustbl.htm"),
+    "D": ("eplus.err", "eplus.csv", "eplus-table.htm"),
+}
+_SEVERE_ERR = "   ** Severe  ** Weather file days requested without a weather file\n"
+
+
+class TestOutputFileNaming:
+    """The lookup finds the main output whatever the naming style and listing order."""
+
+    @pytest.mark.parametrize("style", sorted(_STYLE_FILES))
+    def test_local_run_dir(self, tmp_path: Path, style: str) -> None:
+        for name in _STYLE_FILES[style]:
+            (tmp_path / name).write_text(_SEVERE_ERR if name in _STYLE_EXPECTED[style] else "aux")
+        result = _make_result(tmp_path)
+        err, csv, htm = _STYLE_EXPECTED[style]
+        assert result.err_path == tmp_path / err
+        assert result.csv_path == tmp_path / csv
+        assert result.html_path == tmp_path / htm
+
+    @pytest.mark.parametrize("style", sorted(_STYLE_FILES))
+    def test_sync_fs(self, style: str) -> None:
+        fs = InMemoryFileSystem()
+        run_dir = f"output/style_{style}"
+        for name in _STYLE_FILES[style]:
+            fs.write_text(f"{run_dir}/{name}", "x")
+        result = SimulationResult.from_directory(run_dir, fs=fs)
+        err, csv, htm = _STYLE_EXPECTED[style]
+        assert result.err_path == Path(run_dir) / err
+        assert result.csv_path == Path(run_dir) / csv
+        assert result.html_path == Path(run_dir) / htm
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("style", sorted(_STYLE_FILES))
+    async def test_async_fs(self, style: str) -> None:
+        async_fs = InMemoryAsyncFileSystem()
+        run_dir = f"output/async_style_{style}"
+        for name in _STYLE_FILES[style]:
+            await async_fs.write_text(f"{run_dir}/{name}", "x")
+        result = SimulationResult.from_directory(run_dir, async_fs=async_fs)
+        err, csv, htm = _STYLE_EXPECTED[style]
+        assert await result._async_find_output_file(".err") == Path(run_dir) / err  # pyright: ignore[reportPrivateUsage]
+        assert await result._async_find_output_file(".csv") == Path(run_dir) / csv  # pyright: ignore[reportPrivateUsage]
+        assert await result._async_find_output_file(".htm", table=True) == Path(run_dir) / htm  # pyright: ignore[reportPrivateUsage]
+
+    def test_errors_read_from_eplus_err_not_sqlite_err(self, tmp_path: Path) -> None:
+        """The reported bug: ``eplusSqlite.err`` beside ``eplus.err`` hid the severe errors."""
+        (tmp_path / "eplusSqlite.err").write_text("SQLite logging only\n")
+        (tmp_path / "eplus.err").write_text(_SEVERE_ERR)
+        assert len(_make_result(tmp_path).errors.severe) == 1
+
+    @pytest.mark.asyncio
+    async def test_async_errors_read_from_eplus_err_not_sqlite_err(self) -> None:
+        async_fs = InMemoryAsyncFileSystem()
+        run_dir = "output/async_sqlite"
+        await async_fs.write_text(f"{run_dir}/eplusSqlite.err", "SQLite logging only\n")
+        await async_fs.write_text(f"{run_dir}/eplus.err", _SEVERE_ERR)
+        result = SimulationResult.from_directory(run_dir, async_fs=async_fs)
+        assert len((await result.async_errors()).severe) == 1
+
+    def test_custom_prefix(self, tmp_path: Path) -> None:
+        (tmp_path / "fooSqlite.err").write_text("aux")
+        (tmp_path / "foo.err").write_text(_SEVERE_ERR)
+        result = SimulationResult.from_directory(tmp_path, output_prefix="foo")
+        assert result.err_path == tmp_path / "foo.err"
+
+    def test_fallback_skips_auxiliary_when_prefix_differs(self, tmp_path: Path) -> None:
+        """With an unexpected prefix the scan still never returns the SQLite log."""
+        (tmp_path / "runSqlite.err").write_text("aux")
+        (tmp_path / "run.err").write_text(_SEVERE_ERR)
+        assert _make_result(tmp_path).err_path == tmp_path / "run.err"
+
+    def test_fallback_returns_none_when_only_auxiliary(self, tmp_path: Path) -> None:
+        (tmp_path / "eplusSqlite.err").write_text("aux")
+        assert _make_result(tmp_path).err_path is None
+
+    def test_fallback_is_sorted(self, tmp_path: Path) -> None:
+        (tmp_path / "zeta.err").write_text("z")
+        (tmp_path / "alpha.err").write_text("a")
+        assert _make_result(tmp_path).err_path == tmp_path / "alpha.err"
+
+    def test_fs_fallback_is_sorted_and_skips_auxiliary(self) -> None:
+        fs = InMemoryFileSystem()
+        run_dir = "output/fs_fallback"
+        for name in ("zeta.err", "aSqlite.err", "alpha.err"):
+            fs.write_text(f"{run_dir}/{name}", "x")
+        result = SimulationResult.from_directory(run_dir, fs=fs)
+        assert result.err_path == Path(run_dir) / "alpha.err"
+
+    def test_pick_fallback_ignores_listing_order(self) -> None:
+        from idfkit.simulation.result import _pick_fallback  # pyright: ignore[reportPrivateUsage]
+
+        names = ["eplusSqlite.err", "b.err", "a.err"]
+        assert _pick_fallback(names, ".err", table=False) == "a.err"
+        assert _pick_fallback(list(reversed(names)), ".err", table=False) == "a.err"
+
+    def test_html_fallback_prefers_table_file(self, tmp_path: Path) -> None:
+        (tmp_path / "other.htm").write_text("<html></html>")
+        (tmp_path / "runTable.htm").write_text("<html></html>")
+        assert _make_result(tmp_path).html_path == tmp_path / "runTable.htm"
+
+    def test_missing_local_run_dir_raises(self, tmp_path: Path) -> None:
+        """A run directory that does not exist is an error, not an empty result."""
+        with pytest.raises(FileNotFoundError):
+            _ = _make_result(tmp_path / "missing").err_path
+
+    def test_html_fallback_prefers_table_over_other_auxiliary(self, tmp_path: Path) -> None:
+        (tmp_path / "runMeter.htm").write_text("<html></html>")
+        (tmp_path / "runtbl.htm").write_text("<html></html>")
+        assert _make_result(tmp_path).html_path == tmp_path / "runtbl.htm"

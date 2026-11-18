@@ -45,6 +45,7 @@ class FloorDetailed:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.FloorDetailedVerticesItem | _g.FloorDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Detailed`` and add it to the document.
 
@@ -174,6 +175,7 @@ class SurfacePropertyConvectionCoefficientsMultipleSurface:
         convection_coefficient_2: float | None = 0.1,
         convection_coefficient_2_schedule_name: str | None = ...,
         convection_coefficient_2_user_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:ConvectionCoefficients:MultipleSurface`` and add it to the document.
 
@@ -194,6 +196,7 @@ class AirflowNetworkDistributionComponentTerminalUnit:
         ],
         air_path_length: float,
         air_path_hydraulic_diameter: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:TerminalUnit`` and add it to the document.
 
@@ -316,6 +319,7 @@ class AnyHVACTemplateSystemUnitarySystem:
         return_fan_delta_pressure: float | None = 300,
         return_fan_motor_efficiency: float | None = 0.9,
         return_fan_motor_in_air_stream_fraction: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:UnitarySystem`` and add it to the document.
 
@@ -369,6 +373,7 @@ class ZoneHVACFourPipeFanCoil:
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:FourPipeFanCoil`` and add it to the document.
 
@@ -390,6 +395,7 @@ class AnyAirTerminalDualDuctVAV:
         availability_schedule_name: str | None = ...,
         zone_minimum_air_flow_fraction: float | None = 0.2,
         design_specification_outdoor_air_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:DualDuct:VAV`` and add it to the document.
 
@@ -406,6 +412,7 @@ class ConnectorMixer:
         *,
         outlet_branch_name: str,
         branches: Sequence[_g.ConnectorMixerBranchesItem | _g.ConnectorMixerBranchesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Connector:Mixer`` and add it to the document.
 
@@ -428,6 +435,7 @@ class SolarCollectorIntegralCollectorStorage:
         | None = "AmbientAir",
         boundary_condition_model_name: str | None = ...,
         maximum_flow_rate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollector:IntegralCollectorStorage`` and add it to the document.
 
@@ -479,6 +487,7 @@ class AnyHeatPumpAirToWaterFuelFiredCooling:
         auxiliary_electric_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:AirToWater:FuelFired:Cooling`` and add it to the document.
 
@@ -531,6 +540,7 @@ class AnyGeneratorMicroTurbine:
         nominal_exhaust_air_outlet_temperature: float | None = ...,
         exhaust_air_temperature_function_of_temperature_curve_name: str | None = ...,
         exhaust_air_temperature_function_of_part_load_ratio_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:MicroTurbine`` and add it to the document.
 
@@ -541,7 +551,13 @@ class AnyGeneratorMicroTurbine:
 
 class ElectricLoadCenterInverterPVWatts:
     def __call__(
-        self, name: str = "", /, *, dc_to_ac_size_ratio: float | None = 1.1, inverter_efficiency: float | None = 0.96
+        self,
+        name: str = "",
+        /,
+        *,
+        dc_to_ac_size_ratio: float | None = 1.1,
+        inverter_efficiency: float | None = 0.96,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Inverter:PVWatts`` and add it to the document.
 
@@ -557,6 +573,7 @@ class ParametricFileNameSuffix:
         /,
         *,
         suffixes: Sequence[_g.ParametricFileNameSuffixSuffixesItem | _g.ParametricFileNameSuffixSuffixesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Parametric:FileNameSuffix`` and add it to the document.
 
@@ -576,6 +593,7 @@ class OutputMeter:
             "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Meter`` and add it to the document.
 

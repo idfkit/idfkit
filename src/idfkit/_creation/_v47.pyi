@@ -112,6 +112,7 @@ class AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5:
         heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
         initial_heat_recovery_heating_energy_fraction: float | None = 1,
         heat_recovery_heating_energy_time_constant: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow`` and add it to the document.
 
@@ -131,6 +132,7 @@ class ZoneHVACEquipmentList_v9_3_to_v22_1:
         equipment: Sequence[
             _vd.ZoneHVACEquipmentListEquipmentItem_v9_3_to_v22_1 | _vd.ZoneHVACEquipmentListEquipmentGroup_v9_3_to_v22_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
 
@@ -159,6 +161,7 @@ class RunPeriod_v9_0_to_v9_1:
         use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
         use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
         treat_weather_as_actual: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 

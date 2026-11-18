@@ -48,6 +48,7 @@ class AnyPeople:
         | None = ...,
         thermal_comfort_model_5_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"]
         | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``People`` and add it to the document.
 
@@ -71,6 +72,7 @@ class SpaceHVACZoneEquipmentMixer:
         ]
         | None = "DesignCoolingLoad",
         spaces: Sequence[_g.SpaceHVACZoneEquipmentMixerSpacesItem | _g.SpaceHVACZoneEquipmentMixerSpacesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SpaceHVAC:ZoneEquipmentMixer`` and add it to the document.
 
@@ -87,6 +89,7 @@ class AirLoopHVACSupplyPath:
         *,
         supply_air_path_inlet_node_name: str,
         components: Sequence[_g.AirLoopHVACSupplyPathComponentsItem | _g.AirLoopHVACSupplyPathComponentsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:SupplyPath`` and add it to the document.
 

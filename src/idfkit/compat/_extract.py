@@ -255,7 +255,7 @@ def _passes_validate_false(node: ast.Call) -> bool:
 
 # Keywords of IDFDocument.add() that are its own parameters, not fields, and of IDFCollection.add().
 _DOCUMENT_ADD_PARAMS = frozenset({"name", "fields", "validate"})
-_COLLECTION_ADD_PARAMS = frozenset({"name"})
+_COLLECTION_ADD_PARAMS = frozenset({"name", "validate"})
 
 
 def _fields_dicts(node: ast.Call) -> tuple[ast.Dict, ...]:
@@ -636,7 +636,9 @@ class _LiteralVisitor(ast.NodeVisitor):
             return
         releases = self._collection_releases(document, owner)
         receiver_text = self._receiver_text(receiver)
-        self._keyword_choice_literals(node, obj_type, receiver_text, releases, in_idfkit_add=True)
+        # validate=False stores a choice value unchecked, as with IDFDocument.add().
+        in_idfkit_add = not _passes_validate_false(node)
+        self._keyword_choice_literals(node, obj_type, receiver_text, releases, in_idfkit_add=in_idfkit_add)
         # The name is positional-only: ``name=`` is a field to Python, but add() refuses it as one
         # with its own message, and a type checker reports it.
         self._field_name_literals(node, obj_type, receiver_text, releases, (), skip=_COLLECTION_ADD_PARAMS)

@@ -34,6 +34,7 @@ class Lights:
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
         return_air_heat_gain_node_name: str | None = ...,
         exhaust_air_heat_gain_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Lights`` and add it to the document.
 
@@ -58,6 +59,7 @@ class CoilHeatingSteam:
         degree_of_loop_subcooling: float | None = 20,
         coil_control_type: Literal["TemperatureSetpointControl", "ZoneLoadControl"] | None = ...,
         temperature_setpoint_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Steam`` and add it to the document.
 
@@ -85,6 +87,7 @@ class FluidCoolerSingleSpeed:
         design_air_flow_rate_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
         nominal_capacity: float | None = ...,
         outdoor_air_inlet_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FluidCooler:SingleSpeed`` and add it to the document.
 
@@ -105,6 +108,7 @@ class AnyGroundHeatExchangerResponseFactors:
         g_functions: Sequence[
             _g.GroundHeatExchangerResponseFactorsGFunctionsItem | _g.GroundHeatExchangerResponseFactorsGFunctionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:ResponseFactors`` and add it to the document.
 

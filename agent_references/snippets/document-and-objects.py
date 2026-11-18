@@ -62,11 +62,17 @@ insulation = doc["Material"].add(
 )
 doc["Output:SQLite"].add(option_type="SimpleAndTabular")  # a type without a Name field: no name
 
+# validate=False skips value, range and required-field checks at run time, as doc.add(...) does,
+# for bulk loading data already known good. An unknown key still raises InvalidFieldError, and the
+# type checker still requires the type's required fields.
+doc.zones.add("Imported", ceiling_height=2.7, validate=False)
+
 # doc.zones.add("Lab", ceiling_hieght=3.0)                       # error: No parameter named "ceiling_hieght"
 # doc.zones.add("Lab", zone_inside_convection_algorithm="Bogus")  # error: not one of the field's choices
 # doc["Material"].add("XPS_50mm", thickness=0.05)                 # error: Arguments missing for parameters
 #                                                                 #   "roughness", "conductivity", "density", ...
 # doc["Output:SQLite"].add("Out", option_type="Simple")          # error: parameter "this_type_has_no_name_field"
+# doc.zones.add("Lab", validate="no")                             # error: "str" is not assignable to "bool"
 # --8<-- [end:typed-collection-add]
 
 
@@ -94,6 +100,13 @@ loops = doc.air_loop_hvacs  # IDFCollection[AirLoopHVAC]
 coils = doc.coil_cooling_dx_single_speeds  # Coil:Cooling:DX:SingleSpeed
 also_loops = doc["AirLoopHVAC"]  # equivalent
 shades = doc.shading_building_detaileds  # Shading:Building:Detailed
+
+# A type a model holds at most one of is named in the singular. It is still the
+# collection, so add through it and read with .first().
+doc.output_sqlite.add(option_type="SimpleAndTabular")  # IDFCollection[OutputSQLite]
+building = doc.building.first()  # Building | None
+if building is not None:
+    north = building.north_axis
 
 # A typo names the closest matches and their object types:
 #   >>> doc.shading_bulding
@@ -324,18 +337,18 @@ if TYPE_CHECKING:  # the classes exist only in the stubs; importing them at run 
 def latest_ceiling(zone: Zone) -> float | None:
     """A latest-release Zone only: a 9.4 zone (Zone_v8_9_to_v9_4) is rejected."""
     height = zone.ceiling_height
-    return height if isinstance(height, float) else None
+    return None if height is None or isinstance(height, str) else float(height)
 
 
 def any_ceiling(zone: AnyZone) -> float | None:
     """A Zone of any release: the latest one, a 9.4 one, or one reached through AnyIDFDocument."""
     height = zone.ceiling_height
-    return height if isinstance(height, float) else None
+    return None if height is None or isinstance(height, str) else float(height)
 
 
-def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
-    """Extensible groups are typed too: vertices exist in every release."""
-    return sum(1 for vertex in surface.vertices if vertex.vertex_x_coordinate is not None)
+def top_height(surface: AnyBuildingSurfaceDetailed) -> float:
+    """Extensible groups are typed too: every release requires a vertex's coordinates, so they read as float."""
+    return max(vertex.vertex_z_coordinate for vertex in surface.vertices)
 
 
 any_ceiling(doc["Zone"]["Office"])
@@ -369,3 +382,43 @@ try:
 except MissingRequiredFieldError as err:  # an AttributeError naming the object and the field
     print(err.obj_type, err.obj_name, err.field_name)
 # --8<-- [end:read-required]
+
+
+# --8<-- [start:read-required-groups]
+def top_of(surface: AnyBuildingSurfaceDetailed) -> float:
+    """A vertex's coordinates are required in every release: they read as float, no guard."""
+    return max(point["vertex_z_coordinate"] for point in surface.vertices.as_list())
+
+
+for surface in legacy["BuildingSurface:Detailed"]:
+    try:
+        print(surface.name, top_of(surface))
+    except MissingRequiredFieldError as err:  # a vertex lacks a coordinate
+        print(err.wrapper_key, err.group_index, err.field_name)  # "vertices", 2, "vertex_z_coordinate"
+        unset = [v.group_index for v in surface.vertices if v.get(err.field_name) is None]  # get() never raises
+# --8<-- [end:read-required-groups]
+
+
+# --8<-- [start:choice-spelling]
+from collections import Counter
+
+from typing_extensions import assert_never
+
+from idfkit import load_idf
+
+# 5ZoneAirCooled.idf writes WALL, FLOOR, CEILING and ROOF. Each choice is read in the spelling the
+# schema declares, so the Literal type holds and the match is exhaustive on a file of any case.
+model = load_idf("5ZoneAirCooled.idf")
+counts: Counter[str] = Counter()
+for srf in model.building_surfaces:
+    match srf.surface_type:
+        case "Wall" | "Floor" | "Ceiling" | "Roof":
+            counts[srf.surface_type] += 1
+        case _:
+            assert_never(srf.surface_type)
+
+# Opt out to keep the file's own text. The Literal type then does not hold: compare with casefold().
+raw = load_idf("5ZoneAirCooled.idf", normalize_choices=False)
+walls = [s for s in raw.building_surfaces if s.surface_type.casefold() == "wall"]
+assert raw.normalize_choices is False
+# --8<-- [end:choice-spelling]

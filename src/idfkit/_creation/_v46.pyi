@@ -40,6 +40,7 @@ class ComponentCostLineItem_v8_9_to_v9_5:
         cost_per_volume_rate: float | None = ...,
         cost_per_energy_per_temperature_difference: float | None = ...,
         quantity: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComponentCost:LineItem`` and add it to the document.
 
@@ -73,6 +74,7 @@ class HybridModelZone_v9_1_to_v22_1:
         zone_input_supply_air_mass_flow_rate_schedule_name: str | None = ...,
         zone_input_supply_air_humidity_ratio_schedule_name: str | None = ...,
         zone_input_supply_air_co2_concentration_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HybridModel:Zone`` and add it to the document.
 
@@ -125,6 +127,7 @@ class LifeCycleCostUsePriceEscalation_v22_2_to_v23_1:
         escalations: Sequence[
             _g.LifeCycleCostUsePriceEscalationEscalationsItem | _g.LifeCycleCostUsePriceEscalationEscalationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:UsePriceEscalation`` and add it to the document.
 

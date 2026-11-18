@@ -504,8 +504,10 @@ def collect_surface(repo: Path) -> Surface:
         )
 
     # The per-object-type accessors are the Python half of "generated object types". They are
-    # recognised through the machinery that emits them rather than re-derived here.
-    generated = set(_build_resolver(get_schema(LATEST_VERSION)).accessors())
+    # recognised through the machinery that emits them rather than re-derived here. That includes the
+    # deprecated plural of each type a model holds at most one of, which the stub still declares.
+    resolver = _build_resolver(get_schema(LATEST_VERSION))
+    generated = set(resolver.accessors()) | set(resolver.deprecated_accessors())
     document_members = tuple(
         PublicName(
             symbol=name,

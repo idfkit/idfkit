@@ -44,6 +44,7 @@ class AnySiteGroundDomainBasement:
         vertical_insulation_depth: float | None = ...,
         simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
         mesh_density_parameter: int | None = 4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundDomain:Basement`` and add it to the document.
 
@@ -62,6 +63,7 @@ class GroundHeatTransferSlabEquivalentSlab:
         slabdepth_thickness_of_slab_on_grade: float | None = 0.1,
         clearance_distance_from_edge_of_slab_to_domain_edge: float | None = 15,
         zclearance_distance_from_bottom_of_slab_to_domain_bottom: float | None = 15,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:EquivalentSlab`` and add it to the document.
 
@@ -93,6 +95,7 @@ class ZoneHVACUnitHeater:
         heating_convergence_tolerance: float | None = 0.001,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:UnitHeater`` and add it to the document.
 
@@ -126,6 +129,7 @@ class ControllerMechanicalVentilation:
             _g.ControllerMechanicalVentilationZoneSpecificationsItem
             | _g.ControllerMechanicalVentilationZoneSpecificationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Controller:MechanicalVentilation`` and add it to the document.
 
@@ -146,6 +150,7 @@ class SetpointManagerWarmest:
         minimum_setpoint_temperature: float | None = 12,
         maximum_setpoint_temperature: float | None = 18,
         strategy: Literal["MaximumTemperature"] | None = "MaximumTemperature",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:Warmest`` and add it to the document.
 
@@ -169,6 +174,7 @@ class ElectricLoadCenterStorageSimple:
         maximum_power_for_discharging: float | None = ...,
         maximum_power_for_charging: float | None = ...,
         initial_state_of_charge: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Storage:Simple`` and add it to the document.
 
@@ -191,6 +197,7 @@ class ElectricLoadCenterStorageConverter:
         ancillary_power_consumed_in_standby: float | None = ...,
         zone_name: str | None = ...,
         radiative_fraction: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Storage:Converter`` and add it to the document.
 
@@ -211,6 +218,7 @@ class OutputSQLite:
         ]
         | None = "UseOutputControlTableStyle",
         format_numeric_values_for_tabular_data: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:SQLite`` and add it to the document.
 
