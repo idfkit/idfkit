@@ -35,10 +35,10 @@ class WaterHeaterStratified_v8_9_to_v9_2:
         heater_thermal_efficiency: float,
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
         end_use_subcategory: str | None = "General",
-        tank_shape: Literal["", "HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
+        tank_shape: Literal["HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
         tank_perimeter: float | None = ...,
         maximum_temperature_limit: float | None = ...,
-        heater_priority_control: Literal["", "MasterSlave", "Simultaneous"] | None = "MasterSlave",
+        heater_priority_control: Literal["MasterSlave", "Simultaneous"] | None = "MasterSlave",
         heater_1_deadband_temperature_difference: float | None = 0,
         heater_1_capacity: float | Literal["Autosize"] | None = ...,
         heater_1_height: float | None = ...,
@@ -95,15 +95,15 @@ class WaterHeaterStratified_v8_9_to_v9_2:
         use_side_outlet_node_name: str | None = ...,
         use_side_effectiveness: float | None = 1,
         use_side_inlet_height: float | None = 0,
-        use_side_outlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        use_side_outlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
         source_side_inlet_node_name: str | None = ...,
         source_side_outlet_node_name: str | None = ...,
         source_side_effectiveness: float | None = 1,
-        source_side_inlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        source_side_inlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
         source_side_outlet_height: float | None = 0,
-        inlet_mode: Literal["", "Fixed", "Seeking"] | None = "Fixed",
-        use_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        inlet_mode: Literal["Fixed", "Seeking"] | None = "Fixed",
+        use_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         indirect_water_heating_recovery_time: float | None = 1.5,
         number_of_nodes: float | None = 1,
         additional_destratification_conductivity: float | None = 0,
@@ -120,7 +120,7 @@ class WaterHeaterStratified_v8_9_to_v9_2:
         node_11_additional_loss_coefficient: float | None = 0,
         node_12_additional_loss_coefficient: float | None = 0,
         source_side_flow_control_mode: Literal[
-            "", "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
+            "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
@@ -140,9 +140,9 @@ class AirLoopHVACUnitarySystem_v9_3_to_v22_1:
         *,
         air_inlet_node_name: str,
         air_outlet_node_name: str,
-        control_type: Literal["", "Load", "SetPoint", "SingleZoneVAV"] | None = "Load",
+        control_type: Literal["Load", "SetPoint", "SingleZoneVAV"] | None = "Load",
         controlling_zone_or_thermostat_location: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         availability_schedule_name: str | None = ...,
         supply_fan_object_type: Literal[
             "Fan:ComponentModel", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"
@@ -189,10 +189,9 @@ class AirLoopHVACUnitarySystem_v9_3_to_v22_1:
         ]
         | None = ...,
         cooling_coil_name: str | None = ...,
-        use_doas_dx_cooling_coil: Literal["", "No", "Yes"] | None = "No",
-        minimum_supply_air_temperature: float | Literal["", "Autosize"] | None = 2,
+        use_doas_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
+        minimum_supply_air_temperature: float | Literal["Autosize"] | None = 2,
         latent_load_control: Literal[
-            "",
             "LatentOnlyLoadControl",
             "LatentOrSensibleLoadControl",
             "LatentWithSensibleLoadControl",
@@ -241,7 +240,7 @@ class AirLoopHVACUnitarySystem_v9_3_to_v22_1:
         no_load_fraction_of_autosized_heating_supply_air_flow_rate: float | None = ...,
         no_load_supply_air_flow_rate_per_unit_of_capacity_during_cooling_operation: float | None = ...,
         no_load_supply_air_flow_rate_per_unit_of_capacity_during_heating_operation: float | None = ...,
-        maximum_supply_air_temperature: float | Literal["", "Autosize"] | None = 80,
+        maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
         maximum_cycling_rate: float | None = 2.5,
@@ -274,7 +273,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1:
         number_of_sets_of_opening_factor_data: float,
         opening_factor_2: float,
         air_mass_flow_exponent_when_opening_is_closed: float | None = 0.65,
-        type_of_rectangular_large_vertical_opening_lvo_: Literal["", "HorizontallyPivoted", "NonPivoted"]
+        type_of_rectangular_large_vertical_opening_lvo_: Literal["HorizontallyPivoted", "NonPivoted"]
         | None = "NonPivoted",
         extra_crack_length_or_height_of_pivoting_axis: float | None = 0,
         opening_factor_1: float | None = 0,

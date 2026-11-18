@@ -31,8 +31,8 @@ class AnyScheduleFile:
         rows_to_skip_at_top: int,
         schedule_type_limits_name: str | None = ...,
         number_of_hours_of_data: float | None = 8760,
-        column_separator: Literal["", "Comma", "Semicolon", "Tab"] | None = "Comma",
-        interpolate_to_timestep: Literal["", "No", "Yes"] | None = "No",
+        column_separator: Literal["Comma", "Semicolon", "Tab"] | None = "Comma",
+        interpolate_to_timestep: Literal["No", "Yes"] | None = "No",
         minutes_per_item: int | None = ...,
     ) -> None:
         """Create a new ``Schedule:File`` and add it to the document.
@@ -49,7 +49,7 @@ class AirflowNetworkMultiZoneSpecifiedFlowRate:
         /,
         *,
         air_flow_value: float,
-        air_flow_units: Literal["", "MassFlow", "VolumetricFlow"] | None = "MassFlow",
+        air_flow_units: Literal["MassFlow", "VolumetricFlow"] | None = "MassFlow",
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:SpecifiedFlowRate`` and add it to the document.
 
@@ -67,13 +67,13 @@ class SizingZone:
         zone_cooling_design_supply_air_humidity_ratio: float,
         zone_heating_design_supply_air_humidity_ratio: float,
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = ...,
         zone_cooling_design_supply_air_temperature_difference: float | None = ...,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = ...,
@@ -81,48 +81,44 @@ class SizingZone:
         design_specification_outdoor_air_object_name: str | None = ...,
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        cooling_design_air_flow_method: Literal["", "DesignDay", "DesignDayWithLimit", "Flow/Zone"]
-        | None = "DesignDay",
+        cooling_design_air_flow_method: Literal["DesignDay", "DesignDayWithLimit", "Flow/Zone"] | None = "DesignDay",
         cooling_design_air_flow_rate: float | None = 0,
         cooling_minimum_air_flow_per_zone_floor_area: float | None = 0.000762,
         cooling_minimum_air_flow: float | None = 0,
         cooling_minimum_air_flow_fraction: float | None = 0.2,
-        heating_design_air_flow_method: Literal["", "DesignDay", "DesignDayWithLimit", "Flow/Zone"]
-        | None = "DesignDay",
+        heating_design_air_flow_method: Literal["DesignDay", "DesignDayWithLimit", "Flow/Zone"] | None = "DesignDay",
         heating_design_air_flow_rate: float | None = 0,
         heating_maximum_air_flow_per_zone_floor_area: float | None = 0.002032,
         heating_maximum_air_flow: float | None = 0.1415762,
         heating_maximum_air_flow_fraction: float | None = 0.3,
         design_specification_zone_air_distribution_object_name: str | None = ...,
-        account_for_dedicated_outdoor_air_system: Literal["", "No", "Yes"] | None = "No",
+        account_for_dedicated_outdoor_air_system: Literal["No", "Yes"] | None = "No",
         dedicated_outdoor_air_system_control_strategy: Literal[
-            "", "ColdSupplyAir", "NeutralDehumidifiedSupplyAir", "NeutralSupplyAir"
+            "ColdSupplyAir", "NeutralDehumidifiedSupplyAir", "NeutralSupplyAir"
         ]
         | None = "NeutralSupplyAir",
-        dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["", "Autosize"] | None = "Autosize",
-        dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["", "Autosize"] | None = "Autosize",
+        dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
+        dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
         zone_load_sizing_method: Literal[
-            "", "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"
+            "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"
         ]
         | None = "Sensible Load Only No Latent Load",
         zone_latent_cooling_design_supply_air_humidity_ratio_input_method: Literal[
-            "", "HumidityRatioDifference", "SupplyAirHumidityRatio"
+            "HumidityRatioDifference", "SupplyAirHumidityRatio"
         ]
         | None = "HumidityRatioDifference",
         zone_dehumidification_design_supply_air_humidity_ratio: float | None = ...,
         zone_cooling_design_supply_air_humidity_ratio_difference: float | None = 0.005,
         zone_latent_heating_design_supply_air_humidity_ratio_input_method: Literal[
-            "", "HumidityRatioDifference", "SupplyAirHumidityRatio"
+            "HumidityRatioDifference", "SupplyAirHumidityRatio"
         ]
         | None = "HumidityRatioDifference",
         zone_humidification_design_supply_air_humidity_ratio: float | None = ...,
         zone_humidification_design_supply_air_humidity_ratio_difference: float | None = 0.005,
         zone_humidistat_dehumidification_set_point_schedule_name: str | None = ...,
         zone_humidistat_humidification_set_point_schedule_name: str | None = ...,
-        type_of_space_sum_to_use: Literal["", "Coincident", "NonCoincident"] | None = "Coincident",
-        heating_coil_sizing_method: Literal[
-            "", "CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity", "None"
-        ]
+        type_of_space_sum_to_use: Literal["Coincident", "NonCoincident"] | None = "Coincident",
+        heating_coil_sizing_method: Literal["CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity", "None"]
         | None = "None",
         maximum_heating_capacity_to_cooling_load_sizing_ratio: float | None = 1,
     ) -> None:
@@ -142,7 +138,7 @@ class AnyCoilCoolingDXCurveFitSpeed:
         gross_total_cooling_capacity_fraction: float,
         evaporator_air_flow_rate_fraction: float,
         condenser_air_flow_rate_fraction: float | None = ...,
-        gross_sensible_heat_ratio: float | Literal["", "Autosize"] | None = "Autosize",
+        gross_sensible_heat_ratio: float | Literal["Autosize"] | None = "Autosize",
         gross_cooling_cop: float | None = 3,
         active_fraction_of_coil_face_area: float | None = 1,
         evaporative_condenser_pump_power_fraction: float | None = 1,
@@ -173,7 +169,7 @@ class CoilCoolingDXCurveFitSpeed:
         gross_total_cooling_capacity_fraction: float,
         evaporator_air_flow_rate_fraction: float,
         condenser_air_flow_rate_fraction: float | None = ...,
-        gross_sensible_heat_ratio: float | Literal["", "Autosize"] | None = "Autosize",
+        gross_sensible_heat_ratio: float | Literal["Autosize"] | None = "Autosize",
         gross_cooling_cop: float | None = 3,
         active_fraction_of_coil_face_area: float | None = 1,
         evaporative_condenser_pump_power_fraction: float | None = 1,
@@ -285,7 +281,7 @@ class SetpointManagerSingleZoneHeating:
         zone_node_name: str,
         zone_inlet_node_name: str,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "Temperature"] | None = "Temperature",
+        control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_supply_air_temperature: float | None = -99,
         maximum_supply_air_temperature: float | None = 99,
     ) -> None:
@@ -303,9 +299,9 @@ class SetpointManagerFollowSystemNodeTemperature:
         /,
         *,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None = "Temperature",
+        control_variable: Literal["MaximumTemperature", "MinimumTemperature", "Temperature"] | None = "Temperature",
         reference_node_name: str | None = ...,
-        reference_temperature_type: Literal["", "NodeDryBulb", "NodeWetBulb"] | None = "NodeDryBulb",
+        reference_temperature_type: Literal["NodeDryBulb", "NodeWetBulb"] | None = "NodeDryBulb",
         offset_temperature_difference: float | None = ...,
         maximum_limit_setpoint_temperature: float | None = ...,
         minimum_limit_setpoint_temperature: float | None = ...,
@@ -330,10 +326,10 @@ class CurveLinear:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Pressure", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Pressure", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:Linear`` and add it to the document.

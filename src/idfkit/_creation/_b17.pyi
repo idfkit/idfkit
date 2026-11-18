@@ -20,11 +20,7 @@ class SurfacePropertyOtherSideConditionsModel:
         /,
         *,
         type_of_modeling: Literal[
-            "",
-            "ConvectiveUnderwater",
-            "GapConvectionRadiation",
-            "GroundCoupledSurface",
-            "UndergroundPipingSystemSurface",
+            "ConvectiveUnderwater", "GapConvectionRadiation", "GroundCoupledSurface", "UndergroundPipingSystemSurface"
         ]
         | None = "GapConvectionRadiation",
     ) -> None:
@@ -65,7 +61,7 @@ class ZoneCrossMixing:
         zone_or_space_name: str,
         source_zone_or_space_name: str,
         schedule_name: str | None = ...,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_floor_area: float | None = ...,
@@ -95,7 +91,6 @@ class AnyAirflowNetworkDistributionNode:
         *,
         component_name_or_node_name: str | None = ...,
         component_object_type_or_node_type: Literal[
-            "",
             "AirLoopHVAC:OutdoorAirSystem",
             "AirLoopHVAC:ZoneMixer",
             "AirLoopHVAC:ZoneSplitter",
@@ -156,10 +151,10 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam:
         chilled_water_inlet_node_name: str,
         chilled_water_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        supply_air_volumetric_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_total_chilled_water_volumetric_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        number_of_beams: int | Literal["", "Autosize"] | None = "Autosize",
-        beam_length: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_volumetric_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        maximum_total_chilled_water_volumetric_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        number_of_beams: int | Literal["Autosize"] | None = "Autosize",
+        beam_length: float | Literal["Autosize"] | None = "Autosize",
         design_inlet_water_temperature: float | None = 15,
         design_outlet_water_temperature: float | None = 17,
         coil_surface_area_per_coil_length: float | None = 5.422,
@@ -170,7 +165,7 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam:
         model_parameter_a0: float | None = 0.171,
         model_parameter_k1: float | None = 0.0057,
         model_parameter_n: float | None = 0.4,
-        coefficient_of_induction_kin: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        coefficient_of_induction_kin: float | Literal["Autocalculate"] | None = "Autocalculate",
         leaving_pipe_inside_diameter: float | None = 0.0145,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:CooledBeam`` and add it to the document.
@@ -191,12 +186,11 @@ class AnyCoilCoolingDXCurveFitPerformance:
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -25,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         unit_internal_static_air_pressure: float | None = ...,
-        capacity_control_method: Literal["", "Continuous", "Discrete"] | None = "Discrete",
+        capacity_control_method: Literal["Continuous", "Discrete"] | None = "Discrete",
         evaporative_condenser_basin_heater_capacity: float | None = 0,
         evaporative_condenser_basin_heater_setpoint_temperature: float | None = 2,
         evaporative_condenser_basin_heater_operating_schedule_name: str | None = ...,
         compressor_fuel_type: Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -248,7 +242,7 @@ class PipingSystemUndergroundDomain:
         z_direction_geometric_coefficient: float | None = 1.3,
         soil_moisture_content_volume_fraction: float | None = 30,
         soil_moisture_content_volume_fraction_at_saturation: float | None = 50,
-        this_domain_includes_basement_surface_interaction: Literal["", "No", "Yes"] | None = "No",
+        this_domain_includes_basement_surface_interaction: Literal["No", "Yes"] | None = "No",
         width_of_basement_floor_in_ground_domain: float | None = ...,
         depth_of_basement_wall_in_ground_domain: float | None = ...,
         shift_pipe_x_coordinates_by_basement_width: Literal["No", "Yes"] | None = ...,
@@ -331,7 +325,7 @@ class GeneratorInternalCombustionEngine:
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         fuel_type: Literal[
-            "", "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
+            "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
         ]
         | None = "Diesel",
         heat_recovery_maximum_temperature: float | None = 80,
@@ -356,8 +350,8 @@ class CurveRectangularHyperbola2:
         maximum_value_of_x: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:RectangularHyperbola2`` and add it to the document.

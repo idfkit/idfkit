@@ -6,10 +6,7 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import Literal
-
-from .. import versioned as _vd
 
 class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
     def __call__(
@@ -20,14 +17,13 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
-        fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"]
+        fluid_to_radiant_surface_heat_transfer_model: Literal["ConvectionOnly", "ISOStandard"]
         | None = "ConvectionOnly",
         hydronic_tubing_inside_diameter: float | None = 0.013,
         hydronic_tubing_outside_diameter: float | None = 0.016,
-        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
+        hydronic_tubing_length: float | Literal["Autosize"] | None = "Autosize",
         hydronic_tubing_conductivity: float | None = 0.35,
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -37,12 +33,12 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
             "SurfaceInteriorTemperature",
         ]
         | None = "MeanAirTemperature",
-        setpoint_control_type: Literal["", "HalfFlowPower", "ZeroFlowPower"] | None = "HalfFlowPower",
+        setpoint_control_type: Literal["HalfFlowPower", "ZeroFlowPower"] | None = "HalfFlowPower",
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         maximum_hot_water_flow: float | Literal["Autosize"] | None = ...,
@@ -51,7 +47,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
         heating_control_throttling_range: float | None = 0.5,
         heating_control_temperature_schedule_name: str | None = ...,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "CoolingDesignCapacity",
         cooling_design_capacity: float | Literal["Autosize"] | None = ...,
@@ -62,9 +58,9 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
         cooling_water_outlet_node_name: str | None = ...,
         cooling_control_throttling_range: float | None = 0.5,
         cooling_control_temperature_schedule_name: str | None = ...,
-        condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
+        condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
-        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
+        number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
         changeover_delay_time_period_schedule: str | None = ...,
     ) -> None:
@@ -75,25 +71,29 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.4/io-reference/overview/group-radiative-convective-units/#zonehvaclowtemperatureradiantvariableflow
         """
 
-class SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2:
+class HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2:
     def __call__(
         self,
+        name: str,
         /,
         *,
-        surface_name: str,
-        exposed_perimeter_calculation_method: Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"],
-        total_exposed_perimeter: float | None = ...,
-        exposed_perimeter_fraction: float | None = ...,
-        surfaces: Sequence[
-            _vd.SurfacePropertyExposedFoundationPerimeterSurfacesItem_v8_9_to_v9_2
-            | _vd.SurfacePropertyExposedFoundationPerimeterSurfacesGroup_v8_9_to_v9_2
-        ] = ...,
+        load_side_inlet_node_name: str,
+        load_side_outlet_node_name: str,
+        source_side_inlet_node_name: str,
+        source_side_outlet_node_name: str,
+        capacity_modifier_function_of_temperature_curve_name: str,
+        electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str,
+        electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str,
+        companion_heat_pump_name: str | None = ...,
+        load_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        reference_capacity: float | Literal["Autosize"] | None = "Autosize",
+        reference_coefficient_of_performance: float | None = 7.5,
+        sizing_factor: float | None = 1,
     ) -> None:
-        """Create a new ``SurfaceProperty:ExposedFoundationPerimeter`` and add it to the document.
+        """Create a new ``HeatPump:WaterToWater:EIR:Cooling`` and add it to the document.
 
-        Defines the perimeter of a foundation floor that is exposed to the exterior environment through the floor. User may either define the total exposed perimeter, fraction of perimeter exposed or individually define which segments of the floor surface perimeter are exposed.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertyexposedfoundationperimeter
+        An EIR formulated water to water heat pump model, cooling operation.
         """
 
 class ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1:
@@ -134,10 +134,10 @@ class ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1:
         heat_pump_fan_delay_time: float | None = 60,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
-        heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
+        heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_zonehvac_sizing_object_name: str | None = ...,
     ) -> None:
         """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
@@ -145,29 +145,4 @@ class ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1:
         Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coils, supplemental heating coil (gas, electric, hot water, or steam), and fixed-position outdoor air mixer.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-zone-forced-air-units/#zonehvacwatertoairheatpump
-        """
-
-class HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        load_side_inlet_node_name: str,
-        load_side_outlet_node_name: str,
-        source_side_inlet_node_name: str,
-        source_side_outlet_node_name: str,
-        capacity_modifier_function_of_temperature_curve_name: str,
-        electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str,
-        electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str,
-        companion_heat_pump_name: str | None = ...,
-        load_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        reference_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        reference_coefficient_of_performance: float | None = 7.5,
-        sizing_factor: float | None = 1,
-    ) -> None:
-        """Create a new ``HeatPump:WaterToWater:EIR:Cooling`` and add it to the document.
-
-        An EIR formulated water to water heat pump model, cooling operation.
         """

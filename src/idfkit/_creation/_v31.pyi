@@ -20,7 +20,7 @@ class GasEquipment_v9_6_to_v23_2:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -53,7 +53,7 @@ class GroundHeatExchangerSurface_v8_9_to_v22_1:
         hydronic_tube_spacing: float | None = ...,
         surface_length: float | None = ...,
         surface_width: float | None = ...,
-        lower_surface_environment: Literal["", "Exposed", "Ground"] | None = "Ground",
+        lower_surface_environment: Literal["Exposed", "Ground"] | None = "Ground",
     ) -> None:
         """Create a new ``GroundHeatExchanger:Surface`` and add it to the document.
 

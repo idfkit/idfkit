@@ -84,12 +84,12 @@ class WindowPropertyAirflowControl:
         name: str,
         /,
         *,
-        airflow_source: Literal["", "IndoorAir", "OutdoorAir"] | None = "IndoorAir",
-        airflow_destination: Literal["", "IndoorAir", "OutdoorAir", "ReturnAir"] | None = "OutdoorAir",
+        airflow_source: Literal["IndoorAir", "OutdoorAir"] | None = "IndoorAir",
+        airflow_destination: Literal["IndoorAir", "OutdoorAir", "ReturnAir"] | None = "OutdoorAir",
         maximum_flow_rate: float | None = 0,
-        airflow_control_type: Literal["", "AlwaysOff", "AlwaysOnAtMaximumFlow", "ScheduledOnly"]
+        airflow_control_type: Literal["AlwaysOff", "AlwaysOnAtMaximumFlow", "ScheduledOnly"]
         | None = "AlwaysOnAtMaximumFlow",
-        airflow_is_scheduled: Literal["", "No", "Yes"] | None = "No",
+        airflow_is_scheduled: Literal["No", "Yes"] | None = "No",
         airflow_multiplier_schedule_name: str | None = ...,
         airflow_return_air_node_name: str | None = ...,
     ) -> None:
@@ -153,7 +153,7 @@ class SetpointManagerScheduledDualSetpoint:
         high_setpoint_schedule_name: str,
         low_setpoint_schedule_name: str,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "Temperature"] | None = "Temperature",
+        control_variable: Literal["Temperature"] | None = "Temperature",
     ) -> None:
         """Create a new ``SetpointManager:Scheduled:DualSetpoint`` and add it to the document.
 
@@ -209,7 +209,7 @@ class AnyRefrigerationSecondarySystem:
         total_pump_power: float | None = ...,
         total_pump_head: float | None = ...,
         phasechange_circulating_rate: float | None = 2.5,
-        pump_drive_type: Literal["", "Constant", "Variable"] | None = "Constant",
+        pump_drive_type: Literal["Constant", "Variable"] | None = "Constant",
         variable_speed_pump_cubic_curve_name: str | None = ...,
         pump_motor_heat_to_fluid: float | None = 0.85,
         sum_ua_distribution_piping: float | None = 0,
@@ -299,9 +299,9 @@ class PythonPluginSearchPaths:
         name: str,
         /,
         *,
-        add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
-        add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
-        add_epin_environment_variable_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
+        add_current_working_directory_to_search_path: Literal["No", "Yes"] | None = "Yes",
+        add_input_file_directory_to_search_path: Literal["No", "Yes"] | None = "Yes",
+        add_epin_environment_variable_to_search_path: Literal["No", "Yes"] | None = "Yes",
         py_search_paths: Sequence[
             _g.PythonPluginSearchPathsPySearchPathsItem | _g.PythonPluginSearchPathsPySearchPathsGroup
         ] = ...,

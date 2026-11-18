@@ -44,11 +44,11 @@ class CoolingTowerTwoSpeed_v8_9_to_v22_1:
         low_fan_speed_fan_power_sizing_factor: float | None = 0.16,
         low_fan_speed_u_factor_times_area_value: float | Literal["Autocalculate"] | None = ...,
         low_fan_speed_u_factor_times_area_sizing_factor: float | None = 0.6,
-        free_convection_regime_air_flow_rate: float | Literal["", "Autocalculate"] | None = 0,
+        free_convection_regime_air_flow_rate: float | Literal["Autocalculate"] | None = 0,
         free_convection_regime_air_flow_rate_sizing_factor: float | None = 0.1,
-        free_convection_regime_u_factor_times_area_value: float | Literal["", "Autocalculate"] | None = 0,
+        free_convection_regime_u_factor_times_area_value: float | Literal["Autocalculate"] | None = 0,
         free_convection_u_factor_times_area_value_sizing_factor: float | None = 0.1,
-        performance_input_method: Literal["", "NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
+        performance_input_method: Literal["NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
         | None = "UFactorTimesAreaAndDesignWaterFlowRate",
         heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
         high_speed_nominal_capacity: float | None = ...,
@@ -58,8 +58,8 @@ class CoolingTowerTwoSpeed_v8_9_to_v22_1:
         free_convection_nominal_capacity_sizing_factor: float | None = 0.1,
         design_inlet_air_dry_bulb_temperature: float | None = 35,
         design_inlet_air_wet_bulb_temperature: float | None = 25.6,
-        design_approach_temperature: float | Literal["", "Autosize"] | None = "Autosize",
-        design_range_temperature: float | Literal["", "Autosize"] | None = "Autosize",
+        design_approach_temperature: float | Literal["Autosize"] | None = "Autosize",
+        design_range_temperature: float | Literal["Autosize"] | None = "Autosize",
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
@@ -72,7 +72,7 @@ class CoolingTowerTwoSpeed_v8_9_to_v22_1:
         supply_water_storage_tank_name: str | None = ...,
         outdoor_air_inlet_node_name: str | None = ...,
         number_of_cells: float | None = 1,
-        cell_control: Literal["", "MaximalCell", "MinimalCell"] | None = "MinimalCell",
+        cell_control: Literal["MaximalCell", "MinimalCell"] | None = "MinimalCell",
         cell_minimum_water_flow_rate_fraction: float | None = 0.33,
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
@@ -91,9 +91,9 @@ class OutputJSON_v9_1_to_v25_1:
         /,
         *,
         option_type: Literal["TimeSeries", "TimeSeriesAndTabular"],
-        output_json: Literal["", "No", "Yes"] | None = "Yes",
-        output_cbor: Literal["", "No", "Yes"] | None = "No",
-        output_messagepack: Literal["", "No", "Yes"] | None = "No",
+        output_json: Literal["No", "Yes"] | None = "Yes",
+        output_cbor: Literal["No", "Yes"] | None = "No",
+        output_messagepack: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``Output:JSON`` and add it to the document.
 

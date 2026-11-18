@@ -239,6 +239,30 @@ class InvalidFieldError(IdfKitError, AttributeError):
         super().__init__(msg)
 
 
+class MissingRequiredFieldError(IdfKitError, AttributeError):
+    """Raised when reading a required field that the object does not hold.
+
+    A field every EnergyPlus release requires with no default reads as its value type, never
+    ``None``: ``add()`` refuses to create an object without it, and assigning ``None`` to it is a
+    type error. An object can still lack one when it was loaded from a file that omits it, created
+    with ``IDFDocument.add(..., validate=False)``, or cleared through an untyped path. Reading the
+    field then raises this rather than returning a ``None`` the type said could not occur.
+
+    It inherits from ``AttributeError``, so ``getattr(obj, field, None)`` and ``hasattr`` keep
+    working as the untyped way to ask whether the field is set, as does ``obj.get(field)``.
+    """
+
+    def __init__(self, obj_type: str, obj_name: str, field_name: str) -> None:
+        self.obj_type = obj_type
+        self.obj_name = obj_name
+        self.field_name = field_name
+        label = f"{obj_type} {obj_name!r}" if obj_name else obj_type
+        super().__init__(
+            f"{label} has no value for its required field {field_name!r}. EnergyPlus refuses an object "
+            f"without it; set it, or read it with obj.get({field_name!r}) to get None when it is missing."
+        )
+
+
 class VersionNotFoundError(IdfKitError):
     """Raised when version cannot be detected from file."""
 

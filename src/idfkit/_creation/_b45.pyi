@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Literal
 
 class AnyPerformancePrecisionTradeoffs:
-    def __call__(self, /, *, use_coil_direct_solutions: Literal["", "No", "Yes"] | None = "No") -> None:
+    def __call__(self, /, *, use_coil_direct_solutions: Literal["No", "Yes"] | None = "No") -> None:
         """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
 
         This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decreases in accuracy of results.
@@ -70,12 +70,10 @@ class AnyHVACTemplateZoneFanCoil:
         *,
         zone_name: str,
         template_thermostat_name: str | None = ...,
-        supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
@@ -85,20 +83,20 @@ class AnyHVACTemplateZoneFanCoil:
         supply_fan_delta_pressure: float | None = 75,
         supply_fan_motor_efficiency: float | None = 0.9,
         supply_fan_motor_in_air_stream_fraction: float | None = 1,
-        cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None = "ChilledWater",
+        cooling_coil_type: Literal["ChilledWater", "ChilledWaterDetailedFlatModel"] | None = "ChilledWater",
         cooling_coil_availability_schedule_name: str | None = ...,
         cooling_coil_design_setpoint: float | None = 14,
-        heating_coil_type: Literal["", "HotWater"] | None = "HotWater",
+        heating_coil_type: Literal["HotWater"] | None = "HotWater",
         heating_coil_availability_schedule_name: str | None = ...,
         heating_coil_design_setpoint: float | None = 50,
         dedicated_outdoor_air_system_name: str | None = ...,
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
@@ -111,9 +109,9 @@ class AnyHVACTemplateZoneFanCoil:
         low_speed_supply_air_flow_ratio: float | None = 0.33,
         medium_speed_supply_air_flow_ratio: float | None = 0.66,
         outdoor_air_schedule_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
 
@@ -151,15 +149,15 @@ class ZoneHVACPackagedTerminalAirConditioner:
         outdoor_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
         outdoor_air_mixer_name: str | None = ...,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None = "Yes",
+        no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None = "Yes",
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-        capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None = "None",
-        minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None = "Autosize",
+        capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
+        minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalAirConditioner`` and add it to the document.
 

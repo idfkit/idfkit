@@ -34,7 +34,7 @@ class ThermalStorageIceDetailed_v9_2_to_v25_1:
         parasitic_electric_load_during_charging: float | None = ...,
         tank_loss_coefficient: float | None = ...,
         freezing_temperature_of_storage_medium: float | None = 0,
-        thaw_process_indicator: Literal["", "InsideMelt", "OutsideMelt"] | None = "OutsideMelt",
+        thaw_process_indicator: Literal["InsideMelt", "OutsideMelt"] | None = "OutsideMelt",
     ) -> None:
         """Create a new ``ThermalStorage:Ice:Detailed`` and add it to the document.
 
@@ -87,29 +87,27 @@ class AirflowNetworkSimulationControl_v9_5_to_v22_1:
         /,
         *,
         airflownetwork_control: Literal[
-            "",
             "MultizoneWithDistribution",
             "MultizoneWithDistributionOnlyDuringFanOperation",
             "MultizoneWithoutDistribution",
             "NoMultizoneOrDistribution",
         ]
         | None = "NoMultizoneOrDistribution",
-        wind_pressure_coefficient_type: Literal["", "Input", "SurfaceAverageCalculation"]
+        wind_pressure_coefficient_type: Literal["Input", "SurfaceAverageCalculation"]
         | None = "SurfaceAverageCalculation",
-        height_selection_for_local_wind_pressure_calculation: Literal["", "ExternalNode", "OpeningHeight"]
+        height_selection_for_local_wind_pressure_calculation: Literal["ExternalNode", "OpeningHeight"]
         | None = "OpeningHeight",
-        building_type: Literal["", "HighRise", "LowRise"] | None = "LowRise",
+        building_type: Literal["HighRise", "LowRise"] | None = "LowRise",
         maximum_number_of_iterations: float | None = 500,
-        initialization_type: Literal["", "LinearInitializationMethod", "ZeroNodePressures"]
-        | None = "ZeroNodePressures",
+        initialization_type: Literal["LinearInitializationMethod", "ZeroNodePressures"] | None = "ZeroNodePressures",
         relative_airflow_convergence_tolerance: float | None = 0.0001,
         absolute_airflow_convergence_tolerance: float | None = ...,
         convergence_acceleration_limit: float | None = -0.5,
         azimuth_angle_of_long_axis_of_building: float | None = 0,
         ratio_of_building_width_along_short_axis_to_width_along_long_axis: float | None = 1,
-        height_dependence_of_external_node_temperature: Literal["", "No", "Yes"] | None = "No",
-        solver: Literal["", "ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
-        allow_unsupported_zone_equipment: Literal["", "No", "Yes"] | None = "No",
+        height_dependence_of_external_node_temperature: Literal["No", "Yes"] | None = "No",
+        solver: Literal["ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
+        allow_unsupported_zone_equipment: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``AirflowNetwork:SimulationControl`` and add it to the document.
 

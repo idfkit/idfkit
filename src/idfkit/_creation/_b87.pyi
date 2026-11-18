@@ -18,9 +18,9 @@ class AnyZoneAirMassFlowConservation:
         self,
         /,
         *,
-        infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
+        infiltration_balancing_method: Literal["AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
         | None = "AddInfiltrationFlow",
-        infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
+        infiltration_balancing_zones: Literal["AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
     ) -> None:
         """Create a new ``ZoneAirMassFlowConservation`` and add it to the document.
 
@@ -38,7 +38,6 @@ class AnyOtherEquipment:
         narrow_with_as_version_first: Never,
         schedule_name: str,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -51,7 +50,7 @@ class AnyOtherEquipment:
         ]
         | None = "None",
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -94,7 +93,7 @@ class SolarCollectorPerformanceIntegralCollectorStorage:
         name: str,
         /,
         *,
-        ics_collector_type: Literal["", "RectangularTank"] | None = "RectangularTank",
+        ics_collector_type: Literal["RectangularTank"] | None = "RectangularTank",
         gross_area: float | None = ...,
         collector_water_volume: float | None = ...,
         bottom_heat_loss_conductance: float | None = 0.4,
@@ -127,7 +126,7 @@ class RefrigerationGasCoolerAirCooled:
         /,
         *,
         rated_total_heat_rejection_rate_curve_name: str,
-        gas_cooler_fan_speed_control_type: Literal["", "Fixed", "FixedLinear", "TwoSpeed", "VariableSpeed"]
+        gas_cooler_fan_speed_control_type: Literal["Fixed", "FixedLinear", "TwoSpeed", "VariableSpeed"]
         | None = "Fixed",
         rated_fan_power: float | None = 5000,
         minimum_fan_air_flow_ratio: float | None = 0.2,

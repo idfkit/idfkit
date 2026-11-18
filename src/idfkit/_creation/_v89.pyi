@@ -25,10 +25,8 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1:
         heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        supply_air_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        supply_air_fan_object_type: Literal[
-            "", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"
-        ]
+        supply_air_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        supply_air_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"]
         | None = "Fan:ConstantVolume",
         supply_air_fan_object_name: str | None = ...,
         outside_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
@@ -53,7 +51,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1:
         ]
         | None = ...,
         supplemental_heating_coil_name: str | None = ...,
-        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None = "Autosize",
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         controlling_zone_or_thermostat_location: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
@@ -91,7 +89,7 @@ class GeneratorMicroTurbine_v8_9_to_v9_2:
         reference_combustion_air_inlet_temperature: float | None = 15,
         reference_combustion_air_inlet_humidity_ratio: float | None = 0.00638,
         reference_elevation: float | None = 0,
-        fuel_type: Literal["", "NaturalGas", "PropaneGas"] | None = "NaturalGas",
+        fuel_type: Literal["NaturalGas", "PropaneGas"] | None = "NaturalGas",
         fuel_higher_heating_value: float | None = 50000,
         fuel_lower_heating_value: float | None = 45450,
         standby_power: float | None = 0,
@@ -101,7 +99,7 @@ class GeneratorMicroTurbine_v8_9_to_v9_2:
         heat_recovery_water_outlet_node_name: str | None = ...,
         reference_thermal_efficiency_using_lower_heat_value: float | None = 0,
         reference_inlet_water_temperature: float | None = ...,
-        heat_recovery_water_flow_operating_mode: Literal["", "InternalControl", "PlantControl"] | None = "PlantControl",
+        heat_recovery_water_flow_operating_mode: Literal["InternalControl", "PlantControl"] | None = "PlantControl",
         reference_heat_recovery_water_flow_rate: float | None = ...,
         heat_recovery_water_flow_rate_function_of_temperature_and_power_curve_name: str | None = ...,
         thermal_efficiency_function_of_temperature_and_elevation_curve_name: str | None = ...,
@@ -135,9 +133,9 @@ class AirLoopHVACUnitarySystem_v23_2:
         *,
         air_inlet_node_name: str,
         air_outlet_node_name: str,
-        control_type: Literal["", "Load", "SetPoint", "SingleZoneVAV"] | None = "Load",
+        control_type: Literal["Load", "SetPoint", "SingleZoneVAV"] | None = "Load",
         controlling_zone_or_thermostat_location: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         availability_schedule_name: str | None = ...,
         supply_fan_object_type: Literal[
             "Fan:ComponentModel", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"
@@ -184,10 +182,9 @@ class AirLoopHVACUnitarySystem_v23_2:
         ]
         | None = ...,
         cooling_coil_name: str | None = ...,
-        use_doas_dx_cooling_coil: Literal["", "No", "Yes"] | None = "No",
-        minimum_supply_air_temperature: float | Literal["", "Autosize"] | None = 2,
+        use_doas_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
+        minimum_supply_air_temperature: float | Literal["Autosize"] | None = 2,
         latent_load_control: Literal[
-            "",
             "LatentOnlyLoadControl",
             "LatentOrSensibleLoadControl",
             "LatentWithSensibleLoadControl",
@@ -237,7 +234,7 @@ class AirLoopHVACUnitarySystem_v23_2:
         no_load_fraction_of_autosized_heating_supply_air_flow_rate: float | None = ...,
         no_load_supply_air_flow_rate_per_unit_of_capacity_during_cooling_operation: float | None = ...,
         no_load_supply_air_flow_rate_per_unit_of_capacity_during_heating_operation: float | None = ...,
-        maximum_supply_air_temperature: float | Literal["", "Autosize"] | None = 80,
+        maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
         ancillary_on_cycle_electric_power: float | None = 0,

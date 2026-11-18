@@ -31,7 +31,7 @@ class WindowMaterialGlazing:
         back_side_infrared_hemispherical_emissivity: float | None = 0.84,
         conductivity: float | None = 0.9,
         dirt_correction_factor_for_solar_and_visible_transmittance: float | None = 1,
-        solar_diffusing: Literal["", "No", "Yes"] | None = "No",
+        solar_diffusing: Literal["No", "Yes"] | None = "No",
         young_s_modulus: float | None = 72000000000,
         poisson_s_ratio: float | None = 0.22,
         window_glass_spectral_and_incident_angle_transmittance_data_set_table_name: str | None = ...,
@@ -101,7 +101,7 @@ class GasEquipment:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -127,7 +127,7 @@ class HotWaterEquipmentDefinition:
         /,
         *,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -206,10 +206,10 @@ class SpaceHVACZoneEquipmentSplitter:
         ],
         zone_equipment_name: str,
         zone_equipment_outlet_node_name: str | None = ...,
-        thermostat_control_method: Literal["", "Ideal", "Maximum", "SingleSpace"] | None = "SingleSpace",
+        thermostat_control_method: Literal["Ideal", "Maximum", "SingleSpace"] | None = "SingleSpace",
         control_space_name: str | None = ...,
         space_fraction_method: Literal[
-            "", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"
+            "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"
         ]
         | None = "DesignCoolingLoad",
         spaces: Sequence[

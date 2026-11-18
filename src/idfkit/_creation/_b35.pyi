@@ -16,15 +16,15 @@ class PerformancePrecisionTradeoffs:
         self,
         /,
         *,
-        use_coil_direct_solutions: Literal["", "No", "Yes"] | None = "No",
-        zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None = "ScriptF",
+        use_coil_direct_solutions: Literal["No", "Yes"] | None = "No",
+        zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None = "ScriptF",
         override_mode: Literal[
-            "", "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Mode06", "Mode07", "Mode08", "Normal"
+            "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Mode06", "Mode07", "Mode08", "Normal"
         ]
         | None = "Normal",
         maxzonetempdiff: float | None = 0.3,
         maxalloweddeltemp: float | None = 0.002,
-        use_representative_surfaces_for_calculations: Literal["", "No", "Yes"] | None = "No",
+        use_representative_surfaces_for_calculations: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
 
@@ -56,15 +56,15 @@ class SiteGroundDomainBasement:
         soil_moisture_content_volume_fraction: float | None = 30,
         soil_moisture_content_volume_fraction_at_saturation: float | None = 50,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
-        horizontal_insulation: Literal["", "No", "Yes"] | None = "No",
+        horizontal_insulation: Literal["No", "Yes"] | None = "No",
         horizontal_insulation_material_name: str | None = ...,
-        horizontal_insulation_extents: Literal["", "Full", "Perimeter"] | None = "Full",
+        horizontal_insulation_extents: Literal["Full", "Perimeter"] | None = "Full",
         perimeter_horizontal_insulation_width: float | None = ...,
         basement_wall_depth: float | None = ...,
-        vertical_insulation: Literal["", "No", "Yes"] | None = "No",
+        vertical_insulation: Literal["No", "Yes"] | None = "No",
         basement_wall_vertical_insulation_material_name: str | None = ...,
         vertical_insulation_depth: float | None = ...,
-        simulation_timestep: Literal["", "Hourly", "Timestep"] | None = "Hourly",
+        simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
         mesh_density_parameter: int | None = 4,
     ) -> None:
         """Create a new ``Site:GroundDomain:Basement`` and add it to the document.
@@ -107,7 +107,7 @@ class MaterialPropertyVariableAbsorptance:
         *,
         reference_material_name: str,
         control_signal: Literal[
-            "", "Scheduled", "SpaceHeatingCoolingMode", "SurfaceReceivedSolarRadiation", "SurfaceTemperature"
+            "Scheduled", "SpaceHeatingCoolingMode", "SurfaceReceivedSolarRadiation", "SurfaceTemperature"
         ]
         | None = "SurfaceTemperature",
         thermal_absorptance_function_name: str | None = ...,
@@ -135,7 +135,7 @@ class SteamEquipmentDefinition:
         /,
         *,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -163,14 +163,13 @@ class ZoneHVACLowTemperatureRadiantElectric:
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -180,7 +179,7 @@ class ZoneHVACLowTemperatureRadiantElectric:
             "SurfaceInteriorTemperature",
         ]
         | None = "MeanAirTemperature",
-        setpoint_control_type: Literal["", "HalfFlowPower", "ZeroFlowPower"] | None = "HalfFlowPower",
+        setpoint_control_type: Literal["HalfFlowPower", "ZeroFlowPower"] | None = "HalfFlowPower",
         heating_throttling_range: float | None = 0,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:Electric`` and add it to the document.
@@ -196,7 +195,7 @@ class ZoneHVACEquipmentList:
         name: str,
         /,
         *,
-        load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
+        load_distribution_scheme: Literal["SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
         equipment: Sequence[_g.ZoneHVACEquipmentListEquipmentItem | _g.ZoneHVACEquipmentListEquipmentGroup] = ...,
     ) -> None:
@@ -223,9 +222,9 @@ class HeatExchangerAirToAirFlatPlate:
         secondary_air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
         flow_arrangement_type: Literal["CounterFlow", "CrossFlowBothUnmixed", "ParallelFlow"] | None = ...,
-        economizer_lockout: Literal["", "No", "Yes"] | None = "Yes",
+        economizer_lockout: Literal["No", "Yes"] | None = "Yes",
         ratio_of_supply_to_secondary_ha_values: float | None = ...,
-        nominal_supply_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        nominal_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         nominal_electric_power: float | None = ...,
     ) -> None:
         """Create a new ``HeatExchanger:AirToAir:FlatPlate`` and add it to the document.
@@ -275,11 +274,11 @@ class CoolingTowerSingleSpeed:
         design_fan_power: float | Literal["Autosize"],
         design_water_flow_rate: float | Literal["Autosize"] | None = ...,
         design_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
-        free_convection_regime_air_flow_rate: float | Literal["", "Autocalculate"] | None = 0,
+        free_convection_regime_air_flow_rate: float | Literal["Autocalculate"] | None = 0,
         free_convection_regime_air_flow_rate_sizing_factor: float | None = 0.1,
-        free_convection_regime_u_factor_times_area_value: float | Literal["", "Autocalculate"] | None = 0,
+        free_convection_regime_u_factor_times_area_value: float | Literal["Autocalculate"] | None = 0,
         free_convection_u_factor_times_area_value_sizing_factor: float | None = 0.1,
-        performance_input_method: Literal["", "NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
+        performance_input_method: Literal["NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
         | None = "UFactorTimesAreaAndDesignWaterFlowRate",
         heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
         nominal_capacity: float | None = ...,
@@ -287,22 +286,22 @@ class CoolingTowerSingleSpeed:
         free_convection_nominal_capacity_sizing_factor: float | None = 0.1,
         design_inlet_air_dry_bulb_temperature: float | None = 35,
         design_inlet_air_wet_bulb_temperature: float | None = 25.6,
-        design_approach_temperature: float | Literal["", "Autosize"] | None = "Autosize",
-        design_range_temperature: float | Literal["", "Autosize"] | None = "Autosize",
+        design_approach_temperature: float | Literal["Autosize"] | None = "Autosize",
+        design_range_temperature: float | Literal["Autosize"] | None = "Autosize",
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
-        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
+        evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None = "SaturatedExit",
         evaporation_loss_factor: float | None = 0.2,
         drift_loss_percent: float | None = 0.008,
-        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
+        blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
         outdoor_air_inlet_node_name: str | None = ...,
-        capacity_control: Literal["", "FanCycling", "FluidBypass"] | None = "FanCycling",
+        capacity_control: Literal["FanCycling", "FluidBypass"] | None = "FanCycling",
         number_of_cells: int | None = 1,
-        cell_control: Literal["", "MaximalCell", "MinimalCell"] | None = "MaximalCell",
+        cell_control: Literal["MaximalCell", "MinimalCell"] | None = "MaximalCell",
         cell_minimum_water_flow_rate_fraction: float | None = 0.33,
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
@@ -330,7 +329,6 @@ class AnyHeatExchangerFluidToFluid:
         heat_exchanger_u_factor_times_area_value: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
         heat_exchange_model_type: Literal[
-            "",
             "CounterFlow",
             "CrossFlowBothMixed",
             "CrossFlowBothUnMixed",
@@ -341,7 +339,6 @@ class AnyHeatExchangerFluidToFluid:
         ]
         | None = "Ideal",
         control_type: Literal[
-            "",
             "CoolingDifferentialOnOff",
             "CoolingSetpointModulated",
             "CoolingSetpointOnOff",
@@ -358,14 +355,12 @@ class AnyHeatExchangerFluidToFluid:
         heat_exchanger_setpoint_node_name: str | None = ...,
         minimum_temperature_difference_to_activate_heat_exchanger: float | None = 0.01,
         heat_transfer_metering_end_use_type: Literal[
-            "", "FreeCooling", "HeatRecoveryForCooling", "HeatRecoveryForHeating", "HeatRejection", "LoopToLoop"
+            "FreeCooling", "HeatRecoveryForCooling", "HeatRecoveryForHeating", "HeatRejection", "LoopToLoop"
         ]
         | None = "LoopToLoop",
         component_override_loop_supply_side_inlet_node_name: str | None = ...,
         component_override_loop_demand_side_inlet_node_name: str | None = ...,
-        component_override_cooling_control_temperature_mode: Literal[
-            "", "DryBulbTemperature", "Loop", "WetBulbTemperature"
-        ]
+        component_override_cooling_control_temperature_mode: Literal["DryBulbTemperature", "Loop", "WetBulbTemperature"]
         | None = "Loop",
         sizing_factor: float | None = 1,
         operation_minimum_temperature_limit: float | None = ...,

@@ -70,7 +70,7 @@ class ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2:
         condenser_inlet_node_name: str,
         hot_water_inlet_node_name: str,
         hot_water_outlet_node_name: str,
-        nominal_cooling_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        nominal_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_to_cooling_capacity_ratio: float | None = 0.8,
         fuel_input_to_cooling_output_ratio: float | None = 0.97,
         fuel_input_to_heating_output_ratio: float | None = 1.25,
@@ -82,9 +82,9 @@ class ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2:
         optimum_part_load_ratio: float | None = 1,
         design_entering_condenser_water_temperature: float | None = 29,
         design_leaving_chilled_water_temperature: float | None = 7,
-        design_chilled_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        design_condenser_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        design_hot_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        design_chilled_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        design_condenser_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        design_hot_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         cooling_capacity_function_of_temperature_curve_name: str | None = ...,
         fuel_input_to_cooling_output_ratio_function_of_temperature_curve_name: str | None = ...,
         fuel_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_name: str | None = ...,
@@ -92,13 +92,12 @@ class ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2:
         electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_name: str | None = ...,
         heating_capacity_function_of_cooling_capacity_curve_name: str | None = ...,
         fuel_input_to_heat_output_ratio_during_heating_only_operation_curve_name: str | None = ...,
-        temperature_curve_input_variable: Literal["", "EnteringCondenser", "LeavingCondenser"]
-        | None = "EnteringCondenser",
-        condenser_type: Literal["", "AirCooled", "WaterCooled"] | None = "WaterCooled",
+        temperature_curve_input_variable: Literal["EnteringCondenser", "LeavingCondenser"] | None = "EnteringCondenser",
+        condenser_type: Literal["AirCooled", "WaterCooled"] | None = "WaterCooled",
         chilled_water_temperature_lower_limit: float | None = 2,
         fuel_higher_heating_value: float | None = 0,
         fuel_type: Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
+            "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
         ]
         | None = "NaturalGas",
         sizing_factor: float | None = 1,
@@ -159,14 +158,13 @@ class ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3:
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",

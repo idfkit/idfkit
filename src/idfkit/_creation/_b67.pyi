@@ -114,7 +114,7 @@ class OutputMeterCumulative:
         *,
         key_name: str,
         reporting_frequency: Literal[
-            "", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
+            "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
     ) -> None:

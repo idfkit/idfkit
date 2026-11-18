@@ -23,8 +23,8 @@ class ConstructionComplexFenestrationState:
         outside_layer_name: str,
         outside_layer_directional_front_absorptance_matrix_name: str,
         outside_layer_directional_back_absorptance_matrix_name: str,
-        basis_type: Literal["", "LBNLWINDOW", "UserDefined"] | None = "LBNLWINDOW",
-        basis_symmetry_type: Literal["", "Axisymmetric", "None"] | None = "None",
+        basis_type: Literal["LBNLWINDOW", "UserDefined"] | None = "LBNLWINDOW",
+        basis_symmetry_type: Literal["Axisymmetric", "None"] | None = "None",
         gap_1_name: str | None = ...,
         cfs_gap_1_directional_front_absorptance_matrix_name: str | None = ...,
         cfs_gap_1_directional_back_absorptance_matrix_name: str | None = ...,
@@ -63,30 +63,30 @@ class RoomAirSettingsUnderFloorAirDistributionExterior:
         /,
         *,
         zone_name: str,
-        number_of_diffusers_per_zone: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        power_per_plume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        design_effective_area_of_diffuser: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        diffuser_slot_angle_from_vertical: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        number_of_diffusers_per_zone: float | Literal["Autocalculate"] | None = "Autocalculate",
+        power_per_plume: float | Literal["Autocalculate"] | None = "Autocalculate",
+        design_effective_area_of_diffuser: float | Literal["Autocalculate"] | None = "Autocalculate",
+        diffuser_slot_angle_from_vertical: float | Literal["Autocalculate"] | None = "Autocalculate",
         thermostat_height: float | None = 1.2,
         comfort_height: float | None = 1.1,
         temperature_difference_threshold_for_reporting: float | None = 0.4,
-        floor_diffuser_type: Literal["", "Custom", "HorizontalSwirl", "LinearBarGrille", "Swirl", "VariableArea"]
+        floor_diffuser_type: Literal["Custom", "HorizontalSwirl", "LinearBarGrille", "Swirl", "VariableArea"]
         | None = "Swirl",
-        transition_height: float | Literal["", "Autocalculate"] | None = 1.7,
+        transition_height: float | Literal["Autocalculate"] | None = 1.7,
         coefficient_a_in_formula_kc_a_gamma_b_c_d_gamma_e_gamma_2: float
-        | Literal["", "Autocalculate"]
+        | Literal["Autocalculate"]
         | None = "Autocalculate",
         coefficient_b_in_formula_kc_a_gamma_b_c_d_gamma_e_gamma_2: float
-        | Literal["", "Autocalculate"]
+        | Literal["Autocalculate"]
         | None = "Autocalculate",
         coefficient_c_in_formula_kc_a_gamma_b_c_d_gamma_e_gamma_2: float
-        | Literal["", "Autocalculate"]
+        | Literal["Autocalculate"]
         | None = "Autocalculate",
         coefficient_d_in_formula_kc_a_gamma_b_c_d_gamma_e_gamma_2: float
-        | Literal["", "Autocalculate"]
+        | Literal["Autocalculate"]
         | None = "Autocalculate",
         coefficient_e_in_formula_kc_a_gamma_b_c_d_gamma_e_gamma_2: float
-        | Literal["", "Autocalculate"]
+        | Literal["Autocalculate"]
         | None = "Autocalculate",
     ) -> None:
         """Create a new ``RoomAirSettings:UnderFloorAirDistributionExterior`` and add it to the document.
@@ -104,34 +104,32 @@ class HVACTemplateZoneConstantVolume:
         zone_name: str,
         template_constant_volume_system_name: str,
         template_thermostat_name: str | None = ...,
-        supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
         outdoor_air_flow_rate_per_zone: float | None = 0,
         design_specification_outdoor_air_object_name: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
-        reheat_coil_type: Literal["", "Electric", "Gas", "HotWater", "None"] | None = "None",
+        reheat_coil_type: Literal["Electric", "Gas", "HotWater", "None"] | None = "None",
         reheat_coil_availability_schedule_name: str | None = ...,
         maximum_reheat_air_temperature: float | None = ...,
         supply_plenum_name: str | None = ...,
         return_plenum_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SystemSupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = 12.8,
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
@@ -151,17 +149,16 @@ class HVACTemplatePlantMixedWaterLoop:
         /,
         *,
         pump_schedule_name: str | None = ...,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Intermittent",
-        operation_scheme_type: Literal["", "Default", "UserDefined"] | None = "Default",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Intermittent",
+        operation_scheme_type: Literal["Default", "UserDefined"] | None = "Default",
         equipment_operation_schemes_name: str | None = ...,
         high_temperature_setpoint_schedule_name: str | None = ...,
         high_temperature_design_setpoint: float | None = 33,
         low_temperature_setpoint_schedule_name: str | None = ...,
         low_temperature_design_setpoint: float | None = 20,
-        water_pump_configuration: Literal["", "ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
+        water_pump_configuration: Literal["ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
         water_pump_rated_head: float | None = 179352,
         water_pump_type: Literal[
-            "",
             "FiveHeaderedPumps",
             "FourHeaderedPumps",
             "PumpPerTowerOrBoiler",
@@ -170,10 +167,9 @@ class HVACTemplatePlantMixedWaterLoop:
             "TwoHeaderedPumps",
         ]
         | None = "SinglePump",
-        supply_side_bypass_pipe: Literal["", "No", "Yes"] | None = "Yes",
-        demand_side_bypass_pipe: Literal["", "No", "Yes"] | None = "Yes",
+        supply_side_bypass_pipe: Literal["No", "Yes"] | None = "Yes",
+        demand_side_bypass_pipe: Literal["No", "Yes"] | None = "Yes",
         fluid_type: Literal[
-            "",
             "EthyleneGlycol30",
             "EthyleneGlycol40",
             "EthyleneGlycol50",
@@ -187,7 +183,7 @@ class HVACTemplatePlantMixedWaterLoop:
         | None = "Water",
         loop_design_delta_temperature: float | None = 5.6,
         load_distribution_scheme: Literal[
-            "", "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
+            "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
         ]
         | None = "SequentialLoad",
     ) -> None:

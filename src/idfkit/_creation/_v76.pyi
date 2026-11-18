@@ -11,28 +11,6 @@ from typing import Literal
 
 from .. import _generated_types as _g
 
-class ControllerWaterCoil_v8_9_to_v9_3:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        control_variable: Literal["HumidityRatio", "Temperature", "TemperatureAndHumidityRatio"],
-        actuator_variable: Literal["Flow"],
-        sensor_node_name: str,
-        actuator_node_name: str,
-        action: Literal["Normal", "Reverse"] | None = ...,
-        controller_convergence_tolerance: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_actuated_flow: float | Literal["Autosize"] | None = ...,
-        minimum_actuated_flow: float | None = ...,
-    ) -> None:
-        """Create a new ``Controller:WaterCoil`` and add it to the document.
-
-        Controller for a water coil which is located directly in an air loop branch or outdoor air equipment list. Controls the coil water flow to meet the specified leaving air setpoint(s). Used with Coil:Heating:Water, Coil:Cooling:Water, Coil:Cooling:Water:DetailedGeometry, and CoilSystem:Cooling:Water:HeatexchangerAssisted.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-controllers/#controllerwatercoil
-        """
-
 class PlantEquipmentOperationSchemes_v9_0_to_v23_1:
     def __call__(
         self,
@@ -447,11 +425,11 @@ class HeatPumpPlantLoopEIRCooling_v9_3_to_v23_1:
         capacity_modifier_function_of_temperature_curve_name: str,
         electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str,
         electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str,
-        condenser_type: Literal["", "AirSource", "WaterSource"] | None = "WaterSource",
+        condenser_type: Literal["AirSource", "WaterSource"] | None = "WaterSource",
         companion_heat_pump_name: str | None = ...,
-        load_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        reference_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        load_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
     ) -> None:

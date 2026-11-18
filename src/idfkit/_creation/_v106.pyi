@@ -19,9 +19,9 @@ class ElectricEquipmentITEAirCooled_v8_9_to_v9_5:
         design_fan_air_flow_rate_per_power_input: float,
         air_flow_function_of_loading_and_air_temperature_curve_name: str,
         fan_power_input_function_of_flow_curve_name: str,
-        air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"]
+        air_flow_calculation_method: Literal["FlowControlWithApproachTemperatures", "FlowFromSystem"]
         | None = "FlowFromSystem",
-        design_power_input_calculation_method: Literal["", "Watts/Area", "Watts/Unit"] | None = "Watts/Unit",
+        design_power_input_calculation_method: Literal["Watts/Area", "Watts/Unit"] | None = "Watts/Unit",
         watts_per_unit: float | None = ...,
         number_of_units: float | None = 1,
         watts_per_zone_floor_area: float | None = ...,
@@ -29,9 +29,8 @@ class ElectricEquipmentITEAirCooled_v8_9_to_v9_5:
         cpu_loading_schedule_name: str | None = ...,
         design_fan_power_input_fraction: float | None = 0,
         design_entering_air_temperature: float | None = 15,
-        environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None"] | None = "None",
-        air_inlet_connection_type: Literal["", "AdjustedSupply", "RoomAirModel", "ZoneAirNode"]
-        | None = "AdjustedSupply",
+        environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "None"] | None = "None",
+        air_inlet_connection_type: Literal["AdjustedSupply", "RoomAirModel", "ZoneAirNode"] | None = "AdjustedSupply",
         air_inlet_room_air_model_node_name: str | None = ...,
         air_outlet_room_air_model_node_name: str | None = ...,
         supply_air_node_name: str | None = ...,
@@ -62,7 +61,6 @@ class DesignSpecificationOutdoorAir_v8_9_to_v9_4:
         /,
         *,
         outdoor_air_method: Literal[
-            "",
             "AirChanges/Hour",
             "Flow/Area",
             "Flow/Person",
@@ -109,10 +107,10 @@ class AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2:
         cooling_coil_name: str,
         availability_schedule_name: str | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        maximum_supply_air_temperature: float | Literal["", "Autosize"] | None = 80,
+        maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         reheat_coil_object_type: Literal[
             "Coil:Heating:Desuperheater",
             "Coil:Heating:Electric",
@@ -141,7 +139,7 @@ class ChillerCombustionTurbine_v8_9_to_v9_2:
         chilled_water_inlet_node_name: str,
         chilled_water_outlet_node_name: str,
         temperature_rise_coefficient: float,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
         minimum_part_load_ratio: float | None = ...,
@@ -185,13 +183,12 @@ class ChillerCombustionTurbine_v8_9_to_v9_2:
         maximum_exhaust_flow_per_unit_of_power_output: float | None = ...,
         design_steam_saturation_temperature: float | None = ...,
         fuel_higher_heating_value: float | None = ...,
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         fuel_type: Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
+            "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
         ]
         | None = "NaturalGas",
         heat_recovery_maximum_temperature: float | None = 80,
@@ -250,9 +247,9 @@ class HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2:
         electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str,
         electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str,
         companion_heat_pump_name: str | None = ...,
-        load_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        reference_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        load_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
     ) -> None:

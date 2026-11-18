@@ -28,8 +28,8 @@ class GlobalGeometryRules:
         starting_vertex_position: Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"],
         vertex_entry_direction: Literal["Clockwise", "Counterclockwise"],
         coordinate_system: Literal["Relative", "World"],
-        daylighting_reference_point_coordinate_system: Literal["", "Relative", "World"] | None = "Relative",
-        rectangular_surface_coordinate_system: Literal["", "Relative", "World"] | None = "Relative",
+        daylighting_reference_point_coordinate_system: Literal["Relative", "World"] | None = "Relative",
+        rectangular_surface_coordinate_system: Literal["Relative", "World"] | None = "Relative",
     ) -> None:
         """Create a new ``GlobalGeometryRules`` and add it to the document.
 
@@ -63,10 +63,10 @@ class AnyRoofCeilingDetailed:
             "Zone",
         ],
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.RoofCeilingDetailedVerticesItem | _g.RoofCeilingDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``RoofCeiling:Detailed`` and add it to the document.
@@ -107,11 +107,11 @@ class CoilSystemCoolingWater:
         ],
         cooling_coil_name: str,
         availability_schedule_name: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
-        run_on_sensible_load: Literal["", "No", "Yes"] | None = "Yes",
-        run_on_latent_load: Literal["", "No", "Yes"] | None = "No",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
+        run_on_sensible_load: Literal["No", "Yes"] | None = "Yes",
+        run_on_latent_load: Literal["No", "Yes"] | None = "No",
         minimum_air_to_water_temperature_offset: float | None = 0,
-        economizer_lockout: Literal["", "No", "Yes"] | None = "Yes",
+        economizer_lockout: Literal["No", "Yes"] | None = "Yes",
         minimum_water_loop_temperature_for_heat_recovery: float | None = 0,
         companion_coil_used_for_heat_recovery: str | None = ...,
     ) -> None:
@@ -129,17 +129,17 @@ class CoilCoolingDXCurveFitOperatingMode:
         /,
         *,
         speed_1_name: str,
-        rated_gross_total_cooling_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_gross_total_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
         rated_evaporator_air_flow_rate: float | Literal["Autosize"] | None = ...,
         rated_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_cycling_rate: float | None = 0,
         ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         nominal_time_for_condensate_removal_to_begin: float | None = 0,
-        apply_part_load_fraction_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
-        apply_latent_degradation_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
-        nominal_evaporative_condenser_pump_power: float | Literal["", "Autosize"] | None = 0,
+        apply_part_load_fraction_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
+        apply_latent_degradation_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        nominal_evaporative_condenser_pump_power: float | Literal["Autosize"] | None = 0,
         nominal_speed_number: int | None = ...,
         speed_2_name: str | None = ...,
         speed_3_name: str | None = ...,
@@ -196,14 +196,12 @@ class AnyTableIndependentVariable:
         name: str,
         /,
         *,
-        interpolation_method: Literal["", "Cubic", "Linear"] | None = "Linear",
-        extrapolation_method: Literal["", "Constant", "Linear"] | None = "Constant",
+        interpolation_method: Literal["Cubic", "Linear"] | None = "Linear",
+        extrapolation_method: Literal["Constant", "Linear"] | None = "Constant",
         minimum_value: float | None = ...,
         maximum_value: float | None = ...,
         normalization_reference_value: float | None = ...,
-        unit_type: Literal[
-            "", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
-        ]
+        unit_type: Literal["Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"]
         | None = "Dimensionless",
         external_file_name: str | None = ...,
         external_file_column_number: int | None = ...,
@@ -222,11 +220,10 @@ class OutputEnergyManagementSystem:
         self,
         /,
         *,
-        actuator_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"]
+        actuator_availability_dictionary_reporting: Literal["None", "NotByUniqueKeyNames", "Verbose"] | None = "None",
+        internal_variable_availability_dictionary_reporting: Literal["None", "NotByUniqueKeyNames", "Verbose"]
         | None = "None",
-        internal_variable_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"]
-        | None = "None",
-        ems_runtime_language_debug_output_level: Literal["", "ErrorsOnly", "None", "Verbose"] | None = "None",
+        ems_runtime_language_debug_output_level: Literal["ErrorsOnly", "None", "Verbose"] | None = "None",
     ) -> None:
         """Create a new ``Output:EnergyManagementSystem`` and add it to the document.
 

@@ -19,7 +19,6 @@ class SizingPeriodWeatherFileDays:
         end_month: int,
         end_day_of_month: int,
         day_of_week_for_start_day: Literal[
-            "",
             "CustomDay1",
             "CustomDay2",
             "Friday",
@@ -33,8 +32,8 @@ class SizingPeriodWeatherFileDays:
             "WinterDesignDay",
         ]
         | None = "Monday",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_rain_and_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_rain_and_snow_indicators: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``SizingPeriod:WeatherFileDays`` and add it to the document.
 
@@ -108,13 +107,12 @@ class ZoneHVACLowTemperatureRadiantVariableFlowDesign:
         name: str = "",
         /,
         *,
-        fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"]
+        fluid_to_radiant_surface_heat_transfer_model: Literal["ConvectionOnly", "ISOStandard"]
         | None = "ConvectionOnly",
         hydronic_tubing_inside_diameter: float | None = 0.013,
         hydronic_tubing_outside_diameter: float | None = 0.016,
         hydronic_tubing_conductivity: float | None = 0.35,
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -124,9 +122,9 @@ class ZoneHVACLowTemperatureRadiantVariableFlowDesign:
             "SurfaceInteriorTemperature",
         ]
         | None = "MeanAirTemperature",
-        setpoint_control_type: Literal["", "HalfFlowPower", "ZeroFlowPower"] | None = "HalfFlowPower",
+        setpoint_control_type: Literal["HalfFlowPower", "ZeroFlowPower"] | None = "HalfFlowPower",
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
         heating_design_capacity_per_floor_area: float | None = ...,
@@ -134,14 +132,14 @@ class ZoneHVACLowTemperatureRadiantVariableFlowDesign:
         heating_control_throttling_range: float | None = 0.5,
         heating_control_temperature_schedule_name: str | None = ...,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "CoolingDesignCapacity",
         cooling_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_cooling_design_capacity: float | None = ...,
         cooling_control_throttling_range: float | None = 0.5,
         cooling_control_temperature_schedule_name: str | None = ...,
-        condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
+        condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
         changeover_delay_time_period_schedule: str | None = ...,
     ) -> None:

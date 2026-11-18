@@ -66,7 +66,7 @@ class AnyHotWaterEquipment:
         narrow_with_as_version_first: Never,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -123,11 +123,11 @@ class AnyCoolingTowerTwoSpeed:
         low_fan_speed_fan_power_sizing_factor: float | None = 0.16,
         low_fan_speed_u_factor_times_area_value: float | Literal["Autocalculate"] | None = ...,
         low_fan_speed_u_factor_times_area_sizing_factor: float | None = 0.6,
-        free_convection_regime_air_flow_rate: float | Literal["", "Autocalculate"] | None = 0,
+        free_convection_regime_air_flow_rate: float | Literal["Autocalculate"] | None = 0,
         free_convection_regime_air_flow_rate_sizing_factor: float | None = 0.1,
-        free_convection_regime_u_factor_times_area_value: float | Literal["", "Autocalculate"] | None = 0,
+        free_convection_regime_u_factor_times_area_value: float | Literal["Autocalculate"] | None = 0,
         free_convection_u_factor_times_area_value_sizing_factor: float | None = 0.1,
-        performance_input_method: Literal["", "NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
+        performance_input_method: Literal["NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
         | None = "UFactorTimesAreaAndDesignWaterFlowRate",
         heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
         high_speed_nominal_capacity: float | None = ...,
@@ -137,8 +137,8 @@ class AnyCoolingTowerTwoSpeed:
         free_convection_nominal_capacity_sizing_factor: float | None = 0.1,
         design_inlet_air_dry_bulb_temperature: float | None = 35,
         design_inlet_air_wet_bulb_temperature: float | None = 25.6,
-        design_approach_temperature: float | Literal["", "Autosize"] | None = "Autosize",
-        design_range_temperature: float | Literal["", "Autosize"] | None = "Autosize",
+        design_approach_temperature: float | Literal["Autosize"] | None = "Autosize",
+        design_range_temperature: float | Literal["Autosize"] | None = "Autosize",
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
@@ -151,7 +151,7 @@ class AnyCoolingTowerTwoSpeed:
         supply_water_storage_tank_name: str | None = ...,
         outdoor_air_inlet_node_name: str | None = ...,
         number_of_cells: int | None = 1,
-        cell_control: Literal["", "MaximalCell", "MinimalCell"] | None = ...,
+        cell_control: Literal["MaximalCell", "MinimalCell"] | None = ...,
         cell_minimum_water_flow_rate_fraction: float | None = 0.33,
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
@@ -187,10 +187,10 @@ class WaterHeaterMixed:
         ],
         heater_thermal_efficiency: float,
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
-        tank_volume: float | Literal["", "Autosize"] | None = 0,
+        tank_volume: float | Literal["Autosize"] | None = 0,
         deadband_temperature_difference: float | None = 0,
         maximum_temperature_limit: float | None = ...,
-        heater_control_type: Literal["", "Cycle", "Modulate"] | None = "Cycle",
+        heater_control_type: Literal["Cycle", "Modulate"] | None = "Cycle",
         heater_maximum_capacity: float | Literal["Autosize"] | None = ...,
         heater_minimum_capacity: float | None = ...,
         heater_ignition_minimum_flow_rate: float | None = 0,
@@ -246,11 +246,11 @@ class WaterHeaterMixed:
         source_side_inlet_node_name: str | None = ...,
         source_side_outlet_node_name: str | None = ...,
         source_side_effectiveness: float | None = 1,
-        use_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        use_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         indirect_water_heating_recovery_time: float | None = 1.5,
         source_side_flow_control_mode: Literal[
-            "", "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
+            "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,

@@ -19,7 +19,6 @@ class HeatBalanceAlgorithm:
         /,
         *,
         algorithm: Literal[
-            "",
             "CombinedHeatAndMoistureFiniteElement",
             "ConductionFiniteDifference",
             "ConductionTransferFunction",
@@ -51,8 +50,8 @@ class AnyConstructionComplexFenestrationState:
         visible_optical_complex_front_transmittance_matrix_name: str,
         visible_optical_complex_back_transmittance_matrix_name: str,
         outside_layer_name: str,
-        basis_type: Literal["", "LBNLWINDOW", "UserDefined"] | None = "LBNLWINDOW",
-        basis_symmetry_type: Literal["", "Axisymmetric", "None"] | None = "None",
+        basis_type: Literal["LBNLWINDOW", "UserDefined"] | None = "LBNLWINDOW",
+        basis_symmetry_type: Literal["Axisymmetric", "None"] | None = "None",
         gap_1_name: str | None = ...,
         layer_2_name: str | None = ...,
         gap_2_name: str | None = ...,
@@ -126,8 +125,8 @@ class AnyZoneHVACLowTemperatureRadiantVariableFlow:
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
-        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        hydronic_tubing_length: float | Literal["Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         maximum_hot_water_flow: float | Literal["Autosize"] | None = ...,
         heating_water_inlet_node_name: str | None = ...,
         heating_water_outlet_node_name: str | None = ...,
@@ -135,7 +134,7 @@ class AnyZoneHVACLowTemperatureRadiantVariableFlow:
         maximum_cold_water_flow: float | Literal["Autosize"] | None = ...,
         cooling_water_inlet_node_name: str | None = ...,
         cooling_water_outlet_node_name: str | None = ...,
-        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
+        number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` and add it to the document.
@@ -158,7 +157,7 @@ class SetpointManagerCondenserEnteringReset:
         minimum_outside_air_wetbulb_temperature_curve_name: str,
         optimized_cond_entering_water_temperature_curve_name: str,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "Temperature"] | None = "Temperature",
+        control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_lift: float | None = 11.1,
         maximum_condenser_entering_water_temperature: float | None = 32,
         cooling_tower_design_inlet_air_wet_bulb_temperature: float | None = 25.56,
@@ -199,7 +198,7 @@ class AnyDemandManagerVentilation:
         fixed_rate: float | None = ...,
         reduction_ratio: float | None = ...,
         limit_step_change: float | None = ...,
-        selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None = "All",
+        selection_control: Literal["All", "RotateMany", "RotateOne"] | None = "All",
         rotation_duration: int | None = ...,
         controllers: Sequence[
             _g.DemandManagerVentilationControllersItem | _g.DemandManagerVentilationControllersGroup

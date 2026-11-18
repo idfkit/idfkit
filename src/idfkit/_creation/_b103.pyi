@@ -68,7 +68,7 @@ class GroundHeatTransferSlabInsulation:
         dins_width_of_strip_of_under_slab_insulation: float | None = 0,
         rvins_r_value_of_vertical_insulation: float | None = 0,
         zvins_depth_of_vertical_insulation: float | None = 0,
-        ivins_flag_is_there_vertical_insulation: Literal[0, 1, ""] | None = 0,
+        ivins_flag_is_there_vertical_insulation: Literal[0, 1] | None = 0,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:Insulation`` and add it to the document.
 
@@ -87,16 +87,15 @@ class ElectricEquipmentITEAirCooledDefinition:
         design_fan_air_flow_rate_per_power_input: float,
         air_flow_function_of_loading_and_air_temperature_curve_name: str,
         fan_power_input_function_of_flow_curve_name: str,
-        air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"]
+        air_flow_calculation_method: Literal["FlowControlWithApproachTemperatures", "FlowFromSystem"]
         | None = "FlowFromSystem",
-        design_power_input_calculation_method: Literal["", "EquipmentLevel", "Watts/Area"] | None = "EquipmentLevel",
+        design_power_input_calculation_method: Literal["EquipmentLevel", "Watts/Area"] | None = "EquipmentLevel",
         watts_per_unit: float | None = ...,
         watts_per_floor_area: float | None = ...,
         design_fan_power_input_fraction: float | None = 0,
         design_entering_air_temperature: float | None = 15,
-        environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None = "None",
-        air_inlet_connection_type: Literal["", "AdjustedSupply", "RoomAirModel", "ZoneAirNode"]
-        | None = "AdjustedSupply",
+        environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None = "None",
+        air_inlet_connection_type: Literal["AdjustedSupply", "RoomAirModel", "ZoneAirNode"] | None = "AdjustedSupply",
         design_recirculation_fraction: float | None = 0,
         recirculation_function_of_loading_and_supply_temperature_curve_name: str | None = ...,
         design_electric_power_supply_efficiency: float | None = 1,
@@ -122,7 +121,6 @@ class AirflowNetworkDistributionNode:
         *,
         component_name_or_node_name: str | None = ...,
         component_object_type_or_node_type: Literal[
-            "",
             "AirLoopHVAC:OutdoorAirSystem",
             "AirLoopHVAC:ZoneMixer",
             "AirLoopHVAC:ZoneSplitter",
@@ -177,10 +175,10 @@ class CoilHeatingDXSingleSpeed:
         crankcase_heater_capacity: float | None = 0,
         crankcase_heater_capacity_function_of_temperature_curve_name: str | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "ReverseCycle",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "ReverseCycle",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         region_number_for_calculating_hspf: int | None = 4,
         evaporator_air_inlet_node_name: str | None = ...,
         zone_name_for_evaporator_placement: str | None = ...,
@@ -240,13 +238,12 @@ class AnyChillerElectricEIR:
         minimum_unloading_ratio: float | None = 0.2,
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "WaterCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "WaterCooled",
         condenser_fan_power_ratio: float | None = 0,
         fraction_of_compressor_electric_consumption_rejected_by_condenser: float | None = 1,
         leaving_chilled_water_lower_temperature_limit: float | None = 2,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
@@ -288,18 +285,18 @@ class ChillerHeaterPerformanceElectricEIR:
         reference_heating_mode_leaving_condenser_water_temperature: float | None = 49,
         reference_heating_mode_entering_condenser_fluid_temperature: float | None = 29.44,
         heating_mode_entering_chilled_water_temperature_low_limit: float | None = 12.22,
-        chilled_water_flow_mode_type: Literal["", "ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
+        chilled_water_flow_mode_type: Literal["ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
         design_chilled_water_flow_rate: float | Literal["Autosize"] | None = ...,
         design_condenser_water_flow_rate: float | Literal["Autosize"] | None = ...,
         design_hot_water_flow_rate: float | None = 0,
         compressor_motor_efficiency: float | None = 1,
         cooling_mode_temperature_curve_condenser_water_independent_variable: Literal[
-            "", "EnteringCondenser", "LeavingCondenser"
+            "EnteringCondenser", "LeavingCondenser"
         ]
         | None = "EnteringCondenser",
         cooling_mode_cooling_capacity_optimum_part_load_ratio: float | None = 1,
         heating_mode_temperature_curve_condenser_water_independent_variable: Literal[
-            "", "EnteringCondenser", "LeavingCondenser"
+            "EnteringCondenser", "LeavingCondenser"
         ]
         | None = "LeavingCondenser",
         heating_mode_cooling_capacity_optimum_part_load_ratio: float | None = 1,

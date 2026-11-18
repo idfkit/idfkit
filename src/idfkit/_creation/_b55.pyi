@@ -71,13 +71,13 @@ class AnyZoneHVACPackagedTerminalHeatPump:
         heating_convergence_tolerance: float | None = 0.001,
         cooling_convergence_tolerance: float | None = 0.001,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-        capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None = "None",
-        minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None = "Autosize",
+        capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
+        minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
 
@@ -96,7 +96,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow:
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
-        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
+        hydronic_tubing_length: float | Literal["Autosize"] | None = "Autosize",
         rated_flow_rate: float | Literal["Autosize"] | None = ...,
         pump_flow_rate_schedule_name: str | None = ...,
         rated_pump_head: float | None = 179352,
@@ -113,7 +113,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow:
         cooling_low_water_temperature_schedule_name: str | None = ...,
         cooling_high_control_temperature_schedule_name: str | None = ...,
         cooling_low_control_temperature_schedule_name: str | None = ...,
-        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
+        number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
@@ -199,7 +199,7 @@ class AnyCoilCoolingDXTwoSpeed:
         unit_internal_static_air_pressure: float | None = ...,
         low_speed_gross_rated_cooling_cop: float | None = 3,
         condenser_air_inlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -25,
         high_speed_evaporative_condenser_effectiveness: float | None = 0.9,
         high_speed_evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
@@ -237,7 +237,7 @@ class DehumidifierDesiccantSystem:
         regeneration_air_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel"],
         regeneration_air_fan_name: str,
         availability_schedule_name: str | None = ...,
-        regeneration_air_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        regeneration_air_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         regeneration_air_heater_object_type: Literal[
             "Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"
         ]
@@ -251,8 +251,8 @@ class DehumidifierDesiccantSystem:
         ]
         | None = ...,
         companion_cooling_coil_name: str | None = ...,
-        companion_cooling_coil_upstream_of_dehumidifier_process_inlet: Literal["", "No", "Yes"] | None = "No",
-        companion_coil_regeneration_air_heating: Literal["", "No", "Yes"] | None = "No",
+        companion_cooling_coil_upstream_of_dehumidifier_process_inlet: Literal["No", "Yes"] | None = "No",
+        companion_coil_regeneration_air_heating: Literal["No", "Yes"] | None = "No",
         exhaust_fan_maximum_flow_rate: float | None = ...,
         exhaust_fan_maximum_power: float | None = ...,
         exhaust_fan_power_curve_name: str | None = ...,
@@ -289,10 +289,10 @@ class AirLoopHVACUnitaryHeatCool:
         cooling_coil_name: str,
         availability_schedule_name: str | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        maximum_supply_air_temperature: float | Literal["", "Autosize"] | None = 80,
+        maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         reheat_coil_object_type: Literal[
             "Coil:Heating:Desuperheater",
             "Coil:Heating:Electric",
@@ -342,9 +342,9 @@ class AnyAirLoopHVACUnitaryHeatPumpAirToAir:
         availability_schedule_name: str | None = ...,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir`` and add it to the document.
 
@@ -477,18 +477,11 @@ class AnyLifeCycleCostRecurringCosts:
         /,
         *,
         category: Literal[
-            "",
-            "Maintenance",
-            "MajorOverhaul",
-            "MinorOverhaul",
-            "Operation",
-            "OtherOperational",
-            "Repair",
-            "Replacement",
+            "Maintenance", "MajorOverhaul", "MinorOverhaul", "Operation", "OtherOperational", "Repair", "Replacement"
         ]
         | None = "Maintenance",
         cost: float | None = ...,
-        start_of_costs: Literal["", "BasePeriod", "ServicePeriod"] | None = "ServicePeriod",
+        start_of_costs: Literal["BasePeriod", "ServicePeriod"] | None = "ServicePeriod",
         years_from_start: int | None = ...,
         months_from_start: int | None = ...,
         repeat_period_years: int | None = 1,

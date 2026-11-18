@@ -28,7 +28,7 @@ class ChillerElectricReformulatedEIR_v8_9_to_v24_1:
         reference_chilled_water_flow_rate: float | Literal["Autosize"] | None = ...,
         reference_condenser_water_flow_rate: float | Literal["Autosize"] | None = ...,
         electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_type: Literal[
-            "", "LeavingCondenserWaterTemperature", "Lift"
+            "LeavingCondenserWaterTemperature", "Lift"
         ]
         | None = "LeavingCondenserWaterTemperature",
         minimum_part_load_ratio: float | None = 0.1,
@@ -37,9 +37,9 @@ class ChillerElectricReformulatedEIR_v8_9_to_v24_1:
         minimum_unloading_ratio: float | None = 0.2,
         fraction_of_compressor_electric_consumption_rejected_by_condenser: float | None = 1,
         leaving_chilled_water_lower_temperature_limit: float | None = 2,
-        chiller_flow_mode_type: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
+        chiller_flow_mode_type: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
         | None = "NotModulated",
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
@@ -82,7 +82,7 @@ class GeneratorCombustionTurbine_v8_9_to_v9_2:
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         fuel_type: Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
+            "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
         ]
         | None = "NaturalGas",
         heat_recovery_maximum_temperature: float | None = 80,
@@ -102,11 +102,10 @@ class Building_v22_2_to_v26_1:
         /,
         *,
         north_axis: float | None = 0,
-        terrain: Literal["", "City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
+        terrain: Literal["City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
         loads_convergence_tolerance_value: float | None = 0.04,
         temperature_convergence_tolerance_value: float | None = 0.4,
         solar_distribution: Literal[
-            "",
             "FullExterior",
             "FullExteriorWithReflections",
             "FullInteriorAndExterior",
@@ -132,9 +131,9 @@ class AirLoopHVACUnitarySystem_v22_2_to_v23_1:
         *,
         air_inlet_node_name: str,
         air_outlet_node_name: str,
-        control_type: Literal["", "Load", "SetPoint", "SingleZoneVAV"] | None = "Load",
+        control_type: Literal["Load", "SetPoint", "SingleZoneVAV"] | None = "Load",
         controlling_zone_or_thermostat_location: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         availability_schedule_name: str | None = ...,
         supply_fan_object_type: Literal[
             "Fan:ComponentModel", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"
@@ -181,10 +180,9 @@ class AirLoopHVACUnitarySystem_v22_2_to_v23_1:
         ]
         | None = ...,
         cooling_coil_name: str | None = ...,
-        use_doas_dx_cooling_coil: Literal["", "No", "Yes"] | None = "No",
-        minimum_supply_air_temperature: float | Literal["", "Autosize"] | None = 2,
+        use_doas_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
+        minimum_supply_air_temperature: float | Literal["Autosize"] | None = 2,
         latent_load_control: Literal[
-            "",
             "LatentOnlyLoadControl",
             "LatentOrSensibleLoadControl",
             "LatentWithSensibleLoadControl",
@@ -234,7 +232,7 @@ class AirLoopHVACUnitarySystem_v22_2_to_v23_1:
         no_load_fraction_of_autosized_heating_supply_air_flow_rate: float | None = ...,
         no_load_supply_air_flow_rate_per_unit_of_capacity_during_cooling_operation: float | None = ...,
         no_load_supply_air_flow_rate_per_unit_of_capacity_during_heating_operation: float | None = ...,
-        maximum_supply_air_temperature: float | Literal["", "Autosize"] | None = 80,
+        maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
         maximum_cycling_rate: float | None = 2.5,
@@ -264,28 +262,26 @@ class AirflowNetworkSimulationControl_v8_9_to_v9_4:
         /,
         *,
         airflownetwork_control: Literal[
-            "",
             "MultizoneWithDistribution",
             "MultizoneWithDistributionOnlyDuringFanOperation",
             "MultizoneWithoutDistribution",
             "NoMultizoneOrDistribution",
         ]
         | None = "NoMultizoneOrDistribution",
-        wind_pressure_coefficient_type: Literal["", "Input", "SurfaceAverageCalculation"]
+        wind_pressure_coefficient_type: Literal["Input", "SurfaceAverageCalculation"]
         | None = "SurfaceAverageCalculation",
-        height_selection_for_local_wind_pressure_calculation: Literal["", "ExternalNode", "OpeningHeight"]
+        height_selection_for_local_wind_pressure_calculation: Literal["ExternalNode", "OpeningHeight"]
         | None = "OpeningHeight",
-        building_type: Literal["", "HighRise", "LowRise"] | None = "LowRise",
+        building_type: Literal["HighRise", "LowRise"] | None = "LowRise",
         maximum_number_of_iterations: float | None = 500,
-        initialization_type: Literal["", "LinearInitializationMethod", "ZeroNodePressures"]
-        | None = "ZeroNodePressures",
+        initialization_type: Literal["LinearInitializationMethod", "ZeroNodePressures"] | None = "ZeroNodePressures",
         relative_airflow_convergence_tolerance: float | None = 0.0001,
         absolute_airflow_convergence_tolerance: float | None = ...,
         convergence_acceleration_limit: float | None = -0.5,
         azimuth_angle_of_long_axis_of_building: float | None = 0,
         ratio_of_building_width_along_short_axis_to_width_along_long_axis: float | None = 1,
-        height_dependence_of_external_node_temperature: Literal["", "No", "Yes"] | None = "No",
-        solver: Literal["", "ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
+        height_dependence_of_external_node_temperature: Literal["No", "Yes"] | None = "No",
+        solver: Literal["ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
     ) -> None:
         """Create a new ``AirflowNetwork:SimulationControl`` and add it to the document.
 

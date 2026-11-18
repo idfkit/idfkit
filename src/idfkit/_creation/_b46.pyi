@@ -64,7 +64,7 @@ class FanComponentModel:
         maximum_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_flow_rate: float | Literal["Autosize"] | None = ...,
         fan_sizing_factor: float | None = 1,
-        motor_fan_pulley_ratio: float | Literal["", "Autosize"] | None = 1,
+        motor_fan_pulley_ratio: float | Literal["Autosize"] | None = 1,
         belt_sizing_factor: float | None = 1,
         belt_fractional_torque_transition: float | None = 0.167,
         motor_sizing_factor: float | None = 1,
@@ -104,14 +104,14 @@ class HeatExchangerAirToAirSensibleAndLatent:
         sensible_effectiveness_at_100_cooling_air_flow: float | None = 0,
         latent_effectiveness_at_100_cooling_air_flow: float | None = 0,
         nominal_electric_power: float | None = 0,
-        supply_air_outlet_temperature_control: Literal["", "No", "Yes"] | None = "No",
-        heat_exchanger_type: Literal["", "Plate", "Rotary"] | None = "Plate",
-        frost_control_type: Literal["", "ExhaustAirRecirculation", "ExhaustOnly", "MinimumExhaustTemperature", "None"]
+        supply_air_outlet_temperature_control: Literal["No", "Yes"] | None = "No",
+        heat_exchanger_type: Literal["Plate", "Rotary"] | None = "Plate",
+        frost_control_type: Literal["ExhaustAirRecirculation", "ExhaustOnly", "MinimumExhaustTemperature", "None"]
         | None = "None",
         threshold_temperature: float | None = 1.7,
         initial_defrost_time_fraction: float | None = 0.083,
         rate_of_defrost_time_fraction_increase: float | None = 0.012,
-        economizer_lockout: Literal["", "No", "Yes"] | None = "Yes",
+        economizer_lockout: Literal["No", "Yes"] | None = "Yes",
         sensible_effectiveness_of_heating_air_flow_curve_name: str | None = ...,
         latent_effectiveness_of_heating_air_flow_curve_name: str | None = ...,
         sensible_effectiveness_of_cooling_air_flow_curve_name: str | None = ...,
@@ -170,8 +170,8 @@ class AnyPythonPluginSearchPaths:
         name: str,
         /,
         *,
-        add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
-        add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
+        add_current_working_directory_to_search_path: Literal["No", "Yes"] | None = "Yes",
+        add_input_file_directory_to_search_path: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``PythonPlugin:SearchPaths`` and add it to the document.
 

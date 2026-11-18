@@ -18,7 +18,7 @@ class WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1:
         back_side_beam_beam_solar_transmittance: float,
         front_side_beam_beam_solar_reflectance: float,
         back_side_beam_beam_solar_reflectance: float,
-        optical_data_type: Literal["", "Spectral", "SpectralAverage"] | None = "SpectralAverage",
+        optical_data_type: Literal["Spectral", "SpectralAverage"] | None = "SpectralAverage",
         window_glass_spectral_data_set_name: str | None = ...,
         front_side_beam_beam_visible_solar_transmittance: float | None = ...,
         back_side_beam_beam_visible_solar_transmittance: float | None = ...,
@@ -32,16 +32,12 @@ class WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1:
         back_side_beam_diffuse_visible_solar_transmittance: float | None = 0,
         front_side_beam_diffuse_visible_solar_reflectance: float | None = 0,
         back_side_beam_diffuse_visible_solar_reflectance: float | None = 0,
-        diffuse_diffuse_solar_transmittance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        front_side_diffuse_diffuse_solar_reflectance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        back_side_diffuse_diffuse_solar_reflectance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        diffuse_diffuse_visible_solar_transmittance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        front_side_diffuse_diffuse_visible_solar_reflectance: float
-        | Literal["", "Autocalculate"]
-        | None = "Autocalculate",
-        back_side_diffuse_diffuse_visible_solar_reflectance: float
-        | Literal["", "Autocalculate"]
-        | None = "Autocalculate",
+        diffuse_diffuse_solar_transmittance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        front_side_diffuse_diffuse_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        back_side_diffuse_diffuse_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        diffuse_diffuse_visible_solar_transmittance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        front_side_diffuse_diffuse_visible_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        back_side_diffuse_diffuse_visible_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
         infrared_transmittance_applies_to_front_and_back_: float | None = 0,
         front_side_infrared_emissivity: float | None = 0.84,
         back_side_infrared_emissivity: float | None = 0.84,
@@ -93,11 +89,10 @@ class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1:
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         outdoor_air_flow_rate_multiplier_schedule_name: str | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        priority_control_mode: Literal["", "CoolingPriority", "HeatingPriority", "ZonePriority"]
-        | None = "ZonePriority",
+        priority_control_mode: Literal["CoolingPriority", "HeatingPriority", "ZonePriority"] | None = "ZonePriority",
         minimum_outlet_air_temperature_during_cooling_operation: float | None = 8,
         maximum_outlet_air_temperature_during_heating_operation: float | None = 50,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`` and add it to the document.
 

@@ -50,9 +50,8 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3:
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
         hydronic_tubing_inside_diameter: float | None = 0.013,
-        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
+        hydronic_tubing_length: float | Literal["Autosize"] | None = "Autosize",
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -61,10 +60,10 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3:
         ]
         | None = "MeanAirTemperature",
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         maximum_hot_water_flow: float | Literal["Autosize"] | None = ...,
@@ -73,7 +72,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3:
         heating_control_throttling_range: float | None = 0.5,
         heating_control_temperature_schedule_name: str | None = ...,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "CoolingDesignCapacity",
         cooling_design_capacity: float | Literal["Autosize"] | None = ...,
@@ -84,9 +83,9 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3:
         cooling_water_outlet_node_name: str | None = ...,
         cooling_control_throttling_range: float | None = 0.5,
         cooling_control_temperature_schedule_name: str | None = ...,
-        condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
+        condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
-        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
+        number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` and add it to the document.

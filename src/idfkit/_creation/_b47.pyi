@@ -19,7 +19,7 @@ class AnyMaterialPropertyVariableAbsorptance:
         *,
         reference_material_name: str,
         control_signal: Literal[
-            "", "Scheduled", "SpaceHeatingCoolingMode", "SurfaceReceivedSolarRadiation", "SurfaceTemperature"
+            "Scheduled", "SpaceHeatingCoolingMode", "SurfaceReceivedSolarRadiation", "SurfaceTemperature"
         ]
         | None = "SurfaceTemperature",
         thermal_absorptance_function_name: str | None = ...,
@@ -51,13 +51,13 @@ class ZoneVentilationDesignFlowRate:
         *,
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str | None = ...,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_floor_area: float | None = ...,
         flow_rate_per_person: float | None = ...,
         air_changes_per_hour: float | None = ...,
-        ventilation_type: Literal["", "Balanced", "Exhaust", "Intake", "Natural"] | None = "Natural",
+        ventilation_type: Literal["Balanced", "Exhaust", "Intake", "Natural"] | None = "Natural",
         fan_pressure_rise: float | None = 0,
         fan_total_efficiency: float | None = 1,
         constant_term_coefficient: float | None = 1,
@@ -75,7 +75,7 @@ class ZoneVentilationDesignFlowRate:
         maximum_outdoor_temperature: float | None = 100,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_wind_speed: float | None = 40,
-        density_basis: Literal["", "Indoor", "Outdoor", "Standard"] | None = "Outdoor",
+        density_basis: Literal["Indoor", "Outdoor", "Standard"] | None = "Outdoor",
     ) -> None:
         """Create a new ``ZoneVentilation:DesignFlowRate`` and add it to the document.
 
@@ -93,7 +93,7 @@ class ZoneControlHumidistat:
         zone_name: str,
         humidifying_setpoint_schedule_name: str,
         dehumidifying_setpoint_schedule_name: str | None = ...,
-        control_variable: Literal["", "Dewpoint", "RelativeHumidity"] | None = "RelativeHumidity",
+        control_variable: Literal["Dewpoint", "RelativeHumidity"] | None = "RelativeHumidity",
     ) -> None:
         """Create a new ``ZoneControl:Humidistat`` and add it to the document.
 
@@ -149,9 +149,9 @@ class AnyAirLoopHVACUnitarySystem:
         *,
         air_inlet_node_name: str,
         air_outlet_node_name: str,
-        control_type: Literal["", "Load", "SetPoint", "SingleZoneVAV"] | None = "Load",
+        control_type: Literal["Load", "SetPoint", "SingleZoneVAV"] | None = "Load",
         controlling_zone_or_thermostat_location: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         availability_schedule_name: str | None = ...,
         supply_fan_object_type: Literal[
             "Fan:ComponentModel", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"
@@ -197,10 +197,9 @@ class AnyAirLoopHVACUnitarySystem:
         ]
         | None = ...,
         cooling_coil_name: str | None = ...,
-        use_doas_dx_cooling_coil: Literal["", "No", "Yes"] | None = "No",
-        minimum_supply_air_temperature: float | Literal["", "Autosize"] | None = 2,
+        use_doas_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
+        minimum_supply_air_temperature: float | Literal["Autosize"] | None = 2,
         latent_load_control: Literal[
-            "",
             "LatentOnlyLoadControl",
             "LatentOrSensibleLoadControl",
             "LatentWithSensibleLoadControl",
@@ -249,7 +248,7 @@ class AnyAirLoopHVACUnitarySystem:
         no_load_fraction_of_autosized_heating_supply_air_flow_rate: float | None = ...,
         no_load_supply_air_flow_rate_per_unit_of_capacity_during_cooling_operation: float | None = ...,
         no_load_supply_air_flow_rate_per_unit_of_capacity_during_heating_operation: float | None = ...,
-        maximum_supply_air_temperature: float | Literal["", "Autosize"] | None = 80,
+        maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
         ancillary_on_cycle_electric_power: float | None = 0,
@@ -337,10 +336,10 @@ class CurveCubic:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:Cubic`` and add it to the document.
@@ -365,8 +364,8 @@ class CurveDoubleExponentialDecay:
         maximum_value_of_x: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:DoubleExponentialDecay`` and add it to the document.

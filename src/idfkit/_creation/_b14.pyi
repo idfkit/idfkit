@@ -41,10 +41,10 @@ class AnyBuildingSurfaceDetailed:
             "Zone",
         ],
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.BuildingSurfaceDetailedVerticesItem | _g.BuildingSurfaceDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``BuildingSurface:Detailed`` and add it to the document.
@@ -115,13 +115,11 @@ class HVACTemplateZoneBaseboardHeat:
         zone_name: str,
         template_thermostat_name: str | None = ...,
         zone_heating_sizing_factor: float | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater"] | None = "HotWater",
+        baseboard_heating_type: Literal["Electric", "HotWater"] | None = "HotWater",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         dedicated_outdoor_air_system_name: str | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
@@ -164,13 +162,13 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed:
         rated_condenser_inlet_water_temperature: float | None = 57.5,
         rated_evaporator_air_flow_rate: float | Literal["Autocalculate"] | None = ...,
         rated_condenser_water_flow_rate: float | Literal["Autocalculate"] | None = ...,
-        evaporator_fan_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "Yes",
-        condenser_pump_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "No",
-        condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop: Literal["", "No", "Yes"] | None = "No",
+        evaporator_fan_power_included_in_rated_cop: Literal["No", "Yes"] | None = "Yes",
+        condenser_pump_power_included_in_rated_cop: Literal["No", "Yes"] | None = "No",
+        condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop: Literal["No", "Yes"] | None = "No",
         fraction_of_condenser_pump_heat_to_water: float | None = 0.2,
         crankcase_heater_capacity: float | None = 0,
         maximum_ambient_temperature_for_crankcase_heater_operation: float | None = 10,
-        evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        evaporator_air_temperature_type_for_curve_objects: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         part_load_fraction_correlation_curve_name: str | None = ...,
         speed_2_reference_unit_rated_air_flow_rate: float | None = ...,
@@ -321,7 +319,7 @@ class ElectricLoadCenterStorageBattery:
         maximum_module_discharging_current: float | None = ...,
         module_cut_off_voltage: float | None = ...,
         module_charge_rate_limit: float | None = 1,
-        battery_life_calculation: Literal["", "No", "Yes"] | None = "No",
+        battery_life_calculation: Literal["No", "Yes"] | None = "No",
         number_of_cycle_bins: int | None = 10,
         battery_life_curve_name: str | None = ...,
     ) -> None:

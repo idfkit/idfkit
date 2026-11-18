@@ -86,7 +86,7 @@ class AnyGeneratorInternalCombustionEngine:
         design_heat_recovery_water_flow_rate: float | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
-        fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None = "Diesel",
+        fuel_type: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None = "Diesel",
         heat_recovery_maximum_temperature: float | None = 80,
     ) -> None:
         """Create a new ``Generator:InternalCombustionEngine`` and add it to the document.
@@ -114,9 +114,9 @@ class CurveCubicLinear:
         maximum_value_of_y: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless", "Temperature"] | None = "Dimensionless",
-        input_unit_type_for_y: Literal["", "Dimensionless", "Temperature"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless", "Temperature"] | None = "Dimensionless",
+        input_unit_type_for_y: Literal["Dimensionless", "Temperature"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:CubicLinear`` and add it to the document.
@@ -153,13 +153,12 @@ class LifeCycleCostParameters:
         name: str,
         /,
         *,
-        discounting_convention: Literal["", "BeginningOfYear", "EndOfYear", "MidYear"] | None = "EndOfYear",
-        inflation_approach: Literal["", "ConstantDollar", "CurrentDollar"] | None = "ConstantDollar",
+        discounting_convention: Literal["BeginningOfYear", "EndOfYear", "MidYear"] | None = "EndOfYear",
+        inflation_approach: Literal["ConstantDollar", "CurrentDollar"] | None = "ConstantDollar",
         real_discount_rate: float | None = ...,
         nominal_discount_rate: float | None = ...,
         inflation: float | None = ...,
         base_date_month: Literal[
-            "",
             "April",
             "August",
             "December",
@@ -176,7 +175,6 @@ class LifeCycleCostParameters:
         | None = "January",
         base_date_year: int | None = ...,
         service_date_month: Literal[
-            "",
             "April",
             "August",
             "December",
@@ -195,7 +193,6 @@ class LifeCycleCostParameters:
         length_of_study_period_in_years: int | None = ...,
         tax_rate: float | None = ...,
         depreciation_method: Literal[
-            "",
             "ModifiedAcceleratedCostRecoverySystem-10year",
             "ModifiedAcceleratedCostRecoverySystem-15year",
             "ModifiedAcceleratedCostRecoverySystem-20year",

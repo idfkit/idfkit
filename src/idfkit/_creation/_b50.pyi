@@ -6,10 +6,7 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import Literal
-
-from .. import _generated_types as _g
 
 class WindowMaterialGlazingRefractionExtinctionMethod:
     def __call__(
@@ -26,34 +23,13 @@ class WindowMaterialGlazingRefractionExtinctionMethod:
         infrared_hemispherical_emissivity: float | None = 0.84,
         conductivity: float | None = 0.9,
         dirt_correction_factor_for_solar_and_visible_transmittance: float | None = 1,
-        solar_diffusing: Literal["", "No", "Yes"] | None = "No",
+        solar_diffusing: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``WindowMaterial:Glazing:RefractionExtinctionMethod`` and add it to the document.
 
         Glass material properties for Windows or Glass Doors Index of Refraction/Extinction Coefficient input method Not to be used for coated glass
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#windowmaterialglazingrefractionextinctionmethod
-        """
-
-class AnySurfacePropertyExposedFoundationPerimeter:
-    def __call__(
-        self,
-        /,
-        *,
-        surface_name: str,
-        exposed_perimeter_calculation_method: Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"],
-        total_exposed_perimeter: float | None = ...,
-        exposed_perimeter_fraction: float | None = ...,
-        surfaces: Sequence[
-            _g.AnySurfacePropertyExposedFoundationPerimeterSurfacesItem
-            | _g.AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup
-        ] = ...,
-    ) -> None:
-        """Create a new ``SurfaceProperty:ExposedFoundationPerimeter`` and add it to the document.
-
-        Defines the perimeter of a foundation floor that is exposed to the exterior environment through the floor. User may either define the total exposed perimeter, fraction of perimeter exposed or individually define which segments of the floor surface perimeter are exposed.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertyexposedfoundationperimeter
         """
 
 class SwimmingPoolIndoor:
@@ -294,10 +270,10 @@ class AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit:
         number_of_speeds: int | None = 2,
         nominal_speed_level: int | None = 2,
         gross_rated_total_cooling_capacity_at_selected_nominal_speed_level: float
-        | Literal["", "Autosize"]
+        | Literal["Autosize"]
         | None = "Autosize",
-        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
+        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
         nominal_time_for_condensate_to_begin_leaving_the_coil: float | None = 0,
         initial_moisture_evaporation_rate_divided_by_steady_state_ac_latent_capacity: float | None = 0,
         flag_for_using_hot_gas_reheat_0_or_1: float | None = 0,

@@ -19,10 +19,10 @@ class ScheduleFile:
         rows_to_skip_at_top: int,
         schedule_type_limits_name: str | None = ...,
         number_of_hours_of_data: float | None = 8760,
-        column_separator: Literal["", "Comma", "Semicolon", "Space", "Tab"] | None = "Comma",
-        interpolate_to_timestep: Literal["", "No", "Yes"] | None = "No",
+        column_separator: Literal["Comma", "Semicolon", "Space", "Tab"] | None = "Comma",
+        interpolate_to_timestep: Literal["No", "Yes"] | None = "No",
         minutes_per_item: int | None = 60,
-        adjust_schedule_for_daylight_savings: Literal["", "No", "Yes"] | None = "Yes",
+        adjust_schedule_for_daylight_savings: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``Schedule:File`` and add it to the document.
 
@@ -125,7 +125,6 @@ class OtherEquipmentInstance:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -160,8 +159,7 @@ class IndoorLivingWall:
         *,
         surface_name: str,
         schedule_name: str,
-        evapotranspiration_calculation_method: Literal["", "Penman-Monteith", "Stanghellini"]
-        | None = "Penman-Monteith",
+        evapotranspiration_calculation_method: Literal["Penman-Monteith", "Stanghellini"] | None = "Penman-Monteith",
         lighting_method: Literal["Daylight", "LED", "LED-Daylight"] | None = ...,
         led_intensity_schedule_name: str | None = ...,
         daylighting_control_name: str | None = ...,
@@ -194,10 +192,10 @@ class AnyWaterHeaterStratified:
         heater_thermal_efficiency: float,
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
         end_use_subcategory: str | None = "General",
-        tank_shape: Literal["", "HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
+        tank_shape: Literal["HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
         tank_perimeter: float | None = ...,
         maximum_temperature_limit: float | None = ...,
-        heater_priority_control: Literal["", "MasterSlave", "Simultaneous"] | None = "MasterSlave",
+        heater_priority_control: Literal["MasterSlave", "Simultaneous"] | None = "MasterSlave",
         heater_1_deadband_temperature_difference: float | None = 0,
         heater_1_capacity: float | Literal["Autosize"] | None = ...,
         heater_1_height: float | None = ...,
@@ -232,15 +230,15 @@ class AnyWaterHeaterStratified:
         use_side_outlet_node_name: str | None = ...,
         use_side_effectiveness: float | None = 1,
         use_side_inlet_height: float | None = 0,
-        use_side_outlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        use_side_outlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
         source_side_inlet_node_name: str | None = ...,
         source_side_outlet_node_name: str | None = ...,
         source_side_effectiveness: float | None = 1,
-        source_side_inlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        source_side_inlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
         source_side_outlet_height: float | None = 0,
-        inlet_mode: Literal["", "Fixed", "Seeking"] | None = "Fixed",
-        use_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        inlet_mode: Literal["Fixed", "Seeking"] | None = "Fixed",
+        use_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         indirect_water_heating_recovery_time: float | None = 1.5,
         number_of_nodes: int | None = 1,
         additional_destratification_conductivity: float | None = 0,
@@ -257,7 +255,7 @@ class AnyWaterHeaterStratified:
         node_11_additional_loss_coefficient: float | None = 0,
         node_12_additional_loss_coefficient: float | None = 0,
         source_side_flow_control_mode: Literal[
-            "", "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
+            "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,

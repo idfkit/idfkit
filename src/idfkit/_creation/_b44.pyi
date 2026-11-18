@@ -77,8 +77,8 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow:
         heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        supply_air_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        supply_air_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel"]
+        supply_air_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        supply_air_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel"]
         | None = "Fan:ConstantVolume",
         supply_air_fan_object_name: str | None = ...,
         outside_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
@@ -103,7 +103,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow:
         ]
         | None = ...,
         supplemental_heating_coil_name: str | None = ...,
-        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None = "Autosize",
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         controlling_zone_or_thermostat_location: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
@@ -127,10 +127,10 @@ class ZoneHVACHighTemperatureRadiant:
         heating_setpoint_temperature_schedule_name: str,
         availability_schedule_name: str | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         combustion_efficiency: float | None = 0.9,
@@ -138,7 +138,6 @@ class ZoneHVACHighTemperatureRadiant:
         fraction_of_input_converted_to_latent_energy: float | None = 0,
         fraction_of_input_that_is_lost: float | None = 0,
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanAirTemperatureSetpoint",
             "MeanRadiantTemperature",
@@ -230,7 +229,7 @@ class AnyChillerHeaterAbsorptionDirectFired:
         condenser_inlet_node_name: str,
         hot_water_inlet_node_name: str,
         hot_water_outlet_node_name: str,
-        nominal_cooling_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        nominal_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_to_cooling_capacity_ratio: float | None = 0.8,
         fuel_input_to_cooling_output_ratio: float | None = 0.97,
         fuel_input_to_heating_output_ratio: float | None = 1.25,
@@ -242,9 +241,9 @@ class AnyChillerHeaterAbsorptionDirectFired:
         optimum_part_load_ratio: float | None = 1,
         design_entering_condenser_water_temperature: float | None = 29,
         design_leaving_chilled_water_temperature: float | None = 7,
-        design_chilled_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        design_condenser_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        design_hot_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        design_chilled_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        design_condenser_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        design_hot_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         cooling_capacity_function_of_temperature_curve_name: str | None = ...,
         fuel_input_to_cooling_output_ratio_function_of_temperature_curve_name: str | None = ...,
         fuel_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_name: str | None = ...,
@@ -252,12 +251,11 @@ class AnyChillerHeaterAbsorptionDirectFired:
         electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_name: str | None = ...,
         heating_capacity_function_of_cooling_capacity_curve_name: str | None = ...,
         fuel_input_to_heat_output_ratio_during_heating_only_operation_curve_name: str | None = ...,
-        temperature_curve_input_variable: Literal["", "EnteringCondenser", "LeavingCondenser"]
-        | None = "EnteringCondenser",
-        condenser_type: Literal["", "AirCooled", "WaterCooled"] | None = "WaterCooled",
+        temperature_curve_input_variable: Literal["EnteringCondenser", "LeavingCondenser"] | None = "EnteringCondenser",
+        condenser_type: Literal["AirCooled", "WaterCooled"] | None = "WaterCooled",
         chilled_water_temperature_lower_limit: float | None = 2,
         fuel_higher_heating_value: float | None = 0,
-        fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None = "NaturalGas",
+        fuel_type: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None = "NaturalGas",
         sizing_factor: float | None = 1,
     ) -> None:
         """Create a new ``ChillerHeater:Absorption:DirectFired`` and add it to the document.

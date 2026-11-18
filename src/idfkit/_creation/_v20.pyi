@@ -19,12 +19,12 @@ class AvailabilityManagerOptimumStart_v8_9_to_v22_1:
         *,
         applicability_schedule_name: str,
         fan_schedule_name: str,
-        control_type: Literal["", "ControlZone", "MaximumofZoneList", "StayOff"] | None = "ControlZone",
+        control_type: Literal["ControlZone", "MaximumofZoneList", "StayOff"] | None = "ControlZone",
         control_zone_name: str | None = ...,
         zone_list_name: str | None = ...,
         maximum_value_for_optimum_start_time: float | None = 6,
         control_algorithm: Literal[
-            "", "AdaptiveASHRAE", "AdaptiveTemperatureGradient", "ConstantStartTime", "ConstantTemperatureGradient"
+            "AdaptiveASHRAE", "AdaptiveTemperatureGradient", "ConstantStartTime", "ConstantTemperatureGradient"
         ]
         | None = "AdaptiveASHRAE",
         constant_temperature_gradient_during_cooling: float | None = ...,
@@ -77,14 +77,14 @@ class PumpConstantSpeed_v8_9_to_v9_0:
         design_power_consumption: float | Literal["Autosize"] | None = ...,
         motor_efficiency: float | None = 0.9,
         fraction_of_motor_inefficiencies_to_fluid_stream: float | None = 0,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         pump_curve_name: str | None = ...,
         impeller_diameter: float | None = ...,
         rotational_speed: float | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -103,7 +103,7 @@ class UtilityCostVariable_v8_9_to_v9_4:
         /,
         *,
         tariff_name: str,
-        variable_type: Literal["", "Currency", "Dimensionless", "Energy", "Power"] | None = "Dimensionless",
+        variable_type: Literal["Currency", "Dimensionless", "Energy", "Power"] | None = "Dimensionless",
         january_value: float | None = ...,
         february_value: float | None = ...,
         march_value: float | None = ...,
@@ -164,11 +164,11 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1:
         rated_evaporator_inlet_air_wet_bulb_temperature: float | None = 13.5,
         rated_condenser_water_temperature: float | None = 57.5,
         rated_evaporator_air_flow_rate: float | Literal["Autocalculate"] | None = ...,
-        evaporator_fan_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "Yes",
+        evaporator_fan_power_included_in_rated_cop: Literal["No", "Yes"] | None = "Yes",
         crankcase_heater_capacity: float | None = 0,
         crankcase_heater_capacity_function_of_temperature_curve_name: str | None = ...,
         maximum_ambient_temperature_for_crankcase_heater_operation: float | None = 10,
-        evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        evaporator_air_temperature_type_for_curve_objects: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         heating_capacity_function_of_temperature_curve_name: str | None = ...,
         heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,

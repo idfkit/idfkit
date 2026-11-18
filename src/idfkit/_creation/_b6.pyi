@@ -83,9 +83,9 @@ class ElectricEquipmentITEAirCooled:
         design_fan_air_flow_rate_per_power_input: float,
         air_flow_function_of_loading_and_air_temperature_curve_name: str,
         fan_power_input_function_of_flow_curve_name: str,
-        air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"]
+        air_flow_calculation_method: Literal["FlowControlWithApproachTemperatures", "FlowFromSystem"]
         | None = "FlowFromSystem",
-        design_power_input_calculation_method: Literal["", "Watts/Area", "Watts/Unit"] | None = "Watts/Unit",
+        design_power_input_calculation_method: Literal["Watts/Area", "Watts/Unit"] | None = "Watts/Unit",
         watts_per_unit: float | None = ...,
         number_of_units: float | None = 1,
         watts_per_floor_area: float | None = ...,
@@ -93,9 +93,8 @@ class ElectricEquipmentITEAirCooled:
         cpu_loading_schedule_name: str | None = ...,
         design_fan_power_input_fraction: float | None = 0,
         design_entering_air_temperature: float | None = 15,
-        environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None = "None",
-        air_inlet_connection_type: Literal["", "AdjustedSupply", "RoomAirModel", "ZoneAirNode"]
-        | None = "AdjustedSupply",
+        environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None = "None",
+        air_inlet_connection_type: Literal["AdjustedSupply", "RoomAirModel", "ZoneAirNode"] | None = "AdjustedSupply",
         air_inlet_room_air_model_node_name: str | None = ...,
         air_outlet_room_air_model_node_name: str | None = ...,
         supply_air_node_name: str | None = ...,
@@ -194,8 +193,8 @@ class AnyZoneHVACTerminalUnitVariableRefrigerantFlow:
         cooling_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        supply_air_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        supply_air_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel"]
+        supply_air_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        supply_air_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel"]
         | None = "Fan:ConstantVolume",
         outside_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
         outside_air_mixer_object_name: str | None = ...,
@@ -339,7 +338,7 @@ class CoilWaterHeatingDesuperheater:
         dead_band_temperature_difference: float | None = 5,
         rated_heat_reclaim_recovery_efficiency: float | None = ...,
         heat_reclaim_efficiency_function_of_temperature_curve_name: str | None = ...,
-        tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None = "WaterHeater:Mixed",
+        tank_object_type: Literal["WaterHeater:Mixed", "WaterHeater:Stratified"] | None = "WaterHeater:Mixed",
         water_pump_power: float | None = 0,
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,

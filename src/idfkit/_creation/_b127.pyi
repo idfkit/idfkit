@@ -45,28 +45,28 @@ class AnyZoneHVACIdealLoadsAirSystem:
         minimum_cooling_supply_air_temperature: float | None = 13,
         maximum_heating_supply_air_humidity_ratio: float | None = 0.0156,
         minimum_cooling_supply_air_humidity_ratio: float | None = 0.0077,
-        heating_limit: Literal["", "LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
+        heating_limit: Literal["LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
         | None = "NoLimit",
         maximum_heating_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_sensible_heating_capacity: float | Literal["Autosize"] | None = ...,
-        cooling_limit: Literal["", "LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
+        cooling_limit: Literal["LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
         | None = "NoLimit",
         maximum_cooling_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_total_cooling_capacity: float | Literal["Autosize"] | None = ...,
         heating_availability_schedule_name: str | None = ...,
         cooling_availability_schedule_name: str | None = ...,
         dehumidification_control_type: Literal[
-            "", "ConstantSensibleHeatRatio", "ConstantSupplyHumidityRatio", "Humidistat", "None"
+            "ConstantSensibleHeatRatio", "ConstantSupplyHumidityRatio", "Humidistat", "None"
         ]
         | None = "ConstantSensibleHeatRatio",
         cooling_sensible_heat_ratio: float | None = 0.7,
-        humidification_control_type: Literal["", "ConstantSupplyHumidityRatio", "Humidistat", "None"] | None = "None",
+        humidification_control_type: Literal["ConstantSupplyHumidityRatio", "Humidistat", "None"] | None = "None",
         design_specification_outdoor_air_object_name: str | None = ...,
         outdoor_air_inlet_node_name: str | None = ...,
-        demand_controlled_ventilation_type: Literal["", "CO2Setpoint", "None", "OccupancySchedule"] | None = "None",
-        outdoor_air_economizer_type: Literal["", "DifferentialDryBulb", "DifferentialEnthalpy", "NoEconomizer"]
+        demand_controlled_ventilation_type: Literal["CO2Setpoint", "None", "OccupancySchedule"] | None = "None",
+        outdoor_air_economizer_type: Literal["DifferentialDryBulb", "DifferentialEnthalpy", "NoEconomizer"]
         | None = "NoEconomizer",
-        heat_recovery_type: Literal["", "Enthalpy", "None", "Sensible"] | None = "None",
+        heat_recovery_type: Literal["Enthalpy", "None", "Sensible"] | None = "None",
         sensible_heat_recovery_effectiveness: float | None = 0.7,
         latent_heat_recovery_effectiveness: float | None = 0.65,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
@@ -89,7 +89,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveSteam:
         outlet_node_name: str,
         maximum_steam_flow_rate: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         degree_of_subcooling: float | None = 5,
         surface_fractions: Sequence[
             _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem
@@ -135,7 +135,7 @@ class CoilCoolingDXTwoSpeed:
         low_speed_2017_rated_evaporator_fan_power_per_volume_flow_rate: float | None = 773.3,
         low_speed_2023_rated_evaporator_fan_power_per_volume_flow_rate: float | None = 934.4,
         condenser_air_inlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -25,
         high_speed_evaporative_condenser_effectiveness: float | None = 0.9,
         high_speed_evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
@@ -172,7 +172,7 @@ class AnyCoolingTowerVariableSpeed:
         design_water_flow_rate: float | Literal["Autosize"],
         design_air_flow_rate: float | Literal["Autosize"],
         design_fan_power: float | Literal["Autosize"],
-        model_type: Literal["", "CoolToolsCrossFlow", "CoolToolsUserDefined", "YorkCalc", "YorkCalcUserDefined"]
+        model_type: Literal["CoolToolsCrossFlow", "CoolToolsUserDefined", "YorkCalc", "YorkCalcUserDefined"]
         | None = "YorkCalc",
         model_coefficient_name: str | None = ...,
         design_inlet_air_wet_bulb_temperature: float | None = 25.6,
@@ -193,7 +193,7 @@ class AnyCoolingTowerVariableSpeed:
         supply_water_storage_tank_name: str | None = ...,
         outdoor_air_inlet_node_name: str | None = ...,
         number_of_cells: int | None = 1,
-        cell_control: Literal["", "MaximalCell", "MinimalCell"] | None = ...,
+        cell_control: Literal["MaximalCell", "MinimalCell"] | None = ...,
         cell_minimum_water_flow_rate_fraction: float | None = 0.33,
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,

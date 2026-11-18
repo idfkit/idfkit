@@ -22,17 +22,17 @@ class AnyPeople:
         narrow_with_as_version_first: Never,
         number_of_people_schedule_name: str,
         activity_level_schedule_name: str,
-        number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None = "People",
+        number_of_people_calculation_method: Literal["Area/Person", "People", "People/Area"] | None = "People",
         number_of_people: float | None = ...,
         fraction_radiant: float | None = 0.3,
-        sensible_heat_fraction: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sensible_heat_fraction: float | Literal["Autocalculate"] | None = "Autocalculate",
         carbon_dioxide_generation_rate: float | None = ...,
-        enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None = "No",
-        mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted"] | None = ...,
+        enable_ashrae_55_comfort_warnings: Literal["No", "Yes"] | None = "No",
+        mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted"] | None = ...,
         surface_name_angle_factor_list_name: str | None = ...,
         work_efficiency_schedule_name: str | None = ...,
         clothing_insulation_calculation_method: Literal[
-            "", "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
+            "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
         ]
         | None = "ClothingInsulationSchedule",
         clothing_insulation_calculation_method_schedule_name: str | None = ...,
@@ -67,7 +67,7 @@ class SpaceHVACZoneEquipmentMixer:
         zone_name: str,
         zone_equipment_inlet_node_name: str,
         space_fraction_method: Literal[
-            "", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"
+            "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"
         ]
         | None = "DesignCoolingLoad",
         spaces: Sequence[_g.SpaceHVACZoneEquipmentMixerSpacesItem | _g.SpaceHVACZoneEquipmentMixerSpacesGroup] = ...,

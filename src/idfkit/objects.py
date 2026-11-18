@@ -15,7 +15,8 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
-from .exceptions import InvalidFieldError, RefusedEntry, format_refused
+from ._read_required import READ_REQUIRED
+from .exceptions import InvalidFieldError, MissingRequiredFieldError, RefusedEntry, format_refused
 from .schema import trailing_underscore_aliases
 
 __all__ = [
@@ -798,6 +799,11 @@ class IDFObject(EppyObjectMixin):
                     extensible_fields=extensibles,
                 )
 
+        # A field every release requires reads as its value type: absent, it is an error rather
+        # than a None its type says cannot occur. Only the miss path pays for the lookup.
+        if python_key in READ_REQUIRED.get(self._type, ()):
+            raise MissingRequiredFieldError(self._type, self._name, python_key)
+
         # Default: return None (eppy behaviour)
         return None
 
@@ -1051,7 +1057,11 @@ class IDFObject(EppyObjectMixin):
             >>> mat.get("thermal_absorptance", 0.9)
             0.9
         """
-        value = getattr(self, key)
+        try:
+            value = getattr(self, key)
+        except MissingRequiredFieldError:
+            # The untyped read: an absent required field is a missing value here, not an error.
+            return default
         return value if value is not None else default
 
     def update(self, values: Mapping[str, Any] | None = None, /, **kwargs: Any) -> None:

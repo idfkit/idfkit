@@ -82,7 +82,7 @@ class ElectricEquipmentDefinition:
         name: str,
         /,
         *,
-        design_level_calculation_method: Literal["", "EquipmentLevel", "Watts/Area", "Watts/Person"]
+        design_level_calculation_method: Literal["EquipmentLevel", "Watts/Area", "Watts/Person"]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
         watts_per_floor_area: float | None = ...,
@@ -122,31 +122,30 @@ class HVACTemplatePlantChilledWaterLoop:
         /,
         *,
         pump_schedule_name: str | None = ...,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Intermittent",
-        chiller_plant_operation_scheme_type: Literal["", "Default", "UserDefined"] | None = "Default",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Intermittent",
+        chiller_plant_operation_scheme_type: Literal["Default", "UserDefined"] | None = "Default",
         chiller_plant_equipment_operation_schemes_name: str | None = ...,
         chilled_water_setpoint_schedule_name: str | None = ...,
         chilled_water_design_setpoint: float | None = 7.22,
         chilled_water_pump_configuration: Literal[
-            "", "ConstantPrimaryNoSecondary", "ConstantPrimaryVariableSecondary", "VariablePrimaryNoSecondary"
+            "ConstantPrimaryNoSecondary", "ConstantPrimaryVariableSecondary", "VariablePrimaryNoSecondary"
         ]
         | None = "ConstantPrimaryNoSecondary",
         primary_chilled_water_pump_rated_head: float | None = 179352,
         secondary_chilled_water_pump_rated_head: float | None = 179352,
-        condenser_plant_operation_scheme_type: Literal["", "Default", "UserDefined"] | None = "Default",
+        condenser_plant_operation_scheme_type: Literal["Default", "UserDefined"] | None = "Default",
         condenser_equipment_operation_schemes_name: str | None = ...,
         condenser_water_temperature_control_type: Literal["OutdoorWetBulbTemperature", "SpecifiedSetpoint"]
         | None = ...,
         condenser_water_setpoint_schedule_name: str | None = ...,
         condenser_water_design_setpoint: float | None = 29.4,
         condenser_water_pump_rated_head: float | None = 179352,
-        chilled_water_setpoint_reset_type: Literal["", "None", "OutdoorAirTemperatureReset"] | None = "None",
+        chilled_water_setpoint_reset_type: Literal["None", "OutdoorAirTemperatureReset"] | None = "None",
         chilled_water_setpoint_at_outdoor_dry_bulb_low: float | None = 12.2,
         chilled_water_reset_outdoor_dry_bulb_low: float | None = 15.6,
         chilled_water_setpoint_at_outdoor_dry_bulb_high: float | None = 6.7,
         chilled_water_reset_outdoor_dry_bulb_high: float | None = 26.7,
         chilled_water_primary_pump_type: Literal[
-            "",
             "FiveHeaderedPumps",
             "FourHeaderedPumps",
             "PumpPerChiller",
@@ -156,11 +155,10 @@ class HVACTemplatePlantChilledWaterLoop:
         ]
         | None = "SinglePump",
         chilled_water_secondary_pump_type: Literal[
-            "", "FiveHeaderedPumps", "FourHeaderedPumps", "SinglePump", "ThreeHeaderedPumps", "TwoHeaderedPumps"
+            "FiveHeaderedPumps", "FourHeaderedPumps", "SinglePump", "ThreeHeaderedPumps", "TwoHeaderedPumps"
         ]
         | None = "SinglePump",
         condenser_water_pump_type: Literal[
-            "",
             "FiveHeaderedPumps",
             "FourHeaderedPumps",
             "PumpPerTower",
@@ -169,12 +167,11 @@ class HVACTemplatePlantChilledWaterLoop:
             "TwoHeaderedPumps",
         ]
         | None = "SinglePump",
-        chilled_water_supply_side_bypass_pipe: Literal["", "No", "Yes"] | None = "Yes",
-        chilled_water_demand_side_bypass_pipe: Literal["", "No", "Yes"] | None = "Yes",
-        condenser_water_supply_side_bypass_pipe: Literal["", "No", "Yes"] | None = "Yes",
-        condenser_water_demand_side_bypass_pipe: Literal["", "No", "Yes"] | None = "Yes",
+        chilled_water_supply_side_bypass_pipe: Literal["No", "Yes"] | None = "Yes",
+        chilled_water_demand_side_bypass_pipe: Literal["No", "Yes"] | None = "Yes",
+        condenser_water_supply_side_bypass_pipe: Literal["No", "Yes"] | None = "Yes",
+        condenser_water_demand_side_bypass_pipe: Literal["No", "Yes"] | None = "Yes",
         fluid_type: Literal[
-            "",
             "EthyleneGlycol30",
             "EthyleneGlycol40",
             "EthyleneGlycol50",
@@ -189,11 +186,11 @@ class HVACTemplatePlantChilledWaterLoop:
         loop_design_delta_temperature: float | None = 6.67,
         minimum_outdoor_dry_bulb_temperature: float | None = ...,
         chilled_water_load_distribution_scheme: Literal[
-            "", "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
+            "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
         ]
         | None = "SequentialLoad",
         condenser_water_load_distribution_scheme: Literal[
-            "", "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
+            "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
         ]
         | None = "SequentialLoad",
     ) -> None:
@@ -216,12 +213,11 @@ class CoilCoolingDXCurveFitPerformance:
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -25,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         unit_internal_static_air_pressure: float | None = ...,
-        capacity_control_method: Literal["", "Continuous", "Discrete"] | None = "Discrete",
+        capacity_control_method: Literal["Continuous", "Discrete"] | None = "Discrete",
         evaporative_condenser_basin_heater_capacity: float | None = 0,
         evaporative_condenser_basin_heater_setpoint_temperature: float | None = 2,
         evaporative_condenser_basin_heater_operating_schedule_name: str | None = ...,
         compressor_fuel_type: Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -254,7 +250,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl:
         outdoor_unit_condensing_temperature_function_of_subcooling_curve_name: str,
         availability_schedule_name: str | None = ...,
         refrigerant_type: str | None = "R410A",
-        rated_evaporative_capacity: float | Literal["", "Autosize"] | None = 40000,
+        rated_evaporative_capacity: float | Literal["Autosize"] | None = 40000,
         rated_compressor_power_per_unit_of_rated_evaporative_capacity: float | None = 0.35,
         minimum_outdoor_air_temperature_in_cooling_mode: float | None = -6,
         maximum_outdoor_air_temperature_in_cooling_mode: float | None = 43,
@@ -262,7 +258,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl:
         maximum_outdoor_air_temperature_in_heating_mode: float | None = 16,
         reference_outdoor_unit_superheating: float | None = 3,
         reference_outdoor_unit_subcooling: float | None = 5,
-        refrigerant_temperature_control_algorithm_for_indoor_unit: Literal["", "ConstantTemp", "VariableTemp"]
+        refrigerant_temperature_control_algorithm_for_indoor_unit: Literal["ConstantTemp", "VariableTemp"]
         | None = "VariableTemp",
         reference_evaporating_temperature_for_indoor_unit: float | None = 6,
         reference_condensing_temperature_for_indoor_unit: float | None = 44,
@@ -282,11 +278,11 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl:
         number_of_compressors: int | None = 2,
         ratio_of_compressor_size_to_total_compressor_capacity: float | None = 0.5,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "Resistive",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "Resistive",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_energy_input_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
         compressor_maximum_delta_pressure: float | None = 4500000,
         number_of_compressor_loading_index_entries: int | None = 2,
@@ -325,39 +321,39 @@ class OutputControlFiles:
         self,
         /,
         *,
-        output_csv: Literal["", "No", "Yes"] | None = "No",
-        output_mtr: Literal["", "No", "Yes"] | None = "Yes",
-        output_eso: Literal["", "No", "Yes"] | None = "Yes",
-        output_eio: Literal["", "No", "Yes"] | None = "Yes",
-        output_tabular: Literal["", "No", "Yes"] | None = "Yes",
-        output_sqlite: Literal["", "No", "Yes"] | None = "Yes",
-        output_json: Literal["", "No", "Yes"] | None = "Yes",
-        output_audit: Literal["", "No", "Yes"] | None = "Yes",
-        output_space_sizing: Literal["", "No", "Yes"] | None = "Yes",
-        output_zone_sizing: Literal["", "No", "Yes"] | None = "Yes",
-        output_system_sizing: Literal["", "No", "Yes"] | None = "Yes",
-        output_dxf: Literal["", "No", "Yes"] | None = "Yes",
-        output_bnd: Literal["", "No", "Yes"] | None = "Yes",
-        output_rdd: Literal["", "No", "Yes"] | None = "Yes",
-        output_mdd: Literal["", "No", "Yes"] | None = "Yes",
-        output_mtd: Literal["", "No", "Yes"] | None = "Yes",
-        output_end: Literal["", "No", "Yes"] | None = "Yes",
-        output_shd: Literal["", "No", "Yes"] | None = "Yes",
-        output_dfs: Literal["", "No", "Yes"] | None = "Yes",
-        output_glhe: Literal["", "No", "Yes"] | None = "Yes",
-        output_delightin: Literal["", "No", "Yes"] | None = "Yes",
-        output_delighteldmp: Literal["", "No", "Yes"] | None = "Yes",
-        output_delightdfdmp: Literal["", "No", "Yes"] | None = "Yes",
-        output_edd: Literal["", "No", "Yes"] | None = "Yes",
-        output_dbg: Literal["", "No", "Yes"] | None = "Yes",
-        output_perflog: Literal["", "No", "Yes"] | None = "Yes",
-        output_sln: Literal["", "No", "Yes"] | None = "Yes",
-        output_sci: Literal["", "No", "Yes"] | None = "Yes",
-        output_wrl: Literal["", "No", "Yes"] | None = "Yes",
-        output_screen: Literal["", "No", "Yes"] | None = "Yes",
-        output_extshd: Literal["", "No", "Yes"] | None = "Yes",
-        output_tarcog: Literal["", "No", "Yes"] | None = "Yes",
-        output_plant_component_sizing: Literal["", "No", "Yes"] | None = "Yes",
+        output_csv: Literal["No", "Yes"] | None = "No",
+        output_mtr: Literal["No", "Yes"] | None = "Yes",
+        output_eso: Literal["No", "Yes"] | None = "Yes",
+        output_eio: Literal["No", "Yes"] | None = "Yes",
+        output_tabular: Literal["No", "Yes"] | None = "Yes",
+        output_sqlite: Literal["No", "Yes"] | None = "Yes",
+        output_json: Literal["No", "Yes"] | None = "Yes",
+        output_audit: Literal["No", "Yes"] | None = "Yes",
+        output_space_sizing: Literal["No", "Yes"] | None = "Yes",
+        output_zone_sizing: Literal["No", "Yes"] | None = "Yes",
+        output_system_sizing: Literal["No", "Yes"] | None = "Yes",
+        output_dxf: Literal["No", "Yes"] | None = "Yes",
+        output_bnd: Literal["No", "Yes"] | None = "Yes",
+        output_rdd: Literal["No", "Yes"] | None = "Yes",
+        output_mdd: Literal["No", "Yes"] | None = "Yes",
+        output_mtd: Literal["No", "Yes"] | None = "Yes",
+        output_end: Literal["No", "Yes"] | None = "Yes",
+        output_shd: Literal["No", "Yes"] | None = "Yes",
+        output_dfs: Literal["No", "Yes"] | None = "Yes",
+        output_glhe: Literal["No", "Yes"] | None = "Yes",
+        output_delightin: Literal["No", "Yes"] | None = "Yes",
+        output_delighteldmp: Literal["No", "Yes"] | None = "Yes",
+        output_delightdfdmp: Literal["No", "Yes"] | None = "Yes",
+        output_edd: Literal["No", "Yes"] | None = "Yes",
+        output_dbg: Literal["No", "Yes"] | None = "Yes",
+        output_perflog: Literal["No", "Yes"] | None = "Yes",
+        output_sln: Literal["No", "Yes"] | None = "Yes",
+        output_sci: Literal["No", "Yes"] | None = "Yes",
+        output_wrl: Literal["No", "Yes"] | None = "Yes",
+        output_screen: Literal["No", "Yes"] | None = "Yes",
+        output_extshd: Literal["No", "Yes"] | None = "Yes",
+        output_tarcog: Literal["No", "Yes"] | None = "Yes",
+        output_plant_component_sizing: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``OutputControl:Files`` and add it to the document.
 
@@ -371,8 +367,8 @@ class OutputControlTimestamp:
         self,
         /,
         *,
-        iso_8601_format: Literal["", "No", "Yes"] | None = "No",
-        timestamp_at_beginning_of_interval: Literal["", "No", "Yes"] | None = "No",
+        iso_8601_format: Literal["No", "Yes"] | None = "No",
+        timestamp_at_beginning_of_interval: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``OutputControl:Timestamp`` and add it to the document.
 

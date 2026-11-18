@@ -25,7 +25,7 @@ class WindowMaterialBlindEquivalentLayer:
         back_side_slat_beam_diffuse_solar_reflectance: float,
         front_side_slat_diffuse_diffuse_solar_reflectance: float,
         back_side_slat_diffuse_diffuse_solar_reflectance: float,
-        slat_orientation: Literal["", "Horizontal", "Vertical"] | None = "Horizontal",
+        slat_orientation: Literal["Horizontal", "Vertical"] | None = "Horizontal",
         slat_crown: float | None = 0.0015,
         slat_angle: float | None = 45,
         front_side_slat_beam_diffuse_solar_transmittance: float | None = 0,
@@ -41,7 +41,7 @@ class WindowMaterialBlindEquivalentLayer:
         slat_infrared_transmittance: float | None = 0,
         front_side_slat_infrared_emissivity: float | None = 0.9,
         back_side_slat_infrared_emissivity: float | None = 0.9,
-        slat_angle_control: Literal["", "BlockBeamSolar", "FixedSlatAngle", "MaximizeSolar"] | None = "FixedSlatAngle",
+        slat_angle_control: Literal["BlockBeamSolar", "FixedSlatAngle", "MaximizeSolar"] | None = "FixedSlatAngle",
     ) -> None:
         """Create a new ``WindowMaterial:Blind:EquivalentLayer`` and add it to the document.
 
@@ -58,7 +58,7 @@ class AnyLights:
         *,
         narrow_with_as_version_first: Never,
         schedule_name: str,
-        design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"]
+        design_level_calculation_method: Literal["LightingLevel", "Watts/Area", "Watts/Person"]
         | None = "LightingLevel",
         lighting_level: float | None = ...,
         watts_per_person: float | None = ...,
@@ -67,7 +67,7 @@ class AnyLights:
         fraction_visible: float | None = 0,
         fraction_replaceable: float | None = 1,
         end_use_subcategory: str | None = "General",
-        return_air_fraction_calculated_from_plenum_temperature: Literal["", "No", "Yes"] | None = "No",
+        return_air_fraction_calculated_from_plenum_temperature: Literal["No", "Yes"] | None = "No",
         return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
         return_air_heat_gain_node_name: str | None = ...,
@@ -88,9 +88,9 @@ class AnyDaylightingControls:
         /,
         *,
         narrow_with_as_version_first: Never,
-        daylighting_method: Literal["", "DElight", "SplitFlux"] | None = "SplitFlux",
+        daylighting_method: Literal["DElight", "SplitFlux"] | None = "SplitFlux",
         availability_schedule_name: str | None = ...,
-        lighting_control_type: Literal["", "Continuous", "ContinuousOff", "Stepped"] | None = "Continuous",
+        lighting_control_type: Literal["Continuous", "ContinuousOff", "Stepped"] | None = "Continuous",
         minimum_input_power_fraction_for_continuous_or_continuousoff_dimming_control: float | None = 0.3,
         minimum_light_output_fraction_for_continuous_or_continuousoff_dimming_control: float | None = 0.2,
         number_of_stepped_control_steps: int | None = 1,
@@ -141,7 +141,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
         outdoor_unit_condensing_temperature_function_of_subcooling_curve_name: str,
         availability_schedule_name: str | None = ...,
         refrigerant_type: str | None = "R410A",
-        rated_evaporative_capacity: float | Literal["", "Autosize"] | None = 40000,
+        rated_evaporative_capacity: float | Literal["Autosize"] | None = 40000,
         rated_compressor_power_per_unit_of_rated_evaporative_capacity: float | None = 0.35,
         minimum_outdoor_air_temperature_in_cooling_only_mode: float | None = -6,
         maximum_outdoor_air_temperature_in_cooling_only_mode: float | None = 43,
@@ -149,7 +149,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
         maximum_outdoor_air_temperature_in_heating_only_mode: float | None = 16,
         minimum_outdoor_temperature_in_heat_recovery_mode: float | None = -20,
         maximum_outdoor_temperature_in_heat_recovery_mode: float | None = 43,
-        refrigerant_temperature_control_algorithm_for_indoor_unit: Literal["", "ConstantTemp", "VariableTemp"]
+        refrigerant_temperature_control_algorithm_for_indoor_unit: Literal["ConstantTemp", "VariableTemp"]
         | None = "VariableTemp",
         reference_evaporating_temperature_for_indoor_unit: float | None = 6,
         reference_condensing_temperature_for_indoor_unit: float | None = 44,
@@ -177,11 +177,11 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
         number_of_compressors: int | None = 2,
         ratio_of_compressor_size_to_total_compressor_capacity: float | None = 0.5,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "Resistive",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "Resistive",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_energy_input_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
         initial_heat_recovery_cooling_capacity_fraction: float | None = 1,
         heat_recovery_cooling_capacity_time_constant: float | None = 0,
@@ -292,9 +292,9 @@ class UtilityCostQualify:
         tariff_name: str,
         variable_name: str,
         threshold_value_or_variable_name: float | str,
-        qualify_type: Literal["", "Maximum", "Minimum"] | None = "Maximum",
+        qualify_type: Literal["Maximum", "Minimum"] | None = "Maximum",
         season: Literal["Annual", "Fall", "Spring", "Summer", "Winter"] | None = ...,
-        threshold_test: Literal["", "Consecutive", "Count"] | None = "Consecutive",
+        threshold_test: Literal["Consecutive", "Count"] | None = "Consecutive",
         number_of_months: float | None = ...,
     ) -> None:
         """Create a new ``UtilityCost:Qualify`` and add it to the document.

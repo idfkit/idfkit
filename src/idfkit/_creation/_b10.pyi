@@ -159,18 +159,17 @@ class ZoneHVACHybridUnitaryHVAC:
         maximum_supply_air_temperature_schedule_name: str | None = ...,
         minimum_supply_air_humidity_ratio_schedule_name: str | None = ...,
         maximum_supply_air_humidity_ratio_schedule_name: str | None = ...,
-        method_to_choose_controlled_inputs_and_part_runtime_fraction: Literal["", "Automatic", "User Defined"]
+        method_to_choose_controlled_inputs_and_part_runtime_fraction: Literal["Automatic", "User Defined"]
         | None = "Automatic",
         relief_node_name: str | None = ...,
         system_maximum_supply_air_flow_rate: float | None = ...,
         external_static_pressure_at_system_maximum_supply_air_flow_rate: float | None = ...,
-        fan_heat_included_in_lookup_tables: Literal["", "No", "Yes"] | None = "No",
-        fan_heat_gain_location: Literal["", "MixedAirStream", "SupplyAirStream"] | None = "SupplyAirStream",
+        fan_heat_included_in_lookup_tables: Literal["No", "Yes"] | None = "No",
+        fan_heat_gain_location: Literal["MixedAirStream", "SupplyAirStream"] | None = "SupplyAirStream",
         fan_heat_in_air_stream_fraction: float | None = 1,
         scaling_factor: float | None = 1,
         minimum_time_between_mode_change: float | None = 10,
         first_fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -188,7 +187,6 @@ class ZoneHVACHybridUnitaryHVAC:
         ]
         | None = "Electricity",
         second_fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -206,7 +204,6 @@ class ZoneHVACHybridUnitaryHVAC:
         ]
         | None = "None",
         third_fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -223,7 +220,7 @@ class ZoneHVACHybridUnitaryHVAC:
             "Propane",
         ]
         | None = "None",
-        objective_function_to_minimize: Literal["", "Electricity Use", "Second Fuel Use", "Third Fuel Use", "Water Use"]
+        objective_function_to_minimize: Literal["Electricity Use", "Second Fuel Use", "Third Fuel Use", "Water Use"]
         | None = "Electricity Use",
         design_specification_outdoor_air_object_name: str | None = ...,
         mode_0_name: str | None = ...,
@@ -254,7 +251,7 @@ class AnyUnitarySystemPerformanceMultispeed:
         *,
         number_of_speeds_for_heating: int,
         number_of_speeds_for_cooling: int,
-        single_mode_operation: Literal["", "No", "Yes"] | None = "No",
+        single_mode_operation: Literal["No", "Yes"] | None = "No",
         no_load_supply_air_flow_rate_ratio: float | None = 1,
         flow_ratios: Sequence[
             _g.UnitarySystemPerformanceMultispeedFlowRatiosItem | _g.UnitarySystemPerformanceMultispeedFlowRatiosGroup
@@ -278,7 +275,7 @@ class ChillerCombustionTurbine:
         chilled_water_inlet_node_name: str,
         chilled_water_outlet_node_name: str,
         temperature_rise_coefficient: float,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
         minimum_part_load_ratio: float | None = ...,
@@ -322,13 +319,12 @@ class ChillerCombustionTurbine:
         maximum_exhaust_flow_per_unit_of_power_output: float | None = ...,
         design_steam_saturation_temperature: float | None = ...,
         fuel_higher_heating_value: float | None = ...,
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         fuel_type: Literal[
-            "", "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
+            "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
         ]
         | None = "NaturalGas",
         heat_recovery_maximum_temperature: float | None = 80,
@@ -379,8 +375,8 @@ class AnyCurveDoubleExponentialDecay:
         maximum_value_of_x: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:DoubleExponentialDecay`` and add it to the document.

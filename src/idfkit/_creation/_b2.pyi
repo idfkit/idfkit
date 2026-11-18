@@ -18,11 +18,10 @@ class Building:
         /,
         *,
         north_axis: float | None = 0,
-        terrain: Literal["", "City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
+        terrain: Literal["City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
         loads_convergence_tolerance_value: float | None = 0.04,
         temperature_convergence_tolerance_value: float | None = 0.4,
         solar_distribution: Literal[
-            "",
             "FullExterior",
             "FullExteriorWithReflections",
             "FullInteriorAndExterior",
@@ -53,18 +52,18 @@ class AnyZone:
         z_origin: float | None = 0,
         type: int | None = 1,
         multiplier: int | None = 1,
-        ceiling_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        volume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        ceiling_height: float | Literal["Autocalculate"] | None = "Autocalculate",
+        volume: float | Literal["Autocalculate"] | None = "Autocalculate",
+        floor_area: float | Literal["Autocalculate"] | None = "Autocalculate",
         zone_inside_convection_algorithm: Literal[
-            "", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"
+            "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"
         ]
         | None = ...,
         zone_outside_convection_algorithm: Literal[
-            "", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"
+            "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"
         ]
         | None = ...,
-        part_of_total_floor_area: Literal["", "No", "Yes"] | None = "Yes",
+        part_of_total_floor_area: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``Zone`` and add it to the document.
 
@@ -109,7 +108,7 @@ class AnyZoneHVACHybridUnitaryHVAC:
         maximum_supply_air_temperature_schedule_name: str | None = ...,
         minimum_supply_air_humidity_ratio_schedule_name: str | None = ...,
         maximum_supply_air_humidity_ratio_schedule_name: str | None = ...,
-        method_to_choose_controlled_inputs_and_part_runtime_fraction: Literal["", "Automatic", "User Defined"]
+        method_to_choose_controlled_inputs_and_part_runtime_fraction: Literal["Automatic", "User Defined"]
         | None = "Automatic",
         relief_node_name: str | None = ...,
         system_maximum_supply_air_flow_rate: float | None = ...,
@@ -117,7 +116,6 @@ class AnyZoneHVACHybridUnitaryHVAC:
         scaling_factor: float | None = 1,
         minimum_time_between_mode_change: float | None = 10,
         first_fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -130,7 +128,6 @@ class AnyZoneHVACHybridUnitaryHVAC:
         ]
         | None = "Electricity",
         second_fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -143,7 +140,6 @@ class AnyZoneHVACHybridUnitaryHVAC:
         ]
         | None = "None",
         third_fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -155,7 +151,7 @@ class AnyZoneHVACHybridUnitaryHVAC:
             "OtherFuel2",
         ]
         | None = "None",
-        objective_function_to_minimize: Literal["", "Electricity Use", "Second Fuel Use", "Third Fuel Use", "Water Use"]
+        objective_function_to_minimize: Literal["Electricity Use", "Second Fuel Use", "Third Fuel Use", "Water Use"]
         | None = "Electricity Use",
         design_specification_outdoor_air_object_name: str | None = ...,
         mode_0_name: str | None = ...,

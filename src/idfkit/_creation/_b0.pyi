@@ -16,7 +16,7 @@ class AnyZoneAirHeatBalanceAlgorithm:
         self,
         /,
         *,
-        algorithm: Literal["", "AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"]
+        algorithm: Literal["AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"]
         | None = "ThirdOrderBackwardDifference",
     ) -> None:
         """Create a new ``ZoneAirHeatBalanceAlgorithm`` and add it to the document.
@@ -57,7 +57,6 @@ class SurfacePropertyHeatTransferAlgorithmSurfaceList:
         /,
         *,
         algorithm: Literal[
-            "",
             "CombinedHeatAndMoistureFiniteElement",
             "ConductionFiniteDifference",
             "ConductionTransferFunction",
@@ -90,7 +89,7 @@ class SurfacePropertyOtherSideCoefficients:
         wind_speed_coefficient: float | None = 0,
         zone_air_temperature_coefficient: float | None = 0,
         constant_temperature_schedule_name: str | None = ...,
-        sinusoidal_variation_of_constant_temperature_coefficient: Literal["", "No", "Yes"] | None = "No",
+        sinusoidal_variation_of_constant_temperature_coefficient: Literal["No", "Yes"] | None = "No",
         period_of_sinusoidal_variation: float | None = 24,
         previous_other_side_temperature_coefficient: float | None = 0,
         minimum_other_side_temperature_limit: float | None = ...,
@@ -125,7 +124,7 @@ class OtherEquipmentDefinition:
         /,
         *,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -158,16 +157,16 @@ class AirTerminalSingleDuctVAVReheat:
         reheat_coil_name: str,
         air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        zone_minimum_air_flow_input_method: Literal["", "Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
-        constant_minimum_air_flow_fraction: float | Literal["", "Autosize"] | None = "Autosize",
-        fixed_minimum_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        zone_minimum_air_flow_input_method: Literal["Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
+        constant_minimum_air_flow_fraction: float | Literal["Autosize"] | None = "Autosize",
+        fixed_minimum_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         minimum_air_flow_fraction_schedule_name: str | None = ...,
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
-        damper_heating_action: Literal["", "Normal", "Reverse", "ReverseWithLimits"] | None = "ReverseWithLimits",
-        maximum_flow_per_zone_floor_area_during_reheat: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_flow_fraction_during_reheat: float | Literal["", "Autosize"] | None = "Autosize",
+        damper_heating_action: Literal["Normal", "Reverse", "ReverseWithLimits"] | None = "ReverseWithLimits",
+        maximum_flow_per_zone_floor_area_during_reheat: float | Literal["Autosize"] | None = "Autosize",
+        maximum_flow_fraction_during_reheat: float | Literal["Autosize"] | None = "Autosize",
         maximum_reheat_air_temperature: float | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
@@ -241,12 +240,12 @@ class AvailabilityManagerOptimumStart:
         *,
         applicability_schedule_name: str,
         fan_schedule_name: str,
-        control_type: Literal["", "ControlZone", "MaximumofZoneList", "StayOff"] | None = "ControlZone",
+        control_type: Literal["ControlZone", "MaximumofZoneList", "StayOff"] | None = "ControlZone",
         control_zone_name: str | None = ...,
         zone_list_name: str | None = ...,
         maximum_value_for_optimum_start_time: float | None = 6,
         control_algorithm: Literal[
-            "", "AdaptiveASHRAE", "AdaptiveTemperatureGradient", "ConstantStartTime", "ConstantTemperatureGradient"
+            "AdaptiveASHRAE", "AdaptiveTemperatureGradient", "ConstantStartTime", "ConstantTemperatureGradient"
         ]
         | None = "AdaptiveASHRAE",
         constant_temperature_gradient_during_cooling: float | None = ...,
@@ -302,7 +301,6 @@ class GeneratorPhotovoltaic:
         | None = ...,
         module_performance_name: str | None = ...,
         heat_transfer_integration_mode: Literal[
-            "",
             "Decoupled",
             "DecoupledUllebergDynamic",
             "IntegratedExteriorVentedCavity",
@@ -335,10 +333,10 @@ class CurveQuadratic:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:Quadratic`` and add it to the document.
@@ -355,11 +353,11 @@ class TableLookup:
         /,
         *,
         independent_variable_list_name: str,
-        normalization_method: Literal["", "AutomaticWithDivisor", "DivisorOnly", "None"] | None = "None",
+        normalization_method: Literal["AutomaticWithDivisor", "DivisorOnly", "None"] | None = "None",
         normalization_divisor: float | None = 1,
         minimum_output: float | None = ...,
         maximum_output: float | None = ...,
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         external_file_name: str | None = ...,
         external_file_column_number: int | None = ...,

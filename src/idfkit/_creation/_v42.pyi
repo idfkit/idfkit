@@ -40,7 +40,7 @@ class HeaderedPumpsVariableSpeed_v9_1_to_v22_1:
         outlet_node_name: str,
         total_design_flow_rate: float | Literal["Autosize"] | None = ...,
         number_of_pumps_in_bank: float | None = ...,
-        flow_sequencing_control_scheme: Literal["", "Sequential"] | None = "Sequential",
+        flow_sequencing_control_scheme: Literal["Sequential"] | None = "Sequential",
         design_pump_head: float | None = 179352,
         design_power_consumption: float | Literal["Autosize"] | None = ...,
         motor_efficiency: float | None = 0.9,
@@ -50,11 +50,11 @@ class HeaderedPumpsVariableSpeed_v9_1_to_v22_1:
         coefficient_3_of_the_part_load_performance_curve: float | None = 0,
         coefficient_4_of_the_part_load_performance_curve: float | None = 0,
         minimum_flow_rate_fraction: float | None = 0,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -73,7 +73,7 @@ class ZoneHVACEquipmentList_v9_2:
         name: str,
         /,
         *,
-        load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
+        load_distribution_scheme: Literal["SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
         equipment: Sequence[
             _vd.ZoneHVACEquipmentListEquipmentItem_v9_2 | _vd.ZoneHVACEquipmentListEquipmentGroup_v9_2
@@ -130,15 +130,15 @@ class WindowShadingControl_v9_2_to_v22_1:
         construction_with_shading_name: str | None = ...,
         schedule_name: str | None = ...,
         setpoint: float | None = ...,
-        shading_control_is_scheduled: Literal["", "No", "Yes"] | None = "No",
-        glare_control_is_active: Literal["", "No", "Yes"] | None = "No",
+        shading_control_is_scheduled: Literal["No", "Yes"] | None = "No",
+        glare_control_is_active: Literal["No", "Yes"] | None = "No",
         shading_device_material_name: str | None = ...,
-        type_of_slat_angle_control_for_blinds: Literal["", "BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"]
+        type_of_slat_angle_control_for_blinds: Literal["BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"]
         | None = "FixedSlatAngle",
         slat_angle_schedule_name: str | None = ...,
         setpoint_2: float | None = ...,
         daylighting_control_object_name: str | None = ...,
-        multiple_surface_control_type: Literal["", "Group", "Sequential"] | None = "Sequential",
+        multiple_surface_control_type: Literal["Group", "Sequential"] | None = "Sequential",
         fenestration_surfaces: Sequence[
             _g.WindowShadingControlFenestrationSurfacesItem | _g.WindowShadingControlFenestrationSurfacesGroup
         ] = ...,

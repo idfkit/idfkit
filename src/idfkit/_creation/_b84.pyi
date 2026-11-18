@@ -75,7 +75,6 @@ class AnyDesignSpecificationOutdoorAir:
         /,
         *,
         outdoor_air_method: Literal[
-            "",
             "AirChanges/Hour",
             "Flow/Area",
             "Flow/Person",
@@ -116,9 +115,8 @@ class AnyControllerMechanicalVentilation:
         /,
         *,
         availability_schedule_name: str | None = ...,
-        demand_controlled_ventilation: Literal["", "No", "Yes"] | None = "No",
+        demand_controlled_ventilation: Literal["No", "Yes"] | None = "No",
         system_outdoor_air_method: Literal[
-            "",
             "IndoorAirQualityProcedure",
             "IndoorAirQualityProcedureCombined",
             "IndoorAirQualityProcedureGenericContaminant",
@@ -153,14 +151,14 @@ class PumpConstantSpeed:
         design_power_consumption: float | Literal["Autosize"] | None = ...,
         motor_efficiency: float | None = 0.9,
         fraction_of_motor_inefficiencies_to_fluid_stream: float | None = 0,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         pump_curve_name: str | None = ...,
         impeller_diameter: float | None = ...,
         rotational_speed: float | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -193,7 +191,7 @@ class AnyChillerElectricReformulatedEIR:
         reference_chilled_water_flow_rate: float | Literal["Autosize"] | None = ...,
         reference_condenser_water_flow_rate: float | Literal["Autosize"] | None = ...,
         electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_type: Literal[
-            "", "LeavingCondenserWaterTemperature", "Lift"
+            "LeavingCondenserWaterTemperature", "Lift"
         ]
         | None = "LeavingCondenserWaterTemperature",
         minimum_part_load_ratio: float | None = 0.1,
@@ -202,9 +200,9 @@ class AnyChillerElectricReformulatedEIR:
         minimum_unloading_ratio: float | None = 0.2,
         fraction_of_compressor_electric_consumption_rejected_by_condenser: float | None = 1,
         leaving_chilled_water_lower_temperature_limit: float | None = 2,
-        chiller_flow_mode_type: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
+        chiller_flow_mode_type: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
         | None = "NotModulated",
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
@@ -278,7 +276,7 @@ class OutputMeterCumulativeMeterFileOnly:
         *,
         key_name: str,
         reporting_frequency: Literal[
-            "", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
+            "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
     ) -> None:

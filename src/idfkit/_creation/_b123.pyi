@@ -20,11 +20,11 @@ class AnyRunPeriod:
         end_day_of_month: int,
         day_of_week_for_start_day: Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"]
         | None = ...,
-        use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
-        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_holidays_and_special_days: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        apply_weekend_holiday_rule: Literal["No", "Yes"] | None = "No",
+        use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 

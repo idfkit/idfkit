@@ -18,7 +18,6 @@ class WeatherPropertySkyTemperature:
         /,
         *,
         calculation_type: Literal[
-            "",
             "BerdahlMartin",
             "Brunt",
             "ClarkAllen",
@@ -29,7 +28,7 @@ class WeatherPropertySkyTemperature:
         ]
         | None = "ClarkAllen",
         schedule_name: str | None = ...,
-        use_weather_file_horizontal_ir: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_horizontal_ir: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``WeatherProperty:SkyTemperature`` and add it to the document.
 
@@ -73,8 +72,8 @@ class AnyGlobalGeometryRules:
         starting_vertex_position: Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"],
         vertex_entry_direction: Literal["Clockwise", "Counterclockwise"],
         coordinate_system: Literal["Relative", "World"],
-        daylighting_reference_point_coordinate_system: Literal["", "Relative", "World"] | None = "Relative",
-        rectangular_surface_coordinate_system: Literal["", "Relative", "World"] | None = "Relative",
+        daylighting_reference_point_coordinate_system: Literal["Relative", "World"] | None = "Relative",
+        rectangular_surface_coordinate_system: Literal["Relative", "World"] | None = "Relative",
     ) -> None:
         """Create a new ``GlobalGeometryRules`` and add it to the document.
 
@@ -110,10 +109,10 @@ class RoofCeilingDetailed:
         ],
         space_name: str | None = ...,
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.RoofCeilingDetailedVerticesItem | _g.RoofCeilingDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``RoofCeiling:Detailed`` and add it to the document.
@@ -148,7 +147,7 @@ class AirflowNetworkDistributionDuctSizing:
         name: str,
         /,
         *,
-        duct_sizing_method: Literal["", "MaximumVelocity", "PressureLoss", "PressureLossWithMaximumVelocity"]
+        duct_sizing_method: Literal["MaximumVelocity", "PressureLoss", "PressureLossWithMaximumVelocity"]
         | None = "MaximumVelocity",
         duct_sizing_factor: float | None = 1,
         maximum_airflow_velocity: float | None = 5,

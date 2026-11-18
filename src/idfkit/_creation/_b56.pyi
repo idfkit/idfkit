@@ -96,28 +96,26 @@ class AnyAirflowNetworkSimulationControl:
         /,
         *,
         airflownetwork_control: Literal[
-            "",
             "MultizoneWithDistribution",
             "MultizoneWithDistributionOnlyDuringFanOperation",
             "MultizoneWithoutDistribution",
             "NoMultizoneOrDistribution",
         ]
         | None = "NoMultizoneOrDistribution",
-        wind_pressure_coefficient_type: Literal["", "Input", "SurfaceAverageCalculation"]
+        wind_pressure_coefficient_type: Literal["Input", "SurfaceAverageCalculation"]
         | None = "SurfaceAverageCalculation",
-        height_selection_for_local_wind_pressure_calculation: Literal["", "ExternalNode", "OpeningHeight"]
+        height_selection_for_local_wind_pressure_calculation: Literal["ExternalNode", "OpeningHeight"]
         | None = "OpeningHeight",
-        building_type: Literal["", "HighRise", "LowRise"] | None = "LowRise",
+        building_type: Literal["HighRise", "LowRise"] | None = "LowRise",
         maximum_number_of_iterations: int | None = 500,
-        initialization_type: Literal["", "LinearInitializationMethod", "ZeroNodePressures"]
-        | None = "ZeroNodePressures",
+        initialization_type: Literal["LinearInitializationMethod", "ZeroNodePressures"] | None = "ZeroNodePressures",
         relative_airflow_convergence_tolerance: float | None = 0.0001,
         absolute_airflow_convergence_tolerance: float | None = ...,
         convergence_acceleration_limit: float | None = -0.5,
         azimuth_angle_of_long_axis_of_building: float | None = 0,
         ratio_of_building_width_along_short_axis_to_width_along_long_axis: float | None = 1,
-        height_dependence_of_external_node_temperature: Literal["", "No", "Yes"] | None = "No",
-        solver: Literal["", "ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
+        height_dependence_of_external_node_temperature: Literal["No", "Yes"] | None = "No",
+        solver: Literal["ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
     ) -> None:
         """Create a new ``AirflowNetwork:SimulationControl`` and add it to the document.
 

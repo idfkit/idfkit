@@ -16,7 +16,7 @@ class ElectricEquipment_v9_6_to_v23_2:
         *,
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
-        design_level_calculation_method: Literal["", "EquipmentLevel", "Watts/Area", "Watts/Person"]
+        design_level_calculation_method: Literal["EquipmentLevel", "Watts/Area", "Watts/Person"]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
         watts_per_zone_floor_area: float | None = ...,
@@ -43,7 +43,7 @@ class CoilHeatingFuel_v9_3:
         air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
         fuel_type: Literal[
-            "", "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
+            "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
         ]
         | None = "NaturalGas",
         burner_efficiency: float | None = 0.8,
@@ -74,7 +74,6 @@ class HeatPumpAirToWaterFuelFiredHeating_v23_1_to_v25_1:
         air_source_node_name: str | None = ...,
         companion_cooling_heat_pump_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -91,15 +90,15 @@ class HeatPumpAirToWaterFuelFiredHeating_v23_1_to_v25_1:
         nominal_cop: float | None = 1,
         design_flow_rate: float | Literal["Autosize"] | None = ...,
         design_supply_temperature: float | None = 60,
-        design_temperature_lift: float | Literal["", "Autosize"] | None = 11.1,
+        design_temperature_lift: float | Literal["Autosize"] | None = 11.1,
         sizing_factor: float | None = 1,
-        flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
-        outdoor_air_temperature_curve_input_variable: Literal["", "DryBulb", "WetBulb"] | None = "DryBulb",
-        water_temperature_curve_input_variable: Literal["", "EnteringCondenser", "LeavingCondenser"]
+        flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
+        outdoor_air_temperature_curve_input_variable: Literal["DryBulb", "WetBulb"] | None = "DryBulb",
+        water_temperature_curve_input_variable: Literal["EnteringCondenser", "LeavingCondenser"]
         | None = "EnteringCondenser",
         minimum_part_load_ratio: float | None = 0.1,
         maximum_part_load_ratio: float | None = 1,
-        defrost_control_type: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_control_type: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_operation_time_fraction: float | None = 0,
         fuel_energy_input_ratio_defrost_adjustment_curve_name: str | None = ...,
         resistive_defrost_heater_capacity: float | None = 0,

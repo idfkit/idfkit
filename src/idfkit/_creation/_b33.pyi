@@ -57,12 +57,12 @@ class AnyZoneVentilationDesignFlowRate:
         *,
         narrow_with_as_version_first: Never,
         schedule_name: str,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_person: float | None = ...,
         air_changes_per_hour: float | None = ...,
-        ventilation_type: Literal["", "Balanced", "Exhaust", "Intake", "Natural"] | None = "Natural",
+        ventilation_type: Literal["Balanced", "Exhaust", "Intake", "Natural"] | None = "Natural",
         fan_pressure_rise: float | None = 0,
         fan_total_efficiency: float | None = 1,
         constant_term_coefficient: float | None = 1,
@@ -97,7 +97,7 @@ class SetpointManagerFollowGroundTemperature:
         /,
         *,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None = "Temperature",
+        control_variable: Literal["MaximumTemperature", "MinimumTemperature", "Temperature"] | None = "Temperature",
         reference_ground_temperature_object_type: Literal[
             "Site:GroundTemperature:BuildingSurface",
             "Site:GroundTemperature:Deep",
@@ -142,7 +142,7 @@ class AnyGeneratorCombustionTurbine:
         design_heat_recovery_water_flow_rate: float | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
-        fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None = "NaturalGas",
+        fuel_type: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None = "NaturalGas",
         heat_recovery_maximum_temperature: float | None = 80,
         outdoor_air_inlet_node_name: str | None = ...,
     ) -> None:
@@ -180,7 +180,6 @@ class GeneratorCombustionTurbine:
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -215,7 +214,7 @@ class ElectricLoadCenterStorageLiIonNMCBattery:
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         radiative_fraction: float | None = 0,
-        lifetime_model: Literal["", "KandlerSmith", "None"] | None = "KandlerSmith",
+        lifetime_model: Literal["KandlerSmith", "None"] | None = "KandlerSmith",
         initial_fractional_state_of_charge: float | None = 0.5,
         dc_to_dc_charging_efficiency: float | None = 0.95,
         battery_specific_heat_capacity: float | None = 1500,

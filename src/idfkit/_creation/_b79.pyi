@@ -240,8 +240,8 @@ class SolarCollectorUnglazedTranspired:
         setpoint_node_name: str | None = ...,
         zone_node_name: str | None = ...,
         free_heating_setpoint_schedule_name: str | None = ...,
-        hole_layout_pattern_for_pitch: Literal["", "Square", "Triangle"] | None = "Square",
-        heat_exchange_effectiveness_correlation: Literal["", "Kutscher1994", "VanDeckerHollandsBrunger2001"]
+        hole_layout_pattern_for_pitch: Literal["Square", "Triangle"] | None = "Square",
+        heat_exchange_effectiveness_correlation: Literal["Kutscher1994", "VanDeckerHollandsBrunger2001"]
         | None = "Kutscher1994",
         ratio_of_actual_collector_surface_area_to_projected_surface_area: float | None = 1,
         collector_thickness: float | None = ...,

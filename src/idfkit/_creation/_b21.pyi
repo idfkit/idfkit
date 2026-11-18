@@ -154,7 +154,7 @@ class UtilityCostVariable:
         /,
         *,
         tariff_name: str,
-        variable_type: Literal["", "Currency", "Demand", "Dimensionless", "Energy"] | None = "Dimensionless",
+        variable_type: Literal["Currency", "Demand", "Dimensionless", "Energy"] | None = "Dimensionless",
         january_value: float | None = ...,
         february_value: float | None = ...,
         march_value: float | None = ...,
@@ -203,7 +203,6 @@ class LifeCycleCostUsePriceEscalation:
         ],
         escalation_start_year: int | None = ...,
         escalation_start_month: Literal[
-            "",
             "April",
             "August",
             "December",

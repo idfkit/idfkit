@@ -81,13 +81,13 @@ class ZoneVentilationDesignFlowRate_v22_2_to_v24_2:
         *,
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str | None = ...,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_floor_area: float | None = ...,
         flow_rate_per_person: float | None = ...,
         air_changes_per_hour: float | None = ...,
-        ventilation_type: Literal["", "Balanced", "Exhaust", "Intake", "Natural"] | None = "Natural",
+        ventilation_type: Literal["Balanced", "Exhaust", "Intake", "Natural"] | None = "Natural",
         fan_pressure_rise: float | None = 0,
         fan_total_efficiency: float | None = 1,
         constant_term_coefficient: float | None = 1,
@@ -145,18 +145,18 @@ class ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1:
         outdoor_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
         outdoor_air_mixer_name: str | None = ...,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None = "Yes",
+        no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None = "Yes",
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         heating_convergence_tolerance: float | None = 0.001,
         cooling_convergence_tolerance: float | None = 0.001,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-        capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None = "None",
-        minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None = "Autosize",
+        capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
+        minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
 
@@ -181,10 +181,10 @@ class TableOneIndependentVariable_v9_0_to_v9_1:
         minimum_table_output: float | None = ...,
         maximum_table_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
         values: Sequence[
@@ -232,14 +232,14 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped_v8_9_to_v23_1:
         rated_condenser_inlet_water_temperature: float | None = 57.5,
         rated_evaporator_air_flow_rate: float | Literal["Autocalculate"] | None = ...,
         rated_condenser_water_flow_rate: float | Literal["Autocalculate"] | None = ...,
-        evaporator_fan_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "Yes",
-        condenser_pump_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "No",
-        condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop: Literal["", "No", "Yes"] | None = "No",
+        evaporator_fan_power_included_in_rated_cop: Literal["No", "Yes"] | None = "Yes",
+        condenser_pump_power_included_in_rated_cop: Literal["No", "Yes"] | None = "No",
+        condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop: Literal["No", "Yes"] | None = "No",
         condenser_water_pump_power: float | None = 0,
         fraction_of_condenser_pump_heat_to_water: float | None = 0.2,
         crankcase_heater_capacity: float | None = 0,
         maximum_ambient_temperature_for_crankcase_heater_operation: float | None = 10,
-        evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        evaporator_air_temperature_type_for_curve_objects: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         heating_capacity_function_of_temperature_curve_name: str | None = ...,
         heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,

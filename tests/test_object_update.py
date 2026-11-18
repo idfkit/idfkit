@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 
 from idfkit import IDFDocument, IDFObject, new_document
-from idfkit.exceptions import InvalidFieldError, RefusedEntry
+from idfkit.exceptions import InvalidFieldError, MissingRequiredFieldError, RefusedEntry
 
 _VERTEX = {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0}
 
@@ -88,8 +88,16 @@ class TestApplied:
 
     def test_none_clears_a_field(self) -> None:
         heater = _heater(new_document())
-        heater.update(heater_thermal_efficiency=None)
-        assert heater.heater_thermal_efficiency is None
+        heater.update(tank_volume=0.5)
+        heater.update(tank_volume=None)
+        assert heater.tank_volume is None
+
+    def test_clearing_a_required_field_makes_reading_it_an_error(self) -> None:
+        heater = _heater(new_document())
+        heater.update({"heater_fuel_type": None})  # through the mapping: a typed keyword refuses None
+        assert heater.get("heater_fuel_type") is None
+        with pytest.raises(MissingRequiredFieldError, match="heater_fuel_type"):
+            _ = heater.heater_fuel_type
 
     def test_empty_group_changes_nothing(self) -> None:
         heater = _heater(new_document())

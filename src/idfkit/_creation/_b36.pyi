@@ -119,14 +119,13 @@ class AnySizingSystem:
         precool_design_humidity_ratio: float,
         central_cooling_design_supply_air_temperature: float,
         central_heating_design_supply_air_temperature: float,
-        type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None = "Sensible",
-        design_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        central_heating_maximum_system_air_flow_ratio: float | Literal["", "Autosize"] | None = "Autosize",
-        type_of_zone_sum_to_use: Literal["", "Coincident", "NonCoincident"] | None = "NonCoincident",
+        type_of_load_to_size_on: Literal["Sensible", "Total", "VentilationRequirement"] | None = "Sensible",
+        design_outdoor_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        central_heating_maximum_system_air_flow_ratio: float | Literal["Autosize"] | None = "Autosize",
+        type_of_zone_sum_to_use: Literal["Coincident", "NonCoincident"] | None = "NonCoincident",
         central_cooling_design_supply_air_humidity_ratio: float | None = 0.008,
         central_heating_design_supply_air_humidity_ratio: float | None = 0.008,
         cooling_supply_air_flow_rate_method: Literal[
-            "",
             "DesignDay",
             "Flow/System",
             "FlowPerCoolingCapacity",
@@ -139,7 +138,6 @@ class AnySizingSystem:
         cooling_fraction_of_autosized_cooling_supply_air_flow_rate: float | None = ...,
         cooling_supply_air_flow_rate_per_unit_cooling_capacity: float | None = ...,
         heating_supply_air_flow_rate_method: Literal[
-            "",
             "DesignDay",
             "Flow/System",
             "FlowPerFloorArea",
@@ -153,23 +151,23 @@ class AnySizingSystem:
         heating_fraction_of_autosized_heating_supply_air_flow_rate: float | None = ...,
         heating_fraction_of_autosized_cooling_supply_air_flow_rate: float | None = ...,
         heating_supply_air_flow_rate_per_unit_heating_capacity: float | None = ...,
-        system_outdoor_air_method: Literal["", "ZoneSum"] | None = "ZoneSum",
+        system_outdoor_air_method: Literal["ZoneSum"] | None = "ZoneSum",
         zone_maximum_outdoor_air_fraction: float | None = 1,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "CoolingDesignCapacity",
-        cooling_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         cooling_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_cooling_design_capacity: float | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity", "None"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity", "None"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = ...,
-        central_cooling_capacity_control_method: Literal["", "Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
+        central_cooling_capacity_control_method: Literal["Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
     ) -> None:
         """Create a new ``Sizing:System`` and add it to the document.
 
@@ -191,7 +189,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveWater:
         availability_schedule_name: str | None = ...,
         rated_average_water_temperature: float | None = 87.78,
         rated_water_mass_flow_rate: float | None = 0.063,
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         surface_fractions: Sequence[
             _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup
@@ -277,7 +275,7 @@ class SetpointManagerWarmestTemperatureFlow:
         control_variable: Literal["Temperature"] | None = ...,
         minimum_setpoint_temperature: float | None = 12,
         maximum_setpoint_temperature: float | None = 18,
-        strategy: Literal["", "FlowFirst", "TemperatureFirst"] | None = "TemperatureFirst",
+        strategy: Literal["FlowFirst", "TemperatureFirst"] | None = "TemperatureFirst",
         minimum_turndown_ratio: float | None = 0.2,
     ) -> None:
         """Create a new ``SetpointManager:WarmestTemperatureFlow`` and add it to the document.
@@ -300,7 +298,7 @@ class RefrigerationCompressor:
         rated_liquid_temperature: float | None = ...,
         rated_subcooling: float | None = ...,
         end_use_subcategory: str | None = "General",
-        mode_of_operation: Literal["", "Subcritical", "Transcritical"] | None = "Subcritical",
+        mode_of_operation: Literal["Subcritical", "Transcritical"] | None = "Subcritical",
         transcritical_compressor_power_curve_name: str | None = ...,
         transcritical_compressor_capacity_curve_name: str | None = ...,
     ) -> None:

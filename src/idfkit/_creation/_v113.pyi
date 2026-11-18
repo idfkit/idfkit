@@ -17,7 +17,7 @@ class HVACSystemRootFindingAlgorithm_v8_9_to_v22_1:
         /,
         *,
         algorithm: Literal[
-            "", "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"
+            "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"
         ]
         | None = "RegulaFalsi",
         number_of_iterations_before_algorithm_switch: float | None = 5,
@@ -34,10 +34,10 @@ class ZoneAirMassFlowConservation_v8_9_to_v9_4:
         self,
         /,
         *,
-        adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["", "No", "Yes"] | None = "No",
-        infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
+        adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["No", "Yes"] | None = "No",
+        infiltration_balancing_method: Literal["AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
         | None = "AddInfiltrationFlow",
-        infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
+        infiltration_balancing_zones: Literal["AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
     ) -> None:
         """Create a new ``ZoneAirMassFlowConservation`` and add it to the document.
 
@@ -58,18 +58,18 @@ class Zone_v8_9_to_v9_4:
         z_origin: float | None = 0,
         type: float | None = 1,
         multiplier: float | None = 1,
-        ceiling_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        volume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        ceiling_height: float | Literal["Autocalculate"] | None = "Autocalculate",
+        volume: float | Literal["Autocalculate"] | None = "Autocalculate",
+        floor_area: float | Literal["Autocalculate"] | None = "Autocalculate",
         zone_inside_convection_algorithm: Literal[
-            "", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"
+            "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"
         ]
         | None = ...,
         zone_outside_convection_algorithm: Literal[
-            "", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"
+            "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"
         ]
         | None = ...,
-        part_of_total_floor_area: Literal["", "No", "Yes"] | None = "Yes",
+        part_of_total_floor_area: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``Zone`` and add it to the document.
 
@@ -148,15 +148,15 @@ class WindowShadingControl_v9_0_to_v9_1:
         construction_with_shading_name_: str | None = ...,
         schedule_name: str | None = ...,
         setpoint: float | None = ...,
-        shading_control_is_scheduled: Literal["", "No", "Yes"] | None = "No",
-        glare_control_is_active: Literal["", "No", "Yes"] | None = "No",
+        shading_control_is_scheduled: Literal["No", "Yes"] | None = "No",
+        glare_control_is_active: Literal["No", "Yes"] | None = "No",
         shading_device_material_name: str | None = ...,
-        type_of_slat_angle_control_for_blinds: Literal["", "BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"]
+        type_of_slat_angle_control_for_blinds: Literal["BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"]
         | None = "FixedSlatAngle",
         slat_angle_schedule_name: str | None = ...,
         setpoint_2: float | None = ...,
         daylighting_control_object_name: str | None = ...,
-        multiple_surface_control_type: Literal["", "Group", "Sequential"] | None = "Sequential",
+        multiple_surface_control_type: Literal["Group", "Sequential"] | None = "Sequential",
         fenestration_surfaces: Sequence[
             _g.WindowShadingControlFenestrationSurfacesItem | _g.WindowShadingControlFenestrationSurfacesGroup
         ] = ...,
@@ -192,12 +192,12 @@ class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1:
         design_entering_water_temperature: float | None = ...,
         design_entering_air_temperature: float | None = ...,
         design_entering_air_wet_bulb_temperature: float | None = ...,
-        capacity_control: Literal["", "FanCycling", "FluidBypass"] | None = "FanCycling",
+        capacity_control: Literal["FanCycling", "FluidBypass"] | None = "FanCycling",
         sizing_factor: float | None = 1,
-        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
+        evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None = "SaturatedExit",
         evaporation_loss_factor: float | None = ...,
         drift_loss_percent: float | None = 0.008,
-        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
+        blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,

@@ -20,11 +20,10 @@ class AnyBuilding:
         /,
         *,
         north_axis: float | None = 0,
-        terrain: Literal["", "City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
+        terrain: Literal["City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
         loads_convergence_tolerance_value: float | None = 0.04,
         temperature_convergence_tolerance_value: float | None = 0.4,
         solar_distribution: Literal[
-            "",
             "FullExterior",
             "FullExteriorWithReflections",
             "FullInteriorAndExterior",
@@ -74,7 +73,7 @@ class ZoneInfiltrationDesignFlowRate:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str | None = ...,
         design_flow_rate_calculation_method: Literal[
-            "", "AirChanges/Hour", "Flow/Area", "Flow/ExteriorArea", "Flow/ExteriorWallArea", "Flow/Zone"
+            "AirChanges/Hour", "Flow/Area", "Flow/ExteriorArea", "Flow/ExteriorWallArea", "Flow/Zone"
         ]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
@@ -85,7 +84,7 @@ class ZoneInfiltrationDesignFlowRate:
         temperature_term_coefficient: float | None = 0,
         velocity_term_coefficient: float | None = 0,
         velocity_squared_term_coefficient: float | None = 0,
-        density_basis: Literal["", "Indoor", "Outdoor", "Standard"] | None = "Outdoor",
+        density_basis: Literal["Indoor", "Outdoor", "Standard"] | None = "Outdoor",
     ) -> None:
         """Create a new ``ZoneInfiltration:DesignFlowRate`` and add it to the document.
 
@@ -103,10 +102,10 @@ class AnyZoneVentilationWindandStackOpenArea:
         narrow_with_as_version_first: Never,
         opening_area: float | None = 0,
         opening_area_fraction_schedule_name: str | None = ...,
-        opening_effectiveness: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        opening_effectiveness: float | Literal["Autocalculate"] | None = "Autocalculate",
         effective_angle: float | None = 0,
         height_difference: float | None = 0,
-        discharge_coefficient_for_opening: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        discharge_coefficient_for_opening: float | Literal["Autocalculate"] | None = "Autocalculate",
         minimum_indoor_temperature: float | None = -100,
         minimum_indoor_temperature_schedule_name: str | None = ...,
         maximum_indoor_temperature: float | None = 100,
@@ -136,7 +135,7 @@ class AnyZoneCrossMixing:
         *,
         narrow_with_as_version_first: Never,
         schedule_name: str,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_person: float | None = ...,
@@ -162,30 +161,28 @@ class AirflowNetworkSimulationControl:
         /,
         *,
         airflownetwork_control: Literal[
-            "",
             "MultizoneWithDistribution",
             "MultizoneWithDistributionOnlyDuringFanOperation",
             "MultizoneWithoutDistribution",
             "NoMultizoneOrDistribution",
         ]
         | None = "NoMultizoneOrDistribution",
-        wind_pressure_coefficient_type: Literal["", "Input", "SurfaceAverageCalculation"]
+        wind_pressure_coefficient_type: Literal["Input", "SurfaceAverageCalculation"]
         | None = "SurfaceAverageCalculation",
-        height_selection_for_local_wind_pressure_calculation: Literal["", "ExternalNode", "OpeningHeight"]
+        height_selection_for_local_wind_pressure_calculation: Literal["ExternalNode", "OpeningHeight"]
         | None = "OpeningHeight",
-        building_type: Literal["", "HighRise", "LowRise"] | None = "LowRise",
+        building_type: Literal["HighRise", "LowRise"] | None = "LowRise",
         maximum_number_of_iterations: int | None = 500,
-        initialization_type: Literal["", "LinearInitializationMethod", "ZeroNodePressures"]
-        | None = "ZeroNodePressures",
+        initialization_type: Literal["LinearInitializationMethod", "ZeroNodePressures"] | None = "ZeroNodePressures",
         relative_airflow_convergence_tolerance: float | None = 0.0001,
         absolute_airflow_convergence_tolerance: float | None = ...,
         convergence_acceleration_limit: float | None = -0.5,
         azimuth_angle_of_long_axis_of_building: float | None = 0,
         ratio_of_building_width_along_short_axis_to_width_along_long_axis: float | None = 1,
-        height_dependence_of_external_node_temperature: Literal["", "No", "Yes"] | None = "No",
-        solver: Literal["", "ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
-        allow_unsupported_zone_equipment: Literal["", "No", "Yes"] | None = "No",
-        do_distribution_duct_sizing_calculation: Literal["", "No", "Yes"] | None = "No",
+        height_dependence_of_external_node_temperature: Literal["No", "Yes"] | None = "No",
+        solver: Literal["ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
+        allow_unsupported_zone_equipment: Literal["No", "Yes"] | None = "No",
+        do_distribution_duct_sizing_calculation: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``AirflowNetwork:SimulationControl`` and add it to the document.
 
@@ -201,56 +198,54 @@ class HVACTemplateZoneWaterToAirHeatPump:
         *,
         zone_name: str,
         template_thermostat_name: str | None = ...,
-        cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        heating_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
         outdoor_air_flow_rate_per_zone: float | None = 0,
         system_availability_schedule_name: str | None = ...,
         supply_fan_operating_mode_schedule_name: str | None = ...,
-        supply_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        supply_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_fan_total_efficiency: float | None = 0.7,
         supply_fan_delta_pressure: float | None = 75,
         supply_fan_motor_efficiency: float | None = 0.9,
-        cooling_coil_type: Literal["", "Coil:Cooling:WaterToAirHeatPump:EquationFit"] | None = ...,
-        cooling_coil_gross_rated_total_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_coil_type: Literal["Coil:Cooling:WaterToAirHeatPump:EquationFit"] | None = ...,
+        cooling_coil_gross_rated_total_capacity: float | Literal["Autosize"] | None = "Autosize",
+        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["Autosize"] | None = "Autosize",
         cooling_coil_gross_rated_cop: float | None = 3.5,
-        heat_pump_heating_coil_type: Literal["", "Coil:Heating:WaterToAirHeatPump:EquationFit"] | None = ...,
-        heat_pump_heating_coil_gross_rated_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heat_pump_heating_coil_type: Literal["Coil:Heating:WaterToAirHeatPump:EquationFit"] | None = ...,
+        heat_pump_heating_coil_gross_rated_capacity: float | Literal["Autosize"] | None = "Autosize",
         heat_pump_heating_coil_gross_rated_cop: float | None = 4.2,
         supplemental_heating_coil_availability_schedule_name: str | None = ...,
-        supplemental_heating_coil_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        supplemental_heating_coil_capacity: float | Literal["Autosize"] | None = "Autosize",
         maximum_cycling_rate: float | None = 2.5,
         latent_capacity_time_constant: float | None = 60,
         heat_pump_fan_delay_time: float | None = 60,
         dedicated_outdoor_air_system_name: str | None = ...,
-        supplemental_heating_coil_type: Literal["", "Electric", "HotWater"] | None = "Electric",
+        supplemental_heating_coil_type: Literal["Electric", "HotWater"] | None = "Electric",
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = 14,
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
-        heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
+        heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_outdoor_air_object_name: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``HVACTemplate:Zone:WaterToAirHeatPump`` and add it to the document.
 
@@ -270,13 +265,13 @@ class CoilCoolingWaterDetailedGeometry:
         air_inlet_node_name: str,
         air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        maximum_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        tube_outside_surface_area: float | Literal["", "Autosize"] | None = "Autosize",
-        total_tube_inside_area: float | Literal["", "Autosize"] | None = "Autosize",
-        fin_surface_area: float | Literal["", "Autosize"] | None = "Autosize",
-        minimum_airflow_area: float | Literal["", "Autosize"] | None = "Autosize",
-        coil_depth: float | Literal["", "Autosize"] | None = "Autosize",
-        fin_diameter: float | Literal["", "Autosize"] | None = "Autosize",
+        maximum_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        tube_outside_surface_area: float | Literal["Autosize"] | None = "Autosize",
+        total_tube_inside_area: float | Literal["Autosize"] | None = "Autosize",
+        fin_surface_area: float | Literal["Autosize"] | None = "Autosize",
+        minimum_airflow_area: float | Literal["Autosize"] | None = "Autosize",
+        coil_depth: float | Literal["Autosize"] | None = "Autosize",
+        fin_diameter: float | Literal["Autosize"] | None = "Autosize",
         fin_thickness: float | None = 0.0015,
         tube_inside_diameter: float | None = 0.01445,
         tube_outside_diameter: float | None = 0.0159,
@@ -285,10 +280,10 @@ class CoilCoolingWaterDetailedGeometry:
         fin_spacing: float | None = 0.0018,
         tube_depth_spacing: float | None = 0.026,
         number_of_tube_rows: float | None = 4,
-        number_of_tubes_per_row: float | Literal["", "Autosize"] | None = "Autosize",
+        number_of_tubes_per_row: float | Literal["Autosize"] | None = "Autosize",
         condensate_collection_water_storage_tank_name: str | None = ...,
         design_water_temperature_difference: float | None = ...,
-        design_inlet_water_temperature: float | Literal["", "Autosize"] | None = "Autosize",
+        design_inlet_water_temperature: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``Coil:Cooling:Water:DetailedGeometry`` and add it to the document.
 

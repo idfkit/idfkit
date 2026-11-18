@@ -42,14 +42,13 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2:
         rated_inlet_space_temperature: float | None = 24,
         rated_water_mass_flow_rate: float | None = 0.063,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "CoolingDesignCapacity",
         cooling_design_capacity: float | Literal["Autosize"] | None = ...,
         cooling_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_cooling_design_capacity: float | None = ...,
         control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -61,7 +60,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2:
         | None = "MeanAirTemperature",
         cooling_control_throttling_range: float | None = 0.5,
         cooling_control_temperature_schedule_name: str | None = ...,
-        condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
+        condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
         surface_fractions: Sequence[
@@ -127,13 +126,13 @@ class ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2:
         outdoor_air_mixer_name: str | None = ...,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-        capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None = "None",
-        minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None = "Autosize",
+        capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
+        minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalAirConditioner`` and add it to the document.
 
@@ -168,7 +167,6 @@ class LifeCycleCostUsePriceEscalation_v9_3_to_v22_1:
         ],
         escalation_start_year: float | None = ...,
         escalation_start_month: Literal[
-            "",
             "April",
             "August",
             "December",
@@ -201,16 +199,16 @@ class CoilCoolingDXCurveFitOperatingMode_v22_2_to_v26_1:
         /,
         *,
         speed_1_name: str,
-        rated_gross_total_cooling_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_gross_total_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
         rated_evaporator_air_flow_rate: float | Literal["Autosize"] | None = ...,
         rated_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_cycling_rate: float | None = 0,
         ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         nominal_time_for_condensate_removal_to_begin: float | None = 0,
-        apply_latent_degradation_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
-        nominal_evaporative_condenser_pump_power: float | Literal["", "Autosize"] | None = 0,
+        apply_latent_degradation_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        nominal_evaporative_condenser_pump_power: float | Literal["Autosize"] | None = 0,
         nominal_speed_number: int | None = ...,
         speed_2_name: str | None = ...,
         speed_3_name: str | None = ...,

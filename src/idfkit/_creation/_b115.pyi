@@ -58,7 +58,7 @@ class AnyZoneMixing:
         *,
         narrow_with_as_version_first: Never,
         schedule_name: str,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_person: float | None = ...,
@@ -153,7 +153,7 @@ class SetpointManagerSingleZoneCooling:
         zone_node_name: str,
         zone_inlet_node_name: str,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "Temperature"] | None = "Temperature",
+        control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_supply_air_temperature: float | None = -99,
         maximum_supply_air_temperature: float | None = 99,
     ) -> None:
@@ -174,7 +174,7 @@ class SetpointManagerMixedAir:
         fan_inlet_node_name: str,
         fan_outlet_node_name: str,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "Temperature"] | None = "Temperature",
+        control_variable: Literal["Temperature"] | None = "Temperature",
         cooling_coil_inlet_node_name: str | None = ...,
         cooling_coil_outlet_node_name: str | None = ...,
         minimum_temperature_at_cooling_coil_outlet_node: float | None = 7.2,
@@ -208,47 +208,19 @@ class CurveQuadLinear:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_w: Literal[
-            "",
-            "Dimensionless",
-            "Distance",
-            "MassFlow",
-            "Power",
-            "Temperature",
-            "VolumetricFlow",
-            "VolumetricFlowPerPower",
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x: Literal[
-            "",
-            "Dimensionless",
-            "Distance",
-            "MassFlow",
-            "Power",
-            "Temperature",
-            "VolumetricFlow",
-            "VolumetricFlowPerPower",
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
         input_unit_type_for_y: Literal[
-            "",
-            "Dimensionless",
-            "Distance",
-            "MassFlow",
-            "Power",
-            "Temperature",
-            "VolumetricFlow",
-            "VolumetricFlowPerPower",
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
         input_unit_type_for_z: Literal[
-            "",
-            "Dimensionless",
-            "Distance",
-            "MassFlow",
-            "Power",
-            "Temperature",
-            "VolumetricFlow",
-            "VolumetricFlowPerPower",
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
     ) -> None:
@@ -264,7 +236,7 @@ class OutputVariableDictionary:
         self,
         /,
         *,
-        key_field: Literal["", "IDF", "regular"] | None = "regular",
+        key_field: Literal["IDF", "regular"] | None = "regular",
         sort_option: Literal["Name", "Unsorted"] | None = ...,
     ) -> None:
         """Create a new ``Output:VariableDictionary`` and add it to the document.

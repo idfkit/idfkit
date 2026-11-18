@@ -22,13 +22,13 @@ class RunPeriod:
         end_year: float | None = ...,
         day_of_week_for_start_day: Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"]
         | None = ...,
-        use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
-        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        treat_weather_as_actual: Literal["", "No", "Yes"] | None = "No",
-        first_hour_interpolation_starting_values: Literal["", "Hour1", "Hour24"] | None = "Hour24",
+        use_weather_file_holidays_and_special_days: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        apply_weekend_holiday_rule: Literal["No", "Yes"] | None = "No",
+        use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        treat_weather_as_actual: Literal["No", "Yes"] | None = "No",
+        first_hour_interpolation_starting_values: Literal["Hour1", "Hour24"] | None = "Hour24",
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 
@@ -50,7 +50,7 @@ class WindowMaterialBlind:
         front_side_slat_diffuse_solar_reflectance: float,
         back_side_slat_diffuse_solar_reflectance: float,
         slat_beam_visible_transmittance: float,
-        slat_orientation: Literal["", "Horizontal", "Vertical"] | None = "Horizontal",
+        slat_orientation: Literal["Horizontal", "Vertical"] | None = "Horizontal",
         slat_thickness: float | None = 0.00025,
         slat_angle: float | None = 45,
         slat_conductivity: float | None = 221,
@@ -97,7 +97,6 @@ class SurfacePropertyHeatTransferAlgorithmMultipleSurface:
             "AllInteriorWalls",
         ],
         algorithm: Literal[
-            "",
             "CombinedHeatAndMoistureFiniteElement",
             "ConductionFiniteDifference",
             "ConductionTransferFunction",
@@ -121,7 +120,7 @@ class ZoneMixing:
         zone_or_space_name: str,
         source_zone_or_space_name: str,
         schedule_name: str | None = ...,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_floor_area: float | None = ...,
@@ -154,7 +153,7 @@ class ZoneRefrigerationDoorMixing:
         schedule_name: str,
         door_height: float | None = 3,
         door_area: float | None = 9,
-        door_protection_type: Literal["", "AirCurtain", "None", "StripCurtain"] | None = "None",
+        door_protection_type: Literal["AirCurtain", "None", "StripCurtain"] | None = "None",
     ) -> None:
         """Create a new ``ZoneRefrigerationDoorMixing`` and add it to the document.
 
@@ -226,10 +225,10 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpWrapped:
         rated_evaporator_inlet_air_wet_bulb_temperature: float | None = 13.5,
         rated_condenser_water_temperature: float | None = 57.5,
         rated_evaporator_air_flow_rate: float | Literal["Autocalculate"] | None = ...,
-        evaporator_fan_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "Yes",
+        evaporator_fan_power_included_in_rated_cop: Literal["No", "Yes"] | None = "Yes",
         crankcase_heater_capacity: float | None = 0,
         maximum_ambient_temperature_for_crankcase_heater_operation: float | None = 10,
-        evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        evaporator_air_temperature_type_for_curve_objects: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         heating_capacity_function_of_temperature_curve_name: str | None = ...,
         heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
@@ -250,7 +249,7 @@ class AnySolarCollectorPerformanceIntegralCollectorStorage:
         name: str,
         /,
         *,
-        ics_collector_type: Literal["", "RectangularTank"] | None = "RectangularTank",
+        ics_collector_type: Literal["RectangularTank"] | None = "RectangularTank",
         gross_area: float | None = ...,
         collector_water_volume: float | None = ...,
         bottom_heat_loss_conductance: float | None = 0.4,
@@ -341,15 +340,15 @@ class EvaporativeFluidCoolerSingleSpeed:
         design_air_flow_rate_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
         design_water_flow_rate: float | Literal["Autosize"] | None = ...,
         user_specified_design_capacity: float | None = ...,
-        design_entering_water_temperature: float | Literal["", "Autosize"] | None = "Autosize",
+        design_entering_water_temperature: float | Literal["Autosize"] | None = "Autosize",
         design_entering_air_temperature: float | None = 35,
         design_entering_air_wet_bulb_temperature: float | None = 25.6,
-        capacity_control: Literal["", "FanCycling", "FluidBypass"] | None = "FanCycling",
+        capacity_control: Literal["FanCycling", "FluidBypass"] | None = "FanCycling",
         sizing_factor: float | None = 1,
-        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
+        evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None = "SaturatedExit",
         evaporation_loss_factor: float | None = ...,
         drift_loss_percent: float | None = 0.008,
-        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
+        blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
@@ -370,7 +369,7 @@ class AnyThermalStorageChilledWaterStratified:
         tank_volume: float,
         tank_height: float,
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
-        tank_shape: Literal["", "HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
+        tank_shape: Literal["HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
         tank_perimeter: float | None = ...,
         setpoint_temperature_schedule_name: str | None = ...,
         deadband_temperature_difference: float | None = ...,
@@ -385,18 +384,18 @@ class AnyThermalStorageChilledWaterStratified:
         use_side_outlet_node_name: str | None = ...,
         use_side_heat_transfer_effectiveness: float | None = 1,
         use_side_availability_schedule_name: str | None = ...,
-        use_side_inlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        use_side_inlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
         use_side_outlet_height: float | None = 0,
-        use_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        use_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         source_side_inlet_node_name: str | None = ...,
         source_side_outlet_node_name: str | None = ...,
         source_side_heat_transfer_effectiveness: float | None = 1,
         source_side_availability_schedule_name: str | None = ...,
         source_side_inlet_height: float | None = 0,
-        source_side_outlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        source_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        source_side_outlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
+        source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         tank_recovery_time: float | None = 4,
-        inlet_mode: Literal["", "Fixed", "Seeking"] | None = "Fixed",
+        inlet_mode: Literal["Fixed", "Seeking"] | None = "Fixed",
         number_of_nodes: int | None = 1,
         additional_destratification_conductivity: float | None = 0,
         node_1_additional_loss_coefficient: float | None = 0,
@@ -523,7 +522,7 @@ class AnyElectricLoadCenterStorageBattery:
         maximum_module_discharging_current: float | None = ...,
         module_cut_off_voltage: float | None = ...,
         module_charge_rate_limit: float | None = 1,
-        battery_life_calculation: Literal["", "No", "Yes"] | None = "No",
+        battery_life_calculation: Literal["No", "Yes"] | None = "No",
         number_of_cycle_bins: int | None = 10,
         battery_life_curve_name: str | None = ...,
     ) -> None:
@@ -553,14 +552,14 @@ class CurveQuadraticLinear:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_y: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:QuadraticLinear`` and add it to the document.

@@ -110,62 +110,60 @@ class AnyHVACTemplateZonePTHP:
         *,
         zone_name: str,
         template_thermostat_name: str | None = ...,
-        cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        heating_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
         outdoor_air_flow_rate_per_zone: float | None = 0,
         system_availability_schedule_name: str | None = ...,
         supply_fan_operating_mode_schedule_name: str | None = ...,
-        supply_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        supply_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_fan_total_efficiency: float | None = 0.7,
         supply_fan_delta_pressure: float | None = 75,
         supply_fan_motor_efficiency: float | None = 0.9,
-        cooling_coil_type: Literal["", "SingleSpeedDX"] | None = "SingleSpeedDX",
+        cooling_coil_type: Literal["SingleSpeedDX"] | None = "SingleSpeedDX",
         cooling_coil_availability_schedule_name: str | None = ...,
-        cooling_coil_gross_rated_total_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_coil_gross_rated_total_capacity: float | Literal["Autosize"] | None = "Autosize",
+        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["Autosize"] | None = "Autosize",
         cooling_coil_gross_rated_cop: float | None = 3,
-        heat_pump_heating_coil_type: Literal["", "SingleSpeedDXHeatPump"] | None = "SingleSpeedDXHeatPump",
+        heat_pump_heating_coil_type: Literal["SingleSpeedDXHeatPump"] | None = "SingleSpeedDXHeatPump",
         heat_pump_heating_coil_availability_schedule_name: str | None = ...,
-        heat_pump_heating_coil_gross_rated_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heat_pump_heating_coil_gross_rated_capacity: float | Literal["Autosize"] | None = "Autosize",
         heat_pump_heating_coil_gross_rated_cop: float | None = 2.75,
         heat_pump_heating_minimum_outdoor_dry_bulb_temperature: float | None = -8,
         heat_pump_defrost_maximum_outdoor_dry_bulb_temperature: float | None = 5,
-        heat_pump_defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "ReverseCycle",
-        heat_pump_defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        heat_pump_defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "ReverseCycle",
+        heat_pump_defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         heat_pump_defrost_time_period_fraction: float | None = 0.058333,
-        supplemental_heating_coil_type: Literal["", "Electric", "Gas", "HotWater"] | None = "Electric",
+        supplemental_heating_coil_type: Literal["Electric", "Gas", "HotWater"] | None = "Electric",
         supplemental_heating_coil_availability_schedule_name: str | None = ...,
-        supplemental_heating_coil_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        supplemental_heating_coil_capacity: float | Literal["Autosize"] | None = "Autosize",
         supplemental_heating_coil_maximum_outdoor_dry_bulb_temperature: float | None = 21,
         supplemental_gas_heating_coil_efficiency: float | None = 0.8,
         supplemental_gas_heating_coil_parasitic_electric_load: float | None = 0,
         dedicated_outdoor_air_system_name: str | None = ...,
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = 14,
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
         design_specification_outdoor_air_object_name: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``HVACTemplate:Zone:PTHP`` and add it to the document.
 
@@ -201,8 +199,7 @@ class AirTerminalSingleDuctConstantVolumeNoReheat:
         maximum_air_flow_rate: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
-        per_person_ventilation_rate_mode: Literal["", "CurrentOccupancy", "DesignOccupancy"]
-        | None = "CurrentOccupancy",
+        per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None = "CurrentOccupancy",
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:NoReheat`` and add it to the document.
 
@@ -225,7 +222,7 @@ class FanZoneExhaust:
         maximum_flow_rate: float | None = ...,
         end_use_subcategory: str | None = "General",
         flow_fraction_schedule_name: str | None = ...,
-        system_availability_manager_coupling_mode: Literal["", "Coupled", "Decoupled"] | None = "Coupled",
+        system_availability_manager_coupling_mode: Literal["Coupled", "Decoupled"] | None = "Coupled",
         minimum_zone_temperature_limit_schedule_name: str | None = ...,
         balanced_exhaust_fraction_schedule_name: str | None = ...,
     ) -> None:
@@ -244,7 +241,7 @@ class UnitarySystemPerformanceMultispeed:
         *,
         number_of_speeds_for_heating: int,
         number_of_speeds_for_cooling: int,
-        single_mode_operation: Literal["", "No", "Yes"] | None = "No",
+        single_mode_operation: Literal["No", "Yes"] | None = "No",
         no_load_supply_air_flow_rate_ratio: float | None = 1,
         flow_ratios: Sequence[
             _g.UnitarySystemPerformanceMultispeedFlowRatiosItem | _g.UnitarySystemPerformanceMultispeedFlowRatiosGroup
@@ -271,9 +268,8 @@ class AnyChillerConstantCOP:
         design_condenser_water_flow_rate: float | Literal["Autosize"] | None = ...,
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         sizing_factor: float | None = 1,
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,

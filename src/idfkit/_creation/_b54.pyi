@@ -164,7 +164,7 @@ class LightsDefinition:
         name: str,
         /,
         *,
-        design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"]
+        design_level_calculation_method: Literal["LightingLevel", "Watts/Area", "Watts/Person"]
         | None = "LightingLevel",
         lighting_level: float | None = ...,
         watts_per_floor_area: float | None = ...,
@@ -172,7 +172,7 @@ class LightsDefinition:
         return_air_fraction: float | None = 0,
         fraction_radiant: float | None = 0,
         fraction_visible: float | None = 0,
-        return_air_fraction_calculated_from_plenum_temperature: Literal["", "No", "Yes"] | None = "No",
+        return_air_fraction_calculated_from_plenum_temperature: Literal["No", "Yes"] | None = "No",
         return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
     ) -> None:
@@ -220,11 +220,11 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped:
         rated_evaporator_inlet_air_wet_bulb_temperature: float | None = 13.5,
         rated_condenser_water_temperature: float | None = 57.5,
         rated_evaporator_air_flow_rate: float | Literal["Autocalculate"] | None = ...,
-        evaporator_fan_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "Yes",
+        evaporator_fan_power_included_in_rated_cop: Literal["No", "Yes"] | None = "Yes",
         crankcase_heater_capacity: float | None = 0,
         crankcase_heater_capacity_function_of_temperature_curve_name: str | None = ...,
         maximum_ambient_temperature_for_crankcase_heater_operation: float | None = 10,
-        evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        evaporator_air_temperature_type_for_curve_objects: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         heating_capacity_function_of_temperature_curve_name: str | None = ...,
         heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
@@ -252,11 +252,11 @@ class AnyHeatPumpPlantLoopEIRCooling:
         capacity_modifier_function_of_temperature_curve_name: str,
         electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str,
         electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str,
-        condenser_type: Literal["", "AirSource", "WaterSource"] | None = "WaterSource",
+        condenser_type: Literal["AirSource", "WaterSource"] | None = "WaterSource",
         companion_heat_pump_name: str | None = ...,
-        load_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        reference_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        load_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = ...,
         sizing_factor: float | None = 1,
     ) -> None:
@@ -366,14 +366,12 @@ class TableIndependentVariable:
         name: str,
         /,
         *,
-        interpolation_method: Literal["", "Cubic", "Linear"] | None = "Linear",
-        extrapolation_method: Literal["", "Constant", "Linear"] | None = "Constant",
+        interpolation_method: Literal["Cubic", "Linear"] | None = "Linear",
+        extrapolation_method: Literal["Constant", "Linear"] | None = "Constant",
         minimum_value: float | None = ...,
         maximum_value: float | None = ...,
         normalization_reference_value: float | None = ...,
-        unit_type: Literal[
-            "", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
-        ]
+        unit_type: Literal["Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"]
         | None = "Dimensionless",
         external_file_name: str | None = ...,
         external_file_column_number: int | None = ...,

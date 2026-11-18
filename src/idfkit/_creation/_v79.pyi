@@ -17,7 +17,7 @@ class AirflowNetworkDistributionComponentFan_v8_9_to_v9_1:
         /,
         *,
         fan_name: str,
-        supply_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"]
+        supply_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"]
         | None = "Fan:ConstantVolume",
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Fan`` and add it to the document.
@@ -54,10 +54,10 @@ class WallDetailed_v8_9_to_v9_5:
             "Zone",
         ],
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.WallDetailedVerticesItem | _g.WallDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``Wall:Detailed`` and add it to the document.

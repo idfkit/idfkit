@@ -12,7 +12,7 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class OutputControlIlluminanceMapStyle:
-    def __call__(self, /, *, column_separator: Literal["", "Comma", "Fixed", "Tab"] | None = "Comma") -> None:
+    def __call__(self, /, *, column_separator: Literal["Comma", "Fixed", "Tab"] | None = "Comma") -> None:
         """Create a new ``OutputControl:IlluminanceMap:Style`` and add it to the document.
 
         default style for the Daylighting Illuminance Map is comma -- this works well for importing into spreadsheet programs such as Excel(tm) but not so well for word processing programs -- there tab may be a better choice. fixed puts spaces between the 'columns'
@@ -31,12 +31,12 @@ class AnyFanSystemModel:
         design_maximum_air_flow_rate: float | Literal["Autosize"],
         design_pressure_rise: float,
         availability_schedule_name: str | None = ...,
-        speed_control_method: Literal["", "Continuous", "Discrete"] | None = "Discrete",
+        speed_control_method: Literal["Continuous", "Discrete"] | None = "Discrete",
         electric_power_minimum_flow_rate_fraction: float | None = 0.2,
         motor_efficiency: float | None = 0.9,
         motor_in_air_stream_fraction: float | None = 1,
         design_electric_power_consumption: float | Literal["Autosize"] | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure", "TotalEfficiencyAndPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure", "TotalEfficiencyAndPressure"]
         | None = "PowerPerFlowPerPressure",
         electric_power_per_unit_flow_rate: float | None = ...,
         electric_power_per_unit_flow_rate_per_unit_pressure: float | None = 1.66667,
@@ -74,8 +74,8 @@ class PumpVariableSpeed:
         coefficient_2_of_the_part_load_performance_curve: float | None = 1,
         coefficient_3_of_the_part_load_performance_curve: float | None = 0,
         coefficient_4_of_the_part_load_performance_curve: float | None = 0,
-        design_minimum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        design_minimum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         pump_curve_name: str | None = ...,
         impeller_diameter: float | None = ...,
@@ -87,7 +87,7 @@ class PumpVariableSpeed:
         maximum_rpm_schedule: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -113,7 +113,7 @@ class ChillerHeaterAbsorptionDoubleEffect:
         hot_water_inlet_node_name: str,
         hot_water_outlet_node_name: str,
         exhaust_source_object_type: Literal["Generator:MicroTurbine"],
-        nominal_cooling_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        nominal_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_to_cooling_capacity_ratio: float | None = 0.8,
         thermal_energy_input_to_cooling_output_ratio: float | None = 0.97,
         thermal_energy_input_to_heating_output_ratio: float | None = 1.25,
@@ -125,9 +125,9 @@ class ChillerHeaterAbsorptionDoubleEffect:
         optimum_part_load_ratio: float | None = 1,
         design_entering_condenser_water_temperature: float | None = 29,
         design_leaving_chilled_water_temperature: float | None = 7,
-        design_chilled_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        design_condenser_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        design_hot_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        design_chilled_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        design_condenser_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        design_hot_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         cooling_capacity_function_of_temperature_curve_name: str | None = ...,
         fuel_input_to_cooling_output_ratio_function_of_temperature_curve_name: str | None = ...,
         fuel_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_name: str | None = ...,
@@ -135,9 +135,8 @@ class ChillerHeaterAbsorptionDoubleEffect:
         electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_name: str | None = ...,
         heating_capacity_function_of_cooling_capacity_curve_name: str | None = ...,
         fuel_input_to_heat_output_ratio_during_heating_only_operation_curve_name: str | None = ...,
-        temperature_curve_input_variable: Literal["", "EnteringCondenser", "LeavingCondenser"]
-        | None = "EnteringCondenser",
-        condenser_type: Literal["", "AirCooled", "WaterCooled"] | None = "WaterCooled",
+        temperature_curve_input_variable: Literal["EnteringCondenser", "LeavingCondenser"] | None = "EnteringCondenser",
+        condenser_type: Literal["AirCooled", "WaterCooled"] | None = "WaterCooled",
         chilled_water_temperature_lower_limit: float | None = 2,
         exhaust_source_object_name: str | None = ...,
         sizing_factor: float | None = 1,
@@ -167,7 +166,7 @@ class GroundHeatExchangerSystem:
         ground_thermal_conductivity: float,
         ground_thermal_heat_capacity: float,
         ghe_vertical_responsefactors_object_name: str | None = ...,
-        g_function_calculation_method: Literal["", "FullDesign", "UBHWTcalc", "UHFcalc"] | None = "UHFcalc",
+        g_function_calculation_method: Literal["FullDesign", "UBHWTcalc", "UHFcalc"] | None = "UHFcalc",
         ghe_vertical_sizing_object_type: Literal["GroundHeatExchanger:Vertical:Sizing:Rectangle"] | None = ...,
         ghe_vertical_sizing_object_name: str | None = ...,
         ghe_vertical_array_object_name: str | None = ...,
@@ -215,7 +214,7 @@ class SetpointManagerReturnAirBypassFlow:
         /,
         *,
         hvac_air_loop_name: str,
-        control_variable: Literal["", "Flow"] | None = "Flow",
+        control_variable: Literal["Flow"] | None = "Flow",
         temperature_setpoint_schedule_name: str | None = ...,
     ) -> None:
         """Create a new ``SetpointManager:ReturnAirBypassFlow`` and add it to the document.

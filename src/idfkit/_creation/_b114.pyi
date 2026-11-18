@@ -13,12 +13,12 @@ class SimulationControl:
         self,
         /,
         *,
-        do_zone_sizing_calculation: Literal["", "No", "Yes"] | None = "No",
-        do_system_sizing_calculation: Literal["", "No", "Yes"] | None = "No",
-        do_plant_sizing_calculation: Literal["", "No", "Yes"] | None = "No",
-        run_simulation_for_sizing_periods: Literal["", "No", "Yes"] | None = "Yes",
-        run_simulation_for_weather_file_run_periods: Literal["", "No", "Yes"] | None = "Yes",
-        do_hvac_sizing_simulation_for_sizing_periods: Literal["", "No", "Yes"] | None = "No",
+        do_zone_sizing_calculation: Literal["No", "Yes"] | None = "No",
+        do_system_sizing_calculation: Literal["No", "Yes"] | None = "No",
+        do_plant_sizing_calculation: Literal["No", "Yes"] | None = "No",
+        run_simulation_for_sizing_periods: Literal["No", "Yes"] | None = "Yes",
+        run_simulation_for_weather_file_run_periods: Literal["No", "Yes"] | None = "Yes",
+        do_hvac_sizing_simulation_for_sizing_periods: Literal["No", "Yes"] | None = "No",
         maximum_number_of_hvac_sizing_simulation_passes: int | None = 1,
     ) -> None:
         """Create a new ``SimulationControl`` and add it to the document.
@@ -34,12 +34,12 @@ class ZoneAirMassFlowConservation:
         /,
         *,
         adjust_zone_mixing_and_return_for_air_mass_flow_balance: Literal[
-            "", "AdjustMixingOnly", "AdjustMixingThenReturn", "AdjustReturnOnly", "AdjustReturnThenMixing", "None"
+            "AdjustMixingOnly", "AdjustMixingThenReturn", "AdjustReturnOnly", "AdjustReturnThenMixing", "None"
         ]
         | None = "None",
-        infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
+        infiltration_balancing_method: Literal["AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
         | None = "AddInfiltrationFlow",
-        infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
+        infiltration_balancing_zones: Literal["AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
     ) -> None:
         """Create a new ``ZoneAirMassFlowConservation`` and add it to the document.
 
@@ -98,9 +98,8 @@ class ChillerConstantCOP:
         design_condenser_water_flow_rate: float | Literal["Autosize"] | None = ...,
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         sizing_factor: float | None = 1,
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
@@ -151,8 +150,8 @@ class CurveSigmoid:
         maximum_value_of_x: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:Sigmoid`` and add it to the document.
@@ -169,7 +168,7 @@ class OutputMeterMeterFileOnly:
         *,
         key_name: str,
         reporting_frequency: Literal[
-            "", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
+            "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
     ) -> None:

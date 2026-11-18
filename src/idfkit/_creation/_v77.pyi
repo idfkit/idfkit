@@ -33,7 +33,7 @@ class GeneratorInternalCombustionEngine_v8_9_to_v9_2:
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         fuel_type: Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
+            "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
         ]
         | None = "Diesel",
         heat_recovery_maximum_temperature: float | None = 80,
@@ -64,7 +64,7 @@ class ThermalStorageIceDetailed_v8_9_to_v9_1:
         parasitic_electric_load_during_charging: float | None = ...,
         tank_loss_coefficient: float | None = ...,
         freezing_temperature_of_storage_medium: float | None = 0,
-        thaw_process_indicator: Literal["", "InsideMelt", "OutsideMelt"] | None = "OutsideMelt",
+        thaw_process_indicator: Literal["InsideMelt", "OutsideMelt"] | None = "OutsideMelt",
     ) -> None:
         """Create a new ``ThermalStorage:Ice:Detailed`` and add it to the document.
 

@@ -18,7 +18,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         /,
         *,
         simple_buoyancy_vertical_wall_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "FohannoPolidoriVerticalWall",
@@ -30,27 +29,26 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "FohannoPolidoriVerticalWall",
         simple_buoyancy_vertical_wall_user_curve_name: str | None = ...,
         simple_buoyancy_stable_horizontal_equation_source: Literal[
-            "", "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "AlamdariHammondStableHorizontal",
         simple_buoyancy_stable_horizontal_equation_user_curve_name: str | None = ...,
         simple_buoyancy_unstable_horizontal_equation_source: Literal[
-            "", "AlamdariHammondUnstableHorizontal", "UserCurve", "WaltonUnstableHorizontalOrTilt"
+            "AlamdariHammondUnstableHorizontal", "UserCurve", "WaltonUnstableHorizontalOrTilt"
         ]
         | None = "AlamdariHammondUnstableHorizontal",
         simple_buoyancy_unstable_horizontal_equation_user_curve_name: str | None = ...,
         simple_buoyancy_stable_tilted_equation_source: Literal[
-            "", "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "WaltonStableHorizontalOrTilt",
         simple_buoyancy_stable_tilted_equation_user_curve_name: str | None = ...,
         simple_buoyancy_unstable_tilted_equation_source: Literal[
-            "", "AlamdariHammondUnstableHorizontal", "UserCurve", "WaltonUnstableHorizontalOrTilt"
+            "AlamdariHammondUnstableHorizontal", "UserCurve", "WaltonUnstableHorizontalOrTilt"
         ]
         | None = "WaltonUnstableHorizontalOrTilt",
         simple_buoyancy_unstable_tilted_equation_user_curve_name: str | None = ...,
         simple_buoyancy_windows_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "FohannoPolidoriVerticalWall",
@@ -61,7 +59,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "ISO15099Windows",
         simple_buoyancy_windows_equation_user_curve_name: str | None = ...,
         floor_heat_ceiling_cool_vertical_wall_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "FohannoPolidoriVerticalWall",
@@ -72,12 +69,11 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "KhalifaEq3WallAwayFromHeat",
         floor_heat_ceiling_cool_vertical_wall_equation_user_curve_name: str | None = ...,
         floor_heat_ceiling_cool_stable_horizontal_equation_source: Literal[
-            "", "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "AlamdariHammondStableHorizontal",
         floor_heat_ceiling_cool_stable_horizontal_equation_user_curve_name: str | None = ...,
         floor_heat_ceiling_cool_unstable_horizontal_equation_source: Literal[
-            "",
             "AlamdariHammondUnstableHorizontal",
             "KhalifaEq4CeilingAwayFromHeat",
             "UserCurve",
@@ -86,40 +82,31 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "KhalifaEq4CeilingAwayFromHeat",
         floor_heat_ceiling_cool_unstable_horizontal_equation_user_curve_name: str | None = ...,
         floor_heat_ceiling_cool_heated_floor_equation_source: Literal[
-            "",
-            "AlamdariHammondUnstableHorizontal",
-            "AwbiHattonHeatedFloor",
-            "UserCurve",
-            "WaltonUnstableHorizontalOrTilt",
+            "AlamdariHammondUnstableHorizontal", "AwbiHattonHeatedFloor", "UserCurve", "WaltonUnstableHorizontalOrTilt"
         ]
         | None = "AwbiHattonHeatedFloor",
         floor_heat_ceiling_cool_heated_floor_equation_user_curve_name: str | None = ...,
         floor_heat_ceiling_cool_chilled_ceiling_equation_source: Literal[
-            "",
-            "AlamdariHammondUnstableHorizontal",
-            "KaradagChilledCeiling",
-            "UserCurve",
-            "WaltonUnstableHorizontalOrTilt",
+            "AlamdariHammondUnstableHorizontal", "KaradagChilledCeiling", "UserCurve", "WaltonUnstableHorizontalOrTilt"
         ]
         | None = "KaradagChilledCeiling",
         floor_heat_ceiling_cool_chilled_ceiling_equation_user_curve_name: str | None = ...,
         floor_heat_ceiling_cool_stable_tilted_equation_source: Literal[
-            "", "AlamdariHammondStableHorizontal", "ISO15099Windows", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "AlamdariHammondStableHorizontal", "ISO15099Windows", "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "WaltonStableHorizontalOrTilt",
         floor_heat_ceiling_cool_stable_tilted_equation_user_curve_name: str | None = ...,
         floor_heat_ceiling_cool_unstable_tilted_equation_source: Literal[
-            "", "AlamdariHammondUnstableHorizontal", "ISO15099Windows", "UserCurve", "WaltonUnstableHorizontalOrTilt"
+            "AlamdariHammondUnstableHorizontal", "ISO15099Windows", "UserCurve", "WaltonUnstableHorizontalOrTilt"
         ]
         | None = "WaltonUnstableHorizontalOrTilt",
         floor_heat_ceiling_cool_unstable_tilted_equation_user_curve_name: str | None = ...,
         floor_heat_ceiling_cool_window_equation_source: Literal[
-            "", "ASHRAEVerticalWall", "AlamdariHammondVerticalWall", "ISO15099Windows", "UserCurve"
+            "ASHRAEVerticalWall", "AlamdariHammondVerticalWall", "ISO15099Windows", "UserCurve"
         ]
         | None = "ISO15099Windows",
         floor_heat_ceiling_cool_window_equation_user_curve_name: str | None = ...,
         wall_panel_heating_vertical_wall_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "FohannoPolidoriVerticalWall",
@@ -130,7 +117,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "KhalifaEq6NonHeatedWalls",
         wall_panel_heating_vertical_wall_equation_user_curve_name: str | None = ...,
         wall_panel_heating_heated_wall_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "AwbiHattonHeatedWall",
@@ -142,12 +128,11 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "AwbiHattonHeatedWall",
         wall_panel_heating_heated_wall_equation_user_curve_name: str | None = ...,
         wall_panel_heating_stable_horizontal_equation_source: Literal[
-            "", "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "AlamdariHammondStableHorizontal",
         wall_panel_heating_stable_horizontal_equation_user_curve_name: str | None = ...,
         wall_panel_heating_unstable_horizontal_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondUnstableHorizontal",
             "KaradagChilledCeiling",
@@ -158,17 +143,16 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "KhalifaEq7Ceiling",
         wall_panel_heating_unstable_horizontal_equation_user_curve_name: str | None = ...,
         wall_panel_heating_stable_tilted_equation_source: Literal[
-            "", "AlamdariHammondStableHorizontal", "ISO15099Windows", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "AlamdariHammondStableHorizontal", "ISO15099Windows", "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "WaltonStableHorizontalOrTilt",
         wall_panel_heating_stable_tilted_equation_user_curve_name: str | None = ...,
         wall_panel_heating_unstable_tilted_equation_source: Literal[
-            "", "AlamdariHammondUnstableHorizontal", "ISO15099Windows", "UserCurve", "WaltonUnstableHorizontalOrTilt"
+            "AlamdariHammondUnstableHorizontal", "ISO15099Windows", "UserCurve", "WaltonUnstableHorizontalOrTilt"
         ]
         | None = "WaltonUnstableHorizontalOrTilt",
         wall_panel_heating_unstable_tilted_equation_user_curve_name: str | None = ...,
         wall_panel_heating_window_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "FohannoPolidoriVerticalWall",
@@ -178,7 +162,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "ISO15099Windows",
         wall_panel_heating_window_equation_user_curve_name: str | None = ...,
         convective_zone_heater_vertical_wall_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "FohannoPolidoriVerticalWall",
@@ -190,7 +173,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "FohannoPolidoriVerticalWall",
         convective_zone_heater_vertical_wall_equation_user_curve_name: str | None = ...,
         convective_zone_heater_vertical_walls_near_heater_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "AwbiHattonHeatedWall",
@@ -202,12 +184,11 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "KhalifaEq5WallNearHeat",
         convective_zone_heater_vertical_walls_near_heater_equation_user_curve_name: str | None = ...,
         convective_zone_heater_stable_horizontal_equation_source: Literal[
-            "", "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "AlamdariHammondStableHorizontal",
         convective_zone_heater_stable_horizontal_equation_user_curve_name: str | None = ...,
         convective_zone_heater_unstable_horizontal_equation_source: Literal[
-            "",
             "AlamdariHammondUnstableHorizontal",
             "KhalifaEq4CeilingAwayFromHeat",
             "KhalifaEq7Ceiling",
@@ -217,17 +198,16 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "KhalifaEq7Ceiling",
         convective_zone_heater_unstable_horizontal_equation_user_curve_name: str | None = ...,
         convective_zone_heater_stable_tilted_equation_source: Literal[
-            "", "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "WaltonStableHorizontalOrTilt",
         convective_zone_heater_stable_tilted_equation_user_curve_name: str | None = ...,
         convective_zone_heater_unstable_tilted_equation_source: Literal[
-            "", "AlamdariHammondUnstableHorizontal", "UserCurve", "WaltonUnstableHorizontalOrTilt"
+            "AlamdariHammondUnstableHorizontal", "UserCurve", "WaltonUnstableHorizontalOrTilt"
         ]
         | None = "WaltonUnstableHorizontalOrTilt",
         convective_zone_heater_unstable_tilted_equation_user_curve_name: str | None = ...,
         convective_zone_heater_windows_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "FohannoPolidoriVerticalWall",
@@ -238,7 +218,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "ISO15099Windows",
         convective_zone_heater_windows_equation_user_curve_name: str | None = ...,
         central_air_diffuser_wall_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "BeausoleilMorrisonMixedAssistedWall",
@@ -252,7 +231,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "GoldsteinNovoselacCeilingDiffuserWalls",
         central_air_diffuser_wall_equation_user_curve_name: str | None = ...,
         central_air_diffuser_ceiling_equation_source: Literal[
-            "",
             "BeausoleilMorrisonMixedStableCeiling",
             "BeausoleilMorrisonMixedUnstableCeiling",
             "FisherPedersenCeilingDiffuserCeiling",
@@ -261,7 +239,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "FisherPedersenCeilingDiffuserCeiling",
         central_air_diffuser_ceiling_equation_user_curve_name: str | None = ...,
         central_air_diffuser_floor_equation_source: Literal[
-            "",
             "BeausoleilMorrisonMixedStableFloor",
             "BeausoleilMorrisonMixedUnstableFloor",
             "FisherPedersenCeilingDiffuserFloor",
@@ -271,7 +248,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "GoldsteinNovoselacCeilingDiffuserFloor",
         central_air_diffuser_floor_equation_user_curve_name: str | None = ...,
         central_air_diffuser_window_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "BeausoleilMorrisonMixedAssistedWall",
@@ -285,7 +261,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "GoldsteinNovoselacCeilingDiffuserWindow",
         central_air_diffuser_window_equation_user_curve_name: str | None = ...,
         mechanical_zone_fan_circulation_vertical_wall_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "BeausoleilMorrisonMixedAssistedWall",
@@ -300,12 +275,11 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "KhalifaEq3WallAwayFromHeat",
         mechanical_zone_fan_circulation_vertical_wall_equation_user_curve_name: str | None = ...,
         mechanical_zone_fan_circulation_stable_horizontal_equation_source: Literal[
-            "", "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "AlamdariHammondStableHorizontal", "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "AlamdariHammondStableHorizontal",
         mechanical_zone_fan_circulation_stable_horizontal_equation_user_curve_name: str | None = ...,
         mechanical_zone_fan_circulation_unstable_horizontal_equation_source: Literal[
-            "",
             "AlamdariHammondUnstableHorizontal",
             "KhalifaEq4CeilingAwayFromHeat",
             "UserCurve",
@@ -314,17 +288,16 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "KhalifaEq4CeilingAwayFromHeat",
         mechanical_zone_fan_circulation_unstable_horizontal_equation_user_curve_name: str | None = ...,
         mechanical_zone_fan_circulation_stable_tilted_equation_source: Literal[
-            "", "UserCurve", "WaltonStableHorizontalOrTilt"
+            "UserCurve", "WaltonStableHorizontalOrTilt"
         ]
         | None = "WaltonStableHorizontalOrTilt",
         mechanical_zone_fan_circulation_stable_tilted_equation_user_curve_name: str | None = ...,
         mechanical_zone_fan_circulation_unstable_tilted_equation_source: Literal[
-            "", "AlamdariHammondUnstableHorizontal", "UserCurve", "WaltonUnstableHorizontalOrTilt"
+            "AlamdariHammondUnstableHorizontal", "UserCurve", "WaltonUnstableHorizontalOrTilt"
         ]
         | None = "WaltonUnstableHorizontalOrTilt",
         mechanical_zone_fan_circulation_unstable_tilted_equation_user_curve_name: str | None = ...,
         mechanical_zone_fan_circulation_window_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "FohannoPolidoriVerticalWall",
@@ -335,7 +308,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "ISO15099Windows",
         mechanical_zone_fan_circulation_window_equation_user_curve_name: str | None = ...,
         mixed_regime_buoyancy_assisting_flow_on_walls_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "BeausoleilMorrisonMixedAssistedWall",
@@ -347,7 +319,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "BeausoleilMorrisonMixedAssistedWall",
         mixed_regime_buoyancy_assisting_flow_on_walls_equation_user_curve_name: str | None = ...,
         mixed_regime_buoyancy_opposing_flow_on_walls_equation_source: Literal[
-            "",
             "ASHRAEVerticalWall",
             "AlamdariHammondVerticalWall",
             "BeausoleilMorrisonMixedOpposingWall",
@@ -359,7 +330,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "BeausoleilMorrisonMixedOpposingWall",
         mixed_regime_buoyancy_opposing_flow_on_walls_equation_user_curve_name: str | None = ...,
         mixed_regime_stable_floor_equation_source: Literal[
-            "",
             "AlamdariHammondStableHorizontal",
             "BeausoleilMorrisonMixedStableFloor",
             "UserCurve",
@@ -368,7 +338,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "BeausoleilMorrisonMixedStableFloor",
         mixed_regime_stable_floor_equation_user_curve_name: str | None = ...,
         mixed_regime_unstable_floor_equation_source: Literal[
-            "",
             "AlamdariHammondUnstableHorizontal",
             "BeausoleilMorrisonMixedUnstableFloor",
             "UserCurve",
@@ -377,7 +346,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "BeausoleilMorrisonMixedUnstableFloor",
         mixed_regime_unstable_floor_equation_user_curve_name: str | None = ...,
         mixed_regime_stable_ceiling_equation_source: Literal[
-            "",
             "AlamdariHammondStableHorizontal",
             "BeausoleilMorrisonMixedStableCeiling",
             "UserCurve",
@@ -386,7 +354,6 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "BeausoleilMorrisonMixedStableCeiling",
         mixed_regime_stable_ceiling_equation_user_curve_name: str | None = ...,
         mixed_regime_unstable_ceiling_equation_source: Literal[
-            "",
             "AlamdariHammondUnstableHorizontal",
             "BeausoleilMorrisonMixedUnstableCeiling",
             "UserCurve",
@@ -395,7 +362,7 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         | None = "BeausoleilMorrisonMixedUnstableCeiling",
         mixed_regime_unstable_ceiling_equation_user_curve_name: str | None = ...,
         mixed_regime_window_equation_source: Literal[
-            "", "GoldsteinNovoselacCeilingDiffuserWindow", "ISO15099Windows", "UserCurve"
+            "GoldsteinNovoselacCeilingDiffuserWindow", "ISO15099Windows", "UserCurve"
         ]
         | None = "GoldsteinNovoselacCeilingDiffuserWindow",
         mixed_regime_window_equation_user_curve_name: str | None = ...,
@@ -474,8 +441,8 @@ class AirLoopHVACUnitaryFurnaceHeatOnly:
         heating_coil_name: str,
         availability_schedule_name: str | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        maximum_supply_air_temperature: float | Literal["", "Autosize"] | None = 80,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
     ) -> None:
         """Create a new ``AirLoopHVAC:Unitary:Furnace:HeatOnly`` and add it to the document.
 
@@ -524,11 +491,11 @@ class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass:
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         outdoor_air_flow_rate_multiplier_schedule_name: str | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        priority_control_mode: Literal["", "CoolingPriority", "HeatingPriority", "LoadPriority", "ZonePriority"]
+        priority_control_mode: Literal["CoolingPriority", "HeatingPriority", "LoadPriority", "ZonePriority"]
         | None = "ZonePriority",
         minimum_outlet_air_temperature_during_cooling_operation: float | None = 8,
         maximum_outlet_air_temperature_during_heating_operation: float | None = 50,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         plenum_or_mixer_inlet_node_name: str | None = ...,
         minimum_runtime_before_operating_mode_change: float | None = 0.25,
     ) -> None:
@@ -568,7 +535,7 @@ class AnyAirConditionerVariableRefrigerantFlow:
         heating_energy_input_ratio_modifier_function_of_low_temperature_curve_name: str | None = ...,
         heating_energy_input_ratio_boundary_curve_name: str | None = ...,
         heating_energy_input_ratio_modifier_function_of_high_temperature_curve_name: str | None = ...,
-        heating_performance_curve_outdoor_temperature_type: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        heating_performance_curve_outdoor_temperature_type: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         heating_energy_input_ratio_modifier_function_of_low_part_load_ratio_curve_name: str | None = ...,
         heating_energy_input_ratio_modifier_function_of_high_part_load_ratio_curve_name: str | None = ...,
@@ -577,11 +544,11 @@ class AnyAirConditionerVariableRefrigerantFlow:
         minimum_heat_pump_part_load_ratio: float | None = 0.15,
         zone_name_for_master_thermostat_location: str | None = ...,
         master_thermostat_priority_control_type: Literal[
-            "", "LoadPriority", "MasterThermostatPriority", "Scheduled", "ThermostatOffsetPriority", "ZonePriority"
+            "LoadPriority", "MasterThermostatPriority", "Scheduled", "ThermostatOffsetPriority", "ZonePriority"
         ]
         | None = "MasterThermostatPriority",
         thermostat_priority_schedule_name: str | None = ...,
-        heat_pump_waste_heat_recovery: Literal["", "No", "Yes"] | None = "No",
+        heat_pump_waste_heat_recovery: Literal["No", "Yes"] | None = "No",
         equivalent_piping_length_used_for_piping_correction_factor_in_cooling_mode: float | None = ...,
         vertical_height_used_for_piping_correction_factor: float | None = ...,
         piping_correction_factor_for_length_in_cooling_mode_curve_name: str | None = ...,
@@ -593,25 +560,24 @@ class AnyAirConditionerVariableRefrigerantFlow:
         number_of_compressors: int | None = 2,
         ratio_of_compressor_size_to_total_compressor_capacity: float | None = 0.5,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "Resistive",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "Resistive",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_energy_input_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
         water_condenser_volume_flow_rate: float | Literal["Autosize"] | None = ...,
         evaporative_condenser_effectiveness: float | None = 0.9,
         evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         supply_water_storage_tank_name: str | None = ...,
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -654,7 +620,7 @@ class LoadProfilePlant:
         load_schedule_name: str,
         peak_flow_rate: float,
         flow_rate_fraction_schedule_name: str,
-        plant_loop_fluid_type: Literal["", "Steam", "Water"] | None = "Water",
+        plant_loop_fluid_type: Literal["Steam", "Water"] | None = "Water",
         degree_of_subcooling: float | None = 5,
         degree_of_loop_subcooling: float | None = 20,
     ) -> None:
@@ -728,7 +694,7 @@ class SetpointManagerSingleZoneReheat:
         zone_node_name: str,
         zone_inlet_node_name: str,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "Temperature"] | None = "Temperature",
+        control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_supply_air_temperature: float | None = -99,
         maximum_supply_air_temperature: float | None = 99,
     ) -> None:
@@ -769,15 +735,15 @@ class RefrigerationSystem:
         refrigeration_system_working_fluid_type: str,
         refrigerated_case_or_walkin_or_caseandwalkinlist_name: str | None = ...,
         refrigeration_transfer_load_or_transferload_list_name: str | None = ...,
-        suction_temperature_control_type: Literal["", "ConstantSuctionTemperature", "FloatSuctionTemperature"]
+        suction_temperature_control_type: Literal["ConstantSuctionTemperature", "FloatSuctionTemperature"]
         | None = "ConstantSuctionTemperature",
         mechanical_subcooler_name: str | None = ...,
         liquid_suction_heat_exchanger_subcooler_name: str | None = ...,
         sum_ua_suction_piping: float | None = 0,
         suction_piping_zone_name: str | None = ...,
         end_use_subcategory: str | None = "General",
-        number_of_compressor_stages: Literal[1, 2, ""] | None = 1,
-        intercooler_type: Literal["", "Flash Intercooler", "None", "Shell-and-Coil Intercooler"] | None = "None",
+        number_of_compressor_stages: Literal[1, 2] | None = 1,
+        intercooler_type: Literal["Flash Intercooler", "None", "Shell-and-Coil Intercooler"] | None = "None",
         shell_and_coil_intercooler_effectiveness: float | None = 0.8,
         high_stage_compressor_or_compressorlist_name: str | None = ...,
     ) -> None:
@@ -832,9 +798,9 @@ class HybridModelZone:
         begin_day_of_month: int,
         end_month: int,
         end_day_of_month: int,
-        calculate_zone_internal_thermal_mass: Literal["", "No", "Yes"] | None = "No",
-        calculate_zone_air_infiltration_rate: Literal["", "No", "Yes"] | None = "No",
-        calculate_zone_people_count: Literal["", "No", "Yes"] | None = "No",
+        calculate_zone_internal_thermal_mass: Literal["No", "Yes"] | None = "No",
+        calculate_zone_air_infiltration_rate: Literal["No", "Yes"] | None = "No",
+        calculate_zone_people_count: Literal["No", "Yes"] | None = "No",
         zone_measured_air_temperature_schedule_name: str | None = ...,
         zone_measured_air_humidity_ratio_schedule_name: str | None = ...,
         zone_measured_air_co2_concentration_schedule_name: str | None = ...,
@@ -870,10 +836,10 @@ class CurveQuartic:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:Quartic`` and add it to the document.

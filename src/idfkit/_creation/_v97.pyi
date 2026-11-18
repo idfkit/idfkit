@@ -19,7 +19,7 @@ class HVACTemplatePlantBoiler_v8_9_to_v9_2:
         /,
         *,
         boiler_type: Literal["CondensingHotWaterBoiler", "DistrictHotWater", "HotWaterBoiler"],
-        capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        capacity: float | Literal["Autosize"] | None = "Autosize",
         efficiency: float | None = 0.8,
         fuel_type: Literal[
             "Coal",
@@ -92,7 +92,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
         maximum_supply_air_temperature_schedule_name: str | None = ...,
         minimum_supply_air_humidity_ratio_schedule_name: str | None = ...,
         maximum_supply_air_humidity_ratio_schedule_name: str | None = ...,
-        method_to_choose_controlled_inputs_and_part_runtime_fraction: Literal["", "Automatic", "User Defined"]
+        method_to_choose_controlled_inputs_and_part_runtime_fraction: Literal["Automatic", "User Defined"]
         | None = "Automatic",
         relief_node_name: str | None = ...,
         system_maximum_supply_air_flow_rate: float | None = ...,
@@ -101,7 +101,6 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
         number_of_operating_modes: float | None = 1,
         minimum_time_between_mode_change: float | None = 10,
         first_fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -119,7 +118,6 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
         ]
         | None = "Electricity",
         second_fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -137,7 +135,6 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
         ]
         | None = "None",
         third_fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -154,7 +151,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
             "Steam",
         ]
         | None = "None",
-        objective_function_to_minimize: Literal["", "Electricity Use", "Second Fuel Use", "Third Fuel Use", "Water Use"]
+        objective_function_to_minimize: Literal["Electricity Use", "Second Fuel Use", "Third Fuel Use", "Water Use"]
         | None = "Electricity Use",
         design_specification_outdoor_air_object_name: str | None = ...,
         mode_0_name: str | None = ...,

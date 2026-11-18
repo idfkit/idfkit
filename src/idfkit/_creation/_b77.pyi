@@ -39,7 +39,7 @@ class SurfacePropertyExposedFoundationPerimeter:
         surface_name: str,
         exposed_perimeter_calculation_method: Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"],
         total_exposed_perimeter: float | None = ...,
-        exposed_perimeter_fraction: float | None = 1,
+        exposed_perimeter_fraction: float | None = ...,
         surfaces: Sequence[
             _g.SurfacePropertyExposedFoundationPerimeterSurfacesItem
             | _g.SurfacePropertyExposedFoundationPerimeterSurfacesGroup
@@ -108,7 +108,7 @@ class HVACTemplatePlantBoilerObjectReference:
         /,
         *,
         boiler_name: str,
-        boiler_object_type: Literal["", "Boiler:HotWater"] | None = "Boiler:HotWater",
+        boiler_object_type: Literal["Boiler:HotWater"] | None = "Boiler:HotWater",
         priority: float | None = ...,
         template_plant_loop_type: Literal["HotWater", "MixedWater"] | None = ...,
     ) -> None:
@@ -142,10 +142,10 @@ class AnyCoilHeatingDXSingleSpeed:
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
         crankcase_heater_capacity: float | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "ReverseCycle",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "ReverseCycle",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         region_number_for_calculating_hspf: int | None = 4,
         evaporator_air_inlet_node_name: str | None = ...,
         zone_name_for_evaporator_placement: str | None = ...,
@@ -170,10 +170,10 @@ class SetpointManagerColdest:
         *,
         hvac_air_loop_name: str,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "Temperature"] | None = "Temperature",
+        control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_setpoint_temperature: float | None = 20,
         maximum_setpoint_temperature: float | None = 50,
-        strategy: Literal["", "MinimumTemperature"] | None = "MinimumTemperature",
+        strategy: Literal["MinimumTemperature"] | None = "MinimumTemperature",
     ) -> None:
         """Create a new ``SetpointManager:Coldest`` and add it to the document.
 

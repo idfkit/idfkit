@@ -132,16 +132,16 @@ class RunPeriod_v8_9:
         end_month: float,
         end_day_of_month: float,
         day_of_week_for_start_day: Literal[
-            "", "Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"
+            "Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"
         ]
         | None = "UseWeatherFile",
-        use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
-        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_holidays_and_special_days: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        apply_weekend_holiday_rule: Literal["No", "Yes"] | None = "No",
+        use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
         number_of_times_runperiod_to_be_repeated: float | None = 1,
-        increment_day_of_week_on_repeat: Literal["", "No", "Yes"] | None = "Yes",
+        increment_day_of_week_on_repeat: Literal["No", "Yes"] | None = "Yes",
         start_year: float | None = ...,
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
@@ -158,11 +158,10 @@ class Building_v8_9_to_v22_1:
         /,
         *,
         north_axis: float | None = 0,
-        terrain: Literal["", "City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
+        terrain: Literal["City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
         loads_convergence_tolerance_value: float | None = 0.04,
         temperature_convergence_tolerance_value: float | None = 0.4,
         solar_distribution: Literal[
-            "",
             "FullExterior",
             "FullExteriorWithReflections",
             "FullInteriorAndExterior",

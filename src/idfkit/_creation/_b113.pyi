@@ -202,7 +202,6 @@ class HeatPumpAirToWaterFuelFiredHeating:
         air_source_node_name: str | None = ...,
         companion_cooling_heat_pump_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -219,15 +218,15 @@ class HeatPumpAirToWaterFuelFiredHeating:
         nominal_cop: float | None = 1,
         design_flow_rate: float | Literal["Autosize"] | None = ...,
         design_supply_temperature: float | None = 60,
-        design_temperature_lift: float | Literal["", "Autosize"] | None = 11.1,
+        design_temperature_lift: float | Literal["Autosize"] | None = 11.1,
         sizing_factor: float | None = 1,
-        flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
-        outdoor_air_temperature_curve_input_variable: Literal["", "DryBulb", "WetBulb"] | None = "DryBulb",
-        water_temperature_curve_input_variable: Literal["", "EnteringCondenser", "LeavingCondenser"]
+        flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
+        outdoor_air_temperature_curve_input_variable: Literal["DryBulb", "WetBulb"] | None = "DryBulb",
+        water_temperature_curve_input_variable: Literal["EnteringCondenser", "LeavingCondenser"]
         | None = "EnteringCondenser",
         minimum_part_load_ratio: float | None = 0.1,
         maximum_part_load_ratio: float | None = 1,
-        defrost_control_type: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_control_type: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_operation_time_fraction: float | None = 0,
         fuel_energy_input_ratio_defrost_adjustment_curve_name: str | None = ...,
         resistive_defrost_heater_capacity: float | None = 0,
@@ -262,7 +261,7 @@ class FluidCoolerTwoSpeed:
         high_fan_speed_fan_power: float | Literal["Autosize"],
         low_fan_speed_air_flow_rate: float | Literal["Autocalculate"],
         low_fan_speed_fan_power: float | Literal["Autocalculate"],
-        performance_input_method: Literal["", "NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
+        performance_input_method: Literal["NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
         | None = "NominalCapacity",
         high_fan_speed_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
         low_fan_speed_u_factor_times_area_value: float | Literal["Autocalculate"] | None = ...,
@@ -300,14 +299,14 @@ class CurveBiquadratic:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_y: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:Biquadratic`` and add it to the document.

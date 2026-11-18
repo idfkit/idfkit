@@ -81,7 +81,7 @@ class AnySpace:
         /,
         *,
         zone_name: str,
-        floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        floor_area: float | Literal["Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
         tags: Sequence[_g.SpaceTagsItem | _g.SpaceTagsGroup] = ...,
     ) -> None:
@@ -99,7 +99,7 @@ class ShadingBuildingDetailed:
         /,
         *,
         transmittance_schedule_name: str | None = ...,
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.ShadingBuildingDetailedVerticesItem | _g.ShadingBuildingDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``Shading:Building:Detailed`` and add it to the document.
@@ -120,18 +120,17 @@ class AnyElectricEquipmentITEAirCooled:
         design_fan_air_flow_rate_per_power_input: float,
         air_flow_function_of_loading_and_air_temperature_curve_name: str,
         fan_power_input_function_of_flow_curve_name: str,
-        air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"]
+        air_flow_calculation_method: Literal["FlowControlWithApproachTemperatures", "FlowFromSystem"]
         | None = "FlowFromSystem",
-        design_power_input_calculation_method: Literal["", "Watts/Area", "Watts/Unit"] | None = "Watts/Unit",
+        design_power_input_calculation_method: Literal["Watts/Area", "Watts/Unit"] | None = "Watts/Unit",
         watts_per_unit: float | None = ...,
         number_of_units: float | None = 1,
         design_power_input_schedule_name: str | None = ...,
         cpu_loading_schedule_name: str | None = ...,
         design_fan_power_input_fraction: float | None = 0,
         design_entering_air_temperature: float | None = 15,
-        environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None"] | None = "None",
-        air_inlet_connection_type: Literal["", "AdjustedSupply", "RoomAirModel", "ZoneAirNode"]
-        | None = "AdjustedSupply",
+        environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "None"] | None = "None",
+        air_inlet_connection_type: Literal["AdjustedSupply", "RoomAirModel", "ZoneAirNode"] | None = "AdjustedSupply",
         air_inlet_room_air_model_node_name: str | None = ...,
         air_outlet_room_air_model_node_name: str | None = ...,
         supply_air_node_name: str | None = ...,
@@ -312,7 +311,7 @@ class AnyCoilWaterHeatingDesuperheater:
         dead_band_temperature_difference: float | None = 5,
         rated_heat_reclaim_recovery_efficiency: float | None = ...,
         heat_reclaim_efficiency_function_of_temperature_curve_name: str | None = ...,
-        tank_object_type: Literal["", "WaterHeater:Mixed"] | None = "WaterHeater:Mixed",
+        tank_object_type: Literal["WaterHeater:Mixed"] | None = "WaterHeater:Mixed",
         water_pump_power: float | None = 0,
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
@@ -365,11 +364,10 @@ class AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass:
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         outdoor_air_flow_rate_multiplier_schedule_name: str | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        priority_control_mode: Literal["", "CoolingPriority", "HeatingPriority", "ZonePriority"]
-        | None = "ZonePriority",
+        priority_control_mode: Literal["CoolingPriority", "HeatingPriority", "ZonePriority"] | None = "ZonePriority",
         minimum_outlet_air_temperature_during_cooling_operation: float | None = 8,
         maximum_outlet_air_temperature_during_heating_operation: float | None = 50,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`` and add it to the document.
 

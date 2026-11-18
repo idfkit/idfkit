@@ -120,7 +120,7 @@ class AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2:
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
-        fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None = "ConstantSpeed",
+        fan_control_type: Literal["ConstantSpeed", "VariableSpeed"] | None = "ConstantSpeed",
         minimum_fan_turn_down_ratio: float | None = 0.3,
         heating_control_type: Literal["Modulated", "Staged"] | None = ...,
         design_heating_discharge_air_temperature: float | None = 32.1,

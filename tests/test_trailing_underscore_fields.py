@@ -17,7 +17,8 @@ from typing import Any
 import pytest
 
 from idfkit import IDFDocument, IDFObject, new_document, write_epjson, write_idf
-from idfkit.exceptions import InvalidFieldError, RangeError
+from idfkit._read_required import READ_REQUIRED
+from idfkit.exceptions import InvalidFieldError, MissingRequiredFieldError, RangeError
 from idfkit.objects import to_python_name
 from idfkit.schema import get_schema, trailing_underscore_aliases
 from idfkit.versions import ENERGYPLUS_VERSIONS
@@ -83,7 +84,13 @@ def test_update_accepts_trailing_underscore_field(version: tuple[int, int, int],
 @pytest.mark.parametrize(("version", "obj_type", "key"), _FIELDS, ids=_IDS)
 def test_strict_read_of_unset_trailing_underscore_field(version: tuple[int, int, int], obj_type: str, key: str) -> None:
     obj = _add(new_document(version), obj_type)
-    assert getattr(obj, key) is None
+    if key in READ_REQUIRED.get(obj_type, ()):
+        # Required wherever it exists: reading it unset is an error, not a None its type rules out.
+        with pytest.raises(MissingRequiredFieldError):
+            getattr(obj, key)
+        assert obj.get(key) is None
+    else:
+        assert getattr(obj, key) is None
 
 
 def test_basement_interior_update_and_write() -> None:

@@ -16,7 +16,7 @@ class Lights_v9_6_to_v23_2:
         *,
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
-        design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"]
+        design_level_calculation_method: Literal["LightingLevel", "Watts/Area", "Watts/Person"]
         | None = "LightingLevel",
         lighting_level: float | None = ...,
         watts_per_zone_floor_area: float | None = ...,
@@ -26,7 +26,7 @@ class Lights_v9_6_to_v23_2:
         fraction_visible: float | None = 0,
         fraction_replaceable: float | None = 1,
         end_use_subcategory: str | None = "General",
-        return_air_fraction_calculated_from_plenum_temperature: Literal["", "No", "Yes"] | None = "No",
+        return_air_fraction_calculated_from_plenum_temperature: Literal["No", "Yes"] | None = "No",
         return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
         return_air_heat_gain_node_name: str | None = ...,
@@ -101,12 +101,12 @@ class RunPeriod_v9_2_to_v9_5:
         end_year: float | None = ...,
         day_of_week_for_start_day: Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"]
         | None = ...,
-        use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
-        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        treat_weather_as_actual: Literal["", "No", "Yes"] | None = "No",
+        use_weather_file_holidays_and_special_days: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        apply_weekend_holiday_rule: Literal["No", "Yes"] | None = "No",
+        use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        treat_weather_as_actual: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 

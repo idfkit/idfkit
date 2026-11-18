@@ -26,14 +26,13 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater:
         rated_inlet_space_temperature: float | None = 24,
         rated_water_mass_flow_rate: float | None = 0.063,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "CoolingDesignCapacity",
         cooling_design_capacity: float | Literal["Autosize"] | None = ...,
         cooling_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_cooling_design_capacity: float | None = ...,
         control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -45,7 +44,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater:
         | None = "MeanAirTemperature",
         cooling_control_throttling_range: float | None = 0.5,
         cooling_control_temperature_schedule_name: str | None = ...,
-        condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
+        condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
         surface_fractions: Sequence[

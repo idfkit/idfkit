@@ -35,19 +35,18 @@ class ShadowCalculation_v8_9_to_v9_2:
         self,
         /,
         *,
-        calculation_method: Literal["", "AverageOverDaysInFrequency", "TimestepFrequency"]
+        calculation_method: Literal["AverageOverDaysInFrequency", "TimestepFrequency"]
         | None = "AverageOverDaysInFrequency",
         calculation_frequency: float | None = 20,
         maximum_figures_in_shadow_overlap_calculations: float | None = 15000,
-        polygon_clipping_algorithm: Literal["", "ConvexWeilerAtherton", "SutherlandHodgman"]
-        | None = "SutherlandHodgman",
-        sky_diffuse_modeling_algorithm: Literal["", "DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"]
+        polygon_clipping_algorithm: Literal["ConvexWeilerAtherton", "SutherlandHodgman"] | None = "SutherlandHodgman",
+        sky_diffuse_modeling_algorithm: Literal["DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"]
         | None = "SimpleSkyDiffuseModeling",
-        external_shading_calculation_method: Literal["", "ImportedShading", "InternalCalculation", "ScheduledShading"]
+        external_shading_calculation_method: Literal["ImportedShading", "InternalCalculation", "ScheduledShading"]
         | None = "InternalCalculation",
-        output_external_shading_calculation_results: Literal["", "No", "Yes"] | None = "No",
-        disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
-        disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
+        output_external_shading_calculation_results: Literal["No", "Yes"] | None = "No",
+        disable_self_shading_within_shading_zone_groups: Literal["No", "Yes"] | None = "No",
+        disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["No", "Yes"] | None = "No",
         shading_zone_groups: Sequence[
             _g.ShadowCalculationShadingZoneGroupsItem | _g.ShadowCalculationShadingZoneGroupsGroup
         ] = ...,
@@ -93,14 +92,7 @@ class OutputSQLite_v24_1_to_v25_1:
         *,
         option_type: Literal["Simple", "SimpleAndTabular"] | None = ...,
         unit_conversion_for_tabular_data: Literal[
-            "",
-            "InchPound",
-            "InchPoundExceptElectricity",
-            "JtoGJ",
-            "JtoKWH",
-            "JtoMJ",
-            "None",
-            "UseOutputControlTableStyle",
+            "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"
         ]
         | None = "UseOutputControlTableStyle",
     ) -> None:
@@ -126,7 +118,7 @@ class CentralHeatPumpSystem_v8_9_to_v22_1:
         chiller_heater_modules_performance_component_object_type_1: Literal["ChillerHeaterPerformance:Electric:EIR"],
         chiller_heater_modules_performance_component_name_1: str,
         chiller_heater_modules_control_schedule_name_1: str,
-        control_method: Literal["", "SmartMixing"] | None = "SmartMixing",
+        control_method: Literal["SmartMixing"] | None = "SmartMixing",
         ancillary_power: float | None = 0,
         ancillary_operation_schedule_name: str | None = ...,
         number_of_chiller_heater_modules_1: float | None = 1,

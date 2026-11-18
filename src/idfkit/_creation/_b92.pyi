@@ -66,13 +66,13 @@ class AnyZoneHVACPackagedTerminalAirConditioner:
         outdoor_air_mixer_name: str | None = ...,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-        capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None = "None",
-        minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None = "Autosize",
+        capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
+        minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalAirConditioner`` and add it to the document.
 
@@ -88,16 +88,16 @@ class AnyCoilCoolingDXCurveFitOperatingMode:
         /,
         *,
         speed_1_name: str,
-        rated_gross_total_cooling_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_gross_total_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
         rated_evaporator_air_flow_rate: float | Literal["Autosize"] | None = ...,
         rated_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_cycling_rate: float | None = 0,
         ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         nominal_time_for_condensate_removal_to_begin: float | None = 0,
-        apply_latent_degradation_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
-        nominal_evaporative_condenser_pump_power: float | Literal["", "Autosize"] | None = 0,
+        apply_latent_degradation_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        nominal_evaporative_condenser_pump_power: float | Literal["Autosize"] | None = 0,
         nominal_speed_number: int | None = ...,
         speed_2_name: str | None = ...,
         speed_3_name: str | None = ...,
@@ -194,7 +194,7 @@ class OutputSurfacesDrawing:
         /,
         *,
         report_type: Literal["DXF", "DXF:WireFrame", "VRML"],
-        report_specifications_1: Literal["", "RegularPolyline", "ThickPolyline", "Triangulate3DFace"]
+        report_specifications_1: Literal["RegularPolyline", "ThickPolyline", "Triangulate3DFace"]
         | None = "Triangulate3DFace",
         report_specifications_2: str | None = ...,
     ) -> None:

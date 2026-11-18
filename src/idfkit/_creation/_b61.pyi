@@ -47,7 +47,7 @@ class SteamEquipment:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -100,8 +100,8 @@ class SetpointManagerFollowOutdoorAirTemperature:
         /,
         *,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None = "Temperature",
-        reference_temperature_type: Literal["", "OutdoorAirDryBulb", "OutdoorAirWetBulb"] | None = "OutdoorAirWetBulb",
+        control_variable: Literal["MaximumTemperature", "MinimumTemperature", "Temperature"] | None = "Temperature",
+        reference_temperature_type: Literal["OutdoorAirDryBulb", "OutdoorAirWetBulb"] | None = "OutdoorAirWetBulb",
         offset_temperature_difference: float | None = ...,
         maximum_setpoint_temperature: float | None = ...,
         minimum_setpoint_temperature: float | None = ...,

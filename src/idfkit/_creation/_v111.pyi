@@ -17,7 +17,7 @@ class ZoneHVACEquipmentList_v8_9_to_v9_0:
         name: str,
         /,
         *,
-        load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
+        load_distribution_scheme: Literal["SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
         equipment: Sequence[
             _vd.ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0 | _vd.ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0

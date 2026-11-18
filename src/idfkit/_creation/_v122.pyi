@@ -18,7 +18,7 @@ class ScheduleDayList_v8_9_to_v22_1:
         /,
         *,
         schedule_type_limits_name: str | None = ...,
-        interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None = "No",
+        interpolate_to_timestep: Literal["Average", "Linear", "No"] | None = "No",
         minutes_per_item: float | None = ...,
         extensions: Sequence[_g.ScheduleDayListExtensionsItem | _g.ScheduleDayListExtensionsGroup] = ...,
     ) -> None:
@@ -56,10 +56,10 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1:
         number_of_speeds: float | None = 2,
         nominal_speed_level: float | None = 2,
         gross_rated_total_cooling_capacity_at_selected_nominal_speed_level: float
-        | Literal["", "Autosize"]
+        | Literal["Autosize"]
         | None = "Autosize",
-        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
+        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
         nominal_time_for_condensate_to_begin_leaving_the_coil: float | None = 0,
         initial_moisture_evaporation_rate_divided_by_steady_state_ac_latent_capacity: float | None = 0,
         flag_for_using_hot_gas_reheat_0_or_1: float | None = 0,

@@ -19,7 +19,7 @@ class Lights:
         *,
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
-        design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"]
+        design_level_calculation_method: Literal["LightingLevel", "Watts/Area", "Watts/Person"]
         | None = "LightingLevel",
         lighting_level: float | None = ...,
         watts_per_floor_area: float | None = ...,
@@ -29,7 +29,7 @@ class Lights:
         fraction_visible: float | None = 0,
         fraction_replaceable: float | None = 1,
         end_use_subcategory: str | None = "General",
-        return_air_fraction_calculated_from_plenum_temperature: Literal["", "No", "Yes"] | None = "No",
+        return_air_fraction_calculated_from_plenum_temperature: Literal["No", "Yes"] | None = "No",
         return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
         return_air_heat_gain_node_name: str | None = ...,
@@ -80,7 +80,7 @@ class FluidCoolerSingleSpeed:
         design_water_flow_rate: float | Literal["Autosize"],
         design_air_flow_rate: float | Literal["Autosize"],
         design_air_flow_rate_fan_power: float | Literal["Autosize"],
-        performance_input_method: Literal["", "NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
+        performance_input_method: Literal["NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
         | None = "NominalCapacity",
         design_air_flow_rate_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
         nominal_capacity: float | None = ...,

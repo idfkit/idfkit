@@ -35,7 +35,7 @@ class GeneratorCombustionTurbine_v9_3_to_v9_4:
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         fuel_type: Literal[
-            "", "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
+            "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
         ]
         | None = "NaturalGas",
         heat_recovery_maximum_temperature: float | None = 80,
@@ -61,7 +61,6 @@ class ControllerOutdoorAir_v8_9_to_v23_1:
         minimum_outdoor_air_flow_rate: float | Literal["Autosize"],
         maximum_outdoor_air_flow_rate: float | Literal["Autosize"],
         economizer_control_type: Literal[
-            "",
             "DifferentialDryBulb",
             "DifferentialDryBulbAndEnthalpy",
             "DifferentialEnthalpy",
@@ -72,25 +71,25 @@ class ControllerOutdoorAir_v8_9_to_v23_1:
             "NoEconomizer",
         ]
         | None = "NoEconomizer",
-        economizer_control_action_type: Literal["", "MinimumFlowWithBypass", "ModulateFlow"] | None = "ModulateFlow",
+        economizer_control_action_type: Literal["MinimumFlowWithBypass", "ModulateFlow"] | None = "ModulateFlow",
         economizer_maximum_limit_dry_bulb_temperature: float | None = ...,
         economizer_maximum_limit_enthalpy: float | None = ...,
         economizer_maximum_limit_dewpoint_temperature: float | None = ...,
         electronic_enthalpy_limit_curve_name: str | None = ...,
         economizer_minimum_limit_dry_bulb_temperature: float | None = ...,
-        lockout_type: Literal["", "LockoutWithCompressor", "LockoutWithHeating", "NoLockout"] | None = "NoLockout",
-        minimum_limit_type: Literal["", "FixedMinimum", "ProportionalMinimum"] | None = "ProportionalMinimum",
+        lockout_type: Literal["LockoutWithCompressor", "LockoutWithHeating", "NoLockout"] | None = "NoLockout",
+        minimum_limit_type: Literal["FixedMinimum", "ProportionalMinimum"] | None = "ProportionalMinimum",
         minimum_outdoor_air_schedule_name: str | None = ...,
         minimum_fraction_of_outdoor_air_schedule_name: str | None = ...,
         maximum_fraction_of_outdoor_air_schedule_name: str | None = ...,
         mechanical_ventilation_controller_name: str | None = ...,
         time_of_day_economizer_control_schedule_name: str | None = ...,
-        high_humidity_control: Literal["", "No", "Yes"] | None = "No",
+        high_humidity_control: Literal["No", "Yes"] | None = "No",
         humidistat_control_zone_name: str | None = ...,
         high_humidity_outdoor_air_flow_ratio: float | None = 1,
-        control_high_indoor_humidity_based_on_outdoor_humidity_ratio: Literal["", "No", "Yes"] | None = "Yes",
+        control_high_indoor_humidity_based_on_outdoor_humidity_ratio: Literal["No", "Yes"] | None = "Yes",
         heat_recovery_bypass_control_type: Literal[
-            "", "BypassWhenOAFlowGreaterThanMinimum", "BypassWhenWithinEconomizerLimits"
+            "BypassWhenOAFlowGreaterThanMinimum", "BypassWhenWithinEconomizerLimits"
         ]
         | None = "BypassWhenWithinEconomizerLimits",
     ) -> None:
@@ -120,7 +119,7 @@ class RefrigerationSecondarySystem_v8_9_to_v22_1:
         total_pump_power: float | None = ...,
         total_pump_head: float | None = ...,
         phasechange_circulating_rate: float | None = 2.5,
-        pump_drive_type: Literal["", "Constant", "Variable"] | None = "Constant",
+        pump_drive_type: Literal["Constant", "Variable"] | None = "Constant",
         variable_speed_pump_cubic_curve_name: str | None = ...,
         pump_motor_heat_to_fluid: float | None = 0.85,
         sum_ua_distribution_piping: float | None = 0,
@@ -144,11 +143,11 @@ class HVACTemplateSystemVRF_v9_3_to_v22_1:
         /,
         *,
         system_availability_schedule_name: str | None = ...,
-        gross_rated_total_cooling_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        gross_rated_total_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
         gross_rated_cooling_cop: float | None = 3.3,
         minimum_outdoor_temperature_in_cooling_mode: float | None = -6,
         maximum_outdoor_temperature_in_cooling_mode: float | None = 43,
-        gross_rated_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        gross_rated_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         rated_heating_capacity_sizing_ratio: float | None = 1,
         gross_rated_heating_cop: float | None = 3.4,
         minimum_outdoor_temperature_in_heating_mode: float | None = -20,
@@ -156,11 +155,11 @@ class HVACTemplateSystemVRF_v9_3_to_v22_1:
         minimum_heat_pump_part_load_ratio: float | None = 0.15,
         zone_name_for_master_thermostat_location: str | None = ...,
         master_thermostat_priority_control_type: Literal[
-            "", "LoadPriority", "MasterThermostatPriority", "Scheduled", "ThermostatOffsetPriority", "ZonePriority"
+            "LoadPriority", "MasterThermostatPriority", "Scheduled", "ThermostatOffsetPriority", "ZonePriority"
         ]
         | None = "MasterThermostatPriority",
         thermostat_priority_schedule_name: str | None = ...,
-        heat_pump_waste_heat_recovery: Literal["", "No", "Yes"] | None = "No",
+        heat_pump_waste_heat_recovery: Literal["No", "Yes"] | None = "No",
         equivalent_piping_length_used_for_piping_correction_factor_in_cooling_mode: float | None = 30,
         vertical_height_used_for_piping_correction_factor: float | None = 10,
         equivalent_piping_length_used_for_piping_correction_factor_in_heating_mode: float | None = 30,
@@ -168,21 +167,20 @@ class HVACTemplateSystemVRF_v9_3_to_v22_1:
         number_of_compressors: float | None = 2,
         ratio_of_compressor_size_to_total_compressor_capacity: float | None = 0.5,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "Resistive",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "Resistive",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = "Autosize",
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
-        water_condenser_volume_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        water_condenser_volume_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         evaporative_condenser_effectiveness: float | None = 0.9,
-        evaporative_condenser_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",

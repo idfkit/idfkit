@@ -16,21 +16,21 @@ class ShadowCalculation:
         self,
         /,
         *,
-        shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"]
+        shading_calculation_method: Literal["Imported", "PixelCounting", "PolygonClipping", "Scheduled"]
         | None = "PolygonClipping",
-        shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None = "Periodic",
+        shading_calculation_update_frequency_method: Literal["Periodic", "Timestep"] | None = "Periodic",
         shading_calculation_update_frequency: int | None = 20,
         maximum_figures_in_shadow_overlap_calculations: int | None = 15000,
         polygon_clipping_algorithm: Literal[
-            "", "ConvexWeilerAtherton", "SlaterBarskyandSutherlandHodgman", "SutherlandHodgman"
+            "ConvexWeilerAtherton", "SlaterBarskyandSutherlandHodgman", "SutherlandHodgman"
         ]
         | None = "SutherlandHodgman",
         pixel_counting_resolution: int | None = 512,
-        sky_diffuse_modeling_algorithm: Literal["", "DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"]
+        sky_diffuse_modeling_algorithm: Literal["DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"]
         | None = "SimpleSkyDiffuseModeling",
-        output_external_shading_calculation_results: Literal["", "No", "Yes"] | None = "No",
-        disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
-        disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
+        output_external_shading_calculation_results: Literal["No", "Yes"] | None = "No",
+        disable_self_shading_within_shading_zone_groups: Literal["No", "Yes"] | None = "No",
+        disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["No", "Yes"] | None = "No",
         shading_zone_groups: Sequence[
             _g.ShadowCalculationShadingZoneGroupsItem | _g.ShadowCalculationShadingZoneGroupsGroup
         ] = ...,
@@ -54,7 +54,7 @@ class MaterialRoofVegetation:
         leaf_emissivity: float | None = 0.95,
         minimum_stomatal_resistance: float | None = 180,
         soil_layer_name: str | None = "Green Roof Soil",
-        roughness: Literal["", "MediumRough", "MediumSmooth", "Rough", "Smooth", "VeryRough", "VerySmooth"]
+        roughness: Literal["MediumRough", "MediumSmooth", "Rough", "Smooth", "VeryRough", "VerySmooth"]
         | None = "MediumRough",
         thickness: float | None = 0.1,
         conductivity_of_dry_soil: float | None = 0.35,
@@ -66,7 +66,7 @@ class MaterialRoofVegetation:
         saturation_volumetric_moisture_content_of_the_soil_layer: float | None = 0.3,
         residual_volumetric_moisture_content_of_the_soil_layer: float | None = 0.01,
         initial_volumetric_moisture_content_of_the_soil_layer: float | None = 0.1,
-        moisture_diffusion_calculation_method: Literal["", "Advanced", "Simple"] | None = "Advanced",
+        moisture_diffusion_calculation_method: Literal["Advanced", "Simple"] | None = "Advanced",
     ) -> None:
         """Create a new ``Material:RoofVegetation`` and add it to the document.
 
@@ -103,7 +103,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening:
         number_of_sets_of_opening_factor_data: int,
         opening_factor_2: float,
         air_mass_flow_exponent_when_opening_is_closed: float | None = 0.65,
-        type_of_rectangular_large_vertical_opening_lvo_: Literal["", "HorizontallyPivoted", "NonPivoted"]
+        type_of_rectangular_large_vertical_opening_lvo_: Literal["HorizontallyPivoted", "NonPivoted"]
         | None = "NonPivoted",
         extra_crack_length_or_height_of_pivoting_axis: float | None = 0,
         opening_factor_1: float | None = 0,
@@ -141,40 +141,38 @@ class HVACTemplateZoneVAV:
         zone_name: str,
         template_vav_system_name: str,
         template_thermostat_name: str | None = ...,
-        supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        zone_minimum_air_flow_input_method: Literal["", "Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
+        zone_minimum_air_flow_input_method: Literal["Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
         constant_minimum_air_flow_fraction: float | None = 0.2,
         fixed_minimum_air_flow_rate: float | None = ...,
         minimum_air_flow_fraction_schedule_name: str | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
         outdoor_air_flow_rate_per_zone: float | None = 0,
-        reheat_coil_type: Literal["", "Electric", "Gas", "HotWater", "None"] | None = "None",
+        reheat_coil_type: Literal["Electric", "Gas", "HotWater", "None"] | None = "None",
         reheat_coil_availability_schedule_name: str | None = ...,
-        damper_heating_action: Literal["", "Normal", "Reverse"] | None = "Reverse",
+        damper_heating_action: Literal["Normal", "Reverse"] | None = "Reverse",
         maximum_flow_per_zone_floor_area_during_reheat: float | Literal["Autocalculate"] | None = ...,
         maximum_flow_fraction_during_reheat: float | Literal["Autocalculate"] | None = ...,
         maximum_reheat_air_temperature: float | None = ...,
         design_specification_outdoor_air_object_name_for_control: str | None = ...,
         supply_plenum_name: str | None = ...,
         return_plenum_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SystemSupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = 12.8,
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
@@ -199,7 +197,6 @@ class CoilHeatingFuel:
         air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -263,7 +260,7 @@ class RefrigerationSecondarySystem:
         total_pump_power: float | None = ...,
         total_pump_head: float | None = ...,
         phasechange_circulating_rate: float | None = 2.5,
-        pump_drive_type: Literal["", "Constant", "Variable"] | None = "Constant",
+        pump_drive_type: Literal["Constant", "Variable"] | None = "Constant",
         variable_speed_pump_cubic_curve_name: str | None = ...,
         pump_motor_heat_to_fluid: float | None = 0.85,
         sum_ua_distribution_piping: float | None = 0,

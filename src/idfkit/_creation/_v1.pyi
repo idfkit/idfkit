@@ -68,8 +68,8 @@ class CoilHeatingDXVariableSpeed_v23_2_to_v25_1:
         speed_1_energy_input_ratio_function_of_air_flow_fraction_curve_name: str,
         number_of_speeds: int | None = 2,
         nominal_speed_level: int | None = 2,
-        rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
+        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
         defrost_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -8,
         outdoor_dry_bulb_temperature_to_turn_on_compressor: float | None = ...,
@@ -77,10 +77,10 @@ class CoilHeatingDXVariableSpeed_v23_2_to_v25_1:
         crankcase_heater_capacity: float | None = 0,
         crankcase_heater_capacity_function_of_temperature_curve_name: str | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "ReverseCycle",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "ReverseCycle",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         speed_2_reference_unit_gross_rated_heating_capacity: float | None = ...,
         speed_2_reference_unit_gross_rated_heating_cop: float | None = ...,
         speed_2_reference_unit_rated_air_flow_rate: float | None = ...,
@@ -161,7 +161,7 @@ class ZoneCrossMixing_v8_9_to_v22_1:
         zone_name: str,
         schedule_name: str,
         source_zone_name: str,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_zone_floor_area: float | None = ...,
@@ -192,7 +192,7 @@ class HotWaterEquipment_v8_9_to_v9_5:
         zone_or_zonelist_name: str,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -226,10 +226,10 @@ class TableOneIndependentVariable_v8_9:
         minimum_table_output: float | None = ...,
         maximum_table_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
         values: Sequence[

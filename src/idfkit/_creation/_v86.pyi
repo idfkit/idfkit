@@ -44,7 +44,7 @@ class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1:
         heating_energy_input_ratio_modifier_function_of_low_temperature_curve_name: str | None = ...,
         heating_energy_input_ratio_boundary_curve_name: str | None = ...,
         heating_energy_input_ratio_modifier_function_of_high_temperature_curve_name: str | None = ...,
-        heating_performance_curve_outdoor_temperature_type: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        heating_performance_curve_outdoor_temperature_type: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         heating_energy_input_ratio_modifier_function_of_low_part_load_ratio_curve_name: str | None = ...,
         heating_energy_input_ratio_modifier_function_of_high_part_load_ratio_curve_name: str | None = ...,
@@ -53,11 +53,11 @@ class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1:
         minimum_heat_pump_part_load_ratio: float | None = 0.15,
         zone_name_for_master_thermostat_location: str | None = ...,
         master_thermostat_priority_control_type: Literal[
-            "", "LoadPriority", "MasterThermostatPriority", "Scheduled", "ThermostatOffsetPriority", "ZonePriority"
+            "LoadPriority", "MasterThermostatPriority", "Scheduled", "ThermostatOffsetPriority", "ZonePriority"
         ]
         | None = "MasterThermostatPriority",
         thermostat_priority_schedule_name: str | None = ...,
-        heat_pump_waste_heat_recovery: Literal["", "No", "Yes"] | None = "No",
+        heat_pump_waste_heat_recovery: Literal["No", "Yes"] | None = "No",
         equivalent_piping_length_used_for_piping_correction_factor_in_cooling_mode: float | None = ...,
         vertical_height_used_for_piping_correction_factor: float | None = ...,
         piping_correction_factor_for_length_in_cooling_mode_curve_name: str | None = ...,
@@ -69,25 +69,24 @@ class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1:
         number_of_compressors: float | None = 2,
         ratio_of_compressor_size_to_total_compressor_capacity: float | None = 0.5,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "Resistive",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "Resistive",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_energy_input_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
         water_condenser_volume_flow_rate: float | Literal["Autosize"] | None = ...,
         evaporative_condenser_effectiveness: float | None = 0.9,
         evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         supply_water_storage_tank_name: str | None = ...,
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -126,21 +125,21 @@ class ShadowCalculation_v9_3_to_v22_1:
         self,
         /,
         *,
-        shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"]
+        shading_calculation_method: Literal["Imported", "PixelCounting", "PolygonClipping", "Scheduled"]
         | None = "PolygonClipping",
-        shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None = "Periodic",
+        shading_calculation_update_frequency_method: Literal["Periodic", "Timestep"] | None = "Periodic",
         shading_calculation_update_frequency: float | None = 20,
         maximum_figures_in_shadow_overlap_calculations: float | None = 15000,
         polygon_clipping_algorithm: Literal[
-            "", "ConvexWeilerAtherton", "SlaterBarskyandSutherlandHodgman", "SutherlandHodgman"
+            "ConvexWeilerAtherton", "SlaterBarskyandSutherlandHodgman", "SutherlandHodgman"
         ]
         | None = "SutherlandHodgman",
         pixel_counting_resolution: float | None = 512,
-        sky_diffuse_modeling_algorithm: Literal["", "DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"]
+        sky_diffuse_modeling_algorithm: Literal["DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"]
         | None = "SimpleSkyDiffuseModeling",
-        output_external_shading_calculation_results: Literal["", "No", "Yes"] | None = "No",
-        disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
-        disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
+        output_external_shading_calculation_results: Literal["No", "Yes"] | None = "No",
+        disable_self_shading_within_shading_zone_groups: Literal["No", "Yes"] | None = "No",
+        disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["No", "Yes"] | None = "No",
         shading_zone_groups: Sequence[
             _g.ShadowCalculationShadingZoneGroupsItem | _g.ShadowCalculationShadingZoneGroupsGroup
         ] = ...,
@@ -180,10 +179,10 @@ class FloorDetailed_v9_6_to_v24_2:
         ],
         space_name: str | None = ...,
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.FloorDetailedVerticesItem | _g.FloorDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``Floor:Detailed`` and add it to the document.

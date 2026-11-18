@@ -82,6 +82,7 @@ def _clear_version_caches() -> None:
         _release_creation,
         _creation_pieces,
         _piece_classes,
+        read_required,
     ):
         cached.cache_clear()
 
@@ -135,16 +136,16 @@ def _schema_type_to_python(
 
 def _enum_to_literal(values: list[Any]) -> str:
     """Convert a list of enum values to a ``Literal[...]`` type annotation."""
+    # The empty string is how a schema lets a choice be left blank; a blank field is stored as
+    # absent and reads None (idfkit#183), so "" is never a value of the field.
     parts: list[str] = []
     for v in values:
         if isinstance(v, str):
-            if v == "":
-                parts.append('""')
-            else:
+            if v != "":
                 parts.append(f'"{v}"')
         else:
             parts.append(repr(v))
-    return f"Literal[{', '.join(parts)}]"
+    return f"Literal[{', '.join(parts)}]" if parts else "str"
 
 
 def _anyof_to_python(field_schema: dict[str, Any]) -> str:
@@ -161,7 +162,8 @@ def _anyof_to_python(field_schema: dict[str, Any]) -> str:
                 # String branch with specific enum values (e.g. "Autocalculate")
                 for v in sub["enum"]:
                     if isinstance(v, str):
-                        literal_values.append('""' if v == "" else f'"{v}"')
+                        if v != "":  # blank: stored as absent, so never read back (see _enum_to_literal)
+                            literal_values.append(f'"{v}"')
                     else:
                         literal_values.append(repr(v))
             else:
@@ -720,11 +722,12 @@ def _generate_fields(
         has_any_of = field_schema is not None and "anyOf" in field_schema
         py_type = _schema_type_to_python(field_schema, field_type, has_any_of)
 
+        read_type = py_type if field_name in read_required().get(obj_type, ()) else f"{py_type} | None"
         if field_name in as_properties:
-            lines.extend(_property_lines(field_name, *as_properties[field_name], indent))
+            lines.extend(_property_lines(field_name, *as_properties[field_name], indent, read_type == py_type))
         else:
-            lines.append(f"{indent}{field_name}: {py_type} | None")
-        declared.append((field_name, f"{py_type} | None"))
+            lines.append(f"{indent}{field_name}: {read_type}")
+        declared.append((field_name, read_type))
 
         # Determine field "Since:" — only if the field appeared after the type itself
         fld_since: tuple[int, int, int] | None = None
@@ -741,13 +744,16 @@ def _generate_fields(
     return declared
 
 
-def _property_lines(name: str, read: str, write: str, indent: str) -> list[str]:
-    """A field declared as a property: reading it gives *read* or ``None``, assigning to it accepts *write*."""
+def _property_lines(name: str, read: str, write: str, indent: str, required: bool = False) -> list[str]:
+    """A field declared as a property: reading it gives *read* or ``None``, assigning to it accepts *write*.
+
+    A *required* field (:func:`read_required`) reads *read* alone and is not cleared by assignment.
+    """
     return [
         f"{indent}@property",
-        f"{indent}def {name}(self) -> {read} | None: ...",
+        f"{indent}def {name}(self) -> {read if required else read + ' | None'}: ...",
         f"{indent}@{name}.setter",
-        f"{indent}def {name}(self, value: {_or_none(write)}) -> None: ...",
+        f"{indent}def {name}(self, value: {write if required else _or_none(write)}) -> None: ...",
     ]
 
 
@@ -776,7 +782,8 @@ def _generate_field_aliases(
         alias = alias_of.get(key)
         if alias is not None and key in typed:
             if alias in as_properties:
-                lines.extend(_property_lines(alias, *as_properties[alias], indent))
+                required = not typed[key].endswith("| None")
+                lines.extend(_property_lines(alias, *as_properties[alias], indent, required))
             else:
                 lines.append(f"{indent}{alias}: {typed[key]}")
                 lines.append(f'{indent}"""Alias of :attr:`{key}`, the same field without the trailing underscore."""')
@@ -995,6 +1002,32 @@ def _creation_info(schema: EpJSONSchema, obj_type: str) -> _Creation:
     aliases = trailing_underscore_aliases(schema.get_field_names(obj_type))
     hidden = frozenset(alias for alias, key in aliases.items() if alias != key)
     return _Creation(_name_kind(schema, obj_type), required, tuple(sorted(defaults)), hidden)
+
+
+@functools.cache
+def read_required() -> dict[str, frozenset[str]]:
+    """The fields reading gives a value for, by object type: required with no default wherever they exist.
+
+    A field is in it when every supported release that has the field requires it and gives it no
+    default (the set ``add()`` requires and the validator reports as ``E001``). Its read type drops
+    ``| None`` in every class that declares it, whichever releases the class covers, and the run
+    time raises :class:`~idfkit.exceptions.MissingRequiredFieldError` instead of returning ``None``
+    when it is absent, so the two agree whatever static type the object is seen through.
+    """
+    required: dict[str, set[str]] = {}
+    optional: dict[str, set[str]] = {}
+    for ver in SUPPORTED.versions:
+        schema = get_schema(ver)
+        for obj_type in schema.object_types:
+            info = _creation_info(schema, obj_type)
+            names = [f for f in schema.get_field_names(obj_type) if f.isidentifier()]
+            required.setdefault(obj_type, set()).update(info.required)
+            optional.setdefault(obj_type, set()).update(f for f in names if f not in info.required)
+    return {
+        obj_type: frozenset(fields - optional.get(obj_type, set()))
+        for obj_type, fields in sorted(required.items())
+        if fields - optional.get(obj_type, set())
+    }
 
 
 @functools.cache
@@ -1712,7 +1745,12 @@ def _generate_base_class(
     )
     if lines[-1].startswith("class ") and lines[-1].endswith(": ..."):
         lines[-1] = lines[-1][: -len(" ...")]  # update is about to give the class a body
-    varying = [(name, _or_none(layout.writable[name])) for name in layout.fields if name in layout.varying]
+    always = read_required().get(obj_type, frozenset())
+    varying = [
+        (name, layout.writable[name] if name in always else _or_none(layout.writable[name]))
+        for name in layout.fields
+        if name in layout.varying
+    ]
     if merged_group is not None:
         lines.append(f"    {merged_group.wrapper}: ExtensibleList[{merged_group.cls_name}]")
         varying.append((merged_group.wrapper, _group_items(merged_group.cls_name)))
@@ -1737,7 +1775,12 @@ def _common_entries(
     *prefix* qualifies the group's names as the module reading them reaches ``_generated_types``.
     """
     decls = _field_decls(schema, obj_type)
-    common = [(name, f"{decls[name]} | None") for name in decls if name in layout.identical and name != "name"]
+    always = read_required().get(obj_type, frozenset())
+    common = [
+        (name, decls[name] if name in always else f"{decls[name]} | None")
+        for name in decls
+        if name in layout.identical and name != "name"
+    ]
     group = _group_decl(schema, obj_type)
     if layout.group and group is not None:
         # Any<Class> declares the group, under the unsuffixed name.
@@ -2793,6 +2836,26 @@ checks an ``add()`` call on one of its classes.
 '''
 
 
+def generate_read_required_py() -> str:
+    """The run-time table of :func:`read_required`: ``_read_required.py``."""
+    lines = [
+        '"""The fields reading gives a value for, by object type. GENERATED by idfkit.codegen.generate_stubs.',
+        "",
+        "A field is listed when every supported release that has it requires it with no default. Its",
+        "read type is not optional, and reading it from an object that lacks it raises",
+        "``MissingRequiredFieldError`` rather than returning ``None``.",
+        '"""',
+        "",
+        "from __future__ import annotations",
+        "",
+        "READ_REQUIRED: dict[str, frozenset[str]] = {",
+    ]
+    for obj_type, fields in read_required().items():
+        lines.append(f"    {obj_type!r}: frozenset({sorted(fields)!r}),")
+    lines += ["}", ""]
+    return "\n".join(lines)
+
+
 def main() -> None:
     """CLI entry point."""
     version: tuple[int, int, int] | None = None
@@ -2822,6 +2885,9 @@ def _write_stubs(base_path: Path) -> None:
 
     versioned_runtime_path = base_path / "versioned.py"
     versioned_runtime_path.write_text(generate_versioned_py(), encoding="utf-8")
+
+    required_path = base_path / "_read_required.py"
+    required_path.write_text(generate_read_required_py(), encoding="utf-8")
 
     # One stub per older release. A module left from a release that has since become the latest (or
     # stopped being supported) is removed, or it would still define a type versioned.pyi no longer has.
@@ -2858,6 +2924,7 @@ def _write_stubs(base_path: Path) -> None:
             str(pyi_path),
             str(versioned_path),
             str(versioned_runtime_path),
+            str(required_path),
             *(str(path) for path in document_paths),
             *(str(path) for path in creation_paths),
         ],

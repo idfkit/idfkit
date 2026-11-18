@@ -35,12 +35,11 @@ class SizingPeriodDesignDay:
         maximum_dry_bulb_temperature: float | None = ...,
         daily_dry_bulb_temperature_range: float | None = 0,
         dry_bulb_temperature_range_modifier_type: Literal[
-            "", "DefaultMultipliers", "DifferenceSchedule", "MultiplierSchedule", "TemperatureProfileSchedule"
+            "DefaultMultipliers", "DifferenceSchedule", "MultiplierSchedule", "TemperatureProfileSchedule"
         ]
         | None = "DefaultMultipliers",
         dry_bulb_temperature_range_modifier_day_schedule_name: str | None = ...,
         humidity_condition_type: Literal[
-            "",
             "DewPoint",
             "Enthalpy",
             "HumidityRatio",
@@ -57,10 +56,10 @@ class SizingPeriodDesignDay:
         enthalpy_at_maximum_dry_bulb: float | None = ...,
         daily_wet_bulb_temperature_range: float | None = ...,
         barometric_pressure: float | None = ...,
-        rain_indicator: Literal["", "No", "Yes"] | None = "No",
-        snow_indicator: Literal["", "No", "Yes"] | None = "No",
-        daylight_saving_time_indicator: Literal["", "No", "Yes"] | None = "No",
-        solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"]
+        rain_indicator: Literal["No", "Yes"] | None = "No",
+        snow_indicator: Literal["No", "Yes"] | None = "No",
+        daylight_saving_time_indicator: Literal["No", "Yes"] | None = "No",
+        solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"]
         | None = "ASHRAEClearSky",
         beam_solar_day_schedule_name: str | None = ...,
         diffuse_solar_day_schedule_name: str | None = ...,
@@ -68,7 +67,7 @@ class SizingPeriodDesignDay:
         ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud_: float | None = 0,
         sky_clearness: float | None = 0,
         maximum_number_warmup_days: int | None = ...,
-        begin_environment_reset_mode: Literal["", "FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"]
+        begin_environment_reset_mode: Literal["FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"]
         | None = "FullResetAtBeginEnvironment",
     ) -> None:
         """Create a new ``SizingPeriod:DesignDay`` and add it to the document.
@@ -121,13 +120,13 @@ class AnyCoilCoolingWaterDetailedGeometry:
         air_inlet_node_name: str,
         air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        maximum_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        tube_outside_surface_area: float | Literal["", "Autosize"] | None = "Autosize",
-        total_tube_inside_area: float | Literal["", "Autosize"] | None = "Autosize",
-        fin_surface_area: float | Literal["", "Autosize"] | None = "Autosize",
-        minimum_airflow_area: float | Literal["", "Autosize"] | None = "Autosize",
-        coil_depth: float | Literal["", "Autosize"] | None = "Autosize",
-        fin_diameter: float | Literal["", "Autosize"] | None = "Autosize",
+        maximum_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        tube_outside_surface_area: float | Literal["Autosize"] | None = "Autosize",
+        total_tube_inside_area: float | Literal["Autosize"] | None = "Autosize",
+        fin_surface_area: float | Literal["Autosize"] | None = "Autosize",
+        minimum_airflow_area: float | Literal["Autosize"] | None = "Autosize",
+        coil_depth: float | Literal["Autosize"] | None = "Autosize",
+        fin_diameter: float | Literal["Autosize"] | None = "Autosize",
         fin_thickness: float | None = 0.0015,
         tube_inside_diameter: float | None = 0.01445,
         tube_outside_diameter: float | None = 0.0159,
@@ -136,7 +135,7 @@ class AnyCoilCoolingWaterDetailedGeometry:
         fin_spacing: float | None = 0.0018,
         tube_depth_spacing: float | None = 0.026,
         number_of_tube_rows: float | None = 4,
-        number_of_tubes_per_row: float | Literal["", "Autosize"] | None = "Autosize",
+        number_of_tubes_per_row: float | Literal["Autosize"] | None = "Autosize",
         condensate_collection_water_storage_tank_name: str | None = ...,
         design_water_temperature_difference: float | None = ...,
     ) -> None:
@@ -187,7 +186,7 @@ class ChillerElectricReformulatedEIR:
         reference_chilled_water_flow_rate: float | Literal["Autosize"] | None = ...,
         reference_condenser_water_flow_rate: float | Literal["Autosize"] | None = ...,
         electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_type: Literal[
-            "", "LeavingCondenserWaterTemperature", "Lift"
+            "LeavingCondenserWaterTemperature", "Lift"
         ]
         | None = "LeavingCondenserWaterTemperature",
         minimum_part_load_ratio: float | None = 0.1,
@@ -196,9 +195,9 @@ class ChillerElectricReformulatedEIR:
         minimum_unloading_ratio: float | None = 0.2,
         fraction_of_compressor_electric_consumption_rejected_by_condenser: float | None = 1,
         leaving_chilled_water_lower_temperature_limit: float | None = 2,
-        chiller_flow_mode_type: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
+        chiller_flow_mode_type: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
         | None = "NotModulated",
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
@@ -207,7 +206,7 @@ class ChillerElectricReformulatedEIR:
         heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
         condenser_flow_control: Literal[
-            "", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"
+            "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"
         ]
         | None = "ConstantFlow",
         condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None = ...,

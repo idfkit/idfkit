@@ -17,20 +17,20 @@ class People_v9_6_to_v22_1:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         number_of_people_schedule_name: str,
         activity_level_schedule_name: str,
-        number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None = "People",
+        number_of_people_calculation_method: Literal["Area/Person", "People", "People/Area"] | None = "People",
         number_of_people: float | None = ...,
         people_per_floor_area: float | None = ...,
         floor_area_per_person: float | None = ...,
         fraction_radiant: float | None = 0.3,
-        sensible_heat_fraction: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sensible_heat_fraction: float | Literal["Autocalculate"] | None = "Autocalculate",
         carbon_dioxide_generation_rate: float | None = ...,
-        enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None = "No",
-        mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"]
+        enable_ashrae_55_comfort_warnings: Literal["No", "Yes"] | None = "No",
+        mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"]
         | None = "ZoneAveraged",
         surface_name_angle_factor_list_name: str | None = ...,
         work_efficiency_schedule_name: str | None = ...,
         clothing_insulation_calculation_method: Literal[
-            "", "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
+            "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
         ]
         | None = "ClothingInsulationSchedule",
         clothing_insulation_calculation_method_schedule_name: str | None = ...,
@@ -101,13 +101,13 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v22_2_to_v23_1:
         rated_condenser_inlet_water_temperature: float | None = 57.5,
         rated_evaporator_air_flow_rate: float | Literal["Autocalculate"] | None = ...,
         rated_condenser_water_flow_rate: float | Literal["Autocalculate"] | None = ...,
-        evaporator_fan_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "Yes",
-        condenser_pump_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "No",
-        condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop: Literal["", "No", "Yes"] | None = "No",
+        evaporator_fan_power_included_in_rated_cop: Literal["No", "Yes"] | None = "Yes",
+        condenser_pump_power_included_in_rated_cop: Literal["No", "Yes"] | None = "No",
+        condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop: Literal["No", "Yes"] | None = "No",
         fraction_of_condenser_pump_heat_to_water: float | None = 0.2,
         crankcase_heater_capacity: float | None = 0,
         maximum_ambient_temperature_for_crankcase_heater_operation: float | None = 10,
-        evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        evaporator_air_temperature_type_for_curve_objects: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         part_load_fraction_correlation_curve_name: str | None = ...,
         rated_water_heating_cop_at_speed_1: float | None = 3.2,

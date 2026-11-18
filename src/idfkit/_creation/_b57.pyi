@@ -23,18 +23,18 @@ class Zone:
         z_origin: float | None = 0,
         type: int | None = 1,
         multiplier: int | None = 1,
-        ceiling_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        volume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        ceiling_height: float | Literal["Autocalculate"] | None = "Autocalculate",
+        volume: float | Literal["Autocalculate"] | None = "Autocalculate",
+        floor_area: float | Literal["Autocalculate"] | None = "Autocalculate",
         zone_inside_convection_algorithm: Literal[
-            "", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"
+            "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"
         ]
         | None = ...,
         zone_outside_convection_algorithm: Literal[
-            "", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"
+            "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"
         ]
         | None = ...,
-        part_of_total_floor_area: Literal["", "No", "Yes"] | None = "Yes",
+        part_of_total_floor_area: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``Zone`` and add it to the document.
 
@@ -106,11 +106,10 @@ class WaterHeaterHeatPumpPumpedCondenser:
         inlet_air_temperature_schedule_name: str | None = ...,
         inlet_air_humidity_schedule_name: str | None = ...,
         inlet_air_zone_name: str | None = ...,
-        tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None = "WaterHeater:Mixed",
+        tank_object_type: Literal["WaterHeater:Mixed", "WaterHeater:Stratified"] | None = "WaterHeater:Mixed",
         tank_use_side_inlet_node_name: str | None = ...,
         tank_use_side_outlet_node_name: str | None = ...,
         dx_coil_object_type: Literal[
-            "",
             "Coil:WaterHeating:AirToWaterHeatPump:Pumped",
             "Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed",
             "CoilSystem:IntegratedHeatPump:AirSource",
@@ -119,15 +118,15 @@ class WaterHeaterHeatPumpPumpedCondenser:
         minimum_inlet_air_temperature_for_compressor_operation: float | None = 10,
         maximum_inlet_air_temperature_for_compressor_operation: float | None = 48.88888888889,
         compressor_ambient_temperature_schedule_name: str | None = ...,
-        fan_object_type: Literal["", "Fan:OnOff", "Fan:SystemModel"] | None = "Fan:OnOff",
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        fan_object_type: Literal["Fan:OnOff", "Fan:SystemModel"] | None = "Fan:OnOff",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
-        parasitic_heat_rejection_location: Literal["", "Outdoors", "Zone"] | None = "Outdoors",
+        parasitic_heat_rejection_location: Literal["Outdoors", "Zone"] | None = "Outdoors",
         inlet_air_mixer_node_name: str | None = ...,
         outlet_air_splitter_node_name: str | None = ...,
         inlet_air_mixer_schedule_name: str | None = ...,
-        tank_element_control_logic: Literal["", "MutuallyExclusive", "Simultaneous"] | None = "Simultaneous",
+        tank_element_control_logic: Literal["MutuallyExclusive", "Simultaneous"] | None = "Simultaneous",
         control_sensor_1_height_in_stratified_tank: float | None = ...,
         control_sensor_1_weight: float | None = 1,
         control_sensor_2_height_in_stratified_tank: float | None = ...,
@@ -193,10 +192,10 @@ class CurveChillerPartLoadWithLift:
         maximum_value_of_z: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
-        input_unit_type_for_y: Literal["", "Dimensionless"] | None = "Dimensionless",
-        input_unit_type_for_z: Literal["", "Dimensionless"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
+        input_unit_type_for_y: Literal["Dimensionless"] | None = "Dimensionless",
+        input_unit_type_for_z: Literal["Dimensionless"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:ChillerPartLoadWithLift`` and add it to the document.

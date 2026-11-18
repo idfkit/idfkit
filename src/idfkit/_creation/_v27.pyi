@@ -19,8 +19,8 @@ class ScheduleFile_v9_2_to_v9_6:
         rows_to_skip_at_top: float,
         schedule_type_limits_name: str | None = ...,
         number_of_hours_of_data: float | None = 8760,
-        column_separator: Literal["", "Comma", "Semicolon", "Space", "Tab"] | None = "Comma",
-        interpolate_to_timestep: Literal["", "No", "Yes"] | None = "No",
+        column_separator: Literal["Comma", "Semicolon", "Space", "Tab"] | None = "Comma",
+        interpolate_to_timestep: Literal["No", "Yes"] | None = "No",
         minutes_per_item: float | None = ...,
     ) -> None:
         """Create a new ``Schedule:File`` and add it to the document.
@@ -80,12 +80,11 @@ class CoilCoolingDXCurveFitPerformance_v9_3_to_v23_1:
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -25,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         unit_internal_static_air_pressure: float | None = ...,
-        capacity_control_method: Literal["", "Continuous", "Discrete"] | None = "Discrete",
+        capacity_control_method: Literal["Continuous", "Discrete"] | None = "Discrete",
         evaporative_condenser_basin_heater_capacity: float | None = 0,
         evaporative_condenser_basin_heater_setpoint_temperature: float | None = 2,
         evaporative_condenser_basin_heater_operating_schedule_name: str | None = ...,
         compressor_fuel_type: Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",

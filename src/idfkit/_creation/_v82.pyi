@@ -41,7 +41,7 @@ class AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2:
         heating_energy_input_ratio_modifier_function_of_low_temperature_curve_name: str | None = ...,
         heating_energy_input_ratio_boundary_curve_name: str | None = ...,
         heating_energy_input_ratio_modifier_function_of_high_temperature_curve_name: str | None = ...,
-        heating_performance_curve_outdoor_temperature_type: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        heating_performance_curve_outdoor_temperature_type: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         heating_energy_input_ratio_modifier_function_of_low_part_load_ratio_curve_name: str | None = ...,
         heating_energy_input_ratio_modifier_function_of_high_part_load_ratio_curve_name: str | None = ...,
@@ -50,11 +50,11 @@ class AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2:
         minimum_heat_pump_part_load_ratio: float | None = 0.15,
         zone_name_for_master_thermostat_location: str | None = ...,
         master_thermostat_priority_control_type: Literal[
-            "", "LoadPriority", "MasterThermostatPriority", "Scheduled", "ThermostatOffsetPriority", "ZonePriority"
+            "LoadPriority", "MasterThermostatPriority", "Scheduled", "ThermostatOffsetPriority", "ZonePriority"
         ]
         | None = "MasterThermostatPriority",
         thermostat_priority_schedule_name: str | None = ...,
-        heat_pump_waste_heat_recovery: Literal["", "No", "Yes"] | None = "No",
+        heat_pump_waste_heat_recovery: Literal["No", "Yes"] | None = "No",
         equivalent_piping_length_used_for_piping_correction_factor_in_cooling_mode: float | None = ...,
         vertical_height_used_for_piping_correction_factor: float | None = ...,
         piping_correction_factor_for_length_in_cooling_mode_curve_name: str | None = ...,
@@ -66,19 +66,19 @@ class AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2:
         number_of_compressors: float | None = 2,
         ratio_of_compressor_size_to_total_compressor_capacity: float | None = 0.5,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "Resistive",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "Resistive",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_energy_input_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
         water_condenser_volume_flow_rate: float | Literal["Autosize"] | None = ...,
         evaporative_condenser_effectiveness: float | None = 0.9,
         evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         supply_water_storage_tank_name: str | None = ...,
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,

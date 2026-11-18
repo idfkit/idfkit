@@ -27,57 +27,6 @@ class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1:
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-room-air-models/#roomairtemperaturepatternconstantgradient
         """
 
-class ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        air_inlet_node_name: str,
-        air_outlet_node_name: str,
-        cooling_supply_air_flow_rate: float | Literal["Autosize"],
-        heating_supply_air_flow_rate: float | Literal["Autosize"],
-        cooling_outdoor_air_flow_rate: float | Literal["Autosize"],
-        heating_outdoor_air_flow_rate: float | Literal["Autosize"],
-        supply_air_fan_object_type: Literal["Fan:OnOff", "Fan:SystemModel"],
-        supply_air_fan_name: str,
-        heating_coil_object_type: Literal[
-            "Coil:Heating:WaterToAirHeatPump:EquationFit", "Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit"
-        ],
-        heating_coil_name: str,
-        cooling_coil_object_type: Literal[
-            "Coil:Cooling:WaterToAirHeatPump:EquationFit", "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit"
-        ],
-        cooling_coil_name: str,
-        supplemental_heating_coil_object_type: Literal[
-            "Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"
-        ],
-        supplemental_heating_coil_name: str,
-        availability_schedule_name: str | None = ...,
-        outdoor_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
-        outdoor_air_mixer_name: str | None = ...,
-        no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        maximum_cycling_rate: float | None = 2.5,
-        heat_pump_time_constant: float | None = 60,
-        fraction_of_on_cycle_power_use: float | None = 0.01,
-        heat_pump_fan_delay_time: float | None = 60,
-        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
-        outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        availability_manager_list_name: str | None = ...,
-        heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
-        design_specification_zonehvac_sizing_object_name: str | None = ...,
-    ) -> None:
-        """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
-
-        Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coils, supplemental heating coil (gas, electric, hot water, or steam), and fixed-position outdoor air mixer.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-zone-forced-air-units/#zonehvacwatertoairheatpump
-        """
-
 class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1:
     def __call__(
         self,
@@ -105,10 +54,10 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1:
         number_of_speeds: int | None = 2,
         nominal_speed_level: int | None = 2,
         gross_rated_total_cooling_capacity_at_selected_nominal_speed_level: float
-        | Literal["", "Autosize"]
+        | Literal["Autosize"]
         | None = "Autosize",
-        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
+        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
         nominal_time_for_condensate_to_begin_leaving_the_coil: float | None = 0,
         initial_moisture_evaporation_rate_divided_by_steady_state_ac_latent_capacity: float | None = 0,
         flag_for_using_hot_gas_reheat_0_or_1: float | None = 0,
@@ -242,38 +191,38 @@ class OutputControlFiles_v24_2_to_v25_1:
         self,
         /,
         *,
-        output_csv: Literal["", "No", "Yes"] | None = "No",
-        output_mtr: Literal["", "No", "Yes"] | None = "Yes",
-        output_eso: Literal["", "No", "Yes"] | None = "Yes",
-        output_eio: Literal["", "No", "Yes"] | None = "Yes",
-        output_tabular: Literal["", "No", "Yes"] | None = "Yes",
-        output_sqlite: Literal["", "No", "Yes"] | None = "Yes",
-        output_json: Literal["", "No", "Yes"] | None = "Yes",
-        output_audit: Literal["", "No", "Yes"] | None = "Yes",
-        output_space_sizing: Literal["", "No", "Yes"] | None = "Yes",
-        output_zone_sizing: Literal["", "No", "Yes"] | None = "Yes",
-        output_system_sizing: Literal["", "No", "Yes"] | None = "Yes",
-        output_dxf: Literal["", "No", "Yes"] | None = "Yes",
-        output_bnd: Literal["", "No", "Yes"] | None = "Yes",
-        output_rdd: Literal["", "No", "Yes"] | None = "Yes",
-        output_mdd: Literal["", "No", "Yes"] | None = "Yes",
-        output_mtd: Literal["", "No", "Yes"] | None = "Yes",
-        output_end: Literal["", "No", "Yes"] | None = "Yes",
-        output_shd: Literal["", "No", "Yes"] | None = "Yes",
-        output_dfs: Literal["", "No", "Yes"] | None = "Yes",
-        output_glhe: Literal["", "No", "Yes"] | None = "Yes",
-        output_delightin: Literal["", "No", "Yes"] | None = "Yes",
-        output_delighteldmp: Literal["", "No", "Yes"] | None = "Yes",
-        output_delightdfdmp: Literal["", "No", "Yes"] | None = "Yes",
-        output_edd: Literal["", "No", "Yes"] | None = "Yes",
-        output_dbg: Literal["", "No", "Yes"] | None = "Yes",
-        output_perflog: Literal["", "No", "Yes"] | None = "Yes",
-        output_sln: Literal["", "No", "Yes"] | None = "Yes",
-        output_sci: Literal["", "No", "Yes"] | None = "Yes",
-        output_wrl: Literal["", "No", "Yes"] | None = "Yes",
-        output_screen: Literal["", "No", "Yes"] | None = "Yes",
-        output_extshd: Literal["", "No", "Yes"] | None = "Yes",
-        output_tarcog: Literal["", "No", "Yes"] | None = "Yes",
+        output_csv: Literal["No", "Yes"] | None = "No",
+        output_mtr: Literal["No", "Yes"] | None = "Yes",
+        output_eso: Literal["No", "Yes"] | None = "Yes",
+        output_eio: Literal["No", "Yes"] | None = "Yes",
+        output_tabular: Literal["No", "Yes"] | None = "Yes",
+        output_sqlite: Literal["No", "Yes"] | None = "Yes",
+        output_json: Literal["No", "Yes"] | None = "Yes",
+        output_audit: Literal["No", "Yes"] | None = "Yes",
+        output_space_sizing: Literal["No", "Yes"] | None = "Yes",
+        output_zone_sizing: Literal["No", "Yes"] | None = "Yes",
+        output_system_sizing: Literal["No", "Yes"] | None = "Yes",
+        output_dxf: Literal["No", "Yes"] | None = "Yes",
+        output_bnd: Literal["No", "Yes"] | None = "Yes",
+        output_rdd: Literal["No", "Yes"] | None = "Yes",
+        output_mdd: Literal["No", "Yes"] | None = "Yes",
+        output_mtd: Literal["No", "Yes"] | None = "Yes",
+        output_end: Literal["No", "Yes"] | None = "Yes",
+        output_shd: Literal["No", "Yes"] | None = "Yes",
+        output_dfs: Literal["No", "Yes"] | None = "Yes",
+        output_glhe: Literal["No", "Yes"] | None = "Yes",
+        output_delightin: Literal["No", "Yes"] | None = "Yes",
+        output_delighteldmp: Literal["No", "Yes"] | None = "Yes",
+        output_delightdfdmp: Literal["No", "Yes"] | None = "Yes",
+        output_edd: Literal["No", "Yes"] | None = "Yes",
+        output_dbg: Literal["No", "Yes"] | None = "Yes",
+        output_perflog: Literal["No", "Yes"] | None = "Yes",
+        output_sln: Literal["No", "Yes"] | None = "Yes",
+        output_sci: Literal["No", "Yes"] | None = "Yes",
+        output_wrl: Literal["No", "Yes"] | None = "Yes",
+        output_screen: Literal["No", "Yes"] | None = "Yes",
+        output_extshd: Literal["No", "Yes"] | None = "Yes",
+        output_tarcog: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``OutputControl:Files`` and add it to the document.
 
@@ -313,4 +262,55 @@ class PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2:
         Describes the performance characteristics of Photovoltaic (PV) modules to be modeled using an equivalent one-diode circuit. This model is also known as the 4- or 5-parameter TRNSYS model for photovoltaics.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v25.2/io-reference/overview/group-electric-load-center-generator/#photovoltaicperformanceequivalentone-diode
+        """
+
+class ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        air_inlet_node_name: str,
+        air_outlet_node_name: str,
+        cooling_supply_air_flow_rate: float | Literal["Autosize"],
+        heating_supply_air_flow_rate: float | Literal["Autosize"],
+        cooling_outdoor_air_flow_rate: float | Literal["Autosize"],
+        heating_outdoor_air_flow_rate: float | Literal["Autosize"],
+        supply_air_fan_object_type: Literal["Fan:OnOff", "Fan:SystemModel"],
+        supply_air_fan_name: str,
+        heating_coil_object_type: Literal[
+            "Coil:Heating:WaterToAirHeatPump:EquationFit", "Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit"
+        ],
+        heating_coil_name: str,
+        cooling_coil_object_type: Literal[
+            "Coil:Cooling:WaterToAirHeatPump:EquationFit", "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit"
+        ],
+        cooling_coil_name: str,
+        supplemental_heating_coil_object_type: Literal[
+            "Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"
+        ],
+        supplemental_heating_coil_name: str,
+        availability_schedule_name: str | None = ...,
+        outdoor_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
+        outdoor_air_mixer_name: str | None = ...,
+        no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
+        no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
+        maximum_cycling_rate: float | None = 2.5,
+        heat_pump_time_constant: float | None = 60,
+        fraction_of_on_cycle_power_use: float | None = 0.01,
+        heat_pump_fan_delay_time: float | None = 60,
+        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None = "Autosize",
+        maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
+        outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        supply_air_fan_operating_mode_schedule_name: str | None = ...,
+        availability_manager_list_name: str | None = ...,
+        heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
+        design_specification_zonehvac_sizing_object_name: str | None = ...,
+    ) -> None:
+        """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
+
+        Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coils, supplemental heating coil (gas, electric, hot water, or steam), and fixed-position outdoor air mixer.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-zone-forced-air-units/#zonehvacwatertoairheatpump
         """

@@ -43,14 +43,13 @@ class AnyZoneHVACLowTemperatureRadiantElectric:
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -82,16 +81,16 @@ class AnyAirTerminalSingleDuctVAVReheat:
         reheat_coil_name: str,
         air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        zone_minimum_air_flow_input_method: Literal["", "Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
-        constant_minimum_air_flow_fraction: float | Literal["", "Autosize"] | None = "Autosize",
-        fixed_minimum_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        zone_minimum_air_flow_input_method: Literal["Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
+        constant_minimum_air_flow_fraction: float | Literal["Autosize"] | None = "Autosize",
+        fixed_minimum_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         minimum_air_flow_fraction_schedule_name: str | None = ...,
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
-        damper_heating_action: Literal["", "Normal", "Reverse", "ReverseWithLimits"] | None = "ReverseWithLimits",
-        maximum_flow_per_zone_floor_area_during_reheat: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_flow_fraction_during_reheat: float | Literal["", "Autosize"] | None = "Autosize",
+        damper_heating_action: Literal["Normal", "Reverse", "ReverseWithLimits"] | None = "ReverseWithLimits",
+        maximum_flow_per_zone_floor_area_during_reheat: float | Literal["Autosize"] | None = "Autosize",
+        maximum_flow_fraction_during_reheat: float | Literal["Autosize"] | None = "Autosize",
         maximum_reheat_air_temperature: float | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
     ) -> None:
@@ -114,7 +113,7 @@ class FanVariableVolume:
         availability_schedule_name: str | None = ...,
         fan_total_efficiency: float | None = 0.7,
         maximum_flow_rate: float | Literal["Autosize"] | None = ...,
-        fan_power_minimum_flow_rate_input_method: Literal["", "FixedFlowRate", "Fraction"] | None = "Fraction",
+        fan_power_minimum_flow_rate_input_method: Literal["FixedFlowRate", "Fraction"] | None = "Fraction",
         fan_power_minimum_flow_fraction: float | None = 0.25,
         fan_power_minimum_air_flow_rate: float | None = ...,
         motor_efficiency: float | None = 0.9,
@@ -177,9 +176,9 @@ class ControllerWaterCoil:
         sensor_node_name: str,
         actuator_node_name: str,
         action: Literal["Normal", "Reverse"] | None = ...,
-        controller_convergence_tolerance: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_actuated_flow: float | Literal["", "Autosize"] | None = "Autosize",
-        minimum_actuated_flow: float | None = 0,
+        controller_convergence_tolerance: float | Literal["Autosize"] | None = "Autosize",
+        maximum_actuated_flow: float | Literal["Autosize"] | None = ...,
+        minimum_actuated_flow: float | None = ...,
     ) -> None:
         """Create a new ``Controller:WaterCoil`` and add it to the document.
 
@@ -275,8 +274,8 @@ class CurveExponentialSkewNormal:
         maximum_value_of_x: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:ExponentialSkewNormal`` and add it to the document.
@@ -299,8 +298,8 @@ class CurveExponentialDecay:
         maximum_value_of_x: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:ExponentialDecay`` and add it to the document.

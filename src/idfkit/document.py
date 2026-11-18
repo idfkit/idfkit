@@ -27,6 +27,7 @@ from .introspection import ObjectDescription, describe_object_type
 from .objects import (
     IDFCollection,
     IDFObject,
+    is_blank_slot,
     refuse_name_for_nameless_type,
     refuse_unknown_fields_for_add,
 )
@@ -889,6 +890,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             parsing_cache = self._schema.get_parsing_cache(resolved_obj_type)
             field_order = self._build_field_order_for_add(field_order, field_data, parsing_cache)
             ref_fields = self._compute_ref_fields(self._schema, resolved_obj_type)
+
+        # A blank value leaves the field unset, as the IDF parser and assignment already store it
+        # (idfkit#183): reading it then gives None, or MissingRequiredFieldError, never "".
+        # A blank under a key the type does not name is kept, so the unknown-key check below refuses it.
+        known = parsing_cache.known_keys if parsing_cache is not None else frozenset[str]()
+        field_data = {key: value for key, value in field_data.items() if key not in known or not is_blank_slot(value)}
 
         # Create object
         obj = IDFObject(

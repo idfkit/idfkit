@@ -120,7 +120,7 @@ class HotWaterEquipment_v9_6_to_v23_2:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -153,7 +153,7 @@ class CentralHeatPumpSystem_v22_2_to_v26_1:
         chiller_heater_modules_performance_component_object_type_1: Literal["ChillerHeaterPerformance:Electric:EIR"],
         chiller_heater_modules_performance_component_name_1: str,
         chiller_heater_modules_control_schedule_name_1: str,
-        control_method: Literal["", "SmartMixing"] | None = "SmartMixing",
+        control_method: Literal["SmartMixing"] | None = "SmartMixing",
         ancillary_power: float | None = 0,
         ancillary_operation_schedule_name: str | None = ...,
         number_of_chiller_heater_modules_1: int | None = 1,
