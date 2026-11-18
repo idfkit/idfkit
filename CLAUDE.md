@@ -281,6 +281,41 @@ Security` subsection. Surface breaking changes inline with a `**Breaking:**`
 prefix; do not invent new categories. Write entries for humans, in past tense,
 ending with a period — not as commit messages.
 
+**Keep each entry short.** The changelog is read by people scanning for what
+affects them, above all breaking changes; an essay hides them.
+
+- **Length budget:** 1–2 sentences, aiming for 3 wrapped lines and never more
+  than 5 lines or 450 characters, links included.
+- **User impact, not implementation:** say what changed and for whom. A
+  `**Breaking:**` entry states the migration in one clause ("narrow with
+  `as_version` first").
+- **No benchmarks, error-message transcripts or edge-case catalogs**, and no
+  internal mechanics (module counts, stub layout, overload order).
+- **Details go in the PR body**, the docs (idfkit/idfkit-developers) or the
+  bundled agent reference (`agent_references/`). Put them there first, then
+  summarise here.
+- **Group PRs that form one feature** into one entry with several refs.
+
+Good:
+
+```markdown
+- **Breaking:** `ExtensibleList.as_list()` returned the group's `TypedDict` item type instead of
+  `list[dict[str, Any]]`; annotate with the item type and read keys with `.get()`
+  ([#297](https://github.com/idfkit/idfkit/pull/297)).
+```
+
+Bad (timings, run-time trivia and message wording a reader does not need):
+
+```markdown
+- `IDFCollection.add(name, **fields)` became the typed way to create an object ... 300 calls
+  took 1.8 s, against 1.55 s for 300 untyped `doc.add()` calls; typing `doc.add()` itself took
+  24.5 s ... A document pickled by an earlier release still added through its collections, except
+  one emptied before it was pickled, which raised `TypeError` ... (20 more lines)
+```
+
+`scripts/check_changelog_entries.py` enforces the budget on `[Unreleased]`: it
+runs as a pre-commit hook, so `make check` fails on an overlong entry.
+
 **Reference the source.** End each entry with a parenthetical link to the PR
 (`([#152](https://github.com/idfkit/idfkit/pull/152))`) or, when the change
 landed without a PR, the short commit SHA

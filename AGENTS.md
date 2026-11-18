@@ -115,6 +115,31 @@ subsection. Surface breaking changes inline with a `**Breaking:**` prefix; do
 not invent new categories. Write entries for humans, in past tense, ending with
 a period — not as commit messages.
 
+Keep each entry short — readers scan the changelog for what affects them:
+
+- **Length budget:** 1–2 sentences, aiming for 3 wrapped lines, never more than
+  5 lines or 450 characters including links.
+- **User impact, not implementation.** A `**Breaking:**` entry states the
+  migration in one clause ("narrow with `as_version` first").
+- **No benchmarks, error-message transcripts or edge-case catalogs**, and no
+  internal mechanics.
+- **Details go in the PR body**, the docs (idfkit/idfkit-developers) or
+  `agent_references/`. Group PRs that form one feature into one entry.
+
+Good:
+
+```markdown
+- **Breaking:** `ExtensibleList.as_list()` returned the group's `TypedDict` item type instead of
+  `list[dict[str, Any]]`; annotate with the item type and read keys with `.get()`
+  ([#297](https://github.com/idfkit/idfkit/pull/297)).
+```
+
+Bad: a 20-line entry listing type-checker timings ("300 calls took 1.8 s"),
+pickling edge cases and the exact wording of mypy messages.
+
+`scripts/check_changelog_entries.py` (a pre-commit hook, so part of
+`make check`) fails on an `[Unreleased]` entry over budget.
+
 End each entry with a parenthetical link to the PR
 (`([#152](https://github.com/idfkit/idfkit/pull/152))`) or, when the change
 landed without a PR, the short commit SHA

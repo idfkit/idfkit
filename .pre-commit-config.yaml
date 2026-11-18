@@ -30,3 +30,14 @@ repos:
       - id: ruff-check
         args: [ --exit-non-zero-on-fix ]
       - id: ruff-format
+
+  # Keeps CHANGELOG.md [Unreleased] entries to a summary (see CLAUDE.md, "Changelog"). Runs on
+  # every `make check` through `pre-commit run -a`, and on any commit that touches the changelog.
+  - repo: local
+    hooks:
+      - id: changelog-entry-length
+        name: changelog entry length
+        entry: python scripts/check_changelog_entries.py
+        language: system
+        files: ^CHANGELOG\.md$
+        pass_filenames: false
