@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class Building:
     def __call__(
@@ -148,7 +150,9 @@ class GroundHeatTransferBasementZFACE:
     def __call__(self, /) -> None: ...
 
 class AnyRoomAirNodeAirflowNetworkInternalGains:
-    def __call__(self, name: str = "", /, *, gains: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str = "", /, *, gains: list[_g.AnyRoomAirNodeAirflowNetworkInternalGainsGainsItem] = ...
+    ) -> None: ...
 
 class ElectricEquipmentInstance:
     def __call__(
@@ -414,7 +418,7 @@ class AnyZoneHVACHybridUnitaryHVAC:
         mode_0_system_water_use_lookup_table_name: str | None = ...,
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
-        modes: list[Any] = ...,
+        modes: list[_g.ZoneHVACHybridUnitaryHVACModesItem] = ...,
     ) -> None: ...
 
 class AnyCoilCoolingWaterDetailedGeometry:
@@ -962,7 +966,7 @@ class OutputTableAnnual:
         *,
         filter: str | None = ...,
         schedule_name: str | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.OutputTableAnnualVariableDetailsItem] = ...,
     ) -> None: ...
 
 class PythonPluginTrendVariable:

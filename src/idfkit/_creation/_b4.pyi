@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class AnyMaterial:
     def __call__(
@@ -117,7 +119,7 @@ class SurfacePropertyExteriorNaturalVentedCavity:
         ratio_of_actual_surface_area_to_projected_surface_area: float | None = 1,
         effectiveness_for_perforations_with_respect_to_wind: float | None = 0.25,
         discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None = 0.65,
-        surface: list[Any] = ...,
+        surface: list[_g.SurfacePropertyExteriorNaturalVentedCavitySurfaceItem] = ...,
     ) -> None: ...
 
 class AnySurfacePropertyLocalEnvironment:
@@ -474,7 +476,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveWater:
         rated_average_water_temperature: float | None = 87.78,
         rated_water_mass_flow_rate: float | None = 0.063,
         heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class AnyFanSystemModel:
@@ -505,7 +507,7 @@ class AnyFanSystemModel:
         motor_loss_radiative_fraction: float | None = ...,
         end_use_subcategory: str | None = "General",
         number_of_speeds: int | None = 1,
-        speed_fractions: list[Any] = ...,
+        speed_fractions: list[_g.FanSystemModelSpeedFractionsItem] = ...,
     ) -> None: ...
 
 class FanPerformanceNightVentilation:
@@ -596,7 +598,7 @@ class AnyPipingSystemUndergroundPipeCircuit:
         convergence_criterion_for_the_inner_radial_iteration_loop: float | None = 0.001,
         maximum_iterations_in_the_inner_radial_iteration_loop: int | None = 500,
         number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region: int | None = 3,
-        pipe_segments: list[Any] = ...,
+        pipe_segments: list[_g.PipingSystemUndergroundPipeCircuitPipeSegmentsItem] = ...,
     ) -> None: ...
 
 class PipingSystemUndergroundPipeCircuit:
@@ -618,7 +620,7 @@ class PipingSystemUndergroundPipeCircuit:
         convergence_criterion_for_the_inner_radial_iteration_loop: float | None = 0.001,
         maximum_iterations_in_the_inner_radial_iteration_loop: int | None = 500,
         number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region: int | None = 3,
-        pipe_segments: list[Any] = ...,
+        pipe_segments: list[_g.PipingSystemUndergroundPipeCircuitPipeSegmentsItem] = ...,
     ) -> None: ...
 
 class PumpVariableSpeed:
@@ -778,7 +780,7 @@ class GroundHeatExchangerSystem:
         ghe_vertical_sizing_object_type: Literal["GroundHeatExchanger:Vertical:Sizing:Rectangle"] | None = ...,
         ghe_vertical_sizing_object_name: str | None = ...,
         ghe_vertical_array_object_name: str | None = ...,
-        vertical_well_locations: list[Any] = ...,
+        vertical_well_locations: list[_g.GroundHeatExchangerSystemVerticalWellLocationsItem] = ...,
     ) -> None: ...
 
 class ThermalStoragePCM:
@@ -811,7 +813,7 @@ class ThermalStorageSizing:
     ) -> None: ...
 
 class EnergyManagementSystemGlobalVariable:
-    def __call__(self, /, *, variables: list[Any] = ...) -> None: ...
+    def __call__(self, /, *, variables: list[_g.EnergyManagementSystemGlobalVariableVariablesItem] = ...) -> None: ...
 
 class AvailabilityManagerHybridVentilation:
     def __call__(
@@ -923,7 +925,7 @@ class AnyLifeCycleCostUseAdjustment:
             "Propane",
             "Water",
         ],
-        multipliers: list[Any] = ...,
+        multipliers: list[_g.LifeCycleCostUseAdjustmentMultipliersItem] = ...,
     ) -> None: ...
 
 class LifeCycleCostUseAdjustment:
@@ -952,7 +954,7 @@ class LifeCycleCostUseAdjustment:
             "Propane",
             "Water",
         ],
-        multipliers: list[Any] = ...,
+        multipliers: list[_g.LifeCycleCostUseAdjustmentMultipliersItem] = ...,
     ) -> None: ...
 
 class OutputPreprocessorMessage:

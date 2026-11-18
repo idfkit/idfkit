@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class WindowMaterialShade:
     def __call__(
@@ -94,7 +96,7 @@ class MaterialPropertyGlazingSpectralData:
         transmittance_4: float | None = ...,
         front_reflectance_4: float | None = ...,
         back_reflectance_4: float | None = ...,
-        extensions: list[Any] = ...,
+        extensions: list[_g.MaterialPropertyGlazingSpectralDataExtensionsItem] = ...,
     ) -> None: ...
 
 class AnySpace:
@@ -106,7 +108,7 @@ class AnySpace:
         zone_name: str,
         floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
-        tags: list[Any] = ...,
+        tags: list[_g.SpaceTagsItem] = ...,
     ) -> None: ...
 
 class AnyFenestrationSurfaceDetailed:
@@ -145,7 +147,7 @@ class ShadingBuildingDetailed:
         *,
         transmittance_schedule_name: str | None = ...,
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.ShadingBuildingDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class ComplexFenestrationPropertySolarAbsorbedLayers:
@@ -439,7 +441,7 @@ class SpaceHVACZoneEquipmentMixer:
             "", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"
         ]
         | None = "DesignCoolingLoad",
-        spaces: list[Any] = ...,
+        spaces: list[_g.SpaceHVACZoneEquipmentMixerSpacesItem] = ...,
     ) -> None: ...
 
 class CoilDXASHRAE205Performance:
@@ -990,7 +992,14 @@ class AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass:
     ) -> None: ...
 
 class AirLoopHVACSupplyPath:
-    def __call__(self, name: str, /, *, supply_air_path_inlet_node_name: str, components: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        supply_air_path_inlet_node_name: str,
+        components: list[_g.AirLoopHVACSupplyPathComponentsItem] = ...,
+    ) -> None: ...
 
 class EnergyManagementSystemCurveOrTableIndexVariable:
     def __call__(self, name: str, /, *, curve_or_table_object_name: str) -> None: ...
@@ -1130,7 +1139,7 @@ class AnyLifeCycleCostUsePriceEscalation:
             "September",
         ]
         | None = "January",
-        escalations: list[Any] = ...,
+        escalations: list[_g.LifeCycleCostUsePriceEscalationEscalationsItem] = ...,
     ) -> None: ...
 
 class AnyOutputDebuggingData:

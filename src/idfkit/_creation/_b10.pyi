@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class AnySizingPeriodDesignDay:
     def __call__(
@@ -162,7 +164,7 @@ class ScheduleWeekDaily:
     ) -> None: ...
 
 class ScheduleWeekCompact:
-    def __call__(self, name: str, /, *, data: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, data: list[_g.ScheduleWeekCompactDataItem] = ...) -> None: ...
 
 class AnyWindowMaterialComplexShade:
     def __call__(
@@ -610,7 +612,7 @@ class ZoneHVACHybridUnitaryHVAC:
         mode_0_system_water_use_lookup_table_name: str | None = ...,
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
-        modes: list[Any] = ...,
+        modes: list[_g.ZoneHVACHybridUnitaryHVACModesItem] = ...,
     ) -> None: ...
 
 class ZoneHVACBaseboardConvectiveWater:
@@ -835,7 +837,7 @@ class AnyUnitarySystemPerformanceMultispeed:
         number_of_speeds_for_cooling: int,
         single_mode_operation: Literal["", "No", "Yes"] | None = "No",
         no_load_supply_air_flow_rate_ratio: float | None = 1,
-        flow_ratios: list[Any] = ...,
+        flow_ratios: list[_g.UnitarySystemPerformanceMultispeedFlowRatiosItem] = ...,
     ) -> None: ...
 
 class UnitarySystemPerformanceMultispeed:
@@ -848,7 +850,7 @@ class UnitarySystemPerformanceMultispeed:
         number_of_speeds_for_cooling: int,
         single_mode_operation: Literal["", "No", "Yes"] | None = "No",
         no_load_supply_air_flow_rate_ratio: float | None = 1,
-        flow_ratios: list[Any] = ...,
+        flow_ratios: list[_g.UnitarySystemPerformanceMultispeedFlowRatiosItem] = ...,
     ) -> None: ...
 
 class PipeAdiabatic:
@@ -1031,7 +1033,7 @@ class ThermalStorageChilledWaterStratified:
     ) -> None: ...
 
 class CondenserEquipmentList:
-    def __call__(self, name: str, /, *, equipment: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, equipment: list[_g.CondenserEquipmentListEquipmentItem] = ...) -> None: ...
 
 class ExternalInterfaceFunctionalMockupUnitImportFromVariable:
     def __call__(
@@ -1059,7 +1061,7 @@ class DemandManagerVentilation:
         limit_step_change: float | None = ...,
         selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None = "All",
         rotation_duration: int | None = ...,
-        controllers: list[Any] = ...,
+        controllers: list[_g.DemandManagerVentilationControllersItem] = ...,
     ) -> None: ...
 
 class CurveExponent:

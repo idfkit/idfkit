@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class ZoneCapacitanceMultiplierResearchSpecial:
     def __call__(
@@ -113,7 +115,7 @@ class AnySurfacePropertySurroundingSurfaces:
         sky_temperature_schedule_name: str | None = ...,
         ground_view_factor: float | None = ...,
         ground_temperature_schedule_name: str | None = ...,
-        surfaces: list[Any] = ...,
+        surfaces: list[_g.SurfacePropertySurroundingSurfacesSurfacesItem] = ...,
     ) -> None: ...
 
 class SurfacePropertySurroundingSurfaces:
@@ -126,7 +128,7 @@ class SurfacePropertySurroundingSurfaces:
         sky_temperature_schedule_name: str | None = ...,
         ground_view_factor: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         ground_temperature_schedule_name: str | None = ...,
-        surfaces: list[Any] = ...,
+        surfaces: list[_g.SurfacePropertySurroundingSurfacesSurfacesItem] = ...,
     ) -> None: ...
 
 class RoomAirTemperaturePatternTwoGradient:
@@ -394,11 +396,17 @@ class AnyZoneHVACCoolingPanelRadiantConvectiveWater:
         condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class ZoneHVACLowTemperatureRadiantSurfaceGroup:
-    def __call__(self, name: str, /, *, surface_fractions: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        surface_fractions: list[_g.ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsItem] = ...,
+    ) -> None: ...
 
 class AnyAirTerminalSingleDuctVAVNoReheat:
     def __call__(
@@ -787,7 +795,7 @@ class PlantEquipmentOperationThermalEnergyStorage:
     ) -> None: ...
 
 class EnergyManagementSystemSubroutine:
-    def __call__(self, name: str, /, *, lines: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, lines: list[_g.EnergyManagementSystemSubroutineLinesItem] = ...) -> None: ...
 
 class ExternalInterfaceActuator:
     def __call__(

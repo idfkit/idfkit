@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import versioned as _vd
 
 class GroundHeatExchangerVerticalArray_v8_9_to_v22_1:
     def __call__(
@@ -171,7 +173,13 @@ class People_v8_9_to_v9_4:
     ) -> None: ...
 
 class ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3:
-    def __call__(self, /, *, zone_or_zonelist_name: str | None = ..., view_factors: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        /,
+        *,
+        zone_or_zonelist_name: str | None = ...,
+        view_factors: list[_vd.ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v9_2_to_v9_3] = ...,
+    ) -> None: ...
 
 class HeaderedPumpsConstantSpeed_v8_9_to_v9_0:
     def __call__(
@@ -617,7 +625,7 @@ class TableTwoIndependentVariables_v8_9_to_v9_1:
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
         external_file_name: str | None = ...,
-        values: list[Any] = ...,
+        values: list[_vd.TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1] = ...,
     ) -> None: ...
 
 class ComfortViewFactorAngles_v8_9_to_v9_5:

@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import versioned as _vd
 
 class ScheduleFile_v8_9_to_v9_1:
     def __call__(
@@ -42,7 +44,7 @@ class DaylightingControls_v9_6_to_v22_1:
         glare_calculation_azimuth_angle_of_view_direction_clockwise_from_zone_y_axis: float | None = 0,
         maximum_allowable_discomfort_glare_index: float | None = 22,
         delight_gridding_resolution: float | None = ...,
-        control_data: list[Any] = ...,
+        control_data: list[_vd.DaylightingControlsControlDataItem_v9_6_to_v22_1] = ...,
     ) -> None: ...
 
 class Zone_v9_5_to_v22_1:

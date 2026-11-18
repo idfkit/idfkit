@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class SimulationControl:
     def __call__(
@@ -184,7 +186,7 @@ class AnySurfacePropertyExposedFoundationPerimeter:
         exposed_perimeter_calculation_method: Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"],
         total_exposed_perimeter: float | None = ...,
         exposed_perimeter_fraction: float | None = ...,
-        surfaces: list[Any] = ...,
+        surfaces: list[_g.AnySurfacePropertyExposedFoundationPerimeterSurfacesItem] = ...,
     ) -> None: ...
 
 class GroundHeatTransferBasementYFACE:
@@ -618,10 +620,14 @@ class AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit:
     ) -> None: ...
 
 class AirLoopHVACZoneSplitter:
-    def __call__(self, name: str, /, *, inlet_node_name: str, nodes: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, inlet_node_name: str, nodes: list[_g.AirLoopHVACZoneSplitterNodesItem] = ...
+    ) -> None: ...
 
 class AirLoopHVACSplitter:
-    def __call__(self, name: str, /, *, inlet_node_name: str, nodes: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, inlet_node_name: str, nodes: list[_g.AirLoopHVACSplitterNodesItem] = ...
+    ) -> None: ...
 
 class ConnectorList:
     def __call__(

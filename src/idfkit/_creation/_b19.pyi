@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class AnySurfaceConvectionAlgorithmInside:
     def __call__(
@@ -205,7 +207,7 @@ class BuildingSurfaceDetailed:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.BuildingSurfaceDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class AnyWallDetailed:
@@ -239,7 +241,7 @@ class AnyWallDetailed:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.WallDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class AnyFloorDetailed:
@@ -273,7 +275,7 @@ class AnyFloorDetailed:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.FloorDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class AnyWallUnderground:
@@ -387,7 +389,9 @@ class GroundHeatTransferBasementInterior:
     ) -> None: ...
 
 class RoomAirNodeAirflowNetworkInternalGains:
-    def __call__(self, name: str = "", /, *, gains: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str = "", /, *, gains: list[_g.RoomAirNodeAirflowNetworkInternalGainsGainsItem] = ...
+    ) -> None: ...
 
 class AnyZoneBaseboardOutdoorTemperatureControlled:
     def __call__(
@@ -880,7 +884,7 @@ class DemandManagerLights:
         maximum_limit_fraction: float | None = ...,
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
-        lights: list[Any] = ...,
+        lights: list[_g.DemandManagerLightsLightsItem] = ...,
     ) -> None: ...
 
 class FaultModelHumiditySensorOffsetOutdoorAir:
@@ -1026,7 +1030,14 @@ class OutputTableTimeBins:
     ) -> None: ...
 
 class AnyMeterCustomDecrement:
-    def __call__(self, name: str, /, *, source_meter_name: str, variable_details: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        source_meter_name: str,
+        variable_details: list[_g.MeterCustomDecrementVariableDetailsItem] = ...,
+    ) -> None: ...
 
 class PythonPluginSearchPaths:
     def __call__(
@@ -1037,5 +1048,5 @@ class PythonPluginSearchPaths:
         add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
         add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
         add_epin_environment_variable_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
-        py_search_paths: list[Any] = ...,
+        py_search_paths: list[_g.PythonPluginSearchPathsPySearchPathsItem] = ...,
     ) -> None: ...

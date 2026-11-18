@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class SurfaceConvectionAlgorithmInside:
     def __call__(
@@ -211,7 +213,7 @@ class AnyWindowShadingControl:
         setpoint_2: float | None = ...,
         daylighting_control_object_name: str | None = ...,
         multiple_surface_control_type: Literal["", "Group", "Sequential"] | None = "Sequential",
-        fenestration_surfaces: list[Any] = ...,
+        fenestration_surfaces: list[_g.WindowShadingControlFenestrationSurfacesItem] = ...,
     ) -> None: ...
 
 class WindowPropertyFrameAndDivider:
@@ -315,7 +317,7 @@ class AnyRoomAirTemperaturePatternSurfaceMapping:
         thermostat_offset: float | None = ...,
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
-        surface_deltas: list[Any] = ...,
+        surface_deltas: list[_g.RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem] = ...,
     ) -> None: ...
 
 class AirflowNetworkMultiZoneWindPressureCoefficientArray:
@@ -521,7 +523,7 @@ class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl:
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
         compressor_maximum_delta_pressure: float | None = 4500000,
         number_of_compressor_loading_index_entries: int | None = 2,
-        loading_indices: list[Any] = ...,
+        loading_indices: list[_g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem] = ...,
     ) -> None: ...
 
 class AnyControllerMechanicalVentilation:
@@ -543,7 +545,7 @@ class AnyControllerMechanicalVentilation:
         ]
         | None = ...,
         zone_maximum_outdoor_air_fraction: float | None = 1,
-        zone_specifications: list[Any] = ...,
+        zone_specifications: list[_g.AnyControllerMechanicalVentilationZoneSpecificationsItem] = ...,
     ) -> None: ...
 
 class OutdoorAirNode:
@@ -960,7 +962,7 @@ class CurveFanPressureRise:
     ) -> None: ...
 
 class ParametricRunControl:
-    def __call__(self, name: str = "", /, *, runs: list[Any] = ...) -> None: ...
+    def __call__(self, name: str = "", /, *, runs: list[_g.ParametricRunControlRunsItem] = ...) -> None: ...
 
 class AnyOutputControlTableStyle:
     def __call__(

@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1:
     def __call__(
@@ -194,7 +196,7 @@ class RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1:
         thermostat_offset: float | None = ...,
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
-        surface_deltas: list[Any] = ...,
+        surface_deltas: list[_g.RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem] = ...,
     ) -> None: ...
 
 class OutputSQLite_v8_9_to_v9_4:
@@ -267,7 +269,13 @@ class AirflowNetworkSimulationControl_v9_5_to_v22_1:
     ) -> None: ...
 
 class ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5:
-    def __call__(self, /, *, zone_or_zonelist_name: str | None = ..., view_factors: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        /,
+        *,
+        zone_or_zonelist_name: str | None = ...,
+        view_factors: list[_g.ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem] = ...,
+    ) -> None: ...
 
 class InternalMass_v24_2_to_v26_1:
     def __call__(

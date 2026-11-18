@@ -510,7 +510,7 @@ def _generate_object_class(
     # subclass before the parent class so the parent can reference it.
     group_cls_name: str | None = None
     if wrapper_key and ext_inner_props:
-        group_cls_name = f"{_to_class_name(obj_type)}{_to_class_name(wrapper_key.title())}Group{suffix}"
+        group_cls_name = _group_class_name(obj_type, wrapper_key, suffix)
         lines.extend(_generate_group_class(group_cls_name, cls_name, wrapper_key, ext_inner_props, indent, group_base))
 
     lines.append(f"{indent}class {cls_name}({base}):")
@@ -550,7 +550,7 @@ def _generate_object_class(
     # Add the canonical wrapper attribute typed as ExtensibleList[<GroupCls>].
     if group_cls_name and wrapper_key:
         lines.append(f"{body_indent}{wrapper_key}: ExtensibleList[{group_cls_name}]")
-        update_fields.append((wrapper_key, "list[Any]"))
+        update_fields.append((wrapper_key, _group_items(group_cls_name)))
 
     if emit_update:
         declared = _creation_lines(
@@ -573,6 +573,45 @@ def _in_field_order(schema: EpJSONSchema, obj_type: str, entries: Iterable[tuple
     return sorted(kept.items(), key=lambda entry: order.get(entry[0], len(order)))
 
 
+def _group_class_name(obj_type: str, wrapper_key: str, suffix: str = "") -> str:
+    """``BuildingSurfaceDetailedVerticesGroup``: the group class of *obj_type*'s extensible group."""
+    return f"{_to_class_name(obj_type)}{_to_class_name(wrapper_key.title())}Group{suffix}"
+
+
+def _group_item_name(group_cls: str) -> str:
+    """``BuildingSurfaceDetailedVerticesItem``: the dict type of one group of *group_cls*."""
+    head, _, tail = group_cls.rpartition("Group")
+    return f"{head}Item{tail}"
+
+
+def _group_items(group_cls: str, prefix: str = "") -> str:
+    """The value of a group's wrapper keyword in ``update`` and ``add``: a list of its groups as dicts.
+
+    Each dict is typed by the group's item type (:func:`_group_item_class`), so a misspelled key or
+    a wrong value is a type error. *prefix* qualifies the name (``_g.``) as the module the annotation
+    is written in reaches it.
+    """
+    return f"list[{prefix}{_group_item_name(group_cls)}]"
+
+
+def _group_item_class(group_cls: str, fields: Iterable[tuple[str, str]], indent: str = "") -> list[str]:
+    """One group of *group_cls* as a dict: a ``TypedDict`` of its fields, each optional.
+
+    It is public, so code that builds groups ahead of a call can annotate them
+    (``points: list[BuildingSurfaceDetailedVerticesItem]``). *fields* are the group's fields with
+    the value type writing one accepts.
+    """
+    fields = list(fields)
+    lines = [
+        f"{indent}class {_group_item_name(group_cls)}(TypedDict, total=False):",
+        f'{indent}    """One group of :class:`{group_cls}` as a dict, as ``add()`` and ``update()`` take it."""',
+        "",
+    ]
+    lines += [f"{indent}    {name}: {_or_none(value_type)}" for name, value_type in fields]
+    lines.append("")
+    return lines
+
+
 def _generate_group_class(
     group_cls_name: str,
     cls_name: str,
@@ -586,13 +625,17 @@ def _generate_group_class(
         f"{indent}class {group_cls_name}({group_base}):",
         f'{indent}    """One {wrapper_key} group inside :class:`{cls_name}`."""',
     ]
+    item_fields: list[tuple[str, str]] = []
     for inner_name, inner_schema in inner_props.items():
         if not inner_name.isidentifier():
             continue
         has_any_of = "anyOf" in inner_schema
         py_type = _schema_type_to_python(inner_schema, _schema_field_type(inner_schema), has_any_of)
         lines.append(f"{indent}    {inner_name}: {py_type} | None")
+        item_fields.append((inner_name, py_type))
+    lines.append(f"{indent}    def as_dict(self) -> {_group_item_name(group_cls_name)}: ...  # type: ignore[override]")
     lines.append("")
+    lines += _group_item_class(group_cls_name, item_fields, indent)
     return lines
 
 
@@ -1054,6 +1097,22 @@ class _CreationModules:
     alias: str = "_c"
     classes: dict[int, list[str]] = dataclasses.field(default_factory=dict[int, list[str]])
 
+    @property
+    def home(self) -> str:
+        """How the modules name the stub whose classes they serve: ``_g`` (``_generated_types``) or
+        ``_vd`` (``versioned``), for the group classes and group dicts a signature names."""
+        return "_g" if self.module == "_b" else "_vd"
+
+    def qualify(self, annotation: str) -> str:
+        """*annotation*, written in the classes' stub, as the creation modules reach its names.
+
+        Only a group wrapper's ``list[_<Group>Item | <Group>]`` names classes of the stub; a name
+        already qualified ``_g.`` (``versioned.pyi`` reaching ``_generated_types``) stays.
+        """
+        if not annotation.startswith("list[") or annotation == "list[Any]":
+            return annotation
+        return re.sub(r"(?<![\w.])(_?[A-Z]\w*)", rf"{self.home}.\1", annotation)
+
     def add(self, cls_name: str, params: str) -> str:
         """File the signature (*params*, without parentheses) of *cls_name*; return its annotation."""
         bucket = zlib.crc32(cls_name.encode()) % _CREATION_BUCKETS
@@ -1063,6 +1122,12 @@ class _CreationModules:
             "",
         ])
         return f"{self.alias}{bucket}.{cls_name}"
+
+    def _stubs(self) -> list[tuple[str, str]]:
+        """The stubs whose group classes a module of this family may name: module, alias."""
+        return (
+            [("_generated_types", "_g")] if self.module == "_b" else [("_generated_types", "_g"), ("versioned", "_vd")]
+        )
 
     def imports(self) -> list[str]:
         """The import of every module, for the stub whose classes annotate with them."""
@@ -1093,6 +1158,9 @@ class _CreationModules:
                     if typing_names
                     else ["from typing_extensions import Never"]
                 )
+            own = [f"from .. import {name} as {alias}" for name, alias in self._stubs() if f"{alias}." in body]
+            if own:
+                header.extend(["", *own])
             out[f"{self.module}{k}.pyi"] = "\n".join([*header, "", body]).rstrip() + "\n"
         return out
 
@@ -1129,6 +1197,7 @@ def _creation_lines(
     settable = {name for name, annotation in fields if _strip_none(annotation) != "None"}
     if creation.required - settable:
         required.append(f"{_NARROW_FIRST}: Never")
+    fields = [(name, sink.qualify(annotation)) for name, annotation in fields]
     for name, annotation in fields:
         value_type = _strip_none(annotation)
         if name in creation.hidden:
@@ -1447,6 +1516,8 @@ def _generate_merged_group(group: _MergedGroup, owner: str) -> list[str]:
         else:
             lines += _property_lines(name, read, write, "    ")
     lines.append("")
+    # A dict written into a document of any release holds only what every release accepts.
+    lines += _group_item_class(group.cls_name, [(name, write) for name, _, write in group.fields])
     return lines
 
 
@@ -1535,7 +1606,7 @@ def _generate_base_class(
     varying = [(name, _or_none(layout.writable[name])) for name in layout.fields if name in layout.varying]
     if merged_group is not None:
         lines.append(f"    {merged_group.wrapper}: ExtensibleList[{merged_group.cls_name}]")
-        varying.append((merged_group.wrapper, "list[Any]"))
+        varying.append((merged_group.wrapper, _group_items(merged_group.cls_name)))
     creation = _creation_lines(
         base,
         _in_field_order(schema, obj_type, [*common, *varying]),
@@ -1547,13 +1618,19 @@ def _generate_base_class(
     return lines
 
 
-def _common_entries(schema: EpJSONSchema, obj_type: str, layout: _SharedLayout) -> list[tuple[str, str]]:
-    """The ``update`` keywords of ``_<Class>CommonFields``: the fields every version declares alike."""
+def _common_entries(
+    schema: EpJSONSchema, obj_type: str, layout: _SharedLayout, prefix: str = ""
+) -> list[tuple[str, str]]:
+    """The ``update`` keywords of ``_<Class>CommonFields``: the fields every version declares alike.
+
+    *prefix* qualifies the group's names as the module reading them reaches ``_generated_types``.
+    """
     decls = _field_decls(schema, obj_type)
     common = [(name, f"{decls[name]} | None") for name in decls if name in layout.identical and name != "name"]
     group = _group_decl(schema, obj_type)
     if layout.group and group is not None:
-        common.append((group[0], "list[Any]"))
+        # Any<Class> declares the group, under the unsuffixed name.
+        common.append((group[0], _group_items(_group_class_name(obj_type, group[0]), prefix)))
     return common
 
 
@@ -1684,7 +1761,7 @@ def _generate_piece_class(
         f"``{obj_type}`` as declared in EnergyPlus {span}: the fields of :class:`{base.removeprefix('_g.')}`, "
         "with the fields these releases require."
     )
-    entries = _update_entries(schema, obj_type)
+    entries = _update_entries(schema, obj_type, run)
     fields_base = (
         f"{'_g.' if base.startswith('_g.') else ''}_{base.removeprefix('_g.')}Fields" if entries else "TypedDict"
     )
@@ -1703,18 +1780,24 @@ def _generate_piece_class(
     )
 
 
-def _update_entries(schema: EpJSONSchema, obj_type: str) -> list[tuple[str, str]]:
-    """Every ``update`` keyword of a non-shared class of *obj_type* in *schema*'s release, annotated.
+def _update_entries(schema: EpJSONSchema, obj_type: str, run: tuple[Version, ...]) -> list[tuple[str, str]]:
+    """Every ``update`` keyword of the class of range *run* of *obj_type*, annotated, as ``versioned.pyi`` reads it.
 
     What its ``_<Class>Fields`` and the ``_<Class>CommonFields`` it extends hold together: each
-    field and alias as its value type or ``None``, and the group's wrapper as a list.
+    field and alias as its value type or ``None``, and the group's wrapper as a list of its groups.
+    The group class is the unsuffixed one in ``_generated_types`` (on ``Any<Class>`` or the latest
+    class) unless the range is an older one that declares its own group.
     """
     entries = [
         (name, f"{py_type} | None") for name, py_type in _field_decls(schema, obj_type).items() if name != "name"
     ]
     group = _group_decl(schema, obj_type)
     if group is not None:
-        entries.append((group[0], "list[Any]"))
+        layout = _shared_layout().get(obj_type)
+        if SUPPORTED.latest in run or (layout is not None and layout.group):
+            entries.append((group[0], _group_items(_group_class_name(obj_type, group[0]), "_g.")))
+        else:
+            entries.append((group[0], _group_items(_group_class_name(obj_type, group[0], _run_suffix(list(run))))))
     return entries
 
 
@@ -1814,7 +1897,7 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
                 skip_fields=shared.identical if shared else frozenset(),
                 omit_group=shared.group if shared else False,
                 fields_base=f"_g.{_common_fields_name(obj_type)}" if shared else "TypedDict",
-                inherited=_common_entries(schema, obj_type, shared) if shared else (),
+                inherited=_common_entries(schema, obj_type, shared, "_g.") if shared else (),
                 sink=sink,
                 creation=_class_creation(obj_type, run),
             )

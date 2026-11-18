@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class GasEquipment_v9_6_to_v23_2:
     def __call__(
@@ -51,7 +54,7 @@ class FoundationKiva_v8_9_to_v9_1:
         footing_wall_construction_name: str | None = ...,
         footing_material_name: str | None = ...,
         footing_depth: float | None = 0.3,
-        blocks: list[Any] = ...,
+        blocks: list[_g.FoundationKivaBlocksItem] = ...,
     ) -> None: ...
 
 class WaterHeaterMixed_v8_9_to_v9_2:
@@ -200,7 +203,7 @@ class MeterCustomDecrement_v8_9_to_v9_2:
             "Water",
         ]
         | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.MeterCustomDecrementVariableDetailsItem] = ...,
     ) -> None: ...
 
 class CoilHeatingDesuperheater_v8_9_to_v22_1:
@@ -302,7 +305,7 @@ class ControllerMechanicalVentilation_v8_9_to_v9_2:
         ]
         | None = "VentilationRateProcedure",
         zone_maximum_outdoor_air_fraction: float | None = 1,
-        zone_specifications: list[Any] = ...,
+        zone_specifications: list[_vd.ControllerMechanicalVentilationZoneSpecificationsItem_v8_9_to_v9_2] = ...,
     ) -> None: ...
 
 class ControllerMechanicalVentilation_v9_5:
@@ -326,7 +329,7 @@ class ControllerMechanicalVentilation_v9_5:
         ]
         | None = "VentilationRateProcedure",
         zone_maximum_outdoor_air_fraction: float | None = 1,
-        zone_specifications: list[Any] = ...,
+        zone_specifications: list[_vd.ControllerMechanicalVentilationZoneSpecificationsItem_v9_5] = ...,
     ) -> None: ...
 
 class ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1:
@@ -494,7 +497,7 @@ class DemandManagerLights_v8_9_to_v22_1:
         maximum_limit_fraction: float | None = ...,
         limit_step_change: float | None = ...,
         rotation_duration: float | None = ...,
-        lights: list[Any] = ...,
+        lights: list[_g.DemandManagerLightsLightsItem] = ...,
     ) -> None: ...
 
 class TableIndependentVariable_v9_2_to_v22_1:
@@ -515,7 +518,7 @@ class TableIndependentVariable_v9_2_to_v22_1:
         external_file_name: str | None = ...,
         external_file_column_number: float | None = ...,
         external_file_starting_row_number: float | None = ...,
-        values: list[Any] = ...,
+        values: list[_g.TableIndependentVariableValuesItem] = ...,
     ) -> None: ...
 
 class Space_v9_6_to_v22_1:
@@ -527,7 +530,7 @@ class Space_v9_6_to_v22_1:
         zone_name: str,
         floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
-        tags: list[Any] = ...,
+        tags: list[_g.SpaceTagsItem] = ...,
     ) -> None: ...
 
 class AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5:

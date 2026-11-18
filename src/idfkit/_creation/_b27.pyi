@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class AnyRunPeriod:
     def __call__(
@@ -85,7 +87,7 @@ class ScheduleDayInterval:
         *,
         schedule_type_limits_name: str | None = ...,
         interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None = "No",
-        data: list[Any] = ...,
+        data: list[_g.ScheduleDayIntervalDataItem] = ...,
     ) -> None: ...
 
 class WindowMaterialGap:
@@ -225,7 +227,7 @@ class DaylightingControls:
         glare_calculation_azimuth_angle_of_view_direction_clockwise_from_zone_y_axis: float | None = 0,
         maximum_allowable_discomfort_glare_index: float | None = 22,
         delight_gridding_resolution: float | None = ...,
-        control_data: list[Any] = ...,
+        control_data: list[_g.DaylightingControlsControlDataItem] = ...,
     ) -> None: ...
 
 class AirflowNetworkDistributionComponentConstantPressureDrop:

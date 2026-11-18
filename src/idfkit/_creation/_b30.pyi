@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class ConvergenceLimits:
     def __call__(
@@ -38,7 +40,7 @@ class ScheduleWeekRule:
         apply_thursday: Literal["", "No", "Yes"] | None = "No",
         apply_friday: Literal["", "No", "Yes"] | None = "No",
         apply_saturday: Literal["", "No", "Yes"] | None = "No",
-        date_ranges: list[Any] = ...,
+        date_ranges: list[_g.ScheduleWeekRuleDateRangesItem] = ...,
     ) -> None: ...
 
 class AnyScheduleFile:
@@ -80,7 +82,7 @@ class Space:
         floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
         construction_assignment_set_name: str | None = ...,
-        tags: list[Any] = ...,
+        tags: list[_g.SpaceTagsItem] = ...,
     ) -> None: ...
 
 class GroundHeatTransferSlabMaterials:
@@ -100,7 +102,13 @@ class GroundHeatTransferSlabMaterials:
     ) -> None: ...
 
 class RoomAirNodeAirflowNetworkHVACEquipment:
-    def __call__(self, name: str = "", /, *, equipment_fractions: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str = "",
+        /,
+        *,
+        equipment_fractions: list[_g.RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem] = ...,
+    ) -> None: ...
 
 class Lights:
     def __call__(
@@ -704,7 +712,7 @@ class AnyGroundHeatExchangerResponseFactors:
         ghe_vertical_properties_object_name: str,
         number_of_boreholes: int,
         g_function_reference_ratio: float | None = 0.0005,
-        g_functions: list[Any] = ...,
+        g_functions: list[_g.GroundHeatExchangerResponseFactorsGFunctionsItem] = ...,
     ) -> None: ...
 
 class GroundHeatExchangerResponseFactors:
@@ -716,11 +724,11 @@ class GroundHeatExchangerResponseFactors:
         ghe_vertical_properties_object_name: str,
         number_of_boreholes: int,
         g_function_reference_ratio: float | None = 0.0005,
-        g_functions: list[Any] = ...,
+        g_functions: list[_g.GroundHeatExchangerResponseFactorsGFunctionsItem] = ...,
     ) -> None: ...
 
 class PlantEquipmentList:
-    def __call__(self, name: str, /, *, equipment: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, equipment: list[_g.PlantEquipmentListEquipmentItem] = ...) -> None: ...
 
 class ExternalInterfaceFunctionalMockupUnitExportToActuator:
     def __call__(

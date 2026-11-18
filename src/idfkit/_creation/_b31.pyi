@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class Version:
     def __call__(self, /, *, version_identifier: str | None = ...) -> None: ...
@@ -148,7 +150,7 @@ class RoomAirSettingsAirflowNetwork:
         *,
         zone_name: str,
         control_point_roomairflownetwork_node_name: str | None = ...,
-        nodes: list[Any] = ...,
+        nodes: list[_g.RoomAirSettingsAirflowNetworkNodesItem] = ...,
     ) -> None: ...
 
 class AnySteamEquipment:
@@ -337,7 +339,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveSteam:
         availability_schedule_name: str | None = ...,
         heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
         degree_of_subcooling: float | None = 5,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class ZoneHVACLowTemperatureRadiantVariableFlow:
@@ -493,7 +495,7 @@ class AnyAirLoopHVACDedicatedOutdoorAirSystem:
         number_of_airloophvac: int,
         airloophvac_outdoorairsystem_name: str | None = ...,
         availability_schedule_name: str | None = ...,
-        airloophvacs: list[Any] = ...,
+        airloophvacs: list[_g.AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem] = ...,
     ) -> None: ...
 
 class AnyPipingSystemUndergroundDomain:
@@ -535,7 +537,7 @@ class AnyPipingSystemUndergroundDomain:
         convergence_criterion_for_the_outer_cartesian_domain_iteration_loop: float | None = 0.001,
         maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: int | None = 500,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
-        pipe_circuits: list[Any] = ...,
+        pipe_circuits: list[_g.PipingSystemUndergroundDomainPipeCircuitsItem] = ...,
     ) -> None: ...
 
 class ChillerElectricEIR:
@@ -696,7 +698,7 @@ class AnyDemandManagerExteriorLights:
         maximum_limit_fraction: float | None = ...,
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
-        lights: list[Any] = ...,
+        lights: list[_g.DemandManagerExteriorLightsLightsItem] = ...,
     ) -> None: ...
 
 class PhotovoltaicPerformanceEquivalentOneDiode:
@@ -758,5 +760,11 @@ class FaultModelThermostatOffset:
 
 class AnyMatrixTwoDimension:
     def __call__(
-        self, name: str, /, *, number_of_rows: int, number_of_columns: int, values: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        number_of_rows: int,
+        number_of_columns: int,
+        values: list[_g.MatrixTwoDimensionValuesItem] = ...,
     ) -> None: ...

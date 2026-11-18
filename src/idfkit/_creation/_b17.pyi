@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class AnyConvergenceLimits:
     def __call__(
@@ -546,7 +548,7 @@ class EvaporativeCoolerDirectCelDekPad:
     ) -> None: ...
 
 class NodeList:
-    def __call__(self, name: str, /, *, nodes: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, nodes: list[_g.NodeListNodesItem] = ...) -> None: ...
 
 class PipingSystemUndergroundDomain:
     def __call__(
@@ -587,7 +589,7 @@ class PipingSystemUndergroundDomain:
         convergence_criterion_for_the_outer_cartesian_domain_iteration_loop: float | None = 0.001,
         maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: int | None = 500,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
-        pipe_circuits: list[Any] = ...,
+        pipe_circuits: list[_g.PipingSystemUndergroundDomainPipeCircuitsItem] = ...,
     ) -> None: ...
 
 class BoilerHotWater:
@@ -874,7 +876,7 @@ class ElectricLoadCenterTransformer:
         reference_temperature_for_nameplate_efficiency: float | None = 75,
         per_unit_load_for_maximum_efficiency: float | None = ...,
         consider_transformer_loss_for_utility_cost: Literal["", "No", "Yes"] | None = "Yes",
-        meters: list[Any] = ...,
+        meters: list[_g.ElectricLoadCenterTransformerMetersItem] = ...,
     ) -> None: ...
 
 class FaultModelTemperatureSensorOffsetReturnAir:

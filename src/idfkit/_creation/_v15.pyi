@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class FanSystemModel_v9_4_to_v22_1:
     def __call__(
@@ -36,7 +39,7 @@ class FanSystemModel_v9_4_to_v22_1:
         motor_loss_radiative_fraction: float | None = ...,
         end_use_subcategory: str | None = "General",
         number_of_speeds: float | None = 1,
-        speed_fractions: list[Any] = ...,
+        speed_fractions: list[_g.FanSystemModelSpeedFractionsItem] = ...,
     ) -> None: ...
 
 class AirflowNetworkDistributionComponentFan_v8_9_to_v9_1:
@@ -196,7 +199,7 @@ class WallDetailed_v8_9_to_v9_5:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.WallDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1:
@@ -284,7 +287,7 @@ class ZoneHVACEquipmentList_v8_9_to_v9_0:
         *,
         load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
-        equipment: list[Any] = ...,
+        equipment: list[_vd.ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0] = ...,
     ) -> None: ...
 
 class ZoneHVACEquipmentList_v9_3_to_v22_1:
@@ -295,7 +298,7 @@ class ZoneHVACEquipmentList_v9_3_to_v22_1:
         *,
         load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
-        equipment: list[Any] = ...,
+        equipment: list[_vd.ZoneHVACEquipmentListEquipmentItem_v9_3_to_v22_1] = ...,
     ) -> None: ...
 
 class ComfortViewFactorAngles_v9_6_to_v23_2:

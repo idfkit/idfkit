@@ -48,6 +48,14 @@ if TYPE_CHECKING:
 
         def _creation_signature(self, /, *args: _P.args, **kwargs: _P.kwargs) -> None: ...
 
+    _ItemT = TypeVar("_ItemT")
+    _Item_co = TypeVar("_Item_co", covariant=True)
+
+    class _Snapshot(Protocol[_Item_co]):
+        """A group class whose ``as_dict()`` is typed, as every generated group class's is."""
+
+        def as_dict(self) -> _Item_co: ...
+
     class _ObjectFactory(Protocol):
         """The document a collection creates its objects through (``IDFDocument``)."""
 
@@ -426,7 +434,11 @@ class ExtensibleList(Generic[GroupT_co]):
         for it in coerced:
             self.append(it)
 
-    def as_list(self) -> list[dict[str, Any]]:
+    # Typed through the group class's as_dict(): a generated group gives its item TypedDict
+    # (BuildingSurfaceDetailedVerticesItem), so the list passes back to add() and update() checked;
+    # an untyped ExtensibleGroup gives dict[str, Any]. Python has no way to also say the element is
+    # an ExtensibleGroup, as every list's element already is.
+    def as_list(self: ExtensibleList[_Snapshot[_ItemT]]) -> list[_ItemT]:  # pyright: ignore[reportInvalidTypeArguments]
         """Snapshot the wrapper as a plain list of plain dicts."""
         return [g.as_dict() for g in self]
 

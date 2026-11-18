@@ -448,7 +448,7 @@ surface.vertices.append(vertex_x_coordinate=10.0, vertex_y_coordinate=0.0, verte
 print(len(surface.vertices))  # 4
 ```
 
-`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`.
+`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`. In type-checked code, a group passed to `add()` or `update()` is a dict typed by the group's item type, a `TypedDict` of the group's fields, all optional: `vertices=[{"vertex_x_coordinate": 0.0, ...}]` takes `list[BuildingSurfaceDetailedVerticesItem]`, so editors complete the keys and a misspelled key or wrong value is a type error. `wall.vertices.as_list()` returns that type, so a copy passes straight back (`vertices=wall.vertices.as_list()`). To build groups ahead of a call, annotate the list with the item type (`points: list[BuildingSurfaceDetailedVerticesItem] = []`, imported from `idfkit.document`); a list typed `list[dict[str, float]]` is not accepted. Each item type is named after its object type and group (`ScheduleWeekCompactDataItem`, `ZoneListZonesItem`).
 
 ## Iterating the whole model
 

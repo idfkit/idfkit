@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class SurfaceConvectionAlgorithmOutside:
     def __call__(
@@ -60,7 +62,7 @@ class AnyMaterialPropertyVariableAbsorptance:
     ) -> None: ...
 
 class SpaceList:
-    def __call__(self, name: str, /, *, spaces: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, spaces: list[_g.SpaceListSpacesItem] = ...) -> None: ...
 
 class ShadingSiteDetailed:
     def __call__(
@@ -70,11 +72,17 @@ class ShadingSiteDetailed:
         *,
         transmittance_schedule_name: str | None = ...,
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.ShadingSiteDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class AnyRoomAirNodeAirflowNetworkHVACEquipment:
-    def __call__(self, name: str = "", /, *, equipment_fractions: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str = "",
+        /,
+        *,
+        equipment_fractions: list[_g.AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem] = ...,
+    ) -> None: ...
 
 class PeopleDefinition:
     def __call__(
@@ -767,7 +775,9 @@ class AirLoopHVACOutdoorAirSystemEquipmentList:
     ) -> None: ...
 
 class AirLoopHVACMixer:
-    def __call__(self, name: str, /, *, outlet_node_name: str, nodes: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, outlet_node_name: str, nodes: list[_g.AirLoopHVACMixerNodesItem] = ...
+    ) -> None: ...
 
 class SolarCollectorUnglazedTranspired:
     def __call__(
@@ -797,7 +807,7 @@ class SolarCollectorUnglazedTranspired:
         collector_thickness: float | None = ...,
         effectiveness_for_perforations_with_respect_to_wind: float | None = 0.25,
         discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None = 0.65,
-        surfaces: list[Any] = ...,
+        surfaces: list[_g.SolarCollectorUnglazedTranspiredSurfacesItem] = ...,
     ) -> None: ...
 
 class AnyEvaporativeFluidCoolerTwoSpeed:
@@ -931,7 +941,7 @@ class AnyDemandManagerThermostats:
         minimum_reset_duration: int | None = ...,
         reset_step_change: float | None = ...,
         rotation_duration: int | None = ...,
-        thermostats: list[Any] = ...,
+        thermostats: list[_g.DemandManagerThermostatsThermostatsItem] = ...,
     ) -> None: ...
 
 class AnyPhotovoltaicPerformanceSimple:
@@ -972,7 +982,7 @@ class GeneratorFuelCellAirSupply:
         air_rate_air_temperature_coefficient: float | None = ...,
         air_rate_function_of_fuel_rate_curve_name: str | None = ...,
         number_of_userdefined_constituents: float | None = ...,
-        constituent_fractions: list[Any] = ...,
+        constituent_fractions: list[_g.GeneratorFuelCellAirSupplyConstituentFractionsItem] = ...,
     ) -> None: ...
 
 class ElectricLoadCenterInverterLookUpTable:

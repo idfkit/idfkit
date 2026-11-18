@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class PerformancePrecisionTradeoffs:
     def __call__(
@@ -208,7 +210,7 @@ class AnyRoomAirTemperaturePatternNondimensionalHeight:
         thermostat_offset: float | None = ...,
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
-        pairs: list[Any] = ...,
+        pairs: list[_g.RoomAirTemperaturePatternNondimensionalHeightPairsItem] = ...,
     ) -> None: ...
 
 class RoomAirSettingsUnderFloorAirDistributionExterior:
@@ -275,7 +277,7 @@ class AirflowNetworkDistributionDuctViewFactors:
         linkage_name: str,
         duct_surface_exposure_fraction: float | None = 0,
         duct_surface_emittance: float | None = 0.9,
-        surfaces: list[Any] = ...,
+        surfaces: list[_g.AirflowNetworkDistributionDuctViewFactorsSurfacesItem] = ...,
     ) -> None: ...
 
 class AirflowNetworkOccupantVentilationControl:
@@ -425,7 +427,7 @@ class ZoneHVACEquipmentList:
         *,
         load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
-        equipment: list[Any] = ...,
+        equipment: list[_g.ZoneHVACEquipmentListEquipmentItem] = ...,
     ) -> None: ...
 
 class CoilSystemCoolingWaterHeatExchangerAssisted:
@@ -465,10 +467,19 @@ class HeatExchangerAirToAirFlatPlate:
     ) -> None: ...
 
 class AirLoopHVACReturnPath:
-    def __call__(self, name: str, /, *, return_air_path_outlet_node_name: str, components: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        return_air_path_outlet_node_name: str,
+        components: list[_g.AirLoopHVACReturnPathComponentsItem] = ...,
+    ) -> None: ...
 
 class ConnectorSplitter:
-    def __call__(self, name: str, /, *, inlet_branch_name: str, branches: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, inlet_branch_name: str, branches: list[_g.ConnectorSplitterBranchesItem] = ...
+    ) -> None: ...
 
 class PipeAdiabaticSteam:
     def __call__(self, name: str, /, *, inlet_node_name: str, outlet_node_name: str) -> None: ...
@@ -985,7 +996,7 @@ class WaterUseRainCollector:
         collection_loss_factor: float | None = ...,
         collection_loss_factor_schedule_name: str | None = ...,
         maximum_collection_rate: float | None = ...,
-        surfaces: list[Any] = ...,
+        surfaces: list[_g.WaterUseRainCollectorSurfacesItem] = ...,
     ) -> None: ...
 
 class FaultModelTemperatureSensorOffsetOutdoorAir:

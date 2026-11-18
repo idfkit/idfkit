@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class ScheduleYearRules:
     def __call__(
@@ -60,7 +62,7 @@ class AnyBuildingSurfaceDetailed:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.BuildingSurfaceDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class AnyGlazedDoor:
@@ -101,7 +103,7 @@ class FoundationKiva:
         footing_wall_construction_name: str | None = ...,
         footing_material_name: str | None = ...,
         footing_depth: float | None = 0.3,
-        blocks: list[Any] = ...,
+        blocks: list[_g.FoundationKivaBlocksItem] = ...,
     ) -> None: ...
 
 class SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections:
@@ -698,7 +700,13 @@ class HeatExchangerAirToAirSensibleAndLatent:
     ) -> None: ...
 
 class ZoneTerminalUnitList:
-    def __call__(self, /, *, zone_terminal_unit_list_name: str, terminal_units: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        /,
+        *,
+        zone_terminal_unit_list_name: str,
+        terminal_units: list[_g.ZoneTerminalUnitListTerminalUnitsItem] = ...,
+    ) -> None: ...
 
 class ChillerElectric:
     def __call__(
@@ -941,7 +949,9 @@ class AnyThermalStorageIceDetailed:
     ) -> None: ...
 
 class AvailabilityManagerAssignmentList:
-    def __call__(self, name: str, /, *, managers: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, managers: list[_g.AvailabilityManagerAssignmentListManagersItem] = ...
+    ) -> None: ...
 
 class RefrigerationCondenserEvaporativeCooled:
     def __call__(
@@ -986,7 +996,7 @@ class AnyDemandManagerLights:
         maximum_limit_fraction: float | None = ...,
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
-        lights: list[Any] = ...,
+        lights: list[_g.DemandManagerLightsLightsItem] = ...,
     ) -> None: ...
 
 class GeneratorMicroCHPNonNormalizedParameters:
@@ -1172,10 +1182,10 @@ class CurrencyType:
     ) -> None: ...
 
 class ParametricSetValueForRun:
-    def __call__(self, name: str, /, *, values: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, values: list[_g.ParametricSetValueForRunValuesItem] = ...) -> None: ...
 
 class AnyOutputTableSummaryReports:
-    def __call__(self, /, *, reports: list[Any] = ...) -> None: ...
+    def __call__(self, /, *, reports: list[_g.AnyOutputTableSummaryReportsReportsItem] = ...) -> None: ...
 
 class AnyOutputTableTimeBins:
     def __call__(

@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class ScheduleFile_v9_2_to_v9_6:
     def __call__(
@@ -662,7 +664,7 @@ class TableLookup_v9_2_to_v22_1:
         external_file_name: str | None = ...,
         external_file_column_number: float | None = ...,
         external_file_starting_row_number: float | None = ...,
-        values: list[Any] = ...,
+        values: list[_g.TableLookupValuesItem] = ...,
     ) -> None: ...
 
 class CoilCoolingDXCurveFitPerformance_v9_3_to_v23_1:

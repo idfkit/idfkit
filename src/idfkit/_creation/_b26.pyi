@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class ShadowCalculation:
     def __call__(
@@ -30,7 +32,7 @@ class ShadowCalculation:
         output_external_shading_calculation_results: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
-        shading_zone_groups: list[Any] = ...,
+        shading_zone_groups: list[_g.ShadowCalculationShadingZoneGroupsItem] = ...,
     ) -> None: ...
 
 class Timestep:
@@ -64,7 +66,9 @@ class MaterialRoofVegetation:
     ) -> None: ...
 
 class MaterialPropertyVariableThermalConductivity:
-    def __call__(self, name: str, /, *, values: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, values: list[_g.MaterialPropertyVariableThermalConductivityValuesItem] = ...
+    ) -> None: ...
 
 class AnyCeilingInterzone:
     def __call__(
@@ -401,7 +405,7 @@ class AnyZoneHVACHighTemperatureRadiant:
         | None = "OperativeTemperature",
         heating_throttling_range: float | None = 2,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACHighTemperatureRadiantSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class CoilHeatingFuel:
@@ -760,7 +764,7 @@ class DemandManagerExteriorLights:
         maximum_limit_fraction: float | None = ...,
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
-        lights: list[Any] = ...,
+        lights: list[_g.DemandManagerExteriorLightsLightsItem] = ...,
     ) -> None: ...
 
 class GeneratorFuelCellElectricalStorage:
@@ -841,5 +845,5 @@ class MeterCustom:
             "Water",
         ]
         | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.MeterCustomVariableDetailsItem] = ...,
     ) -> None: ...

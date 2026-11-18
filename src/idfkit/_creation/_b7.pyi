@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class WindowsCalculationEngine:
     def __call__(
@@ -235,7 +237,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater:
         condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class CoilHeatingDXSingleSpeed:
@@ -320,7 +322,7 @@ class AnyAirLoopHVACOutdoorAirSystem:
     def __call__(self, name: str, /, *, controller_list_name: str, outdoor_air_equipment_list_name: str) -> None: ...
 
 class BranchList:
-    def __call__(self, name: str, /, *, branches: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, branches: list[_g.BranchListBranchesItem] = ...) -> None: ...
 
 class PipingSystemUndergroundPipeSegment:
     def __call__(
@@ -512,7 +514,13 @@ class GeneratorPVWatts:
 
 class MatrixTwoDimension:
     def __call__(
-        self, name: str, /, *, number_of_rows: int, number_of_columns: int, values: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        number_of_rows: int,
+        number_of_columns: int,
+        values: list[_g.MatrixTwoDimensionValuesItem] = ...,
     ) -> None: ...
 
 class AnyTableLookup:
@@ -531,7 +539,7 @@ class AnyTableLookup:
         external_file_name: str | None = ...,
         external_file_column_number: int | None = ...,
         external_file_starting_row_number: int | None = ...,
-        values: list[Any] = ...,
+        values: list[_g.TableLookupValuesItem] = ...,
     ) -> None: ...
 
 class AnyEnvironmentalImpactFactors:

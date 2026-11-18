@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class WindowGapDeflectionState:
     def __call__(
@@ -633,7 +635,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl:
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
         compressor_maximum_delta_pressure: float | None = 4500000,
         number_of_compressor_loading_index_entries: int | None = 2,
-        loading_indices: list[Any] = ...,
+        loading_indices: list[_g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem] = ...,
     ) -> None: ...
 
 class ControllerWaterCoil:
@@ -971,7 +973,7 @@ class AnyDemandManagerElectricEquipment:
         maximum_limit_fraction: float | None = ...,
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
-        equipment: list[Any] = ...,
+        equipment: list[_g.DemandManagerElectricEquipmentEquipmentItem] = ...,
     ) -> None: ...
 
 class GeneratorFuelCellStackCooler:
@@ -1070,7 +1072,7 @@ class TableIndependentVariable:
         external_file_name: str | None = ...,
         external_file_column_number: int | None = ...,
         external_file_starting_row_number: int | None = ...,
-        values: list[Any] = ...,
+        values: list[_g.TableIndependentVariableValuesItem] = ...,
     ) -> None: ...
 
 class FluidPropertiesGlycolConcentration:

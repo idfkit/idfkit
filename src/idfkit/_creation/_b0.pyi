@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class HeatBalanceAlgorithm:
     def __call__(
@@ -94,7 +96,7 @@ class SurfacePropertyHeatTransferAlgorithmSurfaceList:
             "MoisturePenetrationDepthConductionTransferFunction",
         ]
         | None = "ConductionTransferFunction",
-        surface: list[Any] = ...,
+        surface: list[_g.SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceItem] = ...,
     ) -> None: ...
 
 class SurfacePropertyOtherSideCoefficients:
@@ -573,7 +575,7 @@ class RoomAirTemperaturePatternSurfaceMapping:
         thermostat_offset: float | None = ...,
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
-        surface_deltas: list[Any] = ...,
+        surface_deltas: list[_g.RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem] = ...,
     ) -> None: ...
 
 class OtherEquipmentDefinition:
@@ -1182,7 +1184,9 @@ class SetpointManagerCondenserEnteringReset:
     ) -> None: ...
 
 class RefrigerationTransferLoadList:
-    def __call__(self, name: str, /, *, transfer_loads: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, transfer_loads: list[_g.RefrigerationTransferLoadListTransferLoadsItem] = ...
+    ) -> None: ...
 
 class RefrigerationSystem:
     def __call__(
@@ -1222,7 +1226,7 @@ class DemandManagerElectricEquipment:
         maximum_limit_fraction: float | None = ...,
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
-        equipment: list[Any] = ...,
+        equipment: list[_g.DemandManagerElectricEquipmentEquipmentItem] = ...,
     ) -> None: ...
 
 class AnyDemandManagerVentilation:
@@ -1239,7 +1243,7 @@ class AnyDemandManagerVentilation:
         limit_step_change: float | None = ...,
         selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None = "All",
         rotation_duration: int | None = ...,
-        controllers: list[Any] = ...,
+        controllers: list[_g.DemandManagerVentilationControllersItem] = ...,
     ) -> None: ...
 
 class GeneratorPhotovoltaic:
@@ -1384,5 +1388,5 @@ class TableLookup:
         external_file_name: str | None = ...,
         external_file_column_number: int | None = ...,
         external_file_starting_row_number: int | None = ...,
-        values: list[Any] = ...,
+        values: list[_g.TableLookupValuesItem] = ...,
     ) -> None: ...

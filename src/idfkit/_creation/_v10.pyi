@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class ElectricEquipmentITEAirCooled_v8_9_to_v9_5:
     def __call__(
@@ -830,7 +833,7 @@ class ZoneHVACEquipmentList_v9_2:
         *,
         load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
-        equipment: list[Any] = ...,
+        equipment: list[_vd.ZoneHVACEquipmentListEquipmentItem_v9_2] = ...,
     ) -> None: ...
 
 class ConstructionInternalSource_v9_4:
@@ -951,7 +954,7 @@ class WindowShadingControl_v9_2_to_v22_1:
         setpoint_2: float | None = ...,
         daylighting_control_object_name: str | None = ...,
         multiple_surface_control_type: Literal["", "Group", "Sequential"] | None = "Sequential",
-        fenestration_surfaces: list[Any] = ...,
+        fenestration_surfaces: list[_g.WindowShadingControlFenestrationSurfacesItem] = ...,
     ) -> None: ...
 
 class HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2:

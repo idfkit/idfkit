@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class ScheduleFile_v22_1:
     def __call__(
@@ -97,7 +100,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4:
         degree_of_subcooling: float | None = 5,
         convergence_tolerance: float | None = 0.001,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class OtherEquipment_v9_6_to_v23_1:
@@ -273,7 +276,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1:
         mode_0_system_water_use_lookup_table_name: str | None = ...,
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
-        modes: list[Any] = ...,
+        modes: list[_g.ZoneHVACHybridUnitaryHVACModesItem] = ...,
     ) -> None: ...
 
 class SizingSystem_v8_9_to_v9_5:
@@ -416,7 +419,7 @@ class GroundHeatExchangerSystem_v8_9_to_v9_5:
         ground_thermal_heat_capacity: float,
         ghe_vertical_responsefactors_object_name: str | None = ...,
         ghe_vertical_array_object_name: str | None = ...,
-        vertical_well_locations: list[Any] = ...,
+        vertical_well_locations: list[_g.GroundHeatExchangerSystemVerticalWellLocationsItem] = ...,
     ) -> None: ...
 
 class ZoneVentilationDesignFlowRate_v22_2_to_v24_2:
@@ -543,7 +546,7 @@ class TableOneIndependentVariable_v9_0_to_v9_1:
         output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
-        values: list[Any] = ...,
+        values: list[_vd.TableOneIndependentVariableValuesItem_v9_0_to_v9_1] = ...,
     ) -> None: ...
 
 class CoilCoolingDXVariableSpeed_v8_9_to_v22_1:
@@ -804,7 +807,9 @@ class CoilHeatingFuel_v8_9_to_v9_2:
     ) -> None: ...
 
 class RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4:
-    def __call__(self, name: str = "", /, *, gains: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str = "", /, *, gains: list[_vd.RoomAirNodeAirflowNetworkInternalGainsGainsItem_v8_9_to_v9_4] = ...
+    ) -> None: ...
 
 class AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5:
     def __call__(

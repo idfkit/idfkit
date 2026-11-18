@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class CoilCoolingDXSingleSpeed_v22_2_to_v23_1:
     def __call__(
@@ -448,7 +450,7 @@ class ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2:
         mode_0_system_water_use_lookup_table_name: str | None = ...,
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
-        modes: list[Any] = ...,
+        modes: list[_g.ZoneHVACHybridUnitaryHVACModesItem] = ...,
     ) -> None: ...
 
 class CoilCoolingDXTwoSpeed_v8_9_to_v23_1:
@@ -507,7 +509,7 @@ class SurfacePropertySurroundingSurfaces_v8_9_to_v26_1:
         sky_temperature_schedule_name: str | None = ...,
         ground_view_factor: float | None = 0.5,
         ground_temperature_schedule_name: str | None = ...,
-        surfaces: list[Any] = ...,
+        surfaces: list[_g.SurfacePropertySurroundingSurfacesSurfacesItem] = ...,
     ) -> None: ...
 
 class GroundHeatExchangerSystem_v9_6_to_v25_1:
@@ -530,7 +532,7 @@ class GroundHeatExchangerSystem_v9_6_to_v25_1:
         ghe_vertical_responsefactors_object_name: str | None = ...,
         g_function_calculation_method: Literal["", "UBHWTcalc", "UHFcalc"] | None = "UHFcalc",
         ghe_vertical_array_object_name: str | None = ...,
-        vertical_well_locations: list[Any] = ...,
+        vertical_well_locations: list[_g.GroundHeatExchangerSystemVerticalWellLocationsItem] = ...,
     ) -> None: ...
 
 class SiteWaterMainsTemperature_v8_9:
@@ -577,7 +579,7 @@ class ScheduleDayList_v8_9_to_v22_1:
         schedule_type_limits_name: str | None = ...,
         interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None = "No",
         minutes_per_item: float | None = ...,
-        extensions: list[Any] = ...,
+        extensions: list[_g.ScheduleDayListExtensionsItem] = ...,
     ) -> None: ...
 
 class CoilWaterHeatingDesuperheater_v9_2_to_v22_1:

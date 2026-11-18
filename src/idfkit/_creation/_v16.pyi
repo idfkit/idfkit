@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class FanSystemModel_v8_9_to_v9_3:
     def __call__(
@@ -36,7 +39,7 @@ class FanSystemModel_v8_9_to_v9_3:
         motor_loss_radiative_fraction: float | None = ...,
         end_use_subcategory: str | None = "General",
         number_of_speeds: float | None = 1,
-        speed_fractions: list[Any] = ...,
+        speed_fractions: list[_g.FanSystemModelSpeedFractionsItem] = ...,
     ) -> None: ...
 
 class MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1:
@@ -417,7 +420,7 @@ class ZoneHVACEquipmentList_v9_1:
         *,
         load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
-        equipment: list[Any] = ...,
+        equipment: list[_vd.ZoneHVACEquipmentListEquipmentItem_v9_1] = ...,
     ) -> None: ...
 
 class DemandManagerAssignmentList_v8_9_to_v22_1:
@@ -433,7 +436,7 @@ class DemandManagerAssignmentList_v8_9_to_v22_1:
         demand_limit_schedule_name: str | None = ...,
         billing_period_schedule_name: str | None = ...,
         peak_period_schedule_name: str | None = ...,
-        manager_data: list[Any] = ...,
+        manager_data: list[_g.DemandManagerAssignmentListManagerDataItem] = ...,
     ) -> None: ...
 
 class PlantComponentUserDefined_v8_9_to_v22_1:

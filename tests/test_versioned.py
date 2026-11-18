@@ -507,6 +507,13 @@ class TestCommittedStubs:
                 'Literal["Zone"], /) -> IDFCollection[AnyZoneX]',
                 "class AnyZoneX not defined",
             ),
+            # A group's item type that misnames one of the group's fields.
+            (
+                0,
+                r"(class BuildingSurfaceDetailedVerticesItem\(TypedDict, total=False\):\n(?:.*\n)*?    )vertex_x_coordinate",
+                r"\1vertex_x_coordinat",
+                "BuildingSurfaceDetailedVerticesItem does not hold the version's inner fields",
+            ),
             # A writable field that some version lacks (People before 9.6): reported, not a KeyError.
             (
                 0,
@@ -576,8 +583,8 @@ class TestCommittedStubs:
             ),
             (
                 # Option A: AnyIDFDocument requires what any release requires.
-                r"(class AnyEnergyManagementSystemProgram:.*?)lines: list\[Any\]",
-                r"\1lines: list[Any] = ...",
+                r"(class AnyEnergyManagementSystemProgram:.*?)(lines: list\[[\w.]+\])",
+                r"\1\2 = ...",
                 "(AnyEnergyManagementSystemProgram): add() does not require lines",
             ),
             (

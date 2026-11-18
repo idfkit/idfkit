@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class DistrictHeating_v8_9_to_v23_1:
     def __call__(
@@ -323,7 +325,7 @@ class DemandManagerElectricEquipment_v8_9_to_v22_1:
         maximum_limit_fraction: float | None = ...,
         limit_step_change: float | None = ...,
         rotation_duration: float | None = ...,
-        equipment: list[Any] = ...,
+        equipment: list[_g.DemandManagerElectricEquipmentEquipmentItem] = ...,
     ) -> None: ...
 
 class GeneratorCombustionTurbine_v8_9_to_v9_2:

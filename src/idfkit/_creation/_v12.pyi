@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class WeatherPropertySkyTemperature_v8_9_to_v9_2:
     def __call__(
@@ -71,7 +74,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2:
         condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
@@ -141,7 +144,7 @@ class SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2:
         exposed_perimeter_calculation_method: Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"],
         total_exposed_perimeter: float | None = ...,
         exposed_perimeter_fraction: float | None = ...,
-        surfaces: list[Any] = ...,
+        surfaces: list[_vd.SurfacePropertyExposedFoundationPerimeterSurfacesItem_v8_9_to_v9_2] = ...,
     ) -> None: ...
 
 class ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1:
@@ -516,7 +519,7 @@ class LifeCycleCostUsePriceEscalation_v9_3_to_v22_1:
             "September",
         ]
         | None = "January",
-        escalations: list[Any] = ...,
+        escalations: list[_g.LifeCycleCostUsePriceEscalationEscalationsItem] = ...,
     ) -> None: ...
 
 class RefrigerationSecondarySystem_v8_9_to_v22_1:
@@ -839,7 +842,7 @@ class MeterCustom_v8_9_to_v9_2:
             "Water",
         ]
         | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.MeterCustomVariableDetailsItem] = ...,
     ) -> None: ...
 
 class HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2:

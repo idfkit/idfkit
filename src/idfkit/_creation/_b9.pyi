@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class ZoneAirContaminantBalance:
     def __call__(
@@ -619,12 +621,17 @@ class ControllerMechanicalVentilation:
         ]
         | None = "Standard62.1VentilationRateProcedure",
         zone_maximum_outdoor_air_fraction: float | None = 1,
-        zone_specifications: list[Any] = ...,
+        zone_specifications: list[_g.ControllerMechanicalVentilationZoneSpecificationsItem] = ...,
     ) -> None: ...
 
 class Branch:
     def __call__(
-        self, name: str, /, *, pressure_drop_curve_name: str | None = ..., components: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        pressure_drop_curve_name: str | None = ...,
+        components: list[_g.BranchComponentsItem] = ...,
     ) -> None: ...
 
 class AnySolarCollectorPerformanceIntegralCollectorStorage:

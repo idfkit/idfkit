@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class LoadProfilePlant_v8_9_to_v23_1:
     def __call__(
@@ -65,7 +68,7 @@ class ShadowCalculation_v8_9_to_v9_2:
         output_external_shading_calculation_results: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
-        shading_zone_groups: list[Any] = ...,
+        shading_zone_groups: list[_g.ShadowCalculationShadingZoneGroupsItem] = ...,
     ) -> None: ...
 
 class InternalMass_v9_2_to_v9_5:
@@ -74,7 +77,7 @@ class InternalMass_v9_2_to_v9_5:
     ) -> None: ...
 
 class OutputTableSummaryReports_v9_3:
-    def __call__(self, /, *, reports: list[Any] = ...) -> None: ...
+    def __call__(self, /, *, reports: list[_vd.OutputTableSummaryReportsReportsItem_v9_3] = ...) -> None: ...
 
 class CoilUserDefined_v8_9_to_v22_1:
     def __call__(
@@ -285,7 +288,13 @@ class CentralHeatPumpSystem_v8_9_to_v22_1:
 
 class MatrixTwoDimension_v8_9_to_v22_1:
     def __call__(
-        self, name: str, /, *, number_of_rows: float, number_of_columns: float, values: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        number_of_rows: float,
+        number_of_columns: float,
+        values: list[_g.MatrixTwoDimensionValuesItem] = ...,
     ) -> None: ...
 
 class WallExterior_v8_9_to_v9_5:

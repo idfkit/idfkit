@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1:
     def __call__(
@@ -900,5 +902,5 @@ class ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1:
         heating_throttling_range: float | None = 2,
         heating_setpoint_temperature_schedule_name: str | None = ...,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACHighTemperatureRadiantSurfaceFractionsItem] = ...,
     ) -> None: ...

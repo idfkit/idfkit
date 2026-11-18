@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class OutputControlTableStyle_v24_1_to_v25_1:
     def __call__(
@@ -136,7 +138,7 @@ class DemandManagerVentilation_v8_9_to_v22_1:
         limit_step_change: float | None = ...,
         selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None = "All",
         rotation_duration: float | None = ...,
-        controllers: list[Any] = ...,
+        controllers: list[_g.DemandManagerVentilationControllersItem] = ...,
     ) -> None: ...
 
 class PerformancePrecisionTradeoffs_v9_4_to_v9_5:
@@ -184,7 +186,7 @@ class CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1:
     ) -> None: ...
 
 class EnergyManagementSystemProgram_v8_9:
-    def __call__(self, name: str, /, *, lines: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, lines: list[_g.EnergyManagementSystemProgramLinesItem] = ...) -> None: ...
 
 class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1:
     def __call__(
@@ -200,5 +202,5 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1:
         rated_average_water_temperature: float | None = 87.78,
         rated_water_mass_flow_rate: float | None = 0.063,
         heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem] = ...,
     ) -> None: ...

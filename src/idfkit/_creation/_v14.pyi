@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class ExteriorFuelEquipment_v8_9_to_v9_2:
     def __call__(
@@ -116,7 +118,7 @@ class LifeCycleCostUseAdjustment_v9_3_to_v23_1:
             "Steam",
             "Water",
         ],
-        multipliers: list[Any] = ...,
+        multipliers: list[_g.LifeCycleCostUseAdjustmentMultipliersItem] = ...,
     ) -> None: ...
 
 class MeterCustomDecrement_v9_3:
@@ -141,7 +143,7 @@ class MeterCustomDecrement_v9_3:
             "Water",
         ]
         | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.MeterCustomDecrementVariableDetailsItem] = ...,
     ) -> None: ...
 
 class PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1:
@@ -163,7 +165,7 @@ class PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1:
         convergence_criterion_for_the_inner_radial_iteration_loop: float | None = 0.001,
         maximum_iterations_in_the_inner_radial_iteration_loop: float | None = 500,
         number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region: float | None = 3,
-        pipe_segments: list[Any] = ...,
+        pipe_segments: list[_g.PipingSystemUndergroundPipeCircuitPipeSegmentsItem] = ...,
     ) -> None: ...
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22_1:
@@ -231,7 +233,9 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22
         compressor_inverter_efficiency: float | None = 0.95,
         compressor_evaporative_capacity_correction_factor: float | None = 1,
         number_of_compressor_loading_index_entries: float | None = 2,
-        loading_indices: list[Any] = ...,
+        loading_indices: list[
+            _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem
+        ] = ...,
     ) -> None: ...
 
 class HybridModelZone_v9_1_to_v22_1:
@@ -302,7 +306,7 @@ class LifeCycleCostUsePriceEscalation_v22_2_to_v23_1:
             "September",
         ]
         | None = "January",
-        escalations: list[Any] = ...,
+        escalations: list[_g.LifeCycleCostUsePriceEscalationEscalationsItem] = ...,
     ) -> None: ...
 
 class HVACTemplateSystemVRF_v8_9_to_v9_2:
@@ -387,7 +391,7 @@ class MeterCustom_v9_3:
             "Water",
         ]
         | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.MeterCustomVariableDetailsItem] = ...,
     ) -> None: ...
 
 class CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1:

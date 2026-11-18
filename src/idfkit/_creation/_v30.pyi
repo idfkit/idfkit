@@ -6,11 +6,18 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class OutputTableMonthly_v8_9_to_v22_1:
     def __call__(
-        self, name: str, /, *, digits_after_decimal: float | None = 2, variable_details: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        digits_after_decimal: float | None = 2,
+        variable_details: list[_g.OutputTableMonthlyVariableDetailsItem] = ...,
     ) -> None: ...
 
 class ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1:
@@ -389,7 +396,7 @@ class RoofCeilingDetailed_v9_6_to_v24_2:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.RoofCeilingDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class PerformancePrecisionTradeoffs_v9_3:
@@ -462,7 +469,7 @@ class BuildingSurfaceDetailed_v25_1_to_v26_1:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.BuildingSurfaceDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class PhotovoltaicPerformanceSandia_v22_2_to_v25_2:

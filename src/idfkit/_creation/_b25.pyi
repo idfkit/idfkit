@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class HeatBalanceSettingsConductionFiniteDifference:
     def __call__(
@@ -31,7 +33,7 @@ class AnyScheduleDayList:
         schedule_type_limits_name: str | None = ...,
         interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None = "No",
         minutes_per_item: int | None = ...,
-        extensions: list[Any] = ...,
+        extensions: list[_g.ScheduleDayListExtensionsItem] = ...,
     ) -> None: ...
 
 class AnyScheduleYear:
@@ -142,7 +144,7 @@ class DaylightingDeviceTubular:
         diameter: float,
         total_length: float,
         effective_thermal_resistance: float | None = 0.28,
-        transition_lengths: list[Any] = ...,
+        transition_lengths: list[_g.DaylightingDeviceTubularTransitionLengthsItem] = ...,
     ) -> None: ...
 
 class ZoneEarthtubeParameters:
@@ -802,8 +804,13 @@ class OutputSchedules:
 
 class AnyOutputTableMonthly:
     def __call__(
-        self, name: str, /, *, digits_after_decimal: int | None = 2, variable_details: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        digits_after_decimal: int | None = 2,
+        variable_details: list[_g.OutputTableMonthlyVariableDetailsItem] = ...,
     ) -> None: ...
 
 class OutputDiagnostics:
-    def __call__(self, /, *, diagnostics: list[Any] = ...) -> None: ...
+    def __call__(self, /, *, diagnostics: list[_g.OutputDiagnosticsDiagnosticsItem] = ...) -> None: ...

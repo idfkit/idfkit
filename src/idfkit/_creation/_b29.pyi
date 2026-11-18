@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class AnySimulationControl:
     def __call__(
@@ -60,7 +62,7 @@ class MaterialPropertyPhaseChange:
         /,
         *,
         temperature_coefficient_for_thermal_conductivity: float | None = 0,
-        values: list[Any] = ...,
+        values: list[_g.MaterialPropertyPhaseChangeValuesItem] = ...,
     ) -> None: ...
 
 class MaterialPropertyHeatAndMoistureTransferSettings:
@@ -108,7 +110,11 @@ class WallInterzone:
 
 class ZonePropertyUserViewFactorsBySurfaceName:
     def __call__(
-        self, /, *, zone_or_zonelist_or_space_or_spacelist_name: str | None = ..., view_factors: list[Any] = ...
+        self,
+        /,
+        *,
+        zone_or_zonelist_or_space_or_spacelist_name: str | None = ...,
+        view_factors: list[_g.ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem] = ...,
     ) -> None: ...
 
 class GasEquipment:
@@ -263,7 +269,7 @@ class AnyHVACTemplateZonePTAC:
     ) -> None: ...
 
 class ZoneHVACVentilatedSlabSlabGroup:
-    def __call__(self, name: str, /, *, data: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, data: list[_g.ZoneHVACVentilatedSlabSlabGroupDataItem] = ...) -> None: ...
 
 class AirTerminalSingleDuctVAVHeatAndCoolNoReheat:
     def __call__(
@@ -328,7 +334,7 @@ class SpaceHVACZoneEquipmentSplitter:
             "", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"
         ]
         | None = "DesignCoolingLoad",
-        spaces: list[Any] = ...,
+        spaces: list[_g.SpaceHVACZoneEquipmentSplitterSpacesItem] = ...,
     ) -> None: ...
 
 class CoilHeatingWaterToAirHeatPumpEquationFit:
@@ -364,7 +370,7 @@ class AirLoopHVACReturnPlenum:
         zone_node_name: str,
         outlet_node_name: str,
         induced_air_outlet_node_or_nodelist_name: str | None = ...,
-        nodes: list[Any] = ...,
+        nodes: list[_g.AirLoopHVACReturnPlenumNodesItem] = ...,
     ) -> None: ...
 
 class AnyLoadProfilePlant:
@@ -381,7 +387,13 @@ class AnyLoadProfilePlant:
     ) -> None: ...
 
 class SolarCollectorUnglazedTranspiredMultisystem:
-    def __call__(self, /, *, solar_collector_name: str, systems: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        /,
+        *,
+        solar_collector_name: str,
+        systems: list[_g.SolarCollectorUnglazedTranspiredMultisystemSystemsItem] = ...,
+    ) -> None: ...
 
 class ThermalStorageChilledWaterMixed:
     def __call__(
@@ -499,4 +511,4 @@ class FaultModelTemperatureSensorOffsetCondenserSupplyWater:
     ) -> None: ...
 
 class AnyMeterCustom:
-    def __call__(self, name: str, /, *, variable_details: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, variable_details: list[_g.MeterCustomVariableDetailsItem] = ...) -> None: ...

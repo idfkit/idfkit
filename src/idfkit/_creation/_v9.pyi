@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1:
     def __call__(
@@ -55,7 +58,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
         compressor_maximum_delta_pressure: float | None = 4500000,
         number_of_compressor_loading_index_entries: float | None = 2,
-        loading_indices: list[Any] = ...,
+        loading_indices: list[_g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem] = ...,
     ) -> None: ...
 
 class BoilerHotWater_v8_9:
@@ -92,7 +95,7 @@ class OutputTableAnnual_v8_9_to_v22_1:
         *,
         filter: str | None = ...,
         schedule_name: str | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_vd.OutputTableAnnualVariableDetailsItem_v8_9_to_v22_1] = ...,
     ) -> None: ...
 
 class GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1:
@@ -408,7 +411,7 @@ class Space_v22_2_to_v26_1:
         volume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
-        tags: list[Any] = ...,
+        tags: list[_g.SpaceTagsItem] = ...,
     ) -> None: ...
 
 class MaterialPropertyVariableAbsorptance_v23_1_to_v26_1:

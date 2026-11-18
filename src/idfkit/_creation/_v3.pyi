@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class EnergyManagementSystemProgramCallingManager_v8_9_to_v9_0:
     def __call__(
@@ -32,7 +34,7 @@ class EnergyManagementSystemProgramCallingManager_v8_9_to_v9_0:
             "UserDefinedComponentModel",
         ]
         | None = ...,
-        programs: list[Any] = ...,
+        programs: list[_g.EnergyManagementSystemProgramCallingManagerProgramsItem] = ...,
     ) -> None: ...
 
 class LifeCycleCostParameters_v8_9_to_v22_1:
@@ -523,7 +525,7 @@ class LifeCycleCostUsePriceEscalation_v8_9_to_v9_2:
             "September",
         ]
         | None = "January",
-        escalations: list[Any] = ...,
+        escalations: list[_g.LifeCycleCostUsePriceEscalationEscalationsItem] = ...,
     ) -> None: ...
 
 class AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1:
@@ -541,7 +543,7 @@ class AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1:
         number_of_airloophvac: float,
         airloophvac_outdoorairsystem_name: str | None = ...,
         availability_schedule_name: str | None = ...,
-        airloophvacs: list[Any] = ...,
+        airloophvacs: list[_g.AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem] = ...,
     ) -> None: ...
 
 class ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1:

@@ -26,7 +26,7 @@ from idfkit.objects import IDFObject
 from idfkit.versioned import AnyIDFDocument, IDFDocumentV9_4
 
 if TYPE_CHECKING:
-    from idfkit.document import Building, InternalMass, Material, Zone
+    from idfkit.document import Building, BuildingSurfaceDetailedVerticesItem, InternalMass, Material, Zone
     from idfkit.versioned import InternalMass_v9_2_to_v9_5
 
 
@@ -105,3 +105,34 @@ def untyped(doc: IDFDocument[Any], obj_type: str) -> None:
     # A collection a type checker cannot narrow requires nothing and accepts any name and field.
     assert_type(doc.get_collection(obj_type).add(), IDFObject)
     assert_type(doc.get_collection(obj_type).add("Anything", whatever=1), IDFObject)
+
+
+def extensible_groups(doc: IDFDocument[Any], old: IDFDocumentV9_4) -> None:
+    # A group is a dict typed by the group's item type: keys complete and are checked.
+    wall = doc.building_surfaces.add(
+        "Wall",
+        surface_type="Wall",
+        construction_name="C",
+        zone_name="Z",
+        outside_boundary_condition="Outdoors",
+        vertices=[{"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0}],
+    )
+    # as_list() is typed by the group, so a copy passes back checked; so does an annotated list.
+    assert_type(wall.vertices.as_list(), list[BuildingSurfaceDetailedVerticesItem])
+    points: list[BuildingSurfaceDetailedVerticesItem] = [{"vertex_x_coordinate": 1.0}]
+    wall.update(vertices=points)
+    doc.building_surfaces.add(
+        "Copy",
+        surface_type="Wall",
+        construction_name="C",
+        zone_name="Z",
+        outside_boundary_condition="Outdoors",
+        vertices=wall.vertices.as_list(),
+    )
+    wall.update(vertices=[{"vertex_x_coordinat": 1.0}])  # pyright: ignore[reportArgumentType]  (misspelled key)
+    wall.update(vertices=[{"vertex_x_coordinate": "zero"}])  # pyright: ignore[reportArgumentType]  (wrong value type)
+    doc["Schedule:Week:Compact"].add(
+        "Week",
+        data=[{"daytype_list": "AllDays", "schedule_day_name": "On"}],
+    )
+    old["Schedule:Week:Compact"].add("Week", data=[{"daytype_list": "AllDays", "schedule_day_name": "On"}])

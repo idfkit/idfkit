@@ -845,7 +845,9 @@ class TestCreationAcrossReleases:
         assert creation.required == {"lines"}
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         generate_stubs(sink=sink)
-        assert "lines: list[Any])" in _signature_of(sink, "AnyEnergyManagementSystemProgram")
+        assert "lines: list[_g.EnergyManagementSystemProgramLinesItem])" in _signature_of(
+            sink, "AnyEnergyManagementSystemProgram"
+        )
         # BuildingSurface:Detailed: 8.9 to 26.1 require the construction, 26.2 does not.
         assert "construction_name: str," in _signature_of(sink, "AnyBuildingSurfaceDetailed")
         assert "construction_name: str | None = ..." in _signature_of(sink, "BuildingSurfaceDetailed")
@@ -912,3 +914,32 @@ class TestCreationAcrossReleases:
         latest = _signature_of(latest_sink, "InternalMass")
         assert "surface_area: float" in latest
         assert "construction_name: str | None = ..." in latest
+
+
+class TestExtensibleGroupItems:
+    """Every extensible group is taken as a list of dicts typed by the group's item TypedDict."""
+
+    def test_item_name(self) -> None:
+        assert gen._group_item_name("BuildingSurfaceDetailedVerticesGroup") == "BuildingSurfaceDetailedVerticesItem"  # pyright: ignore[reportPrivateUsage]
+        assert (
+            gen._group_item_name("ScheduleWeekCompactDataGroup_v8_9_to_v9_4")
+            == "ScheduleWeekCompactDataItem_v8_9_to_v9_4"
+        )  # pyright: ignore[reportPrivateUsage]
+
+    def test_group_class_comes_with_its_item_and_a_typed_as_dict(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        text = "\n".join(_generate_object_class(get_schema(LATEST_VERSION), "BuildingSurface:Detailed", sink=sink))
+        assert "class BuildingSurfaceDetailedVerticesItem(TypedDict, total=False):" in text
+        assert "    vertex_x_coordinate: float | None" in text
+        assert "    def as_dict(self) -> BuildingSurfaceDetailedVerticesItem: ..." in text
+        assert "    vertices: list[BuildingSurfaceDetailedVerticesItem]" in text  # the update keyword
+        signature = _signature_of(sink, "BuildingSurfaceDetailed")
+        assert "vertices: list[_g.BuildingSurfaceDetailedVerticesItem] = ..." in signature
+
+    def test_creation_modules_import_the_stub_their_items_live_in(self) -> None:
+        sink = gen._CreationModules("_v", "_cv")  # pyright: ignore[reportPrivateUsage]
+        gen.generate_versioned_pyi(sink)
+        sources = "\n".join(sink.sources().values())
+        assert "from .. import versioned as _vd" in sources
+        assert "from .. import _generated_types as _g" in sources
+        assert "_vd._" not in sources  # private names stay private: items are public

@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class AnyBuilding:
     def __call__(
@@ -938,7 +940,7 @@ class AirLoopHVACUnitarySystem:
     ) -> None: ...
 
 class OutdoorAirNodeList:
-    def __call__(self, /, *, nodes: list[Any] = ...) -> None: ...
+    def __call__(self, /, *, nodes: list[_g.OutdoorAirNodeListNodesItem] = ...) -> None: ...
 
 class GroundHeatExchangerVerticalProperties:
     def __call__(
@@ -977,7 +979,7 @@ class PlantEquipmentOperationUncontrolled:
     def __call__(self, name: str, /, *, equipment_list_name: str) -> None: ...
 
 class EnergyManagementSystemProgram:
-    def __call__(self, name: str, /, *, lines: list[Any]) -> None: ...
+    def __call__(self, name: str, /, *, lines: list[_g.EnergyManagementSystemProgramLinesItem]) -> None: ...
 
 class AnyEnergyManagementSystemMeteredOutputVariable:
     def __call__(
@@ -1044,7 +1046,9 @@ class AvailabilityManagerHighTemperatureTurnOff:
     def __call__(self, name: str, /, *, sensor_node_name: str, temperature: float) -> None: ...
 
 class RefrigerationCompressorList:
-    def __call__(self, name: str, /, *, compressors: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, compressors: list[_g.RefrigerationCompressorListCompressorsItem] = ...
+    ) -> None: ...
 
 class RefrigerationWalkIn:
     def __call__(
@@ -1072,7 +1076,7 @@ class RefrigerationWalkIn:
         restocking_schedule_name: str | None = ...,
         average_refrigerant_charge_inventory: float | None = 0,
         insulated_floor_u_value: float | None = 0.3154,
-        zone_data: list[Any] = ...,
+        zone_data: list[_g.RefrigerationWalkInZoneDataItem] = ...,
     ) -> None: ...
 
 class DemandManagerThermostats:
@@ -1089,7 +1093,7 @@ class DemandManagerThermostats:
         minimum_reset_duration: int | None = ...,
         reset_step_change: float | None = ...,
         rotation_duration: int | None = ...,
-        thermostats: list[Any] = ...,
+        thermostats: list[_g.DemandManagerThermostatsThermostatsItem] = ...,
     ) -> None: ...
 
 class LifeCycleCostNonrecurringCost:

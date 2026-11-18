@@ -99,8 +99,12 @@ class _Module:
 
 @functools.cache
 def _norm(annotation: str) -> str:
-    """Normalise an annotation's spelling, so line wrapping and the ``_g.`` and ``_v.`` prefixes do not count."""
-    return ast.unparse(ast.parse(annotation.replace("_g.", "").replace("_v.", ""), mode="eval"))
+    """Normalise an annotation's spelling, so line wrapping and the module prefixes do not count.
+
+    ``_g.`` and ``_vd.`` are how the creation modules reach ``_generated_types`` and ``versioned``,
+    ``_v.`` how a release's document module reaches ``versioned``.
+    """
+    return ast.unparse(ast.parse(annotation.replace("_g.", "").replace("_vd.", "").replace("_v.", ""), mode="eval"))
 
 
 def _base_name(node: ast.expr) -> str:
@@ -165,7 +169,7 @@ def _read_signature(node: ast.ClassDef) -> _CreationSignature | None:
                 name = "optional" if args.defaults else "required"
             params: dict[str, tuple[str, str | None]] = {}
             for arg, default in zip(args.kwonlyargs, args.kw_defaults, strict=True):
-                annotation = ast.unparse(arg.annotation) if arg.annotation is not None else ""
+                annotation = _norm(ast.unparse(arg.annotation)) if arg.annotation is not None else ""
                 params[arg.arg] = (annotation, None if default is None else ast.unparse(default))
             return _CreationSignature(name, params)
     return None
@@ -386,7 +390,10 @@ def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problem
             group_cls = _collection_class(annotation)
             if group_cls not in module.classes or _members_of(_fields(module, group_cls)) != inner:
                 problems.append(f"{where}: group {group_cls} does not hold the version's inner fields")
-        keywords[wrapper] = frozenset({"list[Any]"})
+            item = _item_name(group_cls)
+            if item not in module.classes or _members_of(_fields(module, item)) != inner:
+                problems.append(f"{where}: {item} does not hold the version's inner fields")
+            keywords[wrapper] = frozenset({_group_items(group_cls)})
     if actual != expected:
         missing = sorted(set(expected) - set(actual))
         extra = sorted(set(actual) - set(expected))
@@ -545,6 +552,17 @@ def _param_problem(
     if default != "..." and (field not in expected.defaults or ast.literal_eval(default) != expected.defaults[field]):
         return f"add() shows {field} = {default}, not the schema's default"
     return None
+
+
+def _item_name(group_cls: str) -> str:
+    """``BuildingSurfaceDetailedVerticesItem``: the ``TypedDict`` of one group of *group_cls*."""
+    head, _, tail = group_cls.rpartition("Group")
+    return f"{head}Item{tail}"
+
+
+def _group_items(group_cls: str) -> str:
+    """What a group's wrapper keyword takes: a list of dicts typed by the group's item type."""
+    return _norm(f"list[{_item_name(group_cls)}]")
 
 
 def _check_update(
@@ -753,7 +771,7 @@ def _check_writable(
         return
     groups = set(_group_names(module, cls))
     keywords = {
-        k: "list[Any]" if k in groups else klass.setters.get(k, v)
+        k: _group_items(_collection_class(v)) if k in groups else klass.setters.get(k, v)
         for k, v in _fields(module, cls).items()
         if k != "name"
     }
@@ -799,6 +817,11 @@ def _check_any_group(
         writable = _union_members(setters.get(name, read)) - {"Never"}
         if not all(all(_admitted(m, i[name]) for m in writable) for i in inner):
             problems.append(f"{group_cls}.{name}: writable values some version rejects")
+    # A group passed as a dict is written, so its keys take what assigning the field takes.
+    item = _item_name(group_cls)
+    writable_fields = {name: setters.get(name, read) for name, read in _fields(module, group_cls).items()}
+    if item not in module.classes or _members_of(_fields(module, item)) != _members_of(writable_fields):
+        problems.append(f"{item}: its keys are not the writable fields of {group_cls}")
 
 
 def _check_version(module: _Module, ver: Version, is_latest: bool, problems: list[str]) -> None:

@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class SiteGroundTemperatureFCfactorMethod:
     def __call__(
@@ -92,7 +94,7 @@ class AnyRoofCeilingDetailed:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.RoofCeilingDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class FloorDetailed:
@@ -128,7 +130,7 @@ class FloorDetailed:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.FloorDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class AnyWindowPropertyStormWindow:
@@ -154,7 +156,7 @@ class ShadingZoneDetailed:
         base_surface_name: str,
         transmittance_schedule_name: str | None = ...,
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.ShadingZoneDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class SurfacePropertyConvectionCoefficientsMultipleSurface:
@@ -968,11 +970,13 @@ class AirLoopHVACDedicatedOutdoorAirSystem:
         number_of_airloophvac: int,
         airloophvac_outdoorairsystem_name: str | None = ...,
         availability_schedule_name: str | None = ...,
-        airloophvacs: list[Any] = ...,
+        airloophvacs: list[_g.AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem] = ...,
     ) -> None: ...
 
 class ConnectorMixer:
-    def __call__(self, name: str, /, *, outlet_branch_name: str, branches: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, outlet_branch_name: str, branches: list[_g.ConnectorMixerBranchesItem] = ...
+    ) -> None: ...
 
 class SolarCollectorIntegralCollectorStorage:
     def __call__(
@@ -1212,11 +1216,11 @@ class AnyTableIndependentVariable:
         external_file_name: str | None = ...,
         external_file_column_number: int | None = ...,
         external_file_starting_row_number: int | None = ...,
-        values: list[Any] = ...,
+        values: list[_g.TableIndependentVariableValuesItem] = ...,
     ) -> None: ...
 
 class ParametricFileNameSuffix:
-    def __call__(self, name: str = "", /, *, suffixes: list[Any] = ...) -> None: ...
+    def __call__(self, name: str = "", /, *, suffixes: list[_g.ParametricFileNameSuffixSuffixesItem] = ...) -> None: ...
 
 class OutputSurfacesDrawing:
     def __call__(

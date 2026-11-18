@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class BuildingSurfaceDetailed_v9_6_to_v24_2:
     def __call__(
@@ -41,7 +43,7 @@ class BuildingSurfaceDetailed_v9_6_to_v24_2:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.BuildingSurfaceDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class SurfacePropertyConvectionCoefficients_v8_9_to_v9_4:
@@ -483,7 +485,7 @@ class FloorDetailed_v8_9_to_v9_5:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.FloorDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class CoilCoolingDXMultiSpeed_v8_9_to_v9_2:

@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class AirTerminalDualDuctVAV_v8_9_to_v9_2:
     def __call__(
@@ -173,7 +176,7 @@ class LifeCycleCostUseAdjustment_v8_9_to_v9_2:
             "Steam",
             "Water",
         ],
-        multipliers: list[Any] = ...,
+        multipliers: list[_g.LifeCycleCostUseAdjustmentMultipliersItem] = ...,
     ) -> None: ...
 
 class ShadowCalculation_v9_3_to_v22_1:
@@ -196,7 +199,7 @@ class ShadowCalculation_v9_3_to_v22_1:
         output_external_shading_calculation_results: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
-        shading_zone_groups: list[Any] = ...,
+        shading_zone_groups: list[_g.ShadowCalculationShadingZoneGroupsItem] = ...,
     ) -> None: ...
 
 class HVACTemplateZoneFanCoil_v9_0:
@@ -546,7 +549,7 @@ class FloorDetailed_v9_6_to_v24_2:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.FloorDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1:
@@ -741,7 +744,7 @@ class PythonPluginSearchPaths_v9_4_to_v9_6:
         *,
         add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
         add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
-        py_search_paths: list[Any] = ...,
+        py_search_paths: list[_vd.PythonPluginSearchPathsPySearchPathsItem_v9_4_to_v9_6] = ...,
     ) -> None: ...
 
 class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1:
@@ -757,5 +760,5 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1:
         availability_schedule_name: str | None = ...,
         heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
         degree_of_subcooling: float | None = 5,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem] = ...,
     ) -> None: ...

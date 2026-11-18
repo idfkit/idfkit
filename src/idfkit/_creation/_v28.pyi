@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class SurfacePropertyConvectionCoefficients_v9_5_to_v9_6:
     def __call__(
@@ -519,7 +522,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4:
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         convergence_tolerance: float | None = 0.001,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class ChillerElectric_v8_9_to_v24_1:
@@ -630,7 +633,7 @@ class TableMultiVariableLookup_v9_0_to_v9_1:
         number_of_values_for_independent_variable_x1: float | None = ...,
         field_1_determined_by_the_number_of_independent_variables: float | None = ...,
         field_2_determined_by_the_number_of_independent_variables: float | None = ...,
-        values: list[Any] = ...,
+        values: list[_vd.TableMultiVariableLookupValuesItem_v9_0_to_v9_1] = ...,
     ) -> None: ...
 
 class CoilCoolingDXMultiSpeed_v9_3_to_v22_1:
@@ -774,7 +777,7 @@ class RoofCeilingDetailed_v8_9_to_v9_5:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.RoofCeilingDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class OutputControlFiles_v9_4_to_v24_1:

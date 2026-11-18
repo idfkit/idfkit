@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class HVACTemplatePlantBoiler_v8_9_to_v9_2:
     def __call__(
@@ -87,7 +90,7 @@ class EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3:
             "UserDefinedComponentModel",
         ]
         | None = ...,
-        programs: list[Any] = ...,
+        programs: list[_g.EnergyManagementSystemProgramCallingManagerProgramsItem] = ...,
     ) -> None: ...
 
 class ZoneHVACHybridUnitaryHVAC_v9_3:
@@ -181,7 +184,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
         mode_0_system_water_use_lookup_table_name: str | None = ...,
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
-        modes: list[Any] = ...,
+        modes: list[_g.ZoneHVACHybridUnitaryHVACModesItem] = ...,
     ) -> None: ...
 
 class WindowMaterialGasMixture_v8_9_to_v22_1:
@@ -330,11 +333,11 @@ class WallDetailed_v9_6_to_v24_2:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.WallDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class OutputTableSummaryReports_v9_4:
-    def __call__(self, /, *, reports: list[Any] = ...) -> None: ...
+    def __call__(self, /, *, reports: list[_vd.OutputTableSummaryReportsReportsItem_v9_4] = ...) -> None: ...
 
 class ZoneCrossMixing_v8_9_to_v22_1:
     def __call__(
@@ -404,7 +407,7 @@ class TableOneIndependentVariable_v8_9:
         output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
-        values: list[Any] = ...,
+        values: list[_vd.TableOneIndependentVariableValuesItem_v8_9] = ...,
     ) -> None: ...
 
 class GroundHeatExchangerPond_v8_9_to_v22_1:

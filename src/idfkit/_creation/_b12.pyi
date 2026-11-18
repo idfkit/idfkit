@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class SizingPeriodWeatherFileConditionType:
     def __call__(
@@ -148,11 +150,13 @@ class AnyFoundationKiva:
         footing_wall_construction_name: str | None = ...,
         footing_material_name: str | None = ...,
         footing_depth: float | None = 0.3,
-        blocks: list[Any] = ...,
+        blocks: list[_g.FoundationKivaBlocksItem] = ...,
     ) -> None: ...
 
 class AnyZonePropertyUserViewFactorsBySurfaceName:
-    def __call__(self, /, *, view_factors: list[Any] = ...) -> None: ...
+    def __call__(
+        self, /, *, view_factors: list[_g.ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem] = ...
+    ) -> None: ...
 
 class GroundHeatTransferControl:
     def __call__(
@@ -389,7 +393,7 @@ class ZoneHVACHighTemperatureRadiant:
         | None = "OperativeTemperature",
         heating_throttling_range: float | None = 2,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACHighTemperatureRadiantSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class AirTerminalSingleDuctSeriesPIUReheat:
@@ -585,7 +589,7 @@ class AnyGroundHeatExchangerSystem:
         ground_thermal_heat_capacity: float,
         ghe_vertical_responsefactors_object_name: str | None = ...,
         ghe_vertical_array_object_name: str | None = ...,
-        vertical_well_locations: list[Any] = ...,
+        vertical_well_locations: list[_g.GroundHeatExchangerSystemVerticalWellLocationsItem] = ...,
     ) -> None: ...
 
 class PlantEquipmentOperationHeatingLoad:
@@ -650,7 +654,7 @@ class AnyEnergyManagementSystemProgramCallingManager:
             "UserDefinedComponentModel",
         ]
         | None = ...,
-        programs: list[Any] = ...,
+        programs: list[_g.EnergyManagementSystemProgramCallingManagerProgramsItem] = ...,
     ) -> None: ...
 
 class AnyEnergyManagementSystemTrendVariable:

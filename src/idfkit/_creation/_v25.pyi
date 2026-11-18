@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import versioned as _vd
 
 class SiteLocation_v8_9_to_v24_1:
     def __call__(
@@ -220,7 +222,13 @@ class ZoneGroup_v8_9_to_v22_1:
     def __call__(self, name: str, /, *, zone_list_name: str, zone_list_multiplier: float | None = 1) -> None: ...
 
 class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1:
-    def __call__(self, /, *, zone_name: str | None = ..., view_factors: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        /,
+        *,
+        zone_name: str | None = ...,
+        view_factors: list[_vd.ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v8_9_to_v9_1] = ...,
+    ) -> None: ...
 
 class GroundHeatExchangerSlinky_v8_9_to_v22_1:
     def __call__(
@@ -256,7 +264,7 @@ class GroundHeatExchangerSlinky_v8_9_to_v22_1:
     ) -> None: ...
 
 class OutputTableSummaryReports_v8_9_to_v9_2:
-    def __call__(self, /, *, reports: list[Any] = ...) -> None: ...
+    def __call__(self, /, *, reports: list[_vd.OutputTableSummaryReportsReportsItem_v8_9_to_v9_2] = ...) -> None: ...
 
 class CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1:
     def __call__(

@@ -52,6 +52,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so was type-checking speed: the signatures were kept in modules of their own
   (`idfkit/_creation`) that a type checker reads only to check an `add()` call
   ([#297](https://github.com/idfkit/idfkit/pull/297)).
+- Every extensible group got an item type, a `TypedDict` of the group's fields
+  (`BuildingSurfaceDetailedVerticesItem`), and `add()` and `update()` took a group's wrapper as a
+  list of them (`vertices: list[BuildingSurfaceDetailedVerticesItem]`) where they took `list[Any]`:
+  editors completed the keys of `vertices=[{...}]`, and a misspelled key or a wrong value type was a
+  type error. `ExtensibleList.as_list()` returned the item type for a typed group, so
+  `vertices=wall.vertices.as_list()` still type-checked; a list built ahead of the call is annotated
+  with the item type, as one typed `list[dict[str, float]]` is no longer accepted. Run time was
+  unchanged ([#297](https://github.com/idfkit/idfkit/pull/297)).
 - **Breaking:** `idfkit check` gained `C006`, an error checked by default, so a run that passed
   before could fail on it. It reported an object type passed to `add()` that no target release has
   (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a choice value no target

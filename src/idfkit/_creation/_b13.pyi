@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class AnyPerformancePrecisionTradeoffs:
     def __call__(self, /, *, use_coil_direct_solutions: Literal["", "No", "Yes"] | None = "No") -> None: ...
@@ -34,7 +36,7 @@ class ScheduleDayList:
         schedule_type_limits_name: str | None = ...,
         interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None = "No",
         minutes_per_item: int | None = ...,
-        extensions: list[Any] = ...,
+        extensions: list[_g.ScheduleDayListExtensionsItem] = ...,
     ) -> None: ...
 
 class MaterialNoMass:
@@ -189,7 +191,7 @@ class SurfacePropertyExposedFoundationPerimeter:
         exposed_perimeter_calculation_method: Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"],
         total_exposed_perimeter: float | None = ...,
         exposed_perimeter_fraction: float | None = 1,
-        surfaces: list[Any] = ...,
+        surfaces: list[_g.SurfacePropertyExposedFoundationPerimeterSurfacesItem] = ...,
     ) -> None: ...
 
 class SurfaceConvectionAlgorithmInsideUserCurve:
@@ -209,7 +211,9 @@ class SurfaceConvectionAlgorithmInsideUserCurve:
     ) -> None: ...
 
 class ZoneMRTCalculation:
-    def __call__(self, /, *, zone_name: str, people_names: list[Any] = ...) -> None: ...
+    def __call__(
+        self, /, *, zone_name: str, people_names: list[_g.ZoneMRTCalculationPeopleNamesItem] = ...
+    ) -> None: ...
 
 class DaylightingReferencePoint:
     def __call__(
@@ -474,7 +478,9 @@ class SetpointManagerColdest:
     ) -> None: ...
 
 class RefrigerationCaseAndWalkInList:
-    def __call__(self, name: str, /, *, cases_and_walkins: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, cases_and_walkins: list[_g.RefrigerationCaseAndWalkInListCasesAndWalkinsItem] = ...
+    ) -> None: ...
 
 class AnyGeneratorInternalCombustionEngine:
     def __call__(
@@ -567,7 +573,13 @@ class CurveCubicLinear:
     ) -> None: ...
 
 class TableIndependentVariableList:
-    def __call__(self, name: str, /, *, independent_variables: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        independent_variables: list[_g.TableIndependentVariableListIndependentVariablesItem] = ...,
+    ) -> None: ...
 
 class ComponentCostReference:
     def __call__(
@@ -656,5 +668,5 @@ class AnyOutputTableAnnual:
         *,
         filter: str | None = ...,
         schedule_name: str | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.AnyOutputTableAnnualVariableDetailsItem] = ...,
     ) -> None: ...

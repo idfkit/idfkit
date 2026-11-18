@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class RunPeriodControlDaylightSavingTime:
     def __call__(self, /, *, start_date: str, end_date: str) -> None: ...
@@ -31,7 +33,13 @@ class ScheduleFile:
     ) -> None: ...
 
 class WindowMaterialGlazingGroupThermochromic:
-    def __call__(self, name: str, /, *, temperature_data: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        temperature_data: list[_g.WindowMaterialGlazingGroupThermochromicTemperatureDataItem] = ...,
+    ) -> None: ...
 
 class WindowMaterialBlindEquivalentLayer:
     def __call__(
@@ -127,7 +135,7 @@ class ConstructionCfactorUndergroundWall:
     def __call__(self, name: str, /, *, c_factor: float, height: float) -> None: ...
 
 class ZoneList:
-    def __call__(self, name: str, /, *, zones: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, zones: list[_g.ZoneListZonesItem] = ...) -> None: ...
 
 class SurfaceControlMovableInsulation:
     def __call__(
@@ -155,7 +163,7 @@ class GroundHeatTransferBasementAutoGrid:
     ) -> None: ...
 
 class ComfortViewFactorAngles:
-    def __call__(self, name: str = "", /, *, angles: list[Any] = ...) -> None: ...
+    def __call__(self, name: str = "", /, *, angles: list[_g.ComfortViewFactorAnglesAnglesItem] = ...) -> None: ...
 
 class AnyLights:
     def __call__(
@@ -308,7 +316,7 @@ class AnyDaylightingControls:
         glare_calculation_azimuth_angle_of_view_direction_clockwise_from_zone_y_axis: float | None = 0,
         maximum_allowable_discomfort_glare_index: float | None = 22,
         delight_gridding_resolution: float | None = ...,
-        control_data: list[Any] = ...,
+        control_data: list[_g.AnyDaylightingControlsControlDataItem] = ...,
     ) -> None: ...
 
 class HVACTemplatePlantTower:
@@ -329,7 +337,9 @@ class HVACTemplatePlantTower:
     ) -> None: ...
 
 class DesignSpecificationOutdoorAirSpaceList:
-    def __call__(self, name: str, /, *, space_specs: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, space_specs: list[_g.DesignSpecificationOutdoorAirSpaceListSpaceSpecsItem] = ...
+    ) -> None: ...
 
 class ZoneControlThermostat:
     def __call__(
@@ -499,7 +509,7 @@ class FanSystemModel:
         motor_loss_radiative_fraction: float | None = ...,
         end_use_subcategory: str | None = "General",
         number_of_speeds: int | None = 1,
-        speed_fractions: list[Any] = ...,
+        speed_fractions: list[_g.FanSystemModelSpeedFractionsItem] = ...,
     ) -> None: ...
 
 class AnyCoilHeatingElectricMultiStage:
@@ -648,7 +658,9 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
         compressor_inverter_efficiency: float | None = 0.95,
         compressor_evaporative_capacity_correction_factor: float | None = 1,
         number_of_compressor_loading_index_entries: int | None = 2,
-        loading_indices: list[Any] = ...,
+        loading_indices: list[
+            _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem
+        ] = ...,
     ) -> None: ...
 
 class AnyWaterHeaterStratified:
@@ -793,7 +805,7 @@ class EnergyManagementSystemProgramCallingManager:
             "UserDefinedComponentModel",
         ]
         | None = ...,
-        programs: list[Any] = ...,
+        programs: list[_g.EnergyManagementSystemProgramCallingManagerProgramsItem] = ...,
     ) -> None: ...
 
 class AnyExternalInterfaceFunctionalMockupUnitImport:
@@ -1183,7 +1195,7 @@ class AnyOutputControlSurfaceColorScheme:
     ) -> None: ...
 
 class OutputTableSummaryReports:
-    def __call__(self, /, *, reports: list[Any] = ...) -> None: ...
+    def __call__(self, /, *, reports: list[_g.OutputTableSummaryReportsReportsItem] = ...) -> None: ...
 
 class FuelFactors:
     def __call__(

@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class SimulationControl_v8_9_to_v22_1:
     def __call__(
@@ -102,7 +105,12 @@ class MaterialPropertyPhaseChange_v8_9_to_v24_1:
 
 class ScheduleYear_v9_0_to_v22_1:
     def __call__(
-        self, name: str, /, *, schedule_type_limits_name: str | None = ..., schedule_weeks: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        schedule_type_limits_name: str | None = ...,
+        schedule_weeks: list[_vd.ScheduleYearScheduleWeeksItem_v9_0_to_v22_1] = ...,
     ) -> None: ...
 
 class ZoneCoolTowerShower_v8_9_to_v24_1:
@@ -321,7 +329,7 @@ class MeterCustomDecrement_v9_4_to_v23_1:
             "Water",
         ]
         | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.MeterCustomDecrementVariableDetailsItem] = ...,
     ) -> None: ...
 
 class CoilHeatingDesuperheater_v22_2_to_v23_1:
@@ -639,7 +647,7 @@ class MeterCustom_v9_4_to_v23_1:
             "Water",
         ]
         | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.MeterCustomVariableDetailsItem] = ...,
     ) -> None: ...
 
 class ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1:

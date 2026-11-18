@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class AnySiteLocation:
     def __call__(
@@ -125,7 +127,7 @@ class WallDetailed:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.WallDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class FloorGroundContact:
@@ -163,7 +165,9 @@ class Window:
     ) -> None: ...
 
 class SurfacePropertyGroundSurfaces:
-    def __call__(self, name: str, /, *, ground_surfaces: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, ground_surfaces: list[_g.SurfacePropertyGroundSurfacesGroundSurfacesItem] = ...
+    ) -> None: ...
 
 class GroundHeatTransferSlabXFACE:
     def __call__(self, /) -> None: ...
@@ -203,7 +207,7 @@ class RoomAirTemperaturePatternNondimensionalHeight:
         thermostat_offset: float | None = ...,
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
-        pairs: list[Any] = ...,
+        pairs: list[_g.RoomAirTemperaturePatternNondimensionalHeightPairsItem] = ...,
     ) -> None: ...
 
 class RoomAirSettingsCrossVentilation:
@@ -269,7 +273,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam:
         availability_schedule_name: str | None = ...,
         heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
         degree_of_subcooling: float | None = 5,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class AnyAirTerminalSingleDuctVAVReheatVariableSpeedFan:
@@ -322,7 +326,7 @@ class AnyZoneHVACEquipmentList:
         *,
         load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
-        equipment: list[Any] = ...,
+        equipment: list[_g.AnyZoneHVACEquipmentListEquipmentItem] = ...,
     ) -> None: ...
 
 class CoilCoolingDX:
@@ -1128,7 +1132,7 @@ class PlantEquipmentOperationOutdoorDryBulbDifference:
     ) -> None: ...
 
 class AnyEnergyManagementSystemProgram:
-    def __call__(self, name: str, /, *, lines: list[Any]) -> None: ...
+    def __call__(self, name: str, /, *, lines: list[_g.EnergyManagementSystemProgramLinesItem]) -> None: ...
 
 class ExternalInterfaceFunctionalMockupUnitExportToSchedule:
     def __call__(
@@ -1261,7 +1265,7 @@ class WaterUseConnections:
         drain_water_heat_exchanger_type: Literal["", "CounterFlow", "CrossFlow", "Ideal", "None"] | None = "None",
         drain_water_heat_exchanger_destination: Literal["", "Equipment", "Plant", "PlantAndEquipment"] | None = "Plant",
         drain_water_heat_exchanger_u_factor_times_area: float | None = ...,
-        connections: list[Any] = ...,
+        connections: list[_g.WaterUseConnectionsConnectionsItem] = ...,
     ) -> None: ...
 
 class FaultModelFoulingCoil:
@@ -1587,4 +1591,4 @@ class AnyLifeCycleCostNonrecurringCost:
     ) -> None: ...
 
 class ParametricLogic:
-    def __call__(self, name: str, /, *, lines: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, lines: list[_g.ParametricLogicLinesItem] = ...) -> None: ...

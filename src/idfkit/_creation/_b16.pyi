@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class SiteGroundReflectanceSnowModifier:
     def __call__(
@@ -125,7 +127,7 @@ class WindowShadingControl:
         setpoint_2: float | None = ...,
         daylighting_control_object_name: str | None = ...,
         multiple_surface_control_type: Literal["", "Group", "Sequential"] | None = "Sequential",
-        fenestration_surfaces: list[Any] = ...,
+        fenestration_surfaces: list[_g.WindowShadingControlFenestrationSurfacesItem] = ...,
     ) -> None: ...
 
 class SurfacePropertyHeatTransferAlgorithm:
@@ -646,7 +648,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater:
         rated_average_water_temperature: float | None = 87.78,
         rated_water_mass_flow_rate: float | None = 0.063,
         heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class AirTerminalSingleDuctConstantVolumeFourPipeBeam:
@@ -984,7 +986,7 @@ class DemandManagerAssignmentList:
         demand_limit_schedule_name: str | None = ...,
         billing_period_schedule_name: str | None = ...,
         peak_period_schedule_name: str | None = ...,
-        manager_data: list[Any] = ...,
+        manager_data: list[_g.DemandManagerAssignmentListManagerDataItem] = ...,
     ) -> None: ...
 
 class AnyPhotovoltaicPerformanceSandia:

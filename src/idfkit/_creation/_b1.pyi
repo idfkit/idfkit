@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class WeatherPropertySkyTemperature:
     def __call__(
@@ -61,16 +63,23 @@ class SiteSpectrumData:
         spectrum: float | None = ...,
         wavelength_1: float | None = ...,
         spectrum_2: float | None = ...,
-        extensions: list[Any] = ...,
+        extensions: list[_g.SiteSpectrumDataExtensionsItem] = ...,
     ) -> None: ...
 
 class ScheduleYear:
     def __call__(
-        self, name: str, /, *, schedule_type_limits_name: str | None = ..., schedule_weeks: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        schedule_type_limits_name: str | None = ...,
+        schedule_weeks: list[_g.ScheduleYearScheduleWeeksItem] = ...,
     ) -> None: ...
 
 class ScheduleCompact:
-    def __call__(self, name: str, /, *, schedule_type_limits_name: str | None = ..., data: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, schedule_type_limits_name: str | None = ..., data: list[_g.ScheduleCompactDataItem] = ...
+    ) -> None: ...
 
 class WindowMaterialGas:
     def __call__(
@@ -136,7 +145,7 @@ class RoofCeilingDetailed:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.RoofCeilingDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class RoomAirNodeAirflowNetwork:
@@ -153,7 +162,9 @@ class RoomAirNodeAirflowNetwork:
     ) -> None: ...
 
 class RoomAirNodeAirflowNetworkAdjacentSurfaceList:
-    def __call__(self, name: str = "", /, *, surfaces: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str = "", /, *, surfaces: list[_g.RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesItem] = ...
+    ) -> None: ...
 
 class AnyZoneVentilationDesignFlowRate:
     def __call__(
@@ -1258,7 +1269,12 @@ class UtilityCostChargeSimple:
 
 class OutputTableMonthly:
     def __call__(
-        self, name: str, /, *, digits_after_decimal: int | None = 2, variable_details: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        digits_after_decimal: int | None = 2,
+        variable_details: list[_g.OutputTableMonthlyVariableDetailsItem] = ...,
     ) -> None: ...
 
 class AnyOutputTableReportPeriod:
@@ -1337,4 +1353,6 @@ class AnyFuelFactors:
     ) -> None: ...
 
 class PythonPluginVariables:
-    def __call__(self, name: str, /, *, global_py_vars: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, global_py_vars: list[_g.PythonPluginVariablesGlobalPyVarsItem] = ...
+    ) -> None: ...

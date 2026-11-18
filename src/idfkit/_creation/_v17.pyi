@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class HVACSystemRootFindingAlgorithm_v8_9_to_v22_1:
     def __call__(
@@ -538,7 +540,7 @@ class WindowShadingControl_v9_0_to_v9_1:
         daylighting_control_object_name: str | None = ...,
         multiple_surface_control_type: Literal["", "Group", "Sequential"] | None = "Sequential",
         construction_with_shading_name: str | None = ...,
-        fenestration_surfaces: list[Any] = ...,
+        fenestration_surfaces: list[_g.WindowShadingControlFenestrationSurfacesItem] = ...,
     ) -> None: ...
 
 class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1:

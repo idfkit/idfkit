@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import versioned as _vd
 
 class MaterialNoMass_v8_9_to_v26_1:
     def __call__(
@@ -75,7 +77,7 @@ class DaylightingControls_v8_9_to_v9_5:
         glare_calculation_azimuth_angle_of_view_direction_clockwise_from_zone_y_axis: float | None = 0,
         maximum_allowable_discomfort_glare_index: float | None = 22,
         delight_gridding_resolution: float | None = ...,
-        control_data: list[Any] = ...,
+        control_data: list[_vd.DaylightingControlsControlDataItem_v8_9_to_v9_5] = ...,
     ) -> None: ...
 
 class CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4:
@@ -374,7 +376,13 @@ class AirTerminalSingleDuctVAVReheat_v8_9_to_v9_2:
     ) -> None: ...
 
 class RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1:
-    def __call__(self, name: str = "", /, *, equipment_fractions: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str = "",
+        /,
+        *,
+        equipment_fractions: list[_vd.RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v9_3_to_v24_1] = ...,
+    ) -> None: ...
 
 class ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3:
     def __call__(
@@ -470,7 +478,7 @@ class TableTwoIndependentVariables_v9_0_to_v9_1:
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
         external_file_name: str | None = ...,
-        values: list[Any] = ...,
+        values: list[_vd.TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1] = ...,
     ) -> None: ...
 
 class ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1:

@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class BoilerSteam_v8_9_to_v9_2:
     def __call__(
@@ -663,7 +666,7 @@ class UnitarySystemPerformanceMultispeed_v8_9_to_v22_1:
         number_of_speeds_for_cooling: float,
         single_mode_operation: Literal["", "No", "Yes"] | None = "No",
         no_load_supply_air_flow_rate_ratio: float | None = 1,
-        flow_ratios: list[Any] = ...,
+        flow_ratios: list[_g.UnitarySystemPerformanceMultispeedFlowRatiosItem] = ...,
     ) -> None: ...
 
 class PythonPluginOutputVariable_v9_4_to_v23_1:
@@ -759,5 +762,5 @@ class TableTwoIndependentVariables_v8_9:
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
         external_file_name: str | None = ...,
-        values: list[Any] = ...,
+        values: list[_vd.TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1] = ...,
     ) -> None: ...

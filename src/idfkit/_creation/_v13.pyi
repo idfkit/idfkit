@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class GeneratorInternalCombustionEngine_v8_9_to_v9_2:
     def __call__(
@@ -354,7 +356,7 @@ class RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1:
         thermostat_offset: float | None = ...,
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
-        pairs: list[Any] = ...,
+        pairs: list[_g.RoomAirTemperaturePatternNondimensionalHeightPairsItem] = ...,
     ) -> None: ...
 
 class CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1:

@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class AvailabilityManagerOptimumStart_v8_9_to_v22_1:
     def __call__(
@@ -521,7 +524,7 @@ class ControllerMechanicalVentilation_v9_3_to_v9_4:
         ]
         | None = "VentilationRateProcedure",
         zone_maximum_outdoor_air_fraction: float | None = 1,
-        zone_specifications: list[Any] = ...,
+        zone_specifications: list[_vd.ControllerMechanicalVentilationZoneSpecificationsItem_v9_3_to_v9_4] = ...,
     ) -> None: ...
 
 class LifeCycleCostNonrecurringCost_v8_9_to_v22_1:
@@ -568,7 +571,7 @@ class DemandManagerThermostats_v8_9_to_v22_1:
         minimum_reset_duration: float | None = ...,
         reset_step_change: float | None = ...,
         rotation_duration: float | None = ...,
-        thermostats: list[Any] = ...,
+        thermostats: list[_g.DemandManagerThermostatsThermostatsItem] = ...,
     ) -> None: ...
 
 class CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1:
@@ -600,4 +603,10 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1:
     ) -> None: ...
 
 class RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2:
-    def __call__(self, name: str = "", /, *, equipment_fractions: list[Any] = ...) -> None: ...
+    def __call__(
+        self,
+        name: str = "",
+        /,
+        *,
+        equipment_fractions: list[_vd.RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v8_9_to_v9_2] = ...,
+    ) -> None: ...

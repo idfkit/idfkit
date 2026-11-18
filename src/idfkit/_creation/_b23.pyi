@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class AnyZoneAirMassFlowConservation:
     def __call__(
@@ -655,11 +657,15 @@ class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
         compressor_inverter_efficiency: float | None = 0.95,
         compressor_evaporative_capacity_correction_factor: float | None = 1,
         number_of_compressor_loading_index_entries: int | None = 2,
-        loading_indices: list[Any] = ...,
+        loading_indices: list[
+            _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem
+        ] = ...,
     ) -> None: ...
 
 class AirLoopHVACZoneMixer:
-    def __call__(self, name: str, /, *, outlet_node_name: str, nodes: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, outlet_node_name: str, nodes: list[_g.AirLoopHVACZoneMixerNodesItem] = ...
+    ) -> None: ...
 
 class SolarCollectorPerformancePhotovoltaicThermalBIPVT:
     def __call__(
@@ -958,7 +964,9 @@ class RefrigerationGasCoolerAirCooled:
     ) -> None: ...
 
 class ElectricLoadCenterGenerators:
-    def __call__(self, name: str, /, *, generator_outputs: list[Any] = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, generator_outputs: list[_g.ElectricLoadCenterGeneratorsGeneratorOutputsItem] = ...
+    ) -> None: ...
 
 class FaultModelHumidistatOffset:
     def __call__(
@@ -1039,7 +1047,7 @@ class MeterCustomDecrement:
             "Water",
         ]
         | None = ...,
-        variable_details: list[Any] = ...,
+        variable_details: list[_g.MeterCustomDecrementVariableDetailsItem] = ...,
     ) -> None: ...
 
 class AnyPythonPluginOutputVariable:

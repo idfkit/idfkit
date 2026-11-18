@@ -6,7 +6,9 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
 
 class CoilCoolingDXSingleSpeed_v8_9_to_v22_1:
     def __call__(
@@ -82,7 +84,7 @@ class BuildingSurfaceDetailed_v8_9_to_v9_5:
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
+        vertices: list[_g.BuildingSurfaceDetailedVerticesItem] = ...,
     ) -> None: ...
 
 class SiteGroundDomainBasement_v8_9_to_v22_1:
@@ -297,7 +299,7 @@ class GroundHeatExchangerResponseFactors_v8_9_to_v22_1:
         ghe_vertical_properties_object_name: str,
         number_of_boreholes: float,
         g_function_reference_ratio: float | None = 0.0005,
-        g_functions: list[Any] = ...,
+        g_functions: list[_g.GroundHeatExchangerResponseFactorsGFunctionsItem] = ...,
     ) -> None: ...
 
 class GeneratorMicroTurbine_v9_3_to_v9_4:
@@ -437,7 +439,7 @@ class PipingSystemUndergroundDomain_v8_9_to_v22_1:
         convergence_criterion_for_the_outer_cartesian_domain_iteration_loop: float | None = 0.001,
         maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: float | None = 500,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
-        pipe_circuits: list[Any] = ...,
+        pipe_circuits: list[_g.PipingSystemUndergroundDomainPipeCircuitsItem] = ...,
     ) -> None: ...
 
 class SizingPlant_v8_9_to_v22_1:

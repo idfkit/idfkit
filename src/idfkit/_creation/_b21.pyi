@@ -6,9 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from typing_extensions import Never
+
+from .. import _generated_types as _g
 
 class AnyShadowCalculation:
     def __call__(
@@ -23,7 +25,7 @@ class AnyShadowCalculation:
         output_external_shading_calculation_results: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
-        shading_zone_groups: list[Any] = ...,
+        shading_zone_groups: list[_g.ShadowCalculationShadingZoneGroupsItem] = ...,
     ) -> None: ...
 
 class WindowMaterialSimpleGlazingSystem:
@@ -299,12 +301,18 @@ class ZoneHVACBaseboardRadiantConvectiveElectric:
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         efficiency: float | None = 1,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
+        surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsItem] = ...,
     ) -> None: ...
 
 class SpaceHVACZoneReturnMixer:
     def __call__(
-        self, name: str, /, *, zone_name: str, zone_return_air_node_name: str, spaces: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        zone_name: str,
+        zone_return_air_node_name: str,
+        spaces: list[_g.SpaceHVACZoneReturnMixerSpacesItem] = ...,
     ) -> None: ...
 
 class CoilCoolingWater:
@@ -453,7 +461,14 @@ class AirConditionerVariableRefrigerantFlow:
 
 class AirLoopHVACSupplyPlenum:
     def __call__(
-        self, name: str, /, *, zone_name: str, zone_node_name: str, inlet_node_name: str, nodes: list[Any] = ...
+        self,
+        name: str,
+        /,
+        *,
+        zone_name: str,
+        zone_node_name: str,
+        inlet_node_name: str,
+        nodes: list[_g.AirLoopHVACSupplyPlenumNodesItem] = ...,
     ) -> None: ...
 
 class AnyHeatPumpWaterToWaterEquationFitCooling:
@@ -642,7 +657,7 @@ class ZoneHVACRefrigerationChillerSet:
         zone_name: str | None = ...,
         air_inlet_node_name: str | None = ...,
         air_outlet_node_name: str | None = ...,
-        chillers: list[Any] = ...,
+        chillers: list[_g.ZoneHVACRefrigerationChillerSetChillersItem] = ...,
     ) -> None: ...
 
 class AnyDemandManagerAssignmentList:
@@ -658,7 +673,7 @@ class AnyDemandManagerAssignmentList:
         demand_limit_schedule_name: str | None = ...,
         billing_period_schedule_name: str | None = ...,
         peak_period_schedule_name: str | None = ...,
-        manager_data: list[Any] = ...,
+        manager_data: list[_g.DemandManagerAssignmentListManagerDataItem] = ...,
     ) -> None: ...
 
 class GeneratorFuelCell:
@@ -762,7 +777,7 @@ class LifeCycleCostUsePriceEscalation:
             "September",
         ]
         | None = "January",
-        escalations: list[Any] = ...,
+        escalations: list[_g.LifeCycleCostUsePriceEscalationEscalationsItem] = ...,
     ) -> None: ...
 
 class OutputDebuggingData:

@@ -6,7 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
+
+from .. import _generated_types as _g
+from .. import versioned as _vd
 
 class CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1:
     def __call__(
@@ -100,7 +103,7 @@ class DemandManagerExteriorLights_v8_9_to_v22_1:
         maximum_limit_fraction: float | None = ...,
         limit_step_change: float | None = ...,
         rotation_duration: float | None = ...,
-        lights: list[Any] = ...,
+        lights: list[_g.DemandManagerExteriorLightsLightsItem] = ...,
     ) -> None: ...
 
 class SizingSystem_v9_6_to_v22_1:
@@ -423,7 +426,7 @@ class TableMultiVariableLookup_v8_9:
         number_of_values_for_independent_variable_x1: float | None = ...,
         field_1_determined_by_the_number_of_independent_variables: float | None = ...,
         field_2_determined_by_the_number_of_independent_variables: float | None = ...,
-        values: list[Any] = ...,
+        values: list[_vd.TableMultiVariableLookupValuesItem_v8_9] = ...,
     ) -> None: ...
 
 class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5:

@@ -256,10 +256,16 @@ class _ShadowCalculationCommonFields(TypedDict, total=False):
     output_external_shading_calculation_results: Literal["", "No", "Yes"] | None
     disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None
     disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None
-    shading_zone_groups: list[Any]
+    shading_zone_groups: list[ShadowCalculationShadingZoneGroupsItem]
 
 class ShadowCalculationShadingZoneGroupsGroup(_TypedExtensibleGroup):
     """One shading_zone_groups group inside :class:`AnyShadowCalculation`."""
+
+    shading_zone_group_zonelist_name: str | None
+    def as_dict(self) -> ShadowCalculationShadingZoneGroupsItem: ...  # type: ignore[override]
+
+class ShadowCalculationShadingZoneGroupsItem(TypedDict, total=False):
+    """One group of :class:`ShadowCalculationShadingZoneGroupsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     shading_zone_group_zonelist_name: str | None
 
@@ -2086,6 +2092,13 @@ class SiteSpectrumDataExtensionsGroup(_TypedExtensibleGroup):
 
     wavelength: float | None
     spectrum: float | None
+    def as_dict(self) -> SiteSpectrumDataExtensionsItem: ...  # type: ignore[override]
+
+class SiteSpectrumDataExtensionsItem(TypedDict, total=False):
+    """One group of :class:`SiteSpectrumDataExtensionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    wavelength: float | None
+    spectrum: float | None
 
 class SiteSpectrumData(_TypedIDFObject):
     """Spectrum Data Type is followed by up to 107 sets of normal-incidence measured values of [wavelength, spectrum] for wa..."""
@@ -2108,7 +2121,7 @@ class _SiteSpectrumDataFields(TypedDict, total=False):
     spectrum: float | None
     wavelength_1: float | None
     spectrum_2: float | None
-    extensions: list[Any]
+    extensions: list[SiteSpectrumDataExtensionsItem]
 
 class ScheduleTypeLimits(_TypedIDFObject):
     """ScheduleTypeLimits specifies the data types and limits for the values contained in schedules"""
@@ -2259,6 +2272,13 @@ class ScheduleDayIntervalDataGroup(_TypedExtensibleGroup):
 
     time: str | None
     value_until_time: float | None
+    def as_dict(self) -> ScheduleDayIntervalDataItem: ...  # type: ignore[override]
+
+class ScheduleDayIntervalDataItem(TypedDict, total=False):
+    """One group of :class:`ScheduleDayIntervalDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    time: str | None
+    value_until_time: float | None
 
 class ScheduleDayInterval(_TypedIDFObject):
     """A Schedule:Day:Interval contains a full day of values with specified end times for each value Currently, is set up to..."""
@@ -2276,15 +2296,21 @@ class ScheduleDayInterval(_TypedIDFObject):
 class _ScheduleDayIntervalFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
-    data: list[Any]
+    data: list[ScheduleDayIntervalDataItem]
 
 class _ScheduleDayListCommonFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
-    extensions: list[Any]
+    extensions: list[ScheduleDayListExtensionsItem]
 
 class ScheduleDayListExtensionsGroup(_TypedExtensibleGroup):
     """One extensions group inside :class:`AnyScheduleDayList`."""
+
+    value: float | None
+    def as_dict(self) -> ScheduleDayListExtensionsItem: ...  # type: ignore[override]
+
+class ScheduleDayListExtensionsItem(TypedDict, total=False):
+    """One group of :class:`ScheduleDayListExtensionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     value: float | None
 
@@ -2358,6 +2384,13 @@ class ScheduleWeekCompactDataGroup(_TypedExtensibleGroup):
 
     daytype_list: str | None
     schedule_day_name: str | None
+    def as_dict(self) -> ScheduleWeekCompactDataItem: ...  # type: ignore[override]
+
+class ScheduleWeekCompactDataItem(TypedDict, total=False):
+    """One group of :class:`ScheduleWeekCompactDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    daytype_list: str | None
+    schedule_day_name: str | None
 
 class ScheduleWeekCompact(_TypedIDFObject):
     """Compact definition for Schedule:Day:List"""
@@ -2370,7 +2403,7 @@ class ScheduleWeekCompact(_TypedIDFObject):
     _creation_signature: _c10.ScheduleWeekCompact
 
 class _ScheduleWeekCompactFields(TypedDict, total=False):
-    data: list[Any]
+    data: list[ScheduleWeekCompactDataItem]
 
 class _ScheduleYearCommonFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -2393,6 +2426,16 @@ class ScheduleYearScheduleWeeksGroup(_TypedExtensibleGroup):
     start_day: int | None
     end_month: int | None
     end_day: int | None
+    def as_dict(self) -> ScheduleYearScheduleWeeksItem: ...  # type: ignore[override]
+
+class ScheduleYearScheduleWeeksItem(TypedDict, total=False):
+    """One group of :class:`ScheduleYearScheduleWeeksGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    schedule_week_name: str | None
+    start_month: int | None
+    start_day: int | None
+    end_month: int | None
+    end_day: int | None
 
 class ScheduleYear(AnyScheduleYear):
     """A Schedule:Year contains from 1 to 52 week schedules"""
@@ -2403,10 +2446,16 @@ class ScheduleYear(AnyScheduleYear):
     _creation_signature: _c1.ScheduleYear
 
 class _ScheduleYearFields(_ScheduleYearCommonFields, total=False):
-    schedule_weeks: list[Any]
+    schedule_weeks: list[ScheduleYearScheduleWeeksItem]
 
 class ScheduleCompactDataGroup(_TypedExtensibleGroup):
     """One data group inside :class:`ScheduleCompact`."""
+
+    field: float | str | None
+    def as_dict(self) -> ScheduleCompactDataItem: ...  # type: ignore[override]
+
+class ScheduleCompactDataItem(TypedDict, total=False):
+    """One group of :class:`ScheduleCompactDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     field: float | str | None
 
@@ -2421,7 +2470,7 @@ class ScheduleCompact(_TypedIDFObject):
 
 class _ScheduleCompactFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
-    data: list[Any]
+    data: list[ScheduleCompactDataItem]
 
 class ScheduleConstant(_TypedIDFObject):
     """Constant hourly value for entire year."""
@@ -2472,6 +2521,15 @@ class ScheduleWeekRuleDateRangesGroup(_TypedExtensibleGroup):
     start_day: int | None
     end_month: int | None
     end_day: int | None
+    def as_dict(self) -> ScheduleWeekRuleDateRangesItem: ...  # type: ignore[override]
+
+class ScheduleWeekRuleDateRangesItem(TypedDict, total=False):
+    """One group of :class:`ScheduleWeekRuleDateRangesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    start_month: int | None
+    start_day: int | None
+    end_month: int | None
+    end_day: int | None
 
 class ScheduleWeekRule(_TypedIDFObject):
     """A Schedule:Week:Rule defines one override rule for a Schedule:Year:Rules. Rules are evaluated in ascending Rule Prior...; Since: 26.2.0"""
@@ -2510,7 +2568,7 @@ class _ScheduleWeekRuleFields(TypedDict, total=False):
     apply_thursday: Literal["", "No", "Yes"] | None
     apply_friday: Literal["", "No", "Yes"] | None
     apply_saturday: Literal["", "No", "Yes"] | None
-    date_ranges: list[Any]
+    date_ranges: list[ScheduleWeekRuleDateRangesItem]
 
 class ScheduleFileShading(_TypedIDFObject):
     """A Schedule:File:Shading points to a CSV file that has 8760-8784 hours of sunlit fraction data for all or some of the ..."""
@@ -2862,6 +2920,13 @@ class WindowMaterialGlazingGroupThermochromicTemperatureDataGroup(_TypedExtensib
 
     optical_data_temperature: float | None
     window_material_glazing_name: str | None
+    def as_dict(self) -> WindowMaterialGlazingGroupThermochromicTemperatureDataItem: ...  # type: ignore[override]
+
+class WindowMaterialGlazingGroupThermochromicTemperatureDataItem(TypedDict, total=False):
+    """One group of :class:`WindowMaterialGlazingGroupThermochromicTemperatureDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    optical_data_temperature: float | None
+    window_material_glazing_name: str | None
 
 class WindowMaterialGlazingGroupThermochromic(_TypedIDFObject):
     """thermochromic glass at different temperatures"""
@@ -2877,7 +2942,7 @@ class WindowMaterialGlazingGroupThermochromic(_TypedIDFObject):
     _creation_signature: _c6.WindowMaterialGlazingGroupThermochromic
 
 class _WindowMaterialGlazingGroupThermochromicFields(TypedDict, total=False):
-    temperature_data: list[Any]
+    temperature_data: list[WindowMaterialGlazingGroupThermochromicTemperatureDataItem]
 
 class WindowMaterialGlazingRefractionExtinctionMethod(_TypedIDFObject):
     """Glass material properties for Windows or Glass Doors Index of Refraction/Extinction Coefficient input method Not to b..."""
@@ -3826,6 +3891,13 @@ class MaterialPropertyPhaseChangeValuesGroup(_TypedExtensibleGroup):
 
     temperature: float | None
     enthalpy: float | None
+    def as_dict(self) -> MaterialPropertyPhaseChangeValuesItem: ...  # type: ignore[override]
+
+class MaterialPropertyPhaseChangeValuesItem(TypedDict, total=False):
+    """One group of :class:`MaterialPropertyPhaseChangeValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    temperature: float | None
+    enthalpy: float | None
 
 class MaterialPropertyPhaseChange(AnyMaterialPropertyPhaseChange):
     """Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) Na..."""
@@ -3838,7 +3910,7 @@ class MaterialPropertyPhaseChange(AnyMaterialPropertyPhaseChange):
     _creation_signature: _c29.MaterialPropertyPhaseChange
 
 class _MaterialPropertyPhaseChangeFields(_MaterialPropertyPhaseChangeCommonFields, total=False):
-    values: list[Any]
+    values: list[MaterialPropertyPhaseChangeValuesItem]
 
 class MaterialPropertyPhaseChangeHysteresis(_TypedIDFObject):
     """Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) wi..."""
@@ -3912,6 +3984,13 @@ class MaterialPropertyVariableThermalConductivityValuesGroup(_TypedExtensibleGro
 
     temperature: float | None
     thermal_conductivity: float | None
+    def as_dict(self) -> MaterialPropertyVariableThermalConductivityValuesItem: ...  # type: ignore[override]
+
+class MaterialPropertyVariableThermalConductivityValuesItem(TypedDict, total=False):
+    """One group of :class:`MaterialPropertyVariableThermalConductivityValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    temperature: float | None
+    thermal_conductivity: float | None
 
 class MaterialPropertyVariableThermalConductivity(AnyMaterialPropertyVariableThermalConductivity):
     """Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity ..."""
@@ -3929,7 +4008,7 @@ class MaterialPropertyVariableThermalConductivity(AnyMaterialPropertyVariableThe
 class _MaterialPropertyVariableThermalConductivityFields(
     _MaterialPropertyVariableThermalConductivityCommonFields, total=False
 ):
-    values: list[Any]
+    values: list[MaterialPropertyVariableThermalConductivityValuesItem]
 
 class _MaterialPropertyVariableAbsorptanceCommonFields(TypedDict, total=False):
     reference_material_name: str | None
@@ -5007,6 +5086,15 @@ class MaterialPropertyGlazingSpectralDataExtensionsGroup(_TypedExtensibleGroup):
     transmittance: float | None
     front_reflectance: float | None
     back_reflectance: float | None
+    def as_dict(self) -> MaterialPropertyGlazingSpectralDataExtensionsItem: ...  # type: ignore[override]
+
+class MaterialPropertyGlazingSpectralDataExtensionsItem(TypedDict, total=False):
+    """One group of :class:`MaterialPropertyGlazingSpectralDataExtensionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    wavelength: float | None
+    transmittance: float | None
+    front_reflectance: float | None
+    back_reflectance: float | None
 
 class MaterialPropertyGlazingSpectralData(_TypedIDFObject):
     """Name is followed by up to 800 sets of normal-incidence measured values of [wavelength, transmittance, front reflectan..."""
@@ -5055,7 +5143,7 @@ class _MaterialPropertyGlazingSpectralDataFields(TypedDict, total=False):
     transmittance_4: float | None
     front_reflectance_4: float | None
     back_reflectance_4: float | None
-    extensions: list[Any]
+    extensions: list[MaterialPropertyGlazingSpectralDataExtensionsItem]
 
 class Construction(_TypedIDFObject):
     """Start with outside layer and work your way to the inside layer Up to 10 layers total, 8 for windows Enter the materia..."""
@@ -5616,10 +5704,16 @@ class _SpaceCommonFields(TypedDict, total=False):
     zone_name: str | None
     floor_area: float | Literal["", "Autocalculate"] | None
     space_type: str | None
-    tags: list[Any]
+    tags: list[SpaceTagsItem]
 
 class SpaceTagsGroup(_TypedExtensibleGroup):
     """One tags group inside :class:`AnySpace`."""
+
+    tag: str | None
+    def as_dict(self) -> SpaceTagsItem: ...  # type: ignore[override]
+
+class SpaceTagsItem(TypedDict, total=False):
+    """One group of :class:`SpaceTagsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     tag: str | None
 
@@ -5660,6 +5754,12 @@ class SpaceListSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceList`."""
 
     space_name: str | None
+    def as_dict(self) -> SpaceListSpacesItem: ...  # type: ignore[override]
+
+class SpaceListSpacesItem(TypedDict, total=False):
+    """One group of :class:`SpaceListSpacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    space_name: str | None
 
 class SpaceList(_TypedIDFObject):
     """Defines a list of Spaces which can be referenced as a group. The SpaceList name may be used elsewhere in the input to...; Since: 9.6.0"""
@@ -5670,7 +5770,7 @@ class SpaceList(_TypedIDFObject):
     _creation_signature: _c15.SpaceList
 
 class _SpaceListFields(TypedDict, total=False):
-    spaces: list[Any]
+    spaces: list[SpaceListSpacesItem]
 
 class _ZoneCommonFields(TypedDict, total=False):
     direction_of_relative_north: float | None
@@ -5767,6 +5867,12 @@ class ZoneListZonesGroup(_TypedExtensibleGroup):
     """One zones group inside :class:`ZoneList`."""
 
     zone_name: str | None
+    def as_dict(self) -> ZoneListZonesItem: ...  # type: ignore[override]
+
+class ZoneListZonesItem(TypedDict, total=False):
+    """One group of :class:`ZoneListZonesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zone_name: str | None
 
 class ZoneList(_TypedIDFObject):
     """Defines a list of thermal zones which can be referenced as a group. The ZoneList name may be used elsewhere in the in..."""
@@ -5777,7 +5883,7 @@ class ZoneList(_TypedIDFObject):
     _creation_signature: _c6.ZoneList
 
 class _ZoneListFields(TypedDict, total=False):
-    zones: list[Any]
+    zones: list[ZoneListZonesItem]
 
 class _ZoneGroupCommonFields(TypedDict, total=False):
     zone_list_name: str | None
@@ -5817,10 +5923,18 @@ class _BuildingSurfaceDetailedCommonFields(TypedDict, total=False):
     wind_exposure: Literal["", "NoWind", "WindExposed"] | None
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: list[BuildingSurfaceDetailedVerticesItem]
 
 class BuildingSurfaceDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`AnyBuildingSurfaceDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> BuildingSurfaceDetailedVerticesItem: ...  # type: ignore[override]
+
+class BuildingSurfaceDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`BuildingSurfaceDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -5988,10 +6102,18 @@ class _WallDetailedCommonFields(TypedDict, total=False):
     wind_exposure: Literal["", "NoWind", "WindExposed"] | None
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: list[WallDetailedVerticesItem]
 
 class WallDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`AnyWallDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> WallDetailedVerticesItem: ...  # type: ignore[override]
+
+class WallDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`WallDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -6154,10 +6276,18 @@ class _RoofCeilingDetailedCommonFields(TypedDict, total=False):
     wind_exposure: Literal["", "NoWind", "WindExposed"] | None
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: list[RoofCeilingDetailedVerticesItem]
 
 class RoofCeilingDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`AnyRoofCeilingDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> RoofCeilingDetailedVerticesItem: ...  # type: ignore[override]
+
+class RoofCeilingDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`RoofCeilingDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -6314,10 +6444,18 @@ class _FloorDetailedCommonFields(TypedDict, total=False):
     wind_exposure: Literal["", "NoWind", "WindExposed"] | None
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: list[FloorDetailedVerticesItem]
 
 class FloorDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`AnyFloorDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> FloorDetailedVerticesItem: ...  # type: ignore[override]
+
+class FloorDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`FloorDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -7364,10 +7502,16 @@ class _WindowShadingControlCommonFields(TypedDict, total=False):
     setpoint_2: float | None
     daylighting_control_object_name: str | None
     multiple_surface_control_type: Literal["", "Group", "Sequential"] | None
-    fenestration_surfaces: list[Any]
+    fenestration_surfaces: list[WindowShadingControlFenestrationSurfacesItem]
 
 class WindowShadingControlFenestrationSurfacesGroup(_TypedExtensibleGroup):
     """One fenestration_surfaces group inside :class:`AnyWindowShadingControl`."""
+
+    fenestration_surface_name: str | None
+    def as_dict(self) -> WindowShadingControlFenestrationSurfacesItem: ...  # type: ignore[override]
+
+class WindowShadingControlFenestrationSurfacesItem(TypedDict, total=False):
+    """One group of :class:`WindowShadingControlFenestrationSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     fenestration_surface_name: str | None
 
@@ -7940,6 +8084,14 @@ class ShadingSiteDetailedVerticesGroup(_TypedExtensibleGroup):
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
+    def as_dict(self) -> ShadingSiteDetailedVerticesItem: ...  # type: ignore[override]
+
+class ShadingSiteDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`ShadingSiteDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
 
 class ShadingSiteDetailed(_TypedIDFObject):
     """used for shading elements such as trees these items are fixed in space and would not move with relative geometry"""
@@ -7958,10 +8110,18 @@ class ShadingSiteDetailed(_TypedIDFObject):
 class _ShadingSiteDetailedFields(TypedDict, total=False):
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: list[ShadingSiteDetailedVerticesItem]
 
 class ShadingBuildingDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingBuildingDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> ShadingBuildingDetailedVerticesItem: ...  # type: ignore[override]
+
+class ShadingBuildingDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`ShadingBuildingDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -7984,7 +8144,7 @@ class ShadingBuildingDetailed(_TypedIDFObject):
 class _ShadingBuildingDetailedFields(TypedDict, total=False):
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: list[ShadingBuildingDetailedVerticesItem]
 
 class ShadingOverhang(_TypedIDFObject):
     """Overhangs are usually flat shading surfaces that reference a window or door."""
@@ -8130,6 +8290,14 @@ class ShadingZoneDetailedVerticesGroup(_TypedExtensibleGroup):
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
+    def as_dict(self) -> ShadingZoneDetailedVerticesItem: ...  # type: ignore[override]
+
+class ShadingZoneDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`ShadingZoneDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
 
 class ShadingZoneDetailed(_TypedIDFObject):
     """used For fins, overhangs, elements that shade the building, are attached to the building but are not part of the heat..."""
@@ -8150,7 +8318,7 @@ class _ShadingZoneDetailedFields(TypedDict, total=False):
     base_surface_name: str | None
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: list[ShadingZoneDetailedVerticesItem]
 
 class ShadingPropertyReflectance(_TypedIDFObject):
     """If this object is not defined for a shading surface the default values listed in following fields will be used in the..."""
@@ -8278,6 +8446,12 @@ class SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup(_TypedExtensib
     """One surface group inside :class:`SurfacePropertyHeatTransferAlgorithmSurfaceList`."""
 
     surface_name: str | None
+    def as_dict(self) -> SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceItem: ...  # type: ignore[override]
+
+class SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
 
 class SurfacePropertyHeatTransferAlgorithmSurfaceList(_TypedIDFObject):
     """Determines which Heat Balance Algorithm will be used for a list of surfaces Allows selectively overriding the global ..."""
@@ -8314,7 +8488,7 @@ class _SurfacePropertyHeatTransferAlgorithmSurfaceListFields(TypedDict, total=Fa
         ]
         | None
     )
-    surface: list[Any]
+    surface: list[SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceItem]
 
 class SurfacePropertyHeatTransferAlgorithmConstruction(_TypedIDFObject):
     """Determines which Heat Balance Algorithm will be used for surfaces that have a specific type of construction Allows se..."""
@@ -8512,10 +8686,19 @@ class _FoundationKivaCommonFields(TypedDict, total=False):
     footing_wall_construction_name: str | None
     footing_material_name: str | None
     footing_depth: float | None
-    blocks: list[Any]
+    blocks: list[FoundationKivaBlocksItem]
 
 class FoundationKivaBlocksGroup(_TypedExtensibleGroup):
     """One blocks group inside :class:`AnyFoundationKiva`."""
+
+    custom_block_material_name: str | None
+    custom_block_depth: float | None
+    custom_block_x_position: float | None
+    custom_block_z_position: float | None
+    def as_dict(self) -> FoundationKivaBlocksItem: ...  # type: ignore[override]
+
+class FoundationKivaBlocksItem(TypedDict, total=False):
+    """One group of :class:`FoundationKivaBlocksGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     custom_block_material_name: str | None
     custom_block_depth: float | None
@@ -8631,6 +8814,11 @@ class AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup(_TypedExtensible
     @surface_segment_exposed.setter
     def surface_segment_exposed(self, value: Literal["No", "Yes"] | None) -> None: ...
 
+class AnySurfacePropertyExposedFoundationPerimeterSurfacesItem(TypedDict, total=False):
+    """One group of :class:`AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_segment_exposed: Literal["No", "Yes"] | None
+
 class AnySurfacePropertyExposedFoundationPerimeter(_TypedIDFObject):
     """``SurfaceProperty:ExposedFoundationPerimeter`` as every supported EnergyPlus version declares it."""
 
@@ -8656,10 +8844,16 @@ class AnySurfacePropertyExposedFoundationPerimeter(_TypedIDFObject):
 class _AnySurfacePropertyExposedFoundationPerimeterFields(
     _SurfacePropertyExposedFoundationPerimeterCommonFields, total=False
 ):
-    surfaces: list[Any]
+    surfaces: list[AnySurfacePropertyExposedFoundationPerimeterSurfacesItem]
 
 class SurfacePropertyExposedFoundationPerimeterSurfacesGroup(AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup):
     """One surfaces group inside :class:`SurfacePropertyExposedFoundationPerimeter`."""
+
+    surface_segment_exposed: Literal["", "No", "Yes"] | None
+    def as_dict(self) -> SurfacePropertyExposedFoundationPerimeterSurfacesItem: ...  # type: ignore[override]
+
+class SurfacePropertyExposedFoundationPerimeterSurfacesItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertyExposedFoundationPerimeterSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_segment_exposed: Literal["", "No", "Yes"] | None
 
@@ -8679,7 +8873,7 @@ class SurfacePropertyExposedFoundationPerimeter(AnySurfacePropertyExposedFoundat
 class _SurfacePropertyExposedFoundationPerimeterFields(
     _SurfacePropertyExposedFoundationPerimeterCommonFields, total=False
 ):
-    surfaces: list[Any]
+    surfaces: list[SurfacePropertyExposedFoundationPerimeterSurfacesItem]
 
 class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections(_TypedIDFObject):
     """Options to change the individual convection model equations for dynamic selection when using AdaptiveConvectiongAlgor..."""
@@ -11044,6 +11238,12 @@ class SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup(_TypedExtensibleGro
     """One surface group inside :class:`SurfacePropertyExteriorNaturalVentedCavity`."""
 
     surface_name: str | None
+    def as_dict(self) -> SurfacePropertyExteriorNaturalVentedCavitySurfaceItem: ...  # type: ignore[override]
+
+class SurfacePropertyExteriorNaturalVentedCavitySurfaceItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
 
 class SurfacePropertyExteriorNaturalVentedCavity(_TypedIDFObject):
     """Used to describe the decoupled layer, or baffle, and the characteristics of the cavity and openings for naturally ven..."""
@@ -11092,7 +11292,7 @@ class _SurfacePropertyExteriorNaturalVentedCavityFields(TypedDict, total=False):
     )
     effectiveness_for_perforations_with_respect_to_wind: float | None
     discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None
-    surface: list[Any]
+    surface: list[SurfacePropertyExteriorNaturalVentedCavitySurfaceItem]
 
 class SurfacePropertySolarIncidentInside(_TypedIDFObject):
     """Used to provide incident solar radiation on the inside of the surface. Reference surface-construction pair and if tha..."""
@@ -11191,10 +11391,18 @@ class _ZonePropertyLocalEnvironmentFields(TypedDict, total=False):
 class _SurfacePropertySurroundingSurfacesCommonFields(TypedDict, total=False):
     sky_temperature_schedule_name: str | None
     ground_temperature_schedule_name: str | None
-    surfaces: list[Any]
+    surfaces: list[SurfacePropertySurroundingSurfacesSurfacesItem]
 
 class SurfacePropertySurroundingSurfacesSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`AnySurfacePropertySurroundingSurfaces`."""
+
+    surrounding_surface_name: str | None
+    surrounding_surface_view_factor: float | None
+    surrounding_surface_temperature_schedule_name: str | None
+    def as_dict(self) -> SurfacePropertySurroundingSurfacesSurfacesItem: ...  # type: ignore[override]
+
+class SurfacePropertySurroundingSurfacesSurfacesItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertySurroundingSurfacesSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surrounding_surface_name: str | None
     surrounding_surface_view_factor: float | None
@@ -11249,6 +11457,15 @@ class SurfacePropertyGroundSurfacesGroundSurfacesGroup(_TypedExtensibleGroup):
     ground_surface_view_factor: float | None
     ground_surface_temperature_schedule_name: str | None
     ground_surface_reflectance_schedule_name: str | None
+    def as_dict(self) -> SurfacePropertyGroundSurfacesGroundSurfacesItem: ...  # type: ignore[override]
+
+class SurfacePropertyGroundSurfacesGroundSurfacesItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertyGroundSurfacesGroundSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    ground_surface_name: str | None
+    ground_surface_view_factor: float | None
+    ground_surface_temperature_schedule_name: str | None
+    ground_surface_reflectance_schedule_name: str | None
 
 class SurfacePropertyGroundSurfaces(_TypedIDFObject):
     """This object defines a list of ground surfaces for use with an exterior surface.; Since: 22.2.0"""
@@ -11261,7 +11478,7 @@ class SurfacePropertyGroundSurfaces(_TypedIDFObject):
     _creation_signature: _c11.SurfacePropertyGroundSurfaces
 
 class _SurfacePropertyGroundSurfacesFields(TypedDict, total=False):
-    ground_surfaces: list[Any]
+    ground_surfaces: list[SurfacePropertyGroundSurfacesGroundSurfacesItem]
 
 class ComplexFenestrationPropertySolarAbsorbedLayers(_TypedIDFObject):
     """Used to provide solar radiation absorbed in fenestration layers. References surface-construction pair and if that pai..."""
@@ -11297,10 +11514,18 @@ class _ComplexFenestrationPropertySolarAbsorbedLayersFields(TypedDict, total=Fal
     layer_5_solar_radiation_absorbed_schedule_name: str | None
 
 class _ZonePropertyUserViewFactorsBySurfaceNameCommonFields(TypedDict, total=False):
-    view_factors: list[Any]
+    view_factors: list[ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem]
 
 class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup(_TypedExtensibleGroup):
     """One view_factors group inside :class:`AnyZonePropertyUserViewFactorsBySurfaceName`."""
+
+    from_surface: str | None
+    to_surface: str | None
+    view_factor: float | None
+    def as_dict(self) -> ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem: ...  # type: ignore[override]
+
+class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem(TypedDict, total=False):
+    """One group of :class:`ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     from_surface: str | None
     to_surface: str | None
@@ -11347,6 +11572,13 @@ class ZoneMRTCalculationPeopleNamesGroup(_TypedExtensibleGroup):
 
     people_name: str | None
     mrt_weighting_factor: float | None
+    def as_dict(self) -> ZoneMRTCalculationPeopleNamesItem: ...  # type: ignore[override]
+
+class ZoneMRTCalculationPeopleNamesItem(TypedDict, total=False):
+    """One group of :class:`ZoneMRTCalculationPeopleNamesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    people_name: str | None
+    mrt_weighting_factor: float | None
 
 class ZoneMRTCalculation(_TypedIDFObject):
     """Blends MRT values calculated for People instances into one Zone MRT. The weighting factors must sum to a value from 0...; Since: 26.2.0"""
@@ -11362,7 +11594,7 @@ class ZoneMRTCalculation(_TypedIDFObject):
 
 class _ZoneMRTCalculationFields(TypedDict, total=False):
     zone_name: str | None
-    people_names: list[Any]
+    people_names: list[ZoneMRTCalculationPeopleNamesItem]
 
 class GroundHeatTransferControl(_TypedIDFObject):
     """Object determines if the Slab and Basement preprocessors are going to be executed."""
@@ -12255,10 +12487,17 @@ class _RoomAirTemperaturePatternNondimensionalHeightCommonFields(TypedDict, tota
     thermostat_offset: float | None
     return_air_offset: float | None
     exhaust_air_offset: float | None
-    pairs: list[Any]
+    pairs: list[RoomAirTemperaturePatternNondimensionalHeightPairsItem]
 
 class RoomAirTemperaturePatternNondimensionalHeightPairsGroup(_TypedExtensibleGroup):
     """One pairs group inside :class:`AnyRoomAirTemperaturePatternNondimensionalHeight`."""
+
+    pair_zeta_nondimensional_height: float | None
+    pair_delta_adjacent_air_temperature: float | None
+    def as_dict(self) -> RoomAirTemperaturePatternNondimensionalHeightPairsItem: ...  # type: ignore[override]
+
+class RoomAirTemperaturePatternNondimensionalHeightPairsItem(TypedDict, total=False):
+    """One group of :class:`RoomAirTemperaturePatternNondimensionalHeightPairsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     pair_zeta_nondimensional_height: float | None
     pair_delta_adjacent_air_temperature: float | None
@@ -12313,10 +12552,17 @@ class _RoomAirTemperaturePatternSurfaceMappingCommonFields(TypedDict, total=Fals
     thermostat_offset: float | None
     return_air_offset: float | None
     exhaust_air_offset: float | None
-    surface_deltas: list[Any]
+    surface_deltas: list[RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem]
 
 class RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup(_TypedExtensibleGroup):
     """One surface_deltas group inside :class:`AnyRoomAirTemperaturePatternSurfaceMapping`."""
+
+    surface_name_pair: str | None
+    delta_adjacent_air_temperature_pair: float | None
+    def as_dict(self) -> RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem: ...  # type: ignore[override]
+
+class RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem(TypedDict, total=False):
+    """One group of :class:`RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name_pair: str | None
     delta_adjacent_air_temperature_pair: float | None
@@ -12641,6 +12887,12 @@ class RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup(_TypedExtensible
     """One surfaces group inside :class:`RoomAirNodeAirflowNetworkAdjacentSurfaceList`."""
 
     surface_name: str | None
+    def as_dict(self) -> RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesItem: ...  # type: ignore[override]
+
+class RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesItem(TypedDict, total=False):
+    """One group of :class:`RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
 
 class RoomAirNodeAirflowNetworkAdjacentSurfaceList(_TypedIDFObject):
     surfaces: ExtensibleList[RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup]
@@ -12654,7 +12906,7 @@ class RoomAirNodeAirflowNetworkAdjacentSurfaceList(_TypedIDFObject):
     _creation_signature: _c1.RoomAirNodeAirflowNetworkAdjacentSurfaceList
 
 class _RoomAirNodeAirflowNetworkAdjacentSurfaceListFields(TypedDict, total=False):
-    surfaces: list[Any]
+    surfaces: list[RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesItem]
 
 class _RoomAirNodeAirflowNetworkInternalGainsCommonFields(TypedDict, total=False): ...
 
@@ -12769,6 +13021,62 @@ class AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup(_TypedExtensibleGroup)
     internal_gain_object_name: str | None
     fraction_of_gains_to_node: float | None
 
+class AnyRoomAirNodeAirflowNetworkInternalGainsGainsItem(TypedDict, total=False):
+    """One group of :class:`AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    internal_gain_object_type: (
+        Literal[
+            "AirTerminal:SingleDuct:UserDefined",
+            "Coil:UserDefined",
+            "DaylightingDevice:Tubular",
+            "ElectricEquipment",
+            "ElectricLoadCenter:Inverter:FunctionOfPower",
+            "ElectricLoadCenter:Inverter:LookUpTable",
+            "ElectricLoadCenter:Inverter:Simple",
+            "ElectricLoadCenter:Storage:Battery",
+            "ElectricLoadCenter:Storage:Converter",
+            "ElectricLoadCenter:Storage:Simple",
+            "ElectricLoadCenter:Transformer",
+            "GasEquipment",
+            "Generator:FuelCell",
+            "Generator:MicroCHP",
+            "HeaderedPumps:ConstantSpeed",
+            "HeaderedPumps:VariableSpeed",
+            "HotWaterEquipment",
+            "Lights",
+            "OtherEquipment",
+            "People",
+            "Pipe:Indoor",
+            "PlantComponent:UserDefined",
+            "Pump:ConstantSpeed",
+            "Pump:VariableSpeed",
+            "Pump:VariableSpeed:Condensate",
+            "Refrigeration:Case",
+            "Refrigeration:CompressorRack",
+            "Refrigeration:SecondarySystem:Pipe",
+            "Refrigeration:SecondarySystem:Receiver",
+            "Refrigeration:System:Condenser:AirCooled",
+            "Refrigeration:System:SuctionPipe",
+            "Refrigeration:TranscriticalSystem:GasCooler:AirCooled",
+            "Refrigeration:TranscriticalSystem:SuctionPipeLT",
+            "Refrigeration:TranscriticalSystem:SuctionPipeMT",
+            "Refrigeration:WalkIn",
+            "SteamEquipment",
+            "ThermalStorage:ChilledWater:Mixed",
+            "ThermalStorage:ChilledWater:Stratified",
+            "WaterHeater:Mixed",
+            "WaterHeater:Stratified",
+            "WaterUse:Equipment",
+            "ZoneBaseboard:OutdoorTemperatureControlled",
+            "ZoneContaminantSourceAndSink:CarbonDioxide",
+            "ZoneContaminantSourceAndSink:GenericContaminant",
+            "ZoneHVAC:ForcedAir:UserDefined",
+        ]
+        | None
+    )
+    internal_gain_object_name: str | None
+    fraction_of_gains_to_node: float | None
+
 class AnyRoomAirNodeAirflowNetworkInternalGains(_TypedIDFObject):
     """``RoomAir:Node:AirflowNetwork:InternalGains`` as every supported EnergyPlus version declares it."""
 
@@ -12785,10 +13093,68 @@ class AnyRoomAirNodeAirflowNetworkInternalGains(_TypedIDFObject):
 class _AnyRoomAirNodeAirflowNetworkInternalGainsFields(
     _RoomAirNodeAirflowNetworkInternalGainsCommonFields, total=False
 ):
-    gains: list[Any]
+    gains: list[AnyRoomAirNodeAirflowNetworkInternalGainsGainsItem]
 
 class RoomAirNodeAirflowNetworkInternalGainsGainsGroup(AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup):
     """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains`."""
+
+    internal_gain_object_type: (
+        Literal[
+            "AirTerminal:SingleDuct:UserDefined",
+            "Coil:UserDefined",
+            "DaylightingDevice:Tubular",
+            "ElectricEquipment",
+            "ElectricLoadCenter:Inverter:FunctionOfPower",
+            "ElectricLoadCenter:Inverter:LookUpTable",
+            "ElectricLoadCenter:Inverter:Simple",
+            "ElectricLoadCenter:Storage:Battery",
+            "ElectricLoadCenter:Storage:Converter",
+            "ElectricLoadCenter:Storage:LiIonNMCBattery",
+            "ElectricLoadCenter:Storage:Simple",
+            "ElectricLoadCenter:Transformer",
+            "GasEquipment",
+            "Generator:FuelCell",
+            "Generator:MicroCHP",
+            "HeaderedPumps:ConstantSpeed",
+            "HeaderedPumps:VariableSpeed",
+            "HotWaterEquipment",
+            "Lights",
+            "OtherEquipment",
+            "People",
+            "Pipe:Indoor",
+            "PlantComponent:UserDefined",
+            "Pump:ConstantSpeed",
+            "Pump:VariableSpeed",
+            "Pump:VariableSpeed:Condensate",
+            "Refrigeration:Case",
+            "Refrigeration:CompressorRack",
+            "Refrigeration:SecondarySystem:Pipe",
+            "Refrigeration:SecondarySystem:Receiver",
+            "Refrigeration:System:Condenser:AirCooled",
+            "Refrigeration:System:SuctionPipe",
+            "Refrigeration:TranscriticalSystem:GasCooler:AirCooled",
+            "Refrigeration:TranscriticalSystem:SuctionPipeLT",
+            "Refrigeration:TranscriticalSystem:SuctionPipeMT",
+            "Refrigeration:WalkIn",
+            "SteamEquipment",
+            "ThermalStorage:ChilledWater:Mixed",
+            "ThermalStorage:ChilledWater:Stratified",
+            "WaterHeater:Mixed",
+            "WaterHeater:Stratified",
+            "WaterUse:Equipment",
+            "ZoneBaseboard:OutdoorTemperatureControlled",
+            "ZoneContaminantSourceAndSink:CarbonDioxide",
+            "ZoneContaminantSourceAndSink:GenericContaminant",
+            "ZoneHVAC:ForcedAir:UserDefined",
+        ]
+        | None
+    )
+    internal_gain_object_name: str | None
+    fraction_of_gains_to_node: float | None
+    def as_dict(self) -> RoomAirNodeAirflowNetworkInternalGainsGainsItem: ...  # type: ignore[override]
+
+class RoomAirNodeAirflowNetworkInternalGainsGainsItem(TypedDict, total=False):
+    """One group of :class:`RoomAirNodeAirflowNetworkInternalGainsGainsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     internal_gain_object_type: (
         Literal[
@@ -12855,7 +13221,7 @@ class RoomAirNodeAirflowNetworkInternalGains(AnyRoomAirNodeAirflowNetworkInterna
     _creation_signature: _c19.RoomAirNodeAirflowNetworkInternalGains
 
 class _RoomAirNodeAirflowNetworkInternalGainsFields(_RoomAirNodeAirflowNetworkInternalGainsCommonFields, total=False):
-    gains: list[Any]
+    gains: list[RoomAirNodeAirflowNetworkInternalGainsGainsItem]
 
 class _RoomAirNodeAirflowNetworkHVACEquipmentCommonFields(TypedDict, total=False): ...
 
@@ -12955,6 +13321,53 @@ class AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup(_TypedExt
     fraction_of_output_or_supply_air_from_hvac_equipment: float | None
     fraction_of_input_or_return_air_to_hvac_equipment: float | None
 
+class AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem(TypedDict, total=False):
+    """One group of :class:`AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zonehvac_or_air_terminal_equipment_object_type: (
+        Literal[
+            "AirLoopHVACReturnAir",
+            "AirTerminal:DualDuct:ConstantVolume",
+            "AirTerminal:DualDuct:VAV",
+            "AirTerminal:DualDuct:VAV:OutdoorAir",
+            "AirTerminal:SingleDuct:ConstantVolume:CooledBeam",
+            "AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction",
+            "AirTerminal:SingleDuct:ConstantVolume:Reheat",
+            "AirTerminal:SingleDuct:ParallelPIU:Reheat",
+            "AirTerminal:SingleDuct:SeriesPIU:Reheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat",
+            "AirTerminal:SingleDuct:VAV:NoReheat",
+            "AirTerminal:SingleDuct:VAV:Reheat",
+            "AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan",
+            "Fan:ZoneExhaust",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zonehvac_or_air_terminal_equipment_object_name: str | None
+    fraction_of_output_or_supply_air_from_hvac_equipment: float | None
+    fraction_of_input_or_return_air_to_hvac_equipment: float | None
+
 class AnyRoomAirNodeAirflowNetworkHVACEquipment(_TypedIDFObject):
     """``RoomAir:Node:AirflowNetwork:HVACEquipment`` as every supported EnergyPlus version declares it."""
 
@@ -12971,12 +13384,63 @@ class AnyRoomAirNodeAirflowNetworkHVACEquipment(_TypedIDFObject):
 class _AnyRoomAirNodeAirflowNetworkHVACEquipmentFields(
     _RoomAirNodeAirflowNetworkHVACEquipmentCommonFields, total=False
 ):
-    equipment_fractions: list[Any]
+    equipment_fractions: list[AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem]
 
 class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup(
     AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup
 ):
     """One equipment_fractions group inside :class:`RoomAirNodeAirflowNetworkHVACEquipment`."""
+
+    zonehvac_or_air_terminal_equipment_object_type: (
+        Literal[
+            "AirLoopHVACReturnAir",
+            "AirTerminal:DualDuct:ConstantVolume",
+            "AirTerminal:DualDuct:VAV",
+            "AirTerminal:DualDuct:VAV:OutdoorAir",
+            "AirTerminal:SingleDuct:ConstantVolume:CooledBeam",
+            "AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction",
+            "AirTerminal:SingleDuct:ConstantVolume:NoReheat",
+            "AirTerminal:SingleDuct:ConstantVolume:Reheat",
+            "AirTerminal:SingleDuct:ParallelPIU:Reheat",
+            "AirTerminal:SingleDuct:SeriesPIU:Reheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat",
+            "AirTerminal:SingleDuct:VAV:NoReheat",
+            "AirTerminal:SingleDuct:VAV:Reheat",
+            "AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan",
+            "Fan:ZoneExhaust",
+            "WaterHeater:HeatPump:PumpedCondenser",
+            "WaterHeater:HeatPump:WrappedCondenser",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zonehvac_or_air_terminal_equipment_object_name: str | None
+    fraction_of_output_or_supply_air_from_hvac_equipment: float | None
+    fraction_of_input_or_return_air_to_hvac_equipment: float | None
+    def as_dict(self) -> RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem: ...  # type: ignore[override]
+
+class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem(TypedDict, total=False):
+    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     zonehvac_or_air_terminal_equipment_object_type: (
         Literal[
@@ -13036,10 +13500,16 @@ class RoomAirNodeAirflowNetworkHVACEquipment(AnyRoomAirNodeAirflowNetworkHVACEqu
     _creation_signature: _c30.RoomAirNodeAirflowNetworkHVACEquipment
 
 class _RoomAirNodeAirflowNetworkHVACEquipmentFields(_RoomAirNodeAirflowNetworkHVACEquipmentCommonFields, total=False):
-    equipment_fractions: list[Any]
+    equipment_fractions: list[RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem]
 
 class RoomAirSettingsAirflowNetworkNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`RoomAirSettingsAirflowNetwork`."""
+
+    roomairflownetwork_node_name: str | None
+    def as_dict(self) -> RoomAirSettingsAirflowNetworkNodesItem: ...  # type: ignore[override]
+
+class RoomAirSettingsAirflowNetworkNodesItem(TypedDict, total=False):
+    """One group of :class:`RoomAirSettingsAirflowNetworkNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     roomairflownetwork_node_name: str | None
 
@@ -13059,7 +13529,7 @@ class RoomAirSettingsAirflowNetwork(_TypedIDFObject):
 class _RoomAirSettingsAirflowNetworkFields(TypedDict, total=False):
     zone_name: str | None
     control_point_roomairflownetwork_node_name: str | None
-    nodes: list[Any]
+    nodes: list[RoomAirSettingsAirflowNetworkNodesItem]
 
 class _PeopleCommonFields(TypedDict, total=False):
     number_of_people_schedule_name: str | None
@@ -13448,6 +13918,13 @@ class ComfortViewFactorAnglesAnglesGroup(_TypedExtensibleGroup):
 
     surface_name: str | None
     angle_factor: float | None
+    def as_dict(self) -> ComfortViewFactorAnglesAnglesItem: ...  # type: ignore[override]
+
+class ComfortViewFactorAnglesAnglesItem(TypedDict, total=False):
+    """One group of :class:`ComfortViewFactorAnglesAnglesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
+    angle_factor: float | None
 
 class ComfortViewFactorAngles(AnyComfortViewFactorAngles):
     """Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions..."""
@@ -13460,7 +13937,7 @@ class ComfortViewFactorAngles(AnyComfortViewFactorAngles):
     _creation_signature: _c6.ComfortViewFactorAngles
 
 class _ComfortViewFactorAnglesFields(_ComfortViewFactorAnglesCommonFields, total=False):
-    angles: list[Any]
+    angles: list[ComfortViewFactorAnglesAnglesItem]
 
 class _LightsCommonFields(TypedDict, total=False):
     schedule_name: str | None
@@ -14975,6 +15452,12 @@ class AnyDaylightingControlsControlDataGroup(_TypedExtensibleGroup):
     daylighting_reference_point_name: str | None
     illuminance_setpoint_at_reference_point: float | None
 
+class AnyDaylightingControlsControlDataItem(TypedDict, total=False):
+    """One group of :class:`AnyDaylightingControlsControlDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    daylighting_reference_point_name: str | None
+    illuminance_setpoint_at_reference_point: float | None
+
 class AnyDaylightingControls(_TypedIDFObject):
     """``Daylighting:Controls`` as every supported EnergyPlus version declares it."""
 
@@ -15009,10 +15492,18 @@ class AnyDaylightingControls(_TypedIDFObject):
 
 class _AnyDaylightingControlsFields(_DaylightingControlsCommonFields, total=False):
     number_of_stepped_control_steps: int | None
-    control_data: list[Any]
+    control_data: list[AnyDaylightingControlsControlDataItem]
 
 class DaylightingControlsControlDataGroup(AnyDaylightingControlsControlDataGroup):
     """One control_data group inside :class:`DaylightingControls`."""
+
+    daylighting_reference_point_name: str | None
+    fraction_of_lights_controlled_by_reference_point: float | None
+    illuminance_setpoint_at_reference_point: float | None
+    def as_dict(self) -> DaylightingControlsControlDataItem: ...  # type: ignore[override]
+
+class DaylightingControlsControlDataItem(TypedDict, total=False):
+    """One group of :class:`DaylightingControlsControlDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     daylighting_reference_point_name: str | None
     fraction_of_lights_controlled_by_reference_point: float | None
@@ -15035,7 +15526,7 @@ class DaylightingControls(AnyDaylightingControls):
 class _DaylightingControlsFields(_DaylightingControlsCommonFields, total=False):
     zone_or_space_name: str | None
     number_of_stepped_control_steps: int | None
-    control_data: list[Any]
+    control_data: list[DaylightingControlsControlDataItem]
 
 class _DaylightingReferencePointCommonFields(TypedDict, total=False):
     x_coordinate_of_reference_point: float | None
@@ -15101,6 +15592,13 @@ class DaylightingDeviceTubularTransitionLengthsGroup(_TypedExtensibleGroup):
 
     transition_zone_name: str | None
     transition_zone_length: float | None
+    def as_dict(self) -> DaylightingDeviceTubularTransitionLengthsItem: ...  # type: ignore[override]
+
+class DaylightingDeviceTubularTransitionLengthsItem(TypedDict, total=False):
+    """One group of :class:`DaylightingDeviceTubularTransitionLengthsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    transition_zone_name: str | None
+    transition_zone_length: float | None
 
 class DaylightingDeviceTubular(_TypedIDFObject):
     """Defines a tubular daylighting device (TDD) consisting of three components: a dome, a pipe, and a diffuser. The dome a..."""
@@ -15130,7 +15628,7 @@ class _DaylightingDeviceTubularFields(TypedDict, total=False):
     diameter: float | None
     total_length: float | None
     effective_thermal_resistance: float | None
-    transition_lengths: list[Any]
+    transition_lengths: list[DaylightingDeviceTubularTransitionLengthsItem]
 
 class DaylightingDeviceShelf(_TypedIDFObject):
     """Defines a daylighting which can have an inside shelf, an outside shelf, or both. The inside shelf is defined as a bui..."""
@@ -17698,6 +18196,13 @@ class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup(_TypedExtensibleGro
 
     surface_name: str | None
     surface_view_factor: float | None
+    def as_dict(self) -> AirflowNetworkDistributionDuctViewFactorsSurfacesItem: ...  # type: ignore[override]
+
+class AirflowNetworkDistributionDuctViewFactorsSurfacesItem(TypedDict, total=False):
+    """One group of :class:`AirflowNetworkDistributionDuctViewFactorsSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
+    surface_view_factor: float | None
 
 class AirflowNetworkDistributionDuctViewFactors(_TypedIDFObject):
     """This object is used to allow user-defined view factors to be used for duct-surface radiation calculations. All surfac..."""
@@ -17721,7 +18226,7 @@ class _AirflowNetworkDistributionDuctViewFactorsFields(TypedDict, total=False):
     linkage_name: str | None
     duct_surface_exposure_fraction: float | None
     duct_surface_emittance: float | None
-    surfaces: list[Any]
+    surfaces: list[AirflowNetworkDistributionDuctViewFactorsSurfacesItem]
 
 class AirflowNetworkDistributionDuctSizing(_TypedIDFObject):
     """This object defines required parameters for duct sizing in an Airflow Network simulation. To activate duct sizing, se...; Since: 22.2.0"""
@@ -22891,6 +23396,13 @@ class DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup(_TypedExtensibleGrou
 
     space_name: str | None
     space_design_specification_outdoor_air_object_name: str | None
+    def as_dict(self) -> DesignSpecificationOutdoorAirSpaceListSpaceSpecsItem: ...  # type: ignore[override]
+
+class DesignSpecificationOutdoorAirSpaceListSpaceSpecsItem(TypedDict, total=False):
+    """One group of :class:`DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    space_name: str | None
+    space_design_specification_outdoor_air_object_name: str | None
 
 class DesignSpecificationOutdoorAirSpaceList(_TypedIDFObject):
     """Defines a list of DesignSpecification:OutdoorAir names which can be referenced as a group. The DesignSpecification:Ou...; Since: 9.6.0"""
@@ -22903,7 +23415,7 @@ class DesignSpecificationOutdoorAirSpaceList(_TypedIDFObject):
     _creation_signature: _c6.DesignSpecificationOutdoorAirSpaceList
 
 class _DesignSpecificationOutdoorAirSpaceListFields(TypedDict, total=False):
-    space_specs: list[Any]
+    space_specs: list[DesignSpecificationOutdoorAirSpaceListSpaceSpecsItem]
 
 class DesignSpecificationZoneAirDistribution(_TypedIDFObject):
     """This object is used to describe zone air distribution in terms of air distribution effectiveness and secondary recirc..."""
@@ -25483,10 +25995,40 @@ class _ZoneHVACHybridUnitaryHVACCommonFields(TypedDict, total=False):
     mode_0_system_water_use_lookup_table_name: str | None
     mode_0_outdoor_air_fraction: float | None
     mode_0_supply_air_mass_flow_rate_ratio: float | None
-    modes: list[Any]
+    modes: list[ZoneHVACHybridUnitaryHVACModesItem]
 
 class ZoneHVACHybridUnitaryHVACModesGroup(_TypedExtensibleGroup):
     """One modes group inside :class:`AnyZoneHVACHybridUnitaryHVAC`."""
+
+    mode_name: str | None
+    mode_supply_air_temperature_lookup_table_name: str | None
+    mode_supply_air_humidity_ratio_lookup_table_name: str | None
+    mode_system_electric_power_lookup_table_name: str | None
+    mode_supply_fan_electric_power_lookup_table_name: str | None
+    mode_external_static_pressure_lookup_table_name: str | None
+    mode_system_second_fuel_consumption_lookup_table_name: str | None
+    mode_system_third_fuel_consumption_lookup_table_name: str | None
+    mode_system_water_use_lookup_table_name: str | None
+    mode_minimum_outdoor_air_temperature: float | None
+    mode_maximum_outdoor_air_temperature: float | None
+    mode_minimum_outdoor_air_humidity_ratio: float | None
+    mode_maximum_outdoor_air_humidity_ratio: float | None
+    mode_minimum_outdoor_air_relative_humidity: float | None
+    mode_maximum_outdoor_air_relative_humidity: float | None
+    mode_minimum_return_air_temperature: float | None
+    mode_maximum_return_air_temperature: float | None
+    mode_minimum_return_air_humidity_ratio: float | None
+    mode_maximum_return_air_humidity_ratio: float | None
+    mode_minimum_return_air_relative_humidity: float | None
+    mode_maximum_return_air_relative_humidity: float | None
+    mode_minimum_outdoor_air_fraction: float | None
+    mode_maximum_outdoor_air_fraction: float | None
+    mode_minimum_supply_air_mass_flow_rate_ratio: float | None
+    mode_maximum_supply_air_mass_flow_rate_ratio: float | None
+    def as_dict(self) -> ZoneHVACHybridUnitaryHVACModesItem: ...  # type: ignore[override]
+
+class ZoneHVACHybridUnitaryHVACModesItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACHybridUnitaryHVACModesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     mode_name: str | None
     mode_supply_air_temperature_lookup_table_name: str | None
@@ -26956,10 +27498,17 @@ class _ZoneHVACBaseboardRadiantConvectiveWaterCommonFields(TypedDict, total=Fals
     rated_water_mass_flow_rate: float | None
     heating_design_capacity: float | Literal["", "Autosize"] | None
     maximum_water_flow_rate: float | Literal["Autosize"] | None
-    surface_fractions: list[Any]
+    surface_fractions: list[ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem]
 
 class ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`AnyZoneHVACBaseboardRadiantConvectiveWater`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
@@ -27053,10 +27602,17 @@ class _ZoneHVACBaseboardRadiantConvectiveSteamCommonFields(TypedDict, total=Fals
     heating_design_capacity: float | Literal["", "Autosize"] | None
     degree_of_subcooling: float | None
     maximum_steam_flow_rate: float | Literal["Autosize"] | None
-    surface_fractions: list[Any]
+    surface_fractions: list[ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem]
 
 class ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`AnyZoneHVACBaseboardRadiantConvectiveSteam`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
@@ -27110,6 +27666,13 @@ class ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup(_TypedExte
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
 
 class ZoneHVACBaseboardRadiantConvectiveElectric(_TypedIDFObject):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
@@ -27153,7 +27716,7 @@ class _ZoneHVACBaseboardRadiantConvectiveElectricFields(TypedDict, total=False):
     efficiency: float | None
     fraction_radiant: float | None
     fraction_of_radiant_energy_incident_on_people: float | None
-    surface_fractions: list[Any]
+    surface_fractions: list[ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsItem]
 
 class _ZoneHVACCoolingPanelRadiantConvectiveWaterCommonFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -27176,10 +27739,17 @@ class _ZoneHVACCoolingPanelRadiantConvectiveWaterCommonFields(TypedDict, total=F
     condensation_control_dewpoint_offset: float | None
     fraction_radiant: float | None
     fraction_of_radiant_energy_incident_on_people: float | None
-    surface_fractions: list[Any]
+    surface_fractions: list[ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem]
 
 class ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`AnyZoneHVACCoolingPanelRadiantConvectiveWater`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
@@ -27873,6 +28443,13 @@ class ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup(_TypedExten
 
     surface_name: str | None
     flow_fraction_for_surface: float | None
+    def as_dict(self) -> ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
+    flow_fraction_for_surface: float | None
 
 class ZoneHVACLowTemperatureRadiantSurfaceGroup(_TypedIDFObject):
     """This is used to allow the coordinate control of several radiant system surfaces. Note that the following flow fractio..."""
@@ -27888,7 +28465,7 @@ class ZoneHVACLowTemperatureRadiantSurfaceGroup(_TypedIDFObject):
     _creation_signature: _c24.ZoneHVACLowTemperatureRadiantSurfaceGroup
 
 class _ZoneHVACLowTemperatureRadiantSurfaceGroupFields(TypedDict, total=False):
-    surface_fractions: list[Any]
+    surface_fractions: list[ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsItem]
 
 class _ZoneHVACHighTemperatureRadiantCommonFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -27919,10 +28496,17 @@ class _ZoneHVACHighTemperatureRadiantCommonFields(TypedDict, total=False):
     heating_throttling_range: float | None
     heating_setpoint_temperature_schedule_name: str | None
     fraction_of_radiant_energy_incident_on_people: float | None
-    surface_fractions: list[Any]
+    surface_fractions: list[ZoneHVACHighTemperatureRadiantSurfaceFractionsItem]
 
 class ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`AnyZoneHVACHighTemperatureRadiant`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACHighTemperatureRadiantSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACHighTemperatureRadiantSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
@@ -28157,6 +28741,18 @@ class ZoneHVACVentilatedSlabSlabGroupDataGroup(_TypedExtensibleGroup):
     core_numbers_for_surface: float | None
     slab_inlet_node_name_for_surface: str | None
     slab_outlet_node_name_for_surface: str | None
+    def as_dict(self) -> ZoneHVACVentilatedSlabSlabGroupDataItem: ...  # type: ignore[override]
+
+class ZoneHVACVentilatedSlabSlabGroupDataItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACVentilatedSlabSlabGroupDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zone_name: str | None
+    surface_name: str | None
+    core_diameter_for_surface: float | None
+    core_length_for_surface: float | None
+    core_numbers_for_surface: float | None
+    slab_inlet_node_name_for_surface: str | None
+    slab_outlet_node_name_for_surface: str | None
 
 class ZoneHVACVentilatedSlabSlabGroup(_TypedIDFObject):
     """This is used to allow the coordinate control of several ventilated slab system surfaces. Note that the flow fractions..."""
@@ -28169,7 +28765,7 @@ class ZoneHVACVentilatedSlabSlabGroup(_TypedIDFObject):
     _creation_signature: _c29.ZoneHVACVentilatedSlabSlabGroup
 
 class _ZoneHVACVentilatedSlabSlabGroupFields(TypedDict, total=False):
-    data: list[Any]
+    data: list[ZoneHVACVentilatedSlabSlabGroupDataItem]
 
 class AirTerminalSingleDuctConstantVolumeReheat(_TypedIDFObject):
     """Central air system terminal unit, single duct, constant volume, with reheat coil (hot water, electric, gas, or steam)."""
@@ -29381,6 +29977,51 @@ class AnyZoneHVACEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     @zone_equipment_heating_or_no_load_sequence.setter
     def zone_equipment_heating_or_no_load_sequence(self, value: int | None) -> None: ...
 
+class AnyZoneHVACEquipmentListEquipmentItem(TypedDict, total=False):
+    """One group of :class:`AnyZoneHVACEquipmentListEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zone_equipment_object_type: (
+        Literal[
+            "AirLoopHVAC:UnitarySystem",
+            "Fan:ZoneExhaust",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "WaterHeater:HeatPump:PumpedCondenser",
+            "WaterHeater:HeatPump:WrappedCondenser",
+            "ZoneHVAC:AirDistributionUnit",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:EvaporativeCoolerUnit",
+            "ZoneHVAC:ForcedAir:UserDefined",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:HybridUnitaryHVAC",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+            "ZoneHVAC:LowTemperatureRadiant:Electric",
+            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zone_equipment_name: str | None
+    zone_equipment_cooling_sequence: int | None
+    zone_equipment_heating_or_no_load_sequence: int | None
+
 class AnyZoneHVACEquipmentList(_TypedIDFObject):
     """``ZoneHVAC:EquipmentList`` as every supported EnergyPlus version declares it."""
 
@@ -29394,10 +30035,58 @@ class AnyZoneHVACEquipmentList(_TypedIDFObject):
     _creation_signature: _c11.AnyZoneHVACEquipmentList
 
 class _AnyZoneHVACEquipmentListFields(_ZoneHVACEquipmentListCommonFields, total=False):
-    equipment: list[Any]
+    equipment: list[AnyZoneHVACEquipmentListEquipmentItem]
 
 class ZoneHVACEquipmentListEquipmentGroup(AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList`."""
+
+    zone_equipment_object_type: (
+        Literal[
+            "AirLoopHVAC:UnitarySystem",
+            "Fan:ZoneExhaust",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "WaterHeater:HeatPump:PumpedCondenser",
+            "WaterHeater:HeatPump:WrappedCondenser",
+            "ZoneHVAC:AirDistributionUnit",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:EvaporativeCoolerUnit",
+            "ZoneHVAC:ForcedAir:UserDefined",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:HybridUnitaryHVAC",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+            "ZoneHVAC:LowTemperatureRadiant:Electric",
+            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zone_equipment_name: str | None
+    zone_equipment_cooling_sequence: int | None
+    zone_equipment_heating_or_no_load_sequence: int | None
+    zone_equipment_sequential_cooling_fraction_schedule_name: str | None
+    zone_equipment_sequential_heating_fraction_schedule_name: str | None
+    def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem: ...  # type: ignore[override]
+
+class ZoneHVACEquipmentListEquipmentItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     zone_equipment_object_type: (
         Literal[
@@ -29454,7 +30143,7 @@ class ZoneHVACEquipmentList(AnyZoneHVACEquipmentList):
     _creation_signature: _c3.ZoneHVACEquipmentList
 
 class _ZoneHVACEquipmentListFields(_ZoneHVACEquipmentListCommonFields, total=False):
-    equipment: list[Any]
+    equipment: list[ZoneHVACEquipmentListEquipmentItem]
 
 class ZoneHVACEquipmentConnections(_TypedIDFObject):
     """Specifies the HVAC equipment connections for a zone. Node names are specified for the zone air node, air inlet nodes,..."""
@@ -29515,6 +30204,14 @@ class _SpaceHVACEquipmentConnectionsFields(TypedDict, total=False):
 
 class SpaceHVACZoneEquipmentSplitterSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceHVACZoneEquipmentSplitter`."""
+
+    space_name: str | None
+    space_fraction: float | Literal["", "Autosize"] | None
+    space_supply_node_name: str | None
+    def as_dict(self) -> SpaceHVACZoneEquipmentSplitterSpacesItem: ...  # type: ignore[override]
+
+class SpaceHVACZoneEquipmentSplitterSpacesItem(TypedDict, total=False):
+    """One group of :class:`SpaceHVACZoneEquipmentSplitterSpacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     space_name: str | None
     space_fraction: float | Literal["", "Autosize"] | None
@@ -29626,10 +30323,18 @@ class _SpaceHVACZoneEquipmentSplitterFields(TypedDict, total=False):
     space_fraction_method: (
         Literal["", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"] | None
     )
-    spaces: list[Any]
+    spaces: list[SpaceHVACZoneEquipmentSplitterSpacesItem]
 
 class SpaceHVACZoneEquipmentMixerSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceHVACZoneEquipmentMixer`."""
+
+    space_name: str | None
+    space_fraction: float | Literal["", "Autosize"] | None
+    space_node_name: str | None
+    def as_dict(self) -> SpaceHVACZoneEquipmentMixerSpacesItem: ...  # type: ignore[override]
+
+class SpaceHVACZoneEquipmentMixerSpacesItem(TypedDict, total=False):
+    """One group of :class:`SpaceHVACZoneEquipmentMixerSpacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     space_name: str | None
     space_fraction: float | Literal["", "Autosize"] | None
@@ -29659,10 +30364,17 @@ class _SpaceHVACZoneEquipmentMixerFields(TypedDict, total=False):
     space_fraction_method: (
         Literal["", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"] | None
     )
-    spaces: list[Any]
+    spaces: list[SpaceHVACZoneEquipmentMixerSpacesItem]
 
 class SpaceHVACZoneReturnMixerSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceHVACZoneReturnMixer`."""
+
+    space_name: str | None
+    space_return_air_node_name: str | None
+    def as_dict(self) -> SpaceHVACZoneReturnMixerSpacesItem: ...  # type: ignore[override]
+
+class SpaceHVACZoneReturnMixerSpacesItem(TypedDict, total=False):
+    """One group of :class:`SpaceHVACZoneReturnMixerSpacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     space_name: str | None
     space_return_air_node_name: str | None
@@ -29684,7 +30396,7 @@ class SpaceHVACZoneReturnMixer(_TypedIDFObject):
 class _SpaceHVACZoneReturnMixerFields(TypedDict, total=False):
     zone_name: str | None
     zone_return_air_node_name: str | None
-    spaces: list[Any]
+    spaces: list[SpaceHVACZoneReturnMixerSpacesItem]
 
 class _FanSystemModelCommonFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -29708,10 +30420,17 @@ class _FanSystemModelCommonFields(TypedDict, total=False):
     motor_loss_zone_name: str | None
     motor_loss_radiative_fraction: float | None
     end_use_subcategory: str | None
-    speed_fractions: list[Any]
+    speed_fractions: list[FanSystemModelSpeedFractionsItem]
 
 class FanSystemModelSpeedFractionsGroup(_TypedExtensibleGroup):
     """One speed_fractions group inside :class:`AnyFanSystemModel`."""
+
+    speed_flow_fraction: float | None
+    speed_electric_power_fraction: float | None
+    def as_dict(self) -> FanSystemModelSpeedFractionsItem: ...  # type: ignore[override]
+
+class FanSystemModelSpeedFractionsItem(TypedDict, total=False):
+    """One group of :class:`FanSystemModelSpeedFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     speed_flow_fraction: float | None
     speed_electric_power_fraction: float | None
@@ -37204,10 +37923,17 @@ class _AirLoopHVACUnitarySystemFields(_AirLoopHVACUnitarySystemCommonFields, tot
 class _UnitarySystemPerformanceMultispeedCommonFields(TypedDict, total=False):
     single_mode_operation: Literal["", "No", "Yes"] | None
     no_load_supply_air_flow_rate_ratio: float | None
-    flow_ratios: list[Any]
+    flow_ratios: list[UnitarySystemPerformanceMultispeedFlowRatiosItem]
 
 class UnitarySystemPerformanceMultispeedFlowRatiosGroup(_TypedExtensibleGroup):
     """One flow_ratios group inside :class:`AnyUnitarySystemPerformanceMultispeed`."""
+
+    heating_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
+    cooling_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
+    def as_dict(self) -> UnitarySystemPerformanceMultispeedFlowRatiosItem: ...  # type: ignore[override]
+
+class UnitarySystemPerformanceMultispeedFlowRatiosItem(TypedDict, total=False):
+    """One group of :class:`UnitarySystemPerformanceMultispeedFlowRatiosGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     heating_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
     cooling_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
@@ -38533,10 +39259,18 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlCommonFields(
     resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None
     maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None
     compressor_maximum_delta_pressure: float | None
-    loading_indices: list[Any]
+    loading_indices: list[AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem]
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup(_TypedExtensibleGroup):
     """One loading_indices group inside :class:`AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl`."""
+
+    compressor_speed_at_loading_index: float | None
+    loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
+    loading_index_compressor_power_multiplier_function_of_temperature_curve_name: str | None
+    def as_dict(self) -> AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem: ...  # type: ignore[override]
+
+class AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem(TypedDict, total=False):
+    """One group of :class:`AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     compressor_speed_at_loading_index: float | None
     loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
@@ -38727,10 +39461,18 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRCommonField
     compressor_maximum_delta_pressure: float | None
     compressor_inverter_efficiency: float | None
     compressor_evaporative_capacity_correction_factor: float | None
-    loading_indices: list[Any]
+    loading_indices: list[AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem]
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup(_TypedExtensibleGroup):
     """One loading_indices group inside :class:`AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlHR`."""
+
+    compressor_speed_at_loading_index: float | None
+    loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
+    loading_index_compressor_power_multiplier_function_of_temperature_curve_name: str | None
+    def as_dict(self) -> AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem: ...  # type: ignore[override]
+
+class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem(TypedDict, total=False):
+    """One group of :class:`AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     compressor_speed_at_loading_index: float | None
     loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
@@ -38901,6 +39643,12 @@ class ZoneTerminalUnitListTerminalUnitsGroup(_TypedExtensibleGroup):
     """One terminal_units group inside :class:`ZoneTerminalUnitList`."""
 
     zone_terminal_unit_name: str | None
+    def as_dict(self) -> ZoneTerminalUnitListTerminalUnitsItem: ...  # type: ignore[override]
+
+class ZoneTerminalUnitListTerminalUnitsItem(TypedDict, total=False):
+    """One group of :class:`ZoneTerminalUnitListTerminalUnitsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zone_terminal_unit_name: str | None
 
 class ZoneTerminalUnitList(_TypedIDFObject):
     """List of variable refrigerant flow (VRF) terminal units served by a given VRF condensing unit. See ZoneHVAC:TerminalUn..."""
@@ -38915,7 +39663,7 @@ class ZoneTerminalUnitList(_TypedIDFObject):
 
 class _ZoneTerminalUnitListFields(TypedDict, total=False):
     zone_terminal_unit_list_name: str | None
-    terminal_units: list[Any]
+    terminal_units: list[ZoneTerminalUnitListTerminalUnitsItem]
 
 class _ControllerWaterCoilCommonFields(TypedDict, total=False):
     control_variable: Literal["HumidityRatio", "Temperature", "TemperatureAndHumidityRatio"] | None
@@ -39107,6 +39855,12 @@ class AnyControllerMechanicalVentilationZoneSpecificationsGroup(_TypedExtensible
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
 
+class AnyControllerMechanicalVentilationZoneSpecificationsItem(TypedDict, total=False):
+    """One group of :class:`AnyControllerMechanicalVentilationZoneSpecificationsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    design_specification_outdoor_air_object_name: str | None
+    design_specification_zone_air_distribution_object_name: str | None
+
 class AnyControllerMechanicalVentilation(_TypedIDFObject):
     """``Controller:MechanicalVentilation`` as every supported EnergyPlus version declares it."""
 
@@ -39170,10 +39924,18 @@ class _AnyControllerMechanicalVentilationFields(_ControllerMechanicalVentilation
         ]
         | None
     )
-    zone_specifications: list[Any]
+    zone_specifications: list[AnyControllerMechanicalVentilationZoneSpecificationsItem]
 
 class ControllerMechanicalVentilationZoneSpecificationsGroup(AnyControllerMechanicalVentilationZoneSpecificationsGroup):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation`."""
+
+    zone_or_zonelist_name: str | None
+    design_specification_outdoor_air_object_name: str | None
+    design_specification_zone_air_distribution_object_name: str | None
+    def as_dict(self) -> ControllerMechanicalVentilationZoneSpecificationsItem: ...  # type: ignore[override]
+
+class ControllerMechanicalVentilationZoneSpecificationsItem(TypedDict, total=False):
+    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     zone_or_zonelist_name: str | None
     design_specification_outdoor_air_object_name: str | None
@@ -39221,7 +39983,7 @@ class _ControllerMechanicalVentilationFields(_ControllerMechanicalVentilationCom
         ]
         | None
     )
-    zone_specifications: list[Any]
+    zone_specifications: list[ControllerMechanicalVentilationZoneSpecificationsItem]
 
 class AirLoopHVACControllerList(_TypedIDFObject):
     """List controllers in order of control sequence"""
@@ -39409,6 +40171,12 @@ class AirLoopHVACZoneSplitterNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACZoneSplitter`."""
 
     outlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACZoneSplitterNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACZoneSplitterNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACZoneSplitterNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    outlet_node_name: str | None
 
 class AirLoopHVACZoneSplitter(_TypedIDFObject):
     """Split one air stream into N outlet streams (currently 500 per air loop, but extensible). Node names cannot be duplica..."""
@@ -39423,10 +40191,16 @@ class AirLoopHVACZoneSplitter(_TypedIDFObject):
 
 class _AirLoopHVACZoneSplitterFields(TypedDict, total=False):
     inlet_node_name: str | None
-    nodes: list[Any]
+    nodes: list[AirLoopHVACZoneSplitterNodesItem]
 
 class AirLoopHVACSupplyPlenumNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACSupplyPlenum`."""
+
+    outlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACSupplyPlenumNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACSupplyPlenumNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACSupplyPlenumNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     outlet_node_name: str | None
 
@@ -39447,10 +40221,17 @@ class _AirLoopHVACSupplyPlenumFields(TypedDict, total=False):
     zone_name: str | None
     zone_node_name: str | None
     inlet_node_name: str | None
-    nodes: list[Any]
+    nodes: list[AirLoopHVACSupplyPlenumNodesItem]
 
 class AirLoopHVACSupplyPathComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`AirLoopHVACSupplyPath`."""
+
+    component_object_type: Literal["AirLoopHVAC:SupplyPlenum", "AirLoopHVAC:ZoneSplitter"] | None
+    component_name: str | None
+    def as_dict(self) -> AirLoopHVACSupplyPathComponentsItem: ...  # type: ignore[override]
+
+class AirLoopHVACSupplyPathComponentsItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACSupplyPathComponentsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     component_object_type: Literal["AirLoopHVAC:SupplyPlenum", "AirLoopHVAC:ZoneSplitter"] | None
     component_name: str | None
@@ -39468,10 +40249,16 @@ class AirLoopHVACSupplyPath(_TypedIDFObject):
 
 class _AirLoopHVACSupplyPathFields(TypedDict, total=False):
     supply_air_path_inlet_node_name: str | None
-    components: list[Any]
+    components: list[AirLoopHVACSupplyPathComponentsItem]
 
 class AirLoopHVACZoneMixerNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACZoneMixer`."""
+
+    inlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACZoneMixerNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACZoneMixerNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACZoneMixerNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     inlet_node_name: str | None
 
@@ -39488,10 +40275,16 @@ class AirLoopHVACZoneMixer(_TypedIDFObject):
 
 class _AirLoopHVACZoneMixerFields(TypedDict, total=False):
     outlet_node_name: str | None
-    nodes: list[Any]
+    nodes: list[AirLoopHVACZoneMixerNodesItem]
 
 class AirLoopHVACReturnPlenumNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACReturnPlenum`."""
+
+    inlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACReturnPlenumNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACReturnPlenumNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACReturnPlenumNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     inlet_node_name: str | None
 
@@ -39514,10 +40307,17 @@ class _AirLoopHVACReturnPlenumFields(TypedDict, total=False):
     zone_node_name: str | None
     outlet_node_name: str | None
     induced_air_outlet_node_or_nodelist_name: str | None
-    nodes: list[Any]
+    nodes: list[AirLoopHVACReturnPlenumNodesItem]
 
 class AirLoopHVACReturnPathComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`AirLoopHVACReturnPath`."""
+
+    component_object_type: Literal["AirLoopHVAC:ReturnPlenum", "AirLoopHVAC:ZoneMixer"] | None
+    component_name: str | None
+    def as_dict(self) -> AirLoopHVACReturnPathComponentsItem: ...  # type: ignore[override]
+
+class AirLoopHVACReturnPathComponentsItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACReturnPathComponentsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     component_object_type: Literal["AirLoopHVAC:ReturnPlenum", "AirLoopHVAC:ZoneMixer"] | None
     component_name: str | None
@@ -39535,7 +40335,7 @@ class AirLoopHVACReturnPath(_TypedIDFObject):
 
 class _AirLoopHVACReturnPathFields(TypedDict, total=False):
     return_air_path_outlet_node_name: str | None
-    components: list[Any]
+    components: list[AirLoopHVACReturnPathComponentsItem]
 
 class AirLoopHVACExhaustSystem(_TypedIDFObject):
     """Defines a general exhaust system with a central exhaust fan drawing from one or more ZoneHVAC:ExhaustControl outlet n...; Since: 22.1.0"""
@@ -39564,10 +40364,16 @@ class _AirLoopHVACDedicatedOutdoorAirSystemCommonFields(TypedDict, total=False):
     preheat_design_humidity_ratio: float | None
     precool_design_temperature: float | None
     precool_design_humidity_ratio: float | None
-    airloophvacs: list[Any]
+    airloophvacs: list[AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem]
 
 class AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup(_TypedExtensibleGroup):
     """One airloophvacs group inside :class:`AnyAirLoopHVACDedicatedOutdoorAirSystem`."""
+
+    airloophvac_name: str | None
+    def as_dict(self) -> AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem: ...  # type: ignore[override]
+
+class AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     airloophvac_name: str | None
 
@@ -39625,6 +40431,12 @@ class AirLoopHVACMixerNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACMixer`."""
 
     inlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACMixerNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACMixerNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACMixerNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    inlet_node_name: str | None
 
 class AirLoopHVACMixer(_TypedIDFObject):
     """Mix N inlet air streams from Relief Air Stream Node in OutdoorAir:Mixer objects served by AirLoopHVAC objects listed ...; Since: 9.2.0"""
@@ -39637,10 +40449,16 @@ class AirLoopHVACMixer(_TypedIDFObject):
 
 class _AirLoopHVACMixerFields(TypedDict, total=False):
     outlet_node_name: str | None
-    nodes: list[Any]
+    nodes: list[AirLoopHVACMixerNodesItem]
 
 class AirLoopHVACSplitterNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACSplitter`."""
+
+    outlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACSplitterNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACSplitterNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACSplitterNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     outlet_node_name: str | None
 
@@ -39657,10 +40475,19 @@ class AirLoopHVACSplitter(_TypedIDFObject):
 
 class _AirLoopHVACSplitterFields(TypedDict, total=False):
     inlet_node_name: str | None
-    nodes: list[Any]
+    nodes: list[AirLoopHVACSplitterNodesItem]
 
 class BranchComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`Branch`."""
+
+    component_object_type: str | None
+    component_name: str | None
+    component_inlet_node_name: str | None
+    component_outlet_node_name: str | None
+    def as_dict(self) -> BranchComponentsItem: ...  # type: ignore[override]
+
+class BranchComponentsItem(TypedDict, total=False):
+    """One group of :class:`BranchComponentsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     component_object_type: str | None
     component_name: str | None
@@ -39679,10 +40506,16 @@ class Branch(_TypedIDFObject):
 
 class _BranchFields(TypedDict, total=False):
     pressure_drop_curve_name: str | None
-    components: list[Any]
+    components: list[BranchComponentsItem]
 
 class BranchListBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`BranchList`."""
+
+    branch_name: str | None
+    def as_dict(self) -> BranchListBranchesItem: ...  # type: ignore[override]
+
+class BranchListBranchesItem(TypedDict, total=False):
+    """One group of :class:`BranchListBranchesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     branch_name: str | None
 
@@ -39695,10 +40528,16 @@ class BranchList(_TypedIDFObject):
     _creation_signature: _c7.BranchList
 
 class _BranchListFields(TypedDict, total=False):
-    branches: list[Any]
+    branches: list[BranchListBranchesItem]
 
 class ConnectorSplitterBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`ConnectorSplitter`."""
+
+    outlet_branch_name: str | None
+    def as_dict(self) -> ConnectorSplitterBranchesItem: ...  # type: ignore[override]
+
+class ConnectorSplitterBranchesItem(TypedDict, total=False):
+    """One group of :class:`ConnectorSplitterBranchesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     outlet_branch_name: str | None
 
@@ -39713,10 +40552,16 @@ class ConnectorSplitter(_TypedIDFObject):
 
 class _ConnectorSplitterFields(TypedDict, total=False):
     inlet_branch_name: str | None
-    branches: list[Any]
+    branches: list[ConnectorSplitterBranchesItem]
 
 class ConnectorMixerBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`ConnectorMixer`."""
+
+    inlet_branch_name: str | None
+    def as_dict(self) -> ConnectorMixerBranchesItem: ...  # type: ignore[override]
+
+class ConnectorMixerBranchesItem(TypedDict, total=False):
+    """One group of :class:`ConnectorMixerBranchesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     inlet_branch_name: str | None
 
@@ -39731,7 +40576,7 @@ class ConnectorMixer(_TypedIDFObject):
 
 class _ConnectorMixerFields(TypedDict, total=False):
     outlet_branch_name: str | None
-    branches: list[Any]
+    branches: list[ConnectorMixerBranchesItem]
 
 class ConnectorList(_TypedIDFObject):
     """only two connectors allowed per loop if two entered, one must be Connector:Splitter and one must be Connector:Mixer"""
@@ -39754,6 +40599,12 @@ class NodeListNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`NodeList`."""
 
     node_name: str | None
+    def as_dict(self) -> NodeListNodesItem: ...  # type: ignore[override]
+
+class NodeListNodesItem(TypedDict, total=False):
+    """One group of :class:`NodeListNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    node_name: str | None
 
 class NodeList(_TypedIDFObject):
     """This object is used in places where lists of nodes may be needed, e.g. ZoneHVAC:EquipmentConnections field Zone Air I..."""
@@ -39764,7 +40615,7 @@ class NodeList(_TypedIDFObject):
     _creation_signature: _c17.NodeList
 
 class _NodeListFields(TypedDict, total=False):
-    nodes: list[Any]
+    nodes: list[NodeListNodesItem]
 
 class OutdoorAirNode(_TypedIDFObject):
     """This object sets the temperature and humidity conditions for an outdoor air node. It allows the height above ground t..."""
@@ -39803,6 +40654,12 @@ class OutdoorAirNodeListNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`OutdoorAirNodeList`."""
 
     node_or_nodelist_name: str | None
+    def as_dict(self) -> OutdoorAirNodeListNodesItem: ...  # type: ignore[override]
+
+class OutdoorAirNodeListNodesItem(TypedDict, total=False):
+    """One group of :class:`OutdoorAirNodeListNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    node_or_nodelist_name: str | None
 
 class OutdoorAirNodeList(_TypedIDFObject):
     """This object sets the temperature and humidity conditions for an outdoor air node using the weather data values. to va..."""
@@ -39815,7 +40672,7 @@ class OutdoorAirNodeList(_TypedIDFObject):
     _creation_signature: _c5.OutdoorAirNodeList
 
 class _OutdoorAirNodeListFields(TypedDict, total=False):
-    nodes: list[Any]
+    nodes: list[OutdoorAirNodeListNodesItem]
 
 class PipeAdiabatic(_TypedIDFObject):
     """Passes Inlet Node state variables to Outlet Node state variables"""
@@ -39973,10 +40830,16 @@ class _PipingSystemUndergroundDomainCommonFields(TypedDict, total=False):
     name_of_basement_floor_boundary_condition_model: str | None
     convergence_criterion_for_the_outer_cartesian_domain_iteration_loop: float | None
     evapotranspiration_ground_cover_parameter: float | None
-    pipe_circuits: list[Any]
+    pipe_circuits: list[PipingSystemUndergroundDomainPipeCircuitsItem]
 
 class PipingSystemUndergroundDomainPipeCircuitsGroup(_TypedExtensibleGroup):
     """One pipe_circuits group inside :class:`AnyPipingSystemUndergroundDomain`."""
+
+    pipe_circuit: str | None
+    def as_dict(self) -> PipingSystemUndergroundDomainPipeCircuitsItem: ...  # type: ignore[override]
+
+class PipingSystemUndergroundDomainPipeCircuitsItem(TypedDict, total=False):
+    """One group of :class:`PipingSystemUndergroundDomainPipeCircuitsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     pipe_circuit: str | None
 
@@ -40104,10 +40967,16 @@ class _PipingSystemUndergroundPipeCircuitCommonFields(TypedDict, total=False):
     circuit_outlet_node: str | None
     convergence_criterion_for_the_inner_radial_iteration_loop: float | None
     radial_thickness_of_inner_radial_near_pipe_mesh_region: float | None
-    pipe_segments: list[Any]
+    pipe_segments: list[PipingSystemUndergroundPipeCircuitPipeSegmentsItem]
 
 class PipingSystemUndergroundPipeCircuitPipeSegmentsGroup(_TypedExtensibleGroup):
     """One pipe_segments group inside :class:`AnyPipingSystemUndergroundPipeCircuit`."""
+
+    pipe_segment: str | None
+    def as_dict(self) -> PipingSystemUndergroundPipeCircuitPipeSegmentsItem: ...  # type: ignore[override]
+
+class PipingSystemUndergroundPipeCircuitPipeSegmentsItem(TypedDict, total=False):
+    """One group of :class:`PipingSystemUndergroundPipeCircuitPipeSegmentsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     pipe_segment: str | None
 
@@ -41004,6 +41873,12 @@ class SolarCollectorUnglazedTranspiredSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`SolarCollectorUnglazedTranspired`."""
 
     surface_name: str | None
+    def as_dict(self) -> SolarCollectorUnglazedTranspiredSurfacesItem: ...  # type: ignore[override]
+
+class SolarCollectorUnglazedTranspiredSurfacesItem(TypedDict, total=False):
+    """One group of :class:`SolarCollectorUnglazedTranspiredSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
 
 class SolarCollectorUnglazedTranspired(_TypedIDFObject):
     """Unglazed transpired solar collector (UTSC) used to condition outdoor air. This type of collector is generally used to..."""
@@ -41077,10 +41952,19 @@ class _SolarCollectorUnglazedTranspiredFields(TypedDict, total=False):
     collector_thickness: float | None
     effectiveness_for_perforations_with_respect_to_wind: float | None
     discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None
-    surfaces: list[Any]
+    surfaces: list[SolarCollectorUnglazedTranspiredSurfacesItem]
 
 class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup(_TypedExtensibleGroup):
     """One systems group inside :class:`SolarCollectorUnglazedTranspiredMultisystem`."""
+
+    outdoor_air_system_collector_inlet_node: str | None
+    outdoor_air_system_collector_outlet_node: str | None
+    outdoor_air_system_mixed_air_node: str | None
+    outdoor_air_system_zone_node: str | None
+    def as_dict(self) -> SolarCollectorUnglazedTranspiredMultisystemSystemsItem: ...  # type: ignore[override]
+
+class SolarCollectorUnglazedTranspiredMultisystemSystemsItem(TypedDict, total=False):
+    """One group of :class:`SolarCollectorUnglazedTranspiredMultisystemSystemsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     outdoor_air_system_collector_inlet_node: str | None
     outdoor_air_system_collector_outlet_node: str | None
@@ -41104,7 +41988,7 @@ class SolarCollectorUnglazedTranspiredMultisystem(_TypedIDFObject):
 
 class _SolarCollectorUnglazedTranspiredMultisystemFields(TypedDict, total=False):
     solar_collector_name: str | None
-    systems: list[Any]
+    systems: list[SolarCollectorUnglazedTranspiredMultisystemSystemsItem]
 
 class _BoilerHotWaterCommonFields(TypedDict, total=False):
     nominal_capacity: float | Literal["Autosize"] | None
@@ -45542,10 +46426,16 @@ class _GroundHeatExchangerSystemCommonFields(TypedDict, total=False):
     ground_thermal_heat_capacity: float | None
     ghe_vertical_responsefactors_object_name: str | None
     ghe_vertical_array_object_name: str | None
-    vertical_well_locations: list[Any]
+    vertical_well_locations: list[GroundHeatExchangerSystemVerticalWellLocationsItem]
 
 class GroundHeatExchangerSystemVerticalWellLocationsGroup(_TypedExtensibleGroup):
     """One vertical_well_locations group inside :class:`AnyGroundHeatExchangerSystem`."""
+
+    ghe_vertical_single_object_name: str | None
+    def as_dict(self) -> GroundHeatExchangerSystemVerticalWellLocationsItem: ...  # type: ignore[override]
+
+class GroundHeatExchangerSystemVerticalWellLocationsItem(TypedDict, total=False):
+    """One group of :class:`GroundHeatExchangerSystemVerticalWellLocationsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     ghe_vertical_single_object_name: str | None
 
@@ -45751,10 +46641,17 @@ class _GroundHeatExchangerVerticalSingleFields(TypedDict, total=False):
 class _GroundHeatExchangerResponseFactorsCommonFields(TypedDict, total=False):
     ghe_vertical_properties_object_name: str | None
     g_function_reference_ratio: float | None
-    g_functions: list[Any]
+    g_functions: list[GroundHeatExchangerResponseFactorsGFunctionsItem]
 
 class GroundHeatExchangerResponseFactorsGFunctionsGroup(_TypedExtensibleGroup):
     """One g_functions group inside :class:`AnyGroundHeatExchangerResponseFactors`."""
+
+    g_function_ln_t_ts_value: float | None
+    g_function_g_value: float | None
+    def as_dict(self) -> GroundHeatExchangerResponseFactorsGFunctionsItem: ...  # type: ignore[override]
+
+class GroundHeatExchangerResponseFactorsGFunctionsItem(TypedDict, total=False):
+    """One group of :class:`GroundHeatExchangerResponseFactorsGFunctionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     g_function_ln_t_ts_value: float | None
     g_function_g_value: float | None
@@ -48079,6 +48976,13 @@ class PlantEquipmentListEquipmentGroup(_TypedExtensibleGroup):
 
     equipment_object_type: str | None
     equipment_name: str | None
+    def as_dict(self) -> PlantEquipmentListEquipmentItem: ...  # type: ignore[override]
+
+class PlantEquipmentListEquipmentItem(TypedDict, total=False):
+    """One group of :class:`PlantEquipmentListEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    equipment_object_type: str | None
+    equipment_name: str | None
 
 class PlantEquipmentList(AnyPlantEquipmentList):
     """List plant equipment in order of operating priority, 1st in list will be used 1st, etc Use only plant equipment in th..."""
@@ -48091,7 +48995,7 @@ class PlantEquipmentList(AnyPlantEquipmentList):
     _creation_signature: _c30.PlantEquipmentList
 
 class _PlantEquipmentListFields(_PlantEquipmentListCommonFields, total=False):
-    equipment: list[Any]
+    equipment: list[PlantEquipmentListEquipmentItem]
 
 class _CondenserEquipmentListCommonFields(TypedDict, total=False): ...
 
@@ -48110,6 +49014,13 @@ class CondenserEquipmentListEquipmentGroup(_TypedExtensibleGroup):
 
     equipment_object_type: str | None
     equipment_name: str | None
+    def as_dict(self) -> CondenserEquipmentListEquipmentItem: ...  # type: ignore[override]
+
+class CondenserEquipmentListEquipmentItem(TypedDict, total=False):
+    """One group of :class:`CondenserEquipmentListEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    equipment_object_type: str | None
+    equipment_name: str | None
 
 class CondenserEquipmentList(AnyCondenserEquipmentList):
     """List condenser equipment in order of operating priority, 1st in list will be used 1st, etc Use only condenser equipme..."""
@@ -48122,7 +49033,7 @@ class CondenserEquipmentList(AnyCondenserEquipmentList):
     _creation_signature: _c10.CondenserEquipmentList
 
 class _CondenserEquipmentListFields(_CondenserEquipmentListCommonFields, total=False):
-    equipment: list[Any]
+    equipment: list[CondenserEquipmentListEquipmentItem]
 
 class PlantEquipmentOperationUncontrolled(_TypedIDFObject):
     """Plant equipment operation scheme for uncontrolled operation. Specifies a group of equipment that runs if the loop is ..."""
@@ -51067,10 +51978,16 @@ class _EnergyManagementSystemActuatorFields(TypedDict, total=False):
     actuated_component_control_type: str | None
 
 class _EnergyManagementSystemProgramCallingManagerCommonFields(TypedDict, total=False):
-    programs: list[Any]
+    programs: list[EnergyManagementSystemProgramCallingManagerProgramsItem]
 
 class EnergyManagementSystemProgramCallingManagerProgramsGroup(_TypedExtensibleGroup):
     """One programs group inside :class:`AnyEnergyManagementSystemProgramCallingManager`."""
+
+    program_name: str | None
+    def as_dict(self) -> EnergyManagementSystemProgramCallingManagerProgramsItem: ...  # type: ignore[override]
+
+class EnergyManagementSystemProgramCallingManagerProgramsItem(TypedDict, total=False):
+    """One group of :class:`EnergyManagementSystemProgramCallingManagerProgramsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     program_name: str | None
 
@@ -51221,10 +52138,16 @@ class _EnergyManagementSystemProgramCallingManagerFields(
     )
 
 class _EnergyManagementSystemProgramCommonFields(TypedDict, total=False):
-    lines: list[Any]
+    lines: list[EnergyManagementSystemProgramLinesItem]
 
 class EnergyManagementSystemProgramLinesGroup(_TypedExtensibleGroup):
     """One lines group inside :class:`AnyEnergyManagementSystemProgram`."""
+
+    program_line: str | None
+    def as_dict(self) -> EnergyManagementSystemProgramLinesItem: ...  # type: ignore[override]
+
+class EnergyManagementSystemProgramLinesItem(TypedDict, total=False):
+    """One group of :class:`EnergyManagementSystemProgramLinesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     program_line: str | None
 
@@ -51254,6 +52177,12 @@ class EnergyManagementSystemSubroutineLinesGroup(_TypedExtensibleGroup):
     """One lines group inside :class:`EnergyManagementSystemSubroutine`."""
 
     program_line: str | None
+    def as_dict(self) -> EnergyManagementSystemSubroutineLinesItem: ...  # type: ignore[override]
+
+class EnergyManagementSystemSubroutineLinesItem(TypedDict, total=False):
+    """One group of :class:`EnergyManagementSystemSubroutineLinesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    program_line: str | None
 
 class EnergyManagementSystemSubroutine(_TypedIDFObject):
     """This input defines an Erl program subroutine Each field after the name is a line of EMS Runtime Language"""
@@ -51266,10 +52195,16 @@ class EnergyManagementSystemSubroutine(_TypedIDFObject):
     _creation_signature: _c24.EnergyManagementSystemSubroutine
 
 class _EnergyManagementSystemSubroutineFields(TypedDict, total=False):
-    lines: list[Any]
+    lines: list[EnergyManagementSystemSubroutineLinesItem]
 
 class EnergyManagementSystemGlobalVariableVariablesGroup(_TypedExtensibleGroup):
     """One variables group inside :class:`EnergyManagementSystemGlobalVariable`."""
+
+    erl_variable_name: str | None
+    def as_dict(self) -> EnergyManagementSystemGlobalVariableVariablesItem: ...  # type: ignore[override]
+
+class EnergyManagementSystemGlobalVariableVariablesItem(TypedDict, total=False):
+    """One group of :class:`EnergyManagementSystemGlobalVariableVariablesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     erl_variable_name: str | None
 
@@ -51284,7 +52219,7 @@ class EnergyManagementSystemGlobalVariable(_TypedIDFObject):
     _creation_signature: _c4.EnergyManagementSystemGlobalVariable
 
 class _EnergyManagementSystemGlobalVariableFields(TypedDict, total=False):
-    variables: list[Any]
+    variables: list[EnergyManagementSystemGlobalVariableVariablesItem]
 
 class EnergyManagementSystemOutputVariable(_TypedIDFObject):
     """This object sets up an EnergyPlus output variable from an Erl variable"""
@@ -52806,6 +53741,28 @@ class AvailabilityManagerAssignmentListManagersGroup(_TypedExtensibleGroup):
         | None
     )
     availability_manager_name: str | None
+    def as_dict(self) -> AvailabilityManagerAssignmentListManagersItem: ...  # type: ignore[override]
+
+class AvailabilityManagerAssignmentListManagersItem(TypedDict, total=False):
+    """One group of :class:`AvailabilityManagerAssignmentListManagersGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    availability_manager_object_type: (
+        Literal[
+            "AvailabilityManager:DifferentialThermostat",
+            "AvailabilityManager:HighTemperatureTurnOff",
+            "AvailabilityManager:HighTemperatureTurnOn",
+            "AvailabilityManager:LowTemperatureTurnOff",
+            "AvailabilityManager:LowTemperatureTurnOn",
+            "AvailabilityManager:NightCycle",
+            "AvailabilityManager:NightVentilation",
+            "AvailabilityManager:OptimumStart",
+            "AvailabilityManager:Scheduled",
+            "AvailabilityManager:ScheduledOff",
+            "AvailabilityManager:ScheduledOn",
+        ]
+        | None
+    )
+    availability_manager_name: str | None
 
 class AvailabilityManagerAssignmentList(_TypedIDFObject):
     """Defines the applicable managers used for an AirLoopHVAC or PlantLoop. The priority of availability managers is based ..."""
@@ -52818,7 +53775,7 @@ class AvailabilityManagerAssignmentList(_TypedIDFObject):
     _creation_signature: _c14.AvailabilityManagerAssignmentList
 
 class _AvailabilityManagerAssignmentListFields(TypedDict, total=False):
-    managers: list[Any]
+    managers: list[AvailabilityManagerAssignmentListManagersItem]
 
 class SetpointManagerScheduled(_TypedIDFObject):
     """The simplest Setpoint Manager simply uses a schedule to determine one or more setpoints. Values of the nodes are not ..."""
@@ -53979,6 +54936,12 @@ class RefrigerationCaseAndWalkInListCasesAndWalkinsGroup(_TypedExtensibleGroup):
     """One cases_and_walkins group inside :class:`RefrigerationCaseAndWalkInList`."""
 
     case_or_walkin_name: str | None
+    def as_dict(self) -> RefrigerationCaseAndWalkInListCasesAndWalkinsItem: ...  # type: ignore[override]
+
+class RefrigerationCaseAndWalkInListCasesAndWalkinsItem(TypedDict, total=False):
+    """One group of :class:`RefrigerationCaseAndWalkInListCasesAndWalkinsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    case_or_walkin_name: str | None
 
 class RefrigerationCaseAndWalkInList(_TypedIDFObject):
     """Provides a list of all the refrigerated cases, walk in coolers, or air chillers cooled by a single refrigeration syst..."""
@@ -53991,7 +54954,7 @@ class RefrigerationCaseAndWalkInList(_TypedIDFObject):
     _creation_signature: _c13.RefrigerationCaseAndWalkInList
 
 class _RefrigerationCaseAndWalkInListFields(TypedDict, total=False):
-    cases_and_walkins: list[Any]
+    cases_and_walkins: list[RefrigerationCaseAndWalkInListCasesAndWalkinsItem]
 
 class RefrigerationCondenserAirCooled(_TypedIDFObject):
     """Air cooled condenser for a refrigeration system (Refrigeration:System)."""
@@ -54257,6 +55220,12 @@ class RefrigerationTransferLoadListTransferLoadsGroup(_TypedExtensibleGroup):
     """One transfer_loads group inside :class:`RefrigerationTransferLoadList`."""
 
     cascade_condenser_name_or_secondary_system_name: str | None
+    def as_dict(self) -> RefrigerationTransferLoadListTransferLoadsItem: ...  # type: ignore[override]
+
+class RefrigerationTransferLoadListTransferLoadsItem(TypedDict, total=False):
+    """One group of :class:`RefrigerationTransferLoadListTransferLoadsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    cascade_condenser_name_or_secondary_system_name: str | None
 
 class RefrigerationTransferLoadList(_TypedIDFObject):
     """A refrigeration system may provide cooling to other, secondary, systems through either a secondary loop or a cascade ..."""
@@ -54269,7 +55238,7 @@ class RefrigerationTransferLoadList(_TypedIDFObject):
     _creation_signature: _c0.RefrigerationTransferLoadList
 
 class _RefrigerationTransferLoadListFields(TypedDict, total=False):
-    transfer_loads: list[Any]
+    transfer_loads: list[RefrigerationTransferLoadListTransferLoadsItem]
 
 class RefrigerationSubcooler(_TypedIDFObject):
     """Two types of subcoolers are modeled by the detailed refrigeration system. The liquid suction heat exchanger uses cool..."""
@@ -54343,6 +55312,12 @@ class RefrigerationCompressorListCompressorsGroup(_TypedExtensibleGroup):
     """One compressors group inside :class:`RefrigerationCompressorList`."""
 
     refrigeration_compressor_name: str | None
+    def as_dict(self) -> RefrigerationCompressorListCompressorsItem: ...  # type: ignore[override]
+
+class RefrigerationCompressorListCompressorsItem(TypedDict, total=False):
+    """One group of :class:`RefrigerationCompressorListCompressorsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    refrigeration_compressor_name: str | None
 
 class RefrigerationCompressorList(_TypedIDFObject):
     """List of all the compressors included within a single refrigeration system (Refrigeration:System). Each list must cont..."""
@@ -54355,7 +55330,7 @@ class RefrigerationCompressorList(_TypedIDFObject):
     _creation_signature: _c5.RefrigerationCompressorList
 
 class _RefrigerationCompressorListFields(TypedDict, total=False):
-    compressors: list[Any]
+    compressors: list[RefrigerationCompressorListCompressorsItem]
 
 class RefrigerationSystem(_TypedIDFObject):
     """Simulates the performance of a supermarket refrigeration system when used along with other objects to define the refr..."""
@@ -54572,6 +55547,23 @@ class RefrigerationWalkInZoneDataGroup(_TypedExtensibleGroup):
     stocking_door_u_value_facing_zone: float | None
     stocking_door_opening_schedule_name_facing_zone: str | None
     stocking_door_opening_protection_type_facing_zone: Literal["", "AirCurtain", "None", "StripCurtain"] | None
+    def as_dict(self) -> RefrigerationWalkInZoneDataItem: ...  # type: ignore[override]
+
+class RefrigerationWalkInZoneDataItem(TypedDict, total=False):
+    """One group of :class:`RefrigerationWalkInZoneDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zone_name: str | None
+    total_insulated_surface_area_facing_zone: float | None
+    insulated_surface_u_value_facing_zone: float | None
+    area_of_glass_reach_in_doors_facing_zone: float | None
+    height_of_glass_reach_in_doors_facing_zone: float | None
+    glass_reach_in_door_u_value_facing_zone: float | None
+    glass_reach_in_door_opening_schedule_name_facing_zone: str | None
+    area_of_stocking_doors_facing_zone: float | None
+    height_of_stocking_doors_facing_zone: float | None
+    stocking_door_u_value_facing_zone: float | None
+    stocking_door_opening_schedule_name_facing_zone: str | None
+    stocking_door_opening_protection_type_facing_zone: Literal["", "AirCurtain", "None", "StripCurtain"] | None
 
 class RefrigerationWalkIn(_TypedIDFObject):
     """Works in conjunction with a compressor rack, a refrigeration system, or a refrigeration secondary system to simulate ..."""
@@ -54644,7 +55636,7 @@ class _RefrigerationWalkInFields(TypedDict, total=False):
     average_refrigerant_charge_inventory: float | None
     insulated_floor_surface_area: float | None
     insulated_floor_u_value: float | None
-    zone_data: list[Any]
+    zone_data: list[RefrigerationWalkInZoneDataItem]
 
 class RefrigerationAirChiller(_TypedIDFObject):
     """Works in conjunction with a refrigeration chiller set, compressor rack, a refrigeration system, or a refrigeration se..."""
@@ -54776,6 +55768,12 @@ class ZoneHVACRefrigerationChillerSetChillersGroup(_TypedExtensibleGroup):
     """One chillers group inside :class:`ZoneHVACRefrigerationChillerSet`."""
 
     air_chiller_name: str | None
+    def as_dict(self) -> ZoneHVACRefrigerationChillerSetChillersItem: ...  # type: ignore[override]
+
+class ZoneHVACRefrigerationChillerSetChillersItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACRefrigerationChillerSetChillersGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    air_chiller_name: str | None
 
 class ZoneHVACRefrigerationChillerSet(_TypedIDFObject):
     """Works in conjunction with one or multiple air chillers, compressor racks, refrigeration systems, or refrigeration sec..."""
@@ -54800,7 +55798,7 @@ class _ZoneHVACRefrigerationChillerSetFields(TypedDict, total=False):
     zone_name: str | None
     air_inlet_node_name: str | None
     air_outlet_node_name: str | None
-    chillers: list[Any]
+    chillers: list[ZoneHVACRefrigerationChillerSetChillersItem]
 
 class _DemandManagerAssignmentListCommonFields(TypedDict, total=False):
     meter_name: str | None
@@ -54809,10 +55807,26 @@ class _DemandManagerAssignmentListCommonFields(TypedDict, total=False):
     billing_period_schedule_name: str | None
     peak_period_schedule_name: str | None
     demand_manager_priority: Literal["All", "Sequential"] | None
-    manager_data: list[Any]
+    manager_data: list[DemandManagerAssignmentListManagerDataItem]
 
 class DemandManagerAssignmentListManagerDataGroup(_TypedExtensibleGroup):
     """One manager_data group inside :class:`AnyDemandManagerAssignmentList`."""
+
+    demandmanager_object_type: (
+        Literal[
+            "DemandManager:ElectricEquipment",
+            "DemandManager:ExteriorLights",
+            "DemandManager:Lights",
+            "DemandManager:Thermostats",
+            "DemandManager:Ventilation",
+        ]
+        | None
+    )
+    demandmanager_name: str | None
+    def as_dict(self) -> DemandManagerAssignmentListManagerDataItem: ...  # type: ignore[override]
+
+class DemandManagerAssignmentListManagerDataItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerAssignmentListManagerDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     demandmanager_object_type: (
         Literal[
@@ -54872,10 +55886,16 @@ class _DemandManagerExteriorLightsCommonFields(TypedDict, total=False):
     maximum_limit_fraction: float | None
     limit_step_change: float | None
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    lights: list[Any]
+    lights: list[DemandManagerExteriorLightsLightsItem]
 
 class DemandManagerExteriorLightsLightsGroup(_TypedExtensibleGroup):
     """One lights group inside :class:`AnyDemandManagerExteriorLights`."""
+
+    exterior_lights_name: str | None
+    def as_dict(self) -> DemandManagerExteriorLightsLightsItem: ...  # type: ignore[override]
+
+class DemandManagerExteriorLightsLightsItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerExteriorLightsLightsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     exterior_lights_name: str | None
 
@@ -54932,10 +55952,16 @@ class _DemandManagerLightsCommonFields(TypedDict, total=False):
     maximum_limit_fraction: float | None
     limit_step_change: float | None
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    lights: list[Any]
+    lights: list[DemandManagerLightsLightsItem]
 
 class DemandManagerLightsLightsGroup(_TypedExtensibleGroup):
     """One lights group inside :class:`AnyDemandManagerLights`."""
+
+    lights_name: str | None
+    def as_dict(self) -> DemandManagerLightsLightsItem: ...  # type: ignore[override]
+
+class DemandManagerLightsLightsItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerLightsLightsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     lights_name: str | None
 
@@ -54992,10 +56018,16 @@ class _DemandManagerElectricEquipmentCommonFields(TypedDict, total=False):
     maximum_limit_fraction: float | None
     limit_step_change: float | None
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    equipment: list[Any]
+    equipment: list[DemandManagerElectricEquipmentEquipmentItem]
 
 class DemandManagerElectricEquipmentEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`AnyDemandManagerElectricEquipment`."""
+
+    electric_equipment_name: str | None
+    def as_dict(self) -> DemandManagerElectricEquipmentEquipmentItem: ...  # type: ignore[override]
+
+class DemandManagerElectricEquipmentEquipmentItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerElectricEquipmentEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     electric_equipment_name: str | None
 
@@ -55053,10 +56085,16 @@ class _DemandManagerThermostatsCommonFields(TypedDict, total=False):
     maximum_cooling_setpoint_reset: float | None
     reset_step_change: float | None
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    thermostats: list[Any]
+    thermostats: list[DemandManagerThermostatsThermostatsItem]
 
 class DemandManagerThermostatsThermostatsGroup(_TypedExtensibleGroup):
     """One thermostats group inside :class:`AnyDemandManagerThermostats`."""
+
+    thermostat_name: str | None
+    def as_dict(self) -> DemandManagerThermostatsThermostatsItem: ...  # type: ignore[override]
+
+class DemandManagerThermostatsThermostatsItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerThermostatsThermostatsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     thermostat_name: str | None
 
@@ -55116,10 +56154,16 @@ class _DemandManagerVentilationCommonFields(TypedDict, total=False):
     reduction_ratio: float | None
     limit_step_change: float | None
     selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None
-    controllers: list[Any]
+    controllers: list[DemandManagerVentilationControllersItem]
 
 class DemandManagerVentilationControllersGroup(_TypedExtensibleGroup):
     """One controllers group inside :class:`AnyDemandManagerVentilation`."""
+
+    controller_outdoor_air_name: str | None
+    def as_dict(self) -> DemandManagerVentilationControllersItem: ...  # type: ignore[override]
+
+class DemandManagerVentilationControllersItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerVentilationControllersGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     controller_outdoor_air_name: str | None
 
@@ -56157,6 +57201,13 @@ class GeneratorFuelCellAirSupplyConstituentFractionsGroup(_TypedExtensibleGroup)
 
     constituent_name: Literal["Argon", "CarbonDioxide", "Nitrogen", "Oxygen", "Water"] | None
     molar_fraction: float | None
+    def as_dict(self) -> GeneratorFuelCellAirSupplyConstituentFractionsItem: ...  # type: ignore[override]
+
+class GeneratorFuelCellAirSupplyConstituentFractionsItem(TypedDict, total=False):
+    """One group of :class:`GeneratorFuelCellAirSupplyConstituentFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    constituent_name: Literal["Argon", "CarbonDioxide", "Nitrogen", "Oxygen", "Water"] | None
+    molar_fraction: float | None
 
 class GeneratorFuelCellAirSupply(_TypedIDFObject):
     """Used to define details of the air supply subsystem for a fuel cell power generator."""
@@ -56218,7 +57269,7 @@ class _GeneratorFuelCellAirSupplyFields(TypedDict, total=False):
     )
     air_supply_constituent_mode: Literal["AmbientAir", "UserDefinedConstituents"] | None
     number_of_userdefined_constituents: float | None
-    constituent_fractions: list[Any]
+    constituent_fractions: list[GeneratorFuelCellAirSupplyConstituentFractionsItem]
 
 class GeneratorFuelCellWaterSupply(_TypedIDFObject):
     """Used to provide details of the water supply subsystem for a fuel cell power generator. This water is used for steam r..."""
@@ -57202,6 +58253,28 @@ class ElectricLoadCenterGeneratorsGeneratorOutputsGroup(_TypedExtensibleGroup):
     generator_rated_electric_power_output: float | None
     generator_availability_schedule_name: str | None
     generator_rated_thermal_to_electrical_power_ratio: float | None
+    def as_dict(self) -> ElectricLoadCenterGeneratorsGeneratorOutputsItem: ...  # type: ignore[override]
+
+class ElectricLoadCenterGeneratorsGeneratorOutputsItem(TypedDict, total=False):
+    """One group of :class:`ElectricLoadCenterGeneratorsGeneratorOutputsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    generator_name: str | None
+    generator_object_type: (
+        Literal[
+            "Generator:CombustionTurbine",
+            "Generator:FuelCell",
+            "Generator:InternalCombustionEngine",
+            "Generator:MicroCHP",
+            "Generator:MicroTurbine",
+            "Generator:PVWatts",
+            "Generator:Photovoltaic",
+            "Generator:WindTurbine",
+        ]
+        | None
+    )
+    generator_rated_electric_power_output: float | None
+    generator_availability_schedule_name: str | None
+    generator_rated_thermal_to_electrical_power_ratio: float | None
 
 class ElectricLoadCenterGenerators(_TypedIDFObject):
     """List of electric power generators to include in the simulation including the name and type of each generators along w..."""
@@ -57214,7 +58287,7 @@ class ElectricLoadCenterGenerators(_TypedIDFObject):
     _creation_signature: _c23.ElectricLoadCenterGenerators
 
 class _ElectricLoadCenterGeneratorsFields(TypedDict, total=False):
-    generator_outputs: list[Any]
+    generator_outputs: list[ElectricLoadCenterGeneratorsGeneratorOutputsItem]
 
 class ElectricLoadCenterInverterSimple(_TypedIDFObject):
     """Electric power inverter to convert from direct current (DC) to alternating current (AC) in an electric load center th..."""
@@ -57577,6 +58650,12 @@ class ElectricLoadCenterTransformerMetersGroup(_TypedExtensibleGroup):
     """One meters group inside :class:`ElectricLoadCenterTransformer`."""
 
     meter_name: str | None
+    def as_dict(self) -> ElectricLoadCenterTransformerMetersItem: ...  # type: ignore[override]
+
+class ElectricLoadCenterTransformerMetersItem(TypedDict, total=False):
+    """One group of :class:`ElectricLoadCenterTransformerMetersGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    meter_name: str | None
 
 class ElectricLoadCenterTransformer(_TypedIDFObject):
     """This object is used to model the energy losses of transformers when they are used to transfer electricity from the gr..."""
@@ -57640,7 +58719,7 @@ class _ElectricLoadCenterTransformerFields(TypedDict, total=False):
     reference_temperature_for_nameplate_efficiency: float | None
     per_unit_load_for_maximum_efficiency: float | None
     consider_transformer_loss_for_utility_cost: Literal["", "No", "Yes"] | None
-    meters: list[Any]
+    meters: list[ElectricLoadCenterTransformerMetersItem]
 
 class ElectricLoadCenterDistribution(_TypedIDFObject):
     """ElectricLoadCenter:Distribution objects are used to include on-site electricity generators and or storage in a simula..."""
@@ -57847,6 +58926,12 @@ class WaterUseConnectionsConnectionsGroup(_TypedExtensibleGroup):
     """One connections group inside :class:`WaterUseConnections`."""
 
     water_use_equipment_name: str | None
+    def as_dict(self) -> WaterUseConnectionsConnectionsItem: ...  # type: ignore[override]
+
+class WaterUseConnectionsConnectionsItem(TypedDict, total=False):
+    """One group of :class:`WaterUseConnectionsConnectionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    water_use_equipment_name: str | None
 
 class WaterUseConnections(_TypedIDFObject):
     """A subsystem that groups together multiple WaterUse:Equipment components. As its name suggests, the object provides co..."""
@@ -57883,7 +58968,7 @@ class _WaterUseConnectionsFields(TypedDict, total=False):
     drain_water_heat_exchanger_type: Literal["", "CounterFlow", "CrossFlow", "Ideal", "None"] | None
     drain_water_heat_exchanger_destination: Literal["", "Equipment", "Plant", "PlantAndEquipment"] | None
     drain_water_heat_exchanger_u_factor_times_area: float | None
-    connections: list[Any]
+    connections: list[WaterUseConnectionsConnectionsItem]
 
 class WaterUseStorage(_TypedIDFObject):
     """A water storage tank. If the building model is to include any on-site water collection, wells, or storing and reuse o..."""
@@ -57984,6 +59069,12 @@ class WaterUseRainCollectorSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`WaterUseRainCollector`."""
 
     collection_surface_name: str | None
+    def as_dict(self) -> WaterUseRainCollectorSurfacesItem: ...  # type: ignore[override]
+
+class WaterUseRainCollectorSurfacesItem(TypedDict, total=False):
+    """One group of :class:`WaterUseRainCollectorSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    collection_surface_name: str | None
 
 class WaterUseRainCollector(_TypedIDFObject):
     """Used for harvesting rainwater falling on building surfaces. The rainwater is sent to a WaterUse:Storage object. In ve..."""
@@ -58008,7 +59099,7 @@ class _WaterUseRainCollectorFields(TypedDict, total=False):
     collection_loss_factor: float | None
     collection_loss_factor_schedule_name: str | None
     maximum_collection_rate: float | None
-    surfaces: list[Any]
+    surfaces: list[WaterUseRainCollectorSurfacesItem]
 
 class FaultModelTemperatureSensorOffsetOutdoorAir(_TypedIDFObject):
     """This object describes outdoor air temperature sensor offset"""
@@ -58518,10 +59609,16 @@ class _FaultModelFoulingCoilFields(TypedDict, total=False):
     inside_to_outside_coil_surface_area_ratio: float | None
 
 class _MatrixTwoDimensionCommonFields(TypedDict, total=False):
-    values: list[Any]
+    values: list[MatrixTwoDimensionValuesItem]
 
 class MatrixTwoDimensionValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`AnyMatrixTwoDimension`."""
+
+    value: float | None
+    def as_dict(self) -> MatrixTwoDimensionValuesItem: ...  # type: ignore[override]
+
+class MatrixTwoDimensionValuesItem(TypedDict, total=False):
+    """One group of :class:`MatrixTwoDimensionValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     value: float | None
 
@@ -59846,10 +60943,16 @@ class _TableIndependentVariableCommonFields(TypedDict, total=False):
         Literal["", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     external_file_name: str | None
-    values: list[Any]
+    values: list[TableIndependentVariableValuesItem]
 
 class TableIndependentVariableValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`AnyTableIndependentVariable`."""
+
+    value: float | None
+    def as_dict(self) -> TableIndependentVariableValuesItem: ...  # type: ignore[override]
+
+class TableIndependentVariableValuesItem(TypedDict, total=False):
+    """One group of :class:`TableIndependentVariableValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     value: float | None
 
@@ -59908,6 +61011,12 @@ class TableIndependentVariableListIndependentVariablesGroup(_TypedExtensibleGrou
     """One independent_variables group inside :class:`TableIndependentVariableList`."""
 
     independent_variable_name: str | None
+    def as_dict(self) -> TableIndependentVariableListIndependentVariablesItem: ...  # type: ignore[override]
+
+class TableIndependentVariableListIndependentVariablesItem(TypedDict, total=False):
+    """One group of :class:`TableIndependentVariableListIndependentVariablesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    independent_variable_name: str | None
 
 class TableIndependentVariableList(_TypedIDFObject):
     """A sorted list of independent variables used by one or more Table:Lookup objects.; Since: 9.2.0"""
@@ -59920,7 +61029,7 @@ class TableIndependentVariableList(_TypedIDFObject):
     _creation_signature: _c13.TableIndependentVariableList
 
 class _TableIndependentVariableListFields(TypedDict, total=False):
-    independent_variables: list[Any]
+    independent_variables: list[TableIndependentVariableListIndependentVariablesItem]
 
 class _TableLookupCommonFields(TypedDict, total=False):
     independent_variable_list_name: str | None
@@ -59930,10 +61039,16 @@ class _TableLookupCommonFields(TypedDict, total=False):
     maximum_output: float | None
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     external_file_name: str | None
-    values: list[Any]
+    values: list[TableLookupValuesItem]
 
 class TableLookupValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`AnyTableLookup`."""
+
+    output_value: float | None
+    def as_dict(self) -> TableLookupValuesItem: ...  # type: ignore[override]
+
+class TableLookupValuesItem(TypedDict, total=False):
+    """One group of :class:`TableLookupValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     output_value: float | None
 
@@ -63590,10 +64705,16 @@ class _LifeCycleCostUsePriceEscalationCommonFields(TypedDict, total=False):
         ]
         | None
     )
-    escalations: list[Any]
+    escalations: list[LifeCycleCostUsePriceEscalationEscalationsItem]
 
 class LifeCycleCostUsePriceEscalationEscalationsGroup(_TypedExtensibleGroup):
     """One escalations group inside :class:`AnyLifeCycleCostUsePriceEscalation`."""
+
+    year_escalation: float | None
+    def as_dict(self) -> LifeCycleCostUsePriceEscalationEscalationsItem: ...  # type: ignore[override]
+
+class LifeCycleCostUsePriceEscalationEscalationsItem(TypedDict, total=False):
+    """One group of :class:`LifeCycleCostUsePriceEscalationEscalationsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     year_escalation: float | None
 
@@ -63766,10 +64887,16 @@ class _LifeCycleCostUsePriceEscalationFields(_LifeCycleCostUsePriceEscalationCom
     escalation_start_year: int | None
 
 class _LifeCycleCostUseAdjustmentCommonFields(TypedDict, total=False):
-    multipliers: list[Any]
+    multipliers: list[LifeCycleCostUseAdjustmentMultipliersItem]
 
 class LifeCycleCostUseAdjustmentMultipliersGroup(_TypedExtensibleGroup):
     """One multipliers group inside :class:`AnyLifeCycleCostUseAdjustment`."""
+
+    year_multiplier: float | None
+    def as_dict(self) -> LifeCycleCostUseAdjustmentMultipliersItem: ...  # type: ignore[override]
+
+class LifeCycleCostUseAdjustmentMultipliersItem(TypedDict, total=False):
+    """One group of :class:`LifeCycleCostUseAdjustmentMultipliersGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     year_multiplier: float | None
 
@@ -63912,6 +65039,12 @@ class ParametricSetValueForRunValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`ParametricSetValueForRun`."""
 
     value_for_run: str | None
+    def as_dict(self) -> ParametricSetValueForRunValuesItem: ...  # type: ignore[override]
+
+class ParametricSetValueForRunValuesItem(TypedDict, total=False):
+    """One group of :class:`ParametricSetValueForRunValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    value_for_run: str | None
 
 class ParametricSetValueForRun(_TypedIDFObject):
     """Parametric objects allow a set of multiple simulations to be defined in a single idf file. The parametric preprocesso..."""
@@ -63924,10 +65057,16 @@ class ParametricSetValueForRun(_TypedIDFObject):
     _creation_signature: _c14.ParametricSetValueForRun
 
 class _ParametricSetValueForRunFields(TypedDict, total=False):
-    values: list[Any]
+    values: list[ParametricSetValueForRunValuesItem]
 
 class ParametricLogicLinesGroup(_TypedExtensibleGroup):
     """One lines group inside :class:`ParametricLogic`."""
+
+    parametric_logic_line: str | None
+    def as_dict(self) -> ParametricLogicLinesItem: ...  # type: ignore[override]
+
+class ParametricLogicLinesItem(TypedDict, total=False):
+    """One group of :class:`ParametricLogicLinesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     parametric_logic_line: str | None
 
@@ -63940,10 +65079,16 @@ class ParametricLogic(_TypedIDFObject):
     _creation_signature: _c11.ParametricLogic
 
 class _ParametricLogicFields(TypedDict, total=False):
-    lines: list[Any]
+    lines: list[ParametricLogicLinesItem]
 
 class ParametricRunControlRunsGroup(_TypedExtensibleGroup):
     """One runs group inside :class:`ParametricRunControl`."""
+
+    perform_run: Literal["", "No", "Yes"] | None
+    def as_dict(self) -> ParametricRunControlRunsItem: ...  # type: ignore[override]
+
+class ParametricRunControlRunsItem(TypedDict, total=False):
+    """One group of :class:`ParametricRunControlRunsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     perform_run: Literal["", "No", "Yes"] | None
 
@@ -63958,10 +65103,16 @@ class ParametricRunControl(_TypedIDFObject):
     _creation_signature: _c20.ParametricRunControl
 
 class _ParametricRunControlFields(TypedDict, total=False):
-    runs: list[Any]
+    runs: list[ParametricRunControlRunsItem]
 
 class ParametricFileNameSuffixSuffixesGroup(_TypedExtensibleGroup):
     """One suffixes group inside :class:`ParametricFileNameSuffix`."""
+
+    suffix_for_file_name_in_run: str | None
+    def as_dict(self) -> ParametricFileNameSuffixSuffixesItem: ...  # type: ignore[override]
+
+class ParametricFileNameSuffixSuffixesItem(TypedDict, total=False):
+    """One group of :class:`ParametricFileNameSuffixSuffixesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     suffix_for_file_name_in_run: str | None
 
@@ -63976,7 +65127,7 @@ class ParametricFileNameSuffix(_TypedIDFObject):
     _creation_signature: _c28.ParametricFileNameSuffix
 
 class _ParametricFileNameSuffixFields(TypedDict, total=False):
-    suffixes: list[Any]
+    suffixes: list[ParametricFileNameSuffixSuffixesItem]
 
 class OutputVariableDictionary(_TypedIDFObject):
     """Produces a list summarizing the output variables and meters that are available for reporting for the model being simu..."""
@@ -65061,6 +66212,113 @@ class AnyOutputTableSummaryReportsReportsGroup(_TypedExtensibleGroup):
         | None,
     ) -> None: ...
 
+class AnyOutputTableSummaryReportsReportsItem(TypedDict, total=False):
+    """One group of :class:`AnyOutputTableSummaryReportsReportsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    report_name: (
+        Literal[
+            "AdaptiveComfortSummary",
+            "AirLoopComponentLoadSummary",
+            "AirLoopSystemComponentEnergyUseMonthly",
+            "AirLoopSystemComponentLoadsMonthly",
+            "AirLoopSystemEnergyAndWaterUseMonthly",
+            "AllMonthly",
+            "AllSummary",
+            "AllSummaryAndMonthly",
+            "AllSummaryAndSizingPeriod",
+            "AllSummaryMonthlyAndSizingPeriod",
+            "AnnualBuildingUtilityPerformanceSummary",
+            "AverageOutdoorConditionsMonthly",
+            "BoilerReportMonthly",
+            "ChillerReportMonthly",
+            "ClimaticDataSummary",
+            "CoilReportMonthly",
+            "CoilSizingDetails",
+            "ComfortReportSimple55Monthly",
+            "ComponentCostEconomicsSummary",
+            "ComponentSizingSummary",
+            "CondLoopDemandReportMonthly",
+            "DXReportMonthly",
+            "DaylightingReportMonthly",
+            "DemandEndUseComponentsSummary",
+            "EconomicResultSummary",
+            "ElectricComponentsOfPeakDemandMonthly",
+            "EndUseEnergyConsumptionCoalMonthly",
+            "EndUseEnergyConsumptionDieselMonthly",
+            "EndUseEnergyConsumptionElectricityMonthly",
+            "EndUseEnergyConsumptionFuelOilMonthly",
+            "EndUseEnergyConsumptionGasolineMonthly",
+            "EndUseEnergyConsumptionNaturalGasMonthly",
+            "EndUseEnergyConsumptionOtherFuelsMonthly",
+            "EndUseEnergyConsumptionPropaneMonthly",
+            "EnergyConsumptionCoalGasolineMonthly",
+            "EnergyConsumptionDieselFuelOilMonthly",
+            "EnergyConsumptionDistrictHeatingCoolingMonthly",
+            "EnergyConsumptionElectricityGeneratedPropaneMonthly",
+            "EnergyConsumptionElectricityNaturalGasMonthly",
+            "EnergyConsumptionOtherFuelsMonthly",
+            "EnergyMeters",
+            "EnvelopeSummary",
+            "EquipmentSummary",
+            "FacilityComponentLoadSummary",
+            "FanReportMonthly",
+            "GeneratorReportMonthly",
+            "HVACSizingSummary",
+            "HeatEmissionsReportMonthly",
+            "HeatEmissionsSummary",
+            "InitializationSummary",
+            "InputVerificationandResultsSummary",
+            "LEEDSummary",
+            "LifeCycleCostReport",
+            "LightingSummary",
+            "MechanicalVentilationLoadsMonthly",
+            "ObjectCountSummary",
+            "OccupantComfortDataSummaryMonthly",
+            "OutdoorAirSummary",
+            "OutdoorConditionsMaximumDewPointMonthly",
+            "OutdoorConditionsMaximumDryBulbMonthly",
+            "OutdoorConditionsMaximumWetBulbMonthly",
+            "OutdoorConditionsMinimumDryBulbMonthly",
+            "OutdoorGroundConditionsMonthly",
+            "PeakEnergyEndUseCoalMonthly",
+            "PeakEnergyEndUseDieselMonthly",
+            "PeakEnergyEndUseElectricityPart1Monthly",
+            "PeakEnergyEndUseElectricityPart2Monthly",
+            "PeakEnergyEndUseFuelOilMonthly",
+            "PeakEnergyEndUseGasolineMonthly",
+            "PeakEnergyEndUseNaturalGasMonthly",
+            "PeakEnergyEndUseOtherFuelsMonthly",
+            "PeakEnergyEndUsePropaneMonthly",
+            "PeakSpaceGainsMonthly",
+            "PlantLoopDemandReportMonthly",
+            "PumpReportMonthly",
+            "SensibleHeatGainSummary",
+            "SetpointsNotMetWithTemperaturesMonthly",
+            "ShadingSummary",
+            "SourceEnergyEndUseComponentsSummary",
+            "SpaceGainComponentsAtCoolingPeakMonthly",
+            "SpaceGainsMonthly",
+            "Standard62.1Summary",
+            "SurfaceShadowingSummary",
+            "SystemSummary",
+            "TariffReport",
+            "TowerReportMonthly",
+            "UnglazedTranspiredSolarCollectorSummaryMonthly",
+            "WaterHeaterReportMonthly",
+            "WindowACReportMonthly",
+            "WindowEnergyReportMonthly",
+            "WindowEnergyZoneSummaryMonthly",
+            "WindowReportMonthly",
+            "WindowZoneSummaryMonthly",
+            "ZoneComponentLoadSummary",
+            "ZoneCoolingSummaryMonthly",
+            "ZoneElectricSummaryMonthly",
+            "ZoneHeatingSummaryMonthly",
+            "ZoneTemperatureOscillationReportMonthly",
+        ]
+        | None
+    )
+
 class AnyOutputTableSummaryReports(_TypedIDFObject):
     """``Output:Table:SummaryReports`` as every supported EnergyPlus version declares it."""
 
@@ -65072,10 +66330,122 @@ class AnyOutputTableSummaryReports(_TypedIDFObject):
     _creation_signature: _c14.AnyOutputTableSummaryReports
 
 class _AnyOutputTableSummaryReportsFields(_OutputTableSummaryReportsCommonFields, total=False):
-    reports: list[Any]
+    reports: list[AnyOutputTableSummaryReportsReportsItem]
 
 class OutputTableSummaryReportsReportsGroup(AnyOutputTableSummaryReportsReportsGroup):
     """One reports group inside :class:`OutputTableSummaryReports`."""
+
+    report_name: (
+        Literal[
+            "AdaptiveComfortSummary",
+            "AirLoopComponentLoadSummary",
+            "AirLoopSystemComponentEnergyUseMonthly",
+            "AirLoopSystemComponentLoadsMonthly",
+            "AirLoopSystemEnergyAndWaterUseMonthly",
+            "AllMonthly",
+            "AllSummary",
+            "AllSummaryAndMonthly",
+            "AllSummaryAndSizingPeriod",
+            "AllSummaryMonthlyAndSizingPeriod",
+            "AnnualBuildingUtilityPerformanceSummary",
+            "AverageOutdoorConditionsMonthly",
+            "BoilerReportMonthly",
+            "CO2ResilienceSummary",
+            "ChillerReportMonthly",
+            "ClimaticDataSummary",
+            "CoilReportMonthly",
+            "CoilSizingDetails",
+            "ComfortReportSimple55Monthly",
+            "ComponentCostEconomicsSummary",
+            "ComponentSizingSummary",
+            "CondLoopDemandReportMonthly",
+            "DXReportMonthly",
+            "DaylightingReportMonthly",
+            "DemandEndUseComponentsSummary",
+            "EconomicResultSummary",
+            "ElectricComponentsOfPeakDemandMonthly",
+            "EndUseEnergyConsumptionCoalMonthly",
+            "EndUseEnergyConsumptionDieselMonthly",
+            "EndUseEnergyConsumptionElectricityMonthly",
+            "EndUseEnergyConsumptionFuelOilMonthly",
+            "EndUseEnergyConsumptionGasolineMonthly",
+            "EndUseEnergyConsumptionNaturalGasMonthly",
+            "EndUseEnergyConsumptionOtherFuelsMonthly",
+            "EndUseEnergyConsumptionPropaneMonthly",
+            "EnergyConsumptionCoalGasolineMonthly",
+            "EnergyConsumptionDieselFuelOilMonthly",
+            "EnergyConsumptionDistrictHeatingCoolingMonthly",
+            "EnergyConsumptionElectricityGeneratedPropaneMonthly",
+            "EnergyConsumptionElectricityNaturalGasMonthly",
+            "EnergyConsumptionOtherFuelsMonthly",
+            "EnergyMeters",
+            "EnvelopeSummary",
+            "EquipmentSummary",
+            "FacilityComponentLoadSummary",
+            "FanReportMonthly",
+            "GeneratorReportMonthly",
+            "HVACSizingSummary",
+            "HeatEmissionsReportMonthly",
+            "HeatEmissionsSummary",
+            "InitializationSummary",
+            "InputVerificationandResultsSummary",
+            "LEEDSummary",
+            "LifeCycleCostReport",
+            "LightingSummary",
+            "MechanicalVentilationLoadsMonthly",
+            "ObjectCountSummary",
+            "OccupantComfortDataSummaryMonthly",
+            "OutdoorAirDetails",
+            "OutdoorAirSummary",
+            "OutdoorConditionsMaximumDewPointMonthly",
+            "OutdoorConditionsMaximumDryBulbMonthly",
+            "OutdoorConditionsMaximumWetBulbMonthly",
+            "OutdoorConditionsMinimumDryBulbMonthly",
+            "OutdoorGroundConditionsMonthly",
+            "PeakEnergyEndUseCoalMonthly",
+            "PeakEnergyEndUseDieselMonthly",
+            "PeakEnergyEndUseElectricityPart1Monthly",
+            "PeakEnergyEndUseElectricityPart2Monthly",
+            "PeakEnergyEndUseFuelOilMonthly",
+            "PeakEnergyEndUseGasolineMonthly",
+            "PeakEnergyEndUseNaturalGasMonthly",
+            "PeakEnergyEndUseOtherFuelsMonthly",
+            "PeakEnergyEndUsePropaneMonthly",
+            "PeakSpaceGainsMonthly",
+            "PlantLoopDemandReportMonthly",
+            "PumpReportMonthly",
+            "SensibleHeatGainSummary",
+            "SetpointsNotMetWithTemperaturesMonthly",
+            "ShadingSummary",
+            "SourceEnergyEndUseComponentsSummary",
+            "SpaceGainComponentsAtCoolingPeakMonthly",
+            "SpaceGainsMonthly",
+            "Standard62.1Summary",
+            "SurfaceShadowingSummary",
+            "SystemSummary",
+            "TariffReport",
+            "ThermalResilienceSummary",
+            "TowerReportMonthly",
+            "UnglazedTranspiredSolarCollectorSummaryMonthly",
+            "VisualResilienceSummary",
+            "WaterHeaterReportMonthly",
+            "WindowACReportMonthly",
+            "WindowEnergyReportMonthly",
+            "WindowEnergyZoneSummaryMonthly",
+            "WindowReportMonthly",
+            "WindowZoneSummaryMonthly",
+            "ZoneComponentLoadSummary",
+            "ZoneCoolingSummaryMonthly",
+            "ZoneElectricSummaryMonthly",
+            "ZoneHeatingSummaryMonthly",
+            "ZoneTemperatureOscillationReportMonthly",
+        ]
+        | None
+    )
+    def as_dict(self) -> OutputTableSummaryReportsReportsItem: ...  # type: ignore[override]
+
+class OutputTableSummaryReportsReportsItem(TypedDict, total=False):
+    """One group of :class:`OutputTableSummaryReportsReportsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     report_name: (
         Literal[
@@ -65196,7 +66566,7 @@ class OutputTableSummaryReports(AnyOutputTableSummaryReports):
     _creation_signature: _c6.OutputTableSummaryReports
 
 class _OutputTableSummaryReportsFields(_OutputTableSummaryReportsCommonFields, total=False):
-    reports: list[Any]
+    reports: list[OutputTableSummaryReportsReportsItem]
 
 class _OutputTableTimeBinsCommonFields(TypedDict, total=False):
     key_value: str | None
@@ -65248,10 +66618,34 @@ class _OutputTableTimeBinsFields(_OutputTableTimeBinsCommonFields, total=False):
     interval_count: int | None
 
 class _OutputTableMonthlyCommonFields(TypedDict, total=False):
-    variable_details: list[Any]
+    variable_details: list[OutputTableMonthlyVariableDetailsItem]
 
 class OutputTableMonthlyVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`AnyOutputTableMonthly`."""
+
+    variable_or_meter_name: str | None
+    aggregation_type_for_variable_or_meter: (
+        Literal[
+            "HoursNegative",
+            "HoursNonNegative",
+            "HoursNonPositive",
+            "HoursNonZero",
+            "HoursPositive",
+            "HoursZero",
+            "Maximum",
+            "MaximumDuringHoursShown",
+            "Minimum",
+            "MinimumDuringHoursShown",
+            "SumOrAverage",
+            "SumOrAverageDuringHoursShown",
+            "ValueWhenMaximumOrMinimum",
+        ]
+        | None
+    )
+    def as_dict(self) -> OutputTableMonthlyVariableDetailsItem: ...  # type: ignore[override]
+
+class OutputTableMonthlyVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`OutputTableMonthlyVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     variable_or_meter_name: str | None
     aggregation_type_for_variable_or_meter: (
@@ -65337,6 +66731,33 @@ class AnyOutputTableAnnualVariableDetailsGroup(_TypedExtensibleGroup):
     @digits_after_decimal.setter
     def digits_after_decimal(self, value: int | None) -> None: ...
 
+class AnyOutputTableAnnualVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`AnyOutputTableAnnualVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    variable_or_meter_or_ems_variable_or_field_name: str | None
+    aggregation_type_for_variable_or_meter: (
+        Literal[
+            "HourInTenBinsMinToMax",
+            "HourInTenBinsMinToZero",
+            "HourInTenBinsZeroToMax",
+            "HoursNegative",
+            "HoursNonNegative",
+            "HoursNonPositive",
+            "HoursNonZero",
+            "HoursPositive",
+            "HoursZero",
+            "Maximum",
+            "MaximumDuringHoursShown",
+            "Minimum",
+            "MinimumDuringHoursShown",
+            "SumOrAverage",
+            "SumOrAverageDuringHoursShown",
+            "ValueWhenMaximumOrMinimum",
+        ]
+        | None
+    )
+    digits_after_decimal: int | None
+
 class AnyOutputTableAnnual(_TypedIDFObject):
     """``Output:Table:Annual`` as every supported EnergyPlus version declares it."""
 
@@ -65352,10 +66773,38 @@ class AnyOutputTableAnnual(_TypedIDFObject):
     _creation_signature: _c13.AnyOutputTableAnnual
 
 class _AnyOutputTableAnnualFields(_OutputTableAnnualCommonFields, total=False):
-    variable_details: list[Any]
+    variable_details: list[AnyOutputTableAnnualVariableDetailsItem]
 
 class OutputTableAnnualVariableDetailsGroup(AnyOutputTableAnnualVariableDetailsGroup):
     """One variable_details group inside :class:`OutputTableAnnual`."""
+
+    variable_or_meter_or_ems_variable_or_field_name: str | None
+    aggregation_type_for_variable_or_meter: (
+        Literal[
+            "HourInTenBinsMinToMax",
+            "HourInTenBinsMinToZero",
+            "HourInTenBinsZeroToMax",
+            "HoursNegative",
+            "HoursNonNegative",
+            "HoursNonPositive",
+            "HoursNonZero",
+            "HoursPositive",
+            "HoursZero",
+            "Maximum",
+            "MaximumDuringHoursShown",
+            "Minimum",
+            "MinimumDuringHoursShown",
+            "SumOrAverage",
+            "SumOrAverageDuringHoursShown",
+            "ValueWhenMaximumOrMinimum",
+        ]
+        | None
+    )
+    digits_after_decimal: int | None
+    def as_dict(self) -> OutputTableAnnualVariableDetailsItem: ...  # type: ignore[override]
+
+class OutputTableAnnualVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`OutputTableAnnualVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     variable_or_meter_or_ems_variable_or_field_name: str | None
     aggregation_type_for_variable_or_meter: (
@@ -65390,7 +66839,7 @@ class OutputTableAnnual(AnyOutputTableAnnual):
     _creation_signature: _c2.OutputTableAnnual
 
 class _OutputTableAnnualFields(_OutputTableAnnualCommonFields, total=False):
-    variable_details: list[Any]
+    variable_details: list[OutputTableAnnualVariableDetailsItem]
 
 class _OutputTableReportPeriodCommonFields(TypedDict, total=False):
     report_name: (
@@ -65659,10 +67108,17 @@ class _OutputMeterCumulativeMeterFileOnlyFields(TypedDict, total=False):
     )
 
 class _MeterCustomCommonFields(TypedDict, total=False):
-    variable_details: list[Any]
+    variable_details: list[MeterCustomVariableDetailsItem]
 
 class MeterCustomVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`AnyMeterCustom`."""
+
+    key_name: str | None
+    output_variable_or_meter_name: str | None
+    def as_dict(self) -> MeterCustomVariableDetailsItem: ...  # type: ignore[override]
+
+class MeterCustomVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`MeterCustomVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     key_name: str | None
     output_variable_or_meter_name: str | None
@@ -65729,10 +67185,17 @@ class _MeterCustomFields(_MeterCustomCommonFields, total=False):
 
 class _MeterCustomDecrementCommonFields(TypedDict, total=False):
     source_meter_name: str | None
-    variable_details: list[Any]
+    variable_details: list[MeterCustomDecrementVariableDetailsItem]
 
 class MeterCustomDecrementVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`AnyMeterCustomDecrement`."""
+
+    key_name: str | None
+    output_variable_or_meter_name: str | None
+    def as_dict(self) -> MeterCustomDecrementVariableDetailsItem: ...  # type: ignore[override]
+
+class MeterCustomDecrementVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`MeterCustomDecrementVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     key_name: str | None
     output_variable_or_meter_name: str | None
@@ -66329,6 +67792,28 @@ class OutputDiagnosticsDiagnosticsGroup(_TypedExtensibleGroup):
         ]
         | None
     )
+    def as_dict(self) -> OutputDiagnosticsDiagnosticsItem: ...  # type: ignore[override]
+
+class OutputDiagnosticsDiagnosticsItem(TypedDict, total=False):
+    """One group of :class:`OutputDiagnosticsDiagnosticsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    key: (
+        Literal[
+            "DisplayAdvancedReportVariables",
+            "DisplayAllWarnings",
+            "DisplayExtraWarnings",
+            "DisplayUnusedObjects",
+            "DisplayUnusedSchedules",
+            "DisplayWeatherMissingDataWarnings",
+            "DisplayZoneAirHeatBalanceOffBalance",
+            "DoNotMirrorAttachedShading",
+            "DoNotMirrorDetachedShading",
+            "ReportDetailedWarmupConvergence",
+            "ReportDuringHVACSizingSimulation",
+            "ReportDuringWarmup",
+        ]
+        | None
+    )
 
 class OutputDiagnostics(AnyOutputDiagnostics):
     """Special keys to produce certain warning messages or effect certain simulation characteristics."""
@@ -66339,7 +67824,7 @@ class OutputDiagnostics(AnyOutputDiagnostics):
     _creation_signature: _c25.OutputDiagnostics
 
 class _OutputDiagnosticsFields(_OutputDiagnosticsCommonFields, total=False):
-    diagnostics: list[Any]
+    diagnostics: list[OutputDiagnosticsDiagnosticsItem]
 
 class _OutputDebuggingDataCommonFields(TypedDict, total=False): ...
 
@@ -66438,6 +67923,12 @@ class PythonPluginSearchPathsPySearchPathsGroup(_TypedExtensibleGroup):
     """One py_search_paths group inside :class:`PythonPluginSearchPaths`."""
 
     search_path: str | None
+    def as_dict(self) -> PythonPluginSearchPathsPySearchPathsItem: ...  # type: ignore[override]
+
+class PythonPluginSearchPathsPySearchPathsItem(TypedDict, total=False):
+    """One group of :class:`PythonPluginSearchPathsPySearchPathsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    search_path: str | None
 
 class PythonPluginSearchPaths(AnyPythonPluginSearchPaths):
     """Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file ...; Since: 9.3.0"""
@@ -66453,7 +67944,7 @@ class PythonPluginSearchPaths(AnyPythonPluginSearchPaths):
 
 class _PythonPluginSearchPathsFields(_PythonPluginSearchPathsCommonFields, total=False):
     add_epin_environment_variable_to_search_path: Literal["", "No", "Yes"] | None
-    py_search_paths: list[Any]
+    py_search_paths: list[PythonPluginSearchPathsPySearchPathsItem]
 
 class PythonPluginInstance(_TypedIDFObject):
     """A single plugin to be executed during the simulation, which can contain multiple calling points for the same class in...; Since: 9.3.0"""
@@ -66491,6 +67982,12 @@ class PythonPluginVariablesGlobalPyVarsGroup(_TypedExtensibleGroup):
     """One global_py_vars group inside :class:`PythonPluginVariables`."""
 
     variable_name: str | None
+    def as_dict(self) -> PythonPluginVariablesGlobalPyVarsItem: ...  # type: ignore[override]
+
+class PythonPluginVariablesGlobalPyVarsItem(TypedDict, total=False):
+    """One group of :class:`PythonPluginVariablesGlobalPyVarsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    variable_name: str | None
 
 class PythonPluginVariables(AnyPythonPluginVariables):
     """This object defines name identifiers for custom Python Plugin variable data that should be shared among all running P...; Since: 9.3.0"""
@@ -66503,7 +68000,7 @@ class PythonPluginVariables(AnyPythonPluginVariables):
     _creation_signature: _c1.PythonPluginVariables
 
 class _PythonPluginVariablesFields(_PythonPluginVariablesCommonFields, total=False):
-    global_py_vars: list[Any]
+    global_py_vars: list[PythonPluginVariablesGlobalPyVarsItem]
 
 class _PythonPluginTrendVariableCommonFields(TypedDict, total=False):
     name_of_a_python_plugin_variable: str | None
