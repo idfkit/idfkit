@@ -26,30 +26,41 @@ from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
 _PACKAGE = Path(versioned.__file__).resolve().parent
 
 
-def _committed() -> tuple[str, str, str, str]:
-    """The committed stubs: types, document, versioned, and the per-release document modules joined."""
+_Sources = tuple[str, str, str, str, dict[str, str]]
+
+
+def _committed() -> _Sources:
+    """The committed stubs: types, document, versioned, the per-release document modules joined, and
+    the creation signature modules by name."""
     documents = sorted((_PACKAGE / "_versioned").glob("v*.pyi"))
     return (
         (_PACKAGE / "_generated_types.pyi").read_text(encoding="utf-8"),
         (_PACKAGE / "document.pyi").read_text(encoding="utf-8"),
         (_PACKAGE / "versioned.pyi").read_text(encoding="utf-8"),
         "\n".join(path.read_text(encoding="utf-8") for path in documents),
+        {path.stem: path.read_text(encoding="utf-8") for path in sorted((_PACKAGE / "_creation").glob("_*.pyi"))},
     )
 
 
-def _generated() -> tuple[str, str, str, str]:
+def _generated() -> _Sources:
     """What the generator writes now, in the shape of :func:`_committed`."""
     documents = gen.generate_versioned_documents()
+    creation = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+    versioned_creation = gen._CreationModules("_v", "_cv")  # pyright: ignore[reportPrivateUsage]
+    types = gen.generate_stubs(sink=creation)
+    versioned_source = gen.generate_versioned_pyi(versioned_creation)
+    modules = {**creation.sources(), **versioned_creation.sources()}
     return (
-        gen.generate_stubs(),
+        types,
         gen.generate_document_pyi(),
-        gen.generate_versioned_pyi(),
+        versioned_source,
         "\n".join(source for name, source in sorted(documents.items()) if name != "__init__.pyi"),
+        {name.removesuffix(".pyi"): source for name, source in modules.items()},
     )
 
 
-def _verify(sources: tuple[str, ...] | list[str], versions: tuple[tuple[int, int, int], ...]) -> list[str]:
-    return verify(sources[0], sources[1], [sources[2], sources[3]], versions)
+def _verify(sources: _Sources | list[Any], versions: tuple[tuple[int, int, int], ...]) -> list[str]:
+    return verify(sources[0], sources[1], [sources[2], sources[3]], versions, sources[4])
 
 
 # ---------------------------------------------------------------------------
@@ -396,7 +407,7 @@ class TestCommittedStubs:
         # AnyIDFDocument as the latest release, a negative one on a type every release has made its
         # branch unreachable, and it offered get(), setdefault() and pop(), which a document does not
         # have. So documents index through __getitem__ overloads, and no object-type map is generated.
-        for source in _committed():
+        for source in _committed()[:4]:
             assert "_ObjectTypeMap" not in source
             assert "_CommonTypeMap" not in source
             assert "closed=True" not in source
@@ -542,6 +553,45 @@ class TestCommittedStubs:
         mutated = re.sub(pattern, replacement, sources[source], count=1)
         assert mutated != sources[source], "the mutation did not apply"
         sources[source] = mutated
+        problems = _verify(sources, ENERGYPLUS_VERSIONS)
+        assert any(expected in problem for problem in problems), problems
+
+    @pytest.mark.parametrize(
+        ("pattern", "replacement", "expected"),
+        [
+            (
+                r"(class Material:.*?)thickness: float,",
+                r"\1thickness: float | None = ...,",
+                "Material in 26.2.0 (Material): add() does not require thickness",
+            ),
+            (
+                r"(class Material:.*?)thermal_absorptance: float \| None = 0\.9",
+                r"\1thermal_absorptance: float | None = 0.8",
+                "add() shows thermal_absorptance = 0.8, not the schema's default",
+            ),
+            (
+                r"(class OutputSQLite:\s+def __call__\(\s*self,)",
+                r'\1 name: str = "",',
+                "the name is optional in add(), none in the schema",
+            ),
+            (
+                r"(class AnyInternalMass:.*?)construction_name: str \| None = \.\.\.",
+                r"\1construction_name: str",
+                "(AnyInternalMass): add() requires construction_name, which the schema does not",
+            ),
+            (
+                r"(class InternalMass_v9_2_to_v9_5:.*?)zone_or_zonelist_name: str,",
+                r"\1zone_or_zonelist_name: str | None = ...,",
+                "add() does not require zone_or_zonelist_name",
+            ),
+        ],
+    )
+    def test_a_misdescribed_creation_signature_is_reported(self, pattern: str, replacement: str, expected: str) -> None:
+        sources = list(_committed())
+        creation = dict(sources[4])
+        name = next(name for name, source in creation.items() if re.search(pattern, source, flags=re.S))
+        creation[name] = re.sub(pattern, replacement, creation[name], count=1, flags=re.S)
+        sources[4] = creation
         problems = _verify(sources, ENERGYPLUS_VERSIONS)
         assert any(expected in problem for problem in problems), problems
 

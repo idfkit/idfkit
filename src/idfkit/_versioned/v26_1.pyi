@@ -44,16 +44,19 @@ class IDFDocumentV26_1(
     _v._Accessors_v23_1_to_v26_2,
     _v._Accessors_v23_2_to_v26_2,
     _v._Accessors_v24_1_to_v26_2,
+    _v._Accessors_v24_2_to_v26_1,
     _v._Accessors_v24_2_to_v26_2,
+    _v._Accessors_v25_1_to_v26_1,
     _v._Accessors_v25_1_to_v26_2,
     _v._Accessors_v25_2_to_v26_2,
+    _v._Accessors_v26_1,
     _v._Accessors_v26_1_to_v26_2,
     IDFDocumentAllVersions[Strict],
 ):
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 26.1.0."""
 
     @overload
-    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_g.Version]: ...
+    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_v.Version_v26_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["SimulationControl"], /) -> IDFCollection[_g.SimulationControl]: ...
     @overload
@@ -401,7 +404,7 @@ class IDFDocumentV26_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["BuildingSurface:Detailed"], /
-    ) -> IDFCollection[_g.BuildingSurfaceDetailed]: ...
+    ) -> IDFCollection[_v.BuildingSurfaceDetailed_v25_1_to_v26_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["Wall:Detailed"], /) -> IDFCollection[_g.WallDetailed]: ...
     @overload
@@ -459,7 +462,7 @@ class IDFDocumentV26_1(
         self, obj_type: Literal["WindowProperty:StormWindow"], /
     ) -> IDFCollection[_g.WindowPropertyStormWindow]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["InternalMass"], /) -> IDFCollection[_g.InternalMass]: ...
+    def __getitem__(self, obj_type: Literal["InternalMass"], /) -> IDFCollection[_v.InternalMass_v24_2_to_v26_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["Shading:Site"], /) -> IDFCollection[_g.ShadingSite]: ...
     @overload
@@ -1255,7 +1258,7 @@ class IDFDocumentV26_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneControl:ContaminantController"], /
-    ) -> IDFCollection[_g.ZoneControlContaminantController]: ...
+    ) -> IDFCollection[_v.ZoneControlContaminantController_v8_9_to_v26_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:IdealLoadsAirSystem"], /

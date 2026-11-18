@@ -22,6 +22,7 @@ import dataclasses
 import functools
 import re
 import sys
+import zlib
 from collections.abc import Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import Any, TypeAlias
@@ -70,7 +71,14 @@ def supported_up_to(latest: Version) -> Iterator[None]:
 
 
 def _clear_version_caches() -> None:
-    for cached in (_build_type_runs, _shared_layout, _merged_groups, _class_assignment, _accessor_spans):
+    for cached in (
+        _build_type_runs,
+        _shared_layout,
+        _merged_groups,
+        _class_assignment,
+        _accessor_spans,
+        _shared_creation,
+    ):
         cached.cache_clear()
 
 
@@ -448,6 +456,8 @@ def _generate_object_class(
     emit_update: bool = True,
     undocumented: frozenset[str] = frozenset(),
     properties: Mapping[str, tuple[str, str]] | None = None,
+    inherited: Iterable[tuple[str, str]] = (),
+    sink: _CreationModules | None = None,
 ) -> list[str]:
     """Generate a typed IDFObject subclass for *obj_type*.
 
@@ -476,6 +486,9 @@ def _generate_object_class(
         undocumented: Fields declared without a docstring.
         properties: Fields declared as a property instead of an attribute, each with the value type
             reading it gives and the one assigning to it accepts (see :func:`_generate_base_class`).
+        inherited: The ``update`` keywords *fields_base* already holds, with their annotations; with
+            the class's own, they make its ``_creation_signature`` (:func:`_creation_lines`).
+        sink: Where the creation signature is filed; a throwaway one when ``None``.
     """
     cls_name = cls_name or _to_class_name(obj_type) + suffix
     lines: list[str] = []
@@ -507,14 +520,21 @@ def _generate_object_class(
         lines.append(f'{body_indent}"""{cls_doc}"""')
         has_body = True
 
+    inherited = list(inherited)
+    sink = sink if sink is not None else _CreationModules()
     if not field_names and not group_cls_name:
-        if emit_update and fields_base != "TypedDict":
+        if not emit_update:
+            lines[-1:] = [lines[-1], ""] if has_body else [f"{indent}class {cls_name}({base}): ..."]
+            return lines
+        creation = _creation_lines(
+            cls_name, _in_field_order(schema, obj_type, inherited), _creation_info(schema, obj_type), body_indent, sink
+        )
+        if fields_base != "TypedDict":
             # Every field is on the shared base, but update still takes them all as keywords.
-            lines.extend(_generate_update(cls_name, [], indent, fields_base))
-        elif has_body:
-            lines.append("")
+            lines.extend(_generate_update(cls_name, [], indent, fields_base, creation))
         else:
-            lines[-1] = f"{indent}class {cls_name}({base}): ..."
+            # No field at all (a type with only a name): update stays IDFObject's, add() takes the name.
+            lines.extend(["", *creation])
         return lines
 
     update_fields: list[tuple[str, str]] = []
@@ -529,8 +549,24 @@ def _generate_object_class(
         update_fields.append((wrapper_key, "list[Any]"))
 
     if emit_update:
-        lines.extend(_generate_update(cls_name, update_fields, indent, fields_base))
+        creation = _creation_lines(
+            cls_name,
+            _in_field_order(schema, obj_type, [*inherited, *update_fields]),
+            _creation_info(schema, obj_type),
+            body_indent,
+            sink,
+        )
+        lines.extend(_generate_update(cls_name, update_fields, indent, fields_base, creation))
     return lines
+
+
+def _in_field_order(schema: EpJSONSchema, obj_type: str, entries: Iterable[tuple[str, str]]) -> list[tuple[str, str]]:
+    """*entries* (``update`` keywords) in *obj_type*'s field order, without ``name``; the group wrapper last."""
+    order = {name: i for i, name in enumerate(_field_decls(schema, obj_type))}
+    # The first entry for a name wins: a release whose key ends in "_" (9.0's
+    # construction_with_shading_name_) declares its alias, which the shared base already holds.
+    kept = dict(reversed([(name, annotation) for name, annotation in entries if name != "name"]))
+    return sorted(kept.items(), key=lambda entry: order.get(entry[0], len(order)))
 
 
 def _generate_group_class(
@@ -557,7 +593,11 @@ def _generate_group_class(
 
 
 def _generate_update(
-    cls_name: str, fields: list[tuple[str, str]], indent: str, fields_base: str = "TypedDict"
+    cls_name: str,
+    fields: list[tuple[str, str]],
+    indent: str,
+    fields_base: str = "TypedDict",
+    creation: Iterable[str] = (),
 ) -> list[str]:
     """Type ``update`` on *cls_name* with a private ``TypedDict`` of its fields.
 
@@ -567,12 +607,15 @@ def _generate_update(
     ``TypedDict`` there would reject a mapping built at run time, ``None``, and the spaced field
     names single assignment accepts, all of which the method accepts. The override narrows
     ``IDFObject.update``'s ``**kwargs: Any``, which mypy reports; pyright does not.
+
+    *creation* is the class's ``_creation_signature`` (:func:`_creation_lines`), emitted after it.
     """
     fields_cls = f"_{cls_name}Fields"
     lines = [
         "",
         f"{indent}    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[{fields_cls}]) "
         "-> None: ...  # type: ignore[override]",
+        *creation,
         "",
         f"{indent}class {fields_cls}({fields_base}, total=False):",
     ]
@@ -791,17 +834,225 @@ def _version_tag(ver: Version) -> str:
     return f"{ver[0]}_{ver[1]}"
 
 
-_Signature: TypeAlias = tuple[tuple[tuple[str, str], ...], tuple[str, frozenset[tuple[str, str]]] | None]
+_Signature: TypeAlias = tuple[tuple[tuple[str, str], ...], tuple[str, frozenset[tuple[str, str]]] | None, "_Creation"]
 
 
 def _class_signature(schema: EpJSONSchema, obj_type: str) -> _Signature:
     """What a version's class for *obj_type* declares, to compare across versions.
 
-    Its fields with their value types, in order, and its extensible group with the group's fields
-    as a set: some versions list a group's fields in another order (8.9's vertices), which changes
-    nothing a type checker sees, so it does not make a second class.
+    Its fields with their value types, in order, its extensible group with the group's fields as a
+    set (some versions list a group's fields in another order, 8.9's vertices, which changes nothing
+    a type checker sees, so it does not make a second class), and how an object of it is created:
+    which fields are required and which defaults are shown (:func:`_creation_info`). Two releases
+    that type the fields alike but require different ones get a class each, so each release's
+    ``add()`` requires exactly what that release's validator does.
     """
-    return tuple(_field_decls(schema, obj_type).items()), _group_key(_group_decl(schema, obj_type))
+    return (
+        tuple(_field_decls(schema, obj_type).items()),
+        _group_key(_group_decl(schema, obj_type)),
+        _creation_info(schema, obj_type),
+    )
+
+
+# ---- the creation signature ------------------------------------------------
+
+# A string default longer than this is shown as ``...``: the signature is read in a tooltip.
+_MAX_DEFAULT_LENGTH = 40
+
+
+@dataclasses.dataclass(frozen=True)
+class _Creation:
+    """How an object of one type is created in one release, as ``_creation_signature`` spells it.
+
+    Attributes:
+        name: ``"required"`` for a type whose schema requires a name (``name: str``), ``"optional"``
+            for a named type whose name may be left empty (``name: str = ""``), ``"none"`` for a type
+            without a Name field, which takes no name.
+        required: The fields the schema requires and gives no default: the run-time validator
+            refuses an object missing one (``E001``), so the signature has them without a default.
+        defaults: Each field's schema default as Python source (``0.9``, ``"Rough"``), for the
+            defaults that are a number or a short plain string; others are shown as ``...``.
+    """
+
+    name: str
+    required: frozenset[str]
+    defaults: tuple[tuple[str, str], ...]
+
+
+def _render_default(value: object) -> str | None:
+    """A schema default as the Python source a signature shows, or ``None`` when it is not shown.
+
+    Numbers and short plain strings only: a boolean, a list, a long string or one with a quote,
+    backslash or non-printable character is shown as ``...``.
+    """
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        # 2.0 is written 2: some releases give an integer field's default as a float, and an int
+        # default fits a float annotation as well as an int one.
+        text = str(int(value)) if value.is_integer() else repr(value)
+        # repr() uses exponent notation for very large and small numbers; those stay "...".
+        return text if text.lstrip("-").replace(".", "", 1).isdigit() else None
+    if isinstance(value, str):
+        if len(value) > _MAX_DEFAULT_LENGTH or not value.isprintable() or any(c in value for c in "\"'\\"):
+            return None
+        return f'"{value}"'
+    return None
+
+
+def _name_kind(schema: EpJSONSchema, obj_type: str) -> str:
+    """``"required"``, ``"optional"`` or ``"none"``: how ``add()`` takes the name of *obj_type*."""
+    if not schema.has_name(obj_type):
+        return "none"
+    object_schema: dict[str, Any] = schema.get_object_schema(obj_type) or {}
+    name_schema: dict[str, Any] = object_schema.get("name") or {}
+    return "required" if name_schema.get("is_required") else "optional"
+
+
+def _creation_info(schema: EpJSONSchema, obj_type: str) -> _Creation:
+    """How *obj_type* is created in *schema*'s release (see :class:`_Creation`)."""
+    inner: dict[str, Any] = schema.get_inner_schema(obj_type) or {}
+    properties: dict[str, dict[str, Any]] = inner.get("properties", {})
+    listed: list[str] = inner.get("required", [])
+    required = frozenset(f for f in listed if f.isidentifier() and "default" not in properties.get(f, {}))
+    defaults: list[tuple[str, str]] = []
+    for field_name, field_schema in properties.items():
+        if field_name.isidentifier() and "default" in field_schema:
+            rendered = _render_default(field_schema["default"])
+            if rendered is not None:
+                defaults.append((field_name, rendered))
+    return _Creation(_name_kind(schema, obj_type), required, tuple(sorted(defaults)))
+
+
+@functools.cache
+def _shared_creation(obj_type: str) -> _Creation:
+    """How ``Any<Class>`` creates *obj_type*: what is safe whichever release the document is.
+
+    A field is required only where every release that has the type requires it, so a call that
+    type-checks is not refused for a missing field by any of them; a default is shown only where
+    every such release has the same one. The name is required only where every release requires it.
+    """
+    infos = [_creation_info(get_schema(ver), obj_type) for ver in _versions_with(obj_type)]
+    first = infos[0]
+    required = first.required.intersection(*(info.required for info in infos[1:]))
+    common = set(first.defaults).intersection(*(set(info.defaults) for info in infos[1:]))
+    defaults = tuple(item for item in first.defaults if item in common)
+    # A name is taken but not required when the releases disagree.
+    kinds = {info.name for info in infos}
+    name = kinds.pop() if len(kinds) == 1 else "optional"
+    return _Creation(name, required, defaults)
+
+
+def _versions_with(obj_type: str) -> list[Version]:
+    """Every supported release whose schema has *obj_type*, oldest first."""
+    return [ver for run in _build_type_runs()[obj_type] for ver in run]
+
+
+def _strip_none(annotation: str) -> str:
+    """*annotation* without its trailing ``| None``: the value a required field must be given."""
+    return annotation[: -len(" | None")] if annotation.endswith(" | None") else annotation
+
+
+# How many modules the creation signatures of one family of classes are spread over.
+_CREATION_BUCKETS = 32
+
+
+@dataclasses.dataclass
+class _CreationModules:
+    """The creation signatures of one family of classes, filed in ``idfkit/_creation`` modules.
+
+    A class does not declare its creation signature itself: it declares ``_creation_signature`` as
+    an instance of a class whose ``__call__`` has that signature, defined in one of
+    :data:`_CREATION_BUCKETS` modules of ``idfkit/_creation`` chosen from the class name. A type
+    checker reads such a module only when it resolves the signature, which it does to check an
+    ``add()`` call on that type. The signatures repeat every field's annotation and are as large as
+    the classes themselves: declared in the class, they would be parsed and bound in every file that
+    imports idfkit, which is most of a cold ``pyright`` run.
+
+    Attributes:
+        module: The module name prefix, ``_b`` (latest and ``Any<Class>`` classes) or ``_v`` (the
+            classes of older ranges, read only where a file names an older release).
+        alias: The prefix the generated stub imports the modules under (``_c``, ``_cv``).
+        classes: Each module's class definitions, by bucket.
+    """
+
+    module: str = "_b"
+    alias: str = "_c"
+    classes: dict[int, list[str]] = dataclasses.field(default_factory=dict[int, list[str]])
+
+    def add(self, cls_name: str, params: str) -> str:
+        """File the signature (*params*, without parentheses) of *cls_name*; return its annotation."""
+        bucket = zlib.crc32(cls_name.encode()) % _CREATION_BUCKETS
+        self.classes.setdefault(bucket, []).extend([
+            f"class {cls_name}:",
+            f"    def __call__({params}) -> None: ...",
+            "",
+        ])
+        return f"{self.alias}{bucket}.{cls_name}"
+
+    def imports(self) -> list[str]:
+        """The import of every module, for the stub whose classes annotate with them."""
+        return [f"from ._creation import {self.module}{k} as {self.alias}{k}" for k in range(_CREATION_BUCKETS)]
+
+    def sources(self) -> dict[str, str]:
+        """Each module's source by file name (``_b7.pyi``), every bucket included, empty or not."""
+        out: dict[str, str] = {}
+        for k in range(_CREATION_BUCKETS):
+            body = "\n".join(self.classes.get(k, []))
+            typing_names = [n for n in ("Any", "Literal") if re.search(rf"\b{n}\b", body)]
+            header = [
+                '"""Creation signatures of generated classes (stub only).',
+                "",
+                "DO NOT EDIT — regenerate with:",
+                "    python -m idfkit.codegen.generate_stubs",
+                '"""',
+                "",
+                "from __future__ import annotations",
+                "",
+            ]
+            if typing_names:
+                header.append(f"from typing import {', '.join(typing_names)}")
+            if re.search(r"\bNever\b", body):
+                header.append("from typing_extensions import Never")
+            out[f"{self.module}{k}.pyi"] = "\n".join([*header, "", body]).rstrip() + "\n"
+        return out
+
+
+def _creation_lines(
+    cls_name: str, fields: Iterable[tuple[str, str]], creation: _Creation, indent: str, sink: _CreationModules
+) -> list[str]:
+    """Declare *cls_name*'s ``_creation_signature``, the signature ``IDFCollection.add`` captures.
+
+    The class body at *indent* gets the attribute; the signature itself goes to *sink*
+    (:class:`_CreationModules`). *fields* are the keywords with the annotations the class's
+    ``update`` ``TypedDict`` gives them, in field order. The name comes first, positional-only, when
+    the type has one; the fields follow, keyword-only: the required ones without a default and with
+    ``None`` taken out (leaving one empty is what makes it missing), then the others with their
+    schema default where the annotation admits it, and ``...`` otherwise.
+    """
+    params = ["self"]
+    if creation.name == "required":
+        params.append("name: str")
+    elif creation.name == "optional":
+        params.append('name: str = ""')
+    params.append("/")
+    defaults = dict(creation.defaults)
+    required: list[str] = []
+    optional: list[str] = []
+    for name, annotation in fields:
+        value_type = _strip_none(annotation)
+        if name in creation.required and value_type not in ("None", "Never"):
+            required.append(f"{name}: {value_type}")
+            continue
+        default = defaults.get(name)
+        shown = default if default is not None and _admits(_split_union(value_type), default) else "..."
+        optional.append(f"{name}: {annotation} = {shown}")
+    if required or optional:
+        params.append("*")
+    params += required + optional
+    return [f"{indent}_creation_signature: {sink.add(cls_name, ', '.join(params))}"]
 
 
 @functools.cache
@@ -1150,6 +1401,7 @@ def _generate_base_class(
     layout: _SharedLayout,
     type_since: dict[str, tuple[int, int, int]],
     field_since: dict[tuple[str, str], tuple[int, int, int]],
+    sink: _CreationModules,
 ) -> list[str]:
     r"""Generate ``Any<Class>``: the fields of *obj_type* present in every supported version.
 
@@ -1162,11 +1414,7 @@ def _generate_base_class(
     fields declared identically everywhere, so those are written once.
     """
     base = _shared_class_name(obj_type)
-    latest = _field_decls(schema, obj_type)
-    common = [(name, f"{latest[name]} | None") for name in latest if name in layout.identical and name != "name"]
-    group = _group_decl(schema, obj_type)
-    if layout.group and group is not None:
-        common.append((group[0], "list[Any]"))
+    common = _common_entries(schema, obj_type, layout)
     lines = [f"class {_common_fields_name(obj_type)}(TypedDict, total=False):"]
     lines.extend(f"    {name}: {py_type}" for name, py_type in common)
     if not common:
@@ -1196,8 +1444,21 @@ def _generate_base_class(
     if merged_group is not None:
         lines.append(f"    {merged_group.wrapper}: ExtensibleList[{merged_group.cls_name}]")
         varying.append((merged_group.wrapper, "list[Any]"))
-    lines.extend(_generate_update(base, varying, "", _common_fields_name(obj_type)))
+    creation = _creation_lines(
+        base, _in_field_order(schema, obj_type, [*common, *varying]), _shared_creation(obj_type), "    ", sink
+    )
+    lines.extend(_generate_update(base, varying, "", _common_fields_name(obj_type), creation))
     return lines
+
+
+def _common_entries(schema: EpJSONSchema, obj_type: str, layout: _SharedLayout) -> list[tuple[str, str]]:
+    """The ``update`` keywords of ``_<Class>CommonFields``: the fields every version declares alike."""
+    decls = _field_decls(schema, obj_type)
+    common = [(name, f"{decls[name]} | None") for name in decls if name in layout.identical and name != "name"]
+    group = _group_decl(schema, obj_type)
+    if layout.group and group is not None:
+        common.append((group[0], "list[Any]"))
+    return common
 
 
 def _or_none(value_type: str) -> str:
@@ -1302,7 +1563,7 @@ def _check_version_tags(versions: tuple[Version, ...] | None = None) -> None:
         raise ValueError(msg)
 
 
-def generate_versioned_pyi() -> str:
+def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
     """Generate ``versioned.pyi``: an ``IDFDocument`` type for every supported older version.
 
     Everything below is derived from ``SUPPORTED.versions`` and the bundled schemas, so adopting
@@ -1316,7 +1577,10 @@ def generate_versioned_pyi() -> str:
       range they hold over, so each entry is written once.
     * Each version's document type is defined in a module of its own under ``_versioned``
       (:func:`generate_versioned_documents`) and re-exported here.
+    * The classes' creation signatures are filed in *sink*, the ``_v`` modules of ``_creation``
+      (:class:`_CreationModules`), so a file naming an older release reads only those it checks.
     """
+    sink = sink if sink is not None else _CreationModules("_v", "_cv")
     _check_version_tags()
     layout = _shared_layout()
     _, older_runs = _class_assignment()
@@ -1337,6 +1601,7 @@ def generate_versioned_pyi() -> str:
         "from typing_extensions import TypedDict, Unpack",
         "",
         "from . import _generated_types as _g",
+        *sink.imports(),
         *(
             f"from ._versioned.{_versioned_module(ver)} import {_document_class_name(ver)} as {_document_class_name(ver)}"
             for ver in older
@@ -1369,6 +1634,8 @@ def generate_versioned_pyi() -> str:
                 skip_fields=shared.identical if shared else frozenset(),
                 omit_group=shared.group if shared else False,
                 fields_base=f"_g.{_common_fields_name(obj_type)}" if shared else "TypedDict",
+                inherited=_common_entries(schema, obj_type, shared) if shared else (),
+                sink=sink,
             )
         )
         parts.append("")
@@ -1733,21 +2000,25 @@ def _as_latest(version: Version | None) -> contextlib.AbstractContextManager[Non
     return supported_up_to(version)
 
 
-def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
+def generate_stubs(version: tuple[int, int, int] | None = None, sink: _CreationModules | None = None) -> str:
     """Generate the full ``_generated_types.pyi`` content.
 
     Args:
         version: The release to type ``IDFDocument`` for, as if it were the newest supported;
             defaults to the latest release.
+        sink: Where the classes' creation signatures are filed (:class:`_CreationModules`); they
+            are dropped when ``None``.
 
     Returns:
         Complete Python source for the generated types module.
     """
     with _as_latest(version):
-        return _generate_types_module()
+        return _generate_types_module(sink)
 
 
-def _generate_types_module() -> str:
+def _generate_types_module(sink: _CreationModules | None = None) -> str:
+    """``_generated_types.pyi``, filing its classes' creation signatures in *sink* (see :class:`_CreationModules`)."""
+    sink = sink if sink is not None else _CreationModules()
     ver = SUPPORTED.latest
     schema = get_schema(ver)
     version_str = f"{ver[0]}.{ver[1]}.{ver[2]}"
@@ -1769,6 +2040,7 @@ def _generate_types_module() -> str:
     parts.append("")
     parts.append("from typing_extensions import Never, Unpack")
     parts.append("")
+    parts.extend(sink.imports())
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
     parts.append("")
     parts.extend(_generate_typed_bases())
@@ -1784,7 +2056,7 @@ def _generate_types_module() -> str:
     layout = _shared_layout()
     for obj_type in schema.object_types:
         if obj_type in layout:
-            parts.extend(_generate_base_class(schema, obj_type, layout[obj_type], type_since, field_since))
+            parts.extend(_generate_base_class(schema, obj_type, layout[obj_type], type_since, field_since, sink))
             parts.append("")
             class_lines = _generate_object_class(
                 schema,
@@ -1796,6 +2068,8 @@ def _generate_types_module() -> str:
                 skip_fields=layout[obj_type].identical,
                 omit_group=layout[obj_type].group,
                 fields_base=_common_fields_name(obj_type),
+                inherited=_common_entries(schema, obj_type, layout[obj_type]),
+                sink=sink,
             )
         else:
             class_lines = _generate_object_class(
@@ -1803,6 +2077,7 @@ def _generate_types_module() -> str:
                 obj_type,
                 type_since=type_since,
                 field_since=field_since,
+                sink=sink,
             )
         parts.extend(class_lines)
         parts.append("")
@@ -2101,6 +2376,19 @@ def _generate_document_module() -> str:
     return "\n".join(lines)
 
 
+_CREATION_PACKAGE_DOC = '''"""The creation signatures of the generated classes, one module per bucket of classes (stub only).
+
+DO NOT EDIT — regenerate with:
+    python -m idfkit.codegen.generate_stubs
+
+Each generated class declares ``_creation_signature`` as an instance of a class defined here, whose
+``__call__`` is the signature ``IDFCollection.add`` takes: the name, the required fields, the others
+with their defaults. Kept apart from the classes so that a type checker reads a module only when it
+checks an ``add()`` call on one of its classes.
+"""
+'''
+
+
 def main() -> None:
     """CLI entry point."""
     version: tuple[int, int, int] | None = None
@@ -2114,7 +2402,9 @@ def main() -> None:
 
 def _write_stubs(base_path: Path) -> None:
     """Write, format and verify every generated stub under *base_path* (``src/idfkit``)."""
-    content = _generate_types_module()
+    creation = _CreationModules()
+    versioned_creation = _CreationModules("_v", "_cv")
+    content = _generate_types_module(creation)
     doc_pyi = _generate_document_module()
 
     types_path = base_path / "_generated_types.pyi"
@@ -2124,7 +2414,7 @@ def _write_stubs(base_path: Path) -> None:
     pyi_path.write_text(doc_pyi, encoding="utf-8")
 
     versioned_path = base_path / "versioned.pyi"
-    versioned_path.write_text(generate_versioned_pyi(), encoding="utf-8")
+    versioned_path.write_text(generate_versioned_pyi(versioned_creation), encoding="utf-8")
 
     versioned_runtime_path = base_path / "versioned.py"
     versioned_runtime_path.write_text(generate_versioned_py(), encoding="utf-8")
@@ -2141,6 +2431,16 @@ def _write_stubs(base_path: Path) -> None:
     for path in document_paths:
         path.write_text(documents[path.name], encoding="utf-8")
 
+    creation_dir = base_path / "_creation"
+    creation_dir.mkdir(exist_ok=True)
+    creation_sources = {"__init__.pyi": _CREATION_PACKAGE_DOC, **creation.sources(), **versioned_creation.sources()}
+    for stale in creation_dir.glob("*.pyi"):
+        if stale.name not in creation_sources:
+            stale.unlink()
+    creation_paths = [creation_dir / name for name in creation_sources]
+    for path in creation_paths:
+        path.write_text(creation_sources[path.name], encoding="utf-8")
+
     # Run ruff format so regenerated stubs match the committed (ruff-formatted) versions
     import subprocess
 
@@ -2155,6 +2455,7 @@ def _write_stubs(base_path: Path) -> None:
             str(versioned_path),
             str(versioned_runtime_path),
             *(str(path) for path in document_paths),
+            *(str(path) for path in creation_paths),
         ],
         check=False,
     )
@@ -2165,6 +2466,7 @@ def _write_stubs(base_path: Path) -> None:
         pyi_path.read_text(encoding="utf-8"),
         [versioned_path.read_text(encoding="utf-8"), *(path.read_text(encoding="utf-8") for path in document_paths)],
         SUPPORTED.versions,
+        {path.stem: path.read_text(encoding="utf-8") for path in creation_paths},
     )
     if problems:
         for problem in problems:

@@ -12,6 +12,38 @@ from typing import Any, Literal, TypeAlias, TypeVar, overload
 from typing_extensions import TypedDict, Unpack
 
 from . import _generated_types as _g
+from ._creation import _v0 as _cv0
+from ._creation import _v1 as _cv1
+from ._creation import _v2 as _cv2
+from ._creation import _v3 as _cv3
+from ._creation import _v4 as _cv4
+from ._creation import _v5 as _cv5
+from ._creation import _v6 as _cv6
+from ._creation import _v7 as _cv7
+from ._creation import _v8 as _cv8
+from ._creation import _v9 as _cv9
+from ._creation import _v10 as _cv10
+from ._creation import _v11 as _cv11
+from ._creation import _v12 as _cv12
+from ._creation import _v13 as _cv13
+from ._creation import _v14 as _cv14
+from ._creation import _v15 as _cv15
+from ._creation import _v16 as _cv16
+from ._creation import _v17 as _cv17
+from ._creation import _v18 as _cv18
+from ._creation import _v19 as _cv19
+from ._creation import _v20 as _cv20
+from ._creation import _v21 as _cv21
+from ._creation import _v22 as _cv22
+from ._creation import _v23 as _cv23
+from ._creation import _v24 as _cv24
+from ._creation import _v25 as _cv25
+from ._creation import _v26 as _cv26
+from ._creation import _v27 as _cv27
+from ._creation import _v28 as _cv28
+from ._creation import _v29 as _cv29
+from ._creation import _v30 as _cv30
+from ._creation import _v31 as _cv31
 from ._versioned.v8_9 import IDFDocumentV8_9 as IDFDocumentV8_9
 from ._versioned.v9_0 import IDFDocumentV9_0 as IDFDocumentV9_0
 from ._versioned.v9_1 import IDFDocumentV9_1 as IDFDocumentV9_1
@@ -60,6 +92,7 @@ class HVACTemplatePlantBoiler_v8_9_to_v9_2(_g.AnyHVACTemplatePlantBoiler):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantBoiler_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.HVACTemplatePlantBoiler_v8_9_to_v9_2
 
 class _HVACTemplatePlantBoiler_v8_9_to_v9_2Fields(_g._HVACTemplatePlantBoilerCommonFields, total=False):
     fuel_type: (
@@ -93,6 +126,7 @@ class ScheduleFile_v8_9_to_v9_1(_g.AnyScheduleFile):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleFile_v8_9_to_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.ScheduleFile_v8_9_to_v9_1
 
 class _ScheduleFile_v8_9_to_v9_1Fields(_g._ScheduleFileCommonFields, total=False):
     column_number: float | None
@@ -115,6 +149,7 @@ class ScheduleFile_v9_2_to_v9_6(_g.AnyScheduleFile):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleFile_v9_2_to_v9_6Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.ScheduleFile_v9_2_to_v9_6
 
 class _ScheduleFile_v9_2_to_v9_6Fields(_g._ScheduleFileCommonFields, total=False):
     column_number: float | None
@@ -139,6 +174,7 @@ class ScheduleFile_v22_1(_g.AnyScheduleFile):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleFile_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.ScheduleFile_v22_1
 
 class _ScheduleFile_v22_1Fields(_g._ScheduleFileCommonFields, total=False):
     column_number: float | None
@@ -161,6 +197,7 @@ class GroundHeatExchangerVerticalArray_v8_9_to_v22_1(_g.AnyGroundHeatExchangerVe
         /,
         **kwargs: Unpack[_GroundHeatExchangerVerticalArray_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.GroundHeatExchangerVerticalArray_v8_9_to_v22_1
 
 class _GroundHeatExchangerVerticalArray_v8_9_to_v22_1Fields(
     _g._GroundHeatExchangerVerticalArrayCommonFields, total=False
@@ -180,6 +217,7 @@ class AvailabilityManagerOptimumStart_v8_9_to_v22_1(_g.AnyAvailabilityManagerOpt
         /,
         **kwargs: Unpack[_AvailabilityManagerOptimumStart_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.AvailabilityManagerOptimumStart_v8_9_to_v22_1
 
 class _AvailabilityManagerOptimumStart_v8_9_to_v22_1Fields(
     _g._AvailabilityManagerOptimumStartCommonFields, total=False
@@ -196,6 +234,7 @@ class GasEquipment_v8_9_to_v9_5(_g.AnyGasEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GasEquipment_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.GasEquipment_v8_9_to_v9_5
 
 class _GasEquipment_v8_9_to_v9_5Fields(_g._GasEquipmentCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -211,6 +250,7 @@ class GasEquipment_v9_6_to_v23_2(_g.AnyGasEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GasEquipment_v9_6_to_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.GasEquipment_v9_6_to_v23_2
 
 class _GasEquipment_v9_6_to_v23_2Fields(_g._GasEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -242,6 +282,7 @@ class ExteriorFuelEquipment_v8_9_to_v9_2(_g.AnyExteriorFuelEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorFuelEquipment_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.ExteriorFuelEquipment_v8_9_to_v9_2
 
 class _ExteriorFuelEquipment_v8_9_to_v9_2Fields(_g._ExteriorFuelEquipmentCommonFields, total=False):
     fuel_use_type: (
@@ -290,6 +331,7 @@ class ExteriorFuelEquipment_v9_3_to_v23_1(_g.AnyExteriorFuelEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorFuelEquipment_v9_3_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.ExteriorFuelEquipment_v9_3_to_v23_1
 
 class _ExteriorFuelEquipment_v9_3_to_v23_1Fields(_g._ExteriorFuelEquipmentCommonFields, total=False):
     fuel_use_type: (
@@ -332,6 +374,7 @@ class HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4(_g.AnyHeatPumpWaterToW
         /,
         **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4
 
 class _HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4Fields(
     _g._HeatPumpWaterToWaterEquationFitHeatingCommonFields, total=False
@@ -353,6 +396,7 @@ class CeilingAdiabatic_v8_9_to_v9_5(_g.AnyCeilingAdiabatic):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CeilingAdiabatic_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.CeilingAdiabatic_v8_9_to_v9_5
 
 class _CeilingAdiabatic_v8_9_to_v9_5Fields(_g._CeilingAdiabaticCommonFields, total=False): ...
 
@@ -365,6 +409,7 @@ class CoilCoolingDXSingleSpeed_v8_9_to_v22_1(_g.AnyCoilCoolingDXSingleSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXSingleSpeed_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.CoilCoolingDXSingleSpeed_v8_9_to_v22_1
 
 class _CoilCoolingDXSingleSpeed_v8_9_to_v22_1Fields(_g._CoilCoolingDXSingleSpeedCommonFields, total=False):
     rated_evaporator_fan_power_per_volume_flow_rate: float | None
@@ -378,6 +423,7 @@ class CoilCoolingDXSingleSpeed_v22_2_to_v23_1(_g.AnyCoilCoolingDXSingleSpeed):
         /,
         **kwargs: Unpack[_CoilCoolingDXSingleSpeed_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.CoilCoolingDXSingleSpeed_v22_2_to_v23_1
 
 class _CoilCoolingDXSingleSpeed_v22_2_to_v23_1Fields(_g._CoilCoolingDXSingleSpeedCommonFields, total=False): ...
 
@@ -390,6 +436,7 @@ class SimulationControl_v8_9_to_v22_1(_g.AnySimulationControl):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SimulationControl_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.SimulationControl_v8_9_to_v22_1
 
 class _SimulationControl_v8_9_to_v22_1Fields(_g._SimulationControlCommonFields, total=False):
     maximum_number_of_hvac_sizing_simulation_passes: float | None
@@ -405,6 +452,7 @@ class ChillerEngineDriven_v8_9_to_v9_2(_g.AnyChillerEngineDriven):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerEngineDriven_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.ChillerEngineDriven_v8_9_to_v9_2
 
 class _ChillerEngineDriven_v8_9_to_v9_2Fields(_g._ChillerEngineDrivenCommonFields, total=False):
     fuel_type: (
@@ -423,6 +471,7 @@ class FanSystemModel_v8_9_to_v9_3(_g.AnyFanSystemModel):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModel_v8_9_to_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.FanSystemModel_v8_9_to_v9_3
 
 class _FanSystemModel_v8_9_to_v9_3Fields(_g._FanSystemModelCommonFields, total=False):
     design_electric_power_consumption: float | Literal["Autosize"] | None
@@ -439,6 +488,7 @@ class FanSystemModel_v9_4_to_v22_1(_g.AnyFanSystemModel):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModel_v9_4_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.FanSystemModel_v9_4_to_v22_1
 
 class _FanSystemModel_v9_4_to_v22_1Fields(_g._FanSystemModelCommonFields, total=False):
     design_electric_power_consumption: float | Literal["", "Autosize"] | None
@@ -450,6 +500,7 @@ class SiteLocation_v8_9_to_v24_1(_g.AnySiteLocation):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteLocation_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.SiteLocation_v8_9_to_v24_1
 
 class _SiteLocation_v8_9_to_v24_1Fields(_g._SiteLocationCommonFields, total=False): ...
 
@@ -470,6 +521,7 @@ class GeneratorInternalCombustionEngine_v8_9_to_v9_2(_g.AnyGeneratorInternalComb
         /,
         **kwargs: Unpack[_GeneratorInternalCombustionEngine_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.GeneratorInternalCombustionEngine_v8_9_to_v9_2
 
 class _GeneratorInternalCombustionEngine_v8_9_to_v9_2Fields(
     _g._GeneratorInternalCombustionEngineCommonFields, total=False
@@ -487,6 +539,7 @@ class FoundationKiva_v8_9_to_v9_1(_g.AnyFoundationKiva):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FoundationKiva_v8_9_to_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.FoundationKiva_v8_9_to_v9_1
 
 class _FoundationKiva_v8_9_to_v9_1Fields(_g._FoundationKivaCommonFields, total=False): ...
 
@@ -496,6 +549,7 @@ class MaterialNoMass_v8_9_to_v26_1(_g.AnyMaterialNoMass):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialNoMass_v8_9_to_v26_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.MaterialNoMass_v8_9_to_v26_1
 
 class _MaterialNoMass_v8_9_to_v26_1Fields(_g._MaterialNoMassCommonFields, total=False): ...
 
@@ -511,6 +565,7 @@ class AirflowNetworkDistributionComponentFan_v8_9_to_v9_1(_g.AnyAirflowNetworkDi
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentFan_v8_9_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.AirflowNetworkDistributionComponentFan_v8_9_to_v9_1
 
 class _AirflowNetworkDistributionComponentFan_v8_9_to_v9_1Fields(
     _g._AirflowNetworkDistributionComponentFanCommonFields, total=False
@@ -584,6 +639,7 @@ class ZoneThermalChimney_v8_9_to_v24_1(_g.AnyZoneThermalChimney):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneThermalChimney_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.ZoneThermalChimney_v8_9_to_v24_1
 
 class _ZoneThermalChimney_v8_9_to_v24_1Fields(_g._ZoneThermalChimneyCommonFields, total=False):
     zone_1_name: str | None
@@ -639,6 +695,7 @@ class AirTerminalSingleDuctUserDefined_v8_9_to_v22_1(_g.AnyAirTerminalSingleDuct
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctUserDefined_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.AirTerminalSingleDuctUserDefined_v8_9_to_v22_1
 
 class _AirTerminalSingleDuctUserDefined_v8_9_to_v22_1Fields(
     _g._AirTerminalSingleDuctUserDefinedCommonFields, total=False
@@ -669,6 +726,7 @@ class AirflowNetworkDistributionNode_v8_9_to_v25_1(_g.AnyAirflowNetworkDistribut
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionNode_v8_9_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.AirflowNetworkDistributionNode_v8_9_to_v25_1
 
 class _AirflowNetworkDistributionNode_v8_9_to_v25_1Fields(_g._AirflowNetworkDistributionNodeCommonFields, total=False):
     component_object_type_or_node_type: (
@@ -694,9 +752,161 @@ class OutputTableMonthly_v8_9_to_v22_1(_g.AnyOutputTableMonthly):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableMonthly_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.OutputTableMonthly_v8_9_to_v22_1
 
 class _OutputTableMonthly_v8_9_to_v22_1Fields(_g._OutputTableMonthlyCommonFields, total=False):
     digits_after_decimal: float | None
+
+class Version_v8_9(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 8.9.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v8_9Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.Version_v8_9
+
+class _Version_v8_9Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v9_0(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 9.0.1. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v9_0Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.Version_v9_0
+
+class _Version_v9_0Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v9_1(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 9.1.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v9_1Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.Version_v9_1
+
+class _Version_v9_1Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v9_2(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 9.2.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v9_2Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.Version_v9_2
+
+class _Version_v9_2Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v9_3(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 9.3.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v9_3Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.Version_v9_3
+
+class _Version_v9_3Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v9_4(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 9.4.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v9_4Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.Version_v9_4
+
+class _Version_v9_4Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v9_5(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 9.5.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v9_5Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.Version_v9_5
+
+class _Version_v9_5Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v9_6(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 9.6.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v9_6Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.Version_v9_6
+
+class _Version_v9_6Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v22_1(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 22.1.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v22_1Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.Version_v22_1
+
+class _Version_v22_1Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v22_2(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 22.2.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v22_2Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.Version_v22_2
+
+class _Version_v22_2Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v23_1(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 23.1.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v23_1Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.Version_v23_1
+
+class _Version_v23_1Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v23_2(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 23.2.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v23_2Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.Version_v23_2
+
+class _Version_v23_2Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v24_1(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 24.1.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v24_1Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.Version_v24_1
+
+class _Version_v24_1Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v24_2(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 24.2.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v24_2Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.Version_v24_2
+
+class _Version_v24_2Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v25_1(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 25.1.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v25_1Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.Version_v25_1
+
+class _Version_v25_1Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v25_2(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 25.2.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v25_2Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.Version_v25_2
+
+class _Version_v25_2Fields(_g._VersionCommonFields, total=False): ...
+
+class Version_v26_1(_g.AnyVersion):
+    """``Version`` as declared in EnergyPlus 26.1.0. Specifies the EnergyPlus version of the IDF file."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Version_v26_1Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.Version_v26_1
+
+class _Version_v26_1Fields(_g._VersionCommonFields, total=False): ...
+
+class HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1(_g.AnyHeatExchangerDesiccantBalancedFlow):
+    """``HeatExchanger:Desiccant:BalancedFlow`` as declared in EnergyPlus 8.9.0 to 25.1.0. This object models a balanced desiccant heat exchanger. The heat exchanger transfers both sensible and latent energy ..."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1
+
+class _HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1Fields(
+    _g._HeatExchangerDesiccantBalancedFlowCommonFields, total=False
+): ...
 
 class ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1(_g.AnyExternalInterfaceFunctionalMockupUnitImport):
     """``ExternalInterface:FunctionalMockupUnitImport`` as declared in EnergyPlus 8.9.0 to 22.1.0. This object declares an FMU"""
@@ -710,6 +920,7 @@ class ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1(_g.AnyExternalIn
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1
 
 class _ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1Fields(
     _g._ExternalInterfaceFunctionalMockupUnitImportCommonFields, total=False
@@ -727,6 +938,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1(
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.CoilCoolingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1
 
 class _CoilCoolingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
@@ -752,6 +964,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1(
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv24.CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1
 
 class _CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
@@ -767,6 +980,7 @@ class CeilingInterzone_v8_9_to_v9_5(_g.AnyCeilingInterzone):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CeilingInterzone_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.CeilingInterzone_v8_9_to_v9_5
 
 class _CeilingInterzone_v8_9_to_v9_5Fields(_g._CeilingInterzoneCommonFields, total=False): ...
 
@@ -785,6 +999,7 @@ class ElectricEquipmentITEAirCooled_v8_9_to_v9_5(_g.AnyElectricEquipmentITEAirCo
         /,
         **kwargs: Unpack[_ElectricEquipmentITEAirCooled_v8_9_to_v9_5Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.ElectricEquipmentITEAirCooled_v8_9_to_v9_5
 
 class _ElectricEquipmentITEAirCooled_v8_9_to_v9_5Fields(_g._ElectricEquipmentITEAirCooledCommonFields, total=False):
     zone_name: str | None
@@ -807,6 +1022,7 @@ class ElectricEquipmentITEAirCooled_v9_6_to_v22_1(_g.AnyElectricEquipmentITEAirC
         /,
         **kwargs: Unpack[_ElectricEquipmentITEAirCooled_v9_6_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.ElectricEquipmentITEAirCooled_v9_6_to_v22_1
 
 class _ElectricEquipmentITEAirCooled_v9_6_to_v22_1Fields(_g._ElectricEquipmentITEAirCooledCommonFields, total=False):
     zone_or_space_name: str | None
@@ -829,6 +1045,7 @@ class ElectricEquipmentITEAirCooled_v22_2_to_v23_2(_g.AnyElectricEquipmentITEAir
         /,
         **kwargs: Unpack[_ElectricEquipmentITEAirCooled_v22_2_to_v23_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv24.ElectricEquipmentITEAirCooled_v22_2_to_v23_2
 
 class _ElectricEquipmentITEAirCooled_v22_2_to_v23_2Fields(_g._ElectricEquipmentITEAirCooledCommonFields, total=False):
     zone_or_space_name: str | None
@@ -848,6 +1065,7 @@ class DistrictHeating_v8_9_to_v23_1(_g._TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DistrictHeating_v8_9_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.DistrictHeating_v8_9_to_v23_1
 
 class _DistrictHeating_v8_9_to_v23_1Fields(TypedDict, total=False):
     hot_water_inlet_node_name: str | None
@@ -866,6 +1084,7 @@ class CoolingTowerTwoSpeed_v8_9_to_v22_1(_g.AnyCoolingTowerTwoSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerTwoSpeed_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.CoolingTowerTwoSpeed_v8_9_to_v22_1
 
 class _CoolingTowerTwoSpeed_v8_9_to_v22_1Fields(_g._CoolingTowerTwoSpeedCommonFields, total=False):
     evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
@@ -885,6 +1104,7 @@ class WeatherPropertySkyTemperature_v8_9_to_v9_2(_g.AnyWeatherPropertySkyTempera
         /,
         **kwargs: Unpack[_WeatherPropertySkyTemperature_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.WeatherPropertySkyTemperature_v8_9_to_v9_2
 
 class _WeatherPropertySkyTemperature_v8_9_to_v9_2Fields(_g._WeatherPropertySkyTemperatureCommonFields, total=False):
     calculation_type: (
@@ -900,6 +1120,7 @@ class ControllerWaterCoil_v8_9_to_v9_3(_g.AnyControllerWaterCoil):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerWaterCoil_v8_9_to_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.ControllerWaterCoil_v8_9_to_v9_3
 
 class _ControllerWaterCoil_v8_9_to_v9_3Fields(_g._ControllerWaterCoilCommonFields, total=False):
     maximum_actuated_flow: float | Literal["Autosize"] | None
@@ -913,6 +1134,7 @@ class WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1(_g.AnyWindowMaterialGlaz
         /,
         **kwargs: Unpack[_WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1
 
 class _WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1Fields(
     _g._WindowMaterialGlazingEquivalentLayerCommonFields, total=False
@@ -934,6 +1156,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1
         /,
         **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1
 
 class _AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1Fields(
     _g._AirConditionerVariableRefrigerantFlowFluidTemperatureControlCommonFields, total=False
@@ -967,6 +1190,7 @@ class DesignSpecificationOutdoorAir_v8_9_to_v9_4(_g.AnyDesignSpecificationOutdoo
         /,
         **kwargs: Unpack[_DesignSpecificationOutdoorAir_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.DesignSpecificationOutdoorAir_v8_9_to_v9_4
 
 class _DesignSpecificationOutdoorAir_v8_9_to_v9_4Fields(_g._DesignSpecificationOutdoorAirCommonFields, total=False):
     outdoor_air_method: (
@@ -1013,6 +1237,7 @@ class BuildingSurfaceDetailed_v8_9_to_v9_5(_g.AnyBuildingSurfaceDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailed_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.BuildingSurfaceDetailed_v8_9_to_v9_5
 
 class _BuildingSurfaceDetailed_v8_9_to_v9_5Fields(_g._BuildingSurfaceDetailedCommonFields, total=False):
     outside_boundary_condition: (
@@ -1067,6 +1292,7 @@ class BuildingSurfaceDetailed_v9_6_to_v24_2(_g.AnyBuildingSurfaceDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailed_v9_6_to_v24_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.BuildingSurfaceDetailed_v9_6_to_v24_2
 
 class _BuildingSurfaceDetailed_v9_6_to_v24_2Fields(_g._BuildingSurfaceDetailedCommonFields, total=False):
     space_name: str | None
@@ -1092,6 +1318,64 @@ class _BuildingSurfaceDetailed_v9_6_to_v24_2Fields(_g._BuildingSurfaceDetailedCo
         | None
     )
 
+class BuildingSurfaceDetailed_v25_1_to_v26_1(_g.AnyBuildingSurfaceDetailed):
+    """``BuildingSurface:Detailed`` as declared in EnergyPlus 25.1.0 to 26.1.0. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
+
+    space_name: str | None
+    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    outside_boundary_condition: (
+        Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Space",
+            "Surface",
+            "Zone",
+        ]
+        | None
+    )
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailed_v25_1_to_v26_1Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.BuildingSurfaceDetailed_v25_1_to_v26_1
+
+class _BuildingSurfaceDetailed_v25_1_to_v26_1Fields(_g._BuildingSurfaceDetailedCommonFields, total=False):
+    space_name: str | None
+    outside_boundary_condition: (
+        Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Space",
+            "Surface",
+            "Zone",
+        ]
+        | None
+    )
+
 class SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1(_g.AnySiteGroundTemperatureUndisturbedXing):
     """``Site:GroundTemperature:Undisturbed:Xing`` as declared in EnergyPlus 8.9.0 to 23.1.0. Undisturbed ground temperature object using the Xing 2014 2 harmonic parameter model."""
 
@@ -1104,6 +1388,7 @@ class SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1(_g.AnySiteGroundTempera
         /,
         **kwargs: Unpack[_SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1
 
 class _SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1Fields(
     _g._SiteGroundTemperatureUndisturbedXingCommonFields, total=False
@@ -1124,6 +1409,7 @@ class AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2(_g.AnyAirLoopHVACUnitaryFur
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2
 
 class _AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2Fields(
     _g._AirLoopHVACUnitaryFurnaceHeatCoolCommonFields, total=False
@@ -1156,6 +1442,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4(_g.AnyZoneHVACBaseboa
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4
 
 class _ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4Fields(
     _g._ZoneHVACBaseboardRadiantConvectiveSteamCommonFields, total=False
@@ -1169,12 +1456,31 @@ class _ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4Fields(
     fraction_radiant: float | None
     fraction_of_radiant_energy_incident_on_people: float | None
 
+class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1(_g.AnyZoneHVACBaseboardRadiantConvectiveSteam):
+    """``ZoneHVAC:Baseboard:RadiantConvective:Steam`` as declared in EnergyPlus 9.5.0 to 25.1.0. The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list."""
+
+    design_object: str | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1
+
+class _ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1Fields(
+    _g._ZoneHVACBaseboardRadiantConvectiveSteamCommonFields, total=False
+):
+    design_object: str | None
+
 class SizingZone_v8_9_to_v22_1(_g.AnySizingZone):
     """``Sizing:Zone`` as declared in EnergyPlus 8.9.0 to 22.1.0. Specifies the data needed to perform a zone design air flow calculation. The calculation is done for every sizing per..."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingZone_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.SizingZone_v8_9_to_v22_1
 
 class _SizingZone_v8_9_to_v22_1Fields(_g._SizingZoneCommonFields, total=False): ...
 
@@ -1210,6 +1516,7 @@ class SizingZone_v22_2_to_v24_1(_g.AnySizingZone):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingZone_v22_2_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.SizingZone_v22_2_to_v24_1
 
 class _SizingZone_v22_2_to_v24_1Fields(_g._SizingZoneCommonFields, total=False):
     zone_load_sizing_method: (
@@ -1263,6 +1570,7 @@ class SizingZone_v24_2_to_v25_1(_g.AnySizingZone):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingZone_v24_2_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.SizingZone_v24_2_to_v25_1
 
 class _SizingZone_v24_2_to_v25_1Fields(_g._SizingZoneCommonFields, total=False):
     zone_load_sizing_method: (
@@ -1315,6 +1623,7 @@ class OtherEquipment_v8_9_to_v9_2(_g.AnyOtherEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipment_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.OtherEquipment_v8_9_to_v9_2
 
 class _OtherEquipment_v8_9_to_v9_2Fields(_g._OtherEquipmentCommonFields, total=False):
     fuel_type: (
@@ -1372,6 +1681,7 @@ class OtherEquipment_v9_3_to_v9_5(_g.AnyOtherEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipment_v9_3_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.OtherEquipment_v9_3_to_v9_5
 
 class _OtherEquipment_v9_3_to_v9_5Fields(_g._OtherEquipmentCommonFields, total=False):
     fuel_type: (
@@ -1428,6 +1738,7 @@ class OtherEquipment_v9_6_to_v23_1(_g.AnyOtherEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipment_v9_6_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.OtherEquipment_v9_6_to_v23_1
 
 class _OtherEquipment_v9_6_to_v23_1Fields(_g._OtherEquipmentCommonFields, total=False):
     fuel_type: (
@@ -1484,6 +1795,7 @@ class OtherEquipment_v23_2(_g.AnyOtherEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipment_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.OtherEquipment_v23_2
 
 class _OtherEquipment_v23_2Fields(_g._OtherEquipmentCommonFields, total=False):
     fuel_type: (
@@ -1515,6 +1827,7 @@ class AirTerminalDualDuctVAV_v8_9_to_v9_2(_g.AnyAirTerminalDualDuctVAV):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalDualDuctVAV_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.AirTerminalDualDuctVAV_v8_9_to_v9_2
 
 class _AirTerminalDualDuctVAV_v8_9_to_v9_2Fields(_g._AirTerminalDualDuctVAVCommonFields, total=False): ...
 
@@ -1624,6 +1937,7 @@ class SurfacePropertyConvectionCoefficients_v8_9_to_v9_4(_g.AnySurfacePropertyCo
         /,
         **kwargs: Unpack[_SurfacePropertyConvectionCoefficients_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.SurfacePropertyConvectionCoefficients_v8_9_to_v9_4
 
 class _SurfacePropertyConvectionCoefficients_v8_9_to_v9_4Fields(
     _g._SurfacePropertyConvectionCoefficientsCommonFields, total=False
@@ -1833,6 +2147,7 @@ class SurfacePropertyConvectionCoefficients_v9_5_to_v9_6(_g.AnySurfacePropertyCo
         /,
         **kwargs: Unpack[_SurfacePropertyConvectionCoefficients_v9_5_to_v9_6Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.SurfacePropertyConvectionCoefficients_v9_5_to_v9_6
 
 class _SurfacePropertyConvectionCoefficients_v9_5_to_v9_6Fields(
     _g._SurfacePropertyConvectionCoefficientsCommonFields, total=False
@@ -1950,6 +2265,7 @@ class MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1
 
 class _MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferThermalConductivityCommonFields, total=False
@@ -1986,6 +2302,7 @@ class EnergyManagementSystemProgramCallingManager_v8_9_to_v9_0(_g.AnyEnergyManag
         /,
         **kwargs: Unpack[_EnergyManagementSystemProgramCallingManager_v8_9_to_v9_0Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.EnergyManagementSystemProgramCallingManager_v8_9_to_v9_0
 
 class _EnergyManagementSystemProgramCallingManager_v8_9_to_v9_0Fields(
     _g._EnergyManagementSystemProgramCallingManagerCommonFields, total=False
@@ -2043,6 +2360,7 @@ class EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3(_g.AnyEnergyManag
         /,
         **kwargs: Unpack[_EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3
 
 class _EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3Fields(
     _g._EnergyManagementSystemProgramCallingManagerCommonFields, total=False
@@ -2084,6 +2402,7 @@ class BoilerHotWater_v8_9(_g.AnyBoilerHotWater):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerHotWater_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.BoilerHotWater_v8_9
 
 class _BoilerHotWater_v8_9Fields(_g._BoilerHotWaterCommonFields, total=False):
     fuel_type: str | None
@@ -2103,6 +2422,7 @@ class BoilerHotWater_v9_0(_g.AnyBoilerHotWater):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerHotWater_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.BoilerHotWater_v9_0
 
 class _BoilerHotWater_v9_0Fields(_g._BoilerHotWaterCommonFields, total=False):
     fuel_type: str | None
@@ -2121,6 +2441,7 @@ class BoilerHotWater_v9_1_to_v9_2(_g.AnyBoilerHotWater):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerHotWater_v9_1_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.BoilerHotWater_v9_1_to_v9_2
 
 class _BoilerHotWater_v9_1_to_v9_2Fields(_g._BoilerHotWaterCommonFields, total=False):
     fuel_type: str | None
@@ -2153,6 +2474,7 @@ class BoilerHotWater_v9_3_to_v23_1(_g.AnyBoilerHotWater):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerHotWater_v9_3_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.BoilerHotWater_v9_3_to_v23_1
 
 class _BoilerHotWater_v9_3_to_v23_1Fields(_g._BoilerHotWaterCommonFields, total=False):
     fuel_type: (
@@ -2182,6 +2504,7 @@ class PumpVariableSpeedCondensate_v8_9_to_v9_0(_g.AnyPumpVariableSpeedCondensate
         /,
         **kwargs: Unpack[_PumpVariableSpeedCondensate_v8_9_to_v9_0Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.PumpVariableSpeedCondensate_v8_9_to_v9_0
 
 class _PumpVariableSpeedCondensate_v8_9_to_v9_0Fields(_g._PumpVariableSpeedCondensateCommonFields, total=False): ...
 
@@ -2197,6 +2520,7 @@ class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1(_g.AnyRoomAirTempe
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1
 
 class _RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1Fields(
     _g._RoomAirTemperaturePatternConstantGradientCommonFields, total=False
@@ -2212,6 +2536,7 @@ class ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1(_g.AnyZoneHVACIdealLoadsAirSyste
         /,
         **kwargs: Unpack[_ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1
 
 class _ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1Fields(_g._ZoneHVACIdealLoadsAirSystemCommonFields, total=False): ...
 
@@ -2224,6 +2549,7 @@ class SiteGroundDomainBasement_v8_9_to_v22_1(_g.AnySiteGroundDomainBasement):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundDomainBasement_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.SiteGroundDomainBasement_v8_9_to_v22_1
 
 class _SiteGroundDomainBasement_v8_9_to_v22_1Fields(_g._SiteGroundDomainBasementCommonFields, total=False):
     mesh_density_parameter: float | None
@@ -2242,6 +2568,7 @@ class ChillerCombustionTurbine_v8_9_to_v9_2(_g.AnyChillerCombustionTurbine):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerCombustionTurbine_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.ChillerCombustionTurbine_v8_9_to_v9_2
 
 class _ChillerCombustionTurbine_v8_9_to_v9_2Fields(_g._ChillerCombustionTurbineCommonFields, total=False):
     fuel_type: (
@@ -2260,6 +2587,7 @@ class OutputTableTimeBins_v8_9_to_v22_1(_g.AnyOutputTableTimeBins):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableTimeBins_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.OutputTableTimeBins_v8_9_to_v22_1
 
 class _OutputTableTimeBins_v8_9_to_v22_1Fields(_g._OutputTableTimeBinsCommonFields, total=False):
     interval_count: float | None
@@ -2278,6 +2606,7 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1
 
 class _MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferSorptionIsothermCommonFields, total=False
@@ -2306,6 +2635,7 @@ class BoilerSteam_v8_9_to_v9_2(_g.AnyBoilerSteam):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerSteam_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.BoilerSteam_v8_9_to_v9_2
 
 class _BoilerSteam_v8_9_to_v9_2Fields(_g._BoilerSteamCommonFields, total=False):
     fuel_type: (
@@ -2348,6 +2678,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2(_g.AnyZoneHVACCool
         /,
         **kwargs: Unpack[_ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2
 
 class _ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2Fields(
     _g._ZoneHVACCoolingPanelRadiantConvectiveWaterCommonFields, total=False
@@ -2372,6 +2703,7 @@ class LoadProfilePlant_v8_9_to_v23_1(_g.AnyLoadProfilePlant):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LoadProfilePlant_v8_9_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.LoadProfilePlant_v8_9_to_v23_1
 
 class _LoadProfilePlant_v8_9_to_v23_1Fields(_g._LoadProfilePlantCommonFields, total=False): ...
 
@@ -2386,6 +2718,7 @@ class CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1(_g.AnyCoilSystemCoo
         /,
         **kwargs: Unpack[_CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1
 
 class _CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1Fields(
     _g._CoilSystemCoolingDXHeatExchangerAssistedCommonFields, total=False
@@ -2405,6 +2738,7 @@ class LifeCycleCostParameters_v8_9_to_v22_1(_g.AnyLifeCycleCostParameters):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostParameters_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.LifeCycleCostParameters_v8_9_to_v22_1
 
 class _LifeCycleCostParameters_v8_9_to_v22_1Fields(_g._LifeCycleCostParametersCommonFields, total=False):
     base_date_year: float | None
@@ -2423,6 +2757,7 @@ class HVACSystemRootFindingAlgorithm_v8_9_to_v22_1(_g.AnyHVACSystemRootFindingAl
         /,
         **kwargs: Unpack[_HVACSystemRootFindingAlgorithm_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.HVACSystemRootFindingAlgorithm_v8_9_to_v22_1
 
 class _HVACSystemRootFindingAlgorithm_v8_9_to_v22_1Fields(_g._HVACSystemRootFindingAlgorithmCommonFields, total=False):
     number_of_iterations_before_algorithm_switch: float | None
@@ -2573,6 +2908,7 @@ class ZoneHVACOutdoorAirUnitEquipmentList_v8_9(_g.AnyZoneHVACOutdoorAirUnitEquip
         /,
         **kwargs: Unpack[_ZoneHVACOutdoorAirUnitEquipmentList_v8_9Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.ZoneHVACOutdoorAirUnitEquipmentList_v8_9
 
 class _ZoneHVACOutdoorAirUnitEquipmentList_v8_9Fields(_g._ZoneHVACOutdoorAirUnitEquipmentListCommonFields, total=False):
     component_1_object_type: (
@@ -2786,6 +3122,7 @@ class MaterialPropertyPhaseChange_v8_9_to_v24_1(_g.AnyMaterialPropertyPhaseChang
         /,
         **kwargs: Unpack[_MaterialPropertyPhaseChange_v8_9_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.MaterialPropertyPhaseChange_v8_9_to_v24_1
 
 class _MaterialPropertyPhaseChange_v8_9_to_v24_1Fields(_g._MaterialPropertyPhaseChangeCommonFields, total=False):
     temperature_1: float | None
@@ -2931,6 +3268,7 @@ class SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4(
         /,
         **kwargs: Unpack[_SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4
 
 class _SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4Fields(
     _g._SurfacePropertyConvectionCoefficientsMultipleSurfaceCommonFields, total=False
@@ -3046,9 +3384,20 @@ class EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1(_g.AnyEvaporativeFluidCoolerT
         /,
         **kwargs: Unpack[_EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1
 
 class _EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1Fields(_g._EvaporativeFluidCoolerTwoSpeedCommonFields, total=False):
     design_entering_water_temperature: float | None
+
+class UtilityCostChargeBlock_v8_9_to_v9_0(_g.AnyUtilityCostChargeBlock):
+    """``UtilityCost:Charge:Block`` as declared in EnergyPlus 8.9.0 to 9.0.1. Used to compute energy and demand charges (or any other charges) that are structured in blocks of charges. Multiple U..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostChargeBlock_v8_9_to_v9_0Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.UtilityCostChargeBlock_v8_9_to_v9_0
+
+class _UtilityCostChargeBlock_v8_9_to_v9_0Fields(_g._UtilityCostChargeBlockCommonFields, total=False): ...
 
 class ZoneRefrigerationDoorMixing_v8_9_to_v24_1(_g.AnyZoneRefrigerationDoorMixing):
     """``ZoneRefrigerationDoorMixing`` as declared in EnergyPlus 8.9.0 to 24.1.0. Refrigeration Door Mixing is used for an opening between two zones that are at the same elevation but have different ..."""
@@ -3062,6 +3411,7 @@ class ZoneRefrigerationDoorMixing_v8_9_to_v24_1(_g.AnyZoneRefrigerationDoorMixin
         /,
         **kwargs: Unpack[_ZoneRefrigerationDoorMixing_v8_9_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.ZoneRefrigerationDoorMixing_v8_9_to_v24_1
 
 class _ZoneRefrigerationDoorMixing_v8_9_to_v24_1Fields(_g._ZoneRefrigerationDoorMixingCommonFields, total=False):
     zone_1_name: str | None
@@ -3073,6 +3423,7 @@ class ChillerConstantCOP_v8_9_to_v24_1(_g.AnyChillerConstantCOP):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerConstantCOP_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.ChillerConstantCOP_v8_9_to_v24_1
 
 class _ChillerConstantCOP_v8_9_to_v24_1Fields(_g._ChillerConstantCOPCommonFields, total=False): ...
 
@@ -3090,10 +3441,31 @@ class PhotovoltaicPerformanceSandia_v8_9_to_v22_1(_g.AnyPhotovoltaicPerformanceS
         /,
         **kwargs: Unpack[_PhotovoltaicPerformanceSandia_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.PhotovoltaicPerformanceSandia_v8_9_to_v22_1
 
 class _PhotovoltaicPerformanceSandia_v8_9_to_v22_1Fields(_g._PhotovoltaicPerformanceSandiaCommonFields, total=False):
     number_of_cells_in_series: float | None
     number_of_cells_in_parallel: float | None
+
+class PhotovoltaicPerformanceSandia_v22_2_to_v25_2(_g.AnyPhotovoltaicPerformanceSandia):
+    """``PhotovoltaicPerformance:Sandia`` as declared in EnergyPlus 22.2.0 to 25.2.0. Describes performance input data needed for specific makes and models of production PV panels using the empirical coe..."""
+
+    number_of_cells_in_series: int | None
+    """[dimensionless]; Default: 1; Range: >= 1"""
+    number_of_cells_in_parallel: int | None
+    """[dimensionless]; Default: 1; Range: >= 1"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_PhotovoltaicPerformanceSandia_v22_2_to_v25_2Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.PhotovoltaicPerformanceSandia_v22_2_to_v25_2
+
+class _PhotovoltaicPerformanceSandia_v22_2_to_v25_2Fields(_g._PhotovoltaicPerformanceSandiaCommonFields, total=False):
+    number_of_cells_in_series: int | None
+    number_of_cells_in_parallel: int | None
 
 class FloorGroundContact_v8_9_to_v9_5(_g.AnyFloorGroundContact):
     """``Floor:GroundContact`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of exterior floors with ground contact. View Factors to Ground is automatically calculated."""
@@ -3101,6 +3473,7 @@ class FloorGroundContact_v8_9_to_v9_5(_g.AnyFloorGroundContact):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorGroundContact_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.FloorGroundContact_v8_9_to_v9_5
 
 class _FloorGroundContact_v8_9_to_v9_5Fields(_g._FloorGroundContactCommonFields, total=False): ...
 
@@ -3130,6 +3503,7 @@ class AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2(_g.AnyAirConditionerVar
         /,
         **kwargs: Unpack[_AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2
 
 class _AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2Fields(
     _g._AirConditionerVariableRefrigerantFlowCommonFields, total=False
@@ -3183,6 +3557,7 @@ class AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5(_g.AnyAirConditionerVar
         /,
         **kwargs: Unpack[_AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5
 
 class _AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5Fields(
     _g._AirConditionerVariableRefrigerantFlowCommonFields, total=False
@@ -3250,6 +3625,7 @@ class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1(_g.AnyAirConditionerVa
         /,
         **kwargs: Unpack[_AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1
 
 class _AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1Fields(
     _g._AirConditionerVariableRefrigerantFlowCommonFields, total=False
@@ -3516,6 +3892,7 @@ class ScheduleYear_v8_9(_g.AnyScheduleYear):
     """Schedule:Week for Weeks 27-53 are condensed; Range: >= 1.0, <= 31.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleYear_v8_9Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.ScheduleYear_v8_9
 
 class _ScheduleYear_v8_9Fields(_g._ScheduleYearCommonFields, total=False):
     schedule_week_name_1: str | None
@@ -3666,6 +4043,7 @@ class ScheduleYear_v9_0_to_v22_1(_g.AnyScheduleYear):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleYear_v9_0_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.ScheduleYear_v9_0_to_v22_1
 
 class _ScheduleYear_v9_0_to_v22_1Fields(_g._ScheduleYearCommonFields, total=False):
     schedule_weeks: list[Any]
@@ -3681,6 +4059,7 @@ class ZoneControlHumidistat_v8_9_to_v26_1(_g.AnyZoneControlHumidistat):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneControlHumidistat_v8_9_to_v26_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.ZoneControlHumidistat_v8_9_to_v26_1
 
 class _ZoneControlHumidistat_v8_9_to_v26_1Fields(_g._ZoneControlHumidistatCommonFields, total=False):
     humidifying_relative_humidity_setpoint_schedule_name: str | None
@@ -3728,6 +4107,7 @@ class WaterHeaterMixed_v8_9_to_v9_2(_g.AnyWaterHeaterMixed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterMixed_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.WaterHeaterMixed_v8_9_to_v9_2
 
 class _WaterHeaterMixed_v8_9_to_v9_2Fields(_g._WaterHeaterMixedCommonFields, total=False):
     heater_fuel_type: str | None
@@ -3824,6 +4204,7 @@ class WaterHeaterMixed_v9_3_to_v23_1(_g.AnyWaterHeaterMixed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterMixed_v9_3_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.WaterHeaterMixed_v9_3_to_v23_1
 
 class _WaterHeaterMixed_v9_3_to_v23_1Fields(_g._WaterHeaterMixedCommonFields, total=False):
     heater_fuel_type: (
@@ -3950,6 +4331,7 @@ class ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2(_g.AnyZoneHVACHybridUnitaryHVAC):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2
 
 class _ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2Fields(_g._ZoneHVACHybridUnitaryHVACCommonFields, total=False):
     number_of_operating_modes: float | None
@@ -4086,6 +4468,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_3(_g.AnyZoneHVACHybridUnitaryHVAC):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACHybridUnitaryHVAC_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.ZoneHVACHybridUnitaryHVAC_v9_3
 
 class _ZoneHVACHybridUnitaryHVAC_v9_3Fields(_g._ZoneHVACHybridUnitaryHVACCommonFields, total=False):
     number_of_operating_modes: float | None
@@ -4229,6 +4612,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1(_g.AnyZoneHVACHybridUnitaryHVAC):
         /,
         **kwargs: Unpack[_ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1
 
 class _ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields(_g._ZoneHVACHybridUnitaryHVACCommonFields, total=False):
     fan_heat_included_in_lookup_tables: Literal["", "No", "Yes"] | None
@@ -4295,6 +4679,23 @@ class _ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields(_g._ZoneHVACHybridUnitaryHV
         | None
     )
 
+class AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5(
+    _g.AnyAirflowNetworkMultiZoneReferenceCrackConditions
+):
+    """``AirflowNetwork:MultiZone:ReferenceCrackConditions`` as declared in EnergyPlus 8.9.0 to 9.5.0. This object specifies the conditions under which the air mass flow coefficient was measured."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5
+
+class _AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5Fields(
+    _g._AirflowNetworkMultiZoneReferenceCrackConditionsCommonFields, total=False
+): ...
+
 class DaylightingControlsControlDataGroup_v8_9_to_v9_5(_g.AnyDaylightingControlsControlDataGroup):
     """One control_data group inside :class:`DaylightingControls_v8_9_to_v9_5`."""
 
@@ -4313,6 +4714,7 @@ class DaylightingControls_v8_9_to_v9_5(_g.AnyDaylightingControls):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingControls_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.DaylightingControls_v8_9_to_v9_5
 
 class _DaylightingControls_v8_9_to_v9_5Fields(_g._DaylightingControlsCommonFields, total=False):
     zone_name: str | None
@@ -4337,6 +4739,7 @@ class DaylightingControls_v9_6_to_v22_1(_g.AnyDaylightingControls):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingControls_v9_6_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.DaylightingControls_v9_6_to_v22_1
 
 class _DaylightingControls_v9_6_to_v22_1Fields(_g._DaylightingControlsCommonFields, total=False):
     zone_or_space_name: str | None
@@ -4354,6 +4757,7 @@ class ThermalStorageIceDetailed_v8_9_to_v9_1(_g.AnyThermalStorageIceDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageIceDetailed_v8_9_to_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.ThermalStorageIceDetailed_v8_9_to_v9_1
 
 class _ThermalStorageIceDetailed_v8_9_to_v9_1Fields(_g._ThermalStorageIceDetailedCommonFields, total=False):
     capacity: float | None
@@ -4378,6 +4782,7 @@ class ThermalStorageIceDetailed_v9_2_to_v25_1(_g.AnyThermalStorageIceDetailed):
         /,
         **kwargs: Unpack[_ThermalStorageIceDetailed_v9_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.ThermalStorageIceDetailed_v9_2_to_v25_1
 
 class _ThermalStorageIceDetailed_v9_2_to_v25_1Fields(_g._ThermalStorageIceDetailedCommonFields, total=False):
     capacity: float | None
@@ -4402,6 +4807,7 @@ class DemandManagerExteriorLights_v8_9_to_v22_1(_g.AnyDemandManagerExteriorLight
         /,
         **kwargs: Unpack[_DemandManagerExteriorLights_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv24.DemandManagerExteriorLights_v8_9_to_v22_1
 
 class _DemandManagerExteriorLights_v8_9_to_v22_1Fields(_g._DemandManagerExteriorLightsCommonFields, total=False):
     minimum_limit_duration: float | None
@@ -4421,6 +4827,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1(_g.AnyZoneHVACTer
         /,
         **kwargs: Unpack[_ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1
 
 class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1Fields(
     _g._ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
@@ -4453,6 +4860,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2(_g.AnyZoneHVACTerminalUni
         /,
         **kwargs: Unpack[_ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2
 
 class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2Fields(
     _g._ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
@@ -4493,6 +4901,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1(_g.AnyZoneHVACTe
         /,
         **kwargs: Unpack[_ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1
 
 class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1Fields(
     _g._ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
@@ -4538,6 +4947,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1(_g.AnyZoneHVACT
         /,
         **kwargs: Unpack[_ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1
 
 class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1Fields(
     _g._ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
@@ -4590,6 +5000,7 @@ class OutputTableAnnual_v8_9_to_v22_1(_g.AnyOutputTableAnnual):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableAnnual_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.OutputTableAnnual_v8_9_to_v22_1
 
 class _OutputTableAnnual_v8_9_to_v22_1Fields(_g._OutputTableAnnualCommonFields, total=False):
     variable_details: list[Any]
@@ -4603,6 +5014,7 @@ class WindowMaterialGasMixture_v8_9_to_v22_1(_g.AnyWindowMaterialGasMixture):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGasMixture_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.WindowMaterialGasMixture_v8_9_to_v22_1
 
 class _WindowMaterialGasMixture_v8_9_to_v22_1Fields(_g._WindowMaterialGasMixtureCommonFields, total=False):
     number_of_gases_in_mixture: float | None
@@ -4619,6 +5031,7 @@ class ZoneAirMassFlowConservation_v8_9_to_v9_4(_g.AnyZoneAirMassFlowConservation
         /,
         **kwargs: Unpack[_ZoneAirMassFlowConservation_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.ZoneAirMassFlowConservation_v8_9_to_v9_4
 
 class _ZoneAirMassFlowConservation_v8_9_to_v9_4Fields(_g._ZoneAirMassFlowConservationCommonFields, total=False):
     adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["", "No", "Yes"] | None
@@ -4637,6 +5050,7 @@ class EnvironmentalImpactFactors_v8_9_to_v23_1(_g.AnyEnvironmentalImpactFactors)
         /,
         **kwargs: Unpack[_EnvironmentalImpactFactors_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.EnvironmentalImpactFactors_v8_9_to_v23_1
 
 class _EnvironmentalImpactFactors_v8_9_to_v23_1Fields(_g._EnvironmentalImpactFactorsCommonFields, total=False):
     district_heating_efficiency: float | None
@@ -4757,6 +5171,7 @@ class PlantEquipmentOperationThermalEnergyStorage_v8_9_to_v22_1(_g.AnyPlantEquip
         /,
         **kwargs: Unpack[_PlantEquipmentOperationThermalEnergyStorage_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.PlantEquipmentOperationThermalEnergyStorage_v8_9_to_v22_1
 
 class _PlantEquipmentOperationThermalEnergyStorage_v8_9_to_v22_1Fields(
     _g._PlantEquipmentOperationThermalEnergyStorageCommonFields, total=False
@@ -4879,6 +5294,7 @@ class GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1(_g.AnyGroundHeatExchange
         /,
         **kwargs: Unpack[_GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1
 
 class _GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1Fields(
     _g._GroundHeatExchangerHorizontalTrenchCommonFields, total=False
@@ -4897,6 +5313,7 @@ class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1(_g.AnyAirLoopHV
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1
 
 class _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1Fields(
     _g._AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassCommonFields, total=False
@@ -4921,6 +5338,7 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1(_g.AnyAirLoopHVACUnitar
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1
 
 class _AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1Fields(
     _g._AirLoopHVACUnitaryHeatPumpWaterToAirCommonFields, total=False
@@ -4939,6 +5357,7 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1(_g.AnyAirLoopHVACUnita
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1
 
 class _AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1Fields(
     _g._AirLoopHVACUnitaryHeatPumpWaterToAirCommonFields, total=False
@@ -4952,6 +5371,7 @@ class ZoneCoolTowerShower_v8_9_to_v24_1(_g.AnyZoneCoolTowerShower):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneCoolTowerShower_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.ZoneCoolTowerShower_v8_9_to_v24_1
 
 class _ZoneCoolTowerShower_v8_9_to_v24_1Fields(_g._ZoneCoolTowerShowerCommonFields, total=False):
     zone_name: str | None
@@ -4967,6 +5387,7 @@ class SizingSystem_v8_9_to_v9_5(_g.AnySizingSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingSystem_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.SizingSystem_v8_9_to_v9_5
 
 class _SizingSystem_v8_9_to_v9_5Fields(_g._SizingSystemCommonFields, total=False):
     type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None
@@ -4987,6 +5408,7 @@ class SizingSystem_v9_6_to_v22_1(_g.AnySizingSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingSystem_v9_6_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv24.SizingSystem_v9_6_to_v22_1
 
 class _SizingSystem_v9_6_to_v22_1Fields(_g._SizingSystemCommonFields, total=False):
     type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None
@@ -5010,6 +5432,7 @@ class SizingSystem_v22_2_to_v25_1(_g.AnySizingSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingSystem_v22_2_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.SizingSystem_v22_2_to_v25_1
 
 class _SizingSystem_v22_2_to_v25_1Fields(_g._SizingSystemCommonFields, total=False):
     type_of_load_to_size_on: Literal["", "Latent", "Sensible", "Total", "VentilationRequirement"] | None
@@ -5031,6 +5454,7 @@ class Zone_v8_9_to_v9_4(_g.AnyZone):
     """Will default to same value as SurfaceConvectionAlgorithm:Inside object setting this field overrides the default Surfa..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Zone_v8_9_to_v9_4Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.Zone_v8_9_to_v9_4
 
 class _Zone_v8_9_to_v9_4Fields(_g._ZoneCommonFields, total=False):
     type: float | None
@@ -5055,6 +5479,7 @@ class Zone_v9_5_to_v22_1(_g.AnyZone):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Zone_v9_5_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.Zone_v9_5_to_v22_1
 
 class _Zone_v9_5_to_v22_1Fields(_g._ZoneCommonFields, total=False):
     type: float | None
@@ -5088,6 +5513,7 @@ class RunPeriod_v8_9(_g.AnyRunPeriod):
     """this is the start year for the start date. If the leap year is 'Yes' in the weather file header (that is HOLIDAYS/SPE..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriod_v8_9Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.RunPeriod_v8_9
 
 class _RunPeriod_v8_9Fields(_g._RunPeriodCommonFields, total=False):
     begin_month: float | None
@@ -5102,8 +5528,8 @@ class _RunPeriod_v8_9Fields(_g._RunPeriodCommonFields, total=False):
     increment_day_of_week_on_repeat: Literal["", "No", "Yes"] | None
     start_year: float | None
 
-class RunPeriod_v9_0_to_v9_5(_g.AnyRunPeriod):
-    """``RunPeriod`` as declared in EnergyPlus 9.0.1 to 9.5.0. Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not o..."""
+class RunPeriod_v9_0_to_v9_1(_g.AnyRunPeriod):
+    """``RunPeriod`` as declared in EnergyPlus 9.0.1 to 9.1.0. Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not o..."""
 
     begin_month: float | None
     """Range: >= 1.0, <= 12.0"""
@@ -5125,10 +5551,50 @@ class RunPeriod_v9_0_to_v9_5(_g.AnyRunPeriod):
     """Default: No"""
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriod_v9_0_to_v9_5Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriod_v9_0_to_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.RunPeriod_v9_0_to_v9_1
 
-class _RunPeriod_v9_0_to_v9_5Fields(_g._RunPeriodCommonFields, total=False):
+class _RunPeriod_v9_0_to_v9_1Fields(_g._RunPeriodCommonFields, total=False):
+    begin_month: float | None
+    begin_day_of_month: float | None
+    begin_year: float | None
+    end_month: float | None
+    end_day_of_month: float | None
+    end_year: float | None
+    day_of_week_for_start_day: (
+        Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"] | None
+    )
+    treat_weather_as_actual: Literal["", "No", "Yes"] | None
+
+class RunPeriod_v9_2_to_v9_5(_g.AnyRunPeriod):
+    """``RunPeriod`` as declared in EnergyPlus 9.2.0 to 9.5.0. Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not o..."""
+
+    begin_month: float | None
+    """Range: >= 1.0, <= 12.0"""
+    begin_day_of_month: float | None
+    """Range: >= 1.0, <= 31.0"""
+    begin_year: float | None
+    """Start year of the simulation, if this field is specified it must agree with the Day of Week for Start Day If this fie..."""
+    end_month: float | None
+    """Range: >= 1.0, <= 12.0"""
+    end_day_of_month: float | None
+    """Range: >= 1.0, <= 31.0"""
+    end_year: float | None
+    """end year of simulation, if specified"""
+    day_of_week_for_start_day: (
+        Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"] | None
+    )
+    """=[Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday]; If no year is input, this field will default to Sunday I..."""
+    treat_weather_as_actual: Literal["", "No", "Yes"] | None
+    """Default: No"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriod_v9_2_to_v9_5Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.RunPeriod_v9_2_to_v9_5
+
+class _RunPeriod_v9_2_to_v9_5Fields(_g._RunPeriodCommonFields, total=False):
     begin_month: float | None
     begin_day_of_month: float | None
     begin_year: float | None
@@ -5167,6 +5633,7 @@ class RunPeriod_v9_6_to_v22_1(_g.AnyRunPeriod):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriod_v9_6_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.RunPeriod_v9_6_to_v22_1
 
 class _RunPeriod_v9_6_to_v22_1Fields(_g._RunPeriodCommonFields, total=False):
     begin_month: float | None
@@ -5187,6 +5654,7 @@ class HVACTemplateZonePTHP_v8_9(_g.AnyHVACTemplateZonePTHP):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZonePTHP_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.HVACTemplateZonePTHP_v8_9
 
 class _HVACTemplateZonePTHP_v8_9Fields(_g._HVACTemplateZonePTHPCommonFields, total=False): ...
 
@@ -5201,6 +5669,7 @@ class WaterHeaterSizing_v8_9_to_v22_1(_g.AnyWaterHeaterSizing):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterSizing_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.WaterHeaterSizing_v8_9_to_v22_1
 
 class _WaterHeaterSizing_v8_9_to_v22_1Fields(_g._WaterHeaterSizingCommonFields, total=False):
     number_of_bedrooms: float | None
@@ -5215,6 +5684,7 @@ class AirflowNetworkDistributionComponentReliefAirFlow_v8_9(_g.AnyAirflowNetwork
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentReliefAirFlow_v8_9Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.AirflowNetworkDistributionComponentReliefAirFlow_v8_9
 
 class _AirflowNetworkDistributionComponentReliefAirFlow_v8_9Fields(
     _g._AirflowNetworkDistributionComponentReliefAirFlowCommonFields, total=False
@@ -5229,6 +5699,7 @@ class OutputControlTableStyle_v8_9_to_v23_2(_g.AnyOutputControlTableStyle):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlTableStyle_v8_9_to_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.OutputControlTableStyle_v8_9_to_v23_2
 
 class _OutputControlTableStyle_v8_9_to_v23_2Fields(_g._OutputControlTableStyleCommonFields, total=False):
     unit_conversion: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
@@ -5242,6 +5713,7 @@ class OutputControlTableStyle_v24_1_to_v25_1(_g.AnyOutputControlTableStyle):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlTableStyle_v24_1_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.OutputControlTableStyle_v24_1_to_v25_1
 
 class _OutputControlTableStyle_v24_1_to_v25_1Fields(_g._OutputControlTableStyleCommonFields, total=False):
     unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
@@ -5252,6 +5724,7 @@ class Material_v8_9_to_v26_1(_g.AnyMaterial):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Material_v8_9_to_v26_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.Material_v8_9_to_v26_1
 
 class _Material_v8_9_to_v26_1Fields(_g._MaterialCommonFields, total=False): ...
 
@@ -5278,6 +5751,7 @@ class ComponentCostLineItem_v8_9_to_v9_5(_g.AnyComponentCostLineItem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComponentCostLineItem_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.ComponentCostLineItem_v8_9_to_v9_5
 
 class _ComponentCostLineItem_v8_9_to_v9_5Fields(_g._ComponentCostLineItemCommonFields, total=False):
     line_item_type: (
@@ -5305,6 +5779,7 @@ class ZoneGroup_v8_9_to_v22_1(_g.AnyZoneGroup):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneGroup_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.ZoneGroup_v8_9_to_v22_1
 
 class _ZoneGroup_v8_9_to_v22_1Fields(_g._ZoneGroupCommonFields, total=False):
     zone_list_multiplier: float | None
@@ -5315,6 +5790,7 @@ class CoilCoolingDXTwoSpeed_v8_9_to_v23_1(_g.AnyCoilCoolingDXTwoSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXTwoSpeed_v8_9_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.CoilCoolingDXTwoSpeed_v8_9_to_v23_1
 
 class _CoilCoolingDXTwoSpeed_v8_9_to_v23_1Fields(_g._CoilCoolingDXTwoSpeedCommonFields, total=False): ...
 
@@ -5324,6 +5800,7 @@ class WallUnderground_v8_9_to_v9_5(_g.AnyWallUnderground):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallUnderground_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.WallUnderground_v8_9_to_v9_5
 
 class _WallUnderground_v8_9_to_v9_5Fields(_g._WallUndergroundCommonFields, total=False): ...
 
@@ -5345,6 +5822,7 @@ class HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2(_g.AnyHeatExchangerAi
         /,
         **kwargs: Unpack[_HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2
 
 class _HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2Fields(
     _g._HeatExchangerAirToAirSensibleAndLatentCommonFields, total=False
@@ -5374,6 +5852,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4(_g.AnyCoilHeatingWat
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4
 
 class _CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4Fields(
     _g._CoilHeatingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -5401,6 +5880,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1(_g.AnyCoilHeatingWa
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1
 
 class _CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1Fields(
     _g._CoilHeatingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -5426,6 +5906,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1(_g.AnyCoilHeatingW
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1
 
 class _CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1Fields(
     _g._CoilHeatingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -5456,6 +5937,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1(_g.AnyCoilHeatingW
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1
 
 class _CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1Fields(
     _g._CoilHeatingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -5476,10 +5958,44 @@ class ChillerElectricReformulatedEIR_v8_9_to_v24_1(_g.AnyChillerElectricReformul
         /,
         **kwargs: Unpack[_ChillerElectricReformulatedEIR_v8_9_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.ChillerElectricReformulatedEIR_v8_9_to_v24_1
 
 class _ChillerElectricReformulatedEIR_v8_9_to_v24_1Fields(
     _g._ChillerElectricReformulatedEIRCommonFields, total=False
 ): ...
+
+class ChillerElectricReformulatedEIR_v24_2(_g.AnyChillerElectricReformulatedEIR):
+    """``Chiller:Electric:ReformulatedEIR`` as declared in EnergyPlus 24.2.0. This chiller model is an empirical model, a reformulated version of Chiller:Electric:EIR where the performance is a f..."""
+
+    condenser_flow_control: (
+        Literal["", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"] | None
+    )
+    """Select the chiller condenser flow request mode. With 'ConstantFlow' a chiller will always request its maximum condens...; Default: ConstantFlow"""
+    condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None
+    """Condenser loop flow rate fraction as a function of loop part load ratio CWFR = C * PLR + D Where: CWFR is the condens..."""
+    temperature_difference_across_condenser_schedule_name: str | None
+    """A schedule that defines the temperature difference across the condenser. This input is used to calculate the condense..."""
+    condenser_minimum_flow_fraction: float | None
+    """This input corresponds to the minimum flow fraction to be simulated. The minimum condenser flow corresponds to this f..."""
+    thermosiphon_capacity_fraction_curve_name: str | None
+    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo..."""
+    thermosiphon_minimum_temperature_difference: float | None
+    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the prevoi...; Default: 0.0; Range: >= 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricReformulatedEIR_v24_2Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.ChillerElectricReformulatedEIR_v24_2
+
+class _ChillerElectricReformulatedEIR_v24_2Fields(_g._ChillerElectricReformulatedEIRCommonFields, total=False):
+    condenser_flow_control: (
+        Literal["", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"] | None
+    )
+    condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None
+    temperature_difference_across_condenser_schedule_name: str | None
+    condenser_minimum_flow_fraction: float | None
+    thermosiphon_capacity_fraction_curve_name: str | None
+    thermosiphon_minimum_temperature_difference: float | None
 
 class SizingPeriodWeatherFileDays_v8_9_to_v22_1(_g.AnySizingPeriodWeatherFileDays):
     """``SizingPeriod:WeatherFileDays`` as declared in EnergyPlus 8.9.0 to 22.1.0. Use a weather file period for design sizing calculations."""
@@ -5499,6 +6015,7 @@ class SizingPeriodWeatherFileDays_v8_9_to_v22_1(_g.AnySizingPeriodWeatherFileDay
         /,
         **kwargs: Unpack[_SizingPeriodWeatherFileDays_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.SizingPeriodWeatherFileDays_v8_9_to_v22_1
 
 class _SizingPeriodWeatherFileDays_v8_9_to_v22_1Fields(_g._SizingPeriodWeatherFileDaysCommonFields, total=False):
     begin_month: float | None
@@ -5530,6 +6047,7 @@ class People_v8_9_to_v9_4(_g.AnyPeople):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_People_v8_9_to_v9_4Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.People_v8_9_to_v9_4
 
 class _People_v8_9_to_v9_4Fields(_g._PeopleCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -5591,6 +6109,7 @@ class People_v9_5(_g.AnyPeople):
     """units in the schedule are m/s this is the schedule of the air speed at the 0.1 m above the floor optional (only requi..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_People_v9_5Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.People_v9_5
 
 class _People_v9_5Fields(_g._PeopleCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -5678,6 +6197,7 @@ class People_v9_6_to_v22_1(_g.AnyPeople):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_People_v9_6_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.People_v9_6_to_v22_1
 
 class _People_v9_6_to_v22_1Fields(_g._PeopleCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -5769,6 +6289,7 @@ class People_v22_2_to_v23_2(_g.AnyPeople):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_People_v22_2_to_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.People_v22_2_to_v23_2
 
 class _People_v22_2_to_v23_2Fields(_g._PeopleCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -5835,6 +6356,7 @@ class AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2(_g.AnyAirflowNetworkD
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2
 
 class _AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2Fields(
     _g._AirflowNetworkDistributionComponentCoilCommonFields, total=False
@@ -5886,6 +6408,7 @@ class AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2(_g.AnyAirflowNetwork
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2
 
 class _AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2Fields(
     _g._AirflowNetworkDistributionComponentCoilCommonFields, total=False
@@ -5940,6 +6463,7 @@ class AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2(_g.AnyAirflowNetwor
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2
 
 class _AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2Fields(
     _g._AirflowNetworkDistributionComponentCoilCommonFields, total=False
@@ -5996,6 +6520,7 @@ class LifeCycleCostUseAdjustment_v8_9_to_v9_2(_g.AnyLifeCycleCostUseAdjustment):
         /,
         **kwargs: Unpack[_LifeCycleCostUseAdjustment_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.LifeCycleCostUseAdjustment_v8_9_to_v9_2
 
 class _LifeCycleCostUseAdjustment_v8_9_to_v9_2Fields(_g._LifeCycleCostUseAdjustmentCommonFields, total=False):
     resource: (
@@ -6051,6 +6576,7 @@ class LifeCycleCostUseAdjustment_v9_3_to_v23_1(_g.AnyLifeCycleCostUseAdjustment)
         /,
         **kwargs: Unpack[_LifeCycleCostUseAdjustment_v9_3_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.LifeCycleCostUseAdjustment_v9_3_to_v23_1
 
 class _LifeCycleCostUseAdjustment_v9_3_to_v23_1Fields(_g._LifeCycleCostUseAdjustmentCommonFields, total=False):
     resource: (
@@ -6094,6 +6620,7 @@ class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1(_g._TypedIDFObject):
         /,
         **kwargs: Unpack[_ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1
 
 class _ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1Fields(TypedDict, total=False):
     zone_name: str | None
@@ -6119,6 +6646,7 @@ class ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3(_g._TypedIDFObject):
         /,
         **kwargs: Unpack[_ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3
 
 class _ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3Fields(TypedDict, total=False):
     zone_or_zonelist_name: str | None
@@ -6136,6 +6664,7 @@ class ZoneHVACForcedAirUserDefined_v8_9_to_v22_1(_g.AnyZoneHVACForcedAirUserDefi
         /,
         **kwargs: Unpack[_ZoneHVACForcedAirUserDefined_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.ZoneHVACForcedAirUserDefined_v8_9_to_v22_1
 
 class _ZoneHVACForcedAirUserDefined_v8_9_to_v22_1Fields(_g._ZoneHVACForcedAirUserDefinedCommonFields, total=False):
     number_of_plant_loop_connections: float | None
@@ -6191,6 +6720,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTe
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3
 
 class _ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3Fields(
     _g._ZoneHVACLowTemperatureRadiantVariableFlowCommonFields, total=False
@@ -6288,6 +6818,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4(_g.AnyZoneHVACLowTemperatur
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantVariableFlow_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.ZoneHVACLowTemperatureRadiantVariableFlow_v9_4
 
 class _ZoneHVACLowTemperatureRadiantVariableFlow_v9_4Fields(
     _g._ZoneHVACLowTemperatureRadiantVariableFlowCommonFields, total=False
@@ -6329,6 +6860,39 @@ class _ZoneHVACLowTemperatureRadiantVariableFlow_v9_4Fields(
     condensation_control_dewpoint_offset: float | None
     changeover_delay_time_period_schedule: str | None
 
+class ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1(_g.AnyZoneHVACLowTemperatureRadiantVariableFlow):
+    """``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` as declared in EnergyPlus 9.5.0 to 25.1.0. Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
+
+    design_object: str | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1
+
+class _ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1Fields(
+    _g._ZoneHVACLowTemperatureRadiantVariableFlowCommonFields, total=False
+):
+    design_object: str | None
+
+class ZoneControlContaminantController_v8_9_to_v26_1(_g.AnyZoneControlContaminantController):
+    """``ZoneControl:ContaminantController`` as declared in EnergyPlus 8.9.0 to 26.1.0. Used to control a zone to a specified indoor level of CO2 or generic contaminants, or to specify minimum CO2 concentr..."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZoneControlContaminantController_v8_9_to_v26_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.ZoneControlContaminantController_v8_9_to_v26_1
+
+class _ZoneControlContaminantController_v8_9_to_v26_1Fields(
+    _g._ZoneControlContaminantControllerCommonFields, total=False
+): ...
+
 class ConstructionComplexFenestrationState_v8_9_to_v9_5(_g.AnyConstructionComplexFenestrationState):
     """``Construction:ComplexFenestrationState`` as declared in EnergyPlus 8.9.0 to 9.5.0. Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software..."""
 
@@ -6366,6 +6930,7 @@ class ConstructionComplexFenestrationState_v8_9_to_v9_5(_g.AnyConstructionComple
         /,
         **kwargs: Unpack[_ConstructionComplexFenestrationState_v8_9_to_v9_5Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.ConstructionComplexFenestrationState_v8_9_to_v9_5
 
 class _ConstructionComplexFenestrationState_v8_9_to_v9_5Fields(
     _g._ConstructionComplexFenestrationStateCommonFields, total=False
@@ -6427,6 +6992,7 @@ class ConstructionComplexFenestrationState_v9_6_to_v23_1(_g.AnyConstructionCompl
         /,
         **kwargs: Unpack[_ConstructionComplexFenestrationState_v9_6_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.ConstructionComplexFenestrationState_v9_6_to_v23_1
 
 class _ConstructionComplexFenestrationState_v9_6_to_v23_1Fields(
     _g._ConstructionComplexFenestrationStateCommonFields, total=False
@@ -6463,6 +7029,7 @@ class CoilHeatingElectricMultiStage_v8_9_to_v22_1(_g.AnyCoilHeatingElectricMulti
         /,
         **kwargs: Unpack[_CoilHeatingElectricMultiStage_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.CoilHeatingElectricMultiStage_v8_9_to_v22_1
 
 class _CoilHeatingElectricMultiStage_v8_9_to_v22_1Fields(_g._CoilHeatingElectricMultiStageCommonFields, total=False):
     number_of_stages: float | None
@@ -6479,6 +7046,7 @@ class GroundHeatExchangerSurface_v8_9_to_v22_1(_g.AnyGroundHeatExchangerSurface)
         /,
         **kwargs: Unpack[_GroundHeatExchangerSurface_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.GroundHeatExchangerSurface_v8_9_to_v22_1
 
 class _GroundHeatExchangerSurface_v8_9_to_v22_1Fields(_g._GroundHeatExchangerSurfaceCommonFields, total=False):
     number_of_tubing_circuits: float | None
@@ -6517,6 +7085,7 @@ class RunPeriodCustomRange_v8_9(_g._TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriodCustomRange_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.RunPeriodCustomRange_v8_9
 
 class _RunPeriodCustomRange_v8_9Fields(TypedDict, total=False):
     begin_month: float | None
@@ -6546,6 +7115,7 @@ class CoilHeatingDXSingleSpeed_v8_9_to_v22_1(_g.AnyCoilHeatingDXSingleSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXSingleSpeed_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.CoilHeatingDXSingleSpeed_v8_9_to_v22_1
 
 class _CoilHeatingDXSingleSpeed_v8_9_to_v22_1Fields(_g._CoilHeatingDXSingleSpeedCommonFields, total=False):
     rated_supply_fan_power_per_volume_flow_rate: float | None
@@ -6563,6 +7133,7 @@ class CoilHeatingDXSingleSpeed_v22_2_to_v23_1(_g.AnyCoilHeatingDXSingleSpeed):
         /,
         **kwargs: Unpack[_CoilHeatingDXSingleSpeed_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.CoilHeatingDXSingleSpeed_v22_2_to_v23_1
 
 class _CoilHeatingDXSingleSpeed_v22_2_to_v23_1Fields(_g._CoilHeatingDXSingleSpeedCommonFields, total=False):
     region_number_for_calculating_hspf: int | None
@@ -6573,6 +7144,7 @@ class PumpConstantSpeed_v8_9_to_v9_0(_g.AnyPumpConstantSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpConstantSpeed_v8_9_to_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.PumpConstantSpeed_v8_9_to_v9_0
 
 class _PumpConstantSpeed_v8_9_to_v9_0Fields(_g._PumpConstantSpeedCommonFields, total=False): ...
 
@@ -6582,6 +7154,7 @@ class HVACTemplateZonePTAC_v8_9(_g.AnyHVACTemplateZonePTAC):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZonePTAC_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.HVACTemplateZonePTAC_v8_9
 
 class _HVACTemplateZonePTAC_v8_9Fields(_g._HVACTemplateZonePTACCommonFields, total=False): ...
 
@@ -6613,6 +7186,7 @@ class CoilHeatingDXVariableSpeed_v8_9_to_v22_1(_g.AnyCoilHeatingDXVariableSpeed)
         /,
         **kwargs: Unpack[_CoilHeatingDXVariableSpeed_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.CoilHeatingDXVariableSpeed_v8_9_to_v22_1
 
 class _CoilHeatingDXVariableSpeed_v8_9_to_v22_1Fields(_g._CoilHeatingDXVariableSpeedCommonFields, total=False):
     number_of_speeds: float | None
@@ -6653,6 +7227,7 @@ class CoilHeatingDXVariableSpeed_v22_2_to_v23_1(_g.AnyCoilHeatingDXVariableSpeed
         /,
         **kwargs: Unpack[_CoilHeatingDXVariableSpeed_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.CoilHeatingDXVariableSpeed_v22_2_to_v23_1
 
 class _CoilHeatingDXVariableSpeed_v22_2_to_v23_1Fields(_g._CoilHeatingDXVariableSpeedCommonFields, total=False):
     number_of_speeds: int | None
@@ -6695,6 +7270,7 @@ class CoilHeatingDXVariableSpeed_v23_2_to_v25_1(_g.AnyCoilHeatingDXVariableSpeed
         /,
         **kwargs: Unpack[_CoilHeatingDXVariableSpeed_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.CoilHeatingDXVariableSpeed_v23_2_to_v25_1
 
 class _CoilHeatingDXVariableSpeed_v23_2_to_v25_1Fields(_g._CoilHeatingDXVariableSpeedCommonFields, total=False):
     number_of_speeds: int | None
@@ -6719,6 +7295,7 @@ class ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1(_g.AnyZoneVentilationWin
         /,
         **kwargs: Unpack[_ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1
 
 class _ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1Fields(
     _g._ZoneVentilationWindandStackOpenAreaCommonFields, total=False
@@ -6736,6 +7313,7 @@ class HeaderedPumpsConstantSpeed_v8_9_to_v9_0(_g.AnyHeaderedPumpsConstantSpeed):
         /,
         **kwargs: Unpack[_HeaderedPumpsConstantSpeed_v8_9_to_v9_0Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.HeaderedPumpsConstantSpeed_v8_9_to_v9_0
 
 class _HeaderedPumpsConstantSpeed_v8_9_to_v9_0Fields(_g._HeaderedPumpsConstantSpeedCommonFields, total=False):
     number_of_pumps_in_bank: float | None
@@ -6753,6 +7331,7 @@ class HeaderedPumpsConstantSpeed_v9_1_to_v22_1(_g.AnyHeaderedPumpsConstantSpeed)
         /,
         **kwargs: Unpack[_HeaderedPumpsConstantSpeed_v9_1_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.HeaderedPumpsConstantSpeed_v9_1_to_v22_1
 
 class _HeaderedPumpsConstantSpeed_v9_1_to_v22_1Fields(_g._HeaderedPumpsConstantSpeedCommonFields, total=False):
     number_of_pumps_in_bank: float | None
@@ -6767,6 +7346,7 @@ class SizingParameters_v8_9_to_v22_1(_g.AnySizingParameters):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingParameters_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.SizingParameters_v8_9_to_v22_1
 
 class _SizingParameters_v8_9_to_v22_1Fields(_g._SizingParametersCommonFields, total=False):
     timesteps_in_averaging_window: float | None
@@ -6781,6 +7361,7 @@ class FuelFactors_v8_9_to_v9_2(_g.AnyFuelFactors):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FuelFactors_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.FuelFactors_v8_9_to_v9_2
 
 class _FuelFactors_v8_9_to_v9_2Fields(_g._FuelFactorsCommonFields, total=False):
     existing_fuel_resource_name: str | None
@@ -6811,6 +7392,7 @@ class FuelFactors_v9_3_to_v22_1(_g.AnyFuelFactors):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FuelFactors_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.FuelFactors_v9_3_to_v22_1
 
 class _FuelFactors_v9_3_to_v22_1Fields(_g._FuelFactorsCommonFields, total=False):
     existing_fuel_resource_name: (
@@ -6845,6 +7427,7 @@ class HVACTemplateZoneWaterToAirHeatPump_v8_9_to_v23_1(_g.AnyHVACTemplateZoneWat
         /,
         **kwargs: Unpack[_HVACTemplateZoneWaterToAirHeatPump_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.HVACTemplateZoneWaterToAirHeatPump_v8_9_to_v23_1
 
 class _HVACTemplateZoneWaterToAirHeatPump_v8_9_to_v23_1Fields(
     _g._HVACTemplateZoneWaterToAirHeatPumpCommonFields, total=False
@@ -6866,6 +7449,7 @@ class SurfacePropertySurroundingSurfaces_v8_9_to_v26_1(_g.AnySurfacePropertySurr
         /,
         **kwargs: Unpack[_SurfacePropertySurroundingSurfaces_v8_9_to_v26_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.SurfacePropertySurroundingSurfaces_v8_9_to_v26_1
 
 class _SurfacePropertySurroundingSurfaces_v8_9_to_v26_1Fields(
     _g._SurfacePropertySurroundingSurfacesCommonFields, total=False
@@ -6880,6 +7464,7 @@ class Window_v8_9(_g.AnyWindow):
     """enter the name of a WindowProperty:ShadingControl object used for windows and glass doors only If not specified, wind..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Window_v8_9Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.Window_v8_9
 
 class _Window_v8_9Fields(_g._WindowCommonFields, total=False):
     shading_control_name: str | None
@@ -6903,6 +7488,7 @@ class ShadowCalculation_v8_9_to_v9_2(_g.AnyShadowCalculation):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadowCalculation_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.ShadowCalculation_v8_9_to_v9_2
 
 class _ShadowCalculation_v8_9_to_v9_2Fields(_g._ShadowCalculationCommonFields, total=False):
     calculation_method: Literal["", "AverageOverDaysInFrequency", "TimestepFrequency"] | None
@@ -6934,6 +7520,7 @@ class ShadowCalculation_v9_3_to_v22_1(_g.AnyShadowCalculation):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadowCalculation_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.ShadowCalculation_v9_3_to_v22_1
 
 class _ShadowCalculation_v9_3_to_v22_1Fields(_g._ShadowCalculationCommonFields, total=False):
     shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
@@ -6985,6 +7572,7 @@ class OutputControlSurfaceColorScheme_v8_9_to_v22_1(_g.AnyOutputControlSurfaceCo
         /,
         **kwargs: Unpack[_OutputControlSurfaceColorScheme_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.OutputControlSurfaceColorScheme_v8_9_to_v22_1
 
 class _OutputControlSurfaceColorScheme_v8_9_to_v22_1Fields(
     _g._OutputControlSurfaceColorSchemeCommonFields, total=False
@@ -7011,8 +7599,59 @@ class ChillerElectricEIR_v8_9_to_v24_1(_g.AnyChillerElectricEIR):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricEIR_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.ChillerElectricEIR_v8_9_to_v24_1
 
 class _ChillerElectricEIR_v8_9_to_v24_1Fields(_g._ChillerElectricEIRCommonFields, total=False): ...
+
+class ChillerElectricEIR_v24_2(_g.AnyChillerElectricEIR):
+    """``Chiller:Electric:EIR`` as declared in EnergyPlus 24.2.0. This chiller model is the empirical model from the DOE-2 building Energy simulation program. Chiller performance at o..."""
+
+    condenser_flow_control: (
+        Literal["", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"] | None
+    )
+    """Select the chiller condenser flow request mode. With 'ConstantFlow' a chiller will always request its maximum condens...; Default: ConstantFlow"""
+    condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None
+    """Condenser loop flow rate fraction as a function of loop part load ratio CWFR = C * PLR + D Where: CWFR is the condens..."""
+    temperature_difference_across_condenser_schedule_name: str | None
+    """A schedule that defines the temperature difference across the condenser. This input is used to calculate the condense..."""
+    condenser_minimum_flow_fraction: float | None
+    """This input corresponds to the minimum flow fraction to be simulated. The minimum condenser flow corresponds to this f..."""
+    thermosiphon_capacity_fraction_curve_name: str | None
+    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo..."""
+    thermosiphon_minimum_temperature_difference: float | None
+    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the prevoi...; Default: 0.0; Range: >= 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricEIR_v24_2Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.ChillerElectricEIR_v24_2
+
+class _ChillerElectricEIR_v24_2Fields(_g._ChillerElectricEIRCommonFields, total=False):
+    condenser_flow_control: (
+        Literal["", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"] | None
+    )
+    condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None
+    temperature_difference_across_condenser_schedule_name: str | None
+    condenser_minimum_flow_fraction: float | None
+    thermosiphon_capacity_fraction_curve_name: str | None
+    thermosiphon_minimum_temperature_difference: float | None
+
+class ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1(
+    _g.AnyExternalInterfaceFunctionalMockupUnitExportToActuator
+):
+    """``ExternalInterface:FunctionalMockupUnitExport:To:Actuator`` as declared in EnergyPlus 8.9.0 to 25.1.0. Hardware portion of EMS used to set up actuators in the model that are dynamically updated from the FMU."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1
+
+class _ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1Fields(
+    _g._ExternalInterfaceFunctionalMockupUnitExportToActuatorCommonFields, total=False
+): ...
 
 class WallDetailed_v8_9_to_v9_5(_g.AnyWallDetailed):
     """``Wall:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of wall heat transfer surfaces."""
@@ -7042,6 +7681,7 @@ class WallDetailed_v8_9_to_v9_5(_g.AnyWallDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallDetailed_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.WallDetailed_v8_9_to_v9_5
 
 class _WallDetailed_v8_9_to_v9_5Fields(_g._WallDetailedCommonFields, total=False):
     outside_boundary_condition: (
@@ -7096,6 +7736,7 @@ class WallDetailed_v9_6_to_v24_2(_g.AnyWallDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallDetailed_v9_6_to_v24_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.WallDetailed_v9_6_to_v24_2
 
 class _WallDetailed_v9_6_to_v24_2Fields(_g._WallDetailedCommonFields, total=False):
     space_name: str | None
@@ -7133,6 +7774,7 @@ class OutputIlluminanceMap_v8_9_to_v22_1(_g.AnyOutputIlluminanceMap):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputIlluminanceMap_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.OutputIlluminanceMap_v8_9_to_v22_1
 
 class _OutputIlluminanceMap_v8_9_to_v22_1Fields(_g._OutputIlluminanceMapCommonFields, total=False):
     zone_name: str | None
@@ -7151,6 +7793,7 @@ class OutputIlluminanceMap_v22_2_to_v24_1(_g.AnyOutputIlluminanceMap):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputIlluminanceMap_v22_2_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.OutputIlluminanceMap_v22_2_to_v24_1
 
 class _OutputIlluminanceMap_v22_2_to_v24_1Fields(_g._OutputIlluminanceMapCommonFields, total=False):
     zone_name: str | None
@@ -7169,6 +7812,7 @@ class GroundHeatExchangerSlinky_v8_9_to_v22_1(_g.AnyGroundHeatExchangerSlinky):
         /,
         **kwargs: Unpack[_GroundHeatExchangerSlinky_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.GroundHeatExchangerSlinky_v8_9_to_v22_1
 
 class _GroundHeatExchangerSlinky_v8_9_to_v22_1Fields(_g._GroundHeatExchangerSlinkyCommonFields, total=False):
     number_of_trenches: float | None
@@ -7183,6 +7827,7 @@ class FenestrationSurfaceDetailed_v8_9(_g.AnyFenestrationSurfaceDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FenestrationSurfaceDetailed_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.FenestrationSurfaceDetailed_v8_9
 
 class _FenestrationSurfaceDetailed_v8_9Fields(_g._FenestrationSurfaceDetailedCommonFields, total=False):
     surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
@@ -7199,9 +7844,20 @@ class FenestrationSurfaceDetailed_v9_0_to_v26_1(_g.AnyFenestrationSurfaceDetaile
         /,
         **kwargs: Unpack[_FenestrationSurfaceDetailed_v9_0_to_v26_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.FenestrationSurfaceDetailed_v9_0_to_v26_1
 
 class _FenestrationSurfaceDetailed_v9_0_to_v26_1Fields(_g._FenestrationSurfaceDetailedCommonFields, total=False):
     surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
+
+class EnergyManagementSystemProgram_v8_9(_g.AnyEnergyManagementSystemProgram):
+    """``EnergyManagementSystem:Program`` as declared in EnergyPlus 8.9.0. This input defines an Erl program Each field after the name is a line of EMS Runtime Language"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemProgram_v8_9Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.EnergyManagementSystemProgram_v8_9
+
+class _EnergyManagementSystemProgram_v8_9Fields(_g._EnergyManagementSystemProgramCommonFields, total=False): ...
 
 class InternalMass_v8_9_to_v9_1(_g.AnyInternalMass):
     """``InternalMass`` as declared in EnergyPlus 8.9.0 to 9.1.0. Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
@@ -7212,6 +7868,7 @@ class InternalMass_v8_9_to_v9_1(_g.AnyInternalMass):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_InternalMass_v8_9_to_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.InternalMass_v8_9_to_v9_1
 
 class _InternalMass_v8_9_to_v9_1Fields(_g._InternalMassCommonFields, total=False):
     zone_name: str | None
@@ -7225,9 +7882,44 @@ class InternalMass_v9_2_to_v9_5(_g.AnyInternalMass):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_InternalMass_v9_2_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.InternalMass_v9_2_to_v9_5
 
 class _InternalMass_v9_2_to_v9_5Fields(_g._InternalMassCommonFields, total=False):
     zone_or_zonelist_name: str | None
+
+class InternalMass_v9_6_to_v24_1(_g.AnyInternalMass):
+    """``InternalMass`` as declared in EnergyPlus 9.6.0 to 24.1.0. Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
+
+    zone_or_zonelist_name: str | None
+    """Zone the surface is a part of. used to be Interior Environment"""
+    space_or_spacelist_name: str | None
+    """Space the surface is a part of (optional, see description of Space object for more details). This field is ignored wh..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_InternalMass_v9_6_to_v24_1Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.InternalMass_v9_6_to_v24_1
+
+class _InternalMass_v9_6_to_v24_1Fields(_g._InternalMassCommonFields, total=False):
+    zone_or_zonelist_name: str | None
+    space_or_spacelist_name: str | None
+
+class InternalMass_v24_2_to_v26_1(_g.AnyInternalMass):
+    """``InternalMass`` as declared in EnergyPlus 24.2.0 to 26.1.0. Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
+
+    zone_or_zonelist_name: str | None
+    """Zone(s) the surface is a part of. This field is ignored when a Space or SpaceList Name is specified."""
+    space_or_spacelist_name: str | None
+    """Space(s) the surface is a part of. This field is ignored when a ZoneList Name is specified for Zone or ZoneList Name...."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_InternalMass_v24_2_to_v26_1Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.InternalMass_v24_2_to_v26_1
+
+class _InternalMass_v24_2_to_v26_1Fields(_g._InternalMassCommonFields, total=False):
+    zone_or_zonelist_name: str | None
+    space_or_spacelist_name: str | None
 
 class SteamEquipment_v8_9_to_v9_5(_g.AnySteamEquipment):
     """``SteamEquipment`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains for steam equipment in the zone."""
@@ -7239,6 +7931,7 @@ class SteamEquipment_v8_9_to_v9_5(_g.AnySteamEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SteamEquipment_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.SteamEquipment_v8_9_to_v9_5
 
 class _SteamEquipment_v8_9_to_v9_5Fields(_g._SteamEquipmentCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -7254,6 +7947,7 @@ class SteamEquipment_v9_6_to_v23_2(_g.AnySteamEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SteamEquipment_v9_6_to_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.SteamEquipment_v9_6_to_v23_2
 
 class _SteamEquipment_v9_6_to_v23_2Fields(_g._SteamEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -7272,6 +7966,7 @@ class OutputTableSummaryReports_v8_9_to_v9_2(_g.AnyOutputTableSummaryReports):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableSummaryReports_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.OutputTableSummaryReports_v8_9_to_v9_2
 
 class _OutputTableSummaryReports_v8_9_to_v9_2Fields(_g._OutputTableSummaryReportsCommonFields, total=False):
     reports: list[Any]
@@ -7391,6 +8086,7 @@ class OutputTableSummaryReports_v9_3(_g.AnyOutputTableSummaryReports):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableSummaryReports_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.OutputTableSummaryReports_v9_3
 
 class _OutputTableSummaryReports_v9_3Fields(_g._OutputTableSummaryReportsCommonFields, total=False):
     reports: list[Any]
@@ -7513,6 +8209,7 @@ class OutputTableSummaryReports_v9_4(_g.AnyOutputTableSummaryReports):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableSummaryReports_v9_4Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.OutputTableSummaryReports_v9_4
 
 class _OutputTableSummaryReports_v9_4Fields(_g._OutputTableSummaryReportsCommonFields, total=False):
     reports: list[Any]
@@ -7535,6 +8232,7 @@ class CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1(_g.AnyCoilSystemIntegr
         /,
         **kwargs: Unpack[_CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1
 
 class _CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1Fields(
     _g._CoilSystemIntegratedHeatPumpAirSourceCommonFields, total=False
@@ -7552,6 +8250,7 @@ class DaylightingReferencePoint_v8_9_to_v9_5(_g.AnyDaylightingReferencePoint):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingReferencePoint_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.DaylightingReferencePoint_v8_9_to_v9_5
 
 class _DaylightingReferencePoint_v8_9_to_v9_5Fields(_g._DaylightingReferencePointCommonFields, total=False):
     zone_name: str | None
@@ -7572,6 +8271,7 @@ class FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0(_g._TypedIDFObject):
         /,
         **kwargs: Unpack[_FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0
 
 class _FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0Fields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -7640,6 +8340,7 @@ class WaterHeaterStratified_v8_9_to_v9_2(_g.AnyWaterHeaterStratified):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterStratified_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.WaterHeaterStratified_v8_9_to_v9_2
 
 class _WaterHeaterStratified_v8_9_to_v9_2Fields(_g._WaterHeaterStratifiedCommonFields, total=False):
     heater_fuel_type: (
@@ -7755,6 +8456,7 @@ class WaterHeaterStratified_v9_3_to_v22_1(_g.AnyWaterHeaterStratified):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterStratified_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.WaterHeaterStratified_v9_3_to_v22_1
 
 class _WaterHeaterStratified_v9_3_to_v22_1Fields(_g._WaterHeaterStratifiedCommonFields, total=False):
     heater_fuel_type: (
@@ -7870,6 +8572,7 @@ class WaterHeaterStratified_v22_2_to_v23_1(_g.AnyWaterHeaterStratified):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterStratified_v22_2_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.WaterHeaterStratified_v22_2_to_v23_1
 
 class _WaterHeaterStratified_v22_2_to_v23_1Fields(_g._WaterHeaterStratifiedCommonFields, total=False):
     heater_fuel_type: (
@@ -7934,6 +8637,7 @@ class UtilityCostVariable_v8_9_to_v9_4(_g.AnyUtilityCostVariable):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostVariable_v8_9_to_v9_4Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.UtilityCostVariable_v8_9_to_v9_4
 
 class _UtilityCostVariable_v8_9_to_v9_4Fields(_g._UtilityCostVariableCommonFields, total=False):
     variable_type: Literal["", "Currency", "Dimensionless", "Energy", "Power"] | None
@@ -7952,6 +8656,7 @@ class MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1
 
 class _MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferDiffusionCommonFields, total=False
@@ -7977,6 +8682,7 @@ class ZoneCrossMixing_v8_9_to_v22_1(_g.AnyZoneCrossMixing):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneCrossMixing_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.ZoneCrossMixing_v8_9_to_v22_1
 
 class _ZoneCrossMixing_v8_9_to_v22_1Fields(_g._ZoneCrossMixingCommonFields, total=False):
     zone_name: str | None
@@ -7986,6 +8692,21 @@ class _ZoneCrossMixing_v8_9_to_v22_1Fields(_g._ZoneCrossMixingCommonFields, tota
     maximum_zone_temperature_schedule_name: str | None
     minimum_source_zone_temperature_schedule_name: str | None
     maximum_source_zone_temperature_schedule_name: str | None
+
+class PhotovoltaicPerformanceSimple_v8_9_to_v25_2(_g.AnyPhotovoltaicPerformanceSimple):
+    """``PhotovoltaicPerformance:Simple`` as declared in EnergyPlus 8.9.0 to 25.2.0. Describes a simple model of photovoltaics that may be useful for early phase design analysis. In this model the user ..."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_PhotovoltaicPerformanceSimple_v8_9_to_v25_2Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.PhotovoltaicPerformanceSimple_v8_9_to_v25_2
+
+class _PhotovoltaicPerformanceSimple_v8_9_to_v25_2Fields(
+    _g._PhotovoltaicPerformanceSimpleCommonFields, total=False
+): ...
 
 class ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1(_g.AnyZoneInfiltrationEffectiveLeakageArea):
     """``ZoneInfiltration:EffectiveLeakageArea`` as declared in EnergyPlus 8.9.0 to 22.1.0. Infiltration is specified as effective leakage area at 4 Pa, schedule fraction, stack and wind coefficients, and is a..."""
@@ -7998,6 +8719,7 @@ class ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1(_g.AnyZoneInfiltrationE
         /,
         **kwargs: Unpack[_ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1
 
 class _ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1Fields(
     _g._ZoneInfiltrationEffectiveLeakageAreaCommonFields, total=False
@@ -8010,11 +8732,22 @@ class FloorAdiabatic_v8_9_to_v9_5(_g.AnyFloorAdiabatic):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorAdiabatic_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.FloorAdiabatic_v8_9_to_v9_5
 
 class _FloorAdiabatic_v8_9_to_v9_5Fields(_g._FloorAdiabaticCommonFields, total=False): ...
 
-class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5(_g.AnyAirLoopHVACOutdoorAirSystem):
-    """``AirLoopHVAC:OutdoorAirSystem`` as declared in EnergyPlus 8.9.0 to 9.5.0. Outdoor air subsystem for an AirLoopHVAC. Includes an outdoor air mixing box and optional outdoor air conditioning eq..."""
+class SwimmingPoolIndoor_v8_9_to_v22_1(_g.AnySwimmingPoolIndoor):
+    """``SwimmingPool:Indoor`` as declared in EnergyPlus 8.9.0 to 22.1.0. Specifies an indoor swimming pools linked to a floor surface. The pool is assumed to cover the entire floor to which ..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SwimmingPoolIndoor_v8_9_to_v22_1Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.SwimmingPoolIndoor_v8_9_to_v22_1
+
+class _SwimmingPoolIndoor_v8_9_to_v22_1Fields(_g._SwimmingPoolIndoorCommonFields, total=False): ...
+
+class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1(_g.AnyAirLoopHVACOutdoorAirSystem):
+    """``AirLoopHVAC:OutdoorAirSystem`` as declared in EnergyPlus 8.9.0 to 9.1.0. Outdoor air subsystem for an AirLoopHVAC. Includes an outdoor air mixing box and optional outdoor air conditioning eq..."""
 
     availability_manager_list_name: str | None
     """Enter the name of an AvailabilityManagerAssignmentList object."""
@@ -8023,10 +8756,28 @@ class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5(_g.AnyAirLoopHVACOutdoorAirSystem
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5Fields],
+        **kwargs: Unpack[_AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1
 
-class _AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5Fields(_g._AirLoopHVACOutdoorAirSystemCommonFields, total=False):
+class _AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1Fields(_g._AirLoopHVACOutdoorAirSystemCommonFields, total=False):
+    availability_manager_list_name: str | None
+
+class AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5(_g.AnyAirLoopHVACOutdoorAirSystem):
+    """``AirLoopHVAC:OutdoorAirSystem`` as declared in EnergyPlus 9.2.0 to 9.5.0. Outdoor air subsystem for an AirLoopHVAC. Includes an outdoor air mixing box and optional outdoor air conditioning eq..."""
+
+    availability_manager_list_name: str | None
+    """Enter the name of an AvailabilityManagerAssignmentList object."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5
+
+class _AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5Fields(_g._AirLoopHVACOutdoorAirSystemCommonFields, total=False):
     availability_manager_list_name: str | None
 
 class MeterCustomDecrement_v8_9_to_v9_2(_g.AnyMeterCustomDecrement):
@@ -8053,6 +8804,7 @@ class MeterCustomDecrement_v8_9_to_v9_2(_g.AnyMeterCustomDecrement):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustomDecrement_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.MeterCustomDecrement_v8_9_to_v9_2
 
 class _MeterCustomDecrement_v8_9_to_v9_2Fields(_g._MeterCustomDecrementCommonFields, total=False):
     fuel_type: (
@@ -8097,6 +8849,7 @@ class MeterCustomDecrement_v9_3(_g.AnyMeterCustomDecrement):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustomDecrement_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.MeterCustomDecrement_v9_3
 
 class _MeterCustomDecrement_v9_3Fields(_g._MeterCustomDecrementCommonFields, total=False):
     fuel_type: (
@@ -8144,6 +8897,7 @@ class MeterCustomDecrement_v9_4_to_v23_1(_g.AnyMeterCustomDecrement):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustomDecrement_v9_4_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.MeterCustomDecrement_v9_4_to_v23_1
 
 class _MeterCustomDecrement_v9_4_to_v23_1Fields(_g._MeterCustomDecrementCommonFields, total=False):
     resource_type: (
@@ -8184,6 +8938,7 @@ class ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2(_g.AnyChillerHeaterAbsorpt
         /,
         **kwargs: Unpack[_ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2
 
 class _ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2Fields(
     _g._ChillerHeaterAbsorptionDirectFiredCommonFields, total=False
@@ -8209,6 +8964,7 @@ class CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1(_g.AnyCoolingTowerVariableSp
         /,
         **kwargs: Unpack[_CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1
 
 class _CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1Fields(
     _g._CoolingTowerVariableSpeedMerkelCommonFields, total=False
@@ -8229,6 +8985,7 @@ class RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1(_g.AnyRoomAirTempera
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1
 
 class _RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1Fields(
     _g._RoomAirTemperaturePatternSurfaceMappingCommonFields, total=False
@@ -8257,6 +9014,7 @@ class CoilHeatingDesuperheater_v8_9_to_v22_1(_g.AnyCoilHeatingDesuperheater):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDesuperheater_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.CoilHeatingDesuperheater_v8_9_to_v22_1
 
 class _CoilHeatingDesuperheater_v8_9_to_v22_1Fields(_g._CoilHeatingDesuperheaterCommonFields, total=False):
     heating_source_object_type: (
@@ -8300,6 +9058,7 @@ class CoilHeatingDesuperheater_v22_2_to_v23_1(_g.AnyCoilHeatingDesuperheater):
         /,
         **kwargs: Unpack[_CoilHeatingDesuperheater_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.CoilHeatingDesuperheater_v22_2_to_v23_1
 
 class _CoilHeatingDesuperheater_v22_2_to_v23_1Fields(_g._CoilHeatingDesuperheaterCommonFields, total=False):
     heating_source_object_type: (
@@ -8330,11 +9089,31 @@ class PhotovoltaicPerformanceEquivalentOneDiode_v8_9_to_v22_1(_g.AnyPhotovoltaic
         /,
         **kwargs: Unpack[_PhotovoltaicPerformanceEquivalentOneDiode_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.PhotovoltaicPerformanceEquivalentOneDiode_v8_9_to_v22_1
 
 class _PhotovoltaicPerformanceEquivalentOneDiode_v8_9_to_v22_1Fields(
     _g._PhotovoltaicPerformanceEquivalentOneDiodeCommonFields, total=False
 ):
     number_of_cells_in_series: float | None
+
+class PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2(_g.AnyPhotovoltaicPerformanceEquivalentOneDiode):
+    """``PhotovoltaicPerformance:EquivalentOne-Diode`` as declared in EnergyPlus 22.2.0 to 25.2.0. Describes the performance characteristics of Photovoltaic (PV) modules to be modeled using an equivalent one-diode ci..."""
+
+    number_of_cells_in_series: int | None
+    """[dimensionless]; Default: 36; Range: >= 0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2
+
+class _PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2Fields(
+    _g._PhotovoltaicPerformanceEquivalentOneDiodeCommonFields, total=False
+):
+    number_of_cells_in_series: int | None
 
 class GroundHeatExchangerResponseFactors_v8_9_to_v22_1(_g.AnyGroundHeatExchangerResponseFactors):
     """``GroundHeatExchanger:ResponseFactors`` as declared in EnergyPlus 8.9.0 to 22.1.0. Response factor definitions from third-party tool, commonly referred to a 'g-functions'"""
@@ -8347,6 +9126,7 @@ class GroundHeatExchangerResponseFactors_v8_9_to_v22_1(_g.AnyGroundHeatExchanger
         /,
         **kwargs: Unpack[_GroundHeatExchangerResponseFactors_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.GroundHeatExchangerResponseFactors_v8_9_to_v22_1
 
 class _GroundHeatExchangerResponseFactors_v8_9_to_v22_1Fields(
     _g._GroundHeatExchangerResponseFactorsCommonFields, total=False
@@ -8362,6 +9142,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1(_g.AnyAirLoopHVACUnitaryH
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1
 
 class _AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1Fields(
     _g._AirLoopHVACUnitaryHeatPumpAirToAirCommonFields, total=False
@@ -8373,6 +9154,7 @@ class WallInterzone_v8_9_to_v9_5(_g.AnyWallInterzone):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallInterzone_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.WallInterzone_v8_9_to_v9_5
 
 class _WallInterzone_v8_9_to_v9_5Fields(_g._WallInterzoneCommonFields, total=False): ...
 
@@ -8394,6 +9176,7 @@ class CoilSystemCoolingDX_v8_9_to_v22_1(_g.AnyCoilSystemCoolingDX):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemCoolingDX_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.CoilSystemCoolingDX_v8_9_to_v22_1
 
 class _CoilSystemCoolingDX_v8_9_to_v22_1Fields(_g._CoilSystemCoolingDXCommonFields, total=False):
     cooling_coil_object_type: (
@@ -8484,6 +9267,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1
 
 class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1Fields(
     _g._CoilWaterHeatingAirToWaterHeatPumpVariableSpeedCommonFields, total=False
@@ -8597,6 +9381,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v22_2_to_v23_1(
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v22_2_to_v23_1
 
 class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v22_2_to_v23_1Fields(
     _g._CoilWaterHeatingAirToWaterHeatPumpVariableSpeedCommonFields, total=False
@@ -8712,6 +9497,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v23_2_to_v25_1(
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v23_2_to_v25_1
 
 class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v23_2_to_v25_1Fields(
     _g._CoilWaterHeatingAirToWaterHeatPumpVariableSpeedCommonFields, total=False
@@ -8762,6 +9548,7 @@ class SurfacePropertyLocalEnvironment_v8_9_to_v22_1(_g.AnySurfacePropertyLocalEn
         /,
         **kwargs: Unpack[_SurfacePropertyLocalEnvironment_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.SurfacePropertyLocalEnvironment_v8_9_to_v22_1
 
 class _SurfacePropertyLocalEnvironment_v8_9_to_v22_1Fields(
     _g._SurfacePropertyLocalEnvironmentCommonFields, total=False
@@ -8782,6 +9569,7 @@ class SurfacePropertyLocalEnvironment_v22_2_to_v23_1(_g.AnySurfacePropertyLocalE
         /,
         **kwargs: Unpack[_SurfacePropertyLocalEnvironment_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.SurfacePropertyLocalEnvironment_v22_2_to_v23_1
 
 class _SurfacePropertyLocalEnvironment_v22_2_to_v23_1Fields(
     _g._SurfacePropertyLocalEnvironmentCommonFields, total=False
@@ -8810,6 +9598,7 @@ class AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2(_g._TypedIDFObject):
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv24.AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2
 
 class _AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2Fields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -8833,6 +9622,7 @@ class ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1(_g.AnyZoneControlThe
         /,
         **kwargs: Unpack[_ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1
 
 class _ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1Fields(
     _g._ZoneControlThermostatStagedDualSetpointCommonFields, total=False
@@ -8850,6 +9640,7 @@ class ElectricEquipment_v8_9_to_v9_5(_g.AnyElectricEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipment_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.ElectricEquipment_v8_9_to_v9_5
 
 class _ElectricEquipment_v8_9_to_v9_5Fields(_g._ElectricEquipmentCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -8865,6 +9656,7 @@ class ElectricEquipment_v9_6_to_v23_2(_g.AnyElectricEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipment_v9_6_to_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.ElectricEquipment_v9_6_to_v23_2
 
 class _ElectricEquipment_v9_6_to_v23_2Fields(_g._ElectricEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -8879,6 +9671,7 @@ class CoilUserDefined_v8_9_to_v22_1(_g.AnyCoilUserDefined):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilUserDefined_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.CoilUserDefined_v8_9_to_v22_1
 
 class _CoilUserDefined_v8_9_to_v22_1Fields(_g._CoilUserDefinedCommonFields, total=False):
     number_of_air_connections: float | None
@@ -8898,6 +9691,7 @@ class HVACTemplateZoneFanCoil_v8_9(_g.AnyHVACTemplateZoneFanCoil):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneFanCoil_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.HVACTemplateZoneFanCoil_v8_9
 
 class _HVACTemplateZoneFanCoil_v8_9Fields(_g._HVACTemplateZoneFanCoilCommonFields, total=False):
     cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None
@@ -8928,6 +9722,7 @@ class HVACTemplateZoneFanCoil_v9_0(_g.AnyHVACTemplateZoneFanCoil):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneFanCoil_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.HVACTemplateZoneFanCoil_v9_0
 
 class _HVACTemplateZoneFanCoil_v9_0Fields(_g._HVACTemplateZoneFanCoilCommonFields, total=False):
     cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None
@@ -8949,6 +9744,7 @@ class OutputSQLite_v8_9_to_v9_4(_g.AnyOutputSQLite):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSQLite_v8_9_to_v9_4Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.OutputSQLite_v8_9_to_v9_4
 
 class _OutputSQLite_v8_9_to_v9_4Fields(_g._OutputSQLiteCommonFields, total=False): ...
 
@@ -8963,6 +9759,7 @@ class OutputSQLite_v9_5_to_v23_2(_g.AnyOutputSQLite):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSQLite_v9_5_to_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.OutputSQLite_v9_5_to_v23_2
 
 class _OutputSQLite_v9_5_to_v23_2Fields(_g._OutputSQLiteCommonFields, total=False):
     unit_conversion_for_tabular_data: (
@@ -8990,6 +9787,7 @@ class OutputSQLite_v24_1_to_v25_1(_g.AnyOutputSQLite):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSQLite_v24_1_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.OutputSQLite_v24_1_to_v25_1
 
 class _OutputSQLite_v24_1_to_v25_1Fields(_g._OutputSQLiteCommonFields, total=False):
     unit_conversion_for_tabular_data: (
@@ -9024,14 +9822,15 @@ class SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2(_g.AnySurfaceProper
         /,
         **kwargs: Unpack[_SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2
 
 class _SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2Fields(
     _g._SurfacePropertyExposedFoundationPerimeterCommonFields, total=False
 ):
     surfaces: list[Any]
 
-class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1(_g.AnyEvaporativeFluidCoolerSingleSpeed):
-    """``EvaporativeFluidCooler:SingleSpeed`` as declared in EnergyPlus 8.9.0 to 25.1.0. This model is based on Merkel's theory, which is also the basis for the cooling tower model in EnergyPlus. The Evapor..."""
+class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1(_g.AnyEvaporativeFluidCoolerSingleSpeed):
+    """``EvaporativeFluidCooler:SingleSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. This model is based on Merkel's theory, which is also the basis for the cooling tower model in EnergyPlus. The Evapor..."""
 
     design_entering_water_temperature: float | None
     """Only used for Performance Input Method = UserSpecifiedDesignCapacity; for other Performance Input Methods, this field...; [C] (F); Range: > 0.0"""
@@ -9040,10 +9839,30 @@ class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1(_g.AnyEvaporativeFluidCool
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1Fields],
+        **kwargs: Unpack[_EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1
 
-class _EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1Fields(
+class _EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1Fields(
+    _g._EvaporativeFluidCoolerSingleSpeedCommonFields, total=False
+):
+    design_entering_water_temperature: float | None
+
+class EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1(_g.AnyEvaporativeFluidCoolerSingleSpeed):
+    """``EvaporativeFluidCooler:SingleSpeed`` as declared in EnergyPlus 22.2.0 to 25.1.0. This model is based on Merkel's theory, which is also the basis for the cooling tower model in EnergyPlus. The Evapor..."""
+
+    design_entering_water_temperature: float | None
+    """Only used for Performance Input Method = UserSpecifiedDesignCapacity; for other Performance Input Methods, this field...; [C] (F); Range: > 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1
+
+class _EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1Fields(
     _g._EvaporativeFluidCoolerSingleSpeedCommonFields, total=False
 ):
     design_entering_water_temperature: float | None
@@ -9057,6 +9876,7 @@ class GeneratorMicroTurbine_v8_9_to_v9_2(_g.AnyGeneratorMicroTurbine):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorMicroTurbine_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.GeneratorMicroTurbine_v8_9_to_v9_2
 
 class _GeneratorMicroTurbine_v8_9_to_v9_2Fields(_g._GeneratorMicroTurbineCommonFields, total=False):
     fuel_type: Literal["", "NaturalGas", "PropaneGas"] | None
@@ -9070,6 +9890,7 @@ class GeneratorMicroTurbine_v9_3_to_v9_4(_g.AnyGeneratorMicroTurbine):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorMicroTurbine_v9_3_to_v9_4Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.GeneratorMicroTurbine_v9_3_to_v9_4
 
 class _GeneratorMicroTurbine_v9_3_to_v9_4Fields(_g._GeneratorMicroTurbineCommonFields, total=False):
     fuel_type: Literal["", "NaturalGas", "Propane"] | None
@@ -9086,6 +9907,7 @@ class AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1(_g.AnyAirTerminalSing
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1
 
 class _AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1Fields(
     _g._AirTerminalSingleDuctParallelPIUReheatCommonFields, total=False
@@ -9113,6 +9935,7 @@ class AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2(_g.AnyAirTerminalSin
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2
 
 class _AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2Fields(
     _g._AirTerminalSingleDuctParallelPIUReheatCommonFields, total=False
@@ -9133,6 +9956,7 @@ class ThermalStorageIceSimple_v8_9_to_v25_1(_g.AnyThermalStorageIceSimple):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageIceSimple_v8_9_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.ThermalStorageIceSimple_v8_9_to_v25_1
 
 class _ThermalStorageIceSimple_v8_9_to_v25_1Fields(_g._ThermalStorageIceSimpleCommonFields, total=False):
     capacity: float | None
@@ -9143,6 +9967,7 @@ class GroundHeatExchangerSystem_v8_9_to_v9_5(_g.AnyGroundHeatExchangerSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerSystem_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.GroundHeatExchangerSystem_v8_9_to_v9_5
 
 class _GroundHeatExchangerSystem_v8_9_to_v9_5Fields(_g._GroundHeatExchangerSystemCommonFields, total=False): ...
 
@@ -9158,9 +9983,25 @@ class GroundHeatExchangerSystem_v9_6_to_v25_1(_g.AnyGroundHeatExchangerSystem):
         /,
         **kwargs: Unpack[_GroundHeatExchangerSystem_v9_6_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.GroundHeatExchangerSystem_v9_6_to_v25_1
 
 class _GroundHeatExchangerSystem_v9_6_to_v25_1Fields(_g._GroundHeatExchangerSystemCommonFields, total=False):
     g_function_calculation_method: Literal["", "UBHWTcalc", "UHFcalc"] | None
+
+class ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1(_g.AnyZoneHVACHighTemperatureRadiant):
+    """``ZoneHVAC:HighTemperatureRadiant`` as declared in EnergyPlus 8.9.0 to 25.1.0. The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1
+
+class _ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1Fields(
+    _g._ZoneHVACHighTemperatureRadiantCommonFields, total=False
+): ...
 
 class LifeCycleCostRecurringCosts_v8_9_to_v22_1(_g.AnyLifeCycleCostRecurringCosts):
     """``LifeCycleCost:RecurringCosts`` as declared in EnergyPlus 8.9.0 to 22.1.0. Recurring costs are costs that repeat over time on a regular schedule during the study period. If costs associated wi..."""
@@ -9180,6 +10021,7 @@ class LifeCycleCostRecurringCosts_v8_9_to_v22_1(_g.AnyLifeCycleCostRecurringCost
         /,
         **kwargs: Unpack[_LifeCycleCostRecurringCosts_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.LifeCycleCostRecurringCosts_v8_9_to_v22_1
 
 class _LifeCycleCostRecurringCosts_v8_9_to_v22_1Fields(_g._LifeCycleCostRecurringCostsCommonFields, total=False):
     years_from_start: float | None
@@ -9199,6 +10041,7 @@ class RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1(_g.AnyRoomAirTemperatur
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1
 
 class _RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1Fields(
     _g._RoomAirTemperaturePatternTwoGradientCommonFields, total=False
@@ -9224,6 +10067,7 @@ class ZoneMixing_v8_9_to_v22_1(_g.AnyZoneMixing):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneMixing_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.ZoneMixing_v8_9_to_v22_1
 
 class _ZoneMixing_v8_9_to_v22_1Fields(_g._ZoneMixingCommonFields, total=False):
     zone_name: str | None
@@ -9267,6 +10111,7 @@ class CoilHeatingDXMultiSpeed_v8_9_to_v9_2(_g.AnyCoilHeatingDXMultiSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXMultiSpeed_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.CoilHeatingDXMultiSpeed_v8_9_to_v9_2
 
 class _CoilHeatingDXMultiSpeed_v8_9_to_v9_2Fields(_g._CoilHeatingDXMultiSpeedCommonFields, total=False):
     fuel_type: (
@@ -9323,6 +10168,7 @@ class CoilHeatingDXMultiSpeed_v9_3_to_v22_1(_g.AnyCoilHeatingDXMultiSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXMultiSpeed_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.CoilHeatingDXMultiSpeed_v9_3_to_v22_1
 
 class _CoilHeatingDXMultiSpeed_v9_3_to_v22_1Fields(_g._CoilHeatingDXMultiSpeedCommonFields, total=False):
     fuel_type: (
@@ -9371,6 +10217,7 @@ class CoilHeatingDXMultiSpeed_v22_2_to_v23_1(_g.AnyCoilHeatingDXMultiSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXMultiSpeed_v22_2_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv24.CoilHeatingDXMultiSpeed_v22_2_to_v23_1
 
 class _CoilHeatingDXMultiSpeed_v22_2_to_v23_1Fields(_g._CoilHeatingDXMultiSpeedCommonFields, total=False):
     fuel_type: (
@@ -9403,6 +10250,7 @@ class ZoneVentilationDesignFlowRate_v8_9_to_v22_1(_g.AnyZoneVentilationDesignFlo
         /,
         **kwargs: Unpack[_ZoneVentilationDesignFlowRate_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.ZoneVentilationDesignFlowRate_v8_9_to_v22_1
 
 class _ZoneVentilationDesignFlowRate_v8_9_to_v22_1Fields(_g._ZoneVentilationDesignFlowRateCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -9421,6 +10269,7 @@ class ZoneVentilationDesignFlowRate_v22_2_to_v24_2(_g.AnyZoneVentilationDesignFl
         /,
         **kwargs: Unpack[_ZoneVentilationDesignFlowRate_v22_2_to_v24_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.ZoneVentilationDesignFlowRate_v22_2_to_v24_2
 
 class _ZoneVentilationDesignFlowRate_v22_2_to_v24_2Fields(_g._ZoneVentilationDesignFlowRateCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -9444,6 +10293,7 @@ class WindowPropertyStormWindow_v8_9_to_v22_1(_g.AnyWindowPropertyStormWindow):
         /,
         **kwargs: Unpack[_WindowPropertyStormWindow_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.WindowPropertyStormWindow_v8_9_to_v22_1
 
 class _WindowPropertyStormWindow_v8_9_to_v22_1Fields(_g._WindowPropertyStormWindowCommonFields, total=False):
     month_that_storm_glass_layer_is_put_on: float | None
@@ -9459,6 +10309,7 @@ class SiteWaterMainsTemperature_v8_9(_g.AnySiteWaterMainsTemperature):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteWaterMainsTemperature_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.SiteWaterMainsTemperature_v8_9
 
 class _SiteWaterMainsTemperature_v8_9Fields(_g._SiteWaterMainsTemperatureCommonFields, total=False):
     calculation_method: Literal["Correlation", "Schedule"] | None
@@ -9475,6 +10326,7 @@ class SiteWaterMainsTemperature_v9_0_to_v25_1(_g.AnySiteWaterMainsTemperature):
         /,
         **kwargs: Unpack[_SiteWaterMainsTemperature_v9_0_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.SiteWaterMainsTemperature_v9_0_to_v25_1
 
 class _SiteWaterMainsTemperature_v9_0_to_v25_1Fields(_g._SiteWaterMainsTemperatureCommonFields, total=False):
     calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
@@ -9493,6 +10345,7 @@ class MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1
 
 class _MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferSuctionCommonFields, total=False
@@ -9540,6 +10393,7 @@ class OutputDiagnostics_v8_9_to_v9_3(_g.AnyOutputDiagnostics):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputDiagnostics_v8_9_to_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.OutputDiagnostics_v8_9_to_v9_3
 
 class _OutputDiagnostics_v8_9_to_v9_3Fields(_g._OutputDiagnosticsCommonFields, total=False):
     key_1: (
@@ -9593,6 +10447,7 @@ class PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1(_g.AnyPipingSystemUndergr
         /,
         **kwargs: Unpack[_PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1
 
 class _PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1Fields(
     _g._PipingSystemUndergroundPipeCircuitCommonFields, total=False
@@ -9617,6 +10472,7 @@ class GlobalGeometryRules_v8_9_to_v9_2(_g.AnyGlobalGeometryRules):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GlobalGeometryRules_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.GlobalGeometryRules_v8_9_to_v9_2
 
 class _GlobalGeometryRules_v8_9_to_v9_2Fields(_g._GlobalGeometryRulesCommonFields, total=False):
     starting_vertex_position: str | None
@@ -9639,6 +10495,7 @@ class SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1
 
 class _SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1Fields(
     _g._SolarCollectorPerformanceIntegralCollectorStorageCommonFields, total=False
@@ -9654,6 +10511,7 @@ class SiteGroundDomainSlab_v8_9_to_v22_1(_g.AnySiteGroundDomainSlab):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundDomainSlab_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.SiteGroundDomainSlab_v8_9_to_v22_1
 
 class _SiteGroundDomainSlab_v8_9_to_v22_1Fields(_g._SiteGroundDomainSlabCommonFields, total=False):
     mesh_density_parameter: float | None
@@ -9685,6 +10543,7 @@ class CondenserEquipmentList_v8_9_to_v9_0(_g.AnyCondenserEquipmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CondenserEquipmentList_v8_9_to_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.CondenserEquipmentList_v8_9_to_v9_0
 
 class _CondenserEquipmentList_v8_9_to_v9_0Fields(_g._CondenserEquipmentListCommonFields, total=False):
     equipment_1_object_type: str | None
@@ -9719,6 +10578,7 @@ class ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1(_g.AnyZoneInfiltrationFlowCo
         /,
         **kwargs: Unpack[_ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1
 
 class _ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1Fields(
     _g._ZoneInfiltrationFlowCoefficientCommonFields, total=False
@@ -9734,6 +10594,7 @@ class WindowMaterialComplexShade_v8_9(_g.AnyWindowMaterialComplexShade):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialComplexShade_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.WindowMaterialComplexShade_v8_9
 
 class _WindowMaterialComplexShade_v8_9Fields(_g._WindowMaterialComplexShadeCommonFields, total=False):
     layer_type: Literal["", "BSDF", "OtherShadingType", "Perforated", "Venetian", "Woven"] | None
@@ -9748,6 +10609,7 @@ class Lights_v8_9_to_v9_5(_g.AnyLights):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Lights_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.Lights_v8_9_to_v9_5
 
 class _Lights_v8_9_to_v9_5Fields(_g._LightsCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -9765,6 +10627,7 @@ class Lights_v9_6_to_v23_2(_g.AnyLights):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Lights_v9_6_to_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.Lights_v9_6_to_v23_2
 
 class _Lights_v9_6_to_v23_2Fields(_g._LightsCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -9782,6 +10645,7 @@ class HeaderedPumpsVariableSpeed_v8_9_to_v9_0(_g.AnyHeaderedPumpsVariableSpeed):
         /,
         **kwargs: Unpack[_HeaderedPumpsVariableSpeed_v8_9_to_v9_0Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.HeaderedPumpsVariableSpeed_v8_9_to_v9_0
 
 class _HeaderedPumpsVariableSpeed_v8_9_to_v9_0Fields(_g._HeaderedPumpsVariableSpeedCommonFields, total=False):
     number_of_pumps_in_bank: float | None
@@ -9799,6 +10663,7 @@ class HeaderedPumpsVariableSpeed_v9_1_to_v22_1(_g.AnyHeaderedPumpsVariableSpeed)
         /,
         **kwargs: Unpack[_HeaderedPumpsVariableSpeed_v9_1_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.HeaderedPumpsVariableSpeed_v9_1_to_v22_1
 
 class _HeaderedPumpsVariableSpeed_v9_1_to_v22_1Fields(_g._HeaderedPumpsVariableSpeedCommonFields, total=False):
     number_of_pumps_in_bank: float | None
@@ -9823,6 +10688,7 @@ class ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1(_g.AnyZoneHVACPackage
         /,
         **kwargs: Unpack[_ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1
 
 class _ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1Fields(
     _g._ZoneHVACPackagedTerminalAirConditionerCommonFields, total=False
@@ -9856,6 +10722,7 @@ class ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2(_g.AnyZoneHVACPackag
         /,
         **kwargs: Unpack[_ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2
 
 class _ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2Fields(
     _g._ZoneHVACPackagedTerminalAirConditionerCommonFields, total=False
@@ -9883,6 +10750,7 @@ class SizingPeriodDesignDay_v8_9(_g.AnySizingPeriodDesignDay):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodDesignDay_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.SizingPeriodDesignDay_v8_9
 
 class _SizingPeriodDesignDay_v8_9Fields(_g._SizingPeriodDesignDayCommonFields, total=False):
     month: float | None
@@ -9902,6 +10770,7 @@ class SizingPeriodDesignDay_v9_0_to_v9_2(_g.AnySizingPeriodDesignDay):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodDesignDay_v9_0_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.SizingPeriodDesignDay_v9_0_to_v9_2
 
 class _SizingPeriodDesignDay_v9_0_to_v9_2Fields(_g._SizingPeriodDesignDayCommonFields, total=False):
     month: float | None
@@ -9925,6 +10794,7 @@ class SizingPeriodDesignDay_v9_3_to_v22_1(_g.AnySizingPeriodDesignDay):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodDesignDay_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv24.SizingPeriodDesignDay_v9_3_to_v22_1
 
 class _SizingPeriodDesignDay_v9_3_to_v22_1Fields(_g._SizingPeriodDesignDayCommonFields, total=False):
     month: float | None
@@ -9959,6 +10829,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4(_g.AnyCoilCoolingWat
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4
 
 class _CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4Fields(
     _g._CoilCoolingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -9993,6 +10864,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1(_g.AnyCoilCoolingWa
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1
 
 class _CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -10020,6 +10892,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1(_g.AnyCoilCoolingW
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1
 
 class _CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -10058,6 +10931,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1(_g.AnyCoilCoolingW
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1
 
 class _CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -10097,6 +10971,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4(_g.AnyZoneHVACBaseboa
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4
 
 class _ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4Fields(
     _g._ZoneHVACBaseboardRadiantConvectiveWaterCommonFields, total=False
@@ -10109,6 +10984,24 @@ class _ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4Fields(
     convergence_tolerance: float | None
     fraction_radiant: float | None
     fraction_of_radiant_energy_incident_on_people: float | None
+
+class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1(_g.AnyZoneHVACBaseboardRadiantConvectiveWater):
+    """``ZoneHVAC:Baseboard:RadiantConvective:Water`` as declared in EnergyPlus 9.5.0 to 25.1.0. The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
+
+    design_object: str | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1
+
+class _ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1Fields(
+    _g._ZoneHVACBaseboardRadiantConvectiveWaterCommonFields, total=False
+):
+    design_object: str | None
 
 class ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1(_g.AnyZoneInfiltrationDesignFlowRate):
     """``ZoneInfiltration:DesignFlowRate`` as declared in EnergyPlus 8.9.0 to 22.1.0. Infiltration is specified as a design level which is modified by a Schedule fraction, temperature difference and wind..."""
@@ -10125,6 +11018,7 @@ class ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1(_g.AnyZoneInfiltrationDesignF
         /,
         **kwargs: Unpack[_ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1
 
 class _ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1Fields(_g._ZoneInfiltrationDesignFlowRateCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -10146,6 +11040,7 @@ class ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2(_g.AnyZoneInfiltrationDesign
         /,
         **kwargs: Unpack[_ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2
 
 class _ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2Fields(_g._ZoneInfiltrationDesignFlowRateCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -10166,6 +11061,7 @@ class DemandManagerElectricEquipment_v8_9_to_v22_1(_g.AnyDemandManagerElectricEq
         /,
         **kwargs: Unpack[_DemandManagerElectricEquipment_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.DemandManagerElectricEquipment_v8_9_to_v22_1
 
 class _DemandManagerElectricEquipment_v8_9_to_v22_1Fields(_g._DemandManagerElectricEquipmentCommonFields, total=False):
     minimum_limit_duration: float | None
@@ -10185,6 +11081,7 @@ class CoolingTowerVariableSpeed_v8_9_to_v22_1(_g.AnyCoolingTowerVariableSpeed):
         /,
         **kwargs: Unpack[_CoolingTowerVariableSpeed_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.CoolingTowerVariableSpeed_v8_9_to_v22_1
 
 class _CoolingTowerVariableSpeed_v8_9_to_v22_1Fields(_g._CoolingTowerVariableSpeedCommonFields, total=False):
     evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
@@ -10197,6 +11094,7 @@ class ZoneEarthtube_v8_9_to_v23_1(_g.AnyZoneEarthtube):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneEarthtube_v8_9_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.ZoneEarthtube_v8_9_to_v23_1
 
 class _ZoneEarthtube_v8_9_to_v23_1Fields(_g._ZoneEarthtubeCommonFields, total=False): ...
 
@@ -10210,6 +11108,7 @@ class HotWaterEquipment_v8_9_to_v9_5(_g.AnyHotWaterEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HotWaterEquipment_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.HotWaterEquipment_v8_9_to_v9_5
 
 class _HotWaterEquipment_v8_9_to_v9_5Fields(_g._HotWaterEquipmentCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -10225,6 +11124,7 @@ class HotWaterEquipment_v9_6_to_v23_2(_g.AnyHotWaterEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HotWaterEquipment_v9_6_to_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.HotWaterEquipment_v9_6_to_v23_2
 
 class _HotWaterEquipment_v9_6_to_v23_2Fields(_g._HotWaterEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -10250,6 +11150,7 @@ class PipingSystemUndergroundDomain_v8_9_to_v22_1(_g.AnyPipingSystemUndergroundD
         /,
         **kwargs: Unpack[_PipingSystemUndergroundDomain_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.PipingSystemUndergroundDomain_v8_9_to_v22_1
 
 class _PipingSystemUndergroundDomain_v8_9_to_v22_1Fields(_g._PipingSystemUndergroundDomainCommonFields, total=False):
     x_direction_mesh_density_parameter: float | None
@@ -10277,6 +11178,7 @@ class ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1(_g.AnyZoneHVACPackagedTermi
         /,
         **kwargs: Unpack[_ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1
 
 class _ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1Fields(
     _g._ZoneHVACPackagedTerminalHeatPumpCommonFields, total=False
@@ -10310,6 +11212,7 @@ class ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2(_g.AnyZoneHVACPackagedTerm
         /,
         **kwargs: Unpack[_ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2
 
 class _ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2Fields(
     _g._ZoneHVACPackagedTerminalHeatPumpCommonFields, total=False
@@ -10346,6 +11249,7 @@ class ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1(_g.AnyZoneHVACPackagedTerm
         /,
         **kwargs: Unpack[_ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1
 
 class _ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1Fields(
     _g._ZoneHVACPackagedTerminalHeatPumpCommonFields, total=False
@@ -10370,6 +11274,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolReheat_v8_9_to_v9_2(_g.AnyAirTerminalSi
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVHeatAndCoolReheat_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.AirTerminalSingleDuctVAVHeatAndCoolReheat_v8_9_to_v9_2
 
 class _AirTerminalSingleDuctVAVHeatAndCoolReheat_v8_9_to_v9_2Fields(
     _g._AirTerminalSingleDuctVAVHeatAndCoolReheatCommonFields, total=False
@@ -10410,6 +11315,7 @@ class ControllerMechanicalVentilation_v8_9_to_v9_2(_g.AnyControllerMechanicalVen
         /,
         **kwargs: Unpack[_ControllerMechanicalVentilation_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.ControllerMechanicalVentilation_v8_9_to_v9_2
 
 class _ControllerMechanicalVentilation_v8_9_to_v9_2Fields(_g._ControllerMechanicalVentilationCommonFields, total=False):
     system_outdoor_air_method: (
@@ -10463,6 +11369,7 @@ class ControllerMechanicalVentilation_v9_3_to_v9_4(_g.AnyControllerMechanicalVen
         /,
         **kwargs: Unpack[_ControllerMechanicalVentilation_v9_3_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.ControllerMechanicalVentilation_v9_3_to_v9_4
 
 class _ControllerMechanicalVentilation_v9_3_to_v9_4Fields(_g._ControllerMechanicalVentilationCommonFields, total=False):
     system_outdoor_air_method: (
@@ -10513,6 +11420,7 @@ class ControllerMechanicalVentilation_v9_5(_g.AnyControllerMechanicalVentilation
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerMechanicalVentilation_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.ControllerMechanicalVentilation_v9_5
 
 class _ControllerMechanicalVentilation_v9_5Fields(_g._ControllerMechanicalVentilationCommonFields, total=False):
     system_outdoor_air_method: (
@@ -10545,6 +11453,7 @@ class LifeCycleCostNonrecurringCost_v8_9_to_v22_1(_g.AnyLifeCycleCostNonrecurrin
         /,
         **kwargs: Unpack[_LifeCycleCostNonrecurringCost_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.LifeCycleCostNonrecurringCost_v8_9_to_v22_1
 
 class _LifeCycleCostNonrecurringCost_v8_9_to_v22_1Fields(_g._LifeCycleCostNonrecurringCostCommonFields, total=False):
     years_from_start: float | None
@@ -10645,6 +11554,7 @@ class PlantEquipmentOperationSchemes_v8_9(_g.AnyPlantEquipmentOperationSchemes):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationSchemes_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.PlantEquipmentOperationSchemes_v8_9
 
 class _PlantEquipmentOperationSchemes_v8_9Fields(_g._PlantEquipmentOperationSchemesCommonFields, total=False):
     control_scheme_1_object_type: (
@@ -10890,6 +11800,7 @@ class PlantEquipmentOperationSchemes_v9_0_to_v23_1(_g.AnyPlantEquipmentOperation
         /,
         **kwargs: Unpack[_PlantEquipmentOperationSchemes_v9_0_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.PlantEquipmentOperationSchemes_v9_0_to_v23_1
 
 class _PlantEquipmentOperationSchemes_v9_0_to_v23_1Fields(_g._PlantEquipmentOperationSchemesCommonFields, total=False):
     control_scheme_1_object_type: (
@@ -11053,6 +11964,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22
         /,
         **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22_1
 
 class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22_1Fields(
     _g._AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRCommonFields, total=False
@@ -11099,6 +12011,7 @@ class EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2(_g.AnyEnergyManag
         /,
         **kwargs: Unpack[_EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2
 
 class _EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2Fields(
     _g._EnergyManagementSystemMeteredOutputVariableCommonFields, total=False
@@ -11171,6 +12084,7 @@ class EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1(_g.AnyEnergyMana
         /,
         **kwargs: Unpack[_EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1
 
 class _EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1Fields(
     _g._EnergyManagementSystemMeteredOutputVariableCommonFields, total=False
@@ -11239,6 +12153,7 @@ class TableOneIndependentVariable_v8_9(_g._TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableOneIndependentVariable_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.TableOneIndependentVariable_v8_9
 
 class _TableOneIndependentVariable_v8_9Fields(TypedDict, total=False):
     curve_type: Literal["Cubic", "Exponent", "Linear", "Quadratic", "Quartic"] | None
@@ -11295,6 +12210,7 @@ class TableOneIndependentVariable_v9_0_to_v9_1(_g._TypedIDFObject):
         /,
         **kwargs: Unpack[_TableOneIndependentVariable_v9_0_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.TableOneIndependentVariable_v9_0_to_v9_1
 
 class _TableOneIndependentVariable_v9_0_to_v9_1Fields(TypedDict, total=False):
     curve_type: Literal["Cubic", "Linear", "Quadratic", "Quartic"] | None
@@ -11319,6 +12235,7 @@ class ChillerElectric_v8_9_to_v24_1(_g.AnyChillerElectric):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectric_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.ChillerElectric_v8_9_to_v24_1
 
 class _ChillerElectric_v8_9_to_v24_1Fields(_g._ChillerElectricCommonFields, total=False): ...
 
@@ -11339,6 +12256,7 @@ class CoolingTowerSingleSpeed_v8_9_to_v9_1(_g.AnyCoolingTowerSingleSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerSingleSpeed_v8_9_to_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.CoolingTowerSingleSpeed_v8_9_to_v9_1
 
 class _CoolingTowerSingleSpeed_v8_9_to_v9_1Fields(_g._CoolingTowerSingleSpeedCommonFields, total=False):
     free_convection_air_flow_rate: float | Literal["", "Autocalculate"] | None
@@ -11365,6 +12283,7 @@ class CoolingTowerSingleSpeed_v9_2_to_v22_1(_g.AnyCoolingTowerSingleSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerSingleSpeed_v9_2_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.CoolingTowerSingleSpeed_v9_2_to_v22_1
 
 class _CoolingTowerSingleSpeed_v9_2_to_v22_1Fields(_g._CoolingTowerSingleSpeedCommonFields, total=False):
     free_convection_regime_air_flow_rate: float | Literal["", "Autocalculate"] | None
@@ -11378,6 +12297,7 @@ class Roof_v8_9_to_v9_5(_g.AnyRoof):
     """``Roof`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of roofs (exterior). View Factor to Ground is automatically calculated."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Roof_v8_9_to_v9_5Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.Roof_v8_9_to_v9_5
 
 class _Roof_v8_9_to_v9_5Fields(_g._RoofCommonFields, total=False): ...
 
@@ -11392,6 +12312,7 @@ class OutputDebuggingData_v8_9_to_v9_3(_g.AnyOutputDebuggingData):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputDebuggingData_v8_9_to_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.OutputDebuggingData_v8_9_to_v9_3
 
 class _OutputDebuggingData_v8_9_to_v9_3Fields(_g._OutputDebuggingDataCommonFields, total=False):
     report_debugging_data: float | None
@@ -11414,6 +12335,7 @@ class GeneratorCombustionTurbine_v8_9_to_v9_2(_g.AnyGeneratorCombustionTurbine):
         /,
         **kwargs: Unpack[_GeneratorCombustionTurbine_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.GeneratorCombustionTurbine_v8_9_to_v9_2
 
 class _GeneratorCombustionTurbine_v8_9_to_v9_2Fields(_g._GeneratorCombustionTurbineCommonFields, total=False):
     fuel_type: (
@@ -11440,6 +12362,7 @@ class GeneratorCombustionTurbine_v9_3_to_v9_4(_g.AnyGeneratorCombustionTurbine):
         /,
         **kwargs: Unpack[_GeneratorCombustionTurbine_v9_3_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.GeneratorCombustionTurbine_v9_3_to_v9_4
 
 class _GeneratorCombustionTurbine_v9_3_to_v9_4Fields(_g._GeneratorCombustionTurbineCommonFields, total=False):
     fuel_type: (
@@ -11455,6 +12378,7 @@ class PumpVariableSpeed_v8_9_to_v9_0(_g.AnyPumpVariableSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpVariableSpeed_v8_9_to_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.PumpVariableSpeed_v8_9_to_v9_0
 
 class _PumpVariableSpeed_v8_9_to_v9_0Fields(_g._PumpVariableSpeedCommonFields, total=False): ...
 
@@ -11477,6 +12401,7 @@ class CoilHeatingGasMultiStage_v8_9_to_v22_1(_g.AnyCoilHeatingGasMultiStage):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingGasMultiStage_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.CoilHeatingGasMultiStage_v8_9_to_v22_1
 
 class _CoilHeatingGasMultiStage_v8_9_to_v22_1Fields(_g._CoilHeatingGasMultiStageCommonFields, total=False):
     parasitic_gas_load: float | None
@@ -11508,6 +12433,7 @@ class CoilHeatingGasMultiStage_v22_2_to_v23_1(_g.AnyCoilHeatingGasMultiStage):
         /,
         **kwargs: Unpack[_CoilHeatingGasMultiStage_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.CoilHeatingGasMultiStage_v22_2_to_v23_1
 
 class _CoilHeatingGasMultiStage_v22_2_to_v23_1Fields(_g._CoilHeatingGasMultiStageCommonFields, total=False):
     parasitic_gas_load: float | None
@@ -11526,6 +12452,7 @@ class AirTerminalSingleDuctVAVReheatVariableSpeedFan_v8_9_to_v9_2(_g.AnyAirTermi
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVReheatVariableSpeedFan_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.AirTerminalSingleDuctVAVReheatVariableSpeedFan_v8_9_to_v9_2
 
 class _AirTerminalSingleDuctVAVReheatVariableSpeedFan_v8_9_to_v9_2Fields(
     _g._AirTerminalSingleDuctVAVReheatVariableSpeedFanCommonFields, total=False
@@ -11549,6 +12476,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1
 
 class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1Fields(
     _g._CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
@@ -11575,6 +12503,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1(
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1
 
 class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1Fields(
     _g._CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
@@ -11595,6 +12524,7 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1(_g.AnyAirTermi
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1
 
 class _AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1Fields(
     _g._AirTerminalSingleDuctConstantVolumeCooledBeamCommonFields, total=False
@@ -11616,6 +12546,7 @@ class ConvergenceLimits_v8_9_to_v22_1(_g.AnyConvergenceLimits):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConvergenceLimits_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.ConvergenceLimits_v8_9_to_v22_1
 
 class _ConvergenceLimits_v8_9_to_v22_1Fields(_g._ConvergenceLimitsCommonFields, total=False):
     minimum_system_timestep: float | None
@@ -11688,6 +12619,7 @@ class WindowPropertyShadingControl_v8_9(_g._TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowPropertyShadingControl_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.WindowPropertyShadingControl_v8_9
 
 class _WindowPropertyShadingControl_v8_9Fields(TypedDict, total=False):
     shading_type: (
@@ -11748,6 +12680,7 @@ class ScheduleDayList_v8_9_to_v22_1(_g.AnyScheduleDayList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleDayList_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.ScheduleDayList_v8_9_to_v22_1
 
 class _ScheduleDayList_v8_9_to_v22_1Fields(_g._ScheduleDayListCommonFields, total=False):
     minutes_per_item: float | None
@@ -11779,6 +12712,7 @@ class PlantEquipmentList_v8_9_to_v9_0(_g.AnyPlantEquipmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentList_v8_9_to_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.PlantEquipmentList_v8_9_to_v9_0
 
 class _PlantEquipmentList_v8_9_to_v9_0Fields(_g._PlantEquipmentListCommonFields, total=False):
     equipment_1_object_type: str | None
@@ -11811,6 +12745,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2(_g.AnyAirTerminal
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2
 
 class _AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2Fields(
     _g._AirTerminalSingleDuctVAVHeatAndCoolNoReheatCommonFields, total=False
@@ -11831,6 +12766,7 @@ class HybridModelZone_v8_9_to_v9_0(_g.AnyHybridModelZone):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HybridModelZone_v8_9_to_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.HybridModelZone_v8_9_to_v9_0
 
 class _HybridModelZone_v8_9_to_v9_0Fields(_g._HybridModelZoneCommonFields, total=False):
     begin_month: float | None
@@ -11875,6 +12811,7 @@ class HybridModelZone_v9_1_to_v22_1(_g.AnyHybridModelZone):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HybridModelZone_v9_1_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.HybridModelZone_v9_1_to_v22_1
 
 class _HybridModelZone_v9_1_to_v22_1Fields(_g._HybridModelZoneCommonFields, total=False):
     calculate_zone_people_count: Literal["", "No", "Yes"] | None
@@ -11919,6 +12856,7 @@ class CoilWaterHeatingDesuperheater_v8_9_to_v9_1(_g.AnyCoilWaterHeatingDesuperhe
         /,
         **kwargs: Unpack[_CoilWaterHeatingDesuperheater_v8_9_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.CoilWaterHeatingDesuperheater_v8_9_to_v9_1
 
 class _CoilWaterHeatingDesuperheater_v8_9_to_v9_1Fields(_g._CoilWaterHeatingDesuperheaterCommonFields, total=False):
     tank_object_type: Literal["", "WaterHeater:Mixed"] | None
@@ -11964,6 +12902,7 @@ class CoilWaterHeatingDesuperheater_v9_2_to_v22_1(_g.AnyCoilWaterHeatingDesuperh
         /,
         **kwargs: Unpack[_CoilWaterHeatingDesuperheater_v9_2_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.CoilWaterHeatingDesuperheater_v9_2_to_v22_1
 
 class _CoilWaterHeatingDesuperheater_v9_2_to_v22_1Fields(_g._CoilWaterHeatingDesuperheaterCommonFields, total=False):
     tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None
@@ -12012,6 +12951,7 @@ class CoilWaterHeatingDesuperheater_v22_2_to_v24_2(_g.AnyCoilWaterHeatingDesuper
         /,
         **kwargs: Unpack[_CoilWaterHeatingDesuperheater_v22_2_to_v24_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.CoilWaterHeatingDesuperheater_v22_2_to_v24_2
 
 class _CoilWaterHeatingDesuperheater_v22_2_to_v24_2Fields(_g._CoilWaterHeatingDesuperheaterCommonFields, total=False):
     tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None
@@ -12043,6 +12983,7 @@ class AirTerminalSingleDuctSeriesPIUReheat_v8_9_to_v24_1(_g.AnyAirTerminalSingle
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctSeriesPIUReheat_v8_9_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.AirTerminalSingleDuctSeriesPIUReheat_v8_9_to_v24_1
 
 class _AirTerminalSingleDuctSeriesPIUReheat_v8_9_to_v24_1Fields(
     _g._AirTerminalSingleDuctSeriesPIUReheatCommonFields, total=False
@@ -12069,6 +13010,7 @@ class AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2(_g.AnyAirTerminalSingl
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2
 
 class _AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2Fields(
     _g._AirTerminalSingleDuctSeriesPIUReheatCommonFields, total=False
@@ -12100,6 +13042,7 @@ class HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4(_g.AnyHeatPumpWaterToW
         /,
         **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4
 
 class _HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4Fields(
     _g._HeatPumpWaterToWaterEquationFitCoolingCommonFields, total=False
@@ -12115,8 +13058,25 @@ class _HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4Fields(
     cooling_compressor_power_coefficient_4: float | None
     cooling_compressor_power_coefficient_5: float | None
 
-class Building_v8_9_to_v22_1(_g.AnyBuilding):
-    """``Building`` as declared in EnergyPlus 8.9.0 to 22.1.0. Describes parameters that are used during the simulation of the building. There are necessary correlations between th..."""
+class Building_v8_9_to_v9_2(_g.AnyBuilding):
+    """``Building`` as declared in EnergyPlus 8.9.0 to 9.2.0. Describes parameters that are used during the simulation of the building. There are necessary correlations between th..."""
+
+    maximum_number_of_warmup_days: float | None
+    """EnergyPlus will only use as many warmup days as needed to reach convergence tolerance. This field's value should NOT ...; Default: 25.0; Range: >= 0.0, > True"""
+    minimum_number_of_warmup_days: float | None
+    """The minimum number of warmup days that produce enough temperature and flux history to start EnergyPlus simulation for...; Default: 6.0; Range: >= 0.0, > True"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Building_v8_9_to_v9_2Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.Building_v8_9_to_v9_2
+
+class _Building_v8_9_to_v9_2Fields(_g._BuildingCommonFields, total=False):
+    maximum_number_of_warmup_days: float | None
+    minimum_number_of_warmup_days: float | None
+
+class Building_v9_3_to_v22_1(_g.AnyBuilding):
+    """``Building`` as declared in EnergyPlus 9.3.0 to 22.1.0. Describes parameters that are used during the simulation of the building. There are necessary correlations between th..."""
 
     maximum_number_of_warmup_days: float | None
     """EnergyPlus will only use as many warmup days as needed to reach convergence tolerance. This field's value should NOT ...; Default: 25.0; Range: > 0.0"""
@@ -12124,10 +13084,11 @@ class Building_v8_9_to_v22_1(_g.AnyBuilding):
     """The minimum number of warmup days that produce enough temperature and flux history to start EnergyPlus simulation for...; Default: 1.0; Range: > 0.0"""
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Building_v8_9_to_v22_1Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Building_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.Building_v9_3_to_v22_1
 
-class _Building_v8_9_to_v22_1Fields(_g._BuildingCommonFields, total=False):
+class _Building_v9_3_to_v22_1Fields(_g._BuildingCommonFields, total=False):
     maximum_number_of_warmup_days: float | None
     minimum_number_of_warmup_days: float | None
 
@@ -12142,6 +13103,7 @@ class Building_v22_2_to_v26_1(_g.AnyBuilding):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Building_v22_2_to_v26_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.Building_v22_2_to_v26_1
 
 class _Building_v22_2_to_v26_1Fields(_g._BuildingCommonFields, total=False):
     maximum_number_of_warmup_days: int | None
@@ -12196,6 +13158,7 @@ class CentralHeatPumpSystem_v8_9_to_v22_1(_g.AnyCentralHeatPumpSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CentralHeatPumpSystem_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.CentralHeatPumpSystem_v8_9_to_v22_1
 
 class _CentralHeatPumpSystem_v8_9_to_v22_1Fields(_g._CentralHeatPumpSystemCommonFields, total=False):
     control_method: Literal["", "SmartMixing"] | None
@@ -12269,6 +13232,7 @@ class CentralHeatPumpSystem_v22_2_to_v26_1(_g.AnyCentralHeatPumpSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CentralHeatPumpSystem_v22_2_to_v26_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.CentralHeatPumpSystem_v22_2_to_v26_1
 
 class _CentralHeatPumpSystem_v22_2_to_v26_1Fields(_g._CentralHeatPumpSystemCommonFields, total=False):
     control_method: Literal["", "SmartMixing"] | None
@@ -12347,6 +13311,7 @@ class ZoneHVACEquipmentList_v8_9_to_v9_0(_g.AnyZoneHVACEquipmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEquipmentList_v8_9_to_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.ZoneHVACEquipmentList_v8_9_to_v9_0
 
 class _ZoneHVACEquipmentList_v8_9_to_v9_0Fields(_g._ZoneHVACEquipmentListCommonFields, total=False):
     equipment: list[Any]
@@ -12407,6 +13372,7 @@ class ZoneHVACEquipmentList_v9_1(_g.AnyZoneHVACEquipmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEquipmentList_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.ZoneHVACEquipmentList_v9_1
 
 class _ZoneHVACEquipmentList_v9_1Fields(_g._ZoneHVACEquipmentListCommonFields, total=False):
     equipment: list[Any]
@@ -12467,6 +13433,7 @@ class ZoneHVACEquipmentList_v9_2(_g.AnyZoneHVACEquipmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEquipmentList_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.ZoneHVACEquipmentList_v9_2
 
 class _ZoneHVACEquipmentList_v9_2Fields(_g._ZoneHVACEquipmentListCommonFields, total=False):
     equipment: list[Any]
@@ -12526,6 +13493,7 @@ class ZoneHVACEquipmentList_v9_3_to_v22_1(_g.AnyZoneHVACEquipmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEquipmentList_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.ZoneHVACEquipmentList_v9_3_to_v22_1
 
 class _ZoneHVACEquipmentList_v9_3_to_v22_1Fields(_g._ZoneHVACEquipmentListCommonFields, total=False):
     equipment: list[Any]
@@ -12544,6 +13512,7 @@ class WindowPropertyFrameAndDivider_v8_9_to_v9_6(_g.AnyWindowPropertyFrameAndDiv
         /,
         **kwargs: Unpack[_WindowPropertyFrameAndDivider_v8_9_to_v9_6Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.WindowPropertyFrameAndDivider_v8_9_to_v9_6
 
 class _WindowPropertyFrameAndDivider_v8_9_to_v9_6Fields(_g._WindowPropertyFrameAndDividerCommonFields, total=False):
     number_of_horizontal_dividers: float | None
@@ -12592,6 +13561,7 @@ class WindowPropertyFrameAndDivider_v22_1_to_v26_1(_g.AnyWindowPropertyFrameAndD
         /,
         **kwargs: Unpack[_WindowPropertyFrameAndDivider_v22_1_to_v26_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.WindowPropertyFrameAndDivider_v22_1_to_v26_1
 
 class _WindowPropertyFrameAndDivider_v22_1_to_v26_1Fields(_g._WindowPropertyFrameAndDividerCommonFields, total=False):
     number_of_horizontal_dividers: float | None
@@ -12649,6 +13619,7 @@ class CoilCoolingDXVariableSpeed_v8_9_to_v22_1(_g.AnyCoilCoolingDXVariableSpeed)
         /,
         **kwargs: Unpack[_CoilCoolingDXVariableSpeed_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.CoilCoolingDXVariableSpeed_v8_9_to_v22_1
 
 class _CoilCoolingDXVariableSpeed_v8_9_to_v22_1Fields(_g._CoilCoolingDXVariableSpeedCommonFields, total=False):
     number_of_speeds: float | None
@@ -12683,6 +13654,7 @@ class CoilCoolingDXVariableSpeed_v22_2_to_v23_1(_g.AnyCoilCoolingDXVariableSpeed
         /,
         **kwargs: Unpack[_CoilCoolingDXVariableSpeed_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.CoilCoolingDXVariableSpeed_v22_2_to_v23_1
 
 class _CoilCoolingDXVariableSpeed_v22_2_to_v23_1Fields(_g._CoilCoolingDXVariableSpeedCommonFields, total=False):
     number_of_speeds: int | None
@@ -12725,6 +13697,7 @@ class CoilCoolingDXVariableSpeed_v23_2_to_v25_1(_g.AnyCoilCoolingDXVariableSpeed
         /,
         **kwargs: Unpack[_CoilCoolingDXVariableSpeed_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.CoilCoolingDXVariableSpeed_v23_2_to_v25_1
 
 class _CoilCoolingDXVariableSpeed_v23_2_to_v25_1Fields(_g._CoilCoolingDXVariableSpeedCommonFields, total=False):
     number_of_speeds: int | None
@@ -12748,6 +13721,7 @@ class GroundHeatExchangerPond_v8_9_to_v22_1(_g.AnyGroundHeatExchangerPond):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerPond_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.GroundHeatExchangerPond_v8_9_to_v22_1
 
 class _GroundHeatExchangerPond_v8_9_to_v22_1Fields(_g._GroundHeatExchangerPondCommonFields, total=False):
     number_of_tubing_circuits: float | None
@@ -12844,6 +13818,7 @@ class TableMultiVariableLookup_v8_9(_g._TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableMultiVariableLookup_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv24.TableMultiVariableLookup_v8_9
 
 class _TableMultiVariableLookup_v8_9Fields(TypedDict, total=False):
     interpolation_method: (
@@ -12987,6 +13962,7 @@ class TableMultiVariableLookup_v9_0_to_v9_1(_g._TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableMultiVariableLookup_v9_0_to_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.TableMultiVariableLookup_v9_0_to_v9_1
 
 class _TableMultiVariableLookup_v9_0_to_v9_1Fields(TypedDict, total=False):
     interpolation_method: (
@@ -13059,6 +14035,7 @@ class ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1(_g.AnyZoneHVACWaterToAirHeatPump):
         /,
         **kwargs: Unpack[_ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1
 
 class _ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1Fields(_g._ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
     maximum_cycling_rate: float | None
@@ -13087,6 +14064,7 @@ class ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1(_g.AnyZoneHVACWaterToAirHeatPump)
         /,
         **kwargs: Unpack[_ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1
 
 class _ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1Fields(_g._ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
     maximum_cycling_rate: float | None
@@ -13108,6 +14086,7 @@ class ZoneHVACWaterToAirHeatPump_v23_2(_g.AnyZoneHVACWaterToAirHeatPump):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACWaterToAirHeatPump_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.ZoneHVACWaterToAirHeatPump_v23_2
 
 class _ZoneHVACWaterToAirHeatPump_v23_2Fields(_g._ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
     maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
@@ -13132,6 +14111,7 @@ class ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1(_g.AnyZoneHVACWaterToAirHeatPump
         /,
         **kwargs: Unpack[_ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1
 
 class _ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1Fields(_g._ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
@@ -13167,6 +14147,7 @@ class FloorDetailed_v8_9_to_v9_5(_g.AnyFloorDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorDetailed_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.FloorDetailed_v8_9_to_v9_5
 
 class _FloorDetailed_v8_9_to_v9_5Fields(_g._FloorDetailedCommonFields, total=False):
     outside_boundary_condition: (
@@ -13221,6 +14202,7 @@ class FloorDetailed_v9_6_to_v24_2(_g.AnyFloorDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorDetailed_v9_6_to_v24_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.FloorDetailed_v9_6_to_v24_2
 
 class _FloorDetailed_v9_6_to_v24_2Fields(_g._FloorDetailedCommonFields, total=False):
     space_name: str | None
@@ -13269,6 +14251,7 @@ class HeatExchangerFluidToFluid_v8_9_to_v25_2(_g.AnyHeatExchangerFluidToFluid):
         /,
         **kwargs: Unpack[_HeatExchangerFluidToFluid_v8_9_to_v25_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.HeatExchangerFluidToFluid_v8_9_to_v25_2
 
 class _HeatExchangerFluidToFluid_v8_9_to_v25_2Fields(_g._HeatExchangerFluidToFluidCommonFields, total=False):
     heat_transfer_metering_end_use_type: (
@@ -13331,6 +14314,7 @@ class AirLoopHVACUnitarySystem_v8_9_to_v9_2(_g.AnyAirLoopHVACUnitarySystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitarySystem_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.AirLoopHVACUnitarySystem_v8_9_to_v9_2
 
 class _AirLoopHVACUnitarySystem_v8_9_to_v9_2Fields(_g._AirLoopHVACUnitarySystemCommonFields, total=False):
     cooling_coil_object_type: (
@@ -13416,6 +14400,7 @@ class AirLoopHVACUnitarySystem_v9_3_to_v22_1(_g.AnyAirLoopHVACUnitarySystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitarySystem_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.AirLoopHVACUnitarySystem_v9_3_to_v22_1
 
 class _AirLoopHVACUnitarySystem_v9_3_to_v22_1Fields(_g._AirLoopHVACUnitarySystemCommonFields, total=False):
     cooling_coil_object_type: (
@@ -13506,6 +14491,7 @@ class AirLoopHVACUnitarySystem_v22_2_to_v23_1(_g.AnyAirLoopHVACUnitarySystem):
         /,
         **kwargs: Unpack[_AirLoopHVACUnitarySystem_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.AirLoopHVACUnitarySystem_v22_2_to_v23_1
 
 class _AirLoopHVACUnitarySystem_v22_2_to_v23_1Fields(_g._AirLoopHVACUnitarySystemCommonFields, total=False):
     cooling_coil_object_type: (
@@ -13586,6 +14572,7 @@ class AirLoopHVACUnitarySystem_v23_2(_g.AnyAirLoopHVACUnitarySystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitarySystem_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.AirLoopHVACUnitarySystem_v23_2
 
 class _AirLoopHVACUnitarySystem_v23_2Fields(_g._AirLoopHVACUnitarySystemCommonFields, total=False):
     cooling_coil_object_type: (
@@ -13633,6 +14620,7 @@ class EnergyManagementSystemTrendVariable_v8_9_to_v22_1(_g.AnyEnergyManagementSy
         /,
         **kwargs: Unpack[_EnergyManagementSystemTrendVariable_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.EnergyManagementSystemTrendVariable_v8_9_to_v22_1
 
 class _EnergyManagementSystemTrendVariable_v8_9_to_v22_1Fields(
     _g._EnergyManagementSystemTrendVariableCommonFields, total=False
@@ -13653,6 +14641,7 @@ class HVACTemplateSystemUnitarySystem_v8_9_to_v22_1(_g.AnyHVACTemplateSystemUnit
         /,
         **kwargs: Unpack[_HVACTemplateSystemUnitarySystem_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.HVACTemplateSystemUnitarySystem_v8_9_to_v22_1
 
 class _HVACTemplateSystemUnitarySystem_v8_9_to_v22_1Fields(
     _g._HVACTemplateSystemUnitarySystemCommonFields, total=False
@@ -13691,6 +14680,7 @@ class CoilCoolingDXMultiSpeed_v8_9_to_v9_2(_g.AnyCoilCoolingDXMultiSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXMultiSpeed_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.CoilCoolingDXMultiSpeed_v8_9_to_v9_2
 
 class _CoilCoolingDXMultiSpeed_v8_9_to_v9_2Fields(_g._CoilCoolingDXMultiSpeedCommonFields, total=False):
     fuel_type: (
@@ -13744,6 +14734,7 @@ class CoilCoolingDXMultiSpeed_v9_3_to_v22_1(_g.AnyCoilCoolingDXMultiSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXMultiSpeed_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.CoilCoolingDXMultiSpeed_v9_3_to_v22_1
 
 class _CoilCoolingDXMultiSpeed_v9_3_to_v22_1Fields(_g._CoilCoolingDXMultiSpeedCommonFields, total=False):
     fuel_type: (
@@ -13789,6 +14780,7 @@ class CoilCoolingDXMultiSpeed_v22_2_to_v23_1(_g.AnyCoilCoolingDXMultiSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXMultiSpeed_v22_2_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.CoilCoolingDXMultiSpeed_v22_2_to_v23_1
 
 class _CoilCoolingDXMultiSpeed_v22_2_to_v23_1Fields(_g._CoilCoolingDXMultiSpeedCommonFields, total=False):
     fuel_type: (
@@ -13816,6 +14808,7 @@ class MatrixTwoDimension_v8_9_to_v22_1(_g.AnyMatrixTwoDimension):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MatrixTwoDimension_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.MatrixTwoDimension_v8_9_to_v22_1
 
 class _MatrixTwoDimension_v8_9_to_v22_1Fields(_g._MatrixTwoDimensionCommonFields, total=False):
     number_of_rows: float | None
@@ -13827,6 +14820,7 @@ class WallExterior_v8_9_to_v9_5(_g.AnyWallExterior):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallExterior_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv2.WallExterior_v8_9_to_v9_5
 
 class _WallExterior_v8_9_to_v9_5Fields(_g._WallExteriorCommonFields, total=False): ...
 
@@ -13842,6 +14836,7 @@ class DemandManagerAssignmentList_v8_9_to_v22_1(_g.AnyDemandManagerAssignmentLis
         /,
         **kwargs: Unpack[_DemandManagerAssignmentList_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.DemandManagerAssignmentList_v8_9_to_v22_1
 
 class _DemandManagerAssignmentList_v8_9_to_v22_1Fields(_g._DemandManagerAssignmentListCommonFields, total=False):
     demand_window_length: float | None
@@ -13858,6 +14853,7 @@ class ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1(_g.AnyChillerHeaterPerfo
         /,
         **kwargs: Unpack[_ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1
 
 class _ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1Fields(
     _g._ChillerHeaterPerformanceElectricEIRCommonFields, total=False
@@ -13878,6 +14874,7 @@ class ThermalStorageChilledWaterStratified_v8_9_to_v22_1(_g.AnyThermalStorageChi
         /,
         **kwargs: Unpack[_ThermalStorageChilledWaterStratified_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.ThermalStorageChilledWaterStratified_v8_9_to_v22_1
 
 class _ThermalStorageChilledWaterStratified_v8_9_to_v22_1Fields(
     _g._ThermalStorageChilledWaterStratifiedCommonFields, total=False
@@ -13899,6 +14896,7 @@ class ThermalStorageChilledWaterStratified_v22_2_to_v25_1(_g.AnyThermalStorageCh
         /,
         **kwargs: Unpack[_ThermalStorageChilledWaterStratified_v22_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.ThermalStorageChilledWaterStratified_v22_2_to_v25_1
 
 class _ThermalStorageChilledWaterStratified_v22_2_to_v25_1Fields(
     _g._ThermalStorageChilledWaterStratifiedCommonFields, total=False
@@ -13912,6 +14910,7 @@ class ControllerOutdoorAir_v8_9_to_v23_1(_g.AnyControllerOutdoorAir):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerOutdoorAir_v8_9_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.ControllerOutdoorAir_v8_9_to_v23_1
 
 class _ControllerOutdoorAir_v8_9_to_v23_1Fields(_g._ControllerOutdoorAirCommonFields, total=False): ...
 
@@ -13926,6 +14925,7 @@ class DemandManagerLights_v8_9_to_v22_1(_g.AnyDemandManagerLights):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerLights_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.DemandManagerLights_v8_9_to_v22_1
 
 class _DemandManagerLights_v8_9_to_v22_1Fields(_g._DemandManagerLightsCommonFields, total=False):
     minimum_limit_duration: float | None
@@ -13959,6 +14959,7 @@ class ConstructionInternalSource_v8_9_to_v9_3(_g._TypedIDFObject):
         /,
         **kwargs: Unpack[_ConstructionInternalSource_v8_9_to_v9_3Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.ConstructionInternalSource_v8_9_to_v9_3
 
 class _ConstructionInternalSource_v8_9_to_v9_3Fields(TypedDict, total=False):
     source_present_after_layer_number: float | None
@@ -14003,6 +15004,7 @@ class ConstructionInternalSource_v9_4(_g._TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionInternalSource_v9_4Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.ConstructionInternalSource_v9_4
 
 class _ConstructionInternalSource_v9_4Fields(TypedDict, total=False):
     source_present_after_layer_number: float | None
@@ -14035,6 +15037,7 @@ class MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1
 
 class _MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferRedistributionCommonFields, total=False
@@ -14050,6 +15053,7 @@ class AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9(_g.AnyAirflowNetwor
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9
 
 class _AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9Fields(
     _g._AirflowNetworkDistributionComponentOutdoorAirFlowCommonFields, total=False
@@ -14081,6 +15085,7 @@ class RoofCeilingDetailed_v8_9_to_v9_5(_g.AnyRoofCeilingDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofCeilingDetailed_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.RoofCeilingDetailed_v8_9_to_v9_5
 
 class _RoofCeilingDetailed_v8_9_to_v9_5Fields(_g._RoofCeilingDetailedCommonFields, total=False):
     outside_boundary_condition: (
@@ -14131,6 +15136,7 @@ class RoofCeilingDetailed_v9_6_to_v24_2(_g.AnyRoofCeilingDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofCeilingDetailed_v9_6_to_v24_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.RoofCeilingDetailed_v9_6_to_v24_2
 
 class _RoofCeilingDetailed_v9_6_to_v24_2Fields(_g._RoofCeilingDetailedCommonFields, total=False):
     space_name: str | None
@@ -14163,6 +15169,7 @@ class ZoneHVACEvaporativeCoolerUnit_v8_9_to_v23_1(_g.AnyZoneHVACEvaporativeCoole
         /,
         **kwargs: Unpack[_ZoneHVACEvaporativeCoolerUnit_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.ZoneHVACEvaporativeCoolerUnit_v8_9_to_v23_1
 
 class _ZoneHVACEvaporativeCoolerUnit_v8_9_to_v23_1Fields(
     _g._ZoneHVACEvaporativeCoolerUnitCommonFields, total=False
@@ -14181,6 +15188,7 @@ class LifeCycleCostUsePriceEscalation_v8_9_to_v9_2(_g.AnyLifeCycleCostUsePriceEs
         /,
         **kwargs: Unpack[_LifeCycleCostUsePriceEscalation_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.LifeCycleCostUsePriceEscalation_v8_9_to_v9_2
 
 class _LifeCycleCostUsePriceEscalation_v8_9_to_v9_2Fields(_g._LifeCycleCostUsePriceEscalationCommonFields, total=False):
     resource: str | None
@@ -14219,6 +15227,7 @@ class LifeCycleCostUsePriceEscalation_v9_3_to_v22_1(_g.AnyLifeCycleCostUsePriceE
         /,
         **kwargs: Unpack[_LifeCycleCostUsePriceEscalation_v9_3_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.LifeCycleCostUsePriceEscalation_v9_3_to_v22_1
 
 class _LifeCycleCostUsePriceEscalation_v9_3_to_v22_1Fields(
     _g._LifeCycleCostUsePriceEscalationCommonFields, total=False
@@ -14279,6 +15288,7 @@ class LifeCycleCostUsePriceEscalation_v22_2_to_v23_1(_g.AnyLifeCycleCostUsePrice
         /,
         **kwargs: Unpack[_LifeCycleCostUsePriceEscalation_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.LifeCycleCostUsePriceEscalation_v22_2_to_v23_1
 
 class _LifeCycleCostUsePriceEscalation_v22_2_to_v23_1Fields(
     _g._LifeCycleCostUsePriceEscalationCommonFields, total=False
@@ -14315,20 +15325,21 @@ class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5(_g.AnyCoilCoolingWaterDetail
         /,
         **kwargs: Unpack[_CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv24.CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5
 
 class _CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5Fields(
     _g._CoilCoolingWaterDetailedGeometryCommonFields, total=False
 ): ...
 
-class TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1(_g._TypedExtensibleGroup):
-    """One values group inside :class:`TableTwoIndependentVariables_v8_9_to_v9_1`."""
+class TableTwoIndependentVariablesValuesGroup_v8_9(_g._TypedExtensibleGroup):
+    """One values group inside :class:`TableTwoIndependentVariables_v8_9`."""
 
     output_value_1: float | None
     y_value_1: float | None
     x_value_1: float | None
 
-class TableTwoIndependentVariables_v8_9_to_v9_1(_g._TypedIDFObject):
-    """``Table:TwoIndependentVariables`` as declared in EnergyPlus 8.9.0 to 9.1.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
+class TableTwoIndependentVariables_v8_9(_g._TypedIDFObject):
+    """``Table:TwoIndependentVariables`` as declared in EnergyPlus 8.9.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
 
     curve_type: Literal["BiQuadratic", "QuadraticLinear"] | None
     interpolation_method: (
@@ -14358,16 +15369,86 @@ class TableTwoIndependentVariables_v8_9_to_v9_1(_g._TypedIDFObject):
     normalization_reference: float | None
     """This field is used to normalize the following output data. The minimum and maximum table output fields are also norma..."""
     external_file_name: str | None
-    values: ExtensibleList[TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1]
+    values: ExtensibleList[TableTwoIndependentVariablesValuesGroup_v8_9]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableTwoIndependentVariables_v8_9Fields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.TableTwoIndependentVariables_v8_9
+
+class _TableTwoIndependentVariables_v8_9Fields(TypedDict, total=False):
+    curve_type: Literal["BiQuadratic", "QuadraticLinear"] | None
+    interpolation_method: (
+        Literal["", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
+        | None
+    )
+    minimum_value_of_x: float | None
+    maximum_value_of_x: float | None
+    minimum_value_of_y: float | None
+    maximum_value_of_y: float | None
+    minimum_table_output: float | None
+    maximum_table_output: float | None
+    input_unit_type_for_x: (
+        Literal["", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+    )
+    input_unit_type_for_y: (
+        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"]
+        | None
+    )
+    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    normalization_reference: float | None
+    external_file_name: str | None
+    values: list[Any]
+
+class TableTwoIndependentVariablesValuesGroup_v9_0_to_v9_1(_g._TypedExtensibleGroup):
+    """One values group inside :class:`TableTwoIndependentVariables_v9_0_to_v9_1`."""
+
+    output_value_1: float | None
+    y_value_1: float | None
+    x_value_1: float | None
+
+class TableTwoIndependentVariables_v9_0_to_v9_1(_g._TypedIDFObject):
+    """``Table:TwoIndependentVariables`` as declared in EnergyPlus 9.0.1 to 9.1.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
+
+    curve_type: Literal["BiQuadratic", "QuadraticLinear"] | None
+    interpolation_method: (
+        Literal["", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
+        | None
+    )
+    """Default: LagrangeInterpolationLinearExtrapolation"""
+    minimum_value_of_x: float | None
+    maximum_value_of_x: float | None
+    minimum_value_of_y: float | None
+    maximum_value_of_y: float | None
+    minimum_table_output: float | None
+    """Specify the minimum value calculated by this table lookup object"""
+    maximum_table_output: float | None
+    """Specify the maximum value calculated by this table lookup object"""
+    input_unit_type_for_x: (
+        Literal["", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+    )
+    """Default: Dimensionless"""
+    input_unit_type_for_y: (
+        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"]
+        | None
+    )
+    """Default: Dimensionless"""
+    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    """Default: Dimensionless"""
+    normalization_reference: float | None
+    """This field is used to normalize the following output data. The minimum and maximum table output fields are also norma..."""
+    external_file_name: str | None
+    values: ExtensibleList[TableTwoIndependentVariablesValuesGroup_v9_0_to_v9_1]
 
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_TableTwoIndependentVariables_v8_9_to_v9_1Fields],
+        **kwargs: Unpack[_TableTwoIndependentVariables_v9_0_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.TableTwoIndependentVariables_v9_0_to_v9_1
 
-class _TableTwoIndependentVariables_v8_9_to_v9_1Fields(TypedDict, total=False):
+class _TableTwoIndependentVariables_v9_0_to_v9_1Fields(TypedDict, total=False):
     curve_type: Literal["BiQuadratic", "QuadraticLinear"] | None
     interpolation_method: (
         Literal["", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
@@ -14400,6 +15481,7 @@ class AirTerminalSingleDuctVAVReheat_v8_9_to_v9_2(_g.AnyAirTerminalSingleDuctVAV
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVReheat_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.AirTerminalSingleDuctVAVReheat_v8_9_to_v9_2
 
 class _AirTerminalSingleDuctVAVReheat_v8_9_to_v9_2Fields(
     _g._AirTerminalSingleDuctVAVReheatCommonFields, total=False
@@ -14417,6 +15499,7 @@ class RefrigerationSecondarySystem_v8_9_to_v22_1(_g.AnyRefrigerationSecondarySys
         /,
         **kwargs: Unpack[_RefrigerationSecondarySystem_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.RefrigerationSecondarySystem_v8_9_to_v22_1
 
 class _RefrigerationSecondarySystem_v8_9_to_v22_1Fields(_g._RefrigerationSecondarySystemCommonFields, total=False):
     number_of_pumps_in_loop: float | None
@@ -14430,6 +15513,7 @@ class ZoneAirHeatBalanceAlgorithm_v8_9_to_v22_2(_g.AnyZoneAirHeatBalanceAlgorith
         /,
         **kwargs: Unpack[_ZoneAirHeatBalanceAlgorithm_v8_9_to_v22_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.ZoneAirHeatBalanceAlgorithm_v8_9_to_v22_2
 
 class _ZoneAirHeatBalanceAlgorithm_v8_9_to_v22_2Fields(_g._ZoneAirHeatBalanceAlgorithmCommonFields, total=False): ...
 
@@ -14444,6 +15528,7 @@ class DemandManagerVentilation_v8_9_to_v22_1(_g.AnyDemandManagerVentilation):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerVentilation_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.DemandManagerVentilation_v8_9_to_v22_1
 
 class _DemandManagerVentilation_v8_9_to_v22_1Fields(_g._DemandManagerVentilationCommonFields, total=False):
     minimum_limit_duration: float | None
@@ -14474,6 +15559,7 @@ class HVACTemplateSystemVRF_v8_9_to_v9_2(_g.AnyHVACTemplateSystemVRF):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemVRF_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.HVACTemplateSystemVRF_v8_9_to_v9_2
 
 class _HVACTemplateSystemVRF_v8_9_to_v9_2Fields(_g._HVACTemplateSystemVRFCommonFields, total=False):
     number_of_compressors: float | None
@@ -14518,6 +15604,7 @@ class HVACTemplateSystemVRF_v9_3_to_v22_1(_g.AnyHVACTemplateSystemVRF):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemVRF_v9_3_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.HVACTemplateSystemVRF_v9_3_to_v22_1
 
 class _HVACTemplateSystemVRF_v9_3_to_v22_1Fields(_g._HVACTemplateSystemVRFCommonFields, total=False):
     number_of_compressors: float | None
@@ -14553,6 +15640,7 @@ class ElectricLoadCenterStorageBattery_v8_9_to_v22_1(_g.AnyElectricLoadCenterSto
         /,
         **kwargs: Unpack[_ElectricLoadCenterStorageBattery_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.ElectricLoadCenterStorageBattery_v8_9_to_v22_1
 
 class _ElectricLoadCenterStorageBattery_v8_9_to_v22_1Fields(
     _g._ElectricLoadCenterStorageBatteryCommonFields, total=False
@@ -14570,6 +15658,7 @@ class SizingPlant_v8_9_to_v22_1(_g.AnySizingPlant):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPlant_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.SizingPlant_v8_9_to_v22_1
 
 class _SizingPlant_v8_9_to_v22_1Fields(_g._SizingPlantCommonFields, total=False):
     zone_timesteps_in_averaging_window: float | None
@@ -14583,6 +15672,7 @@ class AirTerminalSingleDuctVAVNoReheat_v8_9_to_v9_2(_g.AnyAirTerminalSingleDuctV
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVNoReheat_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.AirTerminalSingleDuctVAVNoReheat_v8_9_to_v9_2
 
 class _AirTerminalSingleDuctVAVNoReheat_v8_9_to_v9_2Fields(
     _g._AirTerminalSingleDuctVAVNoReheatCommonFields, total=False
@@ -14604,6 +15694,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1(_g.AnyAirLoopHV
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1
 
 class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1Fields(
     _g._AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedCommonFields, total=False
@@ -14628,6 +15719,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1(_g.AnyAirLoopH
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1
 
 class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1Fields(
     _g._AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedCommonFields, total=False
@@ -14645,6 +15737,7 @@ class Timestep_v8_9_to_v22_1(_g.AnyTimestep):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Timestep_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.Timestep_v8_9_to_v22_1
 
 class _Timestep_v8_9_to_v22_1Fields(_g._TimestepCommonFields, total=False):
     number_of_timesteps_per_hour: float | None
@@ -14663,6 +15756,7 @@ class CoilCoolingDXTwoStageWithHumidityControlMode_v8_9_to_v22_1(_g.AnyCoilCooli
         /,
         **kwargs: Unpack[_CoilCoolingDXTwoStageWithHumidityControlMode_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.CoilCoolingDXTwoStageWithHumidityControlMode_v8_9_to_v22_1
 
 class _CoilCoolingDXTwoStageWithHumidityControlMode_v8_9_to_v22_1Fields(
     _g._CoilCoolingDXTwoStageWithHumidityControlModeCommonFields, total=False
@@ -14684,6 +15778,7 @@ class CoilCoolingDXTwoStageWithHumidityControlMode_v22_2_to_v23_1(_g.AnyCoilCool
         /,
         **kwargs: Unpack[_CoilCoolingDXTwoStageWithHumidityControlMode_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.CoilCoolingDXTwoStageWithHumidityControlMode_v22_2_to_v23_1
 
 class _CoilCoolingDXTwoStageWithHumidityControlMode_v22_2_to_v23_1Fields(
     _g._CoilCoolingDXTwoStageWithHumidityControlModeCommonFields, total=False
@@ -14697,6 +15792,7 @@ class FloorInterzone_v8_9_to_v9_5(_g.AnyFloorInterzone):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorInterzone_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.FloorInterzone_v8_9_to_v9_5
 
 class _FloorInterzone_v8_9_to_v9_5Fields(_g._FloorInterzoneCommonFields, total=False): ...
 
@@ -14768,6 +15864,7 @@ class ComfortViewFactorAngles_v8_9_to_v9_5(_g.AnyComfortViewFactorAngles):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComfortViewFactorAngles_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.ComfortViewFactorAngles_v8_9_to_v9_5
 
 class _ComfortViewFactorAngles_v8_9_to_v9_5Fields(_g._ComfortViewFactorAnglesCommonFields, total=False):
     zone_name: str | None
@@ -15120,6 +16217,7 @@ class ComfortViewFactorAngles_v9_6_to_v23_2(_g.AnyComfortViewFactorAngles):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComfortViewFactorAngles_v9_6_to_v23_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.ComfortViewFactorAngles_v9_6_to_v23_2
 
 class _ComfortViewFactorAngles_v9_6_to_v23_2Fields(_g._ComfortViewFactorAnglesCommonFields, total=False):
     zone_name: str | None
@@ -15631,6 +16729,7 @@ class ComfortViewFactorAngles_v24_1_to_v25_1(_g.AnyComfortViewFactorAngles):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComfortViewFactorAngles_v24_1_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.ComfortViewFactorAngles_v24_1_to_v25_1
 
 class _ComfortViewFactorAngles_v24_1_to_v25_1Fields(_g._ComfortViewFactorAnglesCommonFields, total=False):
     surface_1_name: str | None
@@ -15840,8 +16939,26 @@ class WallAdiabatic_v8_9_to_v9_5(_g.AnyWallAdiabatic):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallAdiabatic_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.WallAdiabatic_v8_9_to_v9_5
 
 class _WallAdiabatic_v8_9_to_v9_5Fields(_g._WallAdiabaticCommonFields, total=False): ...
+
+class ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1(
+    _g.AnyExternalInterfaceFunctionalMockupUnitExportToSchedule
+):
+    """``ExternalInterface:FunctionalMockupUnitExport:To:Schedule`` as declared in EnergyPlus 8.9.0 to 25.1.0. This objects contains only one value, which is used during the first call of EnergyPlus"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1
+
+class _ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1Fields(
+    _g._ExternalInterfaceFunctionalMockupUnitExportToScheduleCommonFields, total=False
+): ...
 
 class OutputMeter_v8_9_to_v22_1(_g.AnyOutputMeter):
     """``Output:Meter`` as declared in EnergyPlus 8.9.0 to 22.1.0. Each Output:Meter command picks meters to be put onto the standard output file (.eso) and meter file (.mtr). Not all ..."""
@@ -15857,6 +16974,7 @@ class OutputMeter_v8_9_to_v22_1(_g.AnyOutputMeter):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeter_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.OutputMeter_v8_9_to_v22_1
 
 class _OutputMeter_v8_9_to_v22_1Fields(_g._OutputMeterCommonFields, total=False):
     reporting_frequency: (
@@ -15877,6 +16995,7 @@ class DemandManagerThermostats_v8_9_to_v22_1(_g.AnyDemandManagerThermostats):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerThermostats_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.DemandManagerThermostats_v8_9_to_v22_1
 
 class _DemandManagerThermostats_v8_9_to_v22_1Fields(_g._DemandManagerThermostatsCommonFields, total=False):
     minimum_reset_duration: float | None
@@ -15894,6 +17013,7 @@ class PlantComponentUserDefined_v8_9_to_v22_1(_g.AnyPlantComponentUserDefined):
         /,
         **kwargs: Unpack[_PlantComponentUserDefined_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.PlantComponentUserDefined_v8_9_to_v22_1
 
 class _PlantComponentUserDefined_v8_9_to_v22_1Fields(_g._PlantComponentUserDefinedCommonFields, total=False):
     number_of_plant_loop_connections: float | None
@@ -15907,6 +17027,7 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped_v8_9_to_v23_1(_g.AnyCoilWaterHea
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpWrapped_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.CoilWaterHeatingAirToWaterHeatPumpWrapped_v8_9_to_v23_1
 
 class _CoilWaterHeatingAirToWaterHeatPumpWrapped_v8_9_to_v23_1Fields(
     _g._CoilWaterHeatingAirToWaterHeatPumpWrappedCommonFields, total=False
@@ -15924,6 +17045,7 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1(_g.AnyCoilWaterHe
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1
 
 class _CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1Fields(
     _g._CoilWaterHeatingAirToWaterHeatPumpWrappedCommonFields, total=False
@@ -15992,6 +17114,7 @@ class RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2(_g.AnyRoomAirNodeAirfl
         /,
         **kwargs: Unpack[_RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv20.RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2
 
 class _RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2Fields(
     _g._RoomAirNodeAirflowNetworkHVACEquipmentCommonFields, total=False
@@ -16060,6 +17183,7 @@ class RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1(_g.AnyRoomAirNodeAirf
         /,
         **kwargs: Unpack[_RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1
 
 class _RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1Fields(
     _g._RoomAirNodeAirflowNetworkHVACEquipmentCommonFields, total=False
@@ -16073,6 +17197,7 @@ class GlazedDoor_v8_9(_g.AnyGlazedDoor):
     """enter the name of a WindowProperty:ShadingControl object used for windows and glass doors only If not specified, wind..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GlazedDoor_v8_9Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv1.GlazedDoor_v8_9
 
 class _GlazedDoor_v8_9Fields(_g._GlazedDoorCommonFields, total=False):
     shading_control_name: str | None
@@ -16127,6 +17252,7 @@ class MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1(_g.AnyMaterialPr
         /,
         **kwargs: Unpack[_MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1
 
 class _MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1Fields(
     _g._MaterialPropertyVariableThermalConductivityCommonFields, total=False
@@ -16164,6 +17290,7 @@ class AirflowNetworkSimulationControl_v8_9_to_v9_4(_g.AnyAirflowNetworkSimulatio
         /,
         **kwargs: Unpack[_AirflowNetworkSimulationControl_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv7.AirflowNetworkSimulationControl_v8_9_to_v9_4
 
 class _AirflowNetworkSimulationControl_v8_9_to_v9_4Fields(_g._AirflowNetworkSimulationControlCommonFields, total=False):
     maximum_number_of_iterations: float | None
@@ -16182,6 +17309,7 @@ class AirflowNetworkSimulationControl_v9_5_to_v22_1(_g.AnyAirflowNetworkSimulati
         /,
         **kwargs: Unpack[_AirflowNetworkSimulationControl_v9_5_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.AirflowNetworkSimulationControl_v9_5_to_v22_1
 
 class _AirflowNetworkSimulationControl_v9_5_to_v22_1Fields(
     _g._AirflowNetworkSimulationControlCommonFields, total=False
@@ -16198,6 +17326,7 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped_v8_9_to_v23_1(_g.AnyCoilWaterHeat
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpPumped_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.CoilWaterHeatingAirToWaterHeatPumpPumped_v8_9_to_v23_1
 
 class _CoilWaterHeatingAirToWaterHeatPumpPumped_v8_9_to_v23_1Fields(
     _g._CoilWaterHeatingAirToWaterHeatPumpPumpedCommonFields, total=False
@@ -16215,6 +17344,7 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped_v23_2_to_v25_1(_g.AnyCoilWaterHea
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpPumped_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.CoilWaterHeatingAirToWaterHeatPumpPumped_v23_2_to_v25_1
 
 class _CoilWaterHeatingAirToWaterHeatPumpPumped_v23_2_to_v25_1Fields(
     _g._CoilWaterHeatingAirToWaterHeatPumpPumpedCommonFields, total=False
@@ -16248,6 +17378,7 @@ class CoilHeatingFuel_v8_9_to_v9_2(_g.AnyCoilHeatingFuel):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingFuel_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.CoilHeatingFuel_v8_9_to_v9_2
 
 class _CoilHeatingFuel_v8_9_to_v9_2Fields(_g._CoilHeatingFuelCommonFields, total=False):
     fuel_type: (
@@ -16286,6 +17417,7 @@ class CoilHeatingFuel_v9_3(_g.AnyCoilHeatingFuel):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingFuel_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.CoilHeatingFuel_v9_3
 
 class _CoilHeatingFuel_v9_3Fields(_g._CoilHeatingFuelCommonFields, total=False):
     fuel_type: (
@@ -16324,6 +17456,7 @@ class CoilHeatingFuel_v9_4_to_v23_1(_g.AnyCoilHeatingFuel):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingFuel_v9_4_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.CoilHeatingFuel_v9_4_to_v23_1
 
 class _CoilHeatingFuel_v9_4_to_v23_1Fields(_g._CoilHeatingFuelCommonFields, total=False):
     fuel_type: (
@@ -16363,6 +17496,7 @@ class ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5(_g.AnyZoneBaseboard
         /,
         **kwargs: Unpack[_ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5
 
 class _ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5Fields(
     _g._ZoneBaseboardOutdoorTemperatureControlledCommonFields, total=False
@@ -16392,6 +17526,7 @@ class ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1(_g.AnyZoneBaseboar
         /,
         **kwargs: Unpack[_ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1
 
 class _ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1Fields(
     _g._ZoneBaseboardOutdoorTemperatureControlledCommonFields, total=False
@@ -16424,6 +17559,7 @@ class ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3(_g.AnyZoneHVACLowTemper
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3
 
 class _ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3Fields(
     _g._ZoneHVACLowTemperatureRadiantElectricCommonFields, total=False
@@ -16472,6 +17608,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTe
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3
 
 class _ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3Fields(
     _g._ZoneHVACLowTemperatureRadiantConstantFlowCommonFields, total=False
@@ -16538,6 +17675,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4(_g.AnyZoneHVACLowTemperatur
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantConstantFlow_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv4.ZoneHVACLowTemperatureRadiantConstantFlow_v9_4
 
 class _ZoneHVACLowTemperatureRadiantConstantFlow_v9_4Fields(
     _g._ZoneHVACLowTemperatureRadiantConstantFlowCommonFields, total=False
@@ -16567,6 +17705,24 @@ class _ZoneHVACLowTemperatureRadiantConstantFlow_v9_4Fields(
     condensation_control_dewpoint_offset: float | None
     changeover_delay_time_period_schedule: str | None
 
+class ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1(_g.AnyZoneHVACLowTemperatureRadiantConstantFlow):
+    """``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` as declared in EnergyPlus 9.5.0 to 25.1.0. Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
+
+    design_object: str | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1
+
+class _ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1Fields(
+    _g._ZoneHVACLowTemperatureRadiantConstantFlowCommonFields, total=False
+):
+    design_object: str | None
+
 class MeterCustom_v8_9_to_v9_2(_g.AnyMeterCustom):
     """``Meter:Custom`` as declared in EnergyPlus 8.9.0 to 9.2.0. Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
 
@@ -16591,6 +17747,7 @@ class MeterCustom_v8_9_to_v9_2(_g.AnyMeterCustom):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustom_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.MeterCustom_v8_9_to_v9_2
 
 class _MeterCustom_v8_9_to_v9_2Fields(_g._MeterCustomCommonFields, total=False):
     fuel_type: (
@@ -16633,6 +17790,7 @@ class MeterCustom_v9_3(_g.AnyMeterCustom):
     )
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustom_v9_3Fields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.MeterCustom_v9_3
 
 class _MeterCustom_v9_3Fields(_g._MeterCustomCommonFields, total=False):
     fuel_type: (
@@ -16680,6 +17838,7 @@ class MeterCustom_v9_4_to_v23_1(_g.AnyMeterCustom):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustom_v9_4_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv21.MeterCustom_v9_4_to_v23_1
 
 class _MeterCustom_v9_4_to_v23_1Fields(_g._MeterCustomCommonFields, total=False):
     resource_type: (
@@ -16717,6 +17876,7 @@ class UnitarySystemPerformanceMultispeed_v8_9_to_v22_1(_g.AnyUnitarySystemPerfor
         /,
         **kwargs: Unpack[_UnitarySystemPerformanceMultispeed_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.UnitarySystemPerformanceMultispeed_v8_9_to_v22_1
 
 class _UnitarySystemPerformanceMultispeed_v8_9_to_v22_1Fields(
     _g._UnitarySystemPerformanceMultispeedCommonFields, total=False
@@ -16736,6 +17896,7 @@ class RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1(_g.AnyRoomAirT
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1
 
 class _RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1Fields(
     _g._RoomAirTemperaturePatternNondimensionalHeightCommonFields, total=False
@@ -16753,6 +17914,7 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1(
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.CoilHeatingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1
 
 class _CoilHeatingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1Fields(
     _g._CoilHeatingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
@@ -16772,6 +17934,7 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1(
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1
 
 class _CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1Fields(
     _g._CoilHeatingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
@@ -16790,6 +17953,7 @@ class CurveDoubleExponentialDecay_v8_9_to_v9_3(_g.AnyCurveDoubleExponentialDecay
         /,
         **kwargs: Unpack[_CurveDoubleExponentialDecay_v8_9_to_v9_3Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.CurveDoubleExponentialDecay_v8_9_to_v9_3
 
 class _CurveDoubleExponentialDecay_v8_9_to_v9_3Fields(_g._CurveDoubleExponentialDecayCommonFields, total=False):
     coefficient3_c4: float | None
@@ -16811,6 +17975,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv26.CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1
 
 class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
@@ -16834,6 +17999,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1(
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1
 
 class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
@@ -16863,6 +18029,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v23_2_to_v25_1(
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v23_2_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v23_2_to_v25_1
 
 class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v23_2_to_v25_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
@@ -16887,6 +18054,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1(
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1
 
 class _AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1Fields(
     _g._AirflowNetworkMultiZoneComponentDetailedOpeningCommonFields, total=False
@@ -16962,6 +18130,7 @@ class RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4(_g.AnyRoomAirNodeAirfl
         /,
         **kwargs: Unpack[_RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv29.RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4
 
 class _RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4Fields(
     _g._RoomAirNodeAirflowNetworkInternalGainsCommonFields, total=False
@@ -16980,6 +18149,7 @@ class SurfaceConvectionAlgorithmInside_v8_9_to_v9_4(_g.AnySurfaceConvectionAlgor
         /,
         **kwargs: Unpack[_SurfaceConvectionAlgorithmInside_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.SurfaceConvectionAlgorithmInside_v8_9_to_v9_4
 
 class _SurfaceConvectionAlgorithmInside_v8_9_to_v9_4Fields(
     _g._SurfaceConvectionAlgorithmInsideCommonFields, total=False
@@ -17026,6 +18196,7 @@ class WindowShadingControl_v9_0_to_v9_1(_g.AnyWindowShadingControl):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowShadingControl_v9_0_to_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.WindowShadingControl_v9_0_to_v9_1
 
 class _WindowShadingControl_v9_0_to_v9_1Fields(_g._WindowShadingControlCommonFields, total=False):
     shading_control_sequence_number: float | None
@@ -17094,6 +18265,7 @@ class WindowShadingControl_v9_2_to_v22_1(_g.AnyWindowShadingControl):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowShadingControl_v9_2_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.WindowShadingControl_v9_2_to_v22_1
 
 class _WindowShadingControl_v9_2_to_v22_1Fields(_g._WindowShadingControlCommonFields, total=False):
     shading_control_sequence_number: float | None
@@ -17156,6 +18328,7 @@ class HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2(_g._TypedIDFObject):
         /,
         **kwargs: Unpack[_HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2
 
 class _HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2Fields(TypedDict, total=False):
     load_side_inlet_node_name: str | None
@@ -17204,6 +18377,7 @@ class HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2(_g._TypedIDFObject):
         /,
         **kwargs: Unpack[_HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2
 
 class _HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2Fields(TypedDict, total=False):
     load_side_inlet_node_name: str | None
@@ -17226,6 +18400,7 @@ class OutputJSON_v9_1_to_v25_1(_g.AnyOutputJSON):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputJSON_v9_1_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv25.OutputJSON_v9_1_to_v25_1
 
 class _OutputJSON_v9_1_to_v25_1Fields(_g._OutputJSONCommonFields, total=False): ...
 
@@ -17240,6 +18415,7 @@ class ConstructionAirBoundary_v9_2_to_v9_4(_g.AnyConstructionAirBoundary):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionAirBoundary_v9_2_to_v9_4Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.ConstructionAirBoundary_v9_2_to_v9_4
 
 class _ConstructionAirBoundary_v9_2_to_v9_4Fields(_g._ConstructionAirBoundaryCommonFields, total=False):
     solar_and_daylighting_method: Literal["", "GroupedZones", "InteriorWindow"] | None
@@ -17251,6 +18427,7 @@ class PerformancePrecisionTradeoffs_v9_2(_g.AnyPerformancePrecisionTradeoffs):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PerformancePrecisionTradeoffs_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv8.PerformancePrecisionTradeoffs_v9_2
 
 class _PerformancePrecisionTradeoffs_v9_2Fields(_g._PerformancePrecisionTradeoffsCommonFields, total=False): ...
 
@@ -17267,6 +18444,7 @@ class PerformancePrecisionTradeoffs_v9_3(_g.AnyPerformancePrecisionTradeoffs):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PerformancePrecisionTradeoffs_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.PerformancePrecisionTradeoffs_v9_3
 
 class _PerformancePrecisionTradeoffs_v9_3Fields(_g._PerformancePrecisionTradeoffsCommonFields, total=False):
     zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
@@ -17293,6 +18471,7 @@ class PerformancePrecisionTradeoffs_v9_4_to_v9_5(_g.AnyPerformancePrecisionTrade
         /,
         **kwargs: Unpack[_PerformancePrecisionTradeoffs_v9_4_to_v9_5Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.PerformancePrecisionTradeoffs_v9_4_to_v9_5
 
 class _PerformancePrecisionTradeoffs_v9_4_to_v9_5Fields(_g._PerformancePrecisionTradeoffsCommonFields, total=False):
     zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
@@ -17313,6 +18492,7 @@ class TableIndependentVariable_v9_2_to_v22_1(_g.AnyTableIndependentVariable):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableIndependentVariable_v9_2_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.TableIndependentVariable_v9_2_to_v22_1
 
 class _TableIndependentVariable_v9_2_to_v22_1Fields(_g._TableIndependentVariableCommonFields, total=False):
     external_file_column_number: float | None
@@ -17330,6 +18510,7 @@ class AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1(_g.AnyAirLoopHVACDedica
         /,
         **kwargs: Unpack[_AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1
 
 class _AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1Fields(
     _g._AirLoopHVACDedicatedOutdoorAirSystemCommonFields, total=False
@@ -17347,6 +18528,7 @@ class TableLookup_v9_2_to_v22_1(_g.AnyTableLookup):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableLookup_v9_2_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.TableLookup_v9_2_to_v22_1
 
 class _TableLookup_v9_2_to_v22_1Fields(_g._TableLookupCommonFields, total=False):
     external_file_column_number: float | None
@@ -17361,6 +18543,7 @@ class CoilCoolingDXCurveFitPerformance_v9_3_to_v23_1(_g.AnyCoilCoolingDXCurveFit
         /,
         **kwargs: Unpack[_CoilCoolingDXCurveFitPerformance_v9_3_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv27.CoilCoolingDXCurveFitPerformance_v9_3_to_v23_1
 
 class _CoilCoolingDXCurveFitPerformance_v9_3_to_v23_1Fields(
     _g._CoilCoolingDXCurveFitPerformanceCommonFields, total=False
@@ -17378,6 +18561,7 @@ class CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1(_g.AnyCoilCoolingDXCurveF
         /,
         **kwargs: Unpack[_CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv0.CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1
 
 class _CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1Fields(
     _g._CoilCoolingDXCurveFitOperatingModeCommonFields, total=False
@@ -17396,6 +18580,7 @@ class CoilCoolingDXCurveFitOperatingMode_v22_2_to_v26_1(_g.AnyCoilCoolingDXCurve
         /,
         **kwargs: Unpack[_CoilCoolingDXCurveFitOperatingMode_v22_2_to_v26_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.CoilCoolingDXCurveFitOperatingMode_v22_2_to_v26_1
 
 class _CoilCoolingDXCurveFitOperatingMode_v22_2_to_v26_1Fields(
     _g._CoilCoolingDXCurveFitOperatingModeCommonFields, total=False
@@ -17414,6 +18599,7 @@ class CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1(_g.AnyCoilCoolingDXCurveFitSpeed)
         /,
         **kwargs: Unpack[_CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1
 
 class _CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1Fields(_g._CoilCoolingDXCurveFitSpeedCommonFields, total=False):
     rated_evaporator_fan_power_per_volume_flow_rate: float | None
@@ -17427,6 +18613,7 @@ class HeatPumpPlantLoopEIRCooling_v9_3_to_v23_1(_g.AnyHeatPumpPlantLoopEIRCoolin
         /,
         **kwargs: Unpack[_HeatPumpPlantLoopEIRCooling_v9_3_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.HeatPumpPlantLoopEIRCooling_v9_3_to_v23_1
 
 class _HeatPumpPlantLoopEIRCooling_v9_3_to_v23_1Fields(_g._HeatPumpPlantLoopEIRCoolingCommonFields, total=False): ...
 
@@ -17454,6 +18641,7 @@ class HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1(_g.AnyHeatPumpPlantLoopEIRCooli
         /,
         **kwargs: Unpack[_HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv18.HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1
 
 class _HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1Fields(_g._HeatPumpPlantLoopEIRCoolingCommonFields, total=False):
     control_type: Literal["", "Load", "Setpoint"] | None
@@ -17473,6 +18661,7 @@ class HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1(_g.AnyHeatPumpPlantLoopEIRHeatin
         /,
         **kwargs: Unpack[_HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv5.HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1
 
 class _HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1Fields(_g._HeatPumpPlantLoopEIRHeatingCommonFields, total=False): ...
 
@@ -17519,6 +18708,7 @@ class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1(_g.AnyHeatPumpPlantLoopEIRHeati
         /,
         **kwargs: Unpack[_HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv17.HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1
 
 class _HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1Fields(_g._HeatPumpPlantLoopEIRHeatingCommonFields, total=False):
     heating_to_cooling_capacity_sizing_ratio: float | None
@@ -17551,6 +18741,7 @@ class PythonPluginSearchPaths_v9_3(_g.AnyPythonPluginSearchPaths):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginSearchPaths_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.PythonPluginSearchPaths_v9_3
 
 class _PythonPluginSearchPaths_v9_3Fields(_g._PythonPluginSearchPathsCommonFields, total=False):
     search_path_1: str | None
@@ -17572,6 +18763,7 @@ class PythonPluginSearchPaths_v9_4_to_v9_6(_g.AnyPythonPluginSearchPaths):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginSearchPaths_v9_4_to_v9_6Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv22.PythonPluginSearchPaths_v9_4_to_v9_6
 
 class _PythonPluginSearchPaths_v9_4_to_v9_6Fields(_g._PythonPluginSearchPathsCommonFields, total=False):
     py_search_paths: list[Any]
@@ -17589,6 +18781,7 @@ class PythonPluginVariables_v9_3(_g.AnyPythonPluginVariables):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginVariables_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv19.PythonPluginVariables_v9_3
 
 class _PythonPluginVariables_v9_3Fields(_g._PythonPluginVariablesCommonFields, total=False):
     variable_name_1: str | None
@@ -17609,6 +18802,7 @@ class PythonPluginTrendVariable_v9_3_to_v22_1(_g.AnyPythonPluginTrendVariable):
         /,
         **kwargs: Unpack[_PythonPluginTrendVariable_v9_3_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv16.PythonPluginTrendVariable_v9_3_to_v22_1
 
 class _PythonPluginTrendVariable_v9_3_to_v22_1Fields(_g._PythonPluginTrendVariableCommonFields, total=False):
     number_of_timesteps_to_be_logged: float | None
@@ -17649,6 +18843,7 @@ class PythonPluginOutputVariable_v9_3(_g.AnyPythonPluginOutputVariable):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginOutputVariable_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv10.PythonPluginOutputVariable_v9_3
 
 class _PythonPluginOutputVariable_v9_3Fields(_g._PythonPluginOutputVariableCommonFields, total=False):
     resource_type: (
@@ -17719,6 +18914,7 @@ class PythonPluginOutputVariable_v9_4_to_v23_1(_g.AnyPythonPluginOutputVariable)
         /,
         **kwargs: Unpack[_PythonPluginOutputVariable_v9_4_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv23.PythonPluginOutputVariable_v9_4_to_v23_1
 
 class _PythonPluginOutputVariable_v9_4_to_v23_1Fields(_g._PythonPluginOutputVariableCommonFields, total=False):
     resource_type: (
@@ -17762,6 +18958,7 @@ class ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5(_g.AnyZonePropertyUs
         /,
         **kwargs: Unpack[_ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv6.ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5
 
 class _ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5Fields(
     _g._ZonePropertyUserViewFactorsBySurfaceNameCommonFields, total=False
@@ -17774,6 +18971,7 @@ class OutputControlFiles_v9_4_to_v24_1(_g.AnyOutputControlFiles):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlFiles_v9_4_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv28.OutputControlFiles_v9_4_to_v24_1
 
 class _OutputControlFiles_v9_4_to_v24_1Fields(_g._OutputControlFilesCommonFields, total=False): ...
 
@@ -17786,6 +18984,7 @@ class OutputControlFiles_v24_2_to_v25_1(_g.AnyOutputControlFiles):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlFiles_v24_2_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.OutputControlFiles_v24_2_to_v25_1
 
 class _OutputControlFiles_v24_2_to_v25_1Fields(_g._OutputControlFilesCommonFields, total=False):
     output_space_sizing: Literal["", "No", "Yes"] | None
@@ -17806,6 +19005,7 @@ class ConstructionPropertyInternalHeatSource_v9_5_to_v22_1(_g.AnyConstructionPro
         /,
         **kwargs: Unpack[_ConstructionPropertyInternalHeatSource_v9_5_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv15.ConstructionPropertyInternalHeatSource_v9_5_to_v22_1
 
 class _ConstructionPropertyInternalHeatSource_v9_5_to_v22_1Fields(
     _g._ConstructionPropertyInternalHeatSourceCommonFields, total=False
@@ -17828,6 +19028,7 @@ class ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1(_g.AnyElectricLoadC
         /,
         **kwargs: Unpack[_ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv3.ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1
 
 class _ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1Fields(
     _g._ElectricLoadCenterStorageLiIonNMCBatteryCommonFields, total=False
@@ -17841,6 +19042,7 @@ class Space_v9_6_to_v22_1(_g.AnySpace):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Space_v9_6_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv31.Space_v9_6_to_v22_1
 
 class _Space_v9_6_to_v22_1Fields(_g._SpaceCommonFields, total=False): ...
 
@@ -17855,6 +19057,7 @@ class Space_v22_2_to_v26_1(_g.AnySpace):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Space_v22_2_to_v26_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.Space_v22_2_to_v26_1
 
 class _Space_v22_2_to_v26_1Fields(_g._SpaceCommonFields, total=False):
     ceiling_height: float | Literal["", "Autocalculate"] | None
@@ -17879,6 +19082,7 @@ class OutputTableReportPeriod_v22_2_to_v25_1(_g.AnyOutputTableReportPeriod):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableReportPeriod_v22_2_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv30.OutputTableReportPeriod_v22_2_to_v25_1
 
 class _OutputTableReportPeriod_v22_2_to_v25_1Fields(_g._OutputTableReportPeriodCommonFields, total=False):
     name_: str | None
@@ -17900,6 +19104,7 @@ class MaterialPropertyVariableAbsorptance_v23_1_to_v26_1(_g.AnyMaterialPropertyV
         /,
         **kwargs: Unpack[_MaterialPropertyVariableAbsorptance_v23_1_to_v26_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv9.MaterialPropertyVariableAbsorptance_v23_1_to_v26_1
 
 class _MaterialPropertyVariableAbsorptance_v23_1_to_v26_1Fields(
     _g._MaterialPropertyVariableAbsorptanceCommonFields, total=False
@@ -17914,6 +19119,7 @@ class HeatPumpAirToWaterFuelFiredHeating_v23_1_to_v25_1(_g.AnyHeatPumpAirToWater
         /,
         **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredHeating_v23_1_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv13.HeatPumpAirToWaterFuelFiredHeating_v23_1_to_v25_1
 
 class _HeatPumpAirToWaterFuelFiredHeating_v23_1_to_v25_1Fields(
     _g._HeatPumpAirToWaterFuelFiredHeatingCommonFields, total=False
@@ -17928,6 +19134,7 @@ class HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1(_g.AnyHeatPumpAirToWater
         /,
         **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv14.HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1
 
 class _HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1Fields(
     _g._HeatPumpAirToWaterFuelFiredCoolingCommonFields, total=False
@@ -17947,6 +19154,7 @@ class IndoorLivingWall_v24_1(_g.AnyIndoorLivingWall):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_IndoorLivingWall_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv11.IndoorLivingWall_v24_1
 
 class _IndoorLivingWall_v24_1Fields(_g._IndoorLivingWallCommonFields, total=False):
     led_intensity_schedule_name_: str | None
@@ -17969,6 +19177,8 @@ class _Accessors_v8_9:
     ) -> IDFCollection[AirflowNetworkDistributionComponentReliefAirFlow_v8_9]: ...
     @property
     def boiler_hot_waters(self) -> IDFCollection[BoilerHotWater_v8_9]: ...
+    @property
+    def energy_management_system_programs(self) -> IDFCollection[EnergyManagementSystemProgram_v8_9]: ...
     @property
     def fenestration_surface_detaileds(self) -> IDFCollection[FenestrationSurfaceDetailed_v8_9]: ...
     @property
@@ -18001,6 +19211,10 @@ class _Accessors_v8_9:
     def table_multi_variable_lookups(self) -> IDFCollection[TableMultiVariableLookup_v8_9]: ...
     @property
     def table_one_independent_variables(self) -> IDFCollection[TableOneIndependentVariable_v8_9]: ...
+    @property
+    def table_two_independent_variables(self) -> IDFCollection[TableTwoIndependentVariables_v8_9]: ...
+    @property
+    def versions(self) -> IDFCollection[Version_v8_9]: ...
     @property
     def window_material_complex_shades(self) -> IDFCollection[WindowMaterialComplexShade_v8_9]: ...
     @property
@@ -18036,9 +19250,13 @@ class _Accessors_v8_9_to_v9_0:
     @property
     def pump_variable_speeds(self) -> IDFCollection[PumpVariableSpeed_v8_9_to_v9_0]: ...
     @property
+    def utility_cost_charge_blocks(self) -> IDFCollection[UtilityCostChargeBlock_v8_9_to_v9_0]: ...
+    @property
     def zone_hvac_equipment_lists(self) -> IDFCollection[ZoneHVACEquipmentList_v8_9_to_v9_0]: ...
 
 class _Accessors_v8_9_to_v9_1:
+    @property
+    def air_loop_hvac_outdoor_air_systems(self) -> IDFCollection[AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1]: ...
     @property
     def air_loop_hvac_unitary_heat_cool_vav_changeover_bypasses(
         self,
@@ -18061,8 +19279,6 @@ class _Accessors_v8_9_to_v9_1:
     def schedule_files(self) -> IDFCollection[ScheduleFile_v8_9_to_v9_1]: ...
     @property
     def schedules_file(self) -> IDFCollection[ScheduleFile_v8_9_to_v9_1]: ...
-    @property
-    def table_two_independent_variables(self) -> IDFCollection[TableTwoIndependentVariables_v8_9_to_v9_1]: ...
     @property
     def thermal_storage_ice_detaileds(self) -> IDFCollection[ThermalStorageIceDetailed_v8_9_to_v9_1]: ...
     @property
@@ -18121,6 +19337,10 @@ class _Accessors_v8_9_to_v9_2:
     ) -> IDFCollection[AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2]: ...
     @property
     def boiler_steams(self) -> IDFCollection[BoilerSteam_v8_9_to_v9_2]: ...
+    @property
+    def building(self) -> IDFCollection[Building_v8_9_to_v9_2]: ...
+    @property
+    def buildings(self) -> IDFCollection[Building_v8_9_to_v9_2]: ...
     @property
     def chiller_combustion_turbines(self) -> IDFCollection[ChillerCombustionTurbine_v8_9_to_v9_2]: ...
     @property
@@ -18278,7 +19498,9 @@ class _Accessors_v8_9_to_v9_4:
 
 class _Accessors_v8_9_to_v9_5:
     @property
-    def air_loop_hvac_outdoor_air_systems(self) -> IDFCollection[AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5]: ...
+    def airflow_network_multi_zone_reference_crack_conditions(
+        self,
+    ) -> IDFCollection[AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5]: ...
     @property
     def building_surface_detaileds(self) -> IDFCollection[BuildingSurfaceDetailed_v8_9_to_v9_5]: ...
     @property
@@ -18386,10 +19608,6 @@ class _Accessors_v8_9_to_v22_1:
     @property
     def availability_manager_optimum_starts(self) -> IDFCollection[AvailabilityManagerOptimumStart_v8_9_to_v22_1]: ...
     @property
-    def building(self) -> IDFCollection[Building_v8_9_to_v22_1]: ...
-    @property
-    def buildings(self) -> IDFCollection[Building_v8_9_to_v22_1]: ...
-    @property
     def central_heat_pump_systems(self) -> IDFCollection[CentralHeatPumpSystem_v8_9_to_v22_1]: ...
     @property
     def coil_cooling_dx_single_speeds(self) -> IDFCollection[CoilCoolingDXSingleSpeed_v8_9_to_v22_1]: ...
@@ -18461,6 +19679,10 @@ class _Accessors_v8_9_to_v22_1:
     def energy_management_system_trend_variables(
         self,
     ) -> IDFCollection[EnergyManagementSystemTrendVariable_v8_9_to_v22_1]: ...
+    @property
+    def evaporative_fluid_cooler_single_speeds(
+        self,
+    ) -> IDFCollection[EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1]: ...
     @property
     def external_interface_functional_mockup_unit_imports(
         self,
@@ -18593,6 +19815,8 @@ class _Accessors_v8_9_to_v22_1:
     ) -> IDFCollection[SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1]: ...
     @property
     def surface_property_local_environments(self) -> IDFCollection[SurfacePropertyLocalEnvironment_v8_9_to_v22_1]: ...
+    @property
+    def swimming_pool_indoors(self) -> IDFCollection[SwimmingPoolIndoor_v8_9_to_v22_1]: ...
     @property
     def thermal_storage_chilled_water_stratifieds(
         self,
@@ -18746,21 +19970,33 @@ class _Accessors_v8_9_to_v25_1:
     @property
     def airflow_network_distribution_nodes(self) -> IDFCollection[AirflowNetworkDistributionNode_v8_9_to_v25_1]: ...
     @property
-    def evaporative_fluid_cooler_single_speeds(
-        self,
-    ) -> IDFCollection[EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1]: ...
-    @property
     def evaporative_fluid_cooler_two_speeds(self) -> IDFCollection[EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1]: ...
+    @property
+    def external_interface_functional_mockup_unit_export_to_actuators(
+        self,
+    ) -> IDFCollection[ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1]: ...
+    @property
+    def external_interface_functional_mockup_unit_export_to_schedules(
+        self,
+    ) -> IDFCollection[ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1]: ...
+    @property
+    def heat_exchanger_desiccant_balanced_flows(
+        self,
+    ) -> IDFCollection[HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1]: ...
     @property
     def ideal_loads(self) -> IDFCollection[ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1]: ...
     @property
     def thermal_storage_ice_simples(self) -> IDFCollection[ThermalStorageIceSimple_v8_9_to_v25_1]: ...
+    @property
+    def zone_hvac_high_temperature_radiants(self) -> IDFCollection[ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1]: ...
     @property
     def zone_hvac_ideal_loads_air_systems(self) -> IDFCollection[ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1]: ...
 
 class _Accessors_v8_9_to_v25_2:
     @property
     def heat_exchanger_fluid_to_fluids(self) -> IDFCollection[HeatExchangerFluidToFluid_v8_9_to_v25_2]: ...
+    @property
+    def photovoltaic_performance_simples(self) -> IDFCollection[PhotovoltaicPerformanceSimple_v8_9_to_v25_2]: ...
 
 class _Accessors_v8_9_to_v26_1:
     @property
@@ -18777,6 +20013,8 @@ class _Accessors_v8_9_to_v26_1:
     def surface_property_surrounding_surfaces(
         self,
     ) -> IDFCollection[SurfacePropertySurroundingSurfaces_v8_9_to_v26_1]: ...
+    @property
+    def zone_control_contaminant_controllers(self) -> IDFCollection[ZoneControlContaminantController_v8_9_to_v26_1]: ...
     @property
     def zone_control_humidistats(self) -> IDFCollection[ZoneControlHumidistat_v8_9_to_v26_1]: ...
 
@@ -18877,10 +20115,6 @@ class _Accessors_v8_9_to_v26_2:
     ) -> IDFCollection[_g.AirflowNetworkMultiZoneComponentZoneExhaustFan]: ...
     @property
     def airflow_network_multi_zone_external_nodes(self) -> IDFCollection[_g.AirflowNetworkMultiZoneExternalNode]: ...
-    @property
-    def airflow_network_multi_zone_reference_crack_conditions(
-        self,
-    ) -> IDFCollection[_g.AirflowNetworkMultiZoneReferenceCrackConditions]: ...
     @property
     def airflow_network_multi_zone_surface_cracks(self) -> IDFCollection[_g.AirflowNetworkMultiZoneSurfaceCrack]: ...
     @property
@@ -19128,8 +20362,6 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def energy_management_system_output_variables(self) -> IDFCollection[_g.EnergyManagementSystemOutputVariable]: ...
     @property
-    def energy_management_system_programs(self) -> IDFCollection[_g.EnergyManagementSystemProgram]: ...
-    @property
     def energy_management_system_sensors(self) -> IDFCollection[_g.EnergyManagementSystemSensor]: ...
     @property
     def energy_management_system_subroutines(self) -> IDFCollection[_g.EnergyManagementSystemSubroutine]: ...
@@ -19157,14 +20389,6 @@ class _Accessors_v8_9_to_v26_2:
     def external_interface_functional_mockup_unit_export_from_variables(
         self,
     ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportFromVariable]: ...
-    @property
-    def external_interface_functional_mockup_unit_export_to_actuators(
-        self,
-    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToActuator]: ...
-    @property
-    def external_interface_functional_mockup_unit_export_to_schedules(
-        self,
-    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToSchedule]: ...
     @property
     def external_interface_functional_mockup_unit_export_to_variables(
         self,
@@ -19382,8 +20606,6 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.HeatExchangerDesiccantBalancedFlowPerformanceDataType1]: ...
     @property
-    def heat_exchanger_desiccant_balanced_flows(self) -> IDFCollection[_g.HeatExchangerDesiccantBalancedFlow]: ...
-    @property
     def heat_pump_water_to_water_parameter_estimation_coolings(
         self,
     ) -> IDFCollection[_g.HeatPumpWaterToWaterParameterEstimationCooling]: ...
@@ -19525,8 +20747,6 @@ class _Accessors_v8_9_to_v26_2:
     def parametric_run_controls(self) -> IDFCollection[_g.ParametricRunControl]: ...
     @property
     def parametric_set_value_for_runs(self) -> IDFCollection[_g.ParametricSetValueForRun]: ...
-    @property
-    def photovoltaic_performance_simples(self) -> IDFCollection[_g.PhotovoltaicPerformanceSimple]: ...
     @property
     def pipe_adiabatic_steams(self) -> IDFCollection[_g.PipeAdiabaticSteam]: ...
     @property
@@ -19918,8 +21138,6 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def surface_property_underwaters(self) -> IDFCollection[_g.SurfacePropertyUnderwater]: ...
     @property
-    def swimming_pool_indoors(self) -> IDFCollection[_g.SwimmingPoolIndoor]: ...
-    @property
     def tempering_valves(self) -> IDFCollection[_g.TemperingValve]: ...
     @property
     def thermal_storage_chilled_water_mixeds(self) -> IDFCollection[_g.ThermalStorageChilledWaterMixed]: ...
@@ -19952,8 +21170,6 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def thermostats(self) -> IDFCollection[_g.ThermostatSetpointDualSetpoint]: ...
     @property
-    def utility_cost_charge_blocks(self) -> IDFCollection[_g.UtilityCostChargeBlock]: ...
-    @property
     def utility_cost_charge_simples(self) -> IDFCollection[_g.UtilityCostChargeSimple]: ...
     @property
     def utility_cost_computations(self) -> IDFCollection[_g.UtilityCostComputation]: ...
@@ -19963,8 +21179,6 @@ class _Accessors_v8_9_to_v26_2:
     def utility_cost_ratchets(self) -> IDFCollection[_g.UtilityCostRatchet]: ...
     @property
     def utility_cost_tariffs(self) -> IDFCollection[_g.UtilityCostTariff]: ...
-    @property
-    def versions(self) -> IDFCollection[_g.Version]: ...
     @property
     def water_heater_heat_pump_pumped_condensers(self) -> IDFCollection[_g.WaterHeaterHeatPumpPumpedCondenser]: ...
     @property
@@ -20056,8 +21270,6 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.ZoneContaminantSourceAndSinkGenericDepositionRateSink]: ...
     @property
-    def zone_control_contaminant_controllers(self) -> IDFCollection[_g.ZoneControlContaminantController]: ...
-    @property
     def zone_control_thermostat_operative_temperatures(
         self,
     ) -> IDFCollection[_g.ZoneControlThermostatOperativeTemperature]: ...
@@ -20092,8 +21304,6 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def zone_hvac_four_pipe_fan_coils(self) -> IDFCollection[_g.ZoneHVACFourPipeFanCoil]: ...
     @property
-    def zone_hvac_high_temperature_radiants(self) -> IDFCollection[_g.ZoneHVACHighTemperatureRadiant]: ...
-    @property
     def zone_hvac_low_temperature_radiant_surface_groups(
         self,
     ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantSurfaceGroup]: ...
@@ -20123,24 +21333,26 @@ class _Accessors_v9_0:
     def boiler_hot_waters(self) -> IDFCollection[BoilerHotWater_v9_0]: ...
     @property
     def hvac_template_zone_fan_coils(self) -> IDFCollection[HVACTemplateZoneFanCoil_v9_0]: ...
+    @property
+    def versions(self) -> IDFCollection[Version_v9_0]: ...
 
 class _Accessors_v9_0_to_v9_1:
+    @property
+    def run_period(self) -> IDFCollection[RunPeriod_v9_0_to_v9_1]: ...
+    @property
+    def run_periods(self) -> IDFCollection[RunPeriod_v9_0_to_v9_1]: ...
     @property
     def table_multi_variable_lookups(self) -> IDFCollection[TableMultiVariableLookup_v9_0_to_v9_1]: ...
     @property
     def table_one_independent_variables(self) -> IDFCollection[TableOneIndependentVariable_v9_0_to_v9_1]: ...
+    @property
+    def table_two_independent_variables(self) -> IDFCollection[TableTwoIndependentVariables_v9_0_to_v9_1]: ...
     @property
     def window_shading_controls(self) -> IDFCollection[WindowShadingControl_v9_0_to_v9_1]: ...
 
 class _Accessors_v9_0_to_v9_2:
     @property
     def sizing_period_design_days(self) -> IDFCollection[SizingPeriodDesignDay_v9_0_to_v9_2]: ...
-
-class _Accessors_v9_0_to_v9_5:
-    @property
-    def run_period(self) -> IDFCollection[RunPeriod_v9_0_to_v9_5]: ...
-    @property
-    def run_periods(self) -> IDFCollection[RunPeriod_v9_0_to_v9_5]: ...
 
 class _Accessors_v9_0_to_v22_1:
     @property
@@ -20172,6 +21384,8 @@ class _Accessors_v9_0_to_v26_2:
         self,
     ) -> IDFCollection[_g.AirflowNetworkDistributionComponentReliefAirFlow]: ...
     @property
+    def energy_management_system_programs(self) -> IDFCollection[_g.EnergyManagementSystemProgram]: ...
+    @property
     def glazed_doors(self) -> IDFCollection[_g.GlazedDoor]: ...
     @property
     def hvac_template_zone_ptacs(self) -> IDFCollection[_g.HVACTemplateZonePTAC]: ...
@@ -20187,6 +21401,8 @@ class _Accessors_v9_0_to_v26_2:
     def zone_hvac_outdoor_air_unit_equipment_lists(self) -> IDFCollection[_g.ZoneHVACOutdoorAirUnitEquipmentList]: ...
 
 class _Accessors_v9_1:
+    @property
+    def versions(self) -> IDFCollection[Version_v9_1]: ...
     @property
     def zone_hvac_equipment_lists(self) -> IDFCollection[ZoneHVACEquipmentList_v9_1]: ...
 
@@ -20229,10 +21445,14 @@ class _Accessors_v9_1_to_v26_2:
     def pump_variable_speed_condensates(self) -> IDFCollection[_g.PumpVariableSpeedCondensate]: ...
     @property
     def pump_variable_speeds(self) -> IDFCollection[_g.PumpVariableSpeed]: ...
+    @property
+    def utility_cost_charge_blocks(self) -> IDFCollection[_g.UtilityCostChargeBlock]: ...
 
 class _Accessors_v9_2:
     @property
     def performance_precision_tradeoffs(self) -> IDFCollection[PerformancePrecisionTradeoffs_v9_2]: ...
+    @property
+    def versions(self) -> IDFCollection[Version_v9_2]: ...
     @property
     def zone_hvac_equipment_lists(self) -> IDFCollection[ZoneHVACEquipmentList_v9_2]: ...
     @property
@@ -20252,9 +21472,15 @@ class _Accessors_v9_2_to_v9_4:
 
 class _Accessors_v9_2_to_v9_5:
     @property
+    def air_loop_hvac_outdoor_air_systems(self) -> IDFCollection[AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5]: ...
+    @property
     def internal_mass(self) -> IDFCollection[InternalMass_v9_2_to_v9_5]: ...
     @property
     def internal_masses(self) -> IDFCollection[InternalMass_v9_2_to_v9_5]: ...
+    @property
+    def run_period(self) -> IDFCollection[RunPeriod_v9_2_to_v9_5]: ...
+    @property
+    def run_periods(self) -> IDFCollection[RunPeriod_v9_2_to_v9_5]: ...
 
 class _Accessors_v9_2_to_v9_6:
     @property
@@ -20326,6 +21552,8 @@ class _Accessors_v9_3:
     @property
     def python_plugin_variables(self) -> IDFCollection[PythonPluginVariables_v9_3]: ...
     @property
+    def versions(self) -> IDFCollection[Version_v9_3]: ...
+    @property
     def zone_hvac_hybrid_unitary_hvacs(self) -> IDFCollection[ZoneHVACHybridUnitaryHVAC_v9_3]: ...
 
 class _Accessors_v9_3_to_v9_4:
@@ -20347,6 +21575,10 @@ class _Accessors_v9_3_to_v9_5:
 class _Accessors_v9_3_to_v22_1:
     @property
     def air_loop_hvac_unitary_systems(self) -> IDFCollection[AirLoopHVACUnitarySystem_v9_3_to_v22_1]: ...
+    @property
+    def building(self) -> IDFCollection[Building_v9_3_to_v22_1]: ...
+    @property
+    def buildings(self) -> IDFCollection[Building_v9_3_to_v22_1]: ...
     @property
     def coil_cooling_dx_curve_fit_operating_modes(
         self,
@@ -20470,6 +21702,8 @@ class _Accessors_v9_4:
     @property
     def output_table_summary_reports(self) -> IDFCollection[OutputTableSummaryReports_v9_4]: ...
     @property
+    def versions(self) -> IDFCollection[Version_v9_4]: ...
+    @property
     def zone_hvac_low_temperature_radiant_constant_flows(
         self,
     ) -> IDFCollection[ZoneHVACLowTemperatureRadiantConstantFlow_v9_4]: ...
@@ -20535,6 +21769,8 @@ class _Accessors_v9_5:
     def controller_mechanical_ventilations(self) -> IDFCollection[ControllerMechanicalVentilation_v9_5]: ...
     @property
     def people(self) -> IDFCollection[People_v9_5]: ...
+    @property
+    def versions(self) -> IDFCollection[Version_v9_5]: ...
 
 class _Accessors_v9_5_to_v9_6:
     @property
@@ -20567,6 +21803,24 @@ class _Accessors_v9_5_to_v22_1:
 class _Accessors_v9_5_to_v23_2:
     @property
     def output_sqlites(self) -> IDFCollection[OutputSQLite_v9_5_to_v23_2]: ...
+
+class _Accessors_v9_5_to_v25_1:
+    @property
+    def zone_hvac_baseboard_radiant_convective_steams(
+        self,
+    ) -> IDFCollection[ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1]: ...
+    @property
+    def zone_hvac_baseboard_radiant_convective_waters(
+        self,
+    ) -> IDFCollection[ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1]: ...
+    @property
+    def zone_hvac_low_temperature_radiant_constant_flows(
+        self,
+    ) -> IDFCollection[ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1]: ...
+    @property
+    def zone_hvac_low_temperature_radiant_variable_flows(
+        self,
+    ) -> IDFCollection[ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1]: ...
 
 class _Accessors_v9_5_to_v26_2:
     @property
@@ -20610,33 +21864,21 @@ class _Accessors_v9_5_to_v26_2:
         self,
     ) -> IDFCollection[_g.ZoneHVACBaseboardRadiantConvectiveSteamDesign]: ...
     @property
-    def zone_hvac_baseboard_radiant_convective_steams(
-        self,
-    ) -> IDFCollection[_g.ZoneHVACBaseboardRadiantConvectiveSteam]: ...
-    @property
     def zone_hvac_baseboard_radiant_convective_water_designs(
         self,
     ) -> IDFCollection[_g.ZoneHVACBaseboardRadiantConvectiveWaterDesign]: ...
-    @property
-    def zone_hvac_baseboard_radiant_convective_waters(
-        self,
-    ) -> IDFCollection[_g.ZoneHVACBaseboardRadiantConvectiveWater]: ...
     @property
     def zone_hvac_low_temperature_radiant_constant_flow_designs(
         self,
     ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantConstantFlowDesign]: ...
     @property
-    def zone_hvac_low_temperature_radiant_constant_flows(
-        self,
-    ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantConstantFlow]: ...
-    @property
     def zone_hvac_low_temperature_radiant_variable_flow_designs(
         self,
     ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantVariableFlowDesign]: ...
+
+class _Accessors_v9_6:
     @property
-    def zone_hvac_low_temperature_radiant_variable_flows(
-        self,
-    ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantVariableFlow]: ...
+    def versions(self) -> IDFCollection[Version_v9_6]: ...
 
 class _Accessors_v9_6_to_v22_1:
     @property
@@ -20688,6 +21930,12 @@ class _Accessors_v9_6_to_v23_2:
     @property
     def steam_equipments(self) -> IDFCollection[SteamEquipment_v9_6_to_v23_2]: ...
 
+class _Accessors_v9_6_to_v24_1:
+    @property
+    def internal_mass(self) -> IDFCollection[InternalMass_v9_6_to_v24_1]: ...
+    @property
+    def internal_masses(self) -> IDFCollection[InternalMass_v9_6_to_v24_1]: ...
+
 class _Accessors_v9_6_to_v24_2:
     @property
     def building_surface_detaileds(self) -> IDFCollection[BuildingSurfaceDetailed_v9_6_to_v24_2]: ...
@@ -20713,6 +21961,10 @@ class _Accessors_v9_6_to_v26_1:
 class _Accessors_v9_6_to_v26_2:
     @property
     def air_loop_hvac_outdoor_air_systems(self) -> IDFCollection[_g.AirLoopHVACOutdoorAirSystem]: ...
+    @property
+    def airflow_network_multi_zone_reference_crack_conditions(
+        self,
+    ) -> IDFCollection[_g.AirflowNetworkMultiZoneReferenceCrackConditions]: ...
     @property
     def airflow_network_multi_zone_specified_flow_rates(
         self,
@@ -20742,10 +21994,6 @@ class _Accessors_v9_6_to_v26_2:
     @property
     def floor_interzones(self) -> IDFCollection[_g.FloorInterzone]: ...
     @property
-    def internal_mass(self) -> IDFCollection[_g.InternalMass]: ...
-    @property
-    def internal_masses(self) -> IDFCollection[_g.InternalMass]: ...
-    @property
     def performance_precision_tradeoffs(self) -> IDFCollection[_g.PerformancePrecisionTradeoffs]: ...
     @property
     def roofs(self) -> IDFCollection[_g.Roof]: ...
@@ -20769,6 +22017,8 @@ class _Accessors_v22_1:
     def schedule_files(self) -> IDFCollection[ScheduleFile_v22_1]: ...
     @property
     def schedules_file(self) -> IDFCollection[ScheduleFile_v22_1]: ...
+    @property
+    def versions(self) -> IDFCollection[Version_v22_1]: ...
 
 class _Accessors_v22_1_to_v26_1:
     @property
@@ -20791,6 +22041,10 @@ class _Accessors_v22_1_to_v26_2:
     def surface_property_convection_coefficients(self) -> IDFCollection[_g.SurfacePropertyConvectionCoefficients]: ...
     @property
     def zone_hvac_exhaust_controls(self) -> IDFCollection[_g.ZoneHVACExhaustControl]: ...
+
+class _Accessors_v22_2:
+    @property
+    def versions(self) -> IDFCollection[Version_v22_2]: ...
 
 class _Accessors_v22_2_to_v23_1:
     @property
@@ -20884,6 +22138,10 @@ class _Accessors_v22_2_to_v25_1:
         self,
     ) -> IDFCollection[CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1]: ...
     @property
+    def evaporative_fluid_cooler_single_speeds(
+        self,
+    ) -> IDFCollection[EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1]: ...
+    @property
     def output_table_report_periods(self) -> IDFCollection[OutputTableReportPeriod_v22_2_to_v25_1]: ...
     @property
     def sizing_system(self) -> IDFCollection[SizingSystem_v22_2_to_v25_1]: ...
@@ -20893,6 +22151,14 @@ class _Accessors_v22_2_to_v25_1:
     def thermal_storage_chilled_water_stratifieds(
         self,
     ) -> IDFCollection[ThermalStorageChilledWaterStratified_v22_2_to_v25_1]: ...
+
+class _Accessors_v22_2_to_v25_2:
+    @property
+    def photovoltaic_performance_equivalent_one_diodes(
+        self,
+    ) -> IDFCollection[PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2]: ...
+    @property
+    def photovoltaic_performance_sandias(self) -> IDFCollection[PhotovoltaicPerformanceSandia_v22_2_to_v25_2]: ...
 
 class _Accessors_v22_2_to_v26_1:
     @property
@@ -21062,12 +22328,6 @@ class _Accessors_v22_2_to_v26_2:
     @property
     def output_table_time_bins(self) -> IDFCollection[_g.OutputTableTimeBins]: ...
     @property
-    def photovoltaic_performance_equivalent_one_diodes(
-        self,
-    ) -> IDFCollection[_g.PhotovoltaicPerformanceEquivalentOneDiode]: ...
-    @property
-    def photovoltaic_performance_sandias(self) -> IDFCollection[_g.PhotovoltaicPerformanceSandia]: ...
-    @property
     def piping_system_underground_domains(self) -> IDFCollection[_g.PipingSystemUndergroundDomain]: ...
     @property
     def piping_system_underground_pipe_circuits(self) -> IDFCollection[_g.PipingSystemUndergroundPipeCircuit]: ...
@@ -21140,6 +22400,8 @@ class _Accessors_v22_2_to_v26_2:
         self,
     ) -> IDFCollection[_g.SurfacePropertyIncidentSolarMultiplier]: ...
     @property
+    def swimming_pool_indoors(self) -> IDFCollection[_g.SwimmingPoolIndoor]: ...
+    @property
     def table_independent_variables(self) -> IDFCollection[_g.TableIndependentVariable]: ...
     @property
     def table_lookups(self) -> IDFCollection[_g.TableLookup]: ...
@@ -21180,6 +22442,10 @@ class _Accessors_v22_2_to_v26_2:
     @property
     def zones(self) -> IDFCollection[_g.Zone]: ...
 
+class _Accessors_v23_1:
+    @property
+    def versions(self) -> IDFCollection[Version_v23_1]: ...
+
 class _Accessors_v23_1_to_v25_1:
     @property
     def heat_pump_air_to_water_fuel_fired_coolings(
@@ -21211,6 +22477,8 @@ class _Accessors_v23_2:
     def air_loop_hvac_unitary_systems(self) -> IDFCollection[AirLoopHVACUnitarySystem_v23_2]: ...
     @property
     def other_equipments(self) -> IDFCollection[OtherEquipment_v23_2]: ...
+    @property
+    def versions(self) -> IDFCollection[Version_v23_2]: ...
     @property
     def zone_hvac_water_to_air_heat_pumps(self) -> IDFCollection[ZoneHVACWaterToAirHeatPump_v23_2]: ...
 
@@ -21353,6 +22621,8 @@ class _Accessors_v23_2_to_v26_2:
 class _Accessors_v24_1:
     @property
     def indoor_living_walls(self) -> IDFCollection[IndoorLivingWall_v24_1]: ...
+    @property
+    def versions(self) -> IDFCollection[Version_v24_1]: ...
 
 class _Accessors_v24_1_to_v24_2:
     @property
@@ -21408,6 +22678,14 @@ class _Accessors_v24_1_to_v26_2:
         self,
     ) -> IDFCollection[_g.ZoneHVACPackagedTerminalAirConditioner]: ...
 
+class _Accessors_v24_2:
+    @property
+    def chiller_electric_eirs(self) -> IDFCollection[ChillerElectricEIR_v24_2]: ...
+    @property
+    def chiller_electric_reformulated_eirs(self) -> IDFCollection[ChillerElectricReformulatedEIR_v24_2]: ...
+    @property
+    def versions(self) -> IDFCollection[Version_v24_2]: ...
+
 class _Accessors_v24_2_to_v25_1:
     @property
     def output_control_files(self) -> IDFCollection[OutputControlFiles_v24_2_to_v25_1]: ...
@@ -21426,13 +22704,15 @@ class _Accessors_v24_2_to_v25_2:
         self,
     ) -> IDFCollection[AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2]: ...
 
+class _Accessors_v24_2_to_v26_1:
+    @property
+    def internal_mass(self) -> IDFCollection[InternalMass_v24_2_to_v26_1]: ...
+    @property
+    def internal_masses(self) -> IDFCollection[InternalMass_v24_2_to_v26_1]: ...
+
 class _Accessors_v24_2_to_v26_2:
     @property
     def chiller_constant_cops(self) -> IDFCollection[_g.ChillerConstantCOP]: ...
-    @property
-    def chiller_electric_eirs(self) -> IDFCollection[_g.ChillerElectricEIR]: ...
-    @property
-    def chiller_electric_reformulated_eirs(self) -> IDFCollection[_g.ChillerElectricReformulatedEIR]: ...
     @property
     def chiller_electrics(self) -> IDFCollection[_g.ChillerElectric]: ...
     @property
@@ -21470,15 +22750,25 @@ class _Accessors_v24_2_to_v26_2:
     @property
     def zone_thermal_chimneys(self) -> IDFCollection[_g.ZoneThermalChimney]: ...
 
+class _Accessors_v25_1:
+    @property
+    def versions(self) -> IDFCollection[Version_v25_1]: ...
+
+class _Accessors_v25_1_to_v26_1:
+    @property
+    def building_surface_detaileds(self) -> IDFCollection[BuildingSurfaceDetailed_v25_1_to_v26_1]: ...
+    @property
+    def building_surfaces(self) -> IDFCollection[BuildingSurfaceDetailed_v25_1_to_v26_1]: ...
+
 class _Accessors_v25_1_to_v26_2:
     @property
     def airflow_network_distribution_component_coils(
         self,
     ) -> IDFCollection[_g.AirflowNetworkDistributionComponentCoil]: ...
     @property
-    def building_surface_detaileds(self) -> IDFCollection[_g.BuildingSurfaceDetailed]: ...
+    def chiller_electric_eirs(self) -> IDFCollection[_g.ChillerElectricEIR]: ...
     @property
-    def building_surfaces(self) -> IDFCollection[_g.BuildingSurfaceDetailed]: ...
+    def chiller_electric_reformulated_eirs(self) -> IDFCollection[_g.ChillerElectricReformulatedEIR]: ...
     @property
     def coil_water_heating_desuperheaters(self) -> IDFCollection[_g.CoilWaterHeatingDesuperheater]: ...
     @property
@@ -21497,6 +22787,10 @@ class _Accessors_v25_1_to_v26_2:
     def zone_infiltration_design_flow_rates(self) -> IDFCollection[_g.ZoneInfiltrationDesignFlowRate]: ...
     @property
     def zone_ventilation_design_flow_rates(self) -> IDFCollection[_g.ZoneVentilationDesignFlowRate]: ...
+
+class _Accessors_v25_2:
+    @property
+    def versions(self) -> IDFCollection[Version_v25_2]: ...
 
 class _Accessors_v25_2_to_v26_2:
     @property
@@ -21566,11 +22860,21 @@ class _Accessors_v25_2_to_v26_2:
     @property
     def evaporative_fluid_cooler_two_speeds(self) -> IDFCollection[_g.EvaporativeFluidCoolerTwoSpeed]: ...
     @property
+    def external_interface_functional_mockup_unit_export_to_actuators(
+        self,
+    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToActuator]: ...
+    @property
+    def external_interface_functional_mockup_unit_export_to_schedules(
+        self,
+    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToSchedule]: ...
+    @property
     def ground_heat_exchanger_systems(self) -> IDFCollection[_g.GroundHeatExchangerSystem]: ...
     @property
     def ground_heat_exchanger_vertical_sizing_rectangles(
         self,
     ) -> IDFCollection[_g.GroundHeatExchangerVerticalSizingRectangle]: ...
+    @property
+    def heat_exchanger_desiccant_balanced_flows(self) -> IDFCollection[_g.HeatExchangerDesiccantBalancedFlow]: ...
     @property
     def heat_pump_air_to_water_fuel_fired_coolings(self) -> IDFCollection[_g.HeatPumpAirToWaterFuelFiredCooling]: ...
     @property
@@ -21612,11 +22916,33 @@ class _Accessors_v25_2_to_v26_2:
     @property
     def thermal_storage_sizings(self) -> IDFCollection[_g.ThermalStorageSizing]: ...
     @property
+    def zone_hvac_baseboard_radiant_convective_steams(
+        self,
+    ) -> IDFCollection[_g.ZoneHVACBaseboardRadiantConvectiveSteam]: ...
+    @property
+    def zone_hvac_baseboard_radiant_convective_waters(
+        self,
+    ) -> IDFCollection[_g.ZoneHVACBaseboardRadiantConvectiveWater]: ...
+    @property
+    def zone_hvac_high_temperature_radiants(self) -> IDFCollection[_g.ZoneHVACHighTemperatureRadiant]: ...
+    @property
     def zone_hvac_ideal_loads_air_systems(self) -> IDFCollection[_g.ZoneHVACIdealLoadsAirSystem]: ...
+    @property
+    def zone_hvac_low_temperature_radiant_constant_flows(
+        self,
+    ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantConstantFlow]: ...
+    @property
+    def zone_hvac_low_temperature_radiant_variable_flows(
+        self,
+    ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantVariableFlow]: ...
     @property
     def zone_hvac_packaged_terminal_heat_pumps(self) -> IDFCollection[_g.ZoneHVACPackagedTerminalHeatPump]: ...
     @property
     def zone_hvac_water_to_air_heat_pumps(self) -> IDFCollection[_g.ZoneHVACWaterToAirHeatPump]: ...
+
+class _Accessors_v26_1:
+    @property
+    def versions(self) -> IDFCollection[Version_v26_1]: ...
 
 class _Accessors_v26_1_to_v26_2:
     @property
@@ -21627,6 +22953,14 @@ class _Accessors_v26_1_to_v26_2:
     def air_terminal_single_duct_series_piu_reheats(self) -> IDFCollection[_g.AirTerminalSingleDuctSeriesPIUReheat]: ...
     @property
     def heat_exchanger_fluid_to_fluids(self) -> IDFCollection[_g.HeatExchangerFluidToFluid]: ...
+    @property
+    def photovoltaic_performance_equivalent_one_diodes(
+        self,
+    ) -> IDFCollection[_g.PhotovoltaicPerformanceEquivalentOneDiode]: ...
+    @property
+    def photovoltaic_performance_sandias(self) -> IDFCollection[_g.PhotovoltaicPerformanceSandia]: ...
+    @property
+    def photovoltaic_performance_simples(self) -> IDFCollection[_g.PhotovoltaicPerformanceSimple]: ...
 
 IDFDocumentV26_2 = IDFDocument
 

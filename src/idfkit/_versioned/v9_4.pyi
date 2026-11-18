@@ -37,7 +37,6 @@ class IDFDocumentV9_4(
     _v._Accessors_v8_9_to_v25_2,
     _v._Accessors_v8_9_to_v26_1,
     _v._Accessors_v8_9_to_v26_2,
-    _v._Accessors_v9_0_to_v9_5,
     _v._Accessors_v9_0_to_v22_1,
     _v._Accessors_v9_0_to_v23_1,
     _v._Accessors_v9_0_to_v25_1,
@@ -72,7 +71,7 @@ class IDFDocumentV9_4(
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9.4.0."""
 
     @overload
-    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_g.Version]: ...
+    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_v.Version_v9_4]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["SimulationControl"], /
@@ -82,7 +81,7 @@ class IDFDocumentV9_4(
         self, obj_type: Literal["PerformancePrecisionTradeoffs"], /
     ) -> IDFCollection[_v.PerformancePrecisionTradeoffs_v9_4_to_v9_5]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["Building"], /) -> IDFCollection[_v.Building_v8_9_to_v22_1]: ...
+    def __getitem__(self, obj_type: Literal["Building"], /) -> IDFCollection[_v.Building_v9_3_to_v22_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ShadowCalculation"], /
@@ -146,7 +145,7 @@ class IDFDocumentV9_4(
         self, obj_type: Literal["SizingPeriod:WeatherFileConditionType"], /
     ) -> IDFCollection[_g.SizingPeriodWeatherFileConditionType]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["RunPeriod"], /) -> IDFCollection[_v.RunPeriod_v9_0_to_v9_5]: ...
+    def __getitem__(self, obj_type: Literal["RunPeriod"], /) -> IDFCollection[_v.RunPeriod_v9_2_to_v9_5]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["RunPeriodControl:SpecialDays"], /
@@ -820,7 +819,9 @@ class IDFDocumentV9_4(
         self, obj_type: Literal["ZoneBaseboard:OutdoorTemperatureControlled"], /
     ) -> IDFCollection[_v.ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["SwimmingPool:Indoor"], /) -> IDFCollection[_g.SwimmingPoolIndoor]: ...
+    def __getitem__(
+        self, obj_type: Literal["SwimmingPool:Indoor"], /
+    ) -> IDFCollection[_v.SwimmingPoolIndoor_v8_9_to_v22_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneContaminantSourceAndSink:CarbonDioxide"], /
@@ -948,7 +949,7 @@ class IDFDocumentV9_4(
     @overload
     def __getitem__(
         self, obj_type: Literal["AirflowNetwork:MultiZone:ReferenceCrackConditions"], /
-    ) -> IDFCollection[_g.AirflowNetworkMultiZoneReferenceCrackConditions]: ...
+    ) -> IDFCollection[_v.AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["AirflowNetwork:MultiZone:Surface:Crack"], /
@@ -1272,7 +1273,7 @@ class IDFDocumentV9_4(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneControl:ContaminantController"], /
-    ) -> IDFCollection[_g.ZoneControlContaminantController]: ...
+    ) -> IDFCollection[_v.ZoneControlContaminantController_v8_9_to_v26_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:IdealLoadsAirSystem"], /
@@ -1378,7 +1379,7 @@ class IDFDocumentV9_4(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:HighTemperatureRadiant"], /
-    ) -> IDFCollection[_g.ZoneHVACHighTemperatureRadiant]: ...
+    ) -> IDFCollection[_v.ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:VentilatedSlab"], /
@@ -1682,7 +1683,7 @@ class IDFDocumentV9_4(
     @overload
     def __getitem__(
         self, obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow"], /
-    ) -> IDFCollection[_g.HeatExchangerDesiccantBalancedFlow]: ...
+    ) -> IDFCollection[_v.HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"], /
@@ -1764,7 +1765,7 @@ class IDFDocumentV9_4(
     @overload
     def __getitem__(
         self, obj_type: Literal["AirLoopHVAC:OutdoorAirSystem"], /
-    ) -> IDFCollection[_v.AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5]: ...
+    ) -> IDFCollection[_v.AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5]: ...
     @overload
     def __getitem__(self, obj_type: Literal["OutdoorAir:Mixer"], /) -> IDFCollection[_g.OutdoorAirMixer]: ...
     @overload
@@ -2002,7 +2003,7 @@ class IDFDocumentV9_4(
     @overload
     def __getitem__(
         self, obj_type: Literal["EvaporativeFluidCooler:SingleSpeed"], /
-    ) -> IDFCollection[_v.EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1]: ...
+    ) -> IDFCollection[_v.EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["EvaporativeFluidCooler:TwoSpeed"], /
@@ -2244,11 +2245,11 @@ class IDFDocumentV9_4(
     @overload
     def __getitem__(
         self, obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Schedule"], /
-    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToSchedule]: ...
+    ) -> IDFCollection[_v.ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Actuator"], /
-    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToActuator]: ...
+    ) -> IDFCollection[_v.ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Variable"], /
@@ -2550,7 +2551,7 @@ class IDFDocumentV9_4(
     @overload
     def __getitem__(
         self, obj_type: Literal["PhotovoltaicPerformance:Simple"], /
-    ) -> IDFCollection[_g.PhotovoltaicPerformanceSimple]: ...
+    ) -> IDFCollection[_v.PhotovoltaicPerformanceSimple_v8_9_to_v25_2]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["PhotovoltaicPerformance:EquivalentOne-Diode"], /

@@ -14,6 +14,12 @@ than repeated:
 * every type's class has exactly the version's fields, each with the version's value type, and
   its extensible group exactly the version's inner fields;
 * every class's ``update`` keywords are exactly its fields;
+* every class's creation signature, which ``IDFCollection.add`` takes, has the name exactly when
+  the type has a Name field (required when the schema requires it) and exactly the ``update``
+  keywords, with the same value types; a keyword has no default exactly when the schema requires
+  the field (then without ``None``), and a default it shows is the schema's. Through
+  ``AnyIDFDocument`` a field is required only where every version requires it, and a default is
+  shown only where every version has it;
 * a version's document has exactly the version's attribute accessors, each typed with the class
   of its object type in that version;
 * ``AnyIDFDocument`` offers exactly the types every version has, each with exactly the fields
@@ -32,7 +38,7 @@ from __future__ import annotations
 import ast
 import dataclasses
 import functools
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -54,6 +60,21 @@ class _Class:
     # ``__getitem__`` overloads in order: the literal object type each takes (``None`` for one that
     # takes anything else), the type it returns, and its parameter's annotation.
     getitem: list[tuple[str | None, str, str]] = dataclasses.field(default_factory=list[tuple[str | None, str, str]])
+    # The annotation of ``_creation_signature`` (``_c3.Material``), when the class declares one.
+    creation: str | None = None
+
+
+@dataclasses.dataclass(frozen=True)
+class _CreationSignature:
+    """The ``__call__`` of a creation signature class in ``idfkit/_creation``.
+
+    Attributes:
+        name: ``"required"``, ``"optional"`` (with a default) or ``"none"``: the positional name.
+        params: Each keyword with its annotation and its default's source, ``None`` for none.
+    """
+
+    name: str
+    params: dict[str, tuple[str, str | None]]
 
 
 @dataclasses.dataclass
@@ -63,6 +84,12 @@ class _Module:
     classes: dict[str, _Class] = dataclasses.field(default_factory=dict[str, _Class])
     # Module-level ``Name: TypeAlias = Target``: the alias and the class it names.
     aliases: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
+    # ``from ._creation import _b3 as _c3``: the alias and the module it names.
+    imports: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
+    # The creation signatures, by module and class: ``("_b3", "Material")``.
+    signatures: dict[tuple[str, str], _CreationSignature] = dataclasses.field(
+        default_factory=dict[tuple[str, str], _CreationSignature]
+    )
 
 
 @functools.cache
@@ -101,7 +128,10 @@ def _read_class(node: ast.ClassDef) -> _Class:
     cls = _Class([_base_name(b) for b in node.bases], {}, {})
     for item in node.body:
         if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
-            cls.fields[item.target.id] = _norm(ast.unparse(item.annotation))
+            if item.target.id == "_creation_signature":
+                cls.creation = ast.unparse(item.annotation)
+            else:
+                cls.fields[item.target.id] = _norm(ast.unparse(item.annotation))
         elif not isinstance(item, ast.FunctionDef):
             continue
         elif (overload := _getitem_overload(item)) is not None:
@@ -119,10 +149,39 @@ def _read_class(node: ast.ClassDef) -> _Class:
     return cls
 
 
+def _read_signature(node: ast.ClassDef) -> _CreationSignature | None:
+    """The ``__call__`` of a class in a creation module, or ``None`` when it has none."""
+    for item in node.body:
+        if isinstance(item, ast.FunctionDef) and item.name == "__call__":
+            args = item.args
+            positional = args.posonlyargs[1:]
+            name = "none"
+            if positional:
+                name = "optional" if args.defaults else "required"
+            params: dict[str, tuple[str, str | None]] = {}
+            for arg, default in zip(args.kwonlyargs, args.kw_defaults, strict=True):
+                annotation = ast.unparse(arg.annotation) if arg.annotation is not None else ""
+                params[arg.arg] = (annotation, None if default is None else ast.unparse(default))
+            return _CreationSignature(name, params)
+    return None
+
+
+def _read_creation(sources: Mapping[str, str], module: _Module) -> _Module:
+    """Read the creation modules (``_b3`` -> its source) into *module*."""
+    for name, source in sources.items():
+        for node in ast.parse(source).body:
+            if isinstance(node, ast.ClassDef) and (signature := _read_signature(node)) is not None:
+                module.signatures[name, node.name] = signature
+    return module
+
+
 def _read(source: str, module: _Module | None = None) -> _Module:
     module = module if module is not None else _Module()
     for node in ast.parse(source).body:
-        if isinstance(node, ast.ClassDef):
+        if isinstance(node, ast.ImportFrom) and node.module == "_creation":
+            for alias in node.names:
+                module.imports[alias.asname or alias.name] = alias.name
+        elif isinstance(node, ast.ClassDef):
             module.classes[node.name] = _read_class(node)
         elif (
             isinstance(node, ast.AnnAssign)
@@ -329,6 +388,119 @@ def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problem
         retyped = sorted(k for k in set(actual) & set(expected) if actual[k] != expected[k])
         problems.append(f"{where}: missing {missing}, extra {extra}, mistyped {retyped}")
     _check_update(module, cls, keywords, where, problems)
+    _check_creation(module, cls, [_schema_of(ver)], obj_type, where, problems)
+
+
+def _schema_of(ver: Version) -> EpJSONSchema:
+    from idfkit.schema import get_schema
+
+    return get_schema(ver)
+
+
+@dataclasses.dataclass(frozen=True)
+class _ExpectedCreation:
+    """What a creation signature must say, read from the schemas of the releases it serves."""
+
+    name: str
+    required: frozenset[str]
+    # Each field with a default every release agrees on, with that default.
+    defaults: dict[str, object]
+
+
+def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedCreation:
+    """The name, required fields and defaults of *obj_type* as every one of *schemas* has them.
+
+    A field is required when its schema lists it in ``required`` and gives it no default, as the
+    run-time validator refuses an object without it; over several releases, only when every one
+    does. A name is required when every release's schema marks it ``is_required``, taken when the
+    type has a Name field, and refused otherwise.
+    """
+    kinds: set[str] = set()
+    required: set[str] | None = None
+    defaults: dict[str, object] | None = None
+    for schema in schemas:
+        inner: dict[str, Any] = schema.get_inner_schema(obj_type) or {}
+        properties: dict[str, dict[str, Any]] = inner.get("properties", {})
+        listed: list[str] = inner.get("required", [])
+        own = {f for f in listed if "default" not in properties.get(f, {})}
+        required = own if required is None else required & own
+        own_defaults = {f: p["default"] for f, p in properties.items() if "default" in p}
+        if defaults is None:
+            defaults = own_defaults
+        else:
+            defaults = {f: v for f, v in defaults.items() if f in own_defaults and own_defaults[f] == v}
+        object_schema: dict[str, Any] = schema.get_object_schema(obj_type) or {}
+        name_schema: dict[str, Any] = object_schema.get("name") or {}
+        if not schema.has_name(obj_type):
+            kinds.add("none")
+        else:
+            kinds.add("required" if name_schema.get("is_required") else "optional")
+    name = kinds.pop() if len(kinds) == 1 else "optional"
+    return _ExpectedCreation(name, frozenset(required or ()), defaults or {})
+
+
+def _creation_of(module: _Module, cls: str) -> tuple[str, _CreationSignature | None] | None:
+    """The annotation of *cls*'s nearest ``_creation_signature`` and the signature it names."""
+    for item in reversed(_linearise(module, cls)):
+        annotation = module.classes[item].creation if item in module.classes else None
+        if annotation is not None:
+            alias, _, name = annotation.partition(".")
+            return annotation, module.signatures.get((module.imports.get(alias, alias), name))
+    return None
+
+
+def _update_keywords(module: _Module, cls: str) -> dict[str, frozenset[str]]:
+    """The ``update`` keywords of *cls* with their value types: its nearest ``_<Class>Fields``."""
+    for item in reversed(_linearise(module, cls)):
+        fields_cls = f"_{item}Fields"
+        if fields_cls in module.classes:
+            return _members_of(_fields(module, fields_cls))
+    return {}
+
+
+def _check_creation(
+    module: _Module, cls: str, schemas: list[EpJSONSchema], obj_type: str, where: str, problems: list[str]
+) -> None:
+    """Check the creation signature of *cls* against its ``update`` keywords and *schemas*."""
+    found = _creation_of(module, cls)
+    if found is None:
+        problems.append(f"{where}: no creation signature")
+        return
+    annotation, signature = found
+    if signature is None:
+        problems.append(f"{where}: creation signature {annotation} not defined")
+        return
+    expected = _expected_creation(schemas, obj_type)
+    if signature.name != expected.name:
+        problems.append(f"{where}: the name is {signature.name} in add(), {expected.name} in the schema")
+    keywords = _update_keywords(module, cls)
+    if set(signature.params) != set(keywords):
+        problems.append(f"{where}: add() keywords differ from the update keywords")
+        return
+    for field, (param_type, default) in signature.params.items():
+        problem = _param_problem(field, param_type, default, keywords[field], expected)
+        if problem is not None:
+            problems.append(f"{where}: {problem}")
+
+
+def _param_problem(
+    field: str, param_type: str, default: str | None, members: frozenset[str], expected: _ExpectedCreation
+) -> str | None:
+    """What is wrong with one keyword of a creation signature, typed like *members* in ``update``."""
+    if default is None:
+        if field not in expected.required:
+            return f"add() requires {field}, which the schema does not"
+        # Required: given a value, so not None.
+        return (
+            None if _union_members(param_type) == members - {"None"} else f"add() types required {field} unlike update"
+        )
+    if field in expected.required and members != frozenset({"None"}):
+        return f"add() does not require {field}, which the schema requires"
+    if _union_members(param_type) != members:
+        return f"add() types {field} unlike update"
+    if default != "..." and (field not in expected.defaults or ast.literal_eval(default) != expected.defaults[field]):
+        return f"add() shows {field} = {default}, not the schema's default"
+    return None
 
 
 def _check_update(
@@ -351,7 +523,11 @@ def _check_update(
 
 
 def verify(
-    types_source: str, document_source: str, versioned_sources: Iterable[str], versions: tuple[Version, ...]
+    types_source: str,
+    document_source: str,
+    versioned_sources: Iterable[str],
+    versions: tuple[Version, ...],
+    creation_sources: Mapping[str, str] | None = None,
 ) -> list[str]:
     """Report every way the generated stubs misdescribe a supported version; empty when none.
 
@@ -363,11 +539,15 @@ def verify(
         versions: The releases the stubs were generated to describe, oldest first; the last is the
             one ``IDFDocument`` is typed for. Passed rather than read from the generator, which may
             be running as ``__main__``, a second copy of its module.
+        creation_sources: The modules of ``_creation`` by module name (``_b3``), which hold the
+            creation signatures the classes name; a class's signature is reported missing when
+            its module is not given.
     """
     sources = list(versioned_sources)
     module = _read(document_source, _read(types_source))
     for source in sources:
         module = _read(source, module)
+    _read_creation(creation_sources or {}, module)
     problems: list[str] = []
     for ver in versions:
         _check_version(module, ver, ver == versions[-1], problems)
@@ -669,6 +849,7 @@ def _check_any_entry(
             if not decl[name] <= admitted:
                 problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: does not admit every version's values")
                 break
+    _check_creation(module, cls, having, obj_type, f"AnyIDFDocument[{obj_type!r}] ({cls})", problems)
 
 
 def _intersection(sets: list[set[str]]) -> set[str]:

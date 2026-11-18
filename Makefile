@@ -12,8 +12,8 @@ install: ## Install the virtual environment and install the pre-commit hooks
 check-stubs: ## Verify generated type stubs are up-to-date
 	@echo "🚀 Checking type stub consistency"
 	@uv run python -m idfkit.codegen.generate_stubs
-	@git diff --exit-code src/idfkit/_generated_types.pyi src/idfkit/document.pyi src/idfkit/versioned.pyi src/idfkit/versioned.py src/idfkit/_versioned && \
-		test -z "$$(git ls-files --others --exclude-standard src/idfkit/_versioned)" || \
+	@git diff --exit-code src/idfkit/_generated_types.pyi src/idfkit/document.pyi src/idfkit/versioned.pyi src/idfkit/versioned.py src/idfkit/_versioned src/idfkit/_creation && \
+		test -z "$$(git ls-files --others --exclude-standard src/idfkit/_versioned src/idfkit/_creation)" || \
 		(echo "❌ Generated stubs are out of date. Run: uv run python -m idfkit.codegen.generate_stubs" && exit 1)
 
 .PHONY: check-conformance-level
