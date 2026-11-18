@@ -515,11 +515,10 @@ def new_document(
 
     # Seed core singleton objects for a minimal baseline model.
     version_identifier = f"{version[0]}.{version[1]}"
-    doc.add("Version", version_identifier=version_identifier)
-    doc.add("Building", "Building")
-    doc.add("SimulationControl")
-    doc.add(
-        "GlobalGeometryRules",
+    doc["Version"].add(version_identifier=version_identifier)
+    doc["Building"].add("Building")
+    doc["SimulationControl"].add()
+    doc["GlobalGeometryRules"].add(
         starting_vertex_position="UpperLeftCorner",
         vertex_entry_direction="Counterclockwise",
         coordinate_system="Relative",

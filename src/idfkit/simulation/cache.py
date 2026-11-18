@@ -212,7 +212,7 @@ class SimulationCache:
 
         normalised = model.copy()
         if "Output:SQLite" not in normalised:
-            normalised.add("Output:SQLite", "", option_type="SimpleAndTabular")
+            normalised["Output:SQLite"].add(option_type="SimpleAndTabular")
         idf_text: str = write_idf(normalised)
 
         flag_values: dict[str, object] = {
