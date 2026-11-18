@@ -331,7 +331,7 @@ any_ceiling(as_version(load_idf("legacy.idf"), IDFDocumentV9_4)["Zone"]["Office"
 
 
 # --8<-- [start:read-required]
-from idfkit import MissingRequiredFieldError
+from idfkit.exceptions import MissingRequiredFieldError
 
 if TYPE_CHECKING:
     from idfkit.document import AnyMaterial
