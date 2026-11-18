@@ -1,6 +1,6 @@
 # Parsing IDF and epJSON
 
-idfkit reads both EnergyPlus formats — classic `.idf` and `.epJSON` — through a single document model. Pick the loader that matches the file extension. Both return an `IDFDocument` with identical semantics afterwards.
+idfkit reads both EnergyPlus formats — classic `.idf` and `.epJSON` — through a single document model. Pick the loader that matches the file extension. Both return a document with identical semantics afterwards, typed as `AnyIDFDocument` unless you state its release (see Version handling).
 
 ## When to use
 
@@ -24,8 +24,9 @@ print(len(doc), "objects")
 
 | Symbol | Purpose |
 |---|---|
-| `load_idf(path, *, strict=True, strict_parsing=True, preserve_formatting=False)` | Parse a `.idf` file. |
-| `load_epjson(path, *, strict=True, preserve_formatting=False)` | Parse an `.epJSON` file. |
+| `load_idf(path, version=None, *, as_type=None, since=None, before=None, strict=True, strict_parsing=True, preserve_formatting=False)` | Parse a `.idf` file. Typed `AnyIDFDocument`, or for the release `as_type=` (or the range `since=`/`before=`) names, checked once the file is read. |
+| `load_epjson(path, version=None, *, as_type=None, since=None, before=None, strict=True, preserve_formatting=False)` | Parse an `.epJSON` file, typed the same way. |
+| `load_idf_with_diagnostics(path, ...)` | `load_idf` that also returns the recoverable parse findings, as a `ParseResult`; takes the same `as_type=`, `since=`, `before=`. |
 | `parse_idf(path, ...)` | Lower-level callable used by `load_idf`. |
 | `parse_epjson(path, ...)` | Lower-level callable used by `load_epjson`. |
 | `get_idf_version(path)` | Read the version from an IDF file without parsing the rest. |
@@ -95,7 +96,23 @@ doc = load_idf("legacy.idf", version=(9, 6, 0))
 
 If the file references a version idfkit doesn't bundle, you'll get `VersionNotFoundError`. To upgrade, see [version-migration.md](version-migration.md).
 
-The loaded document is still typed for the latest release, because a type checker cannot read the file. To edit an older model with its own release's fields and choices, type it with `as_version(doc, IDFDocumentV9_4)` from `idfkit.versioned`; see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md).
+A type checker cannot read the file, so a loaded document is typed as `AnyIDFDocument`: only the object types, fields and choices every supported release accepts type-check through it, whatever the file's release. To work with a release's own fields and choices, state the release when loading. The loader checks it once the file is read and raises `TypeError`, naming the file, if the file is another release; a malformed target (`since="27.1"`, or both `as_type=` and `since=`) is refused before the file is read:
+
+```python
+from idfkit import load_epjson, load_idf, load_idf_with_diagnostics
+from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV26_1
+
+model = load_idf("model.idf")  # AnyIDFDocument: what every supported release has
+legacy = load_idf("legacy.idf", as_type=IDFDocumentV9_4)  # IDFDocumentV9_4; TypeError unless 9.4
+legacy["People"]["Office"].zone_or_zonelist_name = "Office"  # the 9.4 field name
+recent = load_epjson("recent.epJSON", since="9.6")  # 9.6 or later: IDFDocumentSince9_6
+recent["Space"].first()  # every release from 9.6 on has Space
+older = load_idf("older.idf", since="25.2", before="26.2")  # 25.2 or 26.1
+result = load_idf_with_diagnostics("hand_edited.idf", as_type=IDFDocumentV26_1)
+print(result.document["Zone"].first(), result.diagnostics)  # result.document is IDFDocumentV26_1
+```
+
+`as_type=` takes what `as_version` takes: a release's type from `idfkit.versioned` or a tuple of them, whose type argument states the strictness as for `new_document` (`as_type=IDFDocumentV9_4[Literal[False]]` loads a non-strict document); `since=` and `before=` take a release number, its type or a version tuple. The positional `version=` is different: it overrides the release the file is read as, and does not type the document. For a document already loaded, `as_version(doc, IDFDocumentV9_4)` does the same check; see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md).
 
 ## Lossless round-trips
 

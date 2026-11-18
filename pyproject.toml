@@ -130,6 +130,7 @@ exclude = [
     "src/idfkit/_generated_types.pyi",
     "src/idfkit/document.pyi",
     "src/idfkit/versioned.pyi",
+    "src/idfkit/_loaders.pyi",
     "src/idfkit/_versioned",
     "src/idfkit/_creation",
 ]

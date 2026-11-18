@@ -163,14 +163,16 @@ Resolution is strict about separators: `doc.z_o_n_e`, `doc.zone_`, `doc.airlooph
 
 ## Typing a document for its EnergyPlus version
 
-The type stubs describe the latest supported release, and every document is typed as one unless you say otherwise: a model's version is read from its file, so a type checker cannot know it. For a model of an older release, state the version with `as_version`, which checks it at run time (`TypeError` if the file is another version) and returns the same document typed for that release. Its object types, field value types and choices, `update()` keywords and accessors are that release's, so editors complete the fields the release has, and a type the release lacks is an error:
+A model's version is read from its file, so a type checker cannot know it. `load_idf`, `load_epjson` and `load_idf_with_diagnostics` therefore return an `AnyIDFDocument`, through which only what every supported release has type-checks: forgetting to state the release can never check a 26.1 or 9.4 model against the latest release's object types, fields and choices. State the release when loading: `load_idf(path, as_type=IDFDocumentV9_4)` names one release, `since=` and `before=` a range of them (below), and the loader checks it once the file is read (`TypeError` naming the file if it is another release) and returns the document typed for it. For a document already in hand, `as_version(doc, IDFDocumentV9_4)` does the same. A typed document's object types, field value types and choices, `update()` keywords and accessors are that release's, so editors complete the fields the release has, and a type the release lacks is an error. A document from `new_document()` is typed for the latest release (`IDFDocument`), since its version is known:
 
 ```python
 from idfkit import load_idf
 from idfkit.document import AnyIDFDocument
 from idfkit.versioned import IDFDocumentV9_4, as_version
 
-legacy = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)  # TypeError unless the file is 9.4
+model = load_idf("model.idf")  # AnyIDFDocument: what every supported release has
+legacy = load_idf("legacy.idf", as_type=IDFDocumentV9_4)  # TypeError unless the file is 9.4
+same = as_version(model, IDFDocumentV9_4)  # the same check, for a document already loaded
 people = legacy["People"]["Office"]
 people.update(zone_or_zonelist_name="Office")  # the 9.4 name; 9.6 renamed it, and the new name is an error here
 
@@ -188,10 +190,10 @@ def count_people(doc: AnyIDFDocument) -> int:
 
 | The code works on | Annotate with |
 |---|---|
-| Models of the latest release (you create them with `new_document()`, or migrated them to it with `migrate(doc, IDFDocument)`) | `IDFDocument` |
-| Models of any supported release (a reusable function, a library module) | `AnyIDFDocument`; an object from it as `AnyZone`, `AnyMaterial`, ... |
-| Models of one release | `IDFDocumentV9_4` and so on, created with `new_document(IDFDocumentV9_4)` or reached with `as_version` |
-| Models of a range of releases (9.6 and later, before 23.2, ...) | `IDFDocumentSince9_6`, `IDFDocumentBefore23_2`, ..., reached with `as_version(doc, since=...)`; a `TypeVar` bound to one returns the caller's type |
+| Models of the latest release (you create them with `new_document()`, load them with `load_idf(path, as_type=IDFDocumentV26_2)`, or migrated them to it with `migrate(doc, IDFDocument)`) | `IDFDocument` |
+| Models of any supported release (a reusable function, a library module, a model loaded without `as_type=`) | `AnyIDFDocument`; an object from it as `AnyZone`, `AnyMaterial`, ... |
+| Models of one release | `IDFDocumentV9_4` and so on, created with `new_document(IDFDocumentV9_4)`, loaded with `load_idf(path, as_type=IDFDocumentV9_4)` or reached with `as_version` |
+| Models of a range of releases (9.6 and later, before 23.2, ...) | `IDFDocumentSince9_6`, `IDFDocumentBefore23_2`, ..., loaded with `load_idf(path, since=...)` or reached with `as_version(doc, since=...)`; a `TypeVar` bound to one returns the caller's type |
 
 ### Annotating a parameter with an object class
 
@@ -225,7 +227,7 @@ def top_height(surface: AnyBuildingSurfaceDetailed) -> float:
 
 
 any_ceiling(doc["Zone"]["Office"])
-any_ceiling(as_version(load_idf("legacy.idf"), IDFDocumentV9_4)["Zone"]["Office"])
+any_ceiling(load_idf("legacy.idf", as_type=IDFDocumentV9_4)["Zone"]["Office"])
 ```
 
 An `Any<Class>` covers the releases idfkit supports. When idfkit adopts a release that drops or renames a field, that field leaves `Any<Class>`, and code using it stops type-checking: it would not work on that release either. A type the latest release no longer has, such as `DistrictHeating`, has no `Any<Class>`; annotate with its range class (`DistrictHeating_v8_9_to_v23_1`), imported from `idfkit.versioned` inside `if TYPE_CHECKING:`, since the range classes too exist only in the stubs.
@@ -256,11 +258,11 @@ A union of release types accepts exactly those releases. `idfkit.versioned` has 
 ```python
 from typing import TypeVar
 
-from idfkit.versioned import IDFDocumentSince26_1, IDFDocumentV26_1
+from idfkit.versioned import IDFDocumentSince26_1, IDFDocumentV26_1, IDFDocumentV26_2
 
 # A function for 26.1 and later. IDFDocumentSince26_1 is IDFDocumentV26_1 | IDFDocumentV26_2, and
-# grows when idfkit adds a release. The TypeVar hands the caller's own type back: a plain
-# load_idf() result (IDFDocument, which is IDFDocumentV26_2) comes back as IDFDocument.
+# grows when idfkit adds a release. The TypeVar hands the caller's own type back: a model loaded
+# as_type=IDFDocumentV26_2 (which is IDFDocument) comes back as IDFDocument.
 Since26_1 = TypeVar("Since26_1", bound=IDFDocumentSince26_1)
 
 
@@ -270,12 +272,14 @@ def use_district_steam(doc: Since26_1) -> Since26_1:
     return doc
 
 
-latest = use_district_steam(load_idf("model.idf"))  # IDFDocument
-older = use_district_steam(as_version(load_idf("older.idf"), IDFDocumentV26_1))  # IDFDocumentV26_1
+latest = use_district_steam(load_idf("model.idf", as_type=IDFDocumentV26_2))  # IDFDocument
+older = use_district_steam(load_idf("older.idf", as_type=IDFDocumentV26_1))  # IDFDocumentV26_1
+either = use_district_steam(load_idf("recent.idf", since="26.1"))  # IDFDocumentSince26_1
 # use_district_steam(legacy)  # error: a 9.4 document is not in the range
+# use_district_steam(load_idf("model.idf"))  # error: a loaded model may be of any release
 ```
 
-The annotation is not checked at run time. To narrow a document of unknown release into a range, give `as_version` the range: `since=` the first release (inclusive), `before=` the release it stops before (exclusive), or both. Each bound is a release's number, its document type or its version tuple: `since="9.6"`, `since=IDFDocumentV9_6` and `since=(9, 6, 0)` are the same range. `as_version` returns the document typed as the union of the releases in the range (`IDFDocumentSince9_6` for `since="9.6"`), or raises `TypeError` naming them. pyright and mypy both keep the union exactly. The range is the releases idfkit supports, so it grows when idfkit adds one, and there is no list to keep current. Pass `since=`, not an `IDFDocumentSince9_6` alias: to a type checker an alias is not a class.
+The annotation is not checked at run time. To narrow a document of unknown release into a range, give the loader or `as_version` the range (the loaders take `since=` and `before=` exactly as `as_version` does, and refuse a malformed bound before reading the file): `since=` the first release (inclusive), `before=` the release it stops before (exclusive), or both. Each bound is a release's number, its document type or its version tuple: `since="9.6"`, `since=IDFDocumentV9_6` and `since=(9, 6, 0)` are the same range. `as_version` returns the document typed as the union of the releases in the range (`IDFDocumentSince9_6` for `since="9.6"`), or raises `TypeError` naming them. pyright and mypy both keep the union exactly. The range is the releases idfkit supports, so it grows when idfkit adds one, and there is no list to keep current. Pass `since=`, not an `IDFDocumentSince9_6` alias: to a type checker an alias is not a class.
 
 A type checker reads a range only from a release's type or a string literal. A bound in a variable (`since=first`), an optional one (`before: str | None`), or a version tuple (`since=doc.version`) is accepted, and types the document as `AnyIDFDocument`; so does a literal no supported release has (`since="27.1"`) or a range with no release in it, both of which raise `ValueError` when the call runs. Name a bound by its release (`"26.2"`, `IDFDocumentV26_2`), not `IDFDocument`: as a bound, `IDFDocument` means the latest release when the code runs, so `since=IDFDocument` stops accepting a 26.2 model once idfkit adopts the next release.
 
@@ -319,7 +323,7 @@ def is_district_heated(doc: IDFDocumentSince23_2, heater_name: str) -> bool:
 
 ### A model created for an older release
 
-Pass `new_document` the release's document type: `new_document(IDFDocumentV9_4)` creates a 9.4.0 model typed as `IDFDocumentV9_4`, so the release is named once and the type and the version cannot disagree. For a non-strict model, parametrize the type, `new_document(IDFDocumentV9_4[Literal[False]])`, typed `IDFDocumentV9_4[Literal[False]]`; this form takes no `strict=`. Given a version tuple instead, `new_document` is typed for the latest release whatever the version, so a test fixture built with `new_document(version=(9, 4, 0))` is checked against the wrong release. For the latest release keep `new_document()`: `IDFDocument`, and so the latest release's own type `IDFDocumentV26_2` (which is `IDFDocument`), is refused (`TypeError`, though pyright accepts the call), because it is the run-time class of every document and `new_document(type(doc))` would otherwise create a latest-release model whatever `doc`'s release; `AnyIDFDocument` and unions of release types are refused too (a union, like `IDFDocument`, only when the call runs). A model whose version comes from a file is typed with `as_version`, as above.
+Pass `new_document` the release's document type: `new_document(IDFDocumentV9_4)` creates a 9.4.0 model typed as `IDFDocumentV9_4`, so the release is named once and the type and the version cannot disagree. For a non-strict model, parametrize the type, `new_document(IDFDocumentV9_4[Literal[False]])`, typed `IDFDocumentV9_4[Literal[False]]`; this form takes no `strict=`. Given a version tuple instead, `new_document` is typed for the latest release whatever the version, so a test fixture built with `new_document(version=(9, 4, 0))` is checked against the wrong release. For the latest release keep `new_document()`: `IDFDocument`, and so the latest release's own type `IDFDocumentV26_2` (which is `IDFDocument`), is refused (`TypeError`, though pyright accepts the call), because it is the run-time class of every document and `new_document(type(doc))` would otherwise create a latest-release model whatever `doc`'s release; `AnyIDFDocument` and unions of release types are refused too (a union, like `IDFDocument`, only when the call runs). A model whose version comes from a file is typed by its loader's `as_type=` or with `as_version`, as above.
 
 ```python
 from typing import Literal
@@ -395,7 +399,7 @@ They catch different mistakes, so code meant for several releases should run bot
 - **`get_collection` with a literal name is for `idfkit check`, not pyright.** pyright types it as `IDFCollection[IDFObject]` whatever the name, and checks nothing. `idfkit check`, in a file that imports idfkit, reports a name no target release has (rule `C003`, an error, with the closest real name). At run time a misspelled `get_collection("Zoen")` still returns an empty collection, but warns `idfkit.exceptions.UnknownObjectTypeWarning` with the closest real name (`Did you mean 'Zone'?`), as `doc["Zoen"]`, `doc.idfobjects[...]` and `doc.getobject(...)` do; a name some bundled release has never warns, even one the document's release lacks (`Space` on 9.4), and `"Zoen" in doc` never warns. That covers notebooks and untyped code, which `idfkit check` does not read; to fail on it in tests, run pytest with `-W error::idfkit.exceptions.UnknownObjectTypeWarning`. The opt-in rule `C004` (`--extend-select C004`) also reports every other literal name, suggesting `doc["Zone"]`, which is typed and which pyright checks. Variable names (`doc.get_collection(t)`) are not reported.
 - Neither checks item access on an object (`obj["field"]`).
 
-`idfkit check` checks a lookup only against the targets it can run on. It recognises a lookup on `as_version(doc, ...)` (one release type, a tuple or `|` union of them, or `since=`/`before=`), on a name bound once to such a call, and a lookup inside `if doc.version >= (9, 4, 0):` (and the `else` of a test it read completely; `and`, `or`, `not` and chained comparisons against tuples are read). It does not follow early returns, `assert`, `isinstance` or annotations. For a guard it cannot see, silence the line with a comment, which it reports as `C005` once it stops being needed:
+`idfkit check` checks a lookup only against the targets it can run on. It recognises a lookup on `as_version(doc, ...)` (one release type, a tuple or `|` union of them, or `since=`/`before=`), on `load_idf(...)` or `load_epjson(...)` given `as_type=`, `since=` or `before=`, on a name bound once to such a call, and a lookup inside `if doc.version >= (9, 4, 0):` (and the `else` of a test it read completely; `and`, `or`, `not` and chained comparisons against tuples are read). It does not follow early returns, `assert`, `isinstance` or annotations. For a guard it cannot see, silence the line with a comment, which it reports as `C005` once it stops being needed:
 
 ```python
 if not list(doc.get_collection("Construction:AirBoundary")):  # idfkit: ignore[C001]
@@ -617,6 +621,23 @@ for obj in doc.all_objects:
     ```
 
     `IDFDocument` is the only document class at run time, so every document passes the test, while a type checker narrows to the latest release on it. Use `as_version`, as above.
+
+!!! failure "annotating or casting a loaded model as `IDFDocument`"
+
+    ```python
+    model: IDFDocument = load_idf("model.idf")  # error: a loaded model may be of any release
+    model = cast(IDFDocument, load_idf("model.idf"))  # silenced: a 26.1 file is now checked as 26.2
+    ```
+
+!!! success "state the release when loading"
+
+    ```python
+    from idfkit import load_idf
+    from idfkit.versioned import IDFDocumentV26_2
+
+    model = load_idf("model.idf", as_type=IDFDocumentV26_2)  # IDFDocument; TypeError unless the file is 26.2
+    recent = load_idf("model.idf", since="26.1")  # 26.1 or any later release
+    ```
 
 !!! failure "mutating a list of extensibles in place"
 

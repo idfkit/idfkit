@@ -171,13 +171,33 @@ def release_for_new_document(document_type: object, strict: bool) -> tuple[tuple
     if "_energyplus_version" not in vars(origin):
         msg = f"{origin.__name__} is a subclass of a release type; pass a release's type from idfkit.versioned"
         raise TypeError(msg)
-    stated = _stated_strictness(document_type)
-    if stated is None:
-        return release, strict
-    if stated and not strict:
+    return release, target_strictness(document_type, strict)
+
+
+def target_strictness(document_type: object, strict: bool) -> bool:
+    """The strictness of a document typed as *document_type*: the one its type argument states, else *strict*.
+
+    ``IDFDocumentV9_4[Literal[False]]`` states ``False``. For a tuple or union, its members' stated
+    strictness, which must agree. What :func:`idfkit.new_document` and the loaders' ``as_type=`` create
+    the document with, so that the type and the document's ``strict`` cannot disagree.
+
+    Raises:
+        TypeError: If the stated strictness is ``True`` and *strict* is ``False``, or the members of a
+            tuple or union state different strictness.
+    """
+    if document_type is None:
+        return strict
+    stated = {value for candidate in _candidates(document_type) if (value := _stated_strictness(candidate)) is not None}
+    if not stated:
+        return strict
+    if len(stated) > 1:
+        msg = f"{document_type!r} states both strict and non-strict documents; state one strictness"
+        raise TypeError(msg)
+    value = stated.pop()
+    if value and not strict:
         msg = f"strict=False contradicts the document type {document_type!r}; pass the type alone"
         raise TypeError(msg)
-    return release, stated
+    return value
 
 
 def _stated_strictness(document_type: object) -> bool | None:
@@ -362,6 +382,37 @@ def as_version(
         typed_as = " | ".join(origin.__name__ for origin, _ in resolved)
     msg = f"The document is EnergyPlus {version_string(doc.version)}, {expected}, so it cannot be typed as {typed_as}"
     raise TypeError(msg)
+
+
+def check_target(document_type: object, since: object, before: object) -> None:
+    """Refuse, before a file is read, a release target no document could meet.
+
+    What the loaders (``load_idf(path, as_type=...)``, ``since=``, ``before=``) check up front, so a
+    misspelt bound fails at once rather than after a parse. Whether the document meets the target
+    is :func:`as_version`'s check, made once it is read.
+
+    Raises:
+        TypeError: If both a document type and a range are given, or the document type is not one.
+        ValueError: If a bound names no supported release, or the range holds none.
+    """
+    if document_type is not None and (since is not None or before is not None):
+        msg = "pass as_type= or since=/before=, not both"
+        raise TypeError(msg)
+    if document_type is not None:
+        candidates = _candidates(document_type)
+        if not candidates:
+            msg = "as_type= needs at least one document type"
+            raise TypeError(msg)
+        for candidate in candidates:
+            _resolve(candidate)
+        return
+    if since is None and before is None:
+        return
+    low = None if since is None else _release(since, "since")
+    high = None if before is None else _release(before, "before")
+    if not releases_between(low, high):
+        msg = f"No supported EnergyPlus release is {_describe_range(low, high)}"
+        raise ValueError(msg)
 
 
 def release_union(*members: type) -> Any:

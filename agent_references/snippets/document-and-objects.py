@@ -159,6 +159,15 @@ for obj in doc.all_objects:
 # --8<-- [end:iterate]
 
 
+# --8<-- [start:mistake-loaded-release-good]
+from idfkit import load_idf
+from idfkit.versioned import IDFDocumentV26_2
+
+model = load_idf("model.idf", as_type=IDFDocumentV26_2)  # IDFDocument; TypeError unless the file is 26.2
+recent = load_idf("model.idf", since="26.1")  # 26.1 or any later release
+# --8<-- [end:mistake-loaded-release-good]
+
+
 # --8<-- [start:mistake-extensible-good]
 surface.vertices.append(vertex_x_coordinate=1.0, vertex_y_coordinate=0.0, vertex_z_coordinate=3.0)
 # --8<-- [end:mistake-extensible-good]
@@ -174,7 +183,9 @@ from idfkit import load_idf
 from idfkit.document import AnyIDFDocument
 from idfkit.versioned import IDFDocumentV9_4, as_version
 
-legacy = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)  # TypeError unless the file is 9.4
+model = load_idf("model.idf")  # AnyIDFDocument: what every supported release has
+legacy = load_idf("legacy.idf", as_type=IDFDocumentV9_4)  # TypeError unless the file is 9.4
+same = as_version(model, IDFDocumentV9_4)  # the same check, for a document already loaded
 people = legacy["People"]["Office"]
 people.update(zone_or_zonelist_name="Office")  # the 9.4 name; 9.6 renamed it, and the new name is an error here
 
@@ -204,11 +215,11 @@ def use_natural_gas(doc: AnyIDFDocument) -> None:
 # --8<-- [start:versioned-range]
 from typing import TypeVar
 
-from idfkit.versioned import IDFDocumentSince26_1, IDFDocumentV26_1
+from idfkit.versioned import IDFDocumentSince26_1, IDFDocumentV26_1, IDFDocumentV26_2
 
 # A function for 26.1 and later. IDFDocumentSince26_1 is IDFDocumentV26_1 | IDFDocumentV26_2, and
-# grows when idfkit adds a release. The TypeVar hands the caller's own type back: a plain
-# load_idf() result (IDFDocument, which is IDFDocumentV26_2) comes back as IDFDocument.
+# grows when idfkit adds a release. The TypeVar hands the caller's own type back: a model loaded
+# as_type=IDFDocumentV26_2 (which is IDFDocument) comes back as IDFDocument.
 Since26_1 = TypeVar("Since26_1", bound=IDFDocumentSince26_1)
 
 
@@ -218,9 +229,11 @@ def use_district_steam(doc: Since26_1) -> Since26_1:
     return doc
 
 
-latest = use_district_steam(load_idf("model.idf"))  # IDFDocument
-older = use_district_steam(as_version(load_idf("older.idf"), IDFDocumentV26_1))  # IDFDocumentV26_1
+latest = use_district_steam(load_idf("model.idf", as_type=IDFDocumentV26_2))  # IDFDocument
+older = use_district_steam(load_idf("older.idf", as_type=IDFDocumentV26_1))  # IDFDocumentV26_1
+either = use_district_steam(load_idf("recent.idf", since="26.1"))  # IDFDocumentSince26_1
 # use_district_steam(legacy)  # error: a 9.4 document is not in the range
+# use_district_steam(load_idf("model.idf"))  # error: a loaded model may be of any release
 # --8<-- [end:versioned-range]
 
 
@@ -339,7 +352,7 @@ def top_height(surface: AnyBuildingSurfaceDetailed) -> float:
 
 
 any_ceiling(doc["Zone"]["Office"])
-any_ceiling(as_version(load_idf("legacy.idf"), IDFDocumentV9_4)["Zone"]["Office"])
+any_ceiling(load_idf("legacy.idf", as_type=IDFDocumentV9_4)["Zone"]["Office"])
 # --8<-- [end:typed-object-parameter]
 
 

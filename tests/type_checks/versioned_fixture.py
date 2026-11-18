@@ -174,9 +174,9 @@ def correct_calls() -> None:
     # Through AnyIDFDocument a field whose choices changed reads as any version's value and accepts
     # a value every version accepts.
     write_safe_fuel(legacy)
-    # ... and a latest-release document, typed as before.
-    model = load_idf("model.idf")
-    assert_type(model, IDFDocument[Literal[True]])
+    # ... and a latest-release document, typed once its release is stated.
+    model = load_idf("model.idf", as_type=IDFDocumentV26_2)
+    assert_type(model, IDFDocument)
     model["People"]["Office"].zone_or_zonelist_or_space_or_spacelist_name = "Office"
     people_count(model)
     assert_type(as_version(model, IDFDocumentV26_2), IDFDocument[bool])

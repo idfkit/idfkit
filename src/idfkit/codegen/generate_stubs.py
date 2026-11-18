@@ -2375,6 +2375,16 @@ def _range_alias(kind: str, ver: Version) -> str:
     return f"IDFDocument{kind}{_version_tag(ver)}"
 
 
+def _release_class(ver: Version, latest: Version) -> str:
+    """The stub's name for *ver*'s document type: ``IDFDocument`` for the latest release."""
+    return "IDFDocument" if ver == latest else _document_class_name(ver)
+
+
+def _release_union(members: list[Version], latest: Version) -> str:
+    """The union of *members*' document types, as the stub writes it."""
+    return " | ".join(_release_class(ver, latest) for ver in members)
+
+
 def _range_typing(versions: list[Version]) -> tuple[list[str], list[str]]:
     """The stub's range aliases, and the ``as_version`` overloads for ``since=`` and ``before=``.
 
@@ -2387,14 +2397,8 @@ def _range_typing(versions: list[Version]) -> tuple[list[str], list[str]]:
     """
     latest = versions[-1]
 
-    def cls(ver: Version) -> str:
-        return "IDFDocument" if ver == latest else _document_class_name(ver)
-
     def union(members: list[Version]) -> str:
-        return " | ".join(cls(ver) for ver in members)
-
-    def bound(ver: Version) -> str:
-        return f'type[{cls(ver)}] | Literal["{ver[0]}.{ver[1]}", "{version_string(ver)}"]'
+        return _release_union(members, latest)
 
     aliases: list[str] = [
         "# Ranges of releases: a type to annotate with, and the as_version overloads that narrow to one.",
@@ -2408,36 +2412,177 @@ def _range_typing(versions: list[Version]) -> tuple[list[str], list[str]]:
         "",
     ]
     overloads: list[str] = []
-    for ver in versions:
+    for keywords, returns in _range_targets(versions):
         overloads.append("@overload")
-        overloads.append(
-            f"def as_version(doc: AnyIDFDocument, *, since: {bound(ver)}) -> {_range_alias('Since', ver)}: ..."
-        )
-    for ver in versions[1:]:
-        overloads.append("@overload")
-        overloads.append(
-            f"def as_version(doc: AnyIDFDocument, *, before: {bound(ver)}) -> {_range_alias('Before', ver)}: ..."
-        )
-    for i, low in enumerate(versions):
-        for j in range(i + 1, len(versions)):
-            overloads.append("@overload")
-            overloads.append(
-                f"def as_version(doc: AnyIDFDocument, *, since: {bound(low)}, before: {bound(versions[j])})"
-                f" -> {union(versions[i:j])}: ..."
-            )
-    # The fallbacks: since= required in one and before= in the other, so a call with neither stays an error.
-    overloads.extend([
-        "@overload",
-        f"def as_version(doc: AnyIDFDocument, *, since: {_ANY_BOUND} | None, before: {_ANY_BOUND} | None = None)"
-        " -> AnyIDFDocument: ...",
-        "@overload",
-        f"def as_version(doc: AnyIDFDocument, *, before: {_ANY_BOUND} | None) -> AnyIDFDocument: ...",
-        "",
-    ])
+        overloads.append(f"def as_version(doc: AnyIDFDocument, *, {keywords}) -> {returns}: ...")
+    overloads.append("")
     return aliases, overloads
 
 
 _ANY_BOUND = "type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int]"
+
+
+def _range_targets(versions: list[Version]) -> list[tuple[str, str]]:
+    """The ``since=``/``before=`` keywords of each range overload, and the type it returns.
+
+    Shared by ``as_version`` and the loaders, which take the same ranges: one entry for each
+    release a range can start from, one for each it can stop before, one for each pair, then the
+    two fallbacks, typed ``AnyIDFDocument``. A fallback requires ``since=`` in one and ``before=``
+    in the other, so a call with neither matches no range overload.
+    """
+    latest = versions[-1]
+
+    def union(members: list[Version]) -> str:
+        return _release_union(members, latest)
+
+    def bound(ver: Version) -> str:
+        return f'type[{_release_class(ver, latest)}] | Literal["{ver[0]}.{ver[1]}", "{version_string(ver)}"]'
+
+    targets = [(f"since: {bound(ver)}", _range_alias("Since", ver)) for ver in versions]
+    targets += [(f"before: {bound(ver)}", _range_alias("Before", ver)) for ver in versions[1:]]
+    targets += [
+        (f"since: {bound(low)}, before: {bound(versions[j])}", union(versions[i:j]))
+        for i, low in enumerate(versions)
+        for j in range(i + 1, len(versions))
+    ]
+    targets += [
+        (f"since: {_ANY_BOUND} | None, before: {_ANY_BOUND} | None = None", "AnyIDFDocument"),
+        (f"before: {_ANY_BOUND} | None", "AnyIDFDocument"),
+    ]
+    return targets
+
+
+@dataclasses.dataclass(frozen=True)
+class _Loader:
+    """One public loader, as ``_loaders.pyi`` declares it."""
+
+    name: str
+    # The keywords after the release target, each with its type and a default.
+    keywords: tuple[str, ...]
+    # Wraps the document type in what the loader returns: "{}" for the document itself.
+    returns: str = "{}"
+
+
+_LOADERS = (
+    _Loader(
+        "load_idf",
+        (
+            "strict_parsing: bool = ...",
+            "strict: {strict}",
+            "preserve_formatting: bool = ...",
+            "normalize_choices: bool = ...",
+        ),
+    ),
+    _Loader(
+        "load_idf_with_diagnostics",
+        ("strict: {strict}", "preserve_formatting: bool = ...", "normalize_choices: bool = ..."),
+        "ParseResult[{}]",
+    ),
+    _Loader("load_epjson", ("strict: {strict}", "preserve_formatting: bool = ...", "normalize_choices: bool = ...")),
+)
+
+_LOADERS_DOC = '''"""Types of the public loaders, whose run-time half is ``_loaders.py``.
+
+A model's EnergyPlus release is read from its file, so a loaded document is typed as
+``AnyIDFDocument``: through it, only what every supported release accepts type-checks. Naming
+the release with ``as_type=``, or a range of releases with ``since=``/``before=``, types it for
+that release, as ``idfkit.versioned.as_version`` does, and is checked when the file is read.
+
+DO NOT EDIT — regenerate with:
+    python -m idfkit.codegen.generate_stubs
+"""'''
+
+
+def _loader_docstrings(source: Path) -> dict[str, str]:
+    """The docstring of each loader in *source* (``_loaders.py``), for the stub's first overload."""
+    tree = ast.parse(source.read_text(encoding="utf-8"))
+    docs: dict[str, str] = {}
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef):
+            doc = ast.get_docstring(node)
+            if doc is not None:
+                docs[node.name] = doc
+    return docs
+
+
+def generate_loaders_pyi(docstrings: Mapping[str, str] | None = None) -> str:
+    """Generate ``_loaders.pyi``: the overloads of ``load_idf``, ``load_idf_with_diagnostics`` and ``load_epjson``.
+
+    Each loader takes the targets ``as_version`` takes, so it carries the same range overloads,
+    written out for the releases this idfkit supports. In order: no target (two overloads, for
+    ``strict=True`` and ``strict=False``) returns ``AnyIDFDocument``; ``as_type=`` a document type
+    or a tuple of them returns that type; then every range, from :func:`_range_targets`. The
+    no-target overloads take ``None`` for each target, as the run time does. A loader
+    called with no target matches the first overloads, so a plain ``load_idf(path)`` costs a type
+    checker no more than before.
+
+    A range overload returns the range's alias, whose strictness is ``bool``, as ``as_version``'s
+    does; only ``doc.strict`` reads it.
+    """
+    if docstrings is None:
+        # The installed module, not one beside __file__: a test points __file__ at a scratch tree.
+        import importlib.util
+
+        spec = importlib.util.find_spec("idfkit._loaders")
+        if spec is None or spec.origin is None:
+            msg = "idfkit._loaders is not importable"
+            raise ValueError(msg)
+        docstrings = _loader_docstrings(Path(spec.origin))
+    versions = list(SUPPORTED.versions)
+    lead = "path: Path | str, version: tuple[int, int, int] | None = ..., *"
+    lines = [
+        _LOADERS_DOC,
+        "",
+        "from __future__ import annotations",
+        "",
+        "from pathlib import Path",
+        "from typing import Literal, TypeVar, overload",
+        "",
+        "from typing_extensions import Unpack",
+        "",
+        "from .document import AnyIDFDocument, IDFDocument",
+        "from .idf_parser import ParseResult",
+        "from .versioned import (",
+        *(f"    {_range_alias('Before', ver)}," for ver in versions[1:]),
+        *(f"    {_range_alias('Since', ver)}," for ver in versions),
+        *(f"    {_document_class_name(ver)}," for ver in versions[:-1]),
+        ")",
+        "",
+        '_D = TypeVar("_D", bound=AnyIDFDocument)',
+        "",
+        "def check_supported_version(version: tuple[int, int, int]) -> None: ...",
+        "",
+    ]
+    for loader in _LOADERS:
+
+        def keywords(strict: str, loader: _Loader = loader) -> str:
+            return ", ".join(keyword.format(strict=strict) for keyword in loader.keywords)
+
+        def define(params: str, returns: str, loader: _Loader = loader) -> str:
+            return f"def {loader.name}({lead}, {params}) -> {loader.returns.format(returns)}"
+
+        doc = docstrings.get(loader.name)
+        if doc is None:
+            msg = f"_loaders.py has no docstring for {loader.name}"
+            raise ValueError(msg)
+        # The targets default to None, and a caller may pass None (a wrapper forwarding an optional one).
+        untargeted = "as_type: None = ..., since: None = ..., before: None = ..., "
+        lines += [
+            "@overload",
+            *_format_def_with_doc(
+                define(untargeted + keywords("Literal[True] = ..."), "AnyIDFDocument[Literal[True]]"), doc
+            ),
+            "@overload",
+            f"{define(untargeted + keywords('Literal[False]'), 'AnyIDFDocument[Literal[False]]')}: ...",
+            "@overload",
+            f"{define('as_type: type[_D], ' + keywords('bool = ...'), '_D')}: ...",
+            "@overload",
+            f"{define('as_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]], ' + keywords('bool = ...'), '_D')}: ...",
+        ]
+        for target, returns in _range_targets(versions):
+            lines += ["@overload", f"{define(f'{target}, ' + keywords('bool = ...'), returns)}: ..."]
+        lines.append("")
+    return "\n".join(lines)
 
 
 def generate_versioned_py() -> str:
@@ -3097,6 +3242,8 @@ def _write_stubs(base_path: Path) -> None:
     required_path = base_path / "_read_required.py"
     required_path.write_text(generate_read_required_py(), encoding="utf-8")
 
+    loaders_path = base_path / "_loaders.pyi"
+    loaders_path.write_text(generate_loaders_pyi(), encoding="utf-8")
     object_types_path = base_path / "_object_types.py"
     object_types_path.write_text(generate_object_types_py(), encoding="utf-8")
 
@@ -3136,6 +3283,7 @@ def _write_stubs(base_path: Path) -> None:
             str(versioned_path),
             str(versioned_runtime_path),
             str(required_path),
+            str(loaders_path),
             str(object_types_path),
             *(str(path) for path in document_paths),
             *(str(path) for path in creation_paths),

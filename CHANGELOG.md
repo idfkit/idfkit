@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `load_idf()`, `load_epjson()` and `load_idf_with_diagnostics()` took `as_type=`, `since=` and
+  `before=`, as `as_version()` does, and returned the document typed for that release or range,
+  raising `TypeError` if the file was of another ([#309](https://github.com/idfkit/idfkit/pull/309)).
 - `IDFCollection.add(name, **fields)` became the typed way to create an object:
   `doc.zones.add("Office", ceiling_height=3.0)` returned a `Zone`, its fields type-checked for the
   document's release and the schema's defaults and docs shown in signature help and hover
@@ -46,6 +49,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** for type checking, the loaders returned `AnyIDFDocument` instead of `IDFDocument`,
+  so a model of unstated release was no longer checked as the latest one; state its release with
+  `as_type=` or `since=` when loading, or with `as_version()` ([#309](https://github.com/idfkit/idfkit/pull/309)).
 - `doc["Zoen"]`, `get_collection(...)` and the eppy lookups warned `idfkit.exceptions.UnknownObjectTypeWarning`,
   naming the closest type, for a type name in no bundled release, instead of silently returning an empty
   collection; suites run with `filterwarnings = error` failed on such reads. ([#310](https://github.com/idfkit/idfkit/pull/310))

@@ -6,12 +6,14 @@ import copy
 import pickle
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 
 from idfkit import IDFDocument, load_idf, new_document, write_idf
 from idfkit.cst import DocumentCST
+from idfkit.document import AnyIDFDocument
 from idfkit.exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeWarning, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.validation import ValidationError
@@ -1240,7 +1242,7 @@ class TestIDFDocumentPickleAndDeepcopy:
     """Regression tests for #217: documents and objects must survive pickle and deepcopy."""
 
     @staticmethod
-    def _roundtrip(doc: IDFDocument) -> IDFDocument:
+    def _roundtrip(doc: AnyIDFDocument) -> AnyIDFDocument:
         return pickle.loads(pickle.dumps(doc))  # noqa: S301
 
     def test_pickle_roundtrip(self, simple_doc: IDFDocument) -> None:
@@ -1304,7 +1306,11 @@ class TestIDFDocumentPickleAndDeepcopy:
         assert original_span is not None
         assert doc.cst is not None
 
-        copiers = {"pickle": self._roundtrip, "deepcopy": copy.deepcopy, "copy": IDFDocument.copy}
+        copiers: dict[str, Callable[[AnyIDFDocument], AnyIDFDocument]] = {
+            "pickle": self._roundtrip,
+            "deepcopy": copy.deepcopy,
+            "copy": lambda d: d.copy(),
+        }
         copied = copiers[copier](doc)
         assert copied.cst is not None
         assert copied.cst is not doc.cst

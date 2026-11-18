@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from idfkit import IDFDocument, IDFObject
+from idfkit import IDFObject
+from idfkit.document import AnyIDFDocument
 
-doc: IDFDocument = ...  # type: ignore[assignment]
+doc: AnyIDFDocument = ...  # type: ignore[assignment]
 zone: IDFObject = ...  # type: ignore[assignment]
 input_paths: list[str] = ...  # type: ignore[assignment]
 
@@ -62,6 +63,21 @@ version = get_idf_version("building.idf")  # (25, 2, 0)
 # --8<-- [start:version-override]
 doc = load_idf("legacy.idf", version=(9, 6, 0))
 # --8<-- [end:version-override]
+
+
+# --8<-- [start:stated-release]
+from idfkit import load_epjson, load_idf, load_idf_with_diagnostics
+from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV26_1
+
+model = load_idf("model.idf")  # AnyIDFDocument: what every supported release has
+legacy = load_idf("legacy.idf", as_type=IDFDocumentV9_4)  # IDFDocumentV9_4; TypeError unless 9.4
+legacy["People"]["Office"].zone_or_zonelist_name = "Office"  # the 9.4 field name
+recent = load_epjson("recent.epJSON", since="9.6")  # 9.6 or later: IDFDocumentSince9_6
+recent["Space"].first()  # every release from 9.6 on has Space
+older = load_idf("older.idf", since="25.2", before="26.2")  # 25.2 or 26.1
+result = load_idf_with_diagnostics("hand_edited.idf", as_type=IDFDocumentV26_1)
+print(result.document["Zone"].first(), result.diagnostics)  # result.document is IDFDocumentV26_1
+# --8<-- [end:stated-release]
 
 
 # --8<-- [start:preserve]

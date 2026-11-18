@@ -14,6 +14,7 @@ from idfkit.migration.report import MigrationReport
 from idfkit.simulation._common import async_resolve_version_mismatch, resolve_version_mismatch
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.runner import simulate
+from idfkit.versioned import IDFDocumentV9_0
 
 
 @pytest.fixture
@@ -74,11 +75,11 @@ def _config_at(tmp_path: Path, version: tuple[int, int, int]) -> EnergyPlusConfi
     return EnergyPlusConfig(executable=exe, version=version, install_dir=tmp_path, idd_path=idd)
 
 
-def _load_two_component_9_0(tmp_path: Path) -> IDFDocument:
+def _load_two_component_9_0(tmp_path: Path) -> IDFDocumentV9_0:
     """A document loaded from a file headed ``Version, 9.0;``: it reads as 9.0.0, the release is 9.0.1."""
     path = tmp_path / "v9_0.idf"
     path.write_text("Version,\n  9.0;\n", encoding="latin-1")
-    doc = load_idf(path)
+    doc = load_idf(path, as_type=IDFDocumentV9_0)
     assert doc.version == (9, 0, 0)
     return doc
 
