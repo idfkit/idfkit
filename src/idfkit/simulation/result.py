@@ -15,6 +15,8 @@ from typing import TYPE_CHECKING, Any
 from .parsers.err import ErrorReport
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from ..migration.report import MigrationReport
     from .fs import AsyncFileSystem, FileSystem
     from .outputs import OutputVariableIndex
@@ -31,6 +33,91 @@ _UNSET: Any = object()
 #: never be created, and the output accessors never look inside it: a batch of
 #: refused jobs leaves nothing behind.
 REFUSED_RUN_DIR = Path(os.devnull) / "idfkit-refused-job"
+
+#: Name stems EnergyPlus gives its auxiliary outputs, lower-cased, in every
+#: ``--output-suffix`` style: legacy (``eplustbl.csv``, ``sqlite.err``),
+#: capital (``eplusTable.csv``, ``eplusSqlite.err``) and dash
+#: (``eplus-table.csv``, ``eplus-sqlite.err``). Each shares an extension with a
+#: main output (``.err``, ``.csv``), so the directory-scan fallback skips them:
+#: ``eplusSqlite.err`` holds the SQLite log, not the simulation's errors.
+_AUXILIARY_STEMS: tuple[str, ...] = (
+    "map",
+    "meter",
+    "mtr",
+    "psz",
+    "screen",
+    "shading",
+    "spsz",
+    "sqlite",
+    "ssz",
+    "table",
+    "tbl",
+    "zsz",
+)
+
+#: Infixes EnergyPlus puts before the extension of the tabular report, in the
+#: legacy, capital and dash ``--output-suffix`` styles.
+_TABLE_INFIXES: tuple[str, ...] = ("tbl", "Table", "-table")
+
+
+def _output_names(prefix: str, suffix: str, *, table: bool) -> tuple[str, ...]:
+    """Return the file names EnergyPlus may give an output, most likely first.
+
+    The runner passes ``-s C`` by default, which names the main outputs
+    ``{prefix}{suffix}`` (``eplus.err``). The legacy style ``-s L`` names them
+    ``{prefix}out{suffix}`` (``eplusout.err``) and is what EnergyPlus uses
+    when run by hand without ``-s``. The tabular report is
+    ``{prefix}tbl``, ``{prefix}Table`` or ``{prefix}-table`` instead.
+
+    Args:
+        prefix: The run's output prefix (``-p``).
+        suffix: File suffix including the dot (e.g. ``".err"``).
+        table: Whether the wanted file is the tabular report.
+
+    Returns:
+        Candidate file names, in lookup order.
+    """
+    if table:
+        return tuple(f"{prefix}{infix}{suffix}" for infix in _TABLE_INFIXES)
+    return (f"{prefix}{suffix}", f"{prefix}out{suffix}")
+
+
+def _is_auxiliary(name: str, suffix: str) -> bool:
+    """Whether *name* is one of EnergyPlus' auxiliary outputs for *suffix*."""
+    stem = name[: -len(suffix)].lower()
+    return stem.endswith(_AUXILIARY_STEMS)
+
+
+def _pick_fallback(paths: Iterable[str | Path], suffix: str, *, table: bool) -> str | Path | None:
+    """Choose the output file among *paths* when no expected name exists.
+
+    Only names ending with *suffix* qualify. For a main output, auxiliary
+    files (``eplusSqlite.err``, ``eplusTable.csv``) never qualify; for the
+    tabular report, files named like one are preferred. Ties break on the
+    name, so the choice does not depend on the order the file system lists
+    the directory in.
+
+    Args:
+        paths: Files in the run directory.
+        suffix: File suffix including the dot (e.g. ``".err"``).
+        table: Whether the wanted file is the tabular report.
+
+    Returns:
+        The chosen path, or ``None`` if none qualifies.
+    """
+    best: tuple[bool, str] | None = None
+    chosen: str | Path | None = None
+    for path in paths:
+        name = Path(path).name
+        if not name.endswith(suffix):
+            continue
+        auxiliary = _is_auxiliary(name, suffix)
+        if auxiliary and not table:
+            continue
+        key = (not auxiliary, name)
+        if best is None or key < best:
+            best, chosen = key, path
+    return chosen
 
 
 @dataclass(slots=True)
@@ -311,12 +398,7 @@ class SimulationResult:
     @property
     def html_path(self) -> Path | None:
         """Path to the HTML tabular output file, if present."""
-        return (
-            self._find_output_file("Table.htm")
-            or self._find_output_file("Table.html")
-            or self._find_output_file(".htm")
-            or self._find_output_file(".html")
-        )
+        return self._find_output_file(".htm", table=True) or self._find_output_file(".html", table=True)
 
     @property
     def rdd_path(self) -> Path | None:
@@ -328,14 +410,19 @@ class SimulationResult:
         """Path to the .mdd output file, if present."""
         return self._find_output_file(".mdd")
 
-    def _find_output_file(self, suffix: str) -> Path | None:
+    def _find_output_file(self, suffix: str, *, table: bool = False) -> Path | None:
         """Find an output file by suffix.
 
-        Looks for ``{prefix}out{suffix}`` first, then falls back to
-        scanning the run directory for any file with the given suffix.
+        Tries each name EnergyPlus gives the output for
+        [output_prefix][idfkit.simulation.result.SimulationResult.output_prefix]
+        (``{prefix}{suffix}``, then ``{prefix}out{suffix}``), then falls back to
+        the first matching file of the run directory in name order, never an
+        auxiliary output such as ``eplusSqlite.err``.
 
         Args:
             suffix: File suffix to look for (e.g. ".sql", ".err").
+            table: Look for the tabular report (``{prefix}Table.htm`` and its
+                other spellings) rather than a main output.
 
         Returns:
             Path to the file, or None if not found.
@@ -355,29 +442,30 @@ class SimulationResult:
         if self.run_dir == REFUSED_RUN_DIR:
             return None
 
-        primary = self.run_dir / f"{self.output_prefix}out{suffix}"
+        candidates = [self.run_dir / name for name in _output_names(self.output_prefix, suffix, table=table)]
 
         if self.fs is not None:
-            if self.fs.exists(str(primary)):
-                return primary
-            # Fallback: glob for matching files
-            matches = self.fs.glob(str(self.run_dir), f"*{suffix}")
-            if matches:
-                return Path(matches[0])
-            return None
+            fs = self.fs
+            for candidate in candidates:
+                if fs.exists(str(candidate)):
+                    return candidate
+            match = _pick_fallback(fs.glob(str(self.run_dir), f"*{suffix}"), suffix, table=table)
+            return None if match is None else Path(match)
 
         # Local path-based lookup
-        if primary.is_file():
-            return primary
+        for candidate in candidates:
+            if candidate.is_file():
+                return candidate
 
-        return self._scan_run_dir(suffix)
+        return self._scan_run_dir(suffix, table=table)
 
-    def _scan_run_dir(self, suffix: str) -> Path | None:
-        """Return the first file in the local run directory ending with *suffix*."""
-        for p in self.run_dir.iterdir():
-            if p.is_file() and p.name.endswith(suffix):
-                return p
-        return None
+    def _scan_run_dir(self, suffix: str, *, table: bool = False) -> Path | None:
+        """Return the local run directory's fallback file for *suffix*, if any."""
+        if not self.run_dir.is_dir():
+            return None
+        files = (p for p in self.run_dir.iterdir() if p.is_file())
+        match = _pick_fallback(files, suffix, table=table)
+        return None if match is None else Path(match)
 
     # ------------------------------------------------------------------
     # Async accessors — non-blocking counterparts to the sync properties
@@ -531,11 +619,8 @@ class SimulationResult:
         cached = object.__getattribute__(self, "_cached_html")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
-        path = (
-            await self._async_find_output_file("Table.htm")
-            or await self._async_find_output_file("Table.html")
-            or await self._async_find_output_file(".htm")
-            or await self._async_find_output_file(".html")
+        path = await self._async_find_output_file(".htm", table=True) or await self._async_find_output_file(
+            ".html", table=True
         )
         if path is None:
             object.__setattr__(self, "_cached_html", None)
@@ -603,14 +688,16 @@ class SimulationResult:
         object.__setattr__(self, "_cached_mtr", result)
         return result
 
-    async def _async_find_output_file(self, suffix: str) -> Path | None:
+    async def _async_find_output_file(self, suffix: str, *, table: bool = False) -> Path | None:
         """Async counterpart to [_find_output_file][].
 
         Uses [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for non-blocking file lookups, falling back
-        to [fs][] or local path checks.
+        to [fs][] or local path checks. The names tried, and the fallback, are
+        those of the sync lookup.
 
         Args:
             suffix: File suffix to look for (e.g. ".sql", ".err").
+            table: Look for the tabular report rather than a main output.
 
         Returns:
             Path to the file, or None if not found.
@@ -618,29 +705,17 @@ class SimulationResult:
         if self.run_dir == REFUSED_RUN_DIR:
             return None
 
-        primary = self.run_dir / f"{self.output_prefix}out{suffix}"
-
         if self.async_fs is not None:
-            if await self.async_fs.exists(str(primary)):
-                return primary
-            matches = await self.async_fs.glob(str(self.run_dir), f"*{suffix}")
-            if matches:
-                return Path(matches[0])
-            return None
+            async_fs = self.async_fs
+            for name in _output_names(self.output_prefix, suffix, table=table):
+                candidate = self.run_dir / name
+                if await async_fs.exists(str(candidate)):
+                    return candidate
+            matches = await async_fs.glob(str(self.run_dir), f"*{suffix}")
+            match = _pick_fallback(matches, suffix, table=table)
+            return None if match is None else Path(match)
 
-        if self.fs is not None:
-            if self.fs.exists(str(primary)):
-                return primary
-            matches = self.fs.glob(str(self.run_dir), f"*{suffix}")
-            if matches:
-                return Path(matches[0])
-            return None
-
-        # Local path-based lookup
-        if primary.is_file():
-            return primary
-
-        return self._scan_run_dir(suffix)
+        return self._find_output_file(suffix, table=table)
 
     @classmethod
     def from_directory(

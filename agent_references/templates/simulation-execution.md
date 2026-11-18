@@ -32,8 +32,8 @@
 | `expand_objects` | `True` | Run `ExpandObjects` + ground-heat preprocessors as needed. |
 | `annual` | `False` | `-a` flag (annual sim, skip design days). |
 | `design_day` | `False` | `-D` flag (design-day only, skip annual). |
-| `output_suffix` | `"C"` | Combined-table output. `"L"` for legacy, `"D"` for timestamped. |
-| `readvars` | `False` | Run `ReadVarsESO` to produce `eplusout.csv`. |
+| `output_suffix` | `"C"` | File-naming style: `"C"` gives `eplus.err`, `eplusTable.htm`; `"L"` (legacy) gives `eplusout.err`, `eplustbl.htm`; `"D"` gives `eplus.err`, `eplus-table.htm`. `result.*_path` finds either. |
+| `readvars` | `False` | Run `ReadVarsESO` to produce `eplus.csv` (`eplusout.csv` with `"L"`). |
 | `timeout` | `3600` | Wall-clock seconds for the main EnergyPlus process. |
 | `cache` | `None` | `SimulationCache` for content-hash skip. |
 | `auto_migrate` | `False` | Forward-migrate the model to match the installed EP version. |
