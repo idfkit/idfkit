@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stored that collection, so it held the new object. A document pickled by an earlier release
   still added through its collections, except one emptied before it was pickled, which raised
   `TypeError` naming `IDFDocument.add()`. See Deprecated for the object form `add(obj)` this
-  replaces ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b), [a2154ae](https://github.com/idfkit/idfkit/commit/a2154ae)).
+  replaces ([#296](https://github.com/idfkit/idfkit/pull/296)).
 - `idfkit check` gained `C006`, an error checked by default: an object type passed to `add()` that
   no target release has (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a
   choice value no target release lists for the field
@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   annotated `IDFDocument`, `AnyIDFDocument`, ...), since a collection's `add()` takes a name
   first; on a collection (`doc["Zone"]`, `doc.zones`, `doc.get_collection("Zone")`, or a name bound
   to one) the keyword choice values were checked against the collection's type, which `C002` did
-  not do before. A run that passed before could fail on it ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b), [a2154ae](https://github.com/idfkit/idfkit/commit/a2154ae)).
+  not do before. A run that passed before could fail on it ([#296](https://github.com/idfkit/idfkit/pull/296)).
 
 - `idfkit.versions.releases_between(since, before)` was added: every supported release from
   `since` (inclusive) to `before` (exclusive), the range `as_version(doc, since=..., before=...)`
@@ -139,7 +139,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for the mistake: pyright's message for `zone.ceiling_hieght = 3.0` read `parameter "key" of type
   "_NotAFieldOfThisObjectType"` rather than `of type "Never"` (`_NotAFieldOfThisExtensibleGroup`
   on an extensible group). The type is an alias of `Never`, so what is reported, and mypy's
-  messages, were unchanged ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b)).
+  messages, were unchanged ([#296](https://github.com/idfkit/idfkit/pull/296)).
 - **Breaking:** `idfkit migrate --to` refused a release line idfkit does not support, such as
   `27.1`, as `idfkit check` and `migrate()` do. It used to migrate to the latest release without
   saying so ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
@@ -209,14 +209,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `DeprecationWarning`; it will be removed. Use `doc.addidfobject(obj)`, which adds the object to
   the document. **Breaking**, for type checking only: the object form is a type error. Through
   `IDFCollection[IDFObject]` it used to accept an object of any type, so a `Material` could be
-  filed in `doc["Zone"]` without an error, as noted under 1.3.0-rc.1 ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b), [a2154ae](https://github.com/idfkit/idfkit/commit/a2154ae)).
+  filed in `doc["Zone"]` without an error, as noted under 1.3.0-rc.1 ([#296](https://github.com/idfkit/idfkit/pull/296)).
 
 ### Fixed
 
 - The bundled agent reference (`document-and-objects.md`) narrowed a document to 22.2 and later
   with a hand-written tuple of release types ending in `IDFDocument`, the pattern it warns against
   a few paragraphs earlier: once idfkit adopts a newer release, that tuple stops covering 26.2. It
-  uses `as_version(doc, since="22.2")` instead ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b)).
+  uses `as_version(doc, since="22.2")` instead ([#296](https://github.com/idfkit/idfkit/pull/296)).
 - `migrate()`, `async_migrate()`, `plan_migration_chain()` and `simulate(..., auto_migrate=True)` matched a model's version to
   its release the way schema selection and `as_version` do. A model loaded from a file headed
   `Version, 9.0;` reads as 9.0.0 while the release is 9.0.1, so migrating it raised
