@@ -572,7 +572,7 @@ class TestGenerateStubs:
             " -> None: ..." in content
         )
         # ReadOnly typed the entries of the TypedDict maps, which are gone; nothing else uses it.
-        assert "from typing_extensions import Unpack" in content
+        assert "from typing_extensions import Required, Unpack" in content
         # A trailing-underscore field is declared under both spellings the runtime accepts.
         assert "    cond_flag_is_the_basement_conditioned_: " in content
         assert "    cond_flag_is_the_basement_conditioned: " in content
@@ -1039,7 +1039,10 @@ class TestExtensibleGroupItems:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         text = "\n".join(_generate_object_class(get_schema(LATEST_VERSION), "BuildingSurface:Detailed", sink=sink))
         assert "class BuildingSurfaceDetailedVerticesItem(TypedDict, total=False):" in text
-        assert "    vertex_x_coordinate: float | None" in text
+        # Every release requires a vertex's coordinates: the group reads them as float, the item requires them.
+        assert "    vertex_x_coordinate: float\n" in text
+        assert "    vertex_x_coordinate: Required[float]" in text
+        assert "| None" not in text.split("class BuildingSurfaceDetailedVerticesGroup", 1)[1].split("def as_dict", 1)[0]
         assert "    def as_dict(self) -> BuildingSurfaceDetailedVerticesItem: ..." in text
         # The update keyword: dicts or groups, in any sequence.
         assert (

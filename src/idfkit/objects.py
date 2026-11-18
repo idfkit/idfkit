@@ -15,7 +15,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
-from ._read_required import READ_REQUIRED
+from ._read_required import GROUP_READ_REQUIRED, READ_REQUIRED
 from .exceptions import InvalidFieldError, MissingRequiredFieldError, RefusedEntry, format_refused
 from .schema import trailing_underscore_aliases
 
@@ -191,8 +191,21 @@ class ExtensibleGroup:
         return cast("dict[str, Any]", items[self._group_index - 1])
 
     def __getattr__(self, name: str) -> Any:
+        """Read one key of the group; unset, ``None``.
+
+        A key every supported release requires (``vertex_x_coordinate``) is typed as always set, so
+        reading it unset raises :class:`~idfkit.exceptions.MissingRequiredFieldError`, an
+        ``AttributeError``; ``group.get(name)`` gives ``None`` for it instead.
+        """
         if name.startswith("_"):
             raise AttributeError(name)
+        value = self._stored(name)
+        if value is None:
+            self._check_present(name)
+        return value
+
+    def _stored(self, name: str) -> Any:
+        """The value stored under *name*, a known inner field, or ``None``; never raises for a missing one."""
         if name not in self._inner_names:
             raise AttributeError(  # noqa: TRY003
                 f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
@@ -201,6 +214,23 @@ class ExtensibleGroup:
         if not items or self._group_index > len(items):
             return None
         return cast("dict[str, Any]", items[self._group_index - 1]).get(name)
+
+    def _check_present(self, name: str) -> None:
+        """Raise if *name*, which the group does not hold, is a key every release requires."""
+        owner = self._owner
+        obj_type = owner.obj_type
+        if obj_type in GROUP_READ_REQUIRED and name in GROUP_READ_REQUIRED[obj_type]:
+            raise MissingRequiredFieldError(obj_type, owner.name, name, group=(self._wrapper_key, self._group_index))
+
+    def get(self, name: str, default: Any = None) -> Any:
+        """The value of *name*, or *default* when it is unset.
+
+        Unlike attribute access, this never raises for an unset required key, so it is the way to
+        ask whether one is set. A name that is not a key of the group still raises
+        ``AttributeError``.
+        """
+        value = self._stored(name)
+        return default if value is None else value
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name.startswith("_"):
@@ -230,19 +260,35 @@ class ExtensibleGroup:
         return self._inner_names
 
     def values(self) -> list[Any]:
-        """Return the values for each inner field, in schema order."""
-        return [self.__getattr__(n) for n in self._inner_names]
+        """Return the values for each inner field, in schema order (``None`` for an unset one)."""
+        return [self._stored(n) for n in self._inner_names]
 
     def items(self) -> list[tuple[str, Any]]:
-        """Return ``(field_name, value)`` pairs for the inner fields."""
-        return [(n, self.__getattr__(n)) for n in self._inner_names]
+        """Return ``(field_name, value)`` pairs for the inner fields (``None`` for an unset one)."""
+        return [(n, self._stored(n)) for n in self._inner_names]
 
-    def as_dict(self) -> dict[str, Any]:
-        """Snapshot the group as a plain dict (does not track future mutations)."""
+    def _snapshot(self) -> dict[str, Any]:
+        """The keys the group holds, as a new dict, whether or not it lacks a required one."""
         items = self._owner.data.get(self._wrapper_key)
         if not items or self._group_index > len(items):
             return {}
         return dict(cast("dict[str, Any]", items[self._group_index - 1]))
+
+    def as_dict(self) -> dict[str, Any]:
+        """Snapshot the group as a plain dict (does not track future mutations).
+
+        The dict holds the keys that are set. A typed group gives its item ``TypedDict``, whose
+        required keys (those every supported release requires) are always present: a group that
+        lacks one raises :class:`~idfkit.exceptions.MissingRequiredFieldError` rather than give a
+        dict that contradicts its type.
+        """
+        snapshot = self._snapshot()
+        obj_type = self._owner.obj_type
+        if obj_type in GROUP_READ_REQUIRED:
+            for name in GROUP_READ_REQUIRED[obj_type]:
+                if name not in snapshot and name in self._inner_names:
+                    self._check_present(name)
+        return snapshot
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update one or more inner fields atomically (matches dict.update)."""
@@ -269,19 +315,17 @@ class ExtensibleGroup:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, ExtensibleGroup):
-            return self.as_dict() == other.as_dict()
+            return self._snapshot() == other._snapshot()
         if isinstance(other, dict):
             other_dict = cast("dict[str, Any]", other)
-            return self.as_dict() == other_dict
+            return self._snapshot() == other_dict
         return NotImplemented
 
     def __hash__(self) -> int:
         return id(self)
 
     def __repr__(self) -> str:
-        return (
-            f"ExtensibleGroup({self._owner.obj_type}.{self._wrapper_key}[{self._group_index - 1}], {self.as_dict()!r})"
-        )
+        return f"ExtensibleGroup({self._owner.obj_type}.{self._wrapper_key}[{self._group_index - 1}], {self._snapshot()!r})"
 
 
 GroupT_co = TypeVar("GroupT_co", bound=ExtensibleGroup, covariant=True)
@@ -358,7 +402,7 @@ class ExtensibleList(Generic[GroupT_co]):
         if item is not None and kwargs:
             raise TypeError("pass either a dict/group OR keyword arguments, not both")  # noqa: TRY003
         if isinstance(item, ExtensibleGroup):
-            return without_blank_slots(item.as_dict())
+            return without_blank_slots(item._snapshot())  # pyright: ignore[reportPrivateUsage]
         if isinstance(item, dict):
             return without_blank_slots(cast("dict[str, Any]", item))
         if item is None:
@@ -443,15 +487,25 @@ class ExtensibleList(Generic[GroupT_co]):
     # an untyped ExtensibleGroup gives dict[str, Any]. Python has no way to also say the element is
     # an ExtensibleGroup, as every list's element already is.
     def as_list(self: ExtensibleList[_Snapshot[_ItemT]]) -> list[_ItemT]:  # pyright: ignore[reportInvalidTypeArguments]
-        """Snapshot the wrapper as a plain list of plain dicts."""
+        """Snapshot the wrapper as a plain list of plain dicts.
+
+        Each dict is the group's ``as_dict()``, so a group that lacks a key every supported release
+        requires raises :class:`~idfkit.exceptions.MissingRequiredFieldError`. ``obj.data`` holds
+        the stored groups as they are.
+        """
         return [g.as_dict() for g in self]
+
+    def _snapshots(self) -> list[dict[str, Any]]:
+        """Each group as a new dict of the keys it holds, whether or not one lacks a required key."""
+        return [dict(item) for item in self._items_or_empty()]
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, ExtensibleList):
-            return self.as_list() == other.as_list()
+            return self._snapshots() == cast("ExtensibleList[ExtensibleGroup]", other)._snapshots()
         if isinstance(other, list):
-            return self.as_list() == [
-                (g.as_dict() if isinstance(g, ExtensibleGroup) else g) for g in cast("list[Any]", other)
+            return self._snapshots() == [
+                (g._snapshot() if isinstance(g, ExtensibleGroup) else g)  # pyright: ignore[reportPrivateUsage]
+                for g in cast("list[Any]", other)
             ]
         return NotImplemented
 
@@ -459,7 +513,7 @@ class ExtensibleList(Generic[GroupT_co]):
         return id(self)
 
     def __repr__(self) -> str:
-        return f"ExtensibleList({self._owner.obj_type}.{self._wrapper_key}, {self.as_list()!r})"
+        return f"ExtensibleList({self._owner.obj_type}.{self._wrapper_key}, {self._snapshots()!r})"
 
 
 @lru_cache(maxsize=2048)
