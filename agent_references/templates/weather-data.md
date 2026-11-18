@@ -63,7 +63,7 @@
 --8<-- "agent_references/snippets/weather-data.py:inspect"
 ```
 
-Multiple `WeatherStation` entries can share the same `wmo` — each TMYx year-range variant is a separate entry.
+Multiple `WeatherStation` entries can share the same `wmo` — each TMYx year-range variant is a separate entry, told apart by `dataset_variant`, not `source`. `search()` and `nearest()` return one hit per physical station: `hit.station` is its newest dataset and `hit.variants` all of them, newest first, so `results[0].station` downloads the latest TMYx window. An exact EPW filename passed to `search()` returns that dataset alone. `nearest()` measures each dataset at its own coordinates, which sometimes differ between a station's datasets: `hit.distance_km` is `hit.station`'s, `max_distance_km` applies to every dataset, and datasets of one station lying more than 5 km apart come back as separate hits.
 
 ## Downloading EPW + DDY
 
@@ -146,7 +146,7 @@ The bundled index ages well — TMYx datasets don't change often. To refresh fro
     # Collisions when multiple TMYx year-ranges exist for the same WMO ID.
     ```
 
-!!! success "key on `(wmo, source)` if you need uniqueness"
+!!! success "key on `filename_stem` (one per dataset) or `station_key` (one per station)"
 
     ```python
     --8<-- "agent_references/snippets/weather-data.py:mistake-uniqueness-good"

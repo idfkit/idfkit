@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `SearchResult.variants` and `SpatialResult.variants` listed a station's TMYx datasets newest first,
+  `WeatherStation.dataset_years` and `station_key` told them apart and grouped them, and
+  `newest_first()` sorted them; `get_timeseries(environment="all")` read every environment.
+  ([#326](https://github.com/idfkit/idfkit/pull/326))
 - `SimulationJob` took `auto_migrate=`, so `simulate_batch()` and `async_simulate_batch()` could
   migrate older models per job, as `simulate()` does.
   ([#325](https://github.com/idfkit/idfkit/pull/325))
@@ -61,6 +65,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SQLResult.get_timeseries()` and `get_tabular_value()` raised `ResultLookupError` (a `KeyError`)
   naming the closest variable, key or report and the reported keys; variable names matched
   case-insensitively, as keys did. ([#325](https://github.com/idfkit/idfkit/pull/325))
+- **Breaking:** `SQLResult.get_timeseries()` and `to_dataframe()` read only the run period by
+  default (the design days when there is none) instead of both, concatenated; pass
+  `environment="all"` for both. An environment with no data raised `ResultLookupError`.
+  ([#326](https://github.com/idfkit/idfkit/pull/326))
+- **Breaking:** `StationIndex.search()` and `nearest()` returned one hit per station, its newest
+  TMYx dataset as `.station` and all of them in `.variants`, instead of one hit per dataset, oldest
+  first; iterate `.variants` for every dataset. ([#326](https://github.com/idfkit/idfkit/pull/326))
 - `VersionMismatchError` named its fixes: `new_document(version=...)` at the installed release or
   installing the model's, and `auto_migrate=True` for an older model.
   ([#325](https://github.com/idfkit/idfkit/pull/325))
@@ -148,6 +159,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `DesignDayManager.from_station(dataset=...)` downloaded the dataset named (`"2009-2023"`), and
+  raised `ValueError` listing the station's datasets, instead of ignoring it.
+  ([#326](https://github.com/idfkit/idfkit/pull/326))
+- `SQLResult.list_variables()` gave a meter's key as `""`, not `"None"`, so its entries could be
+  passed back to `get_timeseries()`. ([#326](https://github.com/idfkit/idfkit/pull/326))
 - `str()` of an `UnknownObjectTypeError` showed the quoted `KeyError` repr, with a literal `\n`,
   instead of the message; `ValidationFailedError`'s header counted warnings as errors.
   ([#324](https://github.com/idfkit/idfkit/pull/324))

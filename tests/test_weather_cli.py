@@ -234,6 +234,18 @@ class TestResolveMatches:
         # Top result should be Chicago Ohare
         assert "Ohare" in matches[0].station.city
 
+    def test_spatial_reports_each_datasets_own_distance(self) -> None:
+        # The datasets of one station can sit at different coordinates (some at 0.0, 0.0).
+        index = StationIndex.from_stations([
+            _station(variant="TMYx.2004-2018"),
+            _station(variant="TMYx.2007-2021", lat=41.99),
+            _station(variant="TMYx.2011-2025", lat=0.0, lon=0.0),
+        ])
+        matches = _resolve_matches(index, TmyFilters(lat=41.98, lon=-87.92, max_km=5), limit=10, quiet=True)
+        assert [m.station.dataset_variant for m in matches] == ["TMYx.2007-2021", "TMYx.2004-2018"]
+        assert matches[0].distance_km == pytest.approx(1.11, abs=0.01)
+        assert matches[1].distance_km == pytest.approx(0.0, abs=1e-6)
+
     def test_spatial_uses_coords(self, sample_index: StationIndex) -> None:
         matches = _resolve_matches(
             sample_index,

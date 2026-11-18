@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import re
+from collections.abc import Iterable
+from dataclasses import dataclass, field
 from typing import Any
+
+_YEAR_RANGE = re.compile(r"(\d{4})-(\d{4})$")
 
 
 @dataclass(frozen=True)
@@ -21,7 +25,10 @@ class WeatherStation:
             (e.g. ``"Marina.Muni.AP"``).
         wmo: WMO station number as a string to preserve leading zeros
             (e.g. ``"722950"`` or ``"012345"``).
-        source: Dataset source identifier (e.g. ``"TMYx.2009-2023"``).
+        source: Source tag from the upstream index (e.g. ``"SRC-TMYx"``). To tell
+            the datasets of one station apart, read
+            [dataset_variant][idfkit.weather.station.WeatherStation.dataset_variant]
+            (e.g. ``"TMYx.2009-2023"``) instead.
         latitude: Decimal degrees, north positive.
         longitude: Decimal degrees, east positive.
         timezone: Hours offset from GMT (e.g. ``-8.0``).
@@ -145,6 +152,26 @@ class WeatherStation:
         return self.filename_stem
 
     @property
+    def dataset_years(self) -> tuple[int, int] | None:
+        """The first and last year of the dataset's period, or ``None`` when it names none.
+
+        ``(2009, 2023)`` for ``"TMYx.2009-2023"``; ``None`` for a plain ``"TMYx"``.
+        """
+        match = _YEAR_RANGE.search(self.dataset_variant)
+        if match is None:
+            return None
+        return int(match.group(1)), int(match.group(2))
+
+    @property
+    def station_key(self) -> str:
+        """What every dataset of one physical station shares: the filename stem without its variant.
+
+        ``"USA_IL_Chicago.Ohare.Intl.AP.725300"`` for each of that station's TMYx datasets.
+        """
+        parts = self.filename_stem.rsplit("_", maxsplit=1)
+        return parts[0] if len(parts) == 2 else self.filename_stem
+
+    @property
     def heating_design_db_f(self) -> float:
         """99% heating design dry-bulb temperature in °F."""
         return self.heating_design_db_c * 9 / 5 + 32
@@ -155,21 +182,61 @@ class WeatherStation:
         return self.cooling_design_db_c * 9 / 5 + 32
 
 
+def newest_first(stations: Iterable[WeatherStation]) -> tuple[WeatherStation, ...]:
+    """*stations* ordered newest dataset first.
+
+    Datasets with a year range sort by their last year, then their first, latest first;
+    datasets without one (a plain ``"TMYx"``) follow them.
+    """
+
+    def recency(station: WeatherStation) -> tuple[int, int, int]:
+        years = station.dataset_years
+        return (0, 0, 0) if years is None else (1, years[1], years[0])
+
+    return tuple(sorted(stations, key=recency, reverse=True))
+
+
 @dataclass(frozen=True)
 class SearchResult:
-    """A text search result with relevance score."""
+    """A text search result with relevance score: one physical station.
+
+    ``station`` is the station's newest dataset; ``variants`` holds every dataset
+    of it the search matched (the TMYx year ranges), newest first.
+    """
 
     station: WeatherStation
     score: float
     """Relevance score from 0.0 to 1.0, higher is better."""
     match_field: str
     """Which field matched: ``"wmo"``, ``"name"``, ``"state"``, ``"country"``, or ``"filename"``."""
+    variants: tuple[WeatherStation, ...] = field(default=())
+    """Every dataset of this station, newest first; ``variants[0]`` is ``station``."""
+
+    def __post_init__(self) -> None:
+        # A result built without its variants still lists its station, so code that
+        # iterates ``variants`` never drops it.
+        if not self.variants:
+            object.__setattr__(self, "variants", (self.station,))
 
 
 @dataclass(frozen=True)
 class SpatialResult:
-    """A spatial proximity result with great-circle distance."""
+    """A spatial proximity result with great-circle distance: one physical station.
+
+    ``station`` is the station's newest dataset; ``variants`` holds its datasets
+    (the TMYx year ranges) at this location, newest first. A station's datasets
+    do not always share coordinates, and those lying more than a few kilometres
+    from the rest come back as a separate result.
+    """
 
     station: WeatherStation
     distance_km: float
-    """Great-circle distance in kilometres."""
+    """Great-circle distance in kilometres to ``station``'s own coordinates."""
+    variants: tuple[WeatherStation, ...] = field(default=())
+    """This station's datasets at this location, newest first; ``variants[0]`` is ``station``."""
+
+    def __post_init__(self) -> None:
+        # A result built without its variants still lists its station, so code that
+        # iterates ``variants`` never drops it.
+        if not self.variants:
+            object.__setattr__(self, "variants", (self.station,))

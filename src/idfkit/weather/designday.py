@@ -242,6 +242,32 @@ def _classify_design_day(name: str) -> DesignDayType | None:
     return None
 
 
+def _station_dataset(station: WeatherStation, dataset: str) -> WeatherStation:
+    """The dataset of *station*'s physical station named *dataset* (a variant, or just its years).
+
+    Raises:
+        ValueError: If the station has no such dataset.
+    """
+    from .index import StationIndex
+    from .station import newest_first
+
+    def matches(candidate: WeatherStation) -> bool:
+        variant = candidate.dataset_variant.casefold()
+        wanted = dataset.strip().casefold()
+        return variant == wanted or variant.endswith("." + wanted)
+
+    if matches(station):
+        return station
+    siblings = [s for s in StationIndex.load().get_by_wmo(station.wmo) if s.station_key == station.station_key]
+    for candidate in siblings:
+        if matches(candidate):
+            return candidate
+    available = [s.dataset_variant for s in newest_first([station, *siblings])]
+    msg = f"{station.display_name} (WMO {station.wmo}) has no dataset {dataset!r}."
+    msg += f" It has: {', '.join(dict.fromkeys(available))}."
+    raise ValueError(msg)
+
+
 class DesignDayManager:
     """Parse DDY files and inject design day conditions into IDF models.
 
@@ -304,15 +330,21 @@ class DesignDayManager:
 
         Args:
             station: The weather station.
-            dataset: TMYx variant to download.  Defaults to the most recent.
+            dataset: Another dataset of the same station to download instead,
+                named by its [dataset_variant][idfkit.weather.station.WeatherStation.dataset_variant]
+                (``"TMYx.2009-2023"``) or its years (``"2009-2023"``). Defaults
+                to *station*'s own dataset; a search result's ``station`` is
+                already the newest.
             version: EnergyPlus version for schema resolution.
+
+        Raises:
+            ValueError: If the station has no dataset named *dataset*; the
+                message lists the ones it has.
         """
         from .download import WeatherDownloader
 
-        # If a specific dataset is requested we need to find the matching
-        # station entry (same WMO, matching URL).  For now, download whatever
-        # the station's URL points to.
-        _ = dataset  # reserved for future dataset selection
+        if dataset is not None:
+            station = _station_dataset(station, dataset)
         downloader = WeatherDownloader()
         ddy_path = downloader.get_ddy(station)
         return cls(ddy_path, version=version, station=station)

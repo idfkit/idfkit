@@ -23,9 +23,12 @@ from urllib.request import Request, urlopen
 
 from .._atomic import write_bytes_atomically
 from .spatial import haversine_km
-from .station import SearchResult, SpatialResult, WeatherStation
+from .station import SearchResult, SpatialResult, WeatherStation, newest_first
 
 logger = logging.getLogger(__name__)
+
+# Datasets of one station whose coordinates lie this close are treated as one location.
+_CO_LOCATED_KM = 5.0
 
 # The main regional TMYx KML index files covering worldwide stations.
 _INDEX_FILES: tuple[str, ...] = (
@@ -912,9 +915,13 @@ class StationIndex:
         detected automatically and resolved via
         [get_by_filename][idfkit.weather.index.StationIndex.get_by_filename].
 
+        Each result is one physical station: ``result.station`` is its newest
+        dataset (the latest TMYx year range) and ``result.variants`` lists all
+        of them, newest first.  An exact EPW filename returns that dataset alone.
+
         Args:
             query: Free-text search query or EPW filename.
-            limit: Maximum number of results to return.
+            limit: Maximum number of stations to return.
             country: If given, restrict to stations in this country code.
         """
         raw = query.strip()
@@ -927,7 +934,7 @@ class StationIndex:
             stations = self.get_by_filename(raw)
             if stations:
                 results = [
-                    SearchResult(station=s, score=1.0, match_field="filename")
+                    SearchResult(station=s, score=1.0, match_field="filename", variants=(s,))
                     for s in stations
                     if not country or s.country.upper() == country.upper()
                 ]
@@ -935,14 +942,23 @@ class StationIndex:
 
         tokens = _tokenize_query(q)
 
-        scored: list[SearchResult] = []
+        # One hit per physical station: its best score, and its datasets newest first.
+        best: dict[str, tuple[float, str]] = {}
+        datasets: dict[str, list[WeatherStation]] = {}
         for station in self._stations:
             if country and station.country.upper() != country.upper():
                 continue
             score, match_field = _score_station(station, q, tokens)
             if score > 0:
-                scored.append(SearchResult(station=station, score=score, match_field=match_field))
+                key = station.station_key
+                datasets.setdefault(key, []).append(station)
+                if key not in best or score > best[key][0]:
+                    best[key] = (score, match_field)
 
+        scored: list[SearchResult] = []
+        for key, (score, match_field) in best.items():
+            variants = newest_first(datasets[key])
+            scored.append(SearchResult(station=variants[0], score=score, match_field=match_field, variants=variants))
         scored.sort(key=lambda r: r.score, reverse=True)
         return scored[:limit]
 
@@ -963,10 +979,17 @@ class StationIndex:
         pre-filter is applied when *max_distance_km* is specified to avoid
         computing distances for stations that are obviously too far.
 
+        Each result is one physical station: ``result.station`` is its newest
+        dataset within *max_distance_km* and ``result.variants`` lists its datasets
+        there, newest first.  Distances and filters use each dataset's own
+        coordinates, and ``distance_km`` is ``result.station``'s.  Datasets of one
+        station whose coordinates lie more than a few kilometres apart are
+        returned as separate results.
+
         Args:
             latitude: Decimal degrees, north positive.
             longitude: Decimal degrees, east positive.
-            limit: Maximum results to return.
+            limit: Maximum number of stations to return.
             max_distance_km: Exclude stations farther than this.
             country: If given, restrict to this country code.
         """
@@ -983,7 +1006,7 @@ class StationIndex:
         else:
             lat_min = lat_max = lon_min = lon_max = 0.0  # unused
 
-        results: list[SpatialResult] = []
+        candidates: list[tuple[float, WeatherStation]] = []
         for station in self._stations:
             if country and station.country.upper() != country.upper():
                 continue
@@ -995,8 +1018,43 @@ class StationIndex:
             dist = haversine_km(latitude, longitude, station.latitude, station.longitude)
             if max_distance_km is not None and dist > max_distance_km:
                 continue
-            results.append(SpatialResult(station=station, distance_km=dist))
+            candidates.append((dist, station))
+        candidates.sort(key=lambda c: c[0])
+        return self._nearest_per_station(candidates, limit)
 
+    def _nearest_per_station(self, candidates: list[tuple[float, WeatherStation]], limit: int) -> list[SpatialResult]:
+        """One result per physical station from distance-sorted *candidates*.
+
+        Every candidate already passed the distance and country filters on its own
+        coordinates. The datasets of one station do not always share coordinates, so a
+        result groups only the datasets of one ``station_key`` that lie within
+        ``_CO_LOCATED_KM`` of the nearest of them; datasets further away (some carry
+        ``0.0, 0.0``) form a result of their own. ``station`` is the group's newest dataset
+        and ``distance_km`` is that dataset's own distance.
+        """
+        passed = {id(s): d for d, s in candidates}
+        used: set[int] = set()
+        results: list[SpatialResult] = []
+        cutoff = math.inf
+        for dist, anchor in candidates:
+            if dist > cutoff:
+                break
+            if id(anchor) in used:
+                continue
+            key = anchor.station_key
+            group: list[WeatherStation] = []
+            for s in self._by_wmo.get(anchor.wmo, [anchor]):
+                if id(s) not in passed or id(s) in used or s.station_key != key:
+                    continue
+                if haversine_km(anchor.latitude, anchor.longitude, s.latitude, s.longitude) <= _CO_LOCATED_KM:
+                    group.append(s)
+                    used.add(id(s))
+            variants = newest_first(group)
+            results.append(SpatialResult(station=variants[0], distance_km=passed[id(variants[0])], variants=variants))
+            if len(results) >= limit:
+                # A later anchor can still report a smaller distance than the farthest kept
+                # result, since a result reports its newest dataset, not its nearest.
+                cutoff = sorted(r.distance_km for r in results)[limit - 1]
         results.sort(key=lambda r: r.distance_km)
         return results[:limit]
 

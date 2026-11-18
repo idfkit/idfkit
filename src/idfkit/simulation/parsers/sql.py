@@ -164,12 +164,46 @@ class EnvironmentInfo:
     environment_type: int
 
 
-# EnergyPlus EnvironmentType values in the EnvironmentPeriods table.
-_SIZING_ENV_TYPES = (1, 2)  # DesignDay, DesignRunPeriod
-_ANNUAL_ENV_TYPE = 3  # WeatherFileRunPeriod
-
 # Accepted string values for the ``environment`` parameter.
-Environment = Literal["sizing", "annual"]
+Environment = Literal["annual", "sizing", "all"]
+
+# EnergyPlus EnvironmentType values in the EnvironmentPeriods table, per
+# ``environment`` choice: 1 = DesignDay, 2 = DesignRunPeriod, 3 = WeatherFileRunPeriod.
+_ENVIRONMENT_TYPES: dict[str, frozenset[int]] = {
+    "annual": frozenset({3}),
+    "sizing": frozenset({1, 2}),
+}
+_ENVIRONMENT_TYPES["all"] = _ENVIRONMENT_TYPES["annual"] | _ENVIRONMENT_TYPES["sizing"]
+
+
+def _environment_types(
+    rows: Sequence[tuple[object, ...]], name: str, environment: Environment | None
+) -> frozenset[int] | None:
+    """The environment types to keep from *rows* (type last), or ``None`` to keep every row.
+
+    ``None`` picks the weather-file run periods when the variable has data there, and
+    otherwise the design days, so an annual run never mixes the two.
+
+    Raises:
+        ResultLookupError: If *environment* names a kind the variable has no data for.
+    """
+    present = {row[-1] for row in rows}
+    if environment == "all":
+        return None
+    if environment is None:
+        for choice in ("annual", "sizing"):
+            if present & _ENVIRONMENT_TYPES[choice]:
+                return _ENVIRONMENT_TYPES[choice]
+        return None
+    wanted = _ENVIRONMENT_TYPES[environment]
+    if rows and not present & wanted:
+        kinds = [choice for choice in ("annual", "sizing") if present & _ENVIRONMENT_TYPES[choice]]
+        label = "run-period ('annual')" if environment == "annual" else "design-day ('sizing')"
+        msg = f"Variable '{name}' has no {label} data in this run."
+        if kinds:
+            msg += f" It has data for environment={' and '.join(repr(k) for k in kinds)}."
+        raise ResultLookupError(msg, available=kinds)
+    return wanted
 
 
 def _unique(values: Iterable[str]) -> list[str]:
@@ -281,9 +315,11 @@ class SQLResult:
                 the ``Environment`` site variables and meters.
             frequency: Optional frequency filter (e.g. ``"Hourly"``). Needed only
                 when the variable is reported at more than one frequency.
-            environment: Filter by environment type. ``None`` (default)
-                returns all data, ``"annual"`` returns only weather-file
-                run period data, and ``"sizing"`` returns only design-day data.
+            environment: Which simulation environments to read. ``None``
+                (default) reads the weather-file run periods when the variable
+                has data there, and the design days otherwise, so an annual
+                run never mixes the two. ``"annual"`` reads only run periods,
+                ``"sizing"`` only design days, and ``"all"`` both, in run order.
 
         Returns:
             A TimeSeriesResult with timestamps and values.
@@ -291,44 +327,37 @@ class SQLResult:
         Raises:
             ResultLookupError: A ``KeyError`` subclass, if the variable, key or
                 frequency is not in the database (with the closest names and the
-                reported keys), or if several keys or frequencies match.
+                reported keys), if several keys or frequencies match, or if the
+                variable has no data for the *environment* asked for.
             ValueError: If *environment* is not a recognized value.
         """
+        if environment is not None and environment not in _ENVIRONMENT_TYPES:
+            msg = f"environment must be 'annual', 'sizing', 'all', or None, got {environment!r}"
+            raise ValueError(msg)
         rdd_index, name, key_val, units, raw_freq = self._find_variable(variable_name, key_value, frequency)
         freq: str = FREQUENCY_MAP.get(raw_freq, raw_freq) if raw_freq else "Unknown"
         cur = self._conn.cursor()
 
-        # Retrieve time-series data, filtering out warmup periods.
-        # COALESCE handles EnergyPlus versions where WarmupFlag is NULL.
-        ts_query = (
-            "SELECT t.Year, t.Month, t.Day, t.Hour, t.Minute, rd.Value "
+        # Retrieve time-series data with each row's environment type, filtering
+        # out warmup periods. COALESCE handles EnergyPlus versions where
+        # WarmupFlag is NULL; the LEFT JOIN keeps rows with no environment.
+        cur.execute(
+            "SELECT t.Year, t.Month, t.Day, t.Hour, t.Minute, rd.Value, ep.EnvironmentType "
             "FROM ReportData rd "
             "JOIN Time t ON rd.TimeIndex = t.TimeIndex "
+            "LEFT JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex "
+            "WHERE rd.ReportDataDictionaryIndex = ? AND COALESCE(t.WarmupFlag, 0) = 0 "
+            "ORDER BY t.TimeIndex",
+            (rdd_index,),
         )
-        ts_params: list[object] = [rdd_index]
-        conditions = [
-            "rd.ReportDataDictionaryIndex = ?",
-            "COALESCE(t.WarmupFlag, 0) = 0",
-        ]
-
-        if environment is not None:
-            ts_query += "JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex "
-            if environment == "sizing":
-                conditions.append(f"ep.EnvironmentType IN ({', '.join('?' for _ in _SIZING_ENV_TYPES)})")
-                ts_params.extend(_SIZING_ENV_TYPES)
-            elif environment == "annual":
-                conditions.append("ep.EnvironmentType = ?")
-                ts_params.append(_ANNUAL_ENV_TYPE)
-            else:
-                msg = f"environment must be 'sizing', 'annual', or None, got {environment!r}"
-                raise ValueError(msg)
-
-        ts_query += "WHERE " + " AND ".join(conditions) + " ORDER BY t.TimeIndex"
-        cur.execute(ts_query, ts_params)
+        rows: list[tuple[int, int, int, int, int, float, int | None]] = cur.fetchall()
+        wanted = _environment_types(rows, name, environment)
 
         timestamps: list[datetime] = []
         values: list[float] = []
-        for year, month, day, hour, minute, value in cur.fetchall():
+        for year, month, day, hour, minute, value, env_type in rows:
+            if wanted is not None and env_type not in wanted:
+                continue
             ref_year = year if year and year > 0 else REFERENCE_YEAR
             timestamps.append(make_timestamp(ref_year, month, day, hour, minute))
             values.append(float(value))
@@ -375,7 +404,10 @@ class SQLResult:
             if not rows:
                 close = closest_names(key_value, keys)
                 msg = f"Variable '{name}' has no key '{key_value}'." + _did_you_mean(close)
-                msg += f" It is reported for {_count(keys, 'key')}: {_listing(keys)}."
+                if keys == [""]:
+                    msg += " It is reported with no key (as meters are); leave key_value at its default."
+                else:
+                    msg += f" It is reported for {_count(keys, 'key')}: {_listing(keys)}."
                 raise ResultLookupError(msg, suggestions=close, available=keys)
 
         if frequency is not None:
@@ -543,11 +575,18 @@ class SQLResult:
     def list_variables(self) -> list[VariableInfo]:
         """List all available variables in the database.
 
+        Each entry's ``name``, ``key_value`` and ``frequency`` can be passed
+        straight to [get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries];
+        a meter's ``key_value`` is ``""``.
+
         Returns:
             List of VariableInfo entries describing each variable.
         """
         cur = self._conn.cursor()
-        cur.execute("SELECT Name, KeyValue, ReportingFrequency, Units, IsMeter, Type FROM ReportDataDictionary")
+        cur.execute(
+            "SELECT Name, COALESCE(KeyValue, ''), COALESCE(ReportingFrequency, ''), COALESCE(Units, ''), "
+            "IsMeter, COALESCE(Type, '') FROM ReportDataDictionary ORDER BY ReportDataDictionaryIndex"
+        )
 
         return [
             VariableInfo(
@@ -556,7 +595,7 @@ class SQLResult:
                 frequency=FREQUENCY_MAP.get(str(row[2]), str(row[2])),
                 units=str(row[3]),
                 is_meter=bool(row[4]),
-                variable_type=str(row[5]) if row[5] else "",
+                variable_type=str(row[5]),
             )
             for row in cur.fetchall()
         ]
@@ -605,9 +644,9 @@ class SQLResult:
                 name otherwise.
             frequency: Optional frequency filter. Required when the variable
                 is reported at more than one frequency.
-            environment: Filter by environment type (``None`` by default
-                for all data, ``"annual"`` for run periods, ``"sizing"`` for
-                design days).
+            environment: Which environments to read: ``None`` (default) for the
+                run periods, or the design days when the run has none;
+                ``"annual"``, ``"sizing"`` or ``"all"`` to choose.
 
         Returns:
             A pandas DataFrame with a ``timestamp`` index.

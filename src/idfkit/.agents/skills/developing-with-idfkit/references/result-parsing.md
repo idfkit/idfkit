@@ -65,7 +65,7 @@ ts = result.sql.get_timeseries(
     variable_name="Zone Mean Air Temperature",
     key_value="Office",  # zone, surface, system name; "*" (default) only if one key is reported
     frequency="Hourly",  # optional filter
-    environment=None,  # None=all, "annual", or "sizing"
+    environment=None,  # None = run period (design days only if no run period), "annual", "sizing", "all"
 )
 print(ts.units, len(ts.values))  # 'C' 8760
 ts.timestamps  # tuple[datetime, ...]
@@ -75,7 +75,7 @@ ts.values  # tuple[float, ...]
 df = ts.to_dataframe()
 ```
 
-`get_timeseries` matches the variable name, key value and frequency case-insensitively. It must resolve to exactly one reported series, so the default `key_value="*"` works only for a variable reported for a single key (site `Environment` variables, a meter): for a per-zone variable it raises, listing the keys, rather than returning one zone at random. Pass `frequency` when the variable is reported at several (e.g. `"Hourly"` and `"Monthly"`); the error lists them. Use `environment="annual"` to skip design-day data when both ran.
+`get_timeseries` matches the variable name, key value and frequency case-insensitively. It must resolve to exactly one reported series, so the default `key_value="*"` works only for a variable reported for a single key (site `Environment` variables, a meter): for a per-zone variable it raises, listing the keys, rather than returning one zone at random. Pass `frequency` when the variable is reported at several (e.g. `"Hourly"` and `"Monthly"`); the error lists them. By default (`environment=None`) it reads the weather-file run period, falling back to the design days only when the run has no run period, so an annual run never mixes 48 design-day hours into its 8760. Pass `"sizing"` for the design days or `"all"` for both in run order; asking for an environment the variable has no data in raises `ResultLookupError`.
 
 Every lookup failure raises `ResultLookupError`, a `KeyError` subclass whose message names the closest variable, key or report spelling ("Did you mean ...?") and the keys reported. A variable missing from the database usually means you didn't add an `Output:Variable` for it in the IDF — see [Output variable discovery](#output-variable-discovery). `get_tabular_value` raises it too, naming the first of report, `report_for`, table, row and column that matches nothing.
 
@@ -118,7 +118,9 @@ To enumerate what's available:
 for r in result.sql.list_reports():
     print(r)
 for v in result.sql.list_variables():
-    print(v.name, v.key_value, v.frequency, v.units)
+    print(v.name, v.key_value, v.frequency, v.units)  # a meter's key_value is ""
+    # Each entry can be passed straight back:
+    series = result.sql.get_timeseries(v.name, key_value=v.key_value, frequency=v.frequency)
 for e in result.sql.list_environments():
     print(e.environment_type, e.name)
 ```

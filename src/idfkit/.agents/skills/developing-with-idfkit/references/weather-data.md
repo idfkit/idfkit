@@ -46,7 +46,12 @@ from idfkit.weather import (
 index = StationIndex.load()
 hits = index.search("chicago ohare")
 for hit in hits[:3]:
-    print(hit.score, hit.station.display_name)
+    print(hit.score, hit.station.display_name, hit.station.dataset_variant)
+
+# One hit per physical station: .station is its newest dataset,
+# .variants every TMYx year range of it, newest first.
+for variant in hits[0].variants:
+    print(variant.dataset_variant, variant.dataset_years)  # "TMYx.2011-2025" (2011, 2025) ... "TMYx" None
 ```
 
 `search` splits the query on whitespace, commas, semicolons, dots and hyphens, and is case- and accent-insensitive (`"Montréal"` finds `Montreal`). A token equal to a station's state or country code qualifies the match instead of having to appear in its name, so `"Boulder, CO"` ranks Boulder, Colorado first; a token shorter than three characters must equal a whole word of the name rather than prefix one. Use it for "I know roughly what the station is called."
@@ -110,11 +115,13 @@ station.wmo  # "725300" (string, preserves leading zeros)
 station.latitude, station.longitude
 station.elevation  # metres above sea level
 station.timezone  # hours offset from GMT, e.g. -6.0
-station.source  # dataset source, e.g. "TMYx.2009-2023"
+station.dataset_variant  # which dataset, e.g. "TMYx.2011-2025" (or "TMYx")
+station.dataset_years  # (2011, 2025), or None for a plain "TMYx"
+station.source  # upstream source tag, e.g. "SRC-TMYx" -- not the dataset
 station.url  # download URL for the ZIP (EPW + DDY)
 ```
 
-Multiple `WeatherStation` entries can share the same `wmo` — each TMYx year-range variant is a separate entry.
+Multiple `WeatherStation` entries can share the same `wmo` — each TMYx year-range variant is a separate entry, told apart by `dataset_variant`, not `source`. `search()` and `nearest()` return one hit per physical station: `hit.station` is its newest dataset and `hit.variants` all of them, newest first, so `results[0].station` downloads the latest TMYx window. An exact EPW filename passed to `search()` returns that dataset alone. `nearest()` measures each dataset at its own coordinates, which sometimes differ between a station's datasets: `hit.distance_km` is `hit.station`'s, `max_distance_km` applies to every dataset, and datasets of one station lying more than 5 km apart come back as separate hits.
 
 ## Downloading EPW + DDY
 
@@ -153,7 +160,8 @@ Lower-level access — download a station's DDY, inspect it, and inject selected
 ```python
 from idfkit.weather import DesignDayManager, DesignDayType
 
-ddm = DesignDayManager.from_station(station)
+ddm = DesignDayManager.from_station(station)  # station's own dataset
+older = DesignDayManager.from_station(station, dataset="2009-2023")  # another; ValueError lists them if absent
 heating = ddm.get(DesignDayType.HEATING_99_6)  # IDFObject | None
 cooling = ddm.get(DesignDayType.COOLING_DB_0_4)
 added = ddm.apply_to_model(  # injects per the preset args
@@ -232,10 +240,11 @@ if index.check_for_updates():
     # Collisions when multiple TMYx year-ranges exist for the same WMO ID.
     ```
 
-!!! success "key on `(wmo, source)` if you need uniqueness"
+!!! success "key on `filename_stem` (one per dataset) or `station_key` (one per station)"
 
     ```python
-    station_by_key = {(s.wmo, s.source): s for s in index.stations}
+    station_by_key = {s.filename_stem: s for s in index.stations}  # one entry per dataset
+    datasets_by_station = {s.station_key: s for s in index.stations}  # collapses the year ranges
     ```
 
 ## Related
