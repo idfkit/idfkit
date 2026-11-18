@@ -1344,18 +1344,17 @@ class IDFCollection(Generic[_T_co]):
     def __setstate__(self, state: Any) -> None:
         """Restore a pickled or deep-copied collection.
 
-        A collection pickled before ``_document`` existed has no such slot in its state. It takes
-        the document of the objects it holds, which pickle has restored by now, so ``add()``
-        works on it as on a collection of this release. An empty one has nothing to take it from
-        and is restored with none (``add()`` then says to use ``IDFDocument.add``).
+        A collection pickled before ``_document`` existed has no such slot in its state, and is
+        restored with none: ``add()`` takes the document of the objects it holds when it is
+        called. The objects are not read here, as one may not be restored yet: when an object is
+        pickled before its document (``pickle.dumps(zone)``), pickle restores the object's
+        collection while it is still reading that object's own state.
         """
         slots = cast("dict[str, Any]", (state[1] if isinstance(state, tuple) else state) or {})
         for key, value in slots.items():
             object.__setattr__(self, key, value)
         if "_document" not in slots:
-            items = cast("list[IDFObject]", slots.get("_items") or [])
-            document = items[0]._document if items else None  # pyright: ignore[reportPrivateUsage]
-            object.__setattr__(self, "_document", document)
+            object.__setattr__(self, "_document", None)
 
     @property
     def obj_type(self) -> str:
@@ -1437,8 +1436,8 @@ class IDFCollection(Generic[_T_co]):
             The new object, typed as this collection's objects.
 
         Raises:
-            TypeError: If the collection belongs to no document (one constructed directly), or a
-                field is passed positionally.
+            TypeError: If the collection belongs to no document (one constructed directly), a
+                field is passed positionally, or the name is passed as ``name=``.
             UnknownObjectTypeError: If the collection's type is in no schema
                 (``doc.get_collection("Zoen")``).
             ValidationFailedError: If validation fails (unknown fields, missing required fields,
@@ -1459,7 +1458,19 @@ class IDFCollection(Generic[_T_co]):
         """
         if isinstance(cast("object", name), IDFObject):
             return self._append_deprecated(cast("IDFObject", name))
+        legacy = fields.get("obj") if not args and len(fields) == 1 and not name else None
+        if isinstance(legacy, IDFObject):
+            # add(obj=...), the keyword spelling of the deprecated form.
+            return self._append_deprecated(legacy)
+        if "name" in fields:
+            msg = f"add() takes the object's name positionally: add({fields['name']!r}, ...), not add(name=...)"
+            raise TypeError(msg)
         document = self._document
+        if document is None and self._items:
+            # Unpickled from a release before collections held their document; its objects do.
+            items = cast("list[IDFObject]", self._items)
+            document = cast("_ObjectFactory | None", items[0]._document)  # pyright: ignore[reportPrivateUsage]
+            self._document = document
         if document is None:
             msg = (
                 f"IDFCollection({self._type}) belongs to no document (constructed directly, or an empty "

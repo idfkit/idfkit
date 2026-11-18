@@ -85,6 +85,12 @@ class TestAdd:
         with pytest.raises(TypeError, match="positional"):
             doc["Zone"].add("Office", "Extra")  # pyright: ignore[reportCallIssue]
 
+    def test_name_by_keyword_raises(self, doc: IDFDocument[Any]) -> None:
+        """``doc.add("Zone", name="Office")`` works; a collection's name is positional only."""
+        with pytest.raises(TypeError, match=r"add\('Office', \.\.\.\)"):
+            doc.get_collection("Zone").add(name="Office")
+        assert len(doc["Zone"]) == 0
+
     def test_collection_without_document_raises(self) -> None:
         collection: IDFCollection[IDFObject] = IDFCollection("Zone")
         with pytest.raises(TypeError, match="document"):
@@ -143,8 +149,8 @@ class TestOlderPickles:
     """A document pickled before collections knew their document still adds through them."""
 
     @staticmethod
-    def _as_older_pickle(doc: IDFDocument[Any], monkeypatch: pytest.MonkeyPatch) -> bytes:
-        """Pickle *doc* as idfkit 1.3.0rc1 would: no collection has ``_document``."""
+    def _as_older_pickle(doc: object, monkeypatch: pytest.MonkeyPatch) -> bytes:
+        """Pickle *doc* (a document, or an object of one) as idfkit 1.3.0rc1 would: no collection has ``_document``."""
 
         def without_document(self: IDFCollection[Any], protocol: SupportsIndex) -> Any:
             reduced = cast("tuple[Any, ...]", object.__reduce_ex__(self, protocol))
@@ -163,6 +169,18 @@ class TestOlderPickles:
         assert older["Zone"]["Lab"] is lab
         assert [z.name for z in older["Zone"]] == ["Office", "Lab"]
         assert [z.name for z in doc["Zone"]] == ["Office"]
+
+    def test_an_object_pickled_before_its_document(
+        self, doc: IDFDocument[Any], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Pickle restores the object's collection while it is still reading the object itself."""
+        office = doc["Zone"].add("Office")
+        twin: IDFObject = pickle.loads(self._as_older_pickle(office, monkeypatch))  # noqa: S301
+        older = cast("IDFDocument[Any]", twin._document)  # pyright: ignore[reportPrivateUsage]
+        assert older["Zone"]["Office"] is twin
+        lab = older["Zone"].add("Lab")
+        assert [z.name for z in older["Zone"]] == ["Office", "Lab"]
+        assert older["Zone"]["Lab"] is lab
 
     def test_an_emptied_collection_says_to_use_add(
         self, doc: IDFDocument[Any], monkeypatch: pytest.MonkeyPatch
@@ -203,3 +221,14 @@ class TestDeprecatedObjectForm:
         doc["Zone"].add("Office")
         with pytest.warns(DeprecationWarning), pytest.raises(DuplicateObjectError):
             doc["Zone"].add(IDFObject(obj_type="Zone", name="office"))  # pyright: ignore[reportArgumentType]
+
+    def test_the_keyword_spelling_still_files(self, doc: IDFDocument[Any]) -> None:
+        """The deprecated form was ``add(self, obj)``, so ``add(obj=...)`` was valid too."""
+        doc["Zone"].add("Office")
+        legacy = IDFObject(obj_type="Zone", name="Legacy")
+        collection = cast("IDFCollection[IDFObject]", doc["Zone"])
+        with pytest.warns(DeprecationWarning) as record:
+            filed = collection.add(obj=legacy)  # untyped collection: obj= type-checks as a field
+        assert filed is legacy
+        assert doc["Zone"]["Legacy"] is legacy
+        assert record[0].filename == __file__

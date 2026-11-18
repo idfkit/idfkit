@@ -170,3 +170,23 @@ doc.get_collection("Zone").add("Annex")
         source = 'doc = new_document()\ndoc.zones.add("Space", multiplier=1)\n'
         diagnostics = check_compatibility(_IMP + source, "t.py", [_V89, _V262])
         assert diagnostics == []
+
+    def test_a_document_held_in_a_dict_is_not_a_collection(self) -> None:
+        """``docs["base"]`` is no object type: its add() takes a type first, which C001 checks."""
+        source = 'docs = {"base": new_document()}\ndocs["base"].add("Space", "S")\n'
+        diagnostics = check_compatibility(_IMP + source, "t.py", [(9, 4, 0), _V262])
+        assert [d.code for d in diagnostics] == ["C001"]
+
+    def test_a_misspelled_key_on_a_document_is_still_a_collection(self) -> None:
+        source = 'doc = new_document()\ndoc["Zoen"].add("Space", multiplier=1)\n'
+        assert check_compatibility(_IMP + source, "t.py", [(9, 4, 0), _V262], select=["C001", "C006"]) == []
+
+    def test_a_bound_collection_keeps_its_narrowing(self) -> None:
+        """A collection read from a narrowed document is checked against that document's releases."""
+        for source in [
+            'doc = new_document()\nheaters = as_version(doc, since="23.2")["WaterHeater:Mixed"]\n'
+            'heaters.add("H", heater_fuel_type="DistrictHeatingSteam")\n',
+            'doc = new_document()\nif doc.version >= (23, 2, 0):\n    heaters = doc["WaterHeater:Mixed"]\n'
+            '    heaters.add("H", heater_fuel_type="DistrictHeatingSteam")\n',
+        ]:
+            assert check_compatibility(_IMP + source, "t.py", [(9, 4, 0), _V262]) == [], source

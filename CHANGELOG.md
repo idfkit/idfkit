@@ -203,13 +203,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
-- `IDFCollection.add(obj)`, which filed an existing object in the collection without validating it,
-  linking it to the document or indexing its references, was deprecated: `add()` became the typed
-  way to create an object (see Added). Called with an object, it still filed it, with a
+- **Breaking:** for type checking only, `IDFCollection.add(obj)`, which filed an existing object in
+  the collection without validating it, linking it to the document or indexing its references, was
+  deprecated, and the object form became a type error: `add()` became the typed way to create an
+  object (see Added). Called with an object, positionally or as `obj=`, it still filed it, with a
   `DeprecationWarning`; it will be removed. Use `doc.addidfobject(obj)`, which adds the object to
-  the document. **Breaking**, for type checking only: the object form is a type error. Through
-  `IDFCollection[IDFObject]` it used to accept an object of any type, so a `Material` could be
-  filed in `doc["Zone"]` without an error, as noted under 1.3.0-rc.1 ([#296](https://github.com/idfkit/idfkit/pull/296)).
+  the document. Through `IDFCollection[IDFObject]` it used to accept an object of any type, so a
+  `Material` could be filed in `doc["Zone"]` without an error, as noted under 1.3.0-rc.1
+  ([#296](https://github.com/idfkit/idfkit/pull/296)).
 
 ### Fixed
 
