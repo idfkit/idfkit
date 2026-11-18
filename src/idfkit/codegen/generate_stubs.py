@@ -83,6 +83,7 @@ def _clear_version_caches() -> None:
         _creation_pieces,
         _piece_classes,
         read_required,
+        read_required_groups,
     ):
         cached.cache_clear()
 
