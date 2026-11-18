@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `IDFCollection.create(name, **fields)` was added, the typed form of `IDFDocument.add()`:
+  `doc.zones.create("Office", ceiling_height=3.0)` and `doc["Zone"].create(...)` created, validated
+  and indexed the object as `add()` does by default, but the keywords were the type's own fields,
+  checked by pyright and mypy, and the result was the type's class (`Zone`), not `IDFObject`. A
+  misspelled field (`ceiling_hieght=`), a value the field does not accept
+  (`zone_inside_convection_algorithm="Tarp"`) or a wrong value type was a type error, where
+  `add()` type-checked and failed when it ran. The keywords followed the document's type: 9.4's
+  fields through `IDFDocumentV9_4`, and only those every release accepts through `AnyIDFDocument`.
+  They were read from the class's typed `update()`, so no overload was resolved and a call cost
+  the type checker the same for every object type: 300 calls took 1.8 s, against 1.55 s for 300
+  untyped `add()` calls; typing `add()` itself, with one overload per type, took 24.5 s. `add()`
+  ran as fast as before (8.6 µs a call with validation). Collections came to hold their document;
+  creating through the empty collection read for a type with no objects stored that collection,
+  so it held the new object. A document pickled by an earlier release still created through its
+  collections, except one emptied before it was pickled, which raised `TypeError` naming `add()`
+  ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b)).
+- `idfkit check` gained `C006`, an error checked by default: an object type passed to `add()` that
+  no target release has (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a
+  choice value no target release lists for the field
+  (`zone_inside_convection_algorithm="Bogus"`, which raises `ValidationFailedError`), with the
+  closest real name. Both used to go unreported: `C001` and `C002` report only what some targets
+  accept and others do not. Choices were matched case-insensitively, as EnergyPlus matches them,
+  and a field that some target accepts as free text was not reported. It was read only in a file
+  that imports idfkit, in a call given more than the type name, so `set.add("x")` was not
+  reported; a group filter did not hide it. A run that passed before could fail on it
+  ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b)).
+
 - `idfkit.versions.releases_between(since, before)` was added: every supported release from
   `since` (inclusive) to `before` (exclusive), the range `as_version(doc, since=..., before=...)`
   accepts ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
@@ -103,6 +130,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- For type checking only, an undeclared field on a typed object was reported against a type named
+  for the mistake: pyright's message for `zone.ceiling_hieght = 3.0` read `parameter "key" of type
+  "_NotAFieldOfThisObjectType"` rather than `of type "Never"` (`_NotAFieldOfThisExtensibleGroup`
+  on an extensible group). The type is an alias of `Never`, so what is reported, and mypy's
+  messages, were unchanged ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b)).
 - **Breaking:** `idfkit migrate --to` refused a release line idfkit does not support, such as
   `27.1`, as `idfkit check` and `migrate()` do. It used to migrate to the latest release without
   saying so ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
@@ -166,6 +198,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The bundled agent reference (`document-and-objects.md`) narrowed a document to 22.2 and later
+  with a hand-written tuple of release types ending in `IDFDocument`, the pattern it warns against
+  a few paragraphs earlier: once idfkit adopts a newer release, that tuple stops covering 26.2. It
+  uses `as_version(doc, since="22.2")` instead ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b)).
 - `migrate()`, `async_migrate()`, `plan_migration_chain()` and `simulate(..., auto_migrate=True)` matched a model's version to
   its release the way schema selection and `as_version` do. A model loaded from a file headed
   `Version, 9.0;` reads as 9.0.0 while the release is 9.0.1, so migrating it raised
