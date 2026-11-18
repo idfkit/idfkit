@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from conftest import InMemoryAsyncFileSystem, InMemoryFileSystem
 
+from idfkit.exceptions import SimulationError
 from idfkit.simulation.outputs import OutputVariableIndex
 from idfkit.simulation.parsers.csv import CSVResult
 from idfkit.simulation.parsers.html import HTMLResult
@@ -823,3 +824,78 @@ class TestOutputFileNaming:
         (tmp_path / "runMeter.htm").write_text("<html></html>")
         (tmp_path / "runtbl.htm").write_text("<html></html>")
         assert _make_result(tmp_path).html_path == tmp_path / "runtbl.htm"
+
+
+def _failed_result(run_dir: Path, *, stderr: str = "") -> SimulationResult:
+    return SimulationResult(
+        run_dir=run_dir, success=False, exit_code=1, stdout="lots of output", stderr=stderr, runtime_seconds=0.1
+    )
+
+
+class TestRaiseForStatus:
+    """``raise_for_status()`` fails fast on a failed run and names its cause."""
+
+    def test_success_returns_self(self, tmp_path: Path) -> None:
+        result = _make_result(tmp_path)
+        assert result.raise_for_status() is result
+
+    def test_failure_quotes_fatal_and_severe(self, tmp_path: Path) -> None:
+        shutil.copy(FIXTURES / "sample_fatal.err", tmp_path / "eplus.err")
+        result = _failed_result(tmp_path)
+        with pytest.raises(SimulationError) as excinfo:
+            result.raise_for_status()
+        text = str(excinfo.value)
+        assert text.startswith("EnergyPlus simulation failed (exit code 1)\n")
+        assert "Fatal: GetSurfaceData: Errors too severe, program terminates." in text
+        assert "Surface WALL-1SOUTH has 0 vertices" in text
+        assert str(tmp_path / "eplus.err") in text
+        assert excinfo.value.exit_code == 1
+        assert excinfo.value.result is result
+
+    def test_failure_without_err_reports_stderr(self, tmp_path: Path) -> None:
+        result = _failed_result(tmp_path, stderr="weather file not found")
+        with pytest.raises(SimulationError, match="weather file not found"):
+            result.raise_for_status()
+
+    @pytest.mark.asyncio
+    async def test_async_failure(self, tmp_path: Path) -> None:
+        shutil.copy(FIXTURES / "sample_fatal.err", tmp_path / "eplus.err")
+        result = _failed_result(tmp_path)
+        with pytest.raises(SimulationError, match="Errors too severe"):
+            await result.async_raise_for_status()
+
+    @pytest.mark.asyncio
+    async def test_async_success_returns_self(self, tmp_path: Path) -> None:
+        result = _make_result(tmp_path)
+        assert await result.async_raise_for_status() is result
+
+    @pytest.mark.asyncio
+    async def test_async_failure_through_async_fs(self) -> None:
+        async_fs = InMemoryAsyncFileSystem()
+        run_dir = Path("output/async_fail")
+        await async_fs.write_bytes(run_dir / "eplus.err", (FIXTURES / "sample_fatal.err").read_bytes())
+        result = SimulationResult(
+            run_dir=run_dir, success=False, exit_code=1, stdout="", stderr="", runtime_seconds=0.1, async_fs=async_fs
+        )
+        with pytest.raises(SimulationError) as excinfo:
+            await result.async_raise_for_status()
+        text = str(excinfo.value)
+        assert "Fatal: GetSurfaceData: Errors too severe, program terminates." in text
+        assert f"Full error report: {run_dir / 'eplus.err'}" in text
+        assert excinfo.value.result is result
+
+    def test_sync_raise_on_async_fs_result(self) -> None:
+        result = SimulationResult(
+            run_dir=Path("output/async_fail"),
+            success=False,
+            exit_code=1,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.1,
+            async_fs=InMemoryAsyncFileSystem(),
+        )
+        with pytest.raises(RuntimeError, match="async"):
+            result.raise_for_status()
+
+    def test_repr_leaves_out_output_streams(self, tmp_path: Path) -> None:
+        assert "lots of output" not in repr(_failed_result(tmp_path))

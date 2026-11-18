@@ -36,7 +36,7 @@ All `None` returns mean "the file doesn't exist" — EnergyPlus may not produce 
 --8<-- "agent_references/snippets/result-parsing.py:errors"
 ```
 
-`severe()` includes both `Severe` and `Fatal`. Always treat a non-empty `severe()` as a simulation failure even if EnergyPlus exited zero — many corrupt-output cases leave the file present but unreadable.
+`simulate()` does not raise when EnergyPlus fails: the result has `success=False`, and `result.sql` may still open a partial database. `result.raise_for_status()` raises `SimulationError` for a failed run (the fatal and first severe messages and the `.err` path in its message, the result in `.result`) and returns the result otherwise; `await result.async_raise_for_status()` for an `async_fs` result. `errs.severe` and `errs.fatal` are separate tuples (properties, not methods). Treat a non-empty `errs.severe` as suspect even if EnergyPlus exited zero — many corrupt-output cases leave the file present but unreadable.
 
 ## Time series from SQLite
 
@@ -174,7 +174,7 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
     --8<-- "agent_references/snippets/result-parsing.py:mistake-variable-good"
     ```
 
-!!! failure "ignoring `result.errors.has_severe()`"
+!!! failure "ignoring a failed run"
 
     ```python
     df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")

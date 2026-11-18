@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `SimulationResult.raise_for_status()` (and `async_raise_for_status()`) raised `SimulationError` for a
+  failed run, quoting the fatal and first severe messages and the `.err` path; `ErrorReport.summary()`
+  quoted those messages too. ([#328](https://github.com/idfkit/idfkit/pull/328))
 - `SearchResult.variants` and `SpatialResult.variants` listed a station's TMYx datasets newest first,
   `WeatherStation.dataset_years` and `station_key` told them apart and grouped them, and
   `newest_first()` sorted them; `get_timeseries(environment="all")` read every environment.
@@ -58,6 +61,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Validation error `E009` quoted the reference as typed instead of uppercased, named the reference
+  list it was looked up in and suggested the closest declared names.
+  ([#328](https://github.com/idfkit/idfkit/pull/328))
+- `SimulationResult`'s repr left out `stdout` and `stderr`.
+  ([#328](https://github.com/idfkit/idfkit/pull/328))
 - **Breaking:** `SQLResult.get_timeseries()` with the default `key_value="*"` raised
   `ResultLookupError` listing the keys when a variable was reported for several, instead of returning
   an arbitrary one; pass `key_value=` (or `frequency=` for several frequencies).
@@ -167,6 +175,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `doc[obj_type].remove(obj)` removed the object from the document as `removeidfobject()` does;
+  it had left the object in the reference graph, so `get_referencing()` still reported it.
+  ([#328](https://github.com/idfkit/idfkit/pull/328))
 - `simulate(annual=True)` and `async_simulate(annual=True)` raised `SimulationError` for a model
   with no `RunPeriod`, where EnergyPlus simulated nothing and reported success; `get_timeseries()`
   raised `ResultLookupError` for such a run instead of returning an empty series.

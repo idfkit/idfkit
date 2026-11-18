@@ -105,6 +105,30 @@ class TestSummary:
         assert "Fatal: 1" in summary
         assert "Severe: 2" in summary
         assert "terminated with fatal error" in summary
+        assert "  Fatal: GetSurfaceData: Errors too severe, program terminates." in summary
+        assert "  Severe: GetSurfaceData: Some Coverage Checks Resulted in Errors." in summary
+        assert "    ...Number of Coverage Errors=2" in summary
+        assert "more severe" not in summary
+
+    def test_summary_caps_severe_messages(self) -> None:
+        text = "".join(f"   ** Severe  ** Problem {i}\n" for i in range(5))
+        summary = ErrorReport.from_string(text).summary(max_messages=2)
+        assert "Problem 1" in summary
+        assert "Problem 2" not in summary
+        assert "... and 3 more severe error(s)" in summary
+
+    def test_summary_without_messages(self) -> None:
+        report = ErrorReport.from_file(FIXTURES / "sample_fatal.err")
+        summary = report.summary(max_messages=0)
+        assert "Fatal: GetSurfaceData" in summary
+        assert "Severe: GetSurfaceData" not in summary
+        assert "... and 2 more severe error(s)" in summary
+
+    def test_summary_without_messages_or_fatal(self) -> None:
+        report = ErrorReport.from_string("   ** Severe  ** A\n   ** Severe  ** B\n")
+        summary = report.summary(max_messages=0)
+        assert "Severe: A" not in summary
+        assert "... and 2 more severe error(s)" in summary
 
 
 class TestFrozenImmutability:

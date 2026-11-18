@@ -9,10 +9,10 @@ result: SimulationResult = ...  # type: ignore[assignment]
 # --8<-- [start:quickstart]
 result = simulate(doc, "weather.epw")
 
-# 1. Always check errors first
-if result.errors.has_severe:
+# 1. Always check errors first: raise SimulationError if EnergyPlus failed
+result.raise_for_status()
+if result.errors.has_severe:  # a run can succeed with severe errors; read them
     print(result.errors.summary())
-    raise SystemExit
 
 # 2. Time series
 ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office", frequency="Hourly")
@@ -25,7 +25,8 @@ rows = result.sql.get_tabular_data(report_name="AnnualBuildingUtilityPerformance
 
 # --8<-- [start:errors]
 errs = result.errors  # ErrorReport
-print(errs.summary())  # human-readable rollup
+print(errs.summary())  # counts, then the fatal and first 3 severe messages
+print(errs.summary(max_messages=10))  # quote more severe messages
 
 if errs.has_severe:  # property, not method
     for msg in errs.severe:  # tuple[ErrorMessage, ...]
@@ -246,6 +247,7 @@ doc.add(
 
 
 # --8<-- [start:mistake-errors-good]
+result.raise_for_status()  # SimulationError naming the cause and the .err path
 if result.errors.has_severe:
     raise SystemExit(result.errors.summary())
 df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")

@@ -40,7 +40,7 @@ idfkit registers references at three points:
 2. **On `add` / `addidfobject`** — `doc.add("People", ..., zone_or_zonelist_or_space_or_spacelist_name="Office")` registers the edge.
 3. **On field mutation** — setting `obj.zone_or_zonelist_or_space_or_spacelist_name = "Office"` swaps the edge atomically.
 
-`doc.removeidfobject(obj)` unregisters every edge originating from `obj`. `obj.name = "new"` triggers `notify_name_change`, which rewrites every edge that pointed at `obj` to point at the new name and rewrites every field carrying the old name.
+`doc.removeidfobject(obj)` (or `doc[obj_type].remove(obj)`, which does the same) unregisters every edge originating from `obj`. `obj.name = "new"` triggers `notify_name_change`, which rewrites every edge that pointed at `obj` to point at the new name and rewrites every field carrying the old name.
 
 The graph is keyed off **reference lists** declared in the EpJSON schema (e.g. `ZoneNames`, `ScheduleNames`, `BranchNames`). idfkit consults the schema to know which fields participate, so you never need to register edges manually.
 

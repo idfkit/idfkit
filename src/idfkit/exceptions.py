@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from .objects import IDFObject
+    from .simulation.result import SimulationResult
 
 
 class IdfKitError(Exception):
@@ -56,11 +57,13 @@ def _format_subprocess_failure(
 ) -> str:
     """Shared subprocess-failure message formatter.
 
-    Appends ``(exit code N)`` and a 500-char-truncated stderr tail to *message*.
+    Appends ``(exit code N)`` to the first line of *message* and a 500-char-truncated stderr tail
+    to the whole.
     """
     msg = message
     if exit_code is not None:
-        msg += f" (exit code {exit_code})"
+        head, sep, rest = msg.partition("\n")
+        msg = f"{head} (exit code {exit_code}){sep}{rest}"
     if stderr:
         msg += f"\nstderr: {stderr.strip()[:500]}"
     return msg
@@ -644,7 +647,15 @@ class ExpandObjectsError(IdfKitError):
 
 
 class SimulationError(IdfKitError):
-    """Raised when an EnergyPlus simulation fails."""
+    """Raised when an EnergyPlus simulation fails.
+
+    Attributes:
+        exit_code: EnergyPlus's exit code, if it ran and exited.
+        stderr: Its standard error, if any.
+        result: The failed run's result, when raised by
+            [SimulationResult.raise_for_status][idfkit.simulation.result.SimulationResult.raise_for_status];
+            read its ``errors`` for every message.
+    """
 
     def __init__(
         self,
@@ -652,9 +663,11 @@ class SimulationError(IdfKitError):
         *,
         exit_code: int | None = None,
         stderr: str | None = None,
+        result: SimulationResult | None = None,
     ) -> None:
         self.exit_code = exit_code
         self.stderr = stderr
+        self.result = result
         super().__init__(_format_subprocess_failure(message, exit_code=exit_code, stderr=stderr))
 
 

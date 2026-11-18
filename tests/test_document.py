@@ -824,6 +824,48 @@ class TestRemoveIdfObjectEdgeCases:
         assert len(doc.cst.nodes) == nodes_before
 
 
+class TestCollectionRemove:
+    """``collection.remove(obj)`` removes the object from the document, as ``removeidfobject`` does."""
+
+    def test_remove_unregisters_references(self, simple_doc: IDFDocument) -> None:
+        construction = simple_doc["Construction"]["TestConstruction"]
+        simple_doc["Construction"].remove(construction)
+        assert "TestConstruction" not in simple_doc["Construction"]
+        assert construction not in simple_doc.get_referencing("TestMaterial")
+
+    def test_rename_no_longer_edits_removed_object(self, simple_doc: IDFDocument) -> None:
+        construction = simple_doc["Construction"]["TestConstruction"]
+        simple_doc["Construction"].remove(construction)
+        simple_doc["Material"]["TestMaterial"].name = "Renamed"
+        assert construction.outside_layer == "TestMaterial"
+
+    def test_remove_clears_cst_node(self, idf_file: Path) -> None:
+        doc = load_idf(str(idf_file), preserve_formatting=True)
+        assert doc.cst is not None
+        zone = doc["Zone"]["TestZone"]
+        doc["Zone"].remove(zone)
+        assert all(node.obj is not zone for node in doc.cst.nodes)
+        assert "Zone,\n  TestZone," not in write_idf(doc)
+
+    def test_remove_invalidates_schedule_cache(self, empty_doc: IDFDocument) -> None:
+        sched = empty_doc.add("Schedule:Constant", "S1", {"hourly_value": 1.0})
+        assert empty_doc.get_schedule("S1") is sched
+        empty_doc["Schedule:Constant"].remove(sched)
+        assert empty_doc.get_schedule("S1") is None
+
+    def test_remove_object_of_another_collection_is_ignored(self, simple_doc: IDFDocument) -> None:
+        material = simple_doc["Material"]["TestMaterial"]
+        simple_doc["Zone"].remove(material)
+        assert simple_doc["Material"]["TestMaterial"] is material
+        assert simple_doc.get_referencing("TestMaterial")
+
+    def test_remove_from_unpickled_document(self, simple_doc: IDFDocument) -> None:
+        doc = pickle.loads(pickle.dumps(simple_doc))  # noqa: S301
+        construction = doc["Construction"]["TestConstruction"]
+        doc["Construction"].remove(construction)
+        assert construction not in doc.get_referencing("TestMaterial")
+
+
 class TestNotifyNameChangeEdgeCases:
     """Tests for notify_name_change edge cases."""
 

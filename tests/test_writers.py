@@ -778,7 +778,7 @@ class TestWriteIdfLossless:
             _write_idf_lossless(doc)
 
     def test_removed_object_skipped_in_lossless_output(self, tmp_path: Path) -> None:
-        """Object removed via collection.remove bypasses CST clearing (L227)."""
+        """An object dropped from its collection alone (not the CST) is not written (L227)."""
         content = """\
 Version, 24.1;
 
@@ -794,11 +794,11 @@ Zone,
         idf_path.write_bytes(content.encode("latin-1"))
         doc = parse_idf(idf_path, preserve_formatting=True)
 
-        # Remove via the collection directly so CST node.obj is NOT cleared.
+        # Drop it from the collection's index only, so CST node.obj is NOT cleared.
         # This means _emit_cst_node will see node.obj set but id not in live_ids (L227).
         zone_remove = doc["Zone"]["ZoneRemove"]
         assert zone_remove is not None
-        doc["Zone"].remove(zone_remove)  # pyright: ignore[reportArgumentType]
+        doc["Zone"]._discard(zone_remove)  # pyright: ignore[reportPrivateUsage]
 
         output = write_idf(doc)
         assert "ZoneKeep" in output

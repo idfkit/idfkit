@@ -1126,13 +1126,21 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             This method is also the recommended idfkit API.  Alternatively,
             use `popidfobject()` to remove by index.
         """
-        obj_type = obj.obj_type
-
         # Resolved, not a raw dict hit: ``attach``-style callers file an object
         # under the schema's spelling, so a mis-cased ``obj.obj_type`` would
         # look in a collection that does not exist and leave the object in the
         # document while reporting it removed.
-        self._lookup_collection(obj_type).remove(obj)
+        self._remove_from(self._lookup_collection(obj.obj_type), obj)
+
+    def _remove_from(self, collection: IDFCollection[Any], obj: IDFObject) -> None:
+        """Remove *obj* from *collection*, the reference graph and the CST.
+
+        The body of [removeidfobject][idfkit.document.IDFDocument.removeidfobject], and what
+        [IDFCollection.remove][idfkit.objects.IDFCollection.remove] calls for a collection of
+        this document.
+        """
+        obj_type = obj.obj_type
+        collection._discard(obj)  # pyright: ignore[reportPrivateUsage]
 
         # Remove from reference graph
         self._references.unregister(obj)

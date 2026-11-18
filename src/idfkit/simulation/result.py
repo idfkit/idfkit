@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
+from ..exceptions import SimulationError
 from .parsers.err import ErrorReport
 
 if TYPE_CHECKING:
@@ -162,8 +163,8 @@ class SimulationResult:
     run_dir: Path
     success: bool
     exit_code: int | None
-    stdout: str
-    stderr: str
+    stdout: str = field(repr=False)
+    stderr: str = field(repr=False)
     runtime_seconds: float
     output_prefix: str = "eplus"
     fs: FileSystem | None = field(default=None, repr=False)
@@ -207,6 +208,49 @@ class SimulationResult:
 
     def __exit__(self, *exc: object) -> None:
         self.close()
+
+    def raise_for_status(self) -> SimulationResult:
+        """Raise if the run failed; return this result if it succeeded.
+
+        ``simulate()`` reports a failed run in the result rather than raising, so a caller that
+        wants to stop on failure calls this: ``result = simulate(doc, epw).raise_for_status()``.
+
+        Returns:
+            This result, when [success][idfkit.simulation.result.SimulationResult.success] is true.
+
+        Raises:
+            SimulationError: If the run failed. Its message names the ``.err`` file and quotes the
+                fatal and first severe errors; its ``result`` is this result.
+            RuntimeError: If the result reads its files through an ``AsyncFileSystem``; use
+                [async_raise_for_status][idfkit.simulation.result.SimulationResult.async_raise_for_status].
+        """
+        if self.success:
+            return self
+        raise self._failure(self.errors, self.err_path)
+
+    async def async_raise_for_status(self) -> SimulationResult:
+        """Raise if the run failed; return this result if it succeeded (async).
+
+        Non-blocking counterpart to [raise_for_status][idfkit.simulation.result.SimulationResult.raise_for_status].
+
+        Raises:
+            SimulationError: If the run failed.
+        """
+        if self.success:
+            return self
+        report = await self.async_errors()
+        raise self._failure(report, await self._async_find_output_file(".err"))
+
+    def _failure(self, report: ErrorReport, err_path: Path | None) -> SimulationError:
+        """The error :meth:`raise_for_status` raises for this failed run."""
+        msg = "EnergyPlus simulation failed"
+        if report.error_count:
+            msg += f"\n{report.summary()}"
+        if err_path is not None:
+            msg += f"\nFull error report: {err_path}"
+        # Without errors in the .err file (a refused job, a timeout), stderr says why.
+        stderr = None if report.error_count else self.stderr or None
+        return SimulationError(msg, exit_code=self.exit_code, stderr=stderr, result=self)
 
     @property
     def errors(self) -> ErrorReport:
