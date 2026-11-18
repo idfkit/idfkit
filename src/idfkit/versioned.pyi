@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any, Literal, TypeAlias, TypeVar, overload
 
-from typing_extensions import TypedDict, Unpack, deprecated
+from typing_extensions import Required, TypedDict, Unpack, deprecated
 
 from . import _generated_types as _g
 from ._creation import _v0 as _cv0
@@ -3709,21 +3709,21 @@ class _ScheduleYear_v8_9Fields(_g._ScheduleYearCommonFields, total=False):
 class ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1(_g._TypedExtensibleGroup):
     """One schedule_weeks group inside :class:`ScheduleYear_v9_0_to_v22_1`."""
 
-    schedule_week_name: str | None
-    start_month: float | None
-    start_day: float | None
-    end_month: float | None
-    end_day: float | None
+    schedule_week_name: str
+    start_month: float
+    start_day: float
+    end_month: float
+    end_day: float
     def as_dict(self) -> ScheduleYearScheduleWeeksItem_v9_0_to_v22_1: ...  # type: ignore[override]
 
 class ScheduleYearScheduleWeeksItem_v9_0_to_v22_1(TypedDict, total=False):
-    """One group of :class:`ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    schedule_week_name: str | None
-    start_month: float | None
-    start_day: float | None
-    end_month: float | None
-    end_day: float | None
+    schedule_week_name: Required[str]
+    start_month: Required[float]
+    start_day: Required[float]
+    end_month: Required[float]
+    end_day: Required[float]
 
 class ScheduleYear_v9_0_to_v22_1(_g.AnyScheduleYear):
     """``Schedule:Year`` as declared in EnergyPlus 9.0.1 to 22.1.0. A Schedule:Year contains from 1 to 52 week schedules"""
@@ -4348,15 +4348,15 @@ class _ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields(_g._ZoneHVACHybridUnitaryHV
 class DaylightingControlsControlDataGroup_v8_9_to_v9_5(_g.AnyDaylightingControlsControlDataGroup):
     """One control_data group inside :class:`DaylightingControls_v8_9_to_v9_5`."""
 
-    daylighting_reference_point_name: str | None
+    daylighting_reference_point_name: str
     fraction_of_zone_controlled_by_reference_point: float | None
     illuminance_setpoint_at_reference_point: float | None
     def as_dict(self) -> DaylightingControlsControlDataItem_v8_9_to_v9_5: ...  # type: ignore[override]
 
 class DaylightingControlsControlDataItem_v8_9_to_v9_5(TypedDict, total=False):
-    """One group of :class:`DaylightingControlsControlDataGroup_v8_9_to_v9_5` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`DaylightingControlsControlDataGroup_v8_9_to_v9_5` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    daylighting_reference_point_name: str | None
+    daylighting_reference_point_name: Required[str]
     fraction_of_zone_controlled_by_reference_point: float | None
     illuminance_setpoint_at_reference_point: float | None
 
@@ -4383,15 +4383,15 @@ class _DaylightingControls_v8_9_to_v9_5Fields(_g._DaylightingControlsCommonField
 class DaylightingControlsControlDataGroup_v9_6_to_v22_1(_g.AnyDaylightingControlsControlDataGroup):
     """One control_data group inside :class:`DaylightingControls_v9_6_to_v22_1`."""
 
-    daylighting_reference_point_name: str | None
+    daylighting_reference_point_name: str
     fraction_of_lights_controlled_by_reference_point: float | None
     illuminance_setpoint_at_reference_point: float | None
     def as_dict(self) -> DaylightingControlsControlDataItem_v9_6_to_v22_1: ...  # type: ignore[override]
 
 class DaylightingControlsControlDataItem_v9_6_to_v22_1(TypedDict, total=False):
-    """One group of :class:`DaylightingControlsControlDataGroup_v9_6_to_v22_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`DaylightingControlsControlDataGroup_v9_6_to_v22_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    daylighting_reference_point_name: str | None
+    daylighting_reference_point_name: Required[str]
     fraction_of_lights_controlled_by_reference_point: float | None
     illuminance_setpoint_at_reference_point: float | None
 
@@ -4663,7 +4663,7 @@ class OutputTableAnnualVariableDetailsGroup_v8_9_to_v22_1(_g.AnyOutputTableAnnua
     def as_dict(self) -> OutputTableAnnualVariableDetailsItem_v8_9_to_v22_1: ...  # type: ignore[override]
 
 class OutputTableAnnualVariableDetailsItem_v8_9_to_v22_1(TypedDict, total=False):
-    """One group of :class:`OutputTableAnnualVariableDetailsGroup_v8_9_to_v22_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`OutputTableAnnualVariableDetailsGroup_v8_9_to_v22_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     variable_or_meter_or_ems_variable_or_field_name: str | None
     aggregation_type_for_variable_or_meter: (
@@ -6197,7 +6197,7 @@ class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1(_g._
     def as_dict(self) -> ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v8_9_to_v9_1: ...  # type: ignore[override]
 
 class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v8_9_to_v9_1(TypedDict, total=False):
-    """One group of :class:`ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     from_surface: str | None
     to_surface: str | None
@@ -6233,7 +6233,7 @@ class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v9_2_to_v9_3(_g._
     def as_dict(self) -> ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v9_2_to_v9_3: ...  # type: ignore[override]
 
 class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v9_2_to_v9_3(TypedDict, total=False):
-    """One group of :class:`ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v9_2_to_v9_3` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v9_2_to_v9_3` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     from_surface: str | None
     to_surface: str | None
@@ -7416,7 +7416,7 @@ class OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2(_g.AnyOutputTableSummar
     def as_dict(self) -> OutputTableSummaryReportsReportsItem_v8_9_to_v9_2: ...  # type: ignore[override]
 
 class OutputTableSummaryReportsReportsItem_v8_9_to_v9_2(TypedDict, total=False):
-    """One group of :class:`OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     report_name: str | None
 
@@ -7544,7 +7544,7 @@ class OutputTableSummaryReportsReportsGroup_v9_3(_g.AnyOutputTableSummaryReports
     def as_dict(self) -> OutputTableSummaryReportsReportsItem_v9_3: ...  # type: ignore[override]
 
 class OutputTableSummaryReportsReportsItem_v9_3(TypedDict, total=False):
-    """One group of :class:`OutputTableSummaryReportsReportsGroup_v9_3` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`OutputTableSummaryReportsReportsGroup_v9_3` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     report_name: (
         Literal[
@@ -7775,7 +7775,7 @@ class OutputTableSummaryReportsReportsGroup_v9_4(_g.AnyOutputTableSummaryReports
     def as_dict(self) -> OutputTableSummaryReportsReportsItem_v9_4: ...  # type: ignore[override]
 
 class OutputTableSummaryReportsReportsItem_v9_4(TypedDict, total=False):
-    """One group of :class:`OutputTableSummaryReportsReportsGroup_v9_4` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`OutputTableSummaryReportsReportsGroup_v9_4` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     report_name: (
         Literal[
@@ -10713,15 +10713,15 @@ class ControllerMechanicalVentilationZoneSpecificationsGroup_v8_9_to_v9_2(
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation_v8_9_to_v9_2`."""
 
     design_specification_outdoor_air_object_name: str | None
-    zone_name: str | None
+    zone_name: str
     design_specification_zone_air_distribution_object_name: str | None
     def as_dict(self) -> ControllerMechanicalVentilationZoneSpecificationsItem_v8_9_to_v9_2: ...  # type: ignore[override]
 
 class ControllerMechanicalVentilationZoneSpecificationsItem_v8_9_to_v9_2(TypedDict, total=False):
-    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v8_9_to_v9_2` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v8_9_to_v9_2` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     design_specification_outdoor_air_object_name: str | None
-    zone_name: str | None
+    zone_name: Required[str]
     design_specification_zone_air_distribution_object_name: str | None
 
 class ControllerMechanicalVentilation_v8_9_to_v9_2(_g.AnyControllerMechanicalVentilation):
@@ -10775,15 +10775,15 @@ class ControllerMechanicalVentilationZoneSpecificationsGroup_v9_3_to_v9_4(
 ):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation_v9_3_to_v9_4`."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
     def as_dict(self) -> ControllerMechanicalVentilationZoneSpecificationsItem_v9_3_to_v9_4: ...  # type: ignore[override]
 
 class ControllerMechanicalVentilationZoneSpecificationsItem_v9_3_to_v9_4(TypedDict, total=False):
-    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v9_3_to_v9_4` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v9_3_to_v9_4` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: Required[str]
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
 
@@ -10838,15 +10838,15 @@ class ControllerMechanicalVentilationZoneSpecificationsGroup_v9_5(
 ):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation_v9_5`."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
     def as_dict(self) -> ControllerMechanicalVentilationZoneSpecificationsItem_v9_5: ...  # type: ignore[override]
 
 class ControllerMechanicalVentilationZoneSpecificationsItem_v9_5(TypedDict, total=False):
-    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v9_5` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup_v9_5` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: Required[str]
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
 
@@ -11551,15 +11551,15 @@ class _EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1Fields(
 class TableOneIndependentVariableValuesGroup_v8_9(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableOneIndependentVariable_v8_9`."""
 
-    output_value_1: float | None
-    x_value_1: float | None
+    output_value_1: float
+    x_value_1: float
     def as_dict(self) -> TableOneIndependentVariableValuesItem_v8_9: ...  # type: ignore[override]
 
 class TableOneIndependentVariableValuesItem_v8_9(TypedDict, total=False):
-    """One group of :class:`TableOneIndependentVariableValuesGroup_v8_9` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableOneIndependentVariableValuesGroup_v8_9` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    output_value_1: float | None
-    x_value_1: float | None
+    output_value_1: Required[float]
+    x_value_1: Required[float]
 
 class TableOneIndependentVariable_v8_9(_g._TypedIDFObject):
     """``Table:OneIndependentVariable`` as declared in EnergyPlus 8.9.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
@@ -11612,15 +11612,15 @@ class _TableOneIndependentVariable_v8_9Fields(TypedDict, total=False):
 class TableOneIndependentVariableValuesGroup_v9_0_to_v9_1(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableOneIndependentVariable_v9_0_to_v9_1`."""
 
-    output_value_1: float | None
-    x_value_1: float | None
+    output_value_1: float
+    x_value_1: float
     def as_dict(self) -> TableOneIndependentVariableValuesItem_v9_0_to_v9_1: ...  # type: ignore[override]
 
 class TableOneIndependentVariableValuesItem_v9_0_to_v9_1(TypedDict, total=False):
-    """One group of :class:`TableOneIndependentVariableValuesGroup_v9_0_to_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableOneIndependentVariableValuesGroup_v9_0_to_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    output_value_1: float | None
-    x_value_1: float | None
+    output_value_1: Required[float]
+    x_value_1: Required[float]
 
 class TableOneIndependentVariable_v9_0_to_v9_1(_g._TypedIDFObject):
     """``Table:OneIndependentVariable`` as declared in EnergyPlus 9.0.1 to 9.1.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
@@ -12643,54 +12643,51 @@ class _CentralHeatPumpSystem_v22_2_to_v26_1Fields(_g._CentralHeatPumpSystemCommo
 class ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0(_g.AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v8_9_to_v9_0`."""
 
-    zone_equipment_object_type: (
-        Literal[
-            "AirLoopHVAC:UnitarySystem",
-            "AirTerminal:SingleDuct:Uncontrolled",
-            "Fan:ZoneExhaust",
-            "HeatExchanger:AirToAir:FlatPlate",
-            "WaterHeater:HeatPump:PumpedCondenser",
-            "WaterHeater:HeatPump:WrappedCondenser",
-            "ZoneHVAC:AirDistributionUnit",
-            "ZoneHVAC:Baseboard:Convective:Electric",
-            "ZoneHVAC:Baseboard:Convective:Water",
-            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
-            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
-            "ZoneHVAC:Baseboard:RadiantConvective:Water",
-            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
-            "ZoneHVAC:Dehumidifier:DX",
-            "ZoneHVAC:EnergyRecoveryVentilator",
-            "ZoneHVAC:EvaporativeCoolerUnit",
-            "ZoneHVAC:ForcedAir:UserDefined",
-            "ZoneHVAC:FourPipeFanCoil",
-            "ZoneHVAC:HighTemperatureRadiant",
-            "ZoneHVAC:HybridUnitaryHVAC",
-            "ZoneHVAC:IdealLoadsAirSystem",
-            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
-            "ZoneHVAC:LowTemperatureRadiant:Electric",
-            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
-            "ZoneHVAC:OutdoorAirUnit",
-            "ZoneHVAC:PackagedTerminalAirConditioner",
-            "ZoneHVAC:PackagedTerminalHeatPump",
-            "ZoneHVAC:RefrigerationChillerSet",
-            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
-            "ZoneHVAC:UnitHeater",
-            "ZoneHVAC:UnitVentilator",
-            "ZoneHVAC:VentilatedSlab",
-            "ZoneHVAC:WaterToAirHeatPump",
-            "ZoneHVAC:WindowAirConditioner",
-        ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
-    zone_equipment_cooling_sequence: float | None
-    zone_equipment_name: str | None
+    zone_equipment_object_type: Literal[
+        "AirLoopHVAC:UnitarySystem",
+        "AirTerminal:SingleDuct:Uncontrolled",
+        "Fan:ZoneExhaust",
+        "HeatExchanger:AirToAir:FlatPlate",
+        "WaterHeater:HeatPump:PumpedCondenser",
+        "WaterHeater:HeatPump:WrappedCondenser",
+        "ZoneHVAC:AirDistributionUnit",
+        "ZoneHVAC:Baseboard:Convective:Electric",
+        "ZoneHVAC:Baseboard:Convective:Water",
+        "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+        "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+        "ZoneHVAC:Baseboard:RadiantConvective:Water",
+        "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+        "ZoneHVAC:Dehumidifier:DX",
+        "ZoneHVAC:EnergyRecoveryVentilator",
+        "ZoneHVAC:EvaporativeCoolerUnit",
+        "ZoneHVAC:ForcedAir:UserDefined",
+        "ZoneHVAC:FourPipeFanCoil",
+        "ZoneHVAC:HighTemperatureRadiant",
+        "ZoneHVAC:HybridUnitaryHVAC",
+        "ZoneHVAC:IdealLoadsAirSystem",
+        "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+        "ZoneHVAC:LowTemperatureRadiant:Electric",
+        "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+        "ZoneHVAC:OutdoorAirUnit",
+        "ZoneHVAC:PackagedTerminalAirConditioner",
+        "ZoneHVAC:PackagedTerminalHeatPump",
+        "ZoneHVAC:RefrigerationChillerSet",
+        "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+        "ZoneHVAC:UnitHeater",
+        "ZoneHVAC:UnitVentilator",
+        "ZoneHVAC:VentilatedSlab",
+        "ZoneHVAC:WaterToAirHeatPump",
+        "ZoneHVAC:WindowAirConditioner",
+    ]
+    zone_equipment_heating_or_no_load_sequence: float
+    zone_equipment_cooling_sequence: float
+    zone_equipment_name: str
     def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0: ...  # type: ignore[override]
 
 class ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0(TypedDict, total=False):
-    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_equipment_object_type: (
+    zone_equipment_object_type: Required[
         Literal[
             "AirLoopHVAC:UnitarySystem",
             "AirTerminal:SingleDuct:Uncontrolled",
@@ -12727,11 +12724,10 @@ class ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0(TypedDict, total=False):
             "ZoneHVAC:WaterToAirHeatPump",
             "ZoneHVAC:WindowAirConditioner",
         ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
-    zone_equipment_cooling_sequence: float | None
-    zone_equipment_name: str | None
+    ]
+    zone_equipment_heating_or_no_load_sequence: Required[float]
+    zone_equipment_cooling_sequence: Required[float]
+    zone_equipment_name: Required[str]
 
 class ZoneHVACEquipmentList_v8_9_to_v9_0(_g.AnyZoneHVACEquipmentList):
     """``ZoneHVAC:EquipmentList`` as declared in EnergyPlus 8.9.0 to 9.0.1. List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit or AirTerminal:SingleDuct:Uncontrolled ..."""
@@ -12751,59 +12747,56 @@ class _ZoneHVACEquipmentList_v8_9_to_v9_0Fields(_g._ZoneHVACEquipmentListCommonF
 class ZoneHVACEquipmentListEquipmentGroup_v9_1(_g.AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v9_1`."""
 
-    zone_equipment_cooling_sequence: float | None
+    zone_equipment_cooling_sequence: float
     zone_equipment_sequential_heating_fraction: float | None
-    zone_equipment_name: str | None
-    zone_equipment_object_type: (
-        Literal[
-            "AirLoopHVAC:UnitarySystem",
-            "AirTerminal:SingleDuct:Uncontrolled",
-            "Fan:ZoneExhaust",
-            "HeatExchanger:AirToAir:FlatPlate",
-            "WaterHeater:HeatPump:PumpedCondenser",
-            "WaterHeater:HeatPump:WrappedCondenser",
-            "ZoneHVAC:AirDistributionUnit",
-            "ZoneHVAC:Baseboard:Convective:Electric",
-            "ZoneHVAC:Baseboard:Convective:Water",
-            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
-            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
-            "ZoneHVAC:Baseboard:RadiantConvective:Water",
-            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
-            "ZoneHVAC:Dehumidifier:DX",
-            "ZoneHVAC:EnergyRecoveryVentilator",
-            "ZoneHVAC:EvaporativeCoolerUnit",
-            "ZoneHVAC:ForcedAir:UserDefined",
-            "ZoneHVAC:FourPipeFanCoil",
-            "ZoneHVAC:HighTemperatureRadiant",
-            "ZoneHVAC:HybridUnitaryHVAC",
-            "ZoneHVAC:IdealLoadsAirSystem",
-            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
-            "ZoneHVAC:LowTemperatureRadiant:Electric",
-            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
-            "ZoneHVAC:OutdoorAirUnit",
-            "ZoneHVAC:PackagedTerminalAirConditioner",
-            "ZoneHVAC:PackagedTerminalHeatPump",
-            "ZoneHVAC:RefrigerationChillerSet",
-            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
-            "ZoneHVAC:UnitHeater",
-            "ZoneHVAC:UnitVentilator",
-            "ZoneHVAC:VentilatedSlab",
-            "ZoneHVAC:WaterToAirHeatPump",
-            "ZoneHVAC:WindowAirConditioner",
-        ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
+    zone_equipment_name: str
+    zone_equipment_object_type: Literal[
+        "AirLoopHVAC:UnitarySystem",
+        "AirTerminal:SingleDuct:Uncontrolled",
+        "Fan:ZoneExhaust",
+        "HeatExchanger:AirToAir:FlatPlate",
+        "WaterHeater:HeatPump:PumpedCondenser",
+        "WaterHeater:HeatPump:WrappedCondenser",
+        "ZoneHVAC:AirDistributionUnit",
+        "ZoneHVAC:Baseboard:Convective:Electric",
+        "ZoneHVAC:Baseboard:Convective:Water",
+        "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+        "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+        "ZoneHVAC:Baseboard:RadiantConvective:Water",
+        "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+        "ZoneHVAC:Dehumidifier:DX",
+        "ZoneHVAC:EnergyRecoveryVentilator",
+        "ZoneHVAC:EvaporativeCoolerUnit",
+        "ZoneHVAC:ForcedAir:UserDefined",
+        "ZoneHVAC:FourPipeFanCoil",
+        "ZoneHVAC:HighTemperatureRadiant",
+        "ZoneHVAC:HybridUnitaryHVAC",
+        "ZoneHVAC:IdealLoadsAirSystem",
+        "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+        "ZoneHVAC:LowTemperatureRadiant:Electric",
+        "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+        "ZoneHVAC:OutdoorAirUnit",
+        "ZoneHVAC:PackagedTerminalAirConditioner",
+        "ZoneHVAC:PackagedTerminalHeatPump",
+        "ZoneHVAC:RefrigerationChillerSet",
+        "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+        "ZoneHVAC:UnitHeater",
+        "ZoneHVAC:UnitVentilator",
+        "ZoneHVAC:VentilatedSlab",
+        "ZoneHVAC:WaterToAirHeatPump",
+        "ZoneHVAC:WindowAirConditioner",
+    ]
+    zone_equipment_heating_or_no_load_sequence: float
     zone_equipment_sequential_cooling_fraction: float | None
     def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem_v9_1: ...  # type: ignore[override]
 
 class ZoneHVACEquipmentListEquipmentItem_v9_1(TypedDict, total=False):
-    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_equipment_cooling_sequence: float | None
+    zone_equipment_cooling_sequence: Required[float]
     zone_equipment_sequential_heating_fraction: float | None
-    zone_equipment_name: str | None
-    zone_equipment_object_type: (
+    zone_equipment_name: Required[str]
+    zone_equipment_object_type: Required[
         Literal[
             "AirLoopHVAC:UnitarySystem",
             "AirTerminal:SingleDuct:Uncontrolled",
@@ -12840,9 +12833,8 @@ class ZoneHVACEquipmentListEquipmentItem_v9_1(TypedDict, total=False):
             "ZoneHVAC:WaterToAirHeatPump",
             "ZoneHVAC:WindowAirConditioner",
         ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
+    ]
+    zone_equipment_heating_or_no_load_sequence: Required[float]
     zone_equipment_sequential_cooling_fraction: float | None
 
 class ZoneHVACEquipmentList_v9_1(_g.AnyZoneHVACEquipmentList):
@@ -12861,60 +12853,57 @@ class _ZoneHVACEquipmentList_v9_1Fields(_g._ZoneHVACEquipmentListCommonFields, t
 class ZoneHVACEquipmentListEquipmentGroup_v9_2(_g.AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v9_2`."""
 
-    zone_equipment_cooling_sequence: float | None
+    zone_equipment_cooling_sequence: float
     zone_equipment_sequential_cooling_fraction_schedule_name: str | None
     zone_equipment_sequential_heating_fraction_schedule_name: str | None
-    zone_equipment_name: str | None
-    zone_equipment_object_type: (
-        Literal[
-            "AirLoopHVAC:UnitarySystem",
-            "AirTerminal:SingleDuct:Uncontrolled",
-            "Fan:ZoneExhaust",
-            "HeatExchanger:AirToAir:FlatPlate",
-            "WaterHeater:HeatPump:PumpedCondenser",
-            "WaterHeater:HeatPump:WrappedCondenser",
-            "ZoneHVAC:AirDistributionUnit",
-            "ZoneHVAC:Baseboard:Convective:Electric",
-            "ZoneHVAC:Baseboard:Convective:Water",
-            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
-            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
-            "ZoneHVAC:Baseboard:RadiantConvective:Water",
-            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
-            "ZoneHVAC:Dehumidifier:DX",
-            "ZoneHVAC:EnergyRecoveryVentilator",
-            "ZoneHVAC:EvaporativeCoolerUnit",
-            "ZoneHVAC:ForcedAir:UserDefined",
-            "ZoneHVAC:FourPipeFanCoil",
-            "ZoneHVAC:HighTemperatureRadiant",
-            "ZoneHVAC:HybridUnitaryHVAC",
-            "ZoneHVAC:IdealLoadsAirSystem",
-            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
-            "ZoneHVAC:LowTemperatureRadiant:Electric",
-            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
-            "ZoneHVAC:OutdoorAirUnit",
-            "ZoneHVAC:PackagedTerminalAirConditioner",
-            "ZoneHVAC:PackagedTerminalHeatPump",
-            "ZoneHVAC:RefrigerationChillerSet",
-            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
-            "ZoneHVAC:UnitHeater",
-            "ZoneHVAC:UnitVentilator",
-            "ZoneHVAC:VentilatedSlab",
-            "ZoneHVAC:WaterToAirHeatPump",
-            "ZoneHVAC:WindowAirConditioner",
-        ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
+    zone_equipment_name: str
+    zone_equipment_object_type: Literal[
+        "AirLoopHVAC:UnitarySystem",
+        "AirTerminal:SingleDuct:Uncontrolled",
+        "Fan:ZoneExhaust",
+        "HeatExchanger:AirToAir:FlatPlate",
+        "WaterHeater:HeatPump:PumpedCondenser",
+        "WaterHeater:HeatPump:WrappedCondenser",
+        "ZoneHVAC:AirDistributionUnit",
+        "ZoneHVAC:Baseboard:Convective:Electric",
+        "ZoneHVAC:Baseboard:Convective:Water",
+        "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+        "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+        "ZoneHVAC:Baseboard:RadiantConvective:Water",
+        "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+        "ZoneHVAC:Dehumidifier:DX",
+        "ZoneHVAC:EnergyRecoveryVentilator",
+        "ZoneHVAC:EvaporativeCoolerUnit",
+        "ZoneHVAC:ForcedAir:UserDefined",
+        "ZoneHVAC:FourPipeFanCoil",
+        "ZoneHVAC:HighTemperatureRadiant",
+        "ZoneHVAC:HybridUnitaryHVAC",
+        "ZoneHVAC:IdealLoadsAirSystem",
+        "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+        "ZoneHVAC:LowTemperatureRadiant:Electric",
+        "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+        "ZoneHVAC:OutdoorAirUnit",
+        "ZoneHVAC:PackagedTerminalAirConditioner",
+        "ZoneHVAC:PackagedTerminalHeatPump",
+        "ZoneHVAC:RefrigerationChillerSet",
+        "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+        "ZoneHVAC:UnitHeater",
+        "ZoneHVAC:UnitVentilator",
+        "ZoneHVAC:VentilatedSlab",
+        "ZoneHVAC:WaterToAirHeatPump",
+        "ZoneHVAC:WindowAirConditioner",
+    ]
+    zone_equipment_heating_or_no_load_sequence: float
     def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem_v9_2: ...  # type: ignore[override]
 
 class ZoneHVACEquipmentListEquipmentItem_v9_2(TypedDict, total=False):
-    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_2` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_2` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_equipment_cooling_sequence: float | None
+    zone_equipment_cooling_sequence: Required[float]
     zone_equipment_sequential_cooling_fraction_schedule_name: str | None
     zone_equipment_sequential_heating_fraction_schedule_name: str | None
-    zone_equipment_name: str | None
-    zone_equipment_object_type: (
+    zone_equipment_name: Required[str]
+    zone_equipment_object_type: Required[
         Literal[
             "AirLoopHVAC:UnitarySystem",
             "AirTerminal:SingleDuct:Uncontrolled",
@@ -12951,9 +12940,8 @@ class ZoneHVACEquipmentListEquipmentItem_v9_2(TypedDict, total=False):
             "ZoneHVAC:WaterToAirHeatPump",
             "ZoneHVAC:WindowAirConditioner",
         ]
-        | None
-    )
-    zone_equipment_heating_or_no_load_sequence: float | None
+    ]
+    zone_equipment_heating_or_no_load_sequence: Required[float]
 
 class ZoneHVACEquipmentList_v9_2(_g.AnyZoneHVACEquipmentList):
     """``ZoneHVAC:EquipmentList`` as declared in EnergyPlus 9.2.0. List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit or AirTerminal:SingleDuct:Uncontrolled ..."""
@@ -12971,55 +12959,52 @@ class _ZoneHVACEquipmentList_v9_2Fields(_g._ZoneHVACEquipmentListCommonFields, t
 class ZoneHVACEquipmentListEquipmentGroup_v9_3_to_v22_1(_g.AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v9_3_to_v22_1`."""
 
-    zone_equipment_object_type: (
-        Literal[
-            "AirLoopHVAC:UnitarySystem",
-            "Fan:ZoneExhaust",
-            "HeatExchanger:AirToAir:FlatPlate",
-            "WaterHeater:HeatPump:PumpedCondenser",
-            "WaterHeater:HeatPump:WrappedCondenser",
-            "ZoneHVAC:AirDistributionUnit",
-            "ZoneHVAC:Baseboard:Convective:Electric",
-            "ZoneHVAC:Baseboard:Convective:Water",
-            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
-            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
-            "ZoneHVAC:Baseboard:RadiantConvective:Water",
-            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
-            "ZoneHVAC:Dehumidifier:DX",
-            "ZoneHVAC:EnergyRecoveryVentilator",
-            "ZoneHVAC:EvaporativeCoolerUnit",
-            "ZoneHVAC:ForcedAir:UserDefined",
-            "ZoneHVAC:FourPipeFanCoil",
-            "ZoneHVAC:HighTemperatureRadiant",
-            "ZoneHVAC:HybridUnitaryHVAC",
-            "ZoneHVAC:IdealLoadsAirSystem",
-            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
-            "ZoneHVAC:LowTemperatureRadiant:Electric",
-            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
-            "ZoneHVAC:OutdoorAirUnit",
-            "ZoneHVAC:PackagedTerminalAirConditioner",
-            "ZoneHVAC:PackagedTerminalHeatPump",
-            "ZoneHVAC:RefrigerationChillerSet",
-            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
-            "ZoneHVAC:UnitHeater",
-            "ZoneHVAC:UnitVentilator",
-            "ZoneHVAC:VentilatedSlab",
-            "ZoneHVAC:WaterToAirHeatPump",
-            "ZoneHVAC:WindowAirConditioner",
-        ]
-        | None
-    )
-    zone_equipment_name: str | None
-    zone_equipment_cooling_sequence: float | None
-    zone_equipment_heating_or_no_load_sequence: float | None
+    zone_equipment_object_type: Literal[
+        "AirLoopHVAC:UnitarySystem",
+        "Fan:ZoneExhaust",
+        "HeatExchanger:AirToAir:FlatPlate",
+        "WaterHeater:HeatPump:PumpedCondenser",
+        "WaterHeater:HeatPump:WrappedCondenser",
+        "ZoneHVAC:AirDistributionUnit",
+        "ZoneHVAC:Baseboard:Convective:Electric",
+        "ZoneHVAC:Baseboard:Convective:Water",
+        "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+        "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+        "ZoneHVAC:Baseboard:RadiantConvective:Water",
+        "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+        "ZoneHVAC:Dehumidifier:DX",
+        "ZoneHVAC:EnergyRecoveryVentilator",
+        "ZoneHVAC:EvaporativeCoolerUnit",
+        "ZoneHVAC:ForcedAir:UserDefined",
+        "ZoneHVAC:FourPipeFanCoil",
+        "ZoneHVAC:HighTemperatureRadiant",
+        "ZoneHVAC:HybridUnitaryHVAC",
+        "ZoneHVAC:IdealLoadsAirSystem",
+        "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+        "ZoneHVAC:LowTemperatureRadiant:Electric",
+        "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+        "ZoneHVAC:OutdoorAirUnit",
+        "ZoneHVAC:PackagedTerminalAirConditioner",
+        "ZoneHVAC:PackagedTerminalHeatPump",
+        "ZoneHVAC:RefrigerationChillerSet",
+        "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+        "ZoneHVAC:UnitHeater",
+        "ZoneHVAC:UnitVentilator",
+        "ZoneHVAC:VentilatedSlab",
+        "ZoneHVAC:WaterToAirHeatPump",
+        "ZoneHVAC:WindowAirConditioner",
+    ]
+    zone_equipment_name: str
+    zone_equipment_cooling_sequence: float
+    zone_equipment_heating_or_no_load_sequence: float
     zone_equipment_sequential_cooling_fraction_schedule_name: str | None
     zone_equipment_sequential_heating_fraction_schedule_name: str | None
     def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem_v9_3_to_v22_1: ...  # type: ignore[override]
 
 class ZoneHVACEquipmentListEquipmentItem_v9_3_to_v22_1(TypedDict, total=False):
-    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_3_to_v22_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup_v9_3_to_v22_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
-    zone_equipment_object_type: (
+    zone_equipment_object_type: Required[
         Literal[
             "AirLoopHVAC:UnitarySystem",
             "Fan:ZoneExhaust",
@@ -13055,11 +13040,10 @@ class ZoneHVACEquipmentListEquipmentItem_v9_3_to_v22_1(TypedDict, total=False):
             "ZoneHVAC:WaterToAirHeatPump",
             "ZoneHVAC:WindowAirConditioner",
         ]
-        | None
-    )
-    zone_equipment_name: str | None
-    zone_equipment_cooling_sequence: float | None
-    zone_equipment_heating_or_no_load_sequence: float | None
+    ]
+    zone_equipment_name: Required[str]
+    zone_equipment_cooling_sequence: Required[float]
+    zone_equipment_heating_or_no_load_sequence: Required[float]
     zone_equipment_sequential_cooling_fraction_schedule_name: str | None
     zone_equipment_sequential_heating_fraction_schedule_name: str | None
 
@@ -13311,7 +13295,7 @@ class TableMultiVariableLookupValuesGroup_v8_9(_g._TypedExtensibleGroup):
     def as_dict(self) -> TableMultiVariableLookupValuesItem_v8_9: ...  # type: ignore[override]
 
 class TableMultiVariableLookupValuesItem_v8_9(TypedDict, total=False):
-    """One group of :class:`TableMultiVariableLookupValuesGroup_v8_9` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableMultiVariableLookupValuesGroup_v8_9` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     field_determined_by_the_number_of_independent_variables: float | None
 
@@ -13476,7 +13460,7 @@ class TableMultiVariableLookupValuesGroup_v9_0_to_v9_1(_g._TypedExtensibleGroup)
     def as_dict(self) -> TableMultiVariableLookupValuesItem_v9_0_to_v9_1: ...  # type: ignore[override]
 
 class TableMultiVariableLookupValuesItem_v9_0_to_v9_1(TypedDict, total=False):
-    """One group of :class:`TableMultiVariableLookupValuesGroup_v9_0_to_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableMultiVariableLookupValuesGroup_v9_0_to_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     field_determined_by_the_number_of_independent_variables: float | None
 
@@ -14836,7 +14820,7 @@ class TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1(_g._TypedExtensibleGr
     def as_dict(self) -> TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1: ...  # type: ignore[override]
 
 class TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1(TypedDict, total=False):
-    """One group of :class:`TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     output_value_1: float | None
     y_value_1: float | None
@@ -16515,7 +16499,7 @@ class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v8_9_to_v9_2
     def as_dict(self) -> RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v8_9_to_v9_2: ...  # type: ignore[override]
 
 class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v8_9_to_v9_2(TypedDict, total=False):
-    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v8_9_to_v9_2` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v8_9_to_v9_2` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     fraction_of_output_or_supply_air_from_hvac_equipment: float | None
     fraction_of_input_or_return_air_to_hvac_equipment: float | None
@@ -16637,7 +16621,7 @@ class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v9_3_to_v24_
     def as_dict(self) -> RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v9_3_to_v24_1: ...  # type: ignore[override]
 
 class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v9_3_to_v24_1(TypedDict, total=False):
-    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v9_3_to_v24_1` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v9_3_to_v24_1` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     zonehvac_or_air_terminal_equipment_object_type: (
         Literal[
@@ -17589,7 +17573,7 @@ class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4(
     def as_dict(self) -> RoomAirNodeAirflowNetworkInternalGainsGainsItem_v8_9_to_v9_4: ...  # type: ignore[override]
 
 class RoomAirNodeAirflowNetworkInternalGainsGainsItem_v8_9_to_v9_4(TypedDict, total=False):
-    """One group of :class:`RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     internal_gain_object_type: (
         Literal[
@@ -18273,7 +18257,7 @@ class PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6(_g._TypedExtensible
     def as_dict(self) -> PythonPluginSearchPathsPySearchPathsItem_v9_4_to_v9_6: ...  # type: ignore[override]
 
 class PythonPluginSearchPathsPySearchPathsItem_v9_4_to_v9_6(TypedDict, total=False):
-    """One group of :class:`PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6` as a dict, as ``add()`` and ``update()`` take it."""
+    """One group of :class:`PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6` as a dict, as ``as_list()`` gives it and ``add()`` and ``update()`` take it."""
 
     search_path: str | None
 

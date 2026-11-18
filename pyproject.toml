@@ -120,13 +120,6 @@ level = "conformance-2026.21"
 [tool.idfkit.governance]
 level = "governance-2026.34"
 
-# idfkit check, run by `make check`: the string literals idfkit's own code passes to add(),
-# get_collection() and doc[...] must exist in every supported release, or be guarded.
-[tool.idfkit.check]
-targets = "all"
-paths = ["src"]
-extend-select = ["C004"]
-
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"

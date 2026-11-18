@@ -109,6 +109,8 @@ The classes exist only in the stubs: import them from `idfkit.document` inside `
 
 An `Any<Class>` covers the releases idfkit supports. When idfkit adopts a release that drops or renames a field, that field leaves `Any<Class>`, and code using it stops type-checking: it would not work on that release either. A type the latest release no longer has, such as `DistrictHeating`, has no `Any<Class>`; annotate with its range class (`DistrictHeating_v8_9_to_v23_1`), imported from `idfkit.versioned` inside `if TYPE_CHECKING:`, since the range classes too exist only in the stubs.
 
+A number field keeps a whole number in the type it arrived as. One loaded from IDF, which does not tell `3` from `3.0`, reads as a `float`. One given as `3` to `add()`, to an unset field by assignment or `update()`, or in an epJSON file reads as the `int` `3`; writing `3` over a field that already holds `3.0` changes nothing, so it stays `3.0`. The field's type says `float`, which accepts an `int` (PEP 484), so a type checker allows both. To tell a number from `"Autocalculate"` or `None`, test for the string and for `None`, as `latest_ceiling` and `any_ceiling` do. `isinstance(height, float)` is false for the `int` `3`, so it would treat a ceiling height of `3` as missing.
+
 ### Reading and writing through `AnyIDFDocument`
 
 Reading a field gives any value some release allows; writing accepts only what every release accepts:
@@ -212,6 +214,12 @@ Reading a field gives its value, or `None` when it is unset. The exception is a 
 --8<-- "agent_references/snippets/document-and-objects.py:read-required"
 ```
 
+The same holds inside extensible groups. A group key that every release having it requires with no default (a vertex's `vertex_x_coordinate`, `vertex_y_coordinate` and `vertex_z_coordinate`, a `ZoneList` group's `zone_name`, about 120 keys in 69 types) reads as its value type on the group (`wall.vertices[0].vertex_z_coordinate` is a `float`) and is a `Required` key of the group's item `TypedDict`, so `p["vertex_z_coordinate"]` on an item of `as_list()` is a `float` with no `.get()` default. `add()` refuses a group without one (`E001` on `vertices[1].vertex_z_coordinate`), and a dict that leaves one out, or gives it `None`, is a type error. A group that lacks one anyway (a hand-written file, `validate=False`) raises `MissingRequiredFieldError` when the key is read, and so do `as_dict()` and `as_list()`, rather than return a dict its type says is complete; the error's `wrapper_key` and `group_index` (1-based) say which group. `group.get(key)`, `getattr(group, key, None)` and `group.items()` give `None` instead, and `obj.data[wrapper]` holds the groups as stored.
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:read-required-groups"
+```
+
 A blank value is stored as absent wherever it comes from (`add(..., f="")`, `obj.f = ""`, `""` or `null` in epJSON, an empty IDF field), so no field reads `""`, and `""` is not part of any field's type: clear a field with `None` in type-checked code.
 
 ### Choice values are read in the schema's spelling
@@ -250,7 +258,7 @@ Some object types have repeated field groups — vertices on a surface, branches
 --8<-- "agent_references/snippets/document-and-objects.py:extensible"
 ```
 
-`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`. In type-checked code, a group passed to `add()` or `update()` is a dict typed by the group's item type, a `TypedDict` of the group's fields, all optional: `vertices=[{"vertex_x_coordinate": 0.0, ...}]` takes a sequence of `BuildingSurfaceDetailedVerticesItem`, or of the group objects themselves (`vertices=list(other.vertices)`), so editors complete the keys and a misspelled key or wrong value is a type error. `wall.vertices.as_list()` returns `list[BuildingSurfaceDetailedVerticesItem]`, so a copy passes straight back (`vertices=wall.vertices.as_list()`); its keys are optional, as a blank field is left out, so read one with `.get()`. To build groups ahead of a call, annotate the list with the item type (`points: list[BuildingSurfaceDetailedVerticesItem] = []`, imported from `idfkit.document`); a list typed `list[dict[str, float]]` is not accepted. Each item type is named after its object type and group (`ScheduleWeekCompactDataItem`, `ZoneListZonesItem`).
+`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`. In type-checked code, a group passed to `add()` or `update()` is a dict typed by the group's item type, a `TypedDict` of the group's fields, with the keys every release requires `Required` and the others optional (see Reading fields): `vertices=[{"vertex_x_coordinate": 0.0, ...}]` takes a sequence of `BuildingSurfaceDetailedVerticesItem`, or of the group objects themselves (`vertices=list(other.vertices)`), so editors complete the keys and a misspelled key or wrong value is a type error. `wall.vertices.as_list()` returns `list[BuildingSurfaceDetailedVerticesItem]`, so a copy passes straight back (`vertices=wall.vertices.as_list()`); a required key is always present, and an optional one is left out when blank, so read an optional one with `.get()`. To build groups ahead of a call, annotate the list with the item type (`points: list[BuildingSurfaceDetailedVerticesItem] = []`, imported from `idfkit.document`); a list typed `list[dict[str, float]]` is not accepted. Each item type is named after its object type and group (`ScheduleWeekCompactDataItem`, `ZoneListZonesItem`).
 
 ## Iterating the whole model
 

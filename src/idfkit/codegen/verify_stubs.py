@@ -334,6 +334,9 @@ def _union_members(annotation: str) -> frozenset[str]:
         if isinstance(node, ast.BinOp) and isinstance(node.op, ast.BitOr):
             walk(node.left)
             walk(node.right)
+        elif isinstance(node, ast.Subscript) and ast.unparse(node.value) in ("Required", "NotRequired"):
+            # A TypedDict key's qualifier says whether it may be left out, not what it holds.
+            walk(node.slice)
         elif isinstance(node, ast.Subscript) and ast.unparse(node.value) == "Literal":
             elts = node.slice.elts if isinstance(node.slice, ast.Tuple) else [node.slice]
             members.update(f"Literal[{ast.unparse(e)}]" for e in elts)
@@ -417,8 +420,10 @@ def _schema_group(schema: EpJSONSchema, obj_type: str) -> tuple[str, dict[str, f
     pc = schema.get_parsing_cache(obj_type)
     if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
         return None
+    always = _REQUIRED_GROUP_READS.get(obj_type, frozenset())
     inner = {
         name: _value_members(sub, sub.get("type") if isinstance(sub.get("type"), str) else None)
+        - ({"None"} if name in always else set())
         for name, sub in pc.ext_inner_props.items()
         if name.isidentifier()
     }
@@ -460,6 +465,7 @@ def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problem
             item = _item_name(group_cls)
             if item not in module.classes or _members_of(_fields(module, item)) != inner:
                 problems.append(f"{where}: {item} does not hold the version's inner fields")
+            _check_item_required(module, item, obj_type, where, problems)
             _check_snapshot(module, group_cls, where, problems)
             keywords[wrapper] = frozenset({_group_items(group_cls)})
     if actual != expected:
@@ -720,6 +726,31 @@ def _required_reads(versions: tuple[Version, ...]) -> dict[str, frozenset[str]]:
     return {t: frozenset(f - optional.get(t, set())) for t, f in required.items()}
 
 
+# Extensible group keys every release whose group has them requires with no default, by type.
+_REQUIRED_GROUP_READS: dict[str, frozenset[str]] = {}
+
+
+def _required_group_reads(versions: tuple[Version, ...]) -> dict[str, frozenset[str]]:
+    """Re-derived from the schemas: a group key every release in *versions* that has it requires."""
+    from idfkit.schema import get_schema
+
+    required: dict[str, set[str]] = {}
+    optional: dict[str, set[str]] = {}
+    for ver in versions:
+        schema = get_schema(ver)
+        for obj_type in schema.object_types:
+            pc = schema.get_parsing_cache(obj_type)
+            if pc is None or not pc.ext_wrapper_key:
+                continue
+            inner = schema.get_inner_schema(obj_type) or {}
+            items: dict[str, Any] = inner.get("properties", {}).get(pc.ext_wrapper_key, {}).get("items", {})
+            properties: dict[str, Any] = items.get("properties", {})
+            listed = {k for k in items.get("required", []) if "default" not in properties.get(k, {})}
+            for name in properties:
+                (required if name in listed else optional).setdefault(obj_type, set()).add(name)
+    return {t: frozenset(f - optional.get(t, set())) for t, f in required.items()}
+
+
 def verify(
     types_source: str,
     document_source: str,
@@ -758,6 +789,8 @@ def verify(
         raise ValueError(msg)
     _REQUIRED_READS.clear()
     _REQUIRED_READS.update(_required_reads(versions))
+    _REQUIRED_GROUP_READS.clear()
+    _REQUIRED_GROUP_READS.update(_required_group_reads(versions))
     sources = list(versioned_sources)
     module = _read(document_source, _read(types_source))
     for source in sources:
@@ -985,7 +1018,18 @@ def _check_any_group(
     writable_fields = {name: setters.get(name, read) for name, read in _fields(module, group_cls).items()}
     if item not in module.classes or _members_of(_fields(module, item)) != _members_of(writable_fields):
         problems.append(f"{item}: its keys are not the writable fields of {group_cls}")
+    _check_item_required(module, item, obj_type, cls, problems)
     _check_snapshot(module, group_cls, group_cls, problems)
+
+
+def _check_item_required(module: _Module, item: str, obj_type: str, where: str, problems: list[str]) -> None:
+    """A group's item ``TypedDict`` marks ``Required`` exactly the keys every release requires."""
+    if item not in module.classes:
+        return
+    always = _REQUIRED_GROUP_READS.get(obj_type, frozenset())
+    marked = frozenset(name for name, annotation in _fields(module, item).items() if annotation.startswith("Required["))
+    if marked != always & set(_fields(module, item)):
+        problems.append(f"{where}: {item} marks {sorted(marked)} Required, not {sorted(always)}")
 
 
 def _check_version(module: _Module, ver: Version, is_latest: bool, problems: list[str]) -> None:

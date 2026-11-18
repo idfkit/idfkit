@@ -53,6 +53,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** for type checking, a type a model holds at most one of (`Building`, `Timestep`,
   `Output:SQLite`, ...) is reached by its singular, `doc.building`, still returning the collection.
   Replace `doc.output_sqlites` with `doc.output_sqlite`; for `Version`, use `doc["Version"]` ([#308](https://github.com/idfkit/idfkit/pull/308)).
+- **Breaking:** for type checking, an extensible group key that every release requires lost its
+  `| None` (`vertex.vertex_z_coordinate` and `p["vertex_z_coordinate"]` from `as_list()` became
+  `float`), and a group dict without one became an error; delete the `is None` guards ([#312](https://github.com/idfkit/idfkit/pull/312)).
+- **Breaking:** reading such a key from a group that lacks it, or calling `as_dict()` or `as_list()`
+  on it, raised `MissingRequiredFieldError` instead of giving `None` or an incomplete dict; use the
+  new `group.get(key)` to test whether it is set ([#312](https://github.com/idfkit/idfkit/pull/312)).
+- **Breaking:** validation reported a group missing a required key as `E001`, so `add()` refused a
+  vertex without its z coordinate; pass `validate=False` to store one anyway ([#312](https://github.com/idfkit/idfkit/pull/312)).
 - **Breaking:** for type checking, a field that every release having it requires with no default
   lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;
   delete the `is None` guards pyright strict now flags ([#303](https://github.com/idfkit/idfkit/pull/303)).
@@ -102,6 +110,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The bundled `developing-with-idfkit` reference's ceiling-height examples treated a whole-number
+  height such as `3`, stored as an `int`, as missing; they now accept any number
+  ([#311](https://github.com/idfkit/idfkit/pull/311)).
+- `SimulationResult.errors` came back empty for runs that had failed with severe errors when the model had
+  `Output:SQLite`, because it could read `eplusSqlite.err` instead of `eplus.err`; `csv` could likewise read
+  `eplusMeter.csv`. The lookup came to find each output by name in every `output_suffix` style
+  ([#314](https://github.com/idfkit/idfkit/pull/314)).
 - `add()` and `load_epjson()` stored a blank value (`""`, epJSON `null`) as set instead of leaving
   the field unset, as the IDF parser did ([#183](https://github.com/idfkit/idfkit/issues/183),
   [#303](https://github.com/idfkit/idfkit/pull/303)).
