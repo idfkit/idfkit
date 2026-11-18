@@ -21,7 +21,15 @@ class OutputControlTableStyle_v24_1_to_v25_1:
         | None = "Comma",
         unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"]
         | None = "None",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``OutputControl:Table:Style`` and add it to the document.
+
+        default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs such as Excel(tm) but not so well for word processing programs -- there tab may be a better choice. fixed puts spaces between the 'columns'. HTML produces tables in HTML. XML produces an XML file. note - if no OutputControl:Table:Style is included, the defaults are comma and None.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/standard-output-reports/outputcontrol-table-style/#outputcontroltablestyle
+        """
 
 class RunPeriodCustomRange_v8_9:
     def __call__(
@@ -44,7 +52,13 @@ class RunPeriodCustomRange_v8_9:
         apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
         use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
         use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``RunPeriod:CustomRange`` and add it to the document.
+
+        run simulation for a custom created weather file
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+        """
 
 class FenestrationSurfaceDetailed_v9_0_to_v26_1:
     def __call__(
@@ -72,7 +86,15 @@ class FenestrationSurfaceDetailed_v9_0_to_v26_1:
         vertex_4_x_coordinate: float | None = ...,
         vertex_4_y_coordinate: float | None = ...,
         vertex_4_z_coordinate: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``FenestrationSurface:Detailed`` and add it to the document.
+
+        Allows for detailed entry of subsurfaces (windows, doors, glass doors, tubular daylighting devices).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.1/io-reference/overview/group-thermal-zone-description-geometry/#fenestrationsurfacedetailed
+        """
 
 class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5:
     def __call__(
@@ -83,7 +105,13 @@ class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5:
         controller_list_name: str,
         outdoor_air_equipment_list_name: str,
         availability_manager_list_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirLoopHVAC:OutdoorAirSystem`` and add it to the document.
+
+        Outdoor air subsystem for an AirLoopHVAC. Includes an outdoor air mixing box and optional outdoor air conditioning equipment such as heat recovery, preheat, and precool coils. From the perspective of the primary air loop the outdoor air system is treated as a single component.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-air-distribution/#airloophvacoutdoorairsystem
+        """
 
 class CoilSystemCoolingDX_v8_9_to_v22_1:
     def __call__(
@@ -109,7 +137,15 @@ class CoilSystemCoolingDX_v8_9_to_v22_1:
         run_on_latent_load: Literal["", "No", "Yes"] | None = "No",
         use_outdoor_air_dx_cooling_coil: Literal["", "No", "Yes"] | None = "No",
         outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None = 2,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``CoilSystem:Cooling:DX`` and add it to the document.
+
+        Virtual container component that consists of a DX cooling coil and its associated controls. This control object supports several different types of DX cooling coils and may be placed directly in an air loop branch or outdoor air equipment list.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-heating-and-cooling-coils/#coilsystemcoolingdx
+        """
 
 class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2:
     def __call__(
@@ -122,7 +158,11 @@ class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2:
         maximum_air_flow_rate: float | Literal["Autosize"],
         zone_minimum_air_flow_fraction: float,
         availability_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat`` and add it to the document.
+
+        Central air system terminal unit, single duct, variable volume for both cooling and heating, with no reheat coil.
+        """
 
 class DemandManagerVentilation_v8_9_to_v22_1:
     def __call__(
@@ -139,7 +179,15 @@ class DemandManagerVentilation_v8_9_to_v22_1:
         selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None = "All",
         rotation_duration: float | None = ...,
         controllers: list[_g.DemandManagerVentilationControllersItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``DemandManager:Ventilation`` and add it to the document.
+
+        used for demand limiting Controller:OutdoorAir objects.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-demand-limiting-controls/#demandmanagerventilation
+        """
 
 class PerformancePrecisionTradeoffs_v9_4_to_v9_5:
     def __call__(
@@ -154,7 +202,15 @@ class PerformancePrecisionTradeoffs_v9_4_to_v9_5:
         | None = "Normal",
         maxzonetempdiff: float | None = 0.3,
         maxalloweddeltemp: float | None = 0.002,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
+
+        This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decreases in accuracy of results.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-simulation-parameters/#performanceprecisiontradeoffs
+        """
 
 class CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1:
     def __call__(
@@ -183,10 +239,24 @@ class CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1:
         speed_8_name: str | None = ...,
         speed_9_name: str | None = ...,
         speed_10_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:DX:CurveFit:OperatingMode`` and add it to the document.
+
+        DX cooling coil performance for a single operating mode which may have one or more speeds.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-coil-cooling-dx/#coilcoolingdxcurvefitoperatingmode
+        """
 
 class EnergyManagementSystemProgram_v8_9:
-    def __call__(self, name: str, /, *, lines: list[_g.EnergyManagementSystemProgramLinesItem] = ...) -> None: ...
+    def __call__(self, name: str, /, *, lines: list[_g.EnergyManagementSystemProgramLinesItem] = ...) -> None:
+        """Create a new ``EnergyManagementSystem:Program`` and add it to the document.
+
+        This input defines an Erl program Each field after the name is a line of EMS Runtime Language
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemprogram
+        """
 
 class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1:
     def __call__(
@@ -203,4 +273,12 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1:
         rated_water_mass_flow_rate: float | None = 0.063,
         heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
         surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Water`` and add it to the document.
+
+        The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-radiative-convective-units/#zonehvacbaseboardradiantconvectivewater
+        """

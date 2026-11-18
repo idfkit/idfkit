@@ -714,6 +714,9 @@ class TestGenerateFieldsWithSinceVersion:
 # =========================================================================
 
 
+_LATEST = get_schema(LATEST_VERSION)
+
+
 def _signature_of(sink: gen._CreationModules, cls_name: str) -> str:  # pyright: ignore[reportPrivateUsage]
     """The ``__call__`` line *sink* filed for *cls_name*."""
     for lines in sink.classes.values():
@@ -769,13 +772,13 @@ class TestCreationSignature:
             ("c", "float | None"),
             ("d", 'Literal["X", "Y"] | None'),  # its default is not one of its values: "..."
         ]
-        lines = gen._creation_lines("Cls", fields, creation, "    ", sink)  # pyright: ignore[reportPrivateUsage]
+        lines = gen._creation_lines("Cls", fields, creation, "    ", sink, _LATEST, "Zone")  # pyright: ignore[reportPrivateUsage]
         assert len(lines) == 1
         assert lines[0].startswith("    _creation_signature: _c")
         assert lines[0].endswith(".Cls")
         assert _signature_of(sink, "Cls") == (
             '    def __call__(self, name: str, /, *, a: float, b: Literal["X", "Y"] | None = "X", '
-            'c: float | None = 0.5, d: Literal["X", "Y"] | None = ...) -> None: ...'
+            'c: float | None = 0.5, d: Literal["X", "Y"] | None = ...) -> None:'
         )
 
     @pytest.mark.parametrize(
@@ -788,7 +791,7 @@ class TestCreationSignature:
     def test_a_required_field_no_value_can_be_given_for_asks_to_narrow(self, fields: list[tuple[str, str]]) -> None:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         creation = gen._Creation("none", frozenset({"a", "e"}), ())  # pyright: ignore[reportPrivateUsage]
-        gen._creation_lines("Cls", fields, creation, "    ", sink)  # pyright: ignore[reportPrivateUsage]
+        gen._creation_lines("Cls", fields, creation, "    ", sink, _LATEST, "Zone")  # pyright: ignore[reportPrivateUsage]
         assert _signature_of(sink, "Cls").startswith(
             "    def __call__(self, /, *, narrow_with_as_version_first: Never, a: float"
         )
@@ -806,8 +809,8 @@ class TestCreationSignature:
     def test_nameless_type_without_fields(self) -> None:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         creation = gen._Creation("none", frozenset(), ())  # pyright: ignore[reportPrivateUsage]
-        gen._creation_lines("Bare", [], creation, "    ", sink)  # pyright: ignore[reportPrivateUsage]
-        assert _signature_of(sink, "Bare") == "    def __call__(self, /) -> None: ..."
+        gen._creation_lines("Bare", [], creation, "    ", sink, _LATEST, "Output:SQLite")  # pyright: ignore[reportPrivateUsage]
+        assert _signature_of(sink, "Bare") == "    def __call__(self, /) -> None:"
 
     def test_the_class_declares_the_signature_its_update_keywords_make(self) -> None:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
@@ -829,10 +832,79 @@ class TestCreationSignature:
             gen._Creation("none", frozenset(), ()),  # pyright: ignore[reportPrivateUsage]
             "    ",
             sink,
+            _LATEST,
+            "Zone",
         )
         module = next(source for source in sink.sources().values() if "class Cls:" in source)
         assert "from typing import Literal\n" in module
         ast.parse(module)
+
+
+def _docstring_of(sink: gen._CreationModules, cls_name: str) -> str:  # pyright: ignore[reportPrivateUsage]
+    """The docstring of the ``__call__`` *sink* filed for *cls_name*: what an editor shows for ``add()``."""
+    for source in sink.sources().values():
+        for node in ast.parse(source).body:
+            if isinstance(node, ast.ClassDef) and node.name == cls_name:
+                call = node.body[0]
+                assert isinstance(call, ast.FunctionDef)
+                doc = ast.get_docstring(call)
+                assert doc is not None
+                return doc
+    pytest.fail(f"no creation signature for {cls_name}")
+
+
+class TestCreationDocstring:
+    """The creation signature's docstring is the one an editor shows for ``add()`` on the type."""
+
+    def test_names_the_type_gives_its_memo_whole_and_links_its_page(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Schedule:Constant", sink=sink)
+        assert _docstring_of(sink, "ScheduleConstant") == (
+            "Create a new ``Schedule:Constant`` and add it to the document.\n\n"
+            "Constant hourly value for entire year.\n\n"
+            "A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.\n\n"
+            "EnergyPlus I/O Reference: "
+            "https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduleconstant"
+        )
+
+    def test_the_memo_is_not_truncated(self) -> None:
+        memo = _LATEST.get_object_memo("Material:NoMass")
+        assert memo is not None
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Material:NoMass", sink=sink)
+        assert " ".join(memo.split()) in _docstring_of(sink, "MaterialNoMass")
+
+    def test_says_what_a_default_means_only_where_one_is_shown(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        creation = gen._Creation("required", frozenset(), ())  # pyright: ignore[reportPrivateUsage]
+        gen._creation_lines("Cls", [("a", "float | None")], creation, "    ", sink, _LATEST, "Zone")  # pyright: ignore[reportPrivateUsage]
+        assert "A default shown" not in _docstring_of(sink, "Cls")
+
+    def test_says_to_narrow_where_no_call_suits_every_release(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        generate_stubs(sink=sink)
+        assert "narrow the document with ``as_version`` first" in _docstring_of(sink, "AnyPeople")
+        assert "narrow the document" not in _docstring_of(sink, "People")
+
+    def test_an_older_release_links_its_own_documentation(self) -> None:
+        sink = gen._CreationModules("_v", "_cv")  # pyright: ignore[reportPrivateUsage]
+        gen.generate_versioned_pyi(sink)
+        doc = _docstring_of(sink, "InternalMass_v9_2_to_v9_5")
+        assert doc.startswith("Create a new ``InternalMass`` and add it to the document.")
+        assert "https://docs.idfkit.com/v9.5/" in doc
+
+    def test_a_docstring_survives_quotes_and_backslashes(self) -> None:
+        schema = MagicMock(spec=EpJSONSchema)
+        schema.version = LATEST_VERSION
+        schema.get_object_memo.return_value = 'A "quoted" C:\\path memo'
+        schema.get_group.return_value = None
+        doc = gen._creation_docstring(schema, "Not:AType", shows_default=False, narrow_first=False)  # pyright: ignore[reportPrivateUsage]
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        sink.add("Cls", "self, /", doc)
+        assert (
+            _docstring_of(sink, "Cls")
+            == "Create a new ``Not:AType`` and add it to the document.\n\nA 'quoted' C:\\path memo"
+        )
 
 
 class TestCreationAcrossReleases:

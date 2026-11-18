@@ -50,7 +50,15 @@ class CoilCoolingDXSingleSpeed_v8_9_to_v22_1:
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
         report_ashrae_standard_127_performance_ratings: Literal["", "No", "Yes"] | None = "No",
         zone_name_for_condenser_placement: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:DX:SingleSpeed`` and add it to the document.
+
+        Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), single-speed. Optional inputs for moisture evaporation from wet coil when compressor cycles off with continuous fan operation.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingdxsinglespeed
+        """
 
 class BuildingSurfaceDetailed_v8_9_to_v9_5:
     def __call__(
@@ -85,7 +93,15 @@ class BuildingSurfaceDetailed_v8_9_to_v9_5:
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         vertices: list[_g.BuildingSurfaceDetailedVerticesItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``BuildingSurface:Detailed`` and add it to the document.
+
+        Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#buildingsurfacedetailed
+        """
 
 class SiteGroundDomainBasement_v8_9_to_v22_1:
     def __call__(
@@ -120,7 +136,15 @@ class SiteGroundDomainBasement_v8_9_to_v22_1:
         vertical_insulation_depth: float | None = ...,
         simulation_timestep: Literal["", "Hourly", "Timestep"] | None = "Hourly",
         mesh_density_parameter: float | None = 4,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Site:GroundDomain:Basement`` and add it to the document.
+
+        Ground-coupled basement model for simulating basements or other underground zones.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-location-climate-weather-file-access/#sitegrounddomainbasement
+        """
 
 class AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2:
     def __call__(
@@ -212,7 +236,15 @@ class AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2:
         heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
         initial_heat_recovery_heating_energy_fraction: float | None = 1,
         heat_recovery_heating_energy_time_constant: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirConditioner:VariableRefrigerantFlow`` and add it to the document.
+
+        Variable refrigerant flow (VRF) air-to-air heat pump condensing unit (includes one or more electric compressors and outdoor fan). Serves one or more VRF zone terminal units. See ZoneHVAC:TerminalUnit:VariableRefrigerantFlow and ZoneTerminalUnitList.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-variable-refrigerant-flow-equipment/#airconditionervariablerefrigerantflow
+        """
 
 class Window_v8_9:
     def __call__(
@@ -229,7 +261,15 @@ class Window_v8_9:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Window`` and add it to the document.
+
+        Allows for simplified entry of Windows.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/overview/group-thermal-zone-description-geometry/#window
+        """
 
 class MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1:
     def __call__(
@@ -288,7 +328,13 @@ class MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1:
         water_vapor_diffusion_resistance_factor_24: float | None = ...,
         relative_humidity_fraction_25: float | None = ...,
         water_vapor_diffusion_resistance_factor_25: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Diffusion`` and add it to the document.
+
+        HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between water vapor diffusion and relative humidity fraction Has no effect with other HeatBalanceAlgorithm solution algorithms
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-surface-construction-elements/#materialpropertyheatandmoisturetransferdiffusion
+        """
 
 class GroundHeatExchangerResponseFactors_v8_9_to_v22_1:
     def __call__(
@@ -300,7 +346,15 @@ class GroundHeatExchangerResponseFactors_v8_9_to_v22_1:
         number_of_boreholes: float,
         g_function_reference_ratio: float | None = 0.0005,
         g_functions: list[_g.GroundHeatExchangerResponseFactorsGFunctionsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``GroundHeatExchanger:ResponseFactors`` and add it to the document.
+
+        Response factor definitions from third-party tool, commonly referred to a 'g-functions'
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-condenser-equipment/#groundheatexchangerresponsefactors
+        """
 
 class GeneratorMicroTurbine_v9_3_to_v9_4:
     def __call__(
@@ -346,7 +400,15 @@ class GeneratorMicroTurbine_v9_3_to_v9_4:
         nominal_exhaust_air_outlet_temperature: float | None = ...,
         exhaust_air_temperature_function_of_temperature_curve_name: str | None = ...,
         exhaust_air_temperature_function_of_part_load_ratio_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Generator:MicroTurbine`` and add it to the document.
+
+        MicroTurbine generators are small combustion turbines (e.g., 25kW to 500kW). The model calculates electrical power output, fuel use, standby and ancillary power. Energy recovery from exhaust air can be used to heat water.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.4/io-reference/overview/group-electric-load-center-generator/#generatormicroturbine
+        """
 
 class SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1:
     def __call__(
@@ -372,7 +434,15 @@ class SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1:
         emissivity_of_inner_cover: float | None = 0.88,
         absorptance_of_absorber_plate: float | None = 0.96,
         emissivity_of_absorber_plate: float | None = 0.3,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SolarCollectorPerformance:IntegralCollectorStorage`` and add it to the document.
+
+        Thermal and optical performance parameters for a single glazed solar collector with integral storage unit.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-solar-collectors/#solarcollectorperformanceintegralcollectorstorage
+        """
 
 class WindowMaterialComplexShade_v8_9:
     def __call__(
@@ -398,7 +468,15 @@ class WindowMaterialComplexShade_v8_9:
         slat_angle: float | None = 90,
         slat_conductivity: float | None = 160,
         slat_curve: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WindowMaterial:ComplexShade`` and add it to the document.
+
+        Complex window shading layer thermal properties
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/overview/group-surface-construction-elements/#windowmaterialcomplexshade
+        """
 
 class PipingSystemUndergroundDomain_v8_9_to_v22_1:
     def __call__(
@@ -440,7 +518,15 @@ class PipingSystemUndergroundDomain_v8_9_to_v22_1:
         maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: float | None = 500,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
         pipe_circuits: list[_g.PipingSystemUndergroundDomainPipeCircuitsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``PipingSystem:Underground:Domain`` and add it to the document.
+
+        The ground domain object for underground piping system simulation.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-node-branch-management/#pipingsystemundergrounddomain
+        """
 
 class SizingPlant_v8_9_to_v22_1:
     def __call__(
@@ -457,7 +543,15 @@ class SizingPlant_v8_9_to_v22_1:
             "GlobalCoolingSizingFactor", "GlobalHeatingSizingFactor", "LoopComponentSizingFactor", "None"
         ]
         | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Sizing:Plant`` and add it to the document.
+
+        Specifies the input needed to autosize plant loop flow rates and equipment capacities. This information is initially used by components that use water for heating or cooling such as hot or chilled water coils to calculate their maximum water flow rates. These flow rates are then summed for use in calculating the Plant Loop flow rates.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-design-objects/#sizingplant
+        """
 
 class FloorInterzone_v8_9_to_v9_5:
     def __call__(
@@ -475,7 +569,15 @@ class FloorInterzone_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Floor:Interzone`` and add it to the document.
+
+        Allows for simplified entry of floors using adjacent zone (interzone) heat transfer - adjacent surface should be a ceiling.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#floorinterzone
+        """
 
 class HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1:
     def __call__(
@@ -504,4 +606,12 @@ class HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1:
         maximum_source_inlet_temperature: float | None = 100,
         minimum_supply_water_temperature_curve_name: float | None = ...,
         maximum_supply_water_temperature_curve_name: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HeatPump:PlantLoop:EIR:Cooling`` and add it to the document.
+
+        An EIR formulated water to water heat pump model, cooling operation.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-plant-equipment/#heatpumpplantloopeircooling
+        """

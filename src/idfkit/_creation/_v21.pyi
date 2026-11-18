@@ -23,7 +23,15 @@ class SimulationControl_v8_9_to_v22_1:
         run_simulation_for_weather_file_run_periods: Literal["", "No", "Yes"] | None = "Yes",
         do_hvac_sizing_simulation_for_sizing_periods: Literal["", "No", "Yes"] | None = "No",
         maximum_number_of_hvac_sizing_simulation_passes: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SimulationControl`` and add it to the document.
+
+        Note that the following 3 fields are related to the Sizing:Zone, Sizing:System, and Sizing:Plant objects. Having these fields set to Yes but no corresponding Sizing object will not cause the sizing to be done. However, having any of these fields set to No, the corresponding Sizing object is ignored. Note also, if you want to do system sizing, you must also do zone sizing in the same run or an error will result.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-simulation-parameters/#simulationcontrol
+        """
 
 class AirflowNetworkDistributionNode_v8_9_to_v25_1:
     def __call__(
@@ -44,7 +52,15 @@ class AirflowNetworkDistributionNode_v8_9_to_v25_1:
         ]
         | None = "Other",
         node_height: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirflowNetwork:Distribution:Node`` and add it to the document.
+
+        This object represents an air distribution node in the AirflowNetwork model.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-airflow-network/#airflownetworkdistributionnode
+        """
 
 class CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1:
     def __call__(
@@ -60,7 +76,13 @@ class CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1:
         heat_exchanger_name: str,
         cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"],
         cooling_coil_name: str,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``CoilSystem:Cooling:DX:HeatExchangerAssisted`` and add it to the document.
+
+        Virtual component consisting of a direct expansion (DX) cooling coil and an air-to-air heat exchanger. The air-to-air heat exchanger precools the air entering the cooling coil and reuses this energy to reheat the supply air leaving the cooling coil. This heat exchange process improves the latent removal performance of the cooling coil (lower sensible heat ratio).
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-heating-and-cooling-coils/#coilsystemcoolingdxheatexchangerassisted
+        """
 
 class MaterialPropertyPhaseChange_v8_9_to_v24_1:
     def __call__(
@@ -101,7 +123,15 @@ class MaterialPropertyPhaseChange_v8_9_to_v24_1:
         enthalpy_15: float | None = ...,
         temperature_16: float | None = ...,
         enthalpy_16: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``MaterialProperty:PhaseChange`` and add it to the document.
+
+        Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) HeatBalanceAlgorithm = CondFD(ConductionFiniteDifference) solution algorithm only. Constructions with this should use the detailed CondFD process. Has no effect with other HeatBalanceAlgorithm solution algorithms
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-surface-construction-elements/#materialpropertyphasechange
+        """
 
 class ScheduleYear_v9_0_to_v22_1:
     def __call__(
@@ -111,7 +141,13 @@ class ScheduleYear_v9_0_to_v22_1:
         *,
         schedule_type_limits_name: str | None = ...,
         schedule_weeks: list[_vd.ScheduleYearScheduleWeeksItem_v9_0_to_v22_1] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Schedule:Year`` and add it to the document.
+
+        A Schedule:Year contains from 1 to 52 week schedules
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-schedules/#scheduleyear
+        """
 
 class ZoneCoolTowerShower_v8_9_to_v24_1:
     def __call__(
@@ -132,7 +168,15 @@ class ZoneCoolTowerShower_v8_9_to_v24_1:
         flow_control_type: Literal["", "WaterFlowSchedule", "WindDrivenFlow"] | None = "WindDrivenFlow",
         fraction_of_water_loss: float | None = ...,
         fraction_of_flow_schedule: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneCoolTower:Shower`` and add it to the document.
+
+        A cooltower (sometimes referred to as a wind tower or a shower cooling tower) models passive downdraught evaporative cooling (PDEC) that is designed to capture the wind at the top of a tower and cool the outdoor air using water evaporation before delivering it to a space.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-airflow/#zonecooltowershower
+        """
 
 class CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1:
     def __call__(
@@ -150,7 +194,13 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1:
         gross_rated_heating_cop: float,
         heating_capacity_curve_name: str,
         heating_power_consumption_curve_name: str,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:WaterToAirHeatPump:EquationFit`` and add it to the document.
+
+        Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-fit model. Equation-fit model uses normalized curves to describe the heat pump performance.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingwatertoairheatpumpequationfit
+        """
 
 class CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1:
     def __call__(
@@ -171,7 +221,15 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1:
         rated_entering_water_temperature: float | None = 20,
         rated_entering_air_dry_bulb_temperature: float | None = 20,
         ratio_of_rated_heating_capacity_to_rated_cooling_capacity: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:WaterToAirHeatPump:EquationFit`` and add it to the document.
+
+        Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-fit model. Equation-fit model uses normalized curves to describe the heat pump performance.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingwatertoairheatpumpequationfit
+        """
 
 class CoilHeatingDXSingleSpeed_v8_9_to_v22_1:
     def __call__(
@@ -209,7 +267,15 @@ class CoilHeatingDXSingleSpeed_v8_9_to_v22_1:
         nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:DX:SingleSpeed`` and add it to the document.
+
+        Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdoor fan), single-speed, with defrost controls.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingdxsinglespeed
+        """
 
 class CoilHeatingDXSingleSpeed_v22_2_to_v23_1:
     def __call__(
@@ -246,7 +312,15 @@ class CoilHeatingDXSingleSpeed_v22_2_to_v23_1:
         nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:DX:SingleSpeed`` and add it to the document.
+
+        Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdoor fan), single-speed, with defrost controls.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingdxsinglespeed
+        """
 
 class FuelFactors_v9_3_to_v22_1:
     def __call__(
@@ -302,7 +376,13 @@ class FuelFactors_v9_3_to_v22_1:
         nuclear_high_level_emission_factor_schedule_name: str | None = ...,
         nuclear_low_level_emission_factor: float | None = ...,
         nuclear_low_level_emission_factor_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``FuelFactors`` and add it to the document.
+
+        Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for users who want to create and use fuels that may not be mainstream (biomass, wood, pellets).
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/input-for-output/#fuelfactors
+        """
 
 class MeterCustomDecrement_v9_4_to_v23_1:
     def __call__(
@@ -330,7 +410,13 @@ class MeterCustomDecrement_v9_4_to_v23_1:
         ]
         | None = ...,
         variable_details: list[_g.MeterCustomDecrementVariableDetailsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Meter:CustomDecrement`` and add it to the document.
+
+        Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-simulation-parameters/#metercustomdecrement
+        """
 
 class CoilHeatingDesuperheater_v22_2_to_v23_1:
     def __call__(
@@ -356,7 +442,13 @@ class CoilHeatingDesuperheater_v22_2_to_v23_1:
         heat_reclaim_recovery_efficiency: float | None = ...,
         temperature_setpoint_node_name: str | None = ...,
         parasitic_electric_load: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:Desuperheater`` and add it to the document.
+
+        Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigerant gas leaving a compressor and does not impact the performance of the compressor. If the coil is located directly in an air loop branch or outdoor air equipment list, then it is controlled on leaving air temperature and the Temperature Setpoint Node Name must be specified. If the coil is contained within another component such as a unitary system, then the coil is controlled by the parent component and the setpoint node name is not entered.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingdesuperheater
+        """
 
 class MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1:
     def __call__(
@@ -415,7 +507,13 @@ class MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1:
         liquid_transport_coefficient_24: float | None = ...,
         moisture_content_25: float | None = ...,
         liquid_transport_coefficient_25: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Suction`` and add it to the document.
+
+        HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between liquid suction transport coefficient and moisture content Has no effect with other HeatBalanceAlgorithm solution algorithms
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-surface-construction-elements/#materialpropertyheatandmoisturetransfersuction
+        """
 
 class AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2:
     def __call__(
@@ -445,7 +543,15 @@ class AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2:
         heating_control_type: Literal["Modulated", "Staged"] | None = ...,
         design_heating_discharge_air_temperature: float | None = 32.1,
         high_limit_heating_discharge_air_temperature: float | None = 37.7,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:SeriesPIU:Reheat`` and add it to the document.
+
+        Central air system terminal unit, single duct, variable volume, series powered induction unit (PIU), with reheat coil (hot water, electric, gas, or steam).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.2/io-reference/overview/group-zone-hvac-air-loop-terminal-units/#airterminalsingleductseriespiureheat
+        """
 
 class AirLoopHVACUnitarySystem_v8_9_to_v9_2:
     def __call__(
@@ -570,7 +676,15 @@ class AirLoopHVACUnitarySystem_v8_9_to_v9_2:
         heat_recovery_water_outlet_node_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirLoopHVAC:UnitarySystem`` and add it to the document.
+
+        AirloopHVAC:UnitarySystem is a generic HVAC system type that allows any configuration of coils and/or fan. This object is a replacement of other AirloopHVAC objects. This object can be used in outdoor air systems, outdoor air units, air loops, and as zone equipment if desired.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-unitary-equipment/#airloophvacunitarysystem
+        """
 
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1:
     def __call__(
@@ -621,7 +735,15 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1:
         heating_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_3_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` and add it to the document.
+
+        Unitary system, heating and cooling, multi-speed with constant volume supply fan (continuous or cycling), direct expansion (DX) cooling coil, heating coil (DX air-to-air heat pump, gas, electric, hot water, or steam), and supplemental heating coil (gas, electric, hot water, or steam).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-unitary-equipment/#airloophvacunitaryheatpumpairtoairmultispeed
+        """
 
 class MeterCustom_v9_4_to_v23_1:
     def __call__(
@@ -648,7 +770,13 @@ class MeterCustom_v9_4_to_v23_1:
         ]
         | None = ...,
         variable_details: list[_g.MeterCustomVariableDetailsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Meter:Custom`` and add it to the document.
+
+        Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names. A Meter:Custom cannot reference another Meter:Custom.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-simulation-parameters/#metercustom
+        """
 
 class ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1:
     def __call__(
@@ -661,4 +789,10 @@ class ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1:
         actuated_component_control_type: str,
         fmu_variable_name: str,
         initial_value: float,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ExternalInterface:FunctionalMockupUnitExport:To:Actuator`` and add it to the document.
+
+        Hardware portion of EMS used to set up actuators in the model that are dynamically updated from the FMU.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-externalinterface/#externalinterfacefunctionalmockupunitexporttoactuator
+        """

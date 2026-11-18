@@ -24,7 +24,15 @@ class ScheduleFile_v8_9_to_v9_1:
         column_separator: Literal["", "Comma", "Fixed", "Semicolon", "Tab"] | None = "Comma",
         interpolate_to_timestep: Literal["", "No", "Yes"] | None = "No",
         minutes_per_item: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Schedule:File`` and add it to the document.
+
+        A Schedule:File points to a text computer file that has 8760-8784 hours of data.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-schedules/#schedulefile
+        """
 
 class DaylightingControls_v9_6_to_v22_1:
     def __call__(
@@ -45,7 +53,15 @@ class DaylightingControls_v9_6_to_v22_1:
         maximum_allowable_discomfort_glare_index: float | None = 22,
         delight_gridding_resolution: float | None = ...,
         control_data: list[_vd.DaylightingControlsControlDataItem_v9_6_to_v22_1] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Daylighting:Controls`` and add it to the document.
+
+        Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calculated.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/energyplus-economics/cost-estimating/#daylightingcontrols
+        """
 
 class Zone_v9_5_to_v22_1:
     def __call__(
@@ -71,7 +87,15 @@ class Zone_v9_5_to_v22_1:
         ]
         | None = ...,
         part_of_total_floor_area: Literal["", "No", "Yes"] | None = "Yes",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Zone`` and add it to the document.
+
+        Defines a thermal zone of the building. Every zone contains one or more Spaces. Space is an optional input. If a Zone has no Space(s) specified in input then a default Space named <Zone Name> will be created. If some surfaces in a Zone are assigned to a space and some are not, then a default Space named <Zone Name>-Remainder will be created. Input references to Space Names must have a matching Space object (default space names may not be referenced except in output variable keys).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-thermal-zone-description-geometry/#zone
+        """
 
 class CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1:
     def __call__(
@@ -98,7 +122,15 @@ class CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1:
         minimum_speed_level_for_scdwh_mode: float | None = 1,
         maximum_running_time_before_allowing_electric_resistance_heat_use_during_shdwh_mode: float | None = 360,
         minimum_speed_level_for_shdwh_mode: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``CoilSystem:IntegratedHeatPump:AirSource`` and add it to the document.
+
+        This object is used for air-source integrated heat pump, a collection of its working modes.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-heating-and-cooling-coils/#coilsystemintegratedheatpumpairsource
+        """
 
 class WallInterzone_v8_9_to_v9_5:
     def __call__(
@@ -116,7 +148,15 @@ class WallInterzone_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Wall:Interzone`` and add it to the document.
+
+        Allows for simplified entry of interzone walls (walls between zones).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#wallinterzone
+        """
 
 class HVACTemplateZoneFanCoil_v8_9:
     def __call__(
@@ -169,7 +209,15 @@ class HVACTemplateZoneFanCoil_v8_9:
         baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
+
+        4 pipe fan coil unit with optional outdoor air.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplatezonefancoil
+        """
 
 class ElectricLoadCenterStorageBattery_v8_9_to_v22_1:
     def __call__(
@@ -197,7 +245,15 @@ class ElectricLoadCenterStorageBattery_v8_9_to_v22_1:
         battery_life_calculation: Literal["", "No", "Yes"] | None = "No",
         number_of_cycle_bins: float | None = 10,
         battery_life_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ElectricLoadCenter:Storage:Battery`` and add it to the document.
+
+        Uses the kinetic battery model (KiBaM) to simulate rechargeable battery banks in an electrical load center. The battery bank is a collection of one or more individual battery modules. Given the surplus or deficit power from the electrical system and the state of charge from the previous time step, this object can model the voltage, current, and energy losses with charging and discharging during each time step. The cumulative battery damage can be also modeled and reported at the end of each simulation run.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-electric-load-center-generator/#electricloadcenterstoragebattery
+        """
 
 class CoilWaterHeatingAirToWaterHeatPumpPumped_v23_2_to_v25_1:
     def __call__(
@@ -234,7 +290,15 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped_v23_2_to_v25_1:
         heating_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         heating_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` and add it to the document.
+
+        Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating coil, evaporator air coil, evaporator fan, electric compressor, and water pump. Part of a WaterHeater:HeatPump:PumpedCondenser system.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-heating-and-cooling-coils/#coilwaterheatingairtowaterheatpumppumped
+        """
 
 class ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5:
     def __call__(
@@ -250,7 +314,15 @@ class ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5:
         high_temperature: float,
         fraction_radiant: float | None = 0,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneBaseboard:OutdoorTemperatureControlled`` and add it to the document.
+
+        Specifies outside temperature-controlled electric baseboard heating.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-internal-gains-people-lights-other/#zonebaseboardoutdoortemperaturecontrolled
+        """
 
 class HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1:
     def __call__(
@@ -272,4 +344,12 @@ class HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1:
         reference_capacity: float | Literal["", "Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HeatPump:PlantLoop:EIR:Heating`` and add it to the document.
+
+        An EIR formulated water to water heat pump model, heating operation
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-plant-equipment/#heatpumpplantloopeirheating
+        """

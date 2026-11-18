@@ -118,7 +118,15 @@ class SurfacePropertyConvectionCoefficients_v9_5_to_v9_6:
         convection_coefficient_2: float | None = 0.1,
         convection_coefficient_2_schedule_name: str | None = ...,
         convection_coefficient_2_user_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SurfaceProperty:ConvectionCoefficients`` and add it to the document.
+
+        Allow user settable interior and/or exterior convection coefficients. Note that some other factors may limit the lower bounds for these values, such as for windows, the interior convection coefficient must be >.28, for trombe wall algorithm selection (zone), the interior convection coefficient must be >.1 for TARP interior convection, the lower limit is also .1 Minimum and maximum limits are set in HeatBalanceAlgorithm object. Defaults in HeatBalanceAlgorithm object are [.1,1000].
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.6/io-reference/overview/group-advanced-surface-concepts/#surfacepropertyconvectioncoefficients
+        """
 
 class ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1:
     def __call__(
@@ -159,7 +167,15 @@ class ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1:
         sensible_heat_recovery_effectiveness: float | None = 0.7,
         latent_heat_recovery_effectiveness: float | None = 0.65,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:IdealLoadsAirSystem`` and add it to the document.
+
+        Ideal system used to calculate loads without modeling a full HVAC system. All that is required for the ideal system are zone controls, zone equipment configurations, and the ideal loads system component. This component can be thought of as an ideal unit that mixes zone air with the specified amount of outdoor air and then adds or removes heat and moisture at 100% efficiency in order to meet the specified controls. Energy use is reported as DistrictHeatingWater and DistrictCooling.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-zone-forced-air-units/#zonehvacidealloadsairsystem
+        """
 
 class WallUnderground_v8_9_to_v9_5:
     def __call__(
@@ -176,7 +192,15 @@ class WallUnderground_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Wall:Underground`` and add it to the document.
+
+        Allows for simplified entry of underground walls.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#wallunderground
+        """
 
 class People_v9_5:
     def __call__(
@@ -235,7 +259,15 @@ class People_v9_5:
         ]
         | None = ...,
         ankle_level_air_velocity_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``People`` and add it to the document.
+
+        Sets internal gains and contaminant rates for occupants in the zone. If you use a ZoneList in the Zone or ZoneList name field then this definition applies to all the zones in the ZoneList.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-internal-gains-people-lights-other/#people
+        """
 
 class AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2:
     def __call__(
@@ -260,7 +292,13 @@ class AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2:
         ],
         air_path_length: float,
         air_path_hydraulic_diameter: float,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirflowNetwork:Distribution:Component:Coil`` and add it to the document.
+
+        This object defines the name of a coil used in an air loop.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/overview/group-airflow-network/#airflownetworkdistributioncomponentcoil
+        """
 
 class ConstructionComplexFenestrationState_v8_9_to_v9_5:
     def __call__(
@@ -303,7 +341,15 @@ class ConstructionComplexFenestrationState_v8_9_to_v9_5:
         layer_5_name: str | None = ...,
         layer_5_directional_front_absoptance_matrix_name: str | None = ...,
         layer_5_directional_back_absoptance_matrix_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Construction:ComplexFenestrationState`` and add it to the document.
+
+        Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software and export to IDF syntax
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-surface-construction-elements/#constructioncomplexfenestrationstate
+        """
 
 class CoilHeatingDXVariableSpeed_v22_2_to_v23_1:
     def __call__(
@@ -398,7 +444,15 @@ class CoilHeatingDXVariableSpeed_v22_2_to_v23_1:
         speed_10_heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:DX:VariableSpeed`` and add it to the document.
+
+        Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdoor fan), variable-speed, with defrost controls. Requires two to ten sets of performance data and will interpolate between speeds.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingdxvariablespeed
+        """
 
 class CoilHeatingDXMultiSpeed_v9_3_to_v22_1:
     def __call__(
@@ -498,7 +552,15 @@ class CoilHeatingDXMultiSpeed_v9_3_to_v22_1:
         speed_4_nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:DX:MultiSpeed`` and add it to the document.
+
+        Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven compressor and outdoor fan), multi-speed (or variable-speed), with defrost controls. Requires two to four sets of performance data and will interpolate between speeds.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingdxmultispeed
+        """
 
 class ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4:
     def __call__(
@@ -523,7 +585,15 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4:
         convergence_tolerance: float | None = 0.001,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
         surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Water`` and add it to the document.
+
+        The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.4/io-reference/overview/group-radiative-convective-units/#zonehvacbaseboardradiantconvectivewater
+        """
 
 class ChillerElectric_v8_9_to_v24_1:
     def __call__(
@@ -569,7 +639,15 @@ class ChillerElectric_v8_9_to_v24_1:
         heat_recovery_inlet_high_temperature_limit_schedule_name: str | None = ...,
         heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Chiller:Electric`` and add it to the document.
+
+        This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller performance curves are generated by fitting catalog data to third order polynomial equations. Three sets of coefficients are required.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/energyplus-economics/cost-estimating/#chillerelectric
+        """
 
 class TableMultiVariableLookup_v9_0_to_v9_1:
     def __call__(
@@ -634,7 +712,13 @@ class TableMultiVariableLookup_v9_0_to_v9_1:
         field_1_determined_by_the_number_of_independent_variables: float | None = ...,
         field_2_determined_by_the_number_of_independent_variables: float | None = ...,
         values: list[_vd.TableMultiVariableLookupValuesItem_v9_0_to_v9_1] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Table:MultiVariableLookup`` and add it to the document.
+
+        The multi-variable lookup table can represent from 1 to 6 independent variables and can interpolate these independent variables up to a 4th order polynomial. The polynomial order is assumed to be the number of interpolation points (n) minus 1. When any independent variable value is outside the table limits, linear extrapolation is used to predict the table result and is based on the two nearest data points in the table for that particular independent variable.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+        """
 
 class CoilCoolingDXMultiSpeed_v9_3_to_v22_1:
     def __call__(
@@ -746,7 +830,15 @@ class CoilCoolingDXMultiSpeed_v9_3_to_v22_1:
         speed_4_evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
         speed_4_rated_evaporative_condenser_pump_power_consumption: float | Literal["Autosize"] | None = ...,
         zone_name_for_condenser_placement: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:DX:MultiSpeed`` and add it to the document.
+
+        Direct expansion (DX) cooling coil and condensing unit (includes electric or engine-driven compressor and condenser fan), multi-speed (or variable-speed). Optional moisture evaporation from wet coil when compressor cycles off with continuous fan operation. Requires two to four sets of performance data and will interpolate between speeds. Modeled as a single coil (multi-speed compressor or multiple compressors with row split or intertwined coil).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingdxmultispeed
+        """
 
 class RoofCeilingDetailed_v8_9_to_v9_5:
     def __call__(
@@ -778,7 +870,15 @@ class RoofCeilingDetailed_v8_9_to_v9_5:
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         vertices: list[_g.RoofCeilingDetailedVerticesItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``RoofCeiling:Detailed`` and add it to the document.
+
+        Allows for detailed entry of roof/ceiling heat transfer surfaces.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#roofceilingdetailed
+        """
 
 class OutputControlFiles_v9_4_to_v24_1:
     def __call__(
@@ -816,4 +916,12 @@ class OutputControlFiles_v9_4_to_v24_1:
         output_screen: Literal["", "No", "Yes"] | None = "Yes",
         output_extshd: Literal["", "No", "Yes"] | None = "Yes",
         output_tarcog: Literal["", "No", "Yes"] | None = "Yes",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``OutputControl:Files`` and add it to the document.
+
+        Conditionally turn on/off output from EnergyPlus.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/input-for-output/#outputcontrolfiles
+        """

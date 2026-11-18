@@ -13,7 +13,13 @@ from typing_extensions import Never
 from .. import _generated_types as _g
 
 class RunPeriodControlDaylightSavingTime:
-    def __call__(self, /, *, start_date: str, end_date: str) -> None: ...
+    def __call__(self, /, *, start_date: str, end_date: str) -> None:
+        """Create a new ``RunPeriodControl:DaylightSavingTime`` and add it to the document.
+
+        This object sets up the daylight saving time period for any RunPeriod. Ignores any daylight saving time period on the weather file and uses this definition. These are not used with SizingPeriod:DesignDay objects. Use with SizingPeriod:WeatherFileDays object can be controlled in that object.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-location-climate-weather-file-access/#runperiodcontroldaylightsavingtime
+        """
 
 class ScheduleFile:
     def __call__(
@@ -30,7 +36,15 @@ class ScheduleFile:
         interpolate_to_timestep: Literal["", "No", "Yes"] | None = "No",
         minutes_per_item: int | None = 60,
         adjust_schedule_for_daylight_savings: Literal["", "No", "Yes"] | None = "Yes",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Schedule:File`` and add it to the document.
+
+        A Schedule:File points to a text computer file that has 8760-8784 hours of data.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#schedulefile
+        """
 
 class WindowMaterialGlazingGroupThermochromic:
     def __call__(
@@ -39,7 +53,13 @@ class WindowMaterialGlazingGroupThermochromic:
         /,
         *,
         temperature_data: list[_g.WindowMaterialGlazingGroupThermochromicTemperatureDataItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WindowMaterial:GlazingGroup:Thermochromic`` and add it to the document.
+
+        thermochromic glass at different temperatures
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#windowmaterialglazinggroupthermochromic
+        """
 
 class WindowMaterialBlindEquivalentLayer:
     def __call__(
@@ -70,7 +90,15 @@ class WindowMaterialBlindEquivalentLayer:
         front_side_slat_infrared_emissivity: float | None = 0.9,
         back_side_slat_infrared_emissivity: float | None = 0.9,
         slat_angle_control: Literal["", "BlockBeamSolar", "FixedSlatAngle", "MaximizeSolar"] | None = "FixedSlatAngle",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WindowMaterial:Blind:EquivalentLayer`` and add it to the document.
+
+        Window equivalent layer blind slat optical and thermal properties. The model assumes that slats are thin and flat, applies correction empirical correlation to account for curvature effect. Slats are assumed to transmit and reflect diffusely.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#windowmaterialblindequivalentlayer
+        """
 
 class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm:
     def __call__(
@@ -129,13 +157,31 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm:
         moisture_content_24: float | None = ...,
         relative_humidity_fraction_25: float | None = ...,
         moisture_content_25: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``MaterialProperty:HeatAndMoistureTransfer:SorptionIsotherm`` and add it to the document.
+
+        HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between moisture content and relative humidity fraction. Has no effect with other HeatBalanceAlgorithm solution algorithms
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#materialpropertyheatandmoisturetransfersorptionisotherm
+        """
 
 class ConstructionCfactorUndergroundWall:
-    def __call__(self, name: str, /, *, c_factor: float, height: float) -> None: ...
+    def __call__(self, name: str, /, *, c_factor: float, height: float) -> None:
+        """Create a new ``Construction:CfactorUndergroundWall`` and add it to the document.
+
+        Alternate method of describing underground wall constructions
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#constructioncfactorundergroundwall
+        """
 
 class ZoneList:
-    def __call__(self, name: str, /, *, zones: list[_g.ZoneListZonesItem] = ...) -> None: ...
+    def __call__(self, name: str, /, *, zones: list[_g.ZoneListZonesItem] = ...) -> None:
+        """Create a new ``ZoneList`` and add it to the document.
+
+        Defines a list of thermal zones which can be referenced as a group. The ZoneList name may be used elsewhere in the input to apply a parameter to all zones in the list. ZoneLists can be used effectively with the following objects: People, Lights, ElectricEquipment, GasEquipment, HotWaterEquipment, ZoneInfiltration:DesignFlowRate, ZoneVentilation:DesignFlowRate, Sizing:Zone, ZoneControl:Thermostat, and others.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#zonelist
+        """
 
 class SurfaceControlMovableInsulation:
     def __call__(
@@ -146,7 +192,13 @@ class SurfaceControlMovableInsulation:
         surface_name: str,
         material_name: str,
         schedule_name: str,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SurfaceControl:MovableInsulation`` and add it to the document.
+
+        Exterior or Interior Insulation on opaque surfaces
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacecontrolmovableinsulation
+        """
 
 class GroundHeatTransferBasementAutoGrid:
     def __call__(
@@ -160,10 +212,24 @@ class GroundHeatTransferBasementAutoGrid:
         slabdepth_thickness_of_the_floor_slab: float | None = 0.1,
         basedepth_depth_of_the_basement_wall_below_grade: float | None = 2,
         clearance_distance_from_outside_of_wall_to_edge: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``GroundHeatTransfer:Basement:AutoGrid`` and add it to the document.
+
+        AutoGrid only necessary when EquivSizing is false If the modeled building is not a rectangle or square, Equivalent sizing MUST be used to get accurate results
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-detailed-ground-heat-transfer/#groundheattransferbasementautogrid
+        """
 
 class ComfortViewFactorAngles:
-    def __call__(self, name: str = "", /, *, angles: list[_g.ComfortViewFactorAnglesAnglesItem] = ...) -> None: ...
+    def __call__(self, name: str = "", /, *, angles: list[_g.ComfortViewFactorAnglesAnglesItem] = ...) -> None:
+        """Create a new ``ComfortViewFactorAngles`` and add it to the document.
+
+        Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions must sum up to 1.0 All surfaces must be in the same enclosure.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains-people-lights-other/#comfortviewfactorangles
+        """
 
 class AnyLights:
     def __call__(
@@ -186,7 +252,16 @@ class AnyLights:
         return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
         return_air_heat_gain_node_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Lights`` and add it to the document.
+
+        Sets internal gains for lights in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
+
+        No call suits every release: narrow the document with ``as_version`` first.
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/cost-estimating/#lights
+        """
 
 class AnyElectricEquipment:
     def __call__(
@@ -204,7 +279,16 @@ class AnyElectricEquipment:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ElectricEquipment`` and add it to the document.
+
+        Sets internal gains for electric equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
+
+        No call suits every release: narrow the document with ``as_version`` first.
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains-people-lights-other/#electricequipment
+        """
 
 class OtherEquipmentInstance:
     def __call__(
@@ -235,7 +319,15 @@ class OtherEquipmentInstance:
         | None = "None",
         multiplier: float | None = 1,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``OtherEquipment:Instance`` and add it to the document.
+
+        Sets internal gains or losses for 'other' equipment in the zone. The physical characteristics are given by the referenced OtherEquipment:Definition object. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains/#otherequipmentinstance
+        """
 
 class IndoorLivingWall:
     def __call__(
@@ -255,7 +347,15 @@ class IndoorLivingWall:
         led_nominal_intensity: float | None = ...,
         led_nominal_power: float | None = ...,
         radiant_fraction_of_led_lights: float | None = 0.6,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``IndoorLivingWall`` and add it to the document.
+
+        Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrates. The living wall structures can be either free-standing or attached to walls. The IndoorLivingWall module directly connects with inside surface heat balance, zone air heat balance, and zone air moisture balance.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains-people-lights-other/#indoorlivingwall
+        """
 
 class ElectricEquipmentITEAirCooled:
     def __call__(
@@ -296,7 +396,15 @@ class ElectricEquipmentITEAirCooled:
         supply_temperature_difference_schedule: str | None = ...,
         return_temperature_difference: float | None = ...,
         return_temperature_difference_schedule: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ElectricEquipment:ITE:AirCooled`` and add it to the document.
+
+        This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption as a function of loading and temperature. If a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains-people-lights-other/#electricequipmentiteaircooled
+        """
 
 class AnyDaylightingControls:
     def __call__(
@@ -317,7 +425,16 @@ class AnyDaylightingControls:
         maximum_allowable_discomfort_glare_index: float | None = 22,
         delight_gridding_resolution: float | None = ...,
         control_data: list[_g.AnyDaylightingControlsControlDataItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Daylighting:Controls`` and add it to the document.
+
+        Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calculated.
+
+        No call suits every release: narrow the document with ``as_version`` first.
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/cost-estimating/#daylightingcontrols
+        """
 
 class HVACTemplatePlantTower:
     def __call__(
@@ -334,12 +451,26 @@ class HVACTemplatePlantTower:
         priority: str | None = ...,
         sizing_factor: float | None = 1,
         template_plant_loop_type: Literal["ChilledWater", "MixedWater"] | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:Plant:Tower`` and add it to the document.
+
+        This object adds a cooling tower to an HVACTemplate:Plant:ChilledWaterLoop or MixedWaterLoop.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplateplanttower
+        """
 
 class DesignSpecificationOutdoorAirSpaceList:
     def __call__(
         self, name: str, /, *, space_specs: list[_g.DesignSpecificationOutdoorAirSpaceListSpaceSpecsItem] = ...
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``DesignSpecification:OutdoorAir:SpaceList`` and add it to the document.
+
+        Defines a list of DesignSpecification:OutdoorAir names which can be referenced as a group. The DesignSpecification:OutdoorAir:SpaceList name may be used in Sizing:Zone and Controller:MechanicalVentilation to specify space-by-space OA requirements and anywhere else that accepts a DesignSpecification:OutdoorAir object name.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-design-objects/#designspecificationoutdoorairspacelist
+        """
 
 class ZoneControlThermostat:
     def __call__(
@@ -381,10 +512,24 @@ class ZoneControlThermostat:
         | None = ...,
         control_4_name: str | None = ...,
         temperature_difference_between_cutout_and_setpoint: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneControl:Thermostat`` and add it to the document.
+
+        Define the Thermostat settings for a zone or list of zones. If you use a ZoneList in the Zone or ZoneList name field then this definition applies to all the zones in the ZoneList.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-controls-thermostats/#zonecontrolthermostat
+        """
 
 class ThermostatSetpointSingleHeatingOrCooling:
-    def __call__(self, name: str, /, *, setpoint_temperature_schedule_name: str | None = ...) -> None: ...
+    def __call__(self, name: str, /, *, setpoint_temperature_schedule_name: str | None = ...) -> None:
+        """Create a new ``ThermostatSetpoint:SingleHeatingOrCooling`` and add it to the document.
+
+        Used for a heating and cooling thermostat with a single setpoint. The setpoint can be scheduled and varied throughout the simulation for both heating and cooling.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-controls-thermostats/#thermostatsetpointsingleheatingorcooling
+        """
 
 class AnyZoneHVACTerminalUnitVariableRefrigerantFlow:
     def __call__(
@@ -424,7 +569,15 @@ class AnyZoneHVACTerminalUnitVariableRefrigerantFlow:
         rated_heating_capacity_sizing_ratio: float | None = 1,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
+
+        A terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF terminal units are served by an AirConditioner:VariableRefrigerantFlow or AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:* system. Terminal units can be configured as zone, air loop or outside air system equipment.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-forced-air-units/#zonehvacterminalunitvariablerefrigerantflow
+        """
 
 class AirTerminalSingleDuctVAVHeatAndCoolReheat:
     def __call__(
@@ -447,7 +600,15 @@ class AirTerminalSingleDuctVAVHeatAndCoolReheat:
         convergence_tolerance: float | None = 0.001,
         maximum_reheat_air_temperature: float | None = ...,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat`` and add it to the document.
+
+        Central air system terminal unit, single duct, variable volume for both cooling and heating, with reheat coil (hot water, electric, gas, or steam).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-hvac-air-loop-terminal-units/#airterminalsingleductvavheatandcoolreheat
+        """
 
 class AirTerminalSingleDuctParallelPIUReheat:
     def __call__(
@@ -479,7 +640,15 @@ class AirTerminalSingleDuctParallelPIUReheat:
         high_limit_heating_discharge_air_temperature: float | None = 37.7,
         backdraft_damper_leakage_fraction_curve_name: str | None = ...,
         backdraft_damper_leakage_zone_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:ParallelPIU:Reheat`` and add it to the document.
+
+        Central air system terminal unit, single duct, variable volume, parallel powered induction unit (PIU), with reheat coil (hot water, electric, gas, or steam).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-distribution-equipment/#airterminalsingleductparallelpiureheat
+        """
 
 class FanSystemModel:
     def __call__(
@@ -510,7 +679,15 @@ class FanSystemModel:
         end_use_subcategory: str | None = "General",
         number_of_speeds: int | None = 1,
         speed_fractions: list[_g.FanSystemModelSpeedFractionsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Fan:SystemModel`` and add it to the document.
+
+        Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-speed applications. Performance at different flow rates, or speed levels, is determined using separate performance curve or table or prescribed power fractions at discrete speed levels for two-speed or multi-speed fans.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-fans/#fansystemmodel
+        """
 
 class AnyCoilHeatingElectricMultiStage:
     def __call__(
@@ -531,7 +708,13 @@ class AnyCoilHeatingElectricMultiStage:
         stage_3_nominal_capacity: float | Literal["Autosize"] | None = ...,
         stage_4_efficiency: float | None = ...,
         stage_4_nominal_capacity: float | Literal["Autosize"] | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:Electric:MultiStage`` and add it to the document.
+
+        Electric heating coil, multi-stage. If the coil is located directly in an air loop branch or outdoor air equipment list, then it is controlled on leaving air temperature and the Temperature Setpoint Node Name must be specified. If the coil is contained within another component such as an air terminal unit, zone HVAC equipment, or unitary system, then the coil is controlled by the parent component and the setpoint node name is not entered.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-heating-and-cooling-coils/#coilheatingelectricmultistage
+        """
 
 class AnyCoilCoolingWaterToAirHeatPumpEquationFit:
     def __call__(
@@ -551,7 +734,16 @@ class AnyCoilCoolingWaterToAirHeatPumpEquationFit:
         gross_rated_cooling_cop: float,
         nominal_time_for_condensate_removal_to_begin: float | None = 0,
         ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:WaterToAirHeatPump:EquationFit`` and add it to the document.
+
+        Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-fit model. Optional inputs for moisture evaporation from wet coil when compressor cycles off with continuous fan operation. Equation-fit model uses normalized curves to describe the heat pump performance.
+
+        No call suits every release: narrow the document with ``as_version`` first.
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingwatertoairheatpumpequationfit
+        """
 
 class CoilWaterHeatingDesuperheater:
     def __call__(
@@ -591,7 +783,15 @@ class CoilWaterHeatingDesuperheater:
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:WaterHeating:Desuperheater`` and add it to the document.
+
+        Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigerant gas leaving a compressor and does not impact the performance of the compressor. This coil must be used with a water heater tank, see Water Heater:Mixed.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-heating-and-cooling-coils/#coilwaterheatingdesuperheater
+        """
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
     def __call__(
@@ -661,7 +861,15 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
         loading_indices: list[
             _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem
         ] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR`` and add it to the document.
+
+        This is a key object in the new physics based VRF Heat Recovery (HR) model applicable for Fluid Temperature Control. It describes the VRF HR system excluding the performance of indoor units. Indoor units are modeled separately in the ZoneHVAC:TerminalUnit:VariableRefrigerantFlow object
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-variable-refrigerant-flow-equipment/#airconditionervariablerefrigerantflowfluidtemperaturecontrolhr
+        """
 
 class AnyWaterHeaterStratified:
     def __call__(
@@ -746,7 +954,15 @@ class AnyWaterHeaterStratified:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WaterHeater:Stratified`` and add it to the document.
+
+        Water heater with stratified, multi-node water tank. May be used to model a tankless water heater (small tank volume), a hot water storage tank (zero heater capacity), or a heat pump water heater (see WaterHeater:HeatPump:*.)
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-water-heaters/#waterheaterstratified
+        """
 
 class ThermalStorageIceDetailed:
     def __call__(
@@ -773,10 +989,24 @@ class ThermalStorageIceDetailed:
         freezing_temperature_of_storage_medium: float | None = 0,
         thaw_process_indicator: Literal["", "InsideMelt", "OutsideMelt"] | None = "OutsideMelt",
         thermal_storage_sizing_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ThermalStorage:Ice:Detailed`` and add it to the document.
+
+        This input syntax is intended to describe a thermal storage system that includes smaller containers filled with water that are placed in a larger tank or series of tanks. The model uses polynomial equations to describe the system performance.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-water-heaters/#thermalstorageicedetailed
+        """
 
 class AnyPlantEquipmentList:
-    def __call__(self, name: str, /) -> None: ...
+    def __call__(self, name: str, /) -> None:
+        """Create a new ``PlantEquipmentList`` and add it to the document.
+
+        List plant equipment in order of operating priority, 1st in list will be used 1st, etc Use only plant equipment in this list. If no equipment object types and equipment names are specified, then the corresponding PlantEquipmentOperation:* object will assume all available plant equipment for the loop should be OFF (not operate) within the specified lower/upper limit.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-condenser-control/#plantequipmentlist
+        """
 
 class EnergyManagementSystemProgramCallingManager:
     def __call__(
@@ -806,12 +1036,24 @@ class EnergyManagementSystemProgramCallingManager:
         ]
         | None = ...,
         programs: list[_g.EnergyManagementSystemProgramCallingManagerProgramsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``EnergyManagementSystem:ProgramCallingManager`` and add it to the document.
+
+        Input EMS program. a program needs a name a description of when it should be called and then lines of program code for EMS Runtime language
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemprogramcallingmanager
+        """
 
 class AnyExternalInterfaceFunctionalMockupUnitImport:
-    def __call__(
-        self, /, *, fmu_file_name: str, fmu_timeout: float | None = 0, fmu_loggingon: int | None = 0
-    ) -> None: ...
+    def __call__(self, /, *, fmu_file_name: str, fmu_timeout: float | None = 0, fmu_loggingon: int | None = 0) -> None:
+        """Create a new ``ExternalInterface:FunctionalMockupUnitImport`` and add it to the document.
+
+        This object declares an FMU
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-externalinterface/#externalinterfacefunctionalmockupunitimport
+        """
 
 class AnyExternalInterfaceFunctionalMockupUnitExportToActuator:
     def __call__(
@@ -824,15 +1066,33 @@ class AnyExternalInterfaceFunctionalMockupUnitExportToActuator:
         actuated_component_control_type: str,
         fmu_variable_name: str,
         initial_value: float,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ExternalInterface:FunctionalMockupUnitExport:To:Actuator`` and add it to the document.
+
+        Hardware portion of EMS used to set up actuators in the model that are dynamically updated from the FMU.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-externalinterface/#externalinterfacefunctionalmockupunitexporttoactuator
+        """
 
 class AvailabilityManagerScheduled:
-    def __call__(self, name: str, /, *, schedule_name: str) -> None: ...
+    def __call__(self, name: str, /, *, schedule_name: str) -> None:
+        """Create a new ``AvailabilityManager:Scheduled`` and add it to the document.
+
+        Determines the availability of a loop or system: whether it is on or off. Schedule overrides fan/pump schedule.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-system-availability-managers/#availabilitymanagerscheduled
+        """
 
 class AvailabilityManagerLowTemperatureTurnOff:
     def __call__(
         self, name: str, /, *, sensor_node_name: str, temperature: float, applicability_schedule_name: str | None = ...
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AvailabilityManager:LowTemperatureTurnOff`` and add it to the document.
+
+        Overrides fan/pump schedules depending on temperature at sensor node.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-system-availability-managers/#availabilitymanagerlowtemperatureturnoff
+        """
 
 class SetpointManagerMultiZoneMinimumHumidityAverage:
     def __call__(
@@ -844,7 +1104,15 @@ class SetpointManagerMultiZoneMinimumHumidityAverage:
         setpoint_node_or_nodelist_name: str,
         minimum_setpoint_humidity_ratio: float | None = 0.005,
         maximum_setpoint_humidity_ratio: float | None = 0.012,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SetpointManager:MultiZone:MinimumHumidity:Average`` and add it to the document.
+
+        This setpoint manager sets the average supply air minimum humidity ratio based on moisture load requirements of all controlled zones in an air loop served by a central air-conditioner.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-setpoint-managers/#setpointmanagermultizoneminimumhumidityaverage
+        """
 
 class ElectricLoadCenterInverterSimple:
     def __call__(
@@ -856,7 +1124,13 @@ class ElectricLoadCenterInverterSimple:
         zone_name: str | None = ...,
         radiative_fraction: float | None = ...,
         inverter_efficiency: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ElectricLoadCenter:Inverter:Simple`` and add it to the document.
+
+        Electric power inverter to convert from direct current (DC) to alternating current (AC) in an electric load center that contains photovoltaic modules. This input object is for the simplest inverter model and uses a fixed efficiency.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-electric-load-center-generator/#electricloadcenterinvertersimple
+        """
 
 class FaultModelEnthalpySensorOffsetReturnAir:
     def __call__(
@@ -869,7 +1143,15 @@ class FaultModelEnthalpySensorOffsetReturnAir:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         enthalpy_sensor_offset: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``FaultModel:EnthalpySensorOffset:ReturnAir`` and add it to the document.
+
+        This object describes return air enthalpy sensor offset
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-operational-faults/#faultmodelenthalpysensoroffsetreturnair
+        """
 
 class FaultModelFoulingCoolingTower:
     def __call__(
@@ -884,7 +1166,13 @@ class FaultModelFoulingCoolingTower:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         reference_ua_reduction_factor: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``FaultModel:Fouling:CoolingTower`` and add it to the document.
+
+        This object describes the fault of fouling cooling towers
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-operational-faults/#faultmodelfoulingcoolingtower
+        """
 
 class UtilityCostQualify:
     def __call__(
@@ -899,7 +1187,15 @@ class UtilityCostQualify:
         season: Literal["Annual", "Fall", "Spring", "Summer", "Winter"] | None = ...,
         threshold_test: Literal["", "Consecutive", "Count"] | None = "Consecutive",
         number_of_months: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``UtilityCost:Qualify`` and add it to the document.
+
+        The qualify object allows only tariffs to be selected based on limits which may apply such as maximum or minimum demand requirements. If the results of the simulation fall outside of the range of qualifications, that tariff is still calculated but the 'Qualified' entry will say 'No' and the UtilityCost:Qualify that caused its exclusion is shown. Multiple UtilityCost:Qualify objects can appear for the same tariff and they can be based on any variable.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/utilitycost-qualify/#utilitycostqualify
+        """
 
 class AnyOutputControlSurfaceColorScheme:
     def __call__(
@@ -1192,10 +1488,22 @@ class AnyOutputControlSurfaceColorScheme:
         ]
         | None = ...,
         color_for_drawing_element_15: int | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``OutputControl:SurfaceColorScheme`` and add it to the document.
+
+        This object is used to set colors for reporting on various building elements particularly for the DXF reports. We know the user can enter 0 to 255 and the color map is available in DXF output. Therefore, we are limiting the colors in that range. You can extend by editing the IDD but you do so on your own. Colors not changed in any scheme will remain as the default scheme uses.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/input-for-output/#outputcontrolsurfacecolorscheme
+        """
 
 class OutputTableSummaryReports:
-    def __call__(self, /, *, reports: list[_g.OutputTableSummaryReportsReportsItem] = ...) -> None: ...
+    def __call__(self, /, *, reports: list[_g.OutputTableSummaryReportsReportsItem] = ...) -> None:
+        """Create a new ``Output:Table:SummaryReports`` and add it to the document.
+
+        This object allows the user to call report types that are predefined and will appear with the other tabular reports. These predefined reports are sensitive to the OutputControl:Table:Style object and appear in the same files as the tabular reports. The entries for this object is a list of the predefined reports that should appear in the tabular report output file.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/standard-output-reports/output-table-summaryreports/#outputtablesummaryreports
+        """
 
 class FuelFactors:
     def __call__(
@@ -1249,4 +1557,10 @@ class FuelFactors:
         nuclear_high_level_emission_factor_schedule_name: str | None = ...,
         nuclear_low_level_emission_factor: float | None = ...,
         nuclear_low_level_emission_factor_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``FuelFactors`` and add it to the document.
+
+        Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for users who want to create and use fuels that may not be mainstream (biomass, wood, pellets).
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/input-for-output/#fuelfactors
+        """

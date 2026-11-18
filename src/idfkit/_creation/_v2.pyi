@@ -22,7 +22,13 @@ class LoadProfilePlant_v8_9_to_v23_1:
         load_schedule_name: str,
         peak_flow_rate: float,
         flow_rate_fraction_schedule_name: str,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``LoadProfile:Plant`` and add it to the document.
+
+        Used to simulate a scheduled plant loop demand profile. Load and flow rate are specified using schedules. Positive values are heating loads, and negative values are cooling loads. The actual load met is dependent on the performance of the supply loop components.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-non-zone-equipment/#loadprofileplant
+        """
 
 class ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1:
     def __call__(
@@ -48,7 +54,15 @@ class ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1:
         maximum_outdoor_temperature: float | None = 100,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_wind_speed: float | None = 40,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneVentilation:WindandStackOpenArea`` and add it to the document.
+
+        This object is specified as natural ventilation driven by wind and stack effect only: Ventilation Wind = Cw * Opening Area * Schedule * WindSpd Ventilation Stack = Cd * Opening Area * Schedule * SQRT(2*g*DH*(|(Tzone-Todb)|/Tzone)) Total Ventilation = SQRT((Ventilation Wind)^2 + (Ventilation Stack)^2)
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-airflow/#zoneventilationwindandstackopenarea
+        """
 
 class ShadowCalculation_v8_9_to_v9_2:
     def __call__(
@@ -69,15 +83,35 @@ class ShadowCalculation_v8_9_to_v9_2:
         disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
         shading_zone_groups: list[_g.ShadowCalculationShadingZoneGroupsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ShadowCalculation`` and add it to the document.
+
+        This object is used to control details of the solar, shading, and daylighting models
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-simulation-parameters/#shadowcalculation
+        """
 
 class InternalMass_v9_2_to_v9_5:
     def __call__(
         self, name: str, /, *, construction_name: str, zone_or_zonelist_name: str, surface_area: float
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``InternalMass`` and add it to the document.
+
+        Used to describe internal zone surface area that does not need to be part of geometric representation. This should be the total surface area exposed to the zone air. If you use a ZoneList in the Zone or ZoneList name field then this definition applies to all the zones in the ZoneList.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#internalmass
+        """
 
 class OutputTableSummaryReports_v9_3:
-    def __call__(self, /, *, reports: list[_vd.OutputTableSummaryReportsReportsItem_v9_3] = ...) -> None: ...
+    def __call__(self, /, *, reports: list[_vd.OutputTableSummaryReportsReportsItem_v9_3] = ...) -> None:
+        """Create a new ``Output:Table:SummaryReports`` and add it to the document.
+
+        This object allows the user to call report types that are predefined and will appear with the other tabular reports. These predefined reports are sensitive to the OutputControl:Table:Style object and appear in the same files as the tabular reports. The entries for this object is a list of the predefined reports that should appear in the tabular report output file. There should be as many fields (A) in this object as there are keys in the following (minus AllSummary+AllMonthly+AllSummaryAndMonthly)
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/standard-output-reports/output-table-summaryreports/#outputtablesummaryreports
+        """
 
 class CoilUserDefined_v8_9_to_v22_1:
     def __call__(
@@ -98,7 +132,13 @@ class CoilUserDefined_v8_9_to_v22_1:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:UserDefined`` and add it to the document.
+
+        Defines a generic air system component for custom modeling using Energy Management System or External Interface
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-user-defined-hvac-and-plant-component/#coiluserdefined
+        """
 
 class OutputSQLite_v24_1_to_v25_1:
     def __call__(
@@ -117,7 +157,15 @@ class OutputSQLite_v24_1_to_v25_1:
             "UseOutputControlTableStyle",
         ]
         | None = "UseOutputControlTableStyle",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Output:SQLite`` and add it to the document.
+
+        Output from EnergyPlus can be written to an SQLite format file.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/input-for-output/#outputsqlite
+        """
 
 class WindowPropertyStormWindow_v8_9_to_v22_1:
     def __call__(
@@ -131,7 +179,15 @@ class WindowPropertyStormWindow_v8_9_to_v22_1:
         month_that_storm_glass_layer_is_taken_off: float,
         day_of_month_that_storm_glass_layer_is_taken_off: float,
         distance_between_storm_glass_layer_and_adjacent_glass: float | None = 0.05,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WindowProperty:StormWindow`` and add it to the document.
+
+        This is a movable exterior glass layer that is usually applied in the winter and removed in the summer.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-thermal-zone-description-geometry/#windowpropertystormwindow
+        """
 
 class OutputDiagnostics_v8_9_to_v9_3:
     def __call__(
@@ -168,7 +224,13 @@ class OutputDiagnostics_v8_9_to_v9_3:
             "ReportDuringWarmup",
         ]
         | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Output:Diagnostics`` and add it to the document.
+
+        Special keys to produce certain warning messages or effect certain simulation characteristics.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-simulation-parameters/#outputdiagnostics
+        """
 
 class CentralHeatPumpSystem_v8_9_to_v22_1:
     def __call__(
@@ -284,7 +346,15 @@ class CentralHeatPumpSystem_v8_9_to_v22_1:
         chiller_heater_modules_performance_component_name_20: str | None = ...,
         chiller_heater_modules_control_schedule_name_20: str | None = ...,
         number_of_chiller_heater_modules_20: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``CentralHeatPumpSystem`` and add it to the document.
+
+        This chiller bank can contain multiple chiller heaters and heat pump performance objects. Its function is to encapsulate the extra controls needed to turn individual modules on/off and whether they are to operate in cooling-only, heating-only or simultaneous cooling/heating mode and whether to connect the source water to the evaporator or condenser side.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-plant-equipment/#centralheatpumpsystem
+        """
 
 class MatrixTwoDimension_v8_9_to_v22_1:
     def __call__(
@@ -295,7 +365,13 @@ class MatrixTwoDimension_v8_9_to_v22_1:
         number_of_rows: float,
         number_of_columns: float,
         values: list[_g.MatrixTwoDimensionValuesItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Matrix:TwoDimension`` and add it to the document.
+
+        matrix data in row-major order list each row keeping the columns in order number of values must equal N1 x N2
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-surface-construction-elements/#matrixtwodimension
+        """
 
 class WallExterior_v8_9_to_v9_5:
     def __call__(
@@ -312,4 +388,12 @@ class WallExterior_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Wall:Exterior`` and add it to the document.
+
+        Allows for simplified entry of exterior walls. View Factor to Ground is automatically calculated.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#wallexterior
+        """

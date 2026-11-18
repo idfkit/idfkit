@@ -21,7 +21,13 @@ class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1:
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
         temperature_gradient: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``RoomAir:TemperaturePattern:ConstantGradient`` and add it to the document.
+
+        Used to model room air with a fixed temperature gradient in the vertical direction. Used in combination with RoomAir:TemperaturePattern:UserDefined.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-room-air-models/#roomairtemperaturepatternconstantgradient
+        """
 
 class ZoneRefrigerationDoorMixing_v8_9_to_v24_1:
     def __call__(
@@ -35,7 +41,15 @@ class ZoneRefrigerationDoorMixing_v8_9_to_v24_1:
         door_height: float | None = 3,
         door_area: float | None = 9,
         door_protection_type: Literal["", "AirCurtain", "None", "StripCurtain"] | None = "None",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneRefrigerationDoorMixing`` and add it to the document.
+
+        Refrigeration Door Mixing is used for an opening between two zones that are at the same elevation but have different air temperatures. In this case, the mixing air flow between the two zones is determined by the density difference between the two zones. This would typically be used between two zones in a refrigerated warehouse that are controlled at different temperatures. It could also be used to model a door to a walk-in refrigerated space if that space were modeled as a zone instead of using the object Refrigeration:WalkIn.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-airflow/#zonerefrigerationdoormixing
+        """
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1:
     def __call__(
@@ -77,7 +91,15 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1:
         rated_heating_capacity_sizing_ratio: float | None = 1,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
+
+        Zone terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF terminal units are served by an AirConditioner:VariableRefrigerantFlow system.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-zone-forced-air-units/#zonehvacterminalunitvariablerefrigerantflow
+        """
 
 class WaterHeaterStratified_v9_3_to_v22_1:
     def __call__(
@@ -195,7 +217,15 @@ class WaterHeaterStratified_v9_3_to_v22_1:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WaterHeater:Stratified`` and add it to the document.
+
+        Water heater with stratified, multi-node water tank. May be used to model a tankless water heater (small tank volume), a hot water storage tank (zero heater capacity), or a heat pump water heater (see WaterHeater:HeatPump:*.)
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-water-heaters/#waterheaterstratified
+        """
 
 class HeaderedPumpsVariableSpeed_v8_9_to_v9_0:
     def __call__(
@@ -225,7 +255,15 @@ class HeaderedPumpsVariableSpeed_v8_9_to_v9_0:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HeaderedPumps:VariableSpeed`` and add it to the document.
+
+        This Headered pump object describes a pump bank with more than 1 pump in parallel
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.0/io-reference/overview/group-pumps/#headeredpumpsvariablespeed
+        """
 
 class HybridModelZone_v8_9_to_v9_0:
     def __call__(
@@ -241,7 +279,15 @@ class HybridModelZone_v8_9_to_v9_0:
         end_day_of_month: float,
         calculate_zone_internal_thermal_mass: Literal["", "No", "Yes"] | None = "No",
         calculate_zone_air_infiltration_rate: Literal["", "No", "Yes"] | None = "No",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HybridModel:Zone`` and add it to the document.
+
+        Zones with measured air temperature data and a range of dates. If the range of temperature measurement dates includes a leap day, the weather data should include a leap day.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.0/io-reference/overview/group-hybrid-model/#hybridmodelzone
+        """
 
 class CoilWaterHeatingDesuperheater_v8_9_to_v9_1:
     def __call__(
@@ -277,7 +323,15 @@ class CoilWaterHeatingDesuperheater_v8_9_to_v9_1:
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:WaterHeating:Desuperheater`` and add it to the document.
+
+        Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigerant gas leaving a compressor and does not impact the performance of the compressor. This coil must be used with a water heater tank, see Water Heater:Mixed.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-heating-and-cooling-coils/#coilwaterheatingdesuperheater
+        """
 
 class CoilWaterHeatingDesuperheater_v22_2_to_v24_2:
     def __call__(
@@ -316,7 +370,15 @@ class CoilWaterHeatingDesuperheater_v22_2_to_v24_2:
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:WaterHeating:Desuperheater`` and add it to the document.
+
+        Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigerant gas leaving a compressor and does not impact the performance of the compressor. This coil must be used with a water heater tank, see Water Heater:Mixed.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.2/io-reference/overview/group-heating-and-cooling-coils/#coilwaterheatingdesuperheater
+        """
 
 class ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1:
     def __call__(
@@ -361,7 +423,15 @@ class ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1:
         availability_manager_list_name: str | None = ...,
         heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
+
+        Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coils, supplemental heating coil (gas, electric, hot water, or steam), and fixed-position outdoor air mixer.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-zone-forced-air-units/#zonehvacwatertoairheatpump
+        """
 
 class HVACTemplateSystemUnitarySystem_v8_9_to_v22_1:
     def __call__(
@@ -481,7 +551,15 @@ class HVACTemplateSystemUnitarySystem_v8_9_to_v22_1:
         return_fan_delta_pressure: float | None = 300,
         return_fan_motor_efficiency: float | None = 0.9,
         return_fan_motor_in_air_stream_fraction: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:System:UnitarySystem`` and add it to the document.
+
+        Unitary HVAC system with optional cooling and heating. Supports DX and chilled water, cooling, gas, electric, and hot water heating, air-to-air and water-to-air heat pumps.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplatesystemunitarysystem
+        """
 
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1:
     def __call__(
@@ -532,7 +610,15 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1:
         heating_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_3_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` and add it to the document.
+
+        Unitary system, heating and cooling, multi-speed with constant volume supply fan (continuous or cycling), direct expansion (DX) cooling coil, heating coil (DX air-to-air heat pump, gas, electric, hot water, or steam), and supplemental heating coil (gas, electric, hot water, or steam).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-unitary-equipment/#airloophvacunitaryheatpumpairtoairmultispeed
+        """
 
 class CoilHeatingFuel_v9_4_to_v23_1:
     def __call__(
@@ -562,7 +648,15 @@ class CoilHeatingFuel_v9_4_to_v23_1:
         parasitic_electric_load: float | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
         parasitic_fuel_load: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:Fuel`` and add it to the document.
+
+        Gas or other fuel heating coil. If the coil is located directly in an air loop branch or outdoor air equipment list, then it is controlled on leaving air temperature and the Temperature Setpoint Node Name must be specified. If the coil is contained within another component such as an air terminal unit, zone HVAC equipment, or unitary system, then the coil is controlled by the parent component and the setpoint node name is not entered.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/energyplus-economics/cost-estimating/#coilheatingfuel
+        """
 
 class ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3:
     def __call__(
@@ -606,7 +700,15 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3:
         condensation_control_dewpoint_offset: float | None = 1,
         number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
+
+        Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floor). Controlled by varying the hot or chilled water temperature circulating through the unit.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-radiative-convective-units/#zonehvaclowtemperatureradiantconstantflow
+        """
 
 class CurveDoubleExponentialDecay_v8_9_to_v9_3:
     def __call__(
@@ -626,7 +728,15 @@ class CurveDoubleExponentialDecay_v8_9_to_v9_3:
         input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Curve:DoubleExponentialDecay`` and add it to the document.
+
+        Double exponential decay curve with one independent variable. Input consists of the curve name, the five coefficients, and the maximum and minimum valid independent variable values. Optional inputs for the curve minimum and maximum may be used to limit the output of the performance curve. curve = C1+C2*exp(C3*x)+C4*exp(C5*x)
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-performance-curves/#curvedoubleexponentialdecay
+        """
 
 class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1:
     def __call__(
@@ -779,7 +889,15 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
+
+        Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), variable-speed, equation-fit model. Optional inputs for moisture evaporation from wet coil when compressor cycles off with continuous fan operation. Equation-fit model uses normalized curves to describe the heat pump performance. Requires two to ten sets of performance data and will interpolate between speeds. Modeled as a single coil with variable-speed compressor.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingwatertoairheatpumpvariablespeedequationfit
+        """
 
 class OutputControlFiles_v24_2_to_v25_1:
     def __call__(
@@ -818,7 +936,15 @@ class OutputControlFiles_v24_2_to_v25_1:
         output_screen: Literal["", "No", "Yes"] | None = "Yes",
         output_extshd: Literal["", "No", "Yes"] | None = "Yes",
         output_tarcog: Literal["", "No", "Yes"] | None = "Yes",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``OutputControl:Files`` and add it to the document.
+
+        Conditionally turn on/off output from EnergyPlus.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/input-for-output/#outputcontrolfiles
+        """
 
 class IndoorLivingWall_v24_1:
     def __call__(
@@ -840,7 +966,15 @@ class IndoorLivingWall_v24_1:
         radiant_fraction_of_led_lights: float | None = 0.6,
         led_intensity_schedule_name: str | None = ...,
         led_nominal_intensity: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``IndoorLivingWall`` and add it to the document.
+
+        Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrates. The living wall structures can be either free-standing or attached to walls. The IndoorLivingWall module directly connects with inside surface heat balance, zone air heat balance, and zone air moisture balance.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-internal-gains-people-lights-other/#indoorlivingwall
+        """
 
 class PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2:
     def __call__(
@@ -867,7 +1001,15 @@ class PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2:
         nominal_operating_cell_temperature_test_insolation: float | None = 800,
         module_heat_loss_coefficient: float | None = 30,
         total_heat_capacity: float | None = 50000,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``PhotovoltaicPerformance:EquivalentOne-Diode`` and add it to the document.
+
+        Describes the performance characteristics of Photovoltaic (PV) modules to be modeled using an equivalent one-diode circuit. This model is also known as the 4- or 5-parameter TRNSYS model for photovoltaics.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.2/io-reference/overview/group-electric-load-center-generator/#photovoltaicperformanceequivalentone-diode
+        """
 
 class ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1:
     def __call__(
@@ -903,4 +1045,12 @@ class ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1:
         heating_setpoint_temperature_schedule_name: str | None = ...,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
         surface_fractions: list[_g.ZoneHVACHighTemperatureRadiantSurfaceFractionsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:HighTemperatureRadiant`` and add it to the document.
+
+        The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-radiative-convective-units/#zonehvachightemperatureradiant
+        """

@@ -40,7 +40,15 @@ class HVACTemplatePlantBoiler_v8_9_to_v9_2:
         optimum_part_load_ratio: float | None = 1,
         water_outlet_upper_temperature_limit: float | None = 100,
         template_plant_loop_type: Literal["HotWater", "MixedWater"] | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:Plant:Boiler`` and add it to the document.
+
+        This object adds a boiler to an HVACTemplate:Plant:HotWaterLoop or MixedWaterLoop.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplateplantboiler
+        """
 
 class AirTerminalSingleDuctUserDefined_v8_9_to_v22_1:
     def __call__(
@@ -62,7 +70,13 @@ class AirTerminalSingleDuctUserDefined_v8_9_to_v22_1:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:UserDefined`` and add it to the document.
+
+        Defines a generic single duct air terminal unit for custom modeling using Energy Management System or External Interface
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-user-defined-hvac-and-plant-component/#airterminalsingleductuserdefined
+        """
 
 class EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3:
     def __call__(
@@ -91,7 +105,13 @@ class EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3:
         ]
         | None = ...,
         programs: list[_g.EnergyManagementSystemProgramCallingManagerProgramsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``EnergyManagementSystem:ProgramCallingManager`` and add it to the document.
+
+        Input EMS program. a program needs a name a description of when it should be called and then lines of program code for EMS Runtime language
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemprogramcallingmanager
+        """
 
 class ZoneHVACHybridUnitaryHVAC_v9_3:
     def __call__(
@@ -185,7 +205,15 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
         modes: list[_g.ZoneHVACHybridUnitaryHVACModesItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:HybridUnitaryHVAC`` and add it to the document.
+
+        Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include outdoor air conditions and indoor air conditions. Controlled inputs include operating mode, supply air flow rate, and outdoor air faction. Emperical lookup tables are required to map supply air temperature supply air humidity, electricity use, fuel uses, water use, fan electricity use, and external static pressure as a function of each indpednent varaible and each controlled input. In each timestep the model will choose one or more combinations of settings for mode, supply air flow rate, outdoor air faction, and part runtime fraction so as to satisfy zone requests for sensible cooling, heating, ventilation, and/or dehumidification with the least resource consumption. Equipment in this class may consume electricity, water, and up to two additional fuel types.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-zone-forced-air-units/#zonehvachybridunitaryhvac
+        """
 
 class WindowMaterialGasMixture_v8_9_to_v22_1:
     def __call__(
@@ -203,7 +231,13 @@ class WindowMaterialGasMixture_v8_9_to_v22_1:
         gas_3_fraction: float | None = ...,
         gas_4_type: Literal["Air", "Argon", "Krypton", "Xenon"] | None = ...,
         gas_4_fraction: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WindowMaterial:GasMixture`` and add it to the document.
+
+        Gas mixtures that are used in Windows or Glass Doors
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-surface-construction-elements/#windowmaterialgasmixture
+        """
 
 class CoilHeatingDXVariableSpeed_v23_2_to_v25_1:
     def __call__(
@@ -299,7 +333,15 @@ class CoilHeatingDXVariableSpeed_v23_2_to_v25_1:
         speed_10_heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:DX:VariableSpeed`` and add it to the document.
+
+        Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdoor fan), variable-speed, with defrost controls. Requires two to ten sets of performance data and will interpolate between speeds.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingdxvariablespeed
+        """
 
 class WallDetailed_v9_6_to_v24_2:
     def __call__(
@@ -334,10 +376,24 @@ class WallDetailed_v9_6_to_v24_2:
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         vertices: list[_g.WallDetailedVerticesItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Wall:Detailed`` and add it to the document.
+
+        Allows for detailed entry of wall heat transfer surfaces.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.2/io-reference/overview/group-thermal-zone-description-geometry/#walldetailed
+        """
 
 class OutputTableSummaryReports_v9_4:
-    def __call__(self, /, *, reports: list[_vd.OutputTableSummaryReportsReportsItem_v9_4] = ...) -> None: ...
+    def __call__(self, /, *, reports: list[_vd.OutputTableSummaryReportsReportsItem_v9_4] = ...) -> None:
+        """Create a new ``Output:Table:SummaryReports`` and add it to the document.
+
+        This object allows the user to call report types that are predefined and will appear with the other tabular reports. These predefined reports are sensitive to the OutputControl:Table:Style object and appear in the same files as the tabular reports. The entries for this object is a list of the predefined reports that should appear in the tabular report output file. There should be as many fields (A) in this object as there are keys in the following (minus AllSummary+AllMonthly+AllSummaryAndMonthly)
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.4/io-reference/standard-output-reports/output-table-summaryreports/#outputtablesummaryreports
+        """
 
 class ZoneCrossMixing_v8_9_to_v22_1:
     def __call__(
@@ -362,7 +418,15 @@ class ZoneCrossMixing_v8_9_to_v22_1:
         maximum_source_zone_temperature_schedule_name: str | None = ...,
         minimum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneCrossMixing`` and add it to the document.
+
+        ZoneCrossMixing exchanges an equal amount of air between two zones. Note that this statement affects the energy balance of both zones.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-airflow/#zonecrossmixing
+        """
 
 class HotWaterEquipment_v8_9_to_v9_5:
     def __call__(
@@ -383,7 +447,15 @@ class HotWaterEquipment_v8_9_to_v9_5:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HotWaterEquipment`` and add it to the document.
+
+        Sets internal gains for hot water equipment in the zone. If you use a ZoneList in the Zone name field then this definition applies to all those zones.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-internal-gains-people-lights-other/#hotwaterequipment
+        """
 
 class TableOneIndependentVariable_v8_9:
     def __call__(
@@ -408,7 +480,13 @@ class TableOneIndependentVariable_v8_9:
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
         values: list[_vd.TableOneIndependentVariableValuesItem_v8_9] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Table:OneIndependentVariable`` and add it to the document.
+
+        Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be created using these inputs. Linear Table Equation: Output = a + bX Linear solution requires a minimum of 2 data pairs Quadratic Table Equation: Output = a + b*X + c*X**2 Quadratic solution requires a minimum of 3 data pairs Cubic Table Equation: Output = a + b*X + c* X**2 + d*X**3 Cubic solution requires a minimum of 4 data pairs Quartic Table Equation: Output = a + b*X + c* X**2 + d*X**3 + e*X**4 Quartic solution requires a minimum of 5 data pairs Exponent Table Equation: Output = a + b*X**c Exponent solution requires a minimum of 4 data pairs
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+        """
 
 class GroundHeatExchangerPond_v8_9_to_v22_1:
     def __call__(
@@ -426,7 +504,13 @@ class GroundHeatExchangerPond_v8_9_to_v22_1:
         ground_thermal_conductivity: float,
         number_of_tubing_circuits: float,
         length_of_each_tubing_circuit: float,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``GroundHeatExchanger:Pond`` and add it to the document.
+
+        A model of a shallow pond with immersed pipe loops. Typically used in hybrid geothermal systems and included in the condenser loop. This component may also be used as a simple solar collector.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-condenser-equipment/#groundheatexchangerpond
+        """
 
 class CoilCoolingDXTwoStageWithHumidityControlMode_v22_2_to_v23_1:
     def __call__(
@@ -457,7 +541,15 @@ class CoilCoolingDXTwoStageWithHumidityControlMode_v22_2_to_v23_1:
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` and add it to the document.
+
+        Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), two-stage with humidity control mode (e.g. sub-cool or hot gas reheat). Optional inputs for moisture evaporation from wet coil when compressor cycles off with continuous fan operation. Requires two to four sets of performance data, see CoilPerformance:DX:Cooling. Stages are modeled as a face-split coil.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingdxtwostagewithhumiditycontrolmode
+        """
 
 class OutputMeter_v8_9_to_v22_1:
     def __call__(
@@ -469,7 +561,15 @@ class OutputMeter_v8_9_to_v22_1:
             "", "Annual", "Daily", "Detailed", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Output:Meter`` and add it to the document.
+
+        Each Output:Meter command picks meters to be put onto the standard output file (.eso) and meter file (.mtr). Not all meters are reported in every simulation. A list of meters that can be reported are available after a run on the meter dictionary file (.mdd) if the Output:VariableDictionary has been requested.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-output-reporting/#outputmeter
+        """
 
 class GlazedDoor_v8_9:
     def __call__(
@@ -486,4 +586,12 @@ class GlazedDoor_v8_9:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``GlazedDoor`` and add it to the document.
+
+        Allows for simplified entry of glass Doors.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/overview/group-thermal-zone-description-geometry/#glazeddoor
+        """

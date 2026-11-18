@@ -20,7 +20,15 @@ class HVACSystemRootFindingAlgorithm_v8_9_to_v22_1:
         ]
         | None = "RegulaFalsi",
         number_of_iterations_before_algorithm_switch: float | None = 5,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACSystemRootFindingAlgorithm`` and add it to the document.
+
+        Specifies a HVAC system solver algorithm to find a root
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-simulation-parameters/#hvacsystemrootfindingalgorithm
+        """
 
 class ZoneAirMassFlowConservation_v8_9_to_v9_4:
     def __call__(
@@ -31,7 +39,15 @@ class ZoneAirMassFlowConservation_v8_9_to_v9_4:
         infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
         | None = "AddInfiltrationFlow",
         infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneAirMassFlowConservation`` and add it to the document.
+
+        Enforces the zone air mass flow balance by adjusting zone mixing object and/or infiltration object mass flow rates. If either mixing or infiltration is active, then the zone air mass flow balance calculation will attempt to enforce conservation of mass for each zone. If mixing is 'No' and infiltration is 'None', then the zone air mass flow calculation defaults to assume self-balanced simple flow mixing and infiltration objects.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.4/io-reference/overview/group-airflow/#zoneairmassflowconservation
+        """
 
 class AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1:
     def __call__(
@@ -71,7 +87,15 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1:
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         dehumidification_control_type: Literal["", "CoolReheat", "None"] | None = "None",
         heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` and add it to the document.
+
+        Unitary heat pump system, heating and cooling, single-speed with constant volume supply fan (continuous or cycling), direct expansion (DX) cooling coil, DX heating coil (water-to-air heat pump), and supplemental heating coil (gas, electric, hot water, or steam).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-unitary-equipment/#airloophvacunitaryheatpumpwatertoair
+        """
 
 class Zone_v8_9_to_v9_4:
     def __call__(
@@ -97,7 +121,15 @@ class Zone_v8_9_to_v9_4:
         ]
         | None = ...,
         part_of_total_floor_area: Literal["", "No", "Yes"] | None = "Yes",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Zone`` and add it to the document.
+
+        Defines a thermal zone of the building.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.4/io-reference/overview/group-thermal-zone-description-geometry/#zone
+        """
 
 class HVACTemplateZonePTHP_v8_9:
     def __call__(
@@ -162,7 +194,15 @@ class HVACTemplateZonePTHP_v8_9:
         baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:Zone:PTHP`` and add it to the document.
+
+        Packaged Terminal Heat Pump
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplatezonepthp
+        """
 
 class SteamEquipment_v9_6_to_v23_2:
     def __call__(
@@ -183,7 +223,15 @@ class SteamEquipment_v9_6_to_v23_2:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SteamEquipment`` and add it to the document.
+
+        Sets internal gains for steam equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/overview/group-internal-gains-people-lights-other/#steamequipment
+        """
 
 class WaterHeaterStratified_v8_9_to_v9_2:
     def __call__(
@@ -301,7 +349,15 @@ class WaterHeaterStratified_v8_9_to_v9_2:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WaterHeater:Stratified`` and add it to the document.
+
+        Water heater with stratified, multi-node water tank. May be used to model a tankless water heater (small tank volume), a hot water storage tank (zero heater capacity), or a heat pump water heater (see WaterHeater:HeatPump:*.)
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-water-heaters/#waterheaterstratified
+        """
 
 class AirLoopHVACUnitarySystem_v9_3_to_v22_1:
     def __call__(
@@ -427,7 +483,15 @@ class AirLoopHVACUnitarySystem_v9_3_to_v22_1:
         heat_recovery_water_outlet_node_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirLoopHVAC:UnitarySystem`` and add it to the document.
+
+        AirloopHVAC:UnitarySystem is a generic HVAC system type that allows any configuration of coils and/or fan. This object is a replacement of other AirloopHVAC objects. This object can be used in outdoor air systems, outdoor air units, air loops, and as zone equipment if desired.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-unitary-equipment/#airloophvacunitarysystem
+        """
 
 class ConstructionInternalSource_v8_9_to_v9_3:
     def __call__(
@@ -449,7 +513,11 @@ class ConstructionInternalSource_v8_9_to_v9_3:
         layer_8: str | None = ...,
         layer_9: str | None = ...,
         layer_10: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Construction:InternalSource`` and add it to the document.
+
+        Start with outside layer and work your way to the inside Layer Up to 10 layers total, 8 for windows Enter the material name for each layer
+        """
 
 class AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1:
     def __call__(
@@ -484,7 +552,15 @@ class AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1:
         height_factor_for_opening_factor_4: float | None = 0,
         start_height_factor_for_opening_factor_4: float | None = 0,
         type_of_rectangular_large_vertical_opening_lvo: Literal["", "HorizontallyPivoted", "NonPivoted"] | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirflowNetwork:MultiZone:Component:DetailedOpening`` and add it to the document.
+
+        This object specifies the properties of airflow through windows and doors (window, door and glass door heat transfer subsurfaces) when they are closed or open.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-airflow-network/#airflownetworkmultizonecomponentdetailedopening
+        """
 
 class WindowShadingControl_v9_0_to_v9_1:
     def __call__(
@@ -541,7 +617,15 @@ class WindowShadingControl_v9_0_to_v9_1:
         multiple_surface_control_type: Literal["", "Group", "Sequential"] | None = "Sequential",
         construction_with_shading_name: str | None = ...,
         fenestration_surfaces: list[_g.WindowShadingControlFenestrationSurfacesItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WindowShadingControl`` and add it to the document.
+
+        Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the surface objects for exterior windows and glass doors (ref: FenestrationSurface:Detailed, Window, and GlazedDoor).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-thermal-zone-description-geometry/#windowshadingcontrol
+        """
 
 class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1:
     def __call__(
@@ -581,7 +665,15 @@ class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1:
         timed_empirical_defrost_frequency_curve_name: str | None = ...,
         timed_empirical_defrost_heat_load_penalty_curve_name: str | None = ...,
         timed_empirical_defrost_heat_input_energy_fraction_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HeatPump:PlantLoop:EIR:Heating`` and add it to the document.
+
+        An EIR formulated water to water heat pump model, heating operation
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-plant-equipment/#heatpumpplantloopeirheating
+        """
 
 class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1:
     def __call__(
@@ -616,7 +708,15 @@ class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``EvaporativeFluidCooler:SingleSpeed`` and add it to the document.
+
+        This model is based on Merkel's theory, which is also the basis for the cooling tower model in EnergyPlus. The Evaporative fluid cooler is modeled as a counter flow heat exchanger.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-condenser-equipment/#evaporativefluidcoolersinglespeed
+        """
 
 class EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1:
     def __call__(
@@ -650,4 +750,12 @@ class EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``EvaporativeFluidCooler:SingleSpeed`` and add it to the document.
+
+        This model is based on Merkel's theory, which is also the basis for the cooling tower model in EnergyPlus. The Evaporative fluid cooler is modeled as a counter flow heat exchanger.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-condenser-equipment/#evaporativefluidcoolersinglespeed
+        """

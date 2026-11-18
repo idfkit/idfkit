@@ -20,7 +20,15 @@ class SiteLocation_v8_9_to_v24_1:
         longitude: float | None = 0,
         time_zone: float | None = 0,
         elevation: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Site:Location`` and add it to the document.
+
+        Specifies the building's location. Only one location is allowed. Weather data file location, if it exists, will override this object.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-location-climate-weather-file-access/#sitelocation
+        """
 
 class CeilingInterzone_v8_9_to_v9_5:
     def __call__(
@@ -38,7 +46,15 @@ class CeilingInterzone_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Ceiling:Interzone`` and add it to the document.
+
+        Allows for simplified entry of ceilings using adjacent zone (interzone) heat transfer - adjacent surface should be a floor
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#ceilinginterzone
+        """
 
 class CoolingTowerTwoSpeed_v8_9_to_v22_1:
     def __call__(
@@ -91,7 +107,15 @@ class CoolingTowerTwoSpeed_v8_9_to_v22_1:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``CoolingTower:TwoSpeed`` and add it to the document.
+
+        This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. The open wet cooling tower is modeled as a counter flow heat exchanger with a two-speed fan drawing air through the tower (induced-draft configuration). For a multi-cell tower, the capacity and air/water flow rate inputs are for the entire tower.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-condenser-equipment/#coolingtowertwospeed
+        """
 
 class ChillerConstantCOP_v8_9_to_v24_1:
     def __call__(
@@ -114,7 +138,15 @@ class ChillerConstantCOP_v8_9_to_v24_1:
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Chiller:ConstantCOP`` and add it to the document.
+
+        This constant COP chiller model provides a means of quickly specifying a Chiller where performance data is not available.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-plant-equipment/#chillerconstantcop
+        """
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1:
     def __call__(
@@ -164,7 +196,15 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1:
         maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None = "Autosize",
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         controlling_zone_or_thermostat_location: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
+
+        A terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF terminal units are served by an AirConditioner:VariableRefrigerantFlow or AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:* system. Terminal units can be configured as zone, air loop or outside air system equipment.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-zone-forced-air-units/#zonehvacterminalunitvariablerefrigerantflow
+        """
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1:
     def __call__(
@@ -216,10 +256,26 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1:
         controlling_zone_or_thermostat_location: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
+
+        A terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF terminal units are served by an AirConditioner:VariableRefrigerantFlow or AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:* system. Terminal units can be configured as zone, air loop or outside air system equipment.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-zone-forced-air-units/#zonehvacterminalunitvariablerefrigerantflow
+        """
 
 class ZoneGroup_v8_9_to_v22_1:
-    def __call__(self, name: str, /, *, zone_list_name: str, zone_list_multiplier: float | None = 1) -> None: ...
+    def __call__(self, name: str, /, *, zone_list_name: str, zone_list_multiplier: float | None = 1) -> None:
+        """Create a new ``ZoneGroup`` and add it to the document.
+
+        Adds a multiplier to a ZoneList. This can be used to reduce the amount of input necessary for simulating repetitive structures, such as the identical floors of a multi-story building.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-thermal-zone-description-geometry/#zonegroup
+        """
 
 class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1:
     def __call__(
@@ -228,7 +284,11 @@ class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1:
         *,
         zone_name: str | None = ...,
         view_factors: list[_vd.ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v8_9_to_v9_1] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneProperty:UserViewFactors:bySurfaceName`` and add it to the document.
+
+        View factors for Surface to Surface in a zone. (Number of Surfaces)**2 must be entered.
+        """
 
 class GroundHeatExchangerSlinky_v8_9_to_v22_1:
     def __call__(
@@ -261,10 +321,24 @@ class GroundHeatExchangerSlinky_v8_9_to_v22_1:
         number_of_trenches: float | None = 1,
         horizontal_spacing_between_pipes: float | None = 2,
         maximum_length_of_simulation: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``GroundHeatExchanger:Slinky`` and add it to the document.
+
+        This models a slinky horizontal heat exchanger placed in a series of trenches The model uses the model developed by: Xiong, Z., D.E. Fisher, and J.D. Spitler. 2015. Development and Validation of a Slinky Ground Heat Exchanger Model. Applied Energy 141: 57-69.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-condenser-equipment/#groundheatexchangerslinky
+        """
 
 class OutputTableSummaryReports_v8_9_to_v9_2:
-    def __call__(self, /, *, reports: list[_vd.OutputTableSummaryReportsReportsItem_v8_9_to_v9_2] = ...) -> None: ...
+    def __call__(self, /, *, reports: list[_vd.OutputTableSummaryReportsReportsItem_v8_9_to_v9_2] = ...) -> None:
+        """Create a new ``Output:Table:SummaryReports`` and add it to the document.
+
+        This object allows the user to call report types that are predefined and will appear with the other tabular reports. These predefined reports are sensitive to the OutputControl:Table:Style object and appear in the same files as the tabular reports. The entries for this object is a list of the predefined reports that should appear in the tabular report output file. There should be as many fields (A) in this object as there are keys in the following (minus AllSummary+AllMonthly+AllSummaryAndMonthly)
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/standard-output-reports/output-table-summaryreports/#outputtablesummaryreports
+        """
 
 class CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1:
     def __call__(
@@ -317,7 +391,15 @@ class CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``CoolingTower:VariableSpeed:Merkel`` and add it to the document.
+
+        This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. The open wet cooling tower is modeled as a counter flow heat exchanger with a variable-speed fan drawing air through the tower (induced-draft configuration). For a multi-cell tower, the capacity and air/water flow rate inputs are for the entire tower.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-condenser-equipment/#coolingtowervariablespeedmerkel
+        """
 
 class GeneratorMicroTurbine_v8_9_to_v9_2:
     def __call__(
@@ -363,7 +445,15 @@ class GeneratorMicroTurbine_v8_9_to_v9_2:
         nominal_exhaust_air_outlet_temperature: float | None = ...,
         exhaust_air_temperature_function_of_temperature_curve_name: str | None = ...,
         exhaust_air_temperature_function_of_part_load_ratio_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Generator:MicroTurbine`` and add it to the document.
+
+        MicroTurbine generators are small combustion turbines (e.g., 25kW to 500kW). The model calculates electrical power output, fuel use, standby and ancillary power. Energy recovery from exhaust air can be used to heat water.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-electric-load-center-generator/#generatormicroturbine
+        """
 
 class RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1:
     def __call__(
@@ -389,7 +479,13 @@ class RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1:
         lower_temperature_bound: float | None = ...,
         upper_heat_rate_bound: float | None = ...,
         lower_heat_rate_bound: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``RoomAir:TemperaturePattern:TwoGradient`` and add it to the document.
+
+        Used to model room air with two temperature gradients in the vertical direction. Used in combination with RoomAir:TemperaturePattern:UserDefined.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-room-air-models/#roomairtemperaturepatterntwogradient
+        """
 
 class CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1:
     def __call__(
@@ -418,7 +514,15 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         fan_delay_time: float | None = 60,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:WaterToAirHeatPump:EquationFit`` and add it to the document.
+
+        Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-fit model. Optional inputs for moisture evaporation from wet coil when compressor cycles off with continuous fan operation. Equation-fit model uses normalized curves to describe the heat pump performance.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingwatertoairheatpumpequationfit
+        """
 
 class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1:
     def __call__(
@@ -556,7 +660,15 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
+
+        Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), variable-speed, equation-fit model. Equation-fit model uses normalized curves to describe the heat pump performance. Requires two to ten sets of performance data and will interpolate between speeds.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingwatertoairheatpumpvariablespeedequationfit
+        """
 
 class AirLoopHVACUnitarySystem_v23_2:
     def __call__(
@@ -679,7 +791,15 @@ class AirLoopHVACUnitarySystem_v23_2:
         heat_recovery_water_outlet_node_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirLoopHVAC:UnitarySystem`` and add it to the document.
+
+        AirloopHVAC:UnitarySystem is a generic HVAC system type that allows any configuration of coils and/or fan. This object is a replacement of other AirloopHVAC objects. This object can be used in outdoor air systems, outdoor air units, air loops, and as zone equipment if desired.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/overview/group-unitary-equipment/#airloophvacunitarysystem
+        """
 
 class OutputJSON_v9_1_to_v25_1:
     def __call__(
@@ -690,7 +810,15 @@ class OutputJSON_v9_1_to_v25_1:
         output_json: Literal["", "No", "Yes"] | None = "Yes",
         output_cbor: Literal["", "No", "Yes"] | None = "No",
         output_messagepack: Literal["", "No", "Yes"] | None = "No",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Output:JSON`` and add it to the document.
+
+        Output from EnergyPlus can be written to JSON format files.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/input-for-output/#outputjson
+        """
 
 class InternalMass_v9_6_to_v24_1:
     def __call__(
@@ -702,7 +830,13 @@ class InternalMass_v9_6_to_v24_1:
         zone_or_zonelist_name: str,
         surface_area: float,
         space_or_spacelist_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``InternalMass`` and add it to the document.
+
+        Used to describe internal zone surface area that does not need to be part of geometric representation. This should be the total surface area exposed to the zone air. If you use a ZoneList in the Zone or ZoneList name field then this definition applies to all the zones in the ZoneList. Likewise for SpaceList.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-thermal-zone-description-geometry/#internalmass
+        """
 
 class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1:
     def __call__(
@@ -713,4 +847,10 @@ class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1:
         controller_list_name: str,
         outdoor_air_equipment_list_name: str,
         availability_manager_list_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirLoopHVAC:OutdoorAirSystem`` and add it to the document.
+
+        Outdoor air subsystem for an AirLoopHVAC. Includes an outdoor air mixing box and optional outdoor air conditioning equipment such as heat recovery, preheat, and precool coils. From the perspective of the primary air loop the outdoor air system is treated as a single component.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-air-distribution/#airloophvacoutdoorairsystem
+        """

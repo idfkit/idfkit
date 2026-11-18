@@ -12,7 +12,9 @@ release refuses a call for a field the signature does not require; and the name 
 
 from __future__ import annotations
 
+import ast
 import functools
+import inspect
 from pathlib import Path
 
 import pytest
@@ -28,7 +30,7 @@ from idfkit.codegen.verify_stubs import (
     _read_creation,  # pyright: ignore[reportPrivateUsage]
 )
 from idfkit.exceptions import DuplicateObjectError, InvalidFieldError, ValidationFailedError
-from idfkit.objects import IDFObject
+from idfkit.objects import IDFCollection, IDFObject
 from idfkit.schema import get_schema
 from idfkit.validation import ValidationError
 from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
@@ -174,3 +176,30 @@ def test_the_deprecated_form_refuses_fields_it_would_drop() -> None:
     with pytest.raises(TypeError, match="takes the object alone"):
         doc.zones.add(zone, "extra")  # pyright: ignore[reportArgumentType, reportCallIssue]
     assert "Office" not in doc.zones
+
+
+def _collection_add_definitions() -> tuple[ast.FunctionDef, ast.FunctionDef]:
+    """``IDFCollection.add`` as type checkers read it, and as it runs: ``if TYPE_CHECKING`` / ``else``."""
+    tree = ast.parse((_PACKAGE / "objects.py").read_text(encoding="utf-8"))
+    cls = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "IDFCollection")
+    for node in cls.body:
+        if isinstance(node, ast.If) and isinstance(node.test, ast.Name) and node.test.id == "TYPE_CHECKING":
+            checked = [n for n in node.body if isinstance(n, ast.FunctionDef) and n.name == "add"]
+            run = [n for n in node.orelse if isinstance(n, ast.FunctionDef) and n.name == "add"]
+            if checked and run:
+                return checked[0], run[0]
+    pytest.fail("IDFCollection.add is not declared for type checkers apart from its run-time definition")
+
+
+def test_type_checkers_read_add_without_a_docstring() -> None:
+    # pyright shows the creation signature's docstring (the object type's own) only when add has
+    # none, so the declaration type checkers read must have none; the run-time one keeps it.
+    checked, run = _collection_add_definitions()
+    assert ast.get_docstring(checked) is None
+    assert ast.unparse(checked.args) == ast.unparse(run.args)
+    assert checked.returns is not None and run.returns is not None
+    assert ast.unparse(checked.returns) == ast.unparse(run.returns)
+    assert ast.get_docstring(run) == inspect.getdoc(IDFCollection.add)
+    assert (IDFCollection.add.__doc__ or "").startswith("Create an object of this collection's type")
+    # Every creation signature documents itself for the editor (see verify_stubs).
+    assert all(signature.doc for signature in _stubs().signatures.values())

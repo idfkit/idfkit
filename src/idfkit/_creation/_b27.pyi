@@ -27,7 +27,15 @@ class AnyRunPeriod:
         apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
         use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
         use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``RunPeriod`` and add it to the document.
+
+        Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not overlap.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-location-climate-weather-file-access/#runperiod
+        """
 
 class AnySiteGroundDomainSlab:
     def __call__(
@@ -63,7 +71,15 @@ class AnySiteGroundDomainSlab:
         simulation_timestep: Literal["", "Hourly", "Timestep"] | None = "Hourly",
         geometric_mesh_coefficient: float | None = 1.6,
         mesh_density_parameter: int | None = 6,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Site:GroundDomain:Slab`` and add it to the document.
+
+        Ground-coupled slab model for on-grade and in-grade cases with or without insulation.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-location-climate-weather-file-access/#sitegrounddomainslab
+        """
 
 class SiteWaterMainsTemperature:
     def __call__(
@@ -77,7 +93,15 @@ class SiteWaterMainsTemperature:
         maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None = ...,
         temperature_multiplier: float | None = 1,
         temperature_offset: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Site:WaterMainsTemperature`` and add it to the document.
+
+        Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a function of outdoor climate conditions and vary with time of year.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-location-climate-weather-file-access/#sitewatermainstemperature
+        """
 
 class ScheduleDayInterval:
     def __call__(
@@ -88,7 +112,15 @@ class ScheduleDayInterval:
         schedule_type_limits_name: str | None = ...,
         interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None = "No",
         data: list[_g.ScheduleDayIntervalDataItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Schedule:Day:Interval`` and add it to the document.
+
+        A Schedule:Day:Interval contains a full day of values with specified end times for each value Currently, is set up to allow for 10 minute intervals for an entire day.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduledayinterval
+        """
 
 class WindowMaterialGap:
     def __call__(
@@ -101,7 +133,15 @@ class WindowMaterialGap:
         pressure: float | None = 101325,
         deflection_state: str | None = ...,
         support_pillar: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``WindowMaterial:Gap`` and add it to the document.
+
+        Used to define the gap between two layers in a complex fenestration system, where the Construction:ComplexFenestrationState object is used. It is referenced as a layer in the Construction:ComplexFenestrationState object. It cannot be referenced as a layer from the Construction object.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#windowmaterialgap
+        """
 
 class GlazedDoorInterzone:
     def __call__(
@@ -117,7 +157,15 @@ class GlazedDoorInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``GlazedDoor:Interzone`` and add it to the document.
+
+        Allows for simplified entry of interzone (glass interior) doors (adjacent to other zones).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#glazeddoorinterzone
+        """
 
 class InternalMass:
     def __call__(
@@ -129,7 +177,13 @@ class InternalMass:
         construction_name: str | None = ...,
         zone_or_zonelist_name: str | None = ...,
         space_or_spacelist_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``InternalMass`` and add it to the document.
+
+        Used to describe internal zone surface area that does not need to be part of geometric representation. This should be the total surface area exposed to the zone air. If you use a ZoneList in the Zone or ZoneList name field then this definition applies to all the zones in the ZoneList. Likewise for SpaceList.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#internalmass
+        """
 
 class GroundHeatTransferSlabMatlProps:
     def __call__(
@@ -142,10 +196,24 @@ class GroundHeatTransferSlabMatlProps:
         cp_soil_cp: float | None = 1200,
         tcon_slab_k: float | None = 0.9,
         tcon_soil_k: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``GroundHeatTransfer:Slab:MatlProps`` and add it to the document.
+
+        This object contains the material properties for the materials used in the model. The fields are mostly self explanatory.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-detailed-ground-heat-transfer/#groundheattransferslabmatlprops
+        """
 
 class GroundHeatTransferSlabYFACE:
-    def __call__(self, /) -> None: ...
+    def __call__(self, /) -> None:
+        """Create a new ``GroundHeatTransfer:Slab:YFACE`` and add it to the document.
+
+        This is only needed when using manual gridding (not recommended) YFACE: Y Direction cell face coordinates: m,
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-detailed-ground-heat-transfer/#groundheattransferslabyface
+        """
 
 class AnyRoomAirTemperaturePatternTwoGradient:
     def __call__(
@@ -171,10 +239,22 @@ class AnyRoomAirTemperaturePatternTwoGradient:
         lower_temperature_bound: float | None = ...,
         upper_heat_rate_bound: float | None = ...,
         lower_heat_rate_bound: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``RoomAir:TemperaturePattern:TwoGradient`` and add it to the document.
+
+        Used to model room air with two temperature gradients in the vertical direction. Used in combination with RoomAir:TemperaturePattern:UserDefined.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-room-air-models/#roomairtemperaturepatterntwogradient
+        """
 
 class AnyComfortViewFactorAngles:
-    def __call__(self, name: str = "", /) -> None: ...
+    def __call__(self, name: str = "", /) -> None:
+        """Create a new ``ComfortViewFactorAngles`` and add it to the document.
+
+        Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions must sum up to 1.0 All surfaces must be in the same enclosure.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains-people-lights-other/#comfortviewfactorangles
+        """
 
 class GasEquipmentInstance:
     def __call__(
@@ -187,7 +267,15 @@ class GasEquipmentInstance:
         schedule_name: str,
         multiplier: float | None = 1,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``GasEquipment:Instance`` and add it to the document.
+
+        Sets internal gains and contaminant rates for gas equipment in the zone. The physical characteristics are given by the referenced GasEquipment:Definition object. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains/#gasequipmentinstance
+        """
 
 class AnyIndoorLivingWall:
     def __call__(
@@ -207,7 +295,15 @@ class AnyIndoorLivingWall:
         led_nominal_intensity: float | None = ...,
         led_nominal_power: float | None = ...,
         radiant_fraction_of_led_lights: float | None = 0.6,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``IndoorLivingWall`` and add it to the document.
+
+        Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrates. The living wall structures can be either free-standing or attached to walls. The IndoorLivingWall module directly connects with inside surface heat balance, zone air heat balance, and zone air moisture balance.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains-people-lights-other/#indoorlivingwall
+        """
 
 class DaylightingControls:
     def __call__(
@@ -228,10 +324,24 @@ class DaylightingControls:
         maximum_allowable_discomfort_glare_index: float | None = 22,
         delight_gridding_resolution: float | None = ...,
         control_data: list[_g.DaylightingControlsControlDataItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Daylighting:Controls`` and add it to the document.
+
+        Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calculated.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/cost-estimating/#daylightingcontrols
+        """
 
 class AirflowNetworkDistributionComponentConstantPressureDrop:
-    def __call__(self, name: str, /, *, pressure_difference_across_the_component: float) -> None: ...
+    def __call__(self, name: str, /, *, pressure_difference_across_the_component: float) -> None:
+        """Create a new ``AirflowNetwork:Distribution:Component:ConstantPressureDrop`` and add it to the document.
+
+        This object defines the characteristics of a constant pressure drop component (e.g. filter). Each node connected to this object can not be a node of mixer, splitter, a node of air primary loop, or zone equipment loop. It is recommended to connect to a duct component at both ends.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-airflow-network/#airflownetworkdistributioncomponentconstantpressuredrop
+        """
 
 class HVACTemplateThermostat:
     def __call__(
@@ -243,7 +353,13 @@ class HVACTemplateThermostat:
         constant_heating_setpoint: float | None = ...,
         cooling_setpoint_schedule_name: str | None = ...,
         constant_cooling_setpoint: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:Thermostat`` and add it to the document.
+
+        Zone thermostat control. Referenced schedules must be defined elsewhere in the idf. Thermostat control type is dual setpoint with deadband. It is not necessary to create a thermostat object for every zone, only for each unique set of setpoint schedules. For example, an office building may have two thermostat objects, one for 'Office' and one for 'Storage'.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplatethermostat
+        """
 
 class HVACTemplateSystemConstantVolume:
     def __call__(
@@ -344,7 +460,15 @@ class HVACTemplateSystemConstantVolume:
         return_fan_delta_pressure: float | None = 300,
         return_fan_motor_efficiency: float | None = 0.9,
         return_fan_motor_in_air_stream_fraction: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:System:ConstantVolume`` and add it to the document.
+
+        Constant Air Volume air loop with optional chilled water cooling coil, optional heating coil and optional preheat.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplatesystemconstantvolume
+        """
 
 class ThermostatSetpointThermalComfortFangerDualSetpoint:
     def __call__(
@@ -354,7 +478,13 @@ class ThermostatSetpointThermalComfortFangerDualSetpoint:
         *,
         fanger_thermal_comfort_heating_schedule_name: str,
         fanger_thermal_comfort_cooling_schedule_name: str,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ThermostatSetpoint:ThermalComfort:Fanger:DualSetpoint`` and add it to the document.
+
+        Used for heating and cooling thermal comfort control with dual setpoints. The PMV setpoints can be scheduled and varied throughout the simulation for both heating and cooling.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-controls-thermostats/#thermostatsetpointthermalcomfortfangerdualsetpoint
+        """
 
 class FanConstantVolume:
     def __call__(
@@ -371,7 +501,15 @@ class FanConstantVolume:
         motor_efficiency: float | None = 0.9,
         motor_in_airstream_fraction: float | None = 1,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Fan:ConstantVolume`` and add it to the document.
+
+        Constant volume fan that is intended to operate continuously based on a time schedule. This fan will not cycle on and off based on cooling/heating load or other control signals.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-fans/#fanconstantvolume
+        """
 
 class AnyAirLoopHVACUnitaryFurnaceHeatCool:
     def __call__(
@@ -407,7 +545,15 @@ class AnyAirLoopHVACUnitaryFurnaceHeatCool:
         ]
         | None = ...,
         reheat_coil_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirLoopHVAC:Unitary:Furnace:HeatCool`` and add it to the document.
+
+        Unitary system, heating and cooling with constant volume supply fan (continuous or cycling), direct expansion (DX) cooling coil, heating coil (gas, electric, hot water, or steam), and optional reheat coil for dehumidification control. Identical to AirLoopHVAC:UnitaryHeatCool.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-unitary-equipment/#airloophvacunitaryfurnaceheatcool
+        """
 
 class PipeUnderground:
     def __call__(
@@ -428,7 +574,13 @@ class PipeUnderground:
         undisturbed_ground_temperature_model_name: str,
         pipe_inside_diameter: float | None = ...,
         pipe_length: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Pipe:Underground`` and add it to the document.
+
+        Buried Pipe model: For pipes buried at a depth less than one meter, this is an alternative object to: HeatExchanger:Surface
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-node-branch-management/#pipeunderground
+        """
 
 class AnyPumpConstantSpeed:
     def __call__(
@@ -454,7 +606,15 @@ class AnyPumpConstantSpeed:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Pump:ConstantSpeed`` and add it to the document.
+
+        This pump model is described in the ASHRAE secondary HVAC toolkit.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-pumps/#pumpconstantspeed
+        """
 
 class AnyHeatPumpPlantLoopEIRHeating:
     def __call__(
@@ -476,10 +636,24 @@ class AnyHeatPumpPlantLoopEIRHeating:
         reference_capacity: float | Literal["", "Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = ...,
         sizing_factor: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HeatPump:PlantLoop:EIR:Heating`` and add it to the document.
+
+        An EIR formulated water to water heat pump model, heating operation
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-equipment/#heatpumpplantloopeirheating
+        """
 
 class ExternalInterfaceVariable:
-    def __call__(self, name: str, /, *, initial_value: float) -> None: ...
+    def __call__(self, name: str, /, *, initial_value: float) -> None:
+        """Create a new ``ExternalInterface:Variable`` and add it to the document.
+
+        This input object is similar to EnergyManagementSystem:GlobalVariable. However, at the beginning of each zone time step, its value is set to the value received from the external interface. During the warm-up period and the system sizing, its value is set to the value specified by the field 'initial value.' This object can be used to move data into Erl subroutines.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-externalinterface/#externalinterfacevariable
+        """
 
 class AvailabilityManagerNightVentilation:
     def __call__(
@@ -494,7 +668,15 @@ class AvailabilityManagerNightVentilation:
         ventilation_temperature_difference: float | None = 2,
         ventilation_temperature_low_limit: float | None = 15,
         night_venting_flow_fraction: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AvailabilityManager:NightVentilation`` and add it to the document.
+
+        depending on zone and outdoor conditions overrides fan schedule to do precooling with outdoor air
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-system-availability-managers/#availabilitymanagernightventilation
+        """
 
 class SetpointManagerSystemNodeResetHumidity:
     def __call__(
@@ -509,7 +691,13 @@ class SetpointManagerSystemNodeResetHumidity:
         high_reference_humidity_ratio: float,
         reference_node_name: str,
         setpoint_node_or_nodelist_name: str,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SetpointManager:SystemNodeReset:Humidity`` and add it to the document.
+
+        This Setpoint Manager is used to place a humidity ratio setpoint on a system node according to the reference (e.g., return) humidity ratio using a reset rule. The humidity ratio setpoint is obtained by retrieving the humidity ratio of the user specified reference system node.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-setpoint-managers/#setpointmanagersystemnoderesethumidity
+        """
 
 class UtilityCostRatchet:
     def __call__(
@@ -524,7 +712,13 @@ class UtilityCostRatchet:
         season_to: Literal["Annual", "Fall", "Spring", "Summer", "Winter"] | None = ...,
         multiplier_value_or_variable_name: float | str | None = ...,
         offset_value_or_variable_name: float | str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``UtilityCost:Ratchet`` and add it to the document.
+
+        Allows the modeling of tariffs that include some type of seasonal ratcheting. Ratchets are most common when used with electric demand charges. A ratchet is when a utility requires that the demand charge for a month with a low demand may be increased to be more consistent with a month that set a higher demand charge.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/utilitycost-ratchet/#utilitycostratchet
+        """
 
 class OutputConstructions:
     def __call__(
@@ -533,7 +727,13 @@ class OutputConstructions:
         *,
         details_type_1: Literal["Constructions", "Materials"] | None = ...,
         details_type_2: Literal["Constructions", "Materials"] | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Output:Constructions`` and add it to the document.
+
+        Adds a report to the eio output file which shows details for each construction, including overall properties, a list of material layers, and calculated results related to conduction transfer functions.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/input-for-output/#outputconstructions
+        """
 
 class OutputControlSurfaceColorScheme:
     def __call__(
@@ -826,7 +1026,13 @@ class OutputControlSurfaceColorScheme:
         ]
         | None = ...,
         color_for_drawing_element_15: int | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``OutputControl:SurfaceColorScheme`` and add it to the document.
+
+        This object is used to set colors for reporting on various building elements particularly for the DXF reports. We know the user can enter 0 to 255 and the color map is available in DXF output. Therefore, we are limiting the colors in that range. You can extend by editing the IDD but you do so on your own. Colors not changed in any scheme will remain as the default scheme uses.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/input-for-output/#outputcontrolsurfacecolorscheme
+        """
 
 class AnyOutputMeter:
     def __call__(
@@ -838,7 +1044,15 @@ class AnyOutputMeter:
             "", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Output:Meter`` and add it to the document.
+
+        Each Output:Meter command picks meters to be put onto the standard output file (.eso) and meter file (.mtr). Not all meters are reported in every simulation. A list of meters that can be reported are available after a run on the meter dictionary file (.mdd) if the Output:VariableDictionary has been requested.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-output-reporting/#outputmeter
+        """
 
 class OutputEnvironmentalImpactFactors:
     def __call__(
@@ -847,4 +1061,10 @@ class OutputEnvironmentalImpactFactors:
         *,
         reporting_frequency: Literal["Annual", "Daily", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"]
         | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Output:EnvironmentalImpactFactors`` and add it to the document.
+
+        This is used to Automatically report the facility meters and turn on the Environmental Impact Report calculations for all of the Environmental Factors.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/input-for-output/#outputenvironmentalimpactfactors
+        """

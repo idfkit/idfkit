@@ -47,7 +47,15 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         fan_delay_time: float | None = 60,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
+
+        Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, parameter estimation model. Optional inputs for moisture evaporation from wet coil when compressor cycles off with continuous fan operation. Parameter estimation model is a deterministic model that requires a consistent set of parameters to describe the operating conditions of the heat pump components.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingwatertoairheatpumpparameterestimation
+        """
 
 class ElectricEquipmentITEAirCooled_v22_2_to_v23_2:
     def __call__(
@@ -88,7 +96,15 @@ class ElectricEquipmentITEAirCooled_v22_2_to_v23_2:
         supply_temperature_difference_schedule: str | None = ...,
         return_temperature_difference: float | None = ...,
         return_temperature_difference_schedule: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ElectricEquipment:ITE:AirCooled`` and add it to the document.
+
+        This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption as a function of loading and temperature. If a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/overview/group-internal-gains-people-lights-other/#electricequipmentiteaircooled
+        """
 
 class DemandManagerExteriorLights_v8_9_to_v22_1:
     def __call__(
@@ -104,7 +120,13 @@ class DemandManagerExteriorLights_v8_9_to_v22_1:
         limit_step_change: float | None = ...,
         rotation_duration: float | None = ...,
         lights: list[_g.DemandManagerExteriorLightsLightsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``DemandManager:ExteriorLights`` and add it to the document.
+
+        used for demand limiting Exterior:Lights objects.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-demand-limiting-controls/#demandmanagerexteriorlights
+        """
 
 class SizingSystem_v9_6_to_v22_1:
     def __call__(
@@ -173,7 +195,15 @@ class SizingSystem_v9_6_to_v22_1:
         fraction_of_autosized_heating_design_capacity: float | None = ...,
         central_cooling_capacity_control_method: Literal["", "Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
         occupant_diversity: float | Literal["", "Autosize"] | None = "Autosize",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Sizing:System`` and add it to the document.
+
+        Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, heating capacity, and cooling capacity will be calculated using this input data.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-design-objects/#sizingsystem
+        """
 
 class AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2:
     def __call__(
@@ -188,7 +218,13 @@ class AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2:
         per_person_ventilation_rate_mode: Literal["", "CurrentOccupancy", "DesignOccupancy"]
         | None = "CurrentOccupancy",
         design_specification_air_terminal_sizing_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:Uncontrolled`` and add it to the document.
+
+        Central air system terminal unit, single duct, constant volume, no controls other than on/off schedule.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+        """
 
 class CoilHeatingDXMultiSpeed_v22_2_to_v23_1:
     def __call__(
@@ -284,7 +320,15 @@ class CoilHeatingDXMultiSpeed_v22_2_to_v23_1:
         speed_4_nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Heating:DX:MultiSpeed`` and add it to the document.
+
+        Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven compressor and outdoor fan), multi-speed (or variable-speed), with defrost controls. Requires two to four sets of performance data and will interpolate between speeds.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingdxmultispeed
+        """
 
 class SizingPeriodDesignDay_v9_3_to_v22_1:
     def __call__(
@@ -350,7 +394,15 @@ class SizingPeriodDesignDay_v9_3_to_v22_1:
         | None = "FullResetAtBeginEnvironment",
         ashrae_clear_sky_optical_depth_for_beam_irradiance_taub: float | None = ...,
         ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SizingPeriod:DesignDay`` and add it to the document.
+
+        The design day object creates the parameters for the program to create the 24 hour weather profile that can be used for sizing as well as running to test the other simulation parameters. Parameters in this include a date (month and day), a day type (which uses the appropriate schedules for either sizing or simple tests), min/max temperatures, wind speeds, and solar radiation values.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-location-climate-weather-file-access/#sizingperioddesignday
+        """
 
 class TableMultiVariableLookup_v8_9:
     def __call__(
@@ -427,7 +479,13 @@ class TableMultiVariableLookup_v8_9:
         field_1_determined_by_the_number_of_independent_variables: float | None = ...,
         field_2_determined_by_the_number_of_independent_variables: float | None = ...,
         values: list[_vd.TableMultiVariableLookupValuesItem_v8_9] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Table:MultiVariableLookup`` and add it to the document.
+
+        The multi-variable lookup table can represent from 1 to 6 independent variables and can interpolate these independent variables up to a 4th order polynomial. The polynomial order is assumed to be the number of interpolation points (n) minus 1. When any independent variable value is outside the table limits, linear extrapolation is used to predict the table result and is based on the two nearest data points in the table for that particular independent variable.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+        """
 
 class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5:
     def __call__(
@@ -458,4 +516,12 @@ class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5:
         number_of_tubes_per_row: float | Literal["", "Autosize"] | None = "Autosize",
         condensate_collection_water_storage_tank_name: str | None = ...,
         design_water_temperature_difference: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:Water:DetailedGeometry`` and add it to the document.
+
+        Chilled water cooling coil, detailed flat fin coil model for continuous plate fins, with inputs for detailed coil geometry specifications.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingwaterdetailedgeometry
+        """

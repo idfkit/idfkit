@@ -6,7 +6,7 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from .. import _generated_types as _g
 from .. import versioned as _vd
@@ -40,7 +40,15 @@ class FanSystemModel_v9_4_to_v22_1:
         end_use_subcategory: str | None = "General",
         number_of_speeds: float | None = 1,
         speed_fractions: list[_g.FanSystemModelSpeedFractionsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Fan:SystemModel`` and add it to the document.
+
+        Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-speed applications. Performance at different flow rates, or speed levels, is determined using separate performance curve or table or prescribed power fractions at discrete speed levels for two-speed or multi-speed fans.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-fans/#fansystemmodel
+        """
 
 class AirflowNetworkDistributionComponentFan_v8_9_to_v9_1:
     def __call__(
@@ -50,7 +58,15 @@ class AirflowNetworkDistributionComponentFan_v8_9_to_v9_1:
         fan_name: str,
         supply_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"]
         | None = "Fan:ConstantVolume",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirflowNetwork:Distribution:Component:Fan`` and add it to the document.
+
+        This object defines the name of the supply Air Fan used in an Air loop.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-airflow-network/#airflownetworkdistributioncomponentfan
+        """
 
 class AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5:
     def __call__(
@@ -154,7 +170,15 @@ class AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5:
         heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
         initial_heat_recovery_heating_energy_fraction: float | None = 1,
         heat_recovery_heating_energy_time_constant: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirConditioner:VariableRefrigerantFlow`` and add it to the document.
+
+        Variable refrigerant flow (VRF) air-to-air heat pump condensing unit (includes one or more electric compressors and outdoor fan). Serves one or more VRF zone terminal units. See ZoneHVAC:TerminalUnit:VariableRefrigerantFlow and ZoneTerminalUnitList.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-variable-refrigerant-flow-equipment/#airconditionervariablerefrigerantflow
+        """
 
 class OutputControlTableStyle_v8_9_to_v23_2:
     def __call__(
@@ -166,7 +190,15 @@ class OutputControlTableStyle_v8_9_to_v23_2:
         ]
         | None = "Comma",
         unit_conversion: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None = "None",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``OutputControl:Table:Style`` and add it to the document.
+
+        default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs such as Excel(tm) but not so well for word processing programs -- there tab may be a better choice. fixed puts spaces between the 'columns'. HTML produces tables in HTML. XML produces an XML file. note - if no OutputControl:Table:Style is included, the defaults are comma and None.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/standard-output-reports/outputcontrol-table-style/#outputcontroltablestyle
+        """
 
 class WallDetailed_v8_9_to_v9_5:
     def __call__(
@@ -200,7 +232,15 @@ class WallDetailed_v8_9_to_v9_5:
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         vertices: list[_g.WallDetailedVerticesItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Wall:Detailed`` and add it to the document.
+
+        Allows for detailed entry of wall heat transfer surfaces.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#walldetailed
+        """
 
 class AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1:
     def __call__(
@@ -226,7 +266,15 @@ class AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1:
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:ParallelPIU:Reheat`` and add it to the document.
+
+        Central air system terminal unit, single duct, variable volume, parallel powered induction unit (PIU), with reheat coil (hot water, electric, gas, or steam).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-air-distribution-equipment/#airterminalsingleductparallelpiureheat
+        """
 
 class CoolingTowerSingleSpeed_v9_2_to_v22_1:
     def __call__(
@@ -272,12 +320,26 @@ class CoolingTowerSingleSpeed_v9_2_to_v22_1:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``CoolingTower:SingleSpeed`` and add it to the document.
+
+        This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. The open wet cooling tower is modeled as a counter flow heat exchanger with a single-speed fan drawing air through the tower (induced-draft configuration). Added fluid bypass as an additional capacity control. 8/2008. For a multi-cell tower, the capacity and air/water flow rate inputs are for the entire tower.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-condenser-equipment/#coolingtowersinglespeed
+        """
 
 class OutputDebuggingData_v8_9_to_v9_3:
     def __call__(
         self, /, *, report_debugging_data: float | None = ..., report_during_warmup: float | None = ...
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Output:DebuggingData`` and add it to the document.
+
+        switch eplusout.dbg file on or off
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-simulation-parameters/#outputdebuggingdata
+        """
 
 class ZoneHVACEquipmentList_v8_9_to_v9_0:
     def __call__(
@@ -288,7 +350,15 @@ class ZoneHVACEquipmentList_v8_9_to_v9_0:
         load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
         equipment: list[_vd.ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
+
+        List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit or AirTerminal:SingleDuct:Uncontrolled object must be listed in this statement if there is a forced air system serving the zone from the air loop. Equipment is simulated in the order specified by Zone Equipment Cooling Sequence and Zone Equipment Heating or No-Load Sequence, depending on the thermostat request. For equipment of similar type, assign sequence 1 to the first system intended to serve that type of load. For situations where one or more equipment types has limited capacity or limited control, order the sequence so that the most controllable piece of equipment runs last. For example, with a dedicated outdoor air system (DOAS), the air terminal for the DOAS should be assigned Heating Sequence = 1 and Cooling Sequence = 1. Any other equipment should be assigned sequence 2 or higher so that it will see the net load after the DOAS air is added to the zone.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.0/io-reference/overview/group-zone-equipment/#zonehvacequipmentlist
+        """
 
 class ZoneHVACEquipmentList_v9_3_to_v22_1:
     def __call__(
@@ -299,7 +369,15 @@ class ZoneHVACEquipmentList_v9_3_to_v22_1:
         load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
         equipment: list[_vd.ZoneHVACEquipmentListEquipmentItem_v9_3_to_v22_1] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
+
+        List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit object must be listed in this statement if there is a forced air system serving the zone from the air loop. Equipment is simulated in the order specified by Zone Equipment Cooling Sequence and Zone Equipment Heating or No-Load Sequence, depending on the thermostat request. For equipment of similar type, assign sequence 1 to the first system intended to serve that type of load. For situations where one or more equipment types has limited capacity or limited control, order the sequence so that the most controllable piece of equipment runs last. For example, with a dedicated outdoor air system (DOAS), the air terminal for the DOAS should be assigned Heating Sequence = 1 and Cooling Sequence = 1. Any other equipment should be assigned sequence 2 or higher so that it will see the net load after the DOAS air is added to the zone.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-zone-equipment/#zonehvacequipmentlist
+        """
 
 class ComfortViewFactorAngles_v9_6_to_v23_2:
     def __call__(
@@ -508,7 +586,13 @@ class ComfortViewFactorAngles_v9_6_to_v23_2:
         angle_factor_99: float | None = ...,
         surface_100_name: str | None = ...,
         angle_factor_100: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ComfortViewFactorAngles`` and add it to the document.
+
+        Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions must sum up to 1.0 The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/overview/group-internal-gains-people-lights-other/#comfortviewfactorangles
+        """
 
 class ConstructionPropertyInternalHeatSource_v9_5_to_v22_1:
     def __call__(
@@ -522,7 +606,15 @@ class ConstructionPropertyInternalHeatSource_v9_5_to_v22_1:
         tube_spacing: float,
         construction_name: str | None = ...,
         two_dimensional_temperature_calculation_position: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ConstructionProperty:InternalHeatSource`` and add it to the document.
+
+        Internal heat source to be attached to a construction layer
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-surface-construction-elements/#constructionpropertyinternalheatsource
+        """
 
 class RunPeriod_v9_0_to_v9_1:
     def __call__(
@@ -544,4 +636,12 @@ class RunPeriod_v9_0_to_v9_1:
         use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
         use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
         treat_weather_as_actual: Literal["", "No", "Yes"] | None = "No",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``RunPeriod`` and add it to the document.
+
+        Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not overlap.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-location-climate-weather-file-access/#runperiod
+        """

@@ -35,7 +35,15 @@ class ExteriorFuelEquipment_v8_9_to_v9_2:
         schedule_name: str,
         design_level: float,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Exterior:FuelEquipment`` and add it to the document.
+
+        only used for Meter type reporting, does not affect building loads
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-exterior-energy-use-equipment/#exteriorfuelequipment
+        """
 
 class PumpVariableSpeedCondensate_v8_9_to_v9_0:
     def __call__(
@@ -61,7 +69,15 @@ class PumpVariableSpeedCondensate_v8_9_to_v9_0:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Pump:VariableSpeed:Condensate`` and add it to the document.
+
+        This pump model is described in the ASHRAE secondary HVAC toolkit. Variable Speed Condensate pump for Steam Systems
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.0/io-reference/overview/group-pumps/#pumpvariablespeedcondensate
+        """
 
 class ComponentCostLineItem_v8_9_to_v9_5:
     def __call__(
@@ -92,7 +108,13 @@ class ComponentCostLineItem_v8_9_to_v9_5:
         cost_per_volume_rate: float | None = ...,
         cost_per_energy_per_temperature_difference: float | None = ...,
         quantity: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ComponentCost:LineItem`` and add it to the document.
+
+        Each instance of this object creates a cost line item and will contribute to the total for a cost estimate.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/energyplus-economics/cost-estimating/#componentcostlineitem
+        """
 
 class LifeCycleCostUseAdjustment_v9_3_to_v23_1:
     def __call__(
@@ -119,7 +141,13 @@ class LifeCycleCostUseAdjustment_v9_3_to_v23_1:
             "Water",
         ],
         multipliers: list[_g.LifeCycleCostUseAdjustmentMultipliersItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``LifeCycleCost:UseAdjustment`` and add it to the document.
+
+        Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensating for inflation but should only be used to increase the costs of energy or water based on assumed changes to the actual usage, such as anticipated changes in the future function of the building. The adjustments begin at the start of the service period.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/energyplus-economics/lifecyclecost-useadjustment/#lifecyclecostuseadjustment
+        """
 
 class MeterCustomDecrement_v9_3:
     def __call__(
@@ -144,7 +172,13 @@ class MeterCustomDecrement_v9_3:
         ]
         | None = ...,
         variable_details: list[_g.MeterCustomDecrementVariableDetailsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Meter:CustomDecrement`` and add it to the document.
+
+        Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-simulation-parameters/#metercustomdecrement
+        """
 
 class PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1:
     def __call__(
@@ -166,7 +200,15 @@ class PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1:
         maximum_iterations_in_the_inner_radial_iteration_loop: float | None = 500,
         number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region: float | None = 3,
         pipe_segments: list[_g.PipingSystemUndergroundPipeCircuitPipeSegmentsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``PipingSystem:Underground:PipeCircuit`` and add it to the document.
+
+        The pipe circuit object in an underground piping system. This object is simulated within an underground piping domain object and connected on a branch on a plant loop.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-node-branch-management/#pipingsystemundergroundpipecircuit
+        """
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22_1:
     def __call__(
@@ -236,7 +278,15 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22
         loading_indices: list[
             _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem
         ] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR`` and add it to the document.
+
+        This is a key object in the new physics based VRF Heat Recovery (HR) model applicable for Fluid Temperature Control. It describes the VRF HR system excluding the performance of indoor units. Indoor units are modeled separately in the ZoneHVAC:TerminalUnit:VariableRefrigerantFlow object
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-variable-refrigerant-flow-equipment/#airconditionervariablerefrigerantflowfluidtemperaturecontrolhr
+        """
 
 class HybridModelZone_v9_1_to_v22_1:
     def __call__(
@@ -263,7 +313,15 @@ class HybridModelZone_v9_1_to_v22_1:
         zone_input_supply_air_mass_flow_rate_schedule_name: str | None = ...,
         zone_input_supply_air_humidity_ratio_schedule_name: str | None = ...,
         zone_input_supply_air_co2_concentration_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HybridModel:Zone`` and add it to the document.
+
+        Zones with measured air temperature data and a range of dates. If the range of temperature measurement dates includes a leap day, the weather data should include a leap day.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-hybrid-model/#hybridmodelzone
+        """
 
 class LifeCycleCostUsePriceEscalation_v22_2_to_v23_1:
     def __call__(
@@ -307,7 +365,15 @@ class LifeCycleCostUsePriceEscalation_v22_2_to_v23_1:
         ]
         | None = "January",
         escalations: list[_g.LifeCycleCostUsePriceEscalationEscalationsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``LifeCycleCost:UsePriceEscalation`` and add it to the document.
+
+        Life cycle cost escalation factors. The values for this object may be found in the annual supplement to NIST Handbook 135 in Tables Ca-1 to Ca-5 and are included in an EnergyPlus dataset file.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/energyplus-economics/lifecyclecost-usepriceescalation/#lifecyclecostusepriceescalation
+        """
 
 class HVACTemplateSystemVRF_v8_9_to_v9_2:
     def __call__(
@@ -368,7 +434,15 @@ class HVACTemplateSystemVRF_v8_9_to_v9_2:
         | None = "Electricity",
         minimum_outdoor_temperature_in_heat_recovery_mode: float | None = -15,
         maximum_outdoor_temperature_in_heat_recovery_mode: float | None = 45,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:System:VRF`` and add it to the document.
+
+        Variable refrigerant flow (VRF) heat pump condensing unit. Serves one or more VRF zone terminal units (HVACTemplate:Zone:VRF).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplatesystemvrf
+        """
 
 class MeterCustom_v9_3:
     def __call__(
@@ -392,7 +466,13 @@ class MeterCustom_v9_3:
         ]
         | None = ...,
         variable_details: list[_g.MeterCustomVariableDetailsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Meter:Custom`` and add it to the document.
+
+        Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names. A Meter:Custom cannot reference another Meter:Custom.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-simulation-parameters/#metercustom
+        """
 
 class CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1:
     def __call__(
@@ -418,7 +498,15 @@ class CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1:
         waste_heat_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:DX:CurveFit:Speed`` and add it to the document.
+
+        DX cooling coil performance for a single speed within a single operating mode.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-coil-cooling-dx/#coilcoolingdxcurvefitspeed
+        """
 
 class HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1:
     def __call__(
@@ -464,7 +552,15 @@ class HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1:
         auxiliary_electric_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HeatPump:AirToWater:FuelFired:Cooling`` and add it to the document.
+
+        The object defines a fuel-fired absorption heat pump based on equation-fit models.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-plant-heating-and-cooling-equipment/#heatpumpairtowaterfuelfiredcooling
+        """
 
 class ZoneControlContaminantController_v8_9_to_v26_1:
     def __call__(
@@ -479,4 +575,10 @@ class ZoneControlContaminantController_v8_9_to_v26_1:
         maximum_carbon_dioxide_concentration_schedule_name: str | None = ...,
         generic_contaminant_control_availability_schedule_name: str | None = ...,
         generic_contaminant_setpoint_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneControl:ContaminantController`` and add it to the document.
+
+        Used to control a zone to a specified indoor level of CO2 or generic contaminants, or to specify minimum CO2 concentration schedule name for a zone.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.1/io-reference/overview/group-zone-controls-thermostats/#zonecontrolcontaminantcontroller
+        """

@@ -21,7 +21,15 @@ class AnyConvergenceLimits:
         maximum_hvac_iterations: int | None = 20,
         minimum_plant_iterations: int | None = 2,
         maximum_plant_iterations: int | None = 8,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ConvergenceLimits`` and add it to the document.
+
+        Specifies limits on HVAC system simulation timesteps and iterations. This item is an advanced feature that should be used only with caution.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-simulation-parameters/#convergencelimits
+        """
 
 class SitePrecipitation:
     def __call__(
@@ -32,7 +40,13 @@ class SitePrecipitation:
         design_level_for_total_annual_precipitation: float | None = ...,
         precipitation_rates_schedule_name: str | None = ...,
         average_total_annual_precipitation: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Site:Precipitation`` and add it to the document.
+
+        Used to describe the amount of water precipitation at the building site. Precipitation includes both rain and the equivalent water content of snow.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-location-climate-weather-file-access/#siteprecipitation
+        """
 
 class SurfacePropertyOtherSideConditionsModel:
     def __call__(
@@ -48,7 +62,15 @@ class SurfacePropertyOtherSideConditionsModel:
             "UndergroundPipingSystemSurface",
         ]
         | None = "GapConvectionRadiation",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SurfaceProperty:OtherSideConditionsModel`` and add it to the document.
+
+        This object sets up modifying the other side conditions for a surface from other model results.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertyothersideconditionsmodel
+        """
 
 class SurfacePropertyUnderwater:
     def __call__(
@@ -59,7 +81,13 @@ class SurfacePropertyUnderwater:
         distance_from_surface_centroid_to_leading_edge_of_boundary_layer: float,
         free_stream_water_temperature_schedule: str,
         free_stream_water_velocity_schedule: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SurfaceProperty:Underwater`` and add it to the document.
+
+        This object sets up a convective water boundary condition for a surface The free stream temperature and velocity are scheduled. If the free stream velocity is zero, the surface will naturally convect with the surrounding water.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertyunderwater
+        """
 
 class AnySurfacePropertyConvectionCoefficientsMultipleSurface:
     def __call__(
@@ -179,7 +207,15 @@ class AnySurfacePropertyConvectionCoefficientsMultipleSurface:
         convection_coefficient_2: float | None = 0.1,
         convection_coefficient_2_schedule_name: str | None = ...,
         convection_coefficient_2_user_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SurfaceProperty:ConvectionCoefficients:MultipleSurface`` and add it to the document.
+
+        Allow user settable interior and/or exterior convection coefficients. Note that some other factors may limit the lower bounds for these values, such as for windows, the interior convection coefficient must be >.28, for trombe wall algorithm selection (zone), the interior convection coefficient must be >.1 for TARP interior convection, the lower limit is also .1 Minimum and maximum limits are set in HeatBalanceAlgorithm object. Defaults in HeatBalanceAlgorithm object are [.1,1000].
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertyconvectioncoefficientsmultiplesurface
+        """
 
 class AnyZoneInfiltrationEffectiveLeakageArea:
     def __call__(
@@ -192,7 +228,15 @@ class AnyZoneInfiltrationEffectiveLeakageArea:
         effective_air_leakage_area: float,
         stack_coefficient: float,
         wind_coefficient: float,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneInfiltration:EffectiveLeakageArea`` and add it to the document.
+
+        Infiltration is specified as effective leakage area at 4 Pa, schedule fraction, stack and wind coefficients, and is a function of temperature difference and wind speed: Infiltration=FSchedule * (AL /1000) SQRT(Cs*|(Tzone-Todb)| + Cw*WindSpd**2 ) If a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
+
+        No call suits every release: narrow the document with ``as_version`` first.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-airflow/#zoneinfiltrationeffectiveleakagearea
+        """
 
 class ZoneCrossMixing:
     def __call__(
@@ -217,7 +261,15 @@ class ZoneCrossMixing:
         maximum_source_temperature_schedule_name: str | None = ...,
         minimum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneCrossMixing`` and add it to the document.
+
+        ZoneCrossMixing exchanges an equal amount of air between two zones or spaces. Note that this statement affects the energy balance of both zones or spaces.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-airflow/#zonecrossmixing
+        """
 
 class AnyZoneCoolTowerShower:
     def __call__(
@@ -238,7 +290,16 @@ class AnyZoneCoolTowerShower:
         flow_control_type: Literal["", "WaterFlowSchedule", "WindDrivenFlow"] | None = "WindDrivenFlow",
         fraction_of_water_loss: float | None = ...,
         fraction_of_flow_schedule: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneCoolTower:Shower`` and add it to the document.
+
+        A cooltower (sometimes referred to as a wind tower or a shower cooling tower) models passive downdraught evaporative cooling (PDEC) that is designed to capture the wind at the top of a tower and cool the outdoor air using water evaporation before delivering it to a zone (or space).
+
+        No call suits every release: narrow the document with ``as_version`` first.
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-airflow/#zonecooltowershower
+        """
 
 class AnyAirflowNetworkDistributionNode:
     def __call__(
@@ -259,7 +320,15 @@ class AnyAirflowNetworkDistributionNode:
         ]
         | None = "Other",
         node_height: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirflowNetwork:Distribution:Node`` and add it to the document.
+
+        This object represents an air distribution node in the AirflowNetwork model.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-airflow-network/#airflownetworkdistributionnode
+        """
 
 class ExteriorLights:
     def __call__(
@@ -271,7 +340,15 @@ class ExteriorLights:
         design_level: float,
         control_option: Literal["AstronomicalClock", "ScheduleNameOnly"] | None = ...,
         end_use_subcategory: str | None = "General",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Exterior:Lights`` and add it to the document.
+
+        only used for Meter type reporting, does not affect building loads
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-exterior-energy-use-equipment/#exteriorlights
+        """
 
 class AnyHVACTemplateSystemVRF:
     def __call__(
@@ -321,10 +398,24 @@ class AnyHVACTemplateSystemVRF:
         | None = "Electricity",
         minimum_outdoor_temperature_in_heat_recovery_mode: float | None = -15,
         maximum_outdoor_temperature_in_heat_recovery_mode: float | None = 45,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:System:VRF`` and add it to the document.
+
+        Variable refrigerant flow (VRF) heat pump condensing unit. Serves one or more VRF zone terminal units (HVACTemplate:Zone:VRF).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplatesystemvrf
+        """
 
 class OutputControlSizingStyle:
-    def __call__(self, /, *, column_separator: Literal["Comma", "Fixed", "Tab"]) -> None: ...
+    def __call__(self, /, *, column_separator: Literal["Comma", "Fixed", "Tab"]) -> None:
+        """Create a new ``OutputControl:Sizing:Style`` and add it to the document.
+
+        Default style for the Sizing output files is comma -- this works well for importing into spreadsheet programs such as Excel(tm) but not so well for word processing programs -- there tab may be a better choice. Fixed puts spaces between the 'columns'
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-design-objects/#outputcontrolsizingstyle
+        """
 
 class AnyZoneControlContaminantController:
     def __call__(
@@ -339,7 +430,13 @@ class AnyZoneControlContaminantController:
         maximum_carbon_dioxide_concentration_schedule_name: str | None = ...,
         generic_contaminant_control_availability_schedule_name: str | None = ...,
         generic_contaminant_setpoint_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneControl:ContaminantController`` and add it to the document.
+
+        Used to control a zone to a specified indoor level of CO2 or generic contaminants, or to specify minimum CO2 concentration schedule name for a zone.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-controls-thermostats/#zonecontrolcontaminantcontroller
+        """
 
 class AnyZoneHVACWaterToAirHeatPump:
     def __call__(
@@ -380,7 +477,15 @@ class AnyZoneHVACWaterToAirHeatPump:
         availability_manager_list_name: str | None = ...,
         heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
+
+        Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coils, supplemental heating coil (gas, electric, hot water, or steam), and fixed-position outdoor air mixer.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-forced-air-units/#zonehvacwatertoairheatpump
+        """
 
 class ZoneHVACWaterToAirHeatPump:
     def __call__(
@@ -425,7 +530,15 @@ class ZoneHVACWaterToAirHeatPump:
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
         dx_heating_coil_sizing_ratio: float | None = 1,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
+
+        Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coils, supplemental heating coil (gas, electric, hot water, or steam), and fixed-position outdoor air mixer.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-forced-air-units/#zonehvacwatertoairheatpump
+        """
 
 class ZoneHVACEnergyRecoveryVentilator:
     def __call__(
@@ -443,7 +556,13 @@ class ZoneHVACEnergyRecoveryVentilator:
         ventilation_rate_per_unit_floor_area: float | None = ...,
         ventilation_rate_per_occupant: float | None = ...,
         availability_manager_list_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:EnergyRecoveryVentilator`` and add it to the document.
+
+        This compound component models a stand-alone energy recovery ventilator (ERV) that conditions outdoor ventilation air and supplies that air directly to a zone. The ERV unit is modeled as a collection of components: air-to-air heat exchanger, supply air fan, exhaust air fan and an optional controller to avoid overheating of the supply air (economizer or free cooling operation).
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-forced-air-units/#zonehvacenergyrecoveryventilator
+        """
 
 class AirTerminalSingleDuctVAVReheatVariableSpeedFan:
     def __call__(
@@ -467,7 +586,15 @@ class AirTerminalSingleDuctVAVReheatVariableSpeedFan:
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         heating_convergence_tolerance: float | None = 0.001,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan`` and add it to the document.
+
+        Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam) and variable-speed fan. These units are usually employed in underfloor air distribution (UFAD) systems where the air is supplied at low static pressure through an underfloor plenum. The fan is used to control the flow of conditioned air that enters the space.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-distribution-equipment/#airterminalsingleductvavreheatvariablespeedfan
+        """
 
 class AirTerminalSingleDuctConstantVolumeCooledBeam:
     def __call__(
@@ -497,7 +624,15 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam:
         model_parameter_n: float | None = 0.4,
         coefficient_of_induction_kin: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         leaving_pipe_inside_diameter: float | None = 0.0145,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:ConstantVolume:CooledBeam`` and add it to the document.
+
+        Central air system terminal unit, single duct, constant volume, with cooled beam (active or passive).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-distribution-equipment/#airterminalsingleductconstantvolumecooledbeam
+        """
 
 class AnyCoilCoolingDXCurveFitPerformance:
     def __call__(
@@ -529,7 +664,15 @@ class AnyCoilCoolingDXCurveFitPerformance:
         | None = "Electricity",
         alternative_operating_mode_1: str | None = ...,
         alternative_operating_mode_2: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:DX:CurveFit:Performance`` and add it to the document.
+
+        DX cooling coil performance specification referencing one or more operating modes. Mode 1 is always the base design operating mode. Additional modes are optional states such as subcool reheat for humidity control.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-coil-cooling-dx/#coilcoolingdxcurvefitperformance
+        """
 
 class EvaporativeCoolerDirectCelDekPad:
     def __call__(
@@ -545,10 +688,24 @@ class EvaporativeCoolerDirectCelDekPad:
         direct_pad_depth: float | Literal["", "Autosize"] | None = "Autosize",
         control_type: str | None = ...,
         water_supply_storage_tank_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``EvaporativeCooler:Direct:CelDekPad`` and add it to the document.
+
+        Direct evaporative cooler with rigid media evaporative pad and recirculating water pump. This model has no controls other than its availability schedule.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-evaporative-coolers/#evaporativecoolerdirectceldekpad
+        """
 
 class NodeList:
-    def __call__(self, name: str, /, *, nodes: list[_g.NodeListNodesItem] = ...) -> None: ...
+    def __call__(self, name: str, /, *, nodes: list[_g.NodeListNodesItem] = ...) -> None:
+        """Create a new ``NodeList`` and add it to the document.
+
+        This object is used in places where lists of nodes may be needed, e.g. ZoneHVAC:EquipmentConnections field Zone Air Inlet Node or NodeList Name
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-node-branch-management/#nodelist
+        """
 
 class PipingSystemUndergroundDomain:
     def __call__(
@@ -590,7 +747,15 @@ class PipingSystemUndergroundDomain:
         maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: int | None = 500,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
         pipe_circuits: list[_g.PipingSystemUndergroundDomainPipeCircuitsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``PipingSystem:Underground:Domain`` and add it to the document.
+
+        The ground domain object for underground piping system simulation.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-node-branch-management/#pipingsystemundergrounddomain
+        """
 
 class BoilerHotWater:
     def __call__(
@@ -627,7 +792,15 @@ class BoilerHotWater:
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
         off_cycle_parasitic_fuel_load: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Boiler:HotWater`` and add it to the document.
+
+        This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Boiler performance curves are generated by fitting catalog data to polynomial equations. A constant efficiency boiler may be modeled by leaving the normalized boiler efficiency curve name input blank.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-equipment/#boilerhotwater
+        """
 
 class AnyHeatPumpAirToWaterFuelFiredHeating:
     def __call__(
@@ -678,7 +851,15 @@ class AnyHeatPumpAirToWaterFuelFiredHeating:
         auxiliary_electric_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HeatPump:AirToWater:FuelFired:Heating`` and add it to the document.
+
+        The object defines a fuel-fired absorption heat pump based on equation-fit models.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-heating-and-cooling-equipment/#heatpumpairtowaterfuelfiredheating
+        """
 
 class HeatPumpAirToWaterFuelFiredHeating:
     def __call__(
@@ -730,7 +911,15 @@ class HeatPumpAirToWaterFuelFiredHeating:
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
         minimum_unloading_ratio: float | None = 0.25,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HeatPump:AirToWater:FuelFired:Heating`` and add it to the document.
+
+        The object defines a fuel-fired absorption heat pump based on equation-fit models.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-heating-and-cooling-equipment/#heatpumpairtowaterfuelfiredheating
+        """
 
 class HeatPumpWaterToWaterParameterEstimationHeating:
     def __call__(
@@ -759,7 +948,15 @@ class HeatPumpWaterToWaterParameterEstimationHeating:
         loss_factor: float | None = ...,
         high_pressure_cut_off: float | None = 500000000,
         low_pressure_cut_off: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HeatPump:WaterToWater:ParameterEstimation:Heating`` and add it to the document.
+
+        OSU parameter estimation model
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-equipment/#heatpumpwatertowaterparameterestimationheating
+        """
 
 class FluidCoolerTwoSpeed:
     def __call__(
@@ -788,17 +985,37 @@ class FluidCoolerTwoSpeed:
         low_fan_speed_air_flow_rate_sizing_factor: float | None = 0.5,
         low_fan_speed_fan_power_sizing_factor: float | None = 0.16,
         outdoor_air_inlet_node_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``FluidCooler:TwoSpeed`` and add it to the document.
+
+        The fluid cooler is modeled as a cross flow heat exchanger (both streams unmixed) with two-speed fans (induced draft configuration).
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-condenser-equipment/#fluidcoolertwospeed
+        """
 
 class ExternalInterfaceFunctionalMockupUnitImportToVariable:
     def __call__(
         self, name: str, /, *, fmu_file_name: str, fmu_instance_name: str, fmu_variable_name: str, initial_value: float
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ExternalInterface:FunctionalMockupUnitImport:To:Variable`` and add it to the document.
+
+        Declares Erl variable as having global scope No spaces allowed in names used for Erl variables
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-externalinterface/#externalinterfacefunctionalmockupunitimporttovariable
+        """
 
 class ExternalInterfaceFunctionalMockupUnitExportFromVariable:
     def __call__(
         self, /, *, output_variable_index_key_name: str, output_variable_name: str, fmu_variable_name: str
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ExternalInterface:FunctionalMockupUnitExport:From:Variable`` and add it to the document.
+
+        This object declares an FMU input variable
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-externalinterface/#externalinterfacefunctionalmockupunitexportfromvariable
+        """
 
 class SetpointManagerScheduled:
     def __call__(
@@ -819,7 +1036,13 @@ class SetpointManagerScheduled:
         ],
         schedule_name: str,
         setpoint_node_or_nodelist_name: str,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SetpointManager:Scheduled`` and add it to the document.
+
+        The simplest Setpoint Manager simply uses a schedule to determine one or more setpoints. Values of the nodes are not used as input.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-setpoint-managers/#setpointmanagerscheduled
+        """
 
 class GeneratorInternalCombustionEngine:
     def __call__(
@@ -850,7 +1073,15 @@ class GeneratorInternalCombustionEngine:
         ]
         | None = "Diesel",
         heat_recovery_maximum_temperature: float | None = 80,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Generator:InternalCombustionEngine`` and add it to the document.
+
+        This generator model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Engine performance curves are generated by fitting catalog data to second order polynomial equations. Three sets of coefficients are required.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-electric-load-center-generator/#generatorinternalcombustionengine
+        """
 
 class ElectricLoadCenterTransformer:
     def __call__(
@@ -877,7 +1108,15 @@ class ElectricLoadCenterTransformer:
         per_unit_load_for_maximum_efficiency: float | None = ...,
         consider_transformer_loss_for_utility_cost: Literal["", "No", "Yes"] | None = "Yes",
         meters: list[_g.ElectricLoadCenterTransformerMetersItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ElectricLoadCenter:Transformer`` and add it to the document.
+
+        This object is used to model the energy losses of transformers when they are used to transfer electricity from the grid to a building (as distribution transformers) or transfer electricity from onsite generators to the grid.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-electric-load-center-generator/#electricloadcentertransformer
+        """
 
 class FaultModelTemperatureSensorOffsetReturnAir:
     def __call__(
@@ -890,7 +1129,15 @@ class FaultModelTemperatureSensorOffsetReturnAir:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         temperature_sensor_offset: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``FaultModel:TemperatureSensorOffset:ReturnAir`` and add it to the document.
+
+        This object describes return air temperature sensor offset
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-operational-faults/#faultmodeltemperaturesensoroffsetreturnair
+        """
 
 class CurveBiquadratic:
     def __call__(
@@ -920,7 +1167,15 @@ class CurveBiquadratic:
         | None = "Dimensionless",
         output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Curve:Biquadratic`` and add it to the document.
+
+        Quadratic curve with two independent variables. Input consists of the curve name, the six coefficients, and min and max values for each of the independent variables. Optional inputs for curve minimum and maximum may be used to limit the output of the performance curve. curve = C1 + C2*x + C3*x**2 + C4*y + C5*y**2 + C6*x*y
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-performance-curves/#curvebiquadratic
+        """
 
 class CurveRectangularHyperbola2:
     def __call__(
@@ -938,7 +1193,21 @@ class CurveRectangularHyperbola2:
         input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Curve:RectangularHyperbola2`` and add it to the document.
+
+        Rectangular hyperbola type 2 curve with one independent variable. Input consists of the curve name, the three coefficients, and the maximum and minimum valid independent variable values. Optional inputs for the curve minimum and maximum may be used to limit the output of the performance curve. curve = ((C1*x)/(C2+x))+(C3*x)
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-performance-curves/#curverectangularhyperbola2
+        """
 
 class AnyOutputSQLite:
-    def __call__(self, /, *, option_type: Literal["Simple", "SimpleAndTabular"] | None = ...) -> None: ...
+    def __call__(self, /, *, option_type: Literal["Simple", "SimpleAndTabular"] | None = ...) -> None:
+        """Create a new ``Output:SQLite`` and add it to the document.
+
+        Output from EnergyPlus can be written to an SQLite format file.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/input-for-output/#outputsqlite
+        """

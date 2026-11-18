@@ -602,6 +602,22 @@ class TestCommittedStubs:
                 r"\1zone_or_zonelist_name: str | None = ...,",
                 "add() does not require zone_or_zonelist_name",
             ),
+            # The docstring an editor shows for add(): the type's own, and the way out when there is one.
+            (
+                r"(class Material:.*?)Create a new ``Material``",
+                r"\1Create a new ``Zone``",
+                "Material in 26.2.0 (Material): add() is not documented as creating a Material",
+            ),
+            (
+                r'(class Zone:.*?\) -> None:)\n\s+""".*?"""',
+                r"\1 ...",
+                "Zone in 26.2.0 (Zone): add() is not documented as creating a Zone",
+            ),
+            (
+                r"(class AnyPeople:.*?)No call suits every release: narrow the document with ``as_version`` first\.",
+                r"\1",
+                "(AnyPeople): add()'s docstring and narrow_with_as_version_first disagree on narrowing first",
+            ),
         ],
     )
     def test_a_misdescribed_creation_signature_is_reported(self, pattern: str, replacement: str, expected: str) -> None:

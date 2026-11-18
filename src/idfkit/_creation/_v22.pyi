@@ -24,7 +24,15 @@ class AirTerminalDualDuctVAV_v8_9_to_v9_2:
         availability_schedule_name: str | None = ...,
         zone_minimum_air_flow_fraction: float | None = 0.2,
         design_specification_outdoor_air_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirTerminal:DualDuct:VAV`` and add it to the document.
+
+        Central air system terminal unit, dual duct, variable volume.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-air-distribution-equipment/#airterminaldualductvav
+        """
 
 class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1:
     def __call__(
@@ -128,7 +136,15 @@ class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1:
         heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
         initial_heat_recovery_heating_energy_fraction: float | None = 1,
         heat_recovery_heating_energy_time_constant: float | None = 0,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``AirConditioner:VariableRefrigerantFlow`` and add it to the document.
+
+        Variable refrigerant flow (VRF) air-to-air heat pump condensing unit (includes one or more electric compressors and outdoor fan). Serves one or more VRF zone terminal units. See ZoneHVAC:TerminalUnit:VariableRefrigerantFlow and ZoneTerminalUnitList.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-variable-refrigerant-flow-equipment/#airconditionervariablerefrigerantflow
+        """
 
 class RunPeriod_v9_0_to_v9_5:
     def __call__(
@@ -150,7 +166,15 @@ class RunPeriod_v9_0_to_v9_5:
         use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
         use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
         treat_weather_as_actual: Literal["", "No", "Yes"] | None = "No",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``RunPeriod`` and add it to the document.
+
+        Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not overlap.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-location-climate-weather-file-access/#runperiod
+        """
 
 class LifeCycleCostUseAdjustment_v8_9_to_v9_2:
     def __call__(
@@ -177,7 +201,13 @@ class LifeCycleCostUseAdjustment_v8_9_to_v9_2:
             "Water",
         ],
         multipliers: list[_g.LifeCycleCostUseAdjustmentMultipliersItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``LifeCycleCost:UseAdjustment`` and add it to the document.
+
+        Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensating for inflation but should only be used to increase the costs of energy or water based on assumed changes to the actual usage, such as anticipated changes in the future function of the building. The adjustments begin at the start of the service period.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/energyplus-economics/lifecyclecost-useadjustment/#lifecyclecostuseadjustment
+        """
 
 class ShadowCalculation_v9_3_to_v22_1:
     def __call__(
@@ -200,7 +230,15 @@ class ShadowCalculation_v9_3_to_v22_1:
         disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
         disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
         shading_zone_groups: list[_g.ShadowCalculationShadingZoneGroupsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ShadowCalculation`` and add it to the document.
+
+        This object is used to control details of the solar, shading, and daylighting models
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-simulation-parameters/#shadowcalculation
+        """
 
 class HVACTemplateZoneFanCoil_v9_0:
     def __call__(
@@ -257,7 +295,15 @@ class HVACTemplateZoneFanCoil_v9_0:
         baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
+
+        4 pipe fan coil unit with optional outdoor air.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.0/io-reference/hvac-template-objects/group-hvac-templates/#hvactemplatezonefancoil
+        """
 
 class ThermalStorageIceSimple_v8_9_to_v25_1:
     def __call__(
@@ -269,7 +315,13 @@ class ThermalStorageIceSimple_v8_9_to_v25_1:
         capacity: float,
         inlet_node_name: str,
         outlet_node_name: str,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ThermalStorage:Ice:Simple`` and add it to the document.
+
+        This ice storage model is a simplified model It requires a setpoint placed on the Chilled Water Side Outlet Node It should be placed in the chilled water supply side outlet branch followed by a pipe. Use the PlantEquipmentOperation:ComponentSetpoint plant operation scheme.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-water-heaters/#thermalstorageicesimple
+        """
 
 class SizingPeriodDesignDay_v9_0_to_v9_2:
     def __call__(
@@ -332,7 +384,15 @@ class SizingPeriodDesignDay_v9_0_to_v9_2:
         sky_clearness: float | None = 0,
         ashrae_clear_sky_optical_depth_for_beam_irradiance_taub: float | None = ...,
         ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``SizingPeriod:DesignDay`` and add it to the document.
+
+        The design day object creates the parameters for the program to create the 24 hour weather profile that can be used for sizing as well as running to test the other simulation parameters. Parameters in this include a date (month and day), a day type (which uses the appropriate schedules for either sizing or simple tests), min/max temperatures, wind speeds, and solar radiation values.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-location-climate-weather-file-access/#sizingperioddesignday
+        """
 
 class ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2:
     def __call__(
@@ -377,7 +437,15 @@ class ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2:
         capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None = "None",
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None = "Autosize",
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
+
+        Packaged terminal heat pump (PTHP). Forced-convection heating-cooling unit with supply fan, direct expansion (DX) cooling coil, DX heating coil (air-to-air heat pump), supplemental heating coil (gas, electric, hot water, or steam), and fixed-position outdoor air mixer.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/overview/group-zone-forced-air-units/#zonehvacpackagedterminalheatpump
+        """
 
 class PlantEquipmentOperationSchemes_v8_9:
     def __call__(
@@ -472,7 +540,13 @@ class PlantEquipmentOperationSchemes_v8_9:
         | None = ...,
         control_scheme_8_name: str | None = ...,
         control_scheme_8_schedule_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``PlantEquipmentOperationSchemes`` and add it to the document.
+
+        Operation schemes are listed in 'priority' order. Note that each scheme must address the entire load and/or condition ranges for the simulation. The actual one selected for use will be the first that is 'Scheduled' on. That is, if control scheme 1 is not 'on' and control scheme 2 is -- then control scheme 2 is selected. Only plant equipment should be listed on a Control Scheme for this item.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/overview/group-plant-condenser-control/#plantequipmentoperationschemes
+        """
 
 class ZoneHVACWaterToAirHeatPump_v23_2:
     def __call__(
@@ -515,7 +589,15 @@ class ZoneHVACWaterToAirHeatPump_v23_2:
         design_specification_zonehvac_sizing_object_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
+
+        Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coils, supplemental heating coil (gas, electric, hot water, or steam), and fixed-position outdoor air mixer.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/overview/group-zone-forced-air-units/#zonehvacwatertoairheatpump
+        """
 
 class FloorDetailed_v9_6_to_v24_2:
     def __call__(
@@ -550,7 +632,15 @@ class FloorDetailed_v9_6_to_v24_2:
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         vertices: list[_g.FloorDetailedVerticesItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Floor:Detailed`` and add it to the document.
+
+        Allows for detailed entry of floor heat transfer surfaces.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.2/io-reference/overview/group-thermal-zone-description-geometry/#floordetailed
+        """
 
 class MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1:
     def __call__(
@@ -578,7 +668,13 @@ class MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1:
         thermal_conductivity_9: float | None = ...,
         temperature_10: float | None = ...,
         thermal_conductivity_10: float | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``MaterialProperty:VariableThermalConductivity`` and add it to the document.
+
+        Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity function. HeatBalanceAlgorithm = CondFD(ConductionFiniteDifference) solution algorithm only. Has no effect with other HeatBalanceAlgorithm solution algorithms
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-surface-construction-elements/#materialpropertyvariablethermalconductivity
+        """
 
 class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v23_2_to_v25_1:
     def __call__(
@@ -734,7 +830,15 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v23_2_to_v25_1:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
+
+        Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), variable-speed, equation-fit model. Optional inputs for moisture evaporation from wet coil when compressor cycles off with continuous fan operation. Equation-fit model uses normalized curves to describe the heat pump performance. Requires two to ten sets of performance data and will interpolate between speeds. Modeled as a single coil with variable-speed compressor.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingwatertoairheatpumpvariablespeedequationfit
+        """
 
 class PythonPluginSearchPaths_v9_4_to_v9_6:
     def __call__(
@@ -745,7 +849,15 @@ class PythonPluginSearchPaths_v9_4_to_v9_6:
         add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
         add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
         py_search_paths: list[_vd.PythonPluginSearchPathsPySearchPathsItem_v9_4_to_v9_6] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``PythonPlugin:SearchPaths`` and add it to the document.
+
+        Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file is automatically added so that the Python interpreter can find the packaged up pyenergyplus Python package. By default, the current working directory and input file directory are also added to the search path. However, this object allows modifying this behavior. With this object, searching these directories can be disabled, and users can add supplemental search paths that point to libraries of plugin scripts.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.6/io-reference/overview/group-python-plugins/#pythonpluginsearchpaths
+        """
 
 class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1:
     def __call__(
@@ -761,4 +873,12 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1:
         heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
         degree_of_subcooling: float | None = 5,
         surface_fractions: list[_g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem] = ...,
-    ) -> None: ...
+    ) -> None:
+        """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Steam`` and add it to the document.
+
+        The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list.
+
+        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-radiative-convective-units/#zonehvacbaseboardradiantconvectivesteam
+        """

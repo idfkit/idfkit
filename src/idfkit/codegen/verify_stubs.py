@@ -73,10 +73,12 @@ class _CreationSignature:
     Attributes:
         name: ``"required"``, ``"optional"`` (with a default) or ``"none"``: the positional name.
         params: Each keyword with its annotation and its default's source, ``None`` for none.
+        doc: Its docstring, which an editor shows for ``add()``; ``None`` for none.
     """
 
     name: str
     params: dict[str, tuple[str, str | None]]
+    doc: str | None = None
 
 
 @dataclasses.dataclass
@@ -171,7 +173,7 @@ def _read_signature(node: ast.ClassDef) -> _CreationSignature | None:
             for arg, default in zip(args.kwonlyargs, args.kw_defaults, strict=True):
                 annotation = _norm(ast.unparse(arg.annotation)) if arg.annotation is not None else ""
                 params[arg.arg] = (annotation, None if default is None else ast.unparse(default))
-            return _CreationSignature(name, params)
+            return _CreationSignature(name, params, ast.get_docstring(item))
     return None
 
 
@@ -500,6 +502,7 @@ def _check_creation(
         return
     before = len(problems)
     _check_signature(module, cls, signature, expected, where, problems)
+    _check_signature_doc(signature, obj_type, where, problems)
     if len(problems) == before:
         module.creation_checked.add(memo)
 
@@ -532,6 +535,21 @@ def _check_signature(
         problem = _param_problem(field, param_type, default, keywords[field], expected)
         if problem is not None:
             problems.append(f"{where}: {problem}")
+
+
+# What an editor shows for add() on a typed collection opens with (see generate_stubs._creation_docstring).
+_CREATION_DOC_SUMMARY = "Create a new ``{}`` and add it to the document."
+_NARROW_FIRST_NOTE = "narrow the document with ``as_version`` first"
+
+
+def _check_signature_doc(signature: _CreationSignature, obj_type: str, where: str, problems: list[str]) -> None:
+    """Check the docstring an editor shows for ``add()``: it names *obj_type*, and says to narrow when it must."""
+    doc = signature.doc
+    if doc is None or not doc.startswith(_CREATION_DOC_SUMMARY.format(obj_type)):
+        problems.append(f"{where}: add() is not documented as creating a {obj_type}")
+        return
+    if (_NARROW_FIRST in signature.params) != (_NARROW_FIRST_NOTE in doc):
+        problems.append(f"{where}: add()'s docstring and {_NARROW_FIRST} disagree on narrowing first")
 
 
 def _param_problem(

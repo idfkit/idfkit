@@ -22,11 +22,13 @@ import dataclasses
 import functools
 import re
 import sys
+import textwrap
 import zlib
 from collections.abc import Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import Any, TypeAlias
 
+from idfkit.docs import io_reference_url
 from idfkit.schema import EpJSONSchema, get_schema, trailing_underscore_aliases
 from idfkit.versions import ENERGYPLUS_VERSIONS, version_string
 
@@ -532,7 +534,9 @@ def _generate_object_class(
         if not emit_update:
             lines[-1:] = [lines[-1], ""] if has_body else [f"{indent}class {cls_name}({base}): ..."]
             return lines
-        declared = _creation_lines(cls_name, _in_field_order(schema, obj_type, inherited), creation, body_indent, sink)
+        declared = _creation_lines(
+            cls_name, _in_field_order(schema, obj_type, inherited), creation, body_indent, sink, schema, obj_type
+        )
         if fields_base != "TypedDict":
             # Every field is on the shared base, but update still takes them all as keywords.
             lines.extend(_generate_update(cls_name, [], indent, fields_base, declared))
@@ -559,6 +563,8 @@ def _generate_object_class(
             creation,
             body_indent,
             sink,
+            schema,
+            obj_type,
         )
         lines.extend(_generate_update(cls_name, update_fields, indent, fields_base, declared))
     return lines
@@ -1113,12 +1119,16 @@ class _CreationModules:
             return annotation
         return re.sub(r"(?<![\w.])(_?[A-Z]\w*)", rf"{self.home}.\1", annotation)
 
-    def add(self, cls_name: str, params: str) -> str:
-        """File the signature (*params*, without parentheses) of *cls_name*; return its annotation."""
+    def add(self, cls_name: str, params: str, doc: str) -> str:
+        """File the signature (*params*, without parentheses) of *cls_name*, documented with *doc*.
+
+        Returns the annotation the class declares ``_creation_signature`` with.
+        """
         bucket = zlib.crc32(cls_name.encode()) % _CREATION_BUCKETS
         self.classes.setdefault(bucket, []).extend([
             f"class {cls_name}:",
-            f"    def __call__({params}) -> None: ...",
+            f"    def __call__({params}) -> None:",
+            textwrap.indent(f'"""{doc}\n"""', "        "),
             "",
         ])
         return f"{self.alias}{bucket}.{cls_name}"
@@ -1165,8 +1175,43 @@ class _CreationModules:
         return out
 
 
+def _creation_docstring(schema: EpJSONSchema, obj_type: str, *, shows_default: bool, narrow_first: bool) -> str:
+    """The docstring of *obj_type*'s creation signature in *schema*'s release.
+
+    An editor shows it for ``add()`` on a collection of the type, in hover and signature help:
+    pyright gives a call the docstring of the signature ``IDFCollection.add`` takes its parameters
+    from, because ``add`` declares none for type checkers. It names the type, gives the schema's
+    memo whole (the class docstring truncates it) and the type's page in the EnergyPlus I/O
+    Reference on docs.idfkit.com. Field notes stay on the class's attributes, which hover shows:
+    here they would double the size of the ``_creation`` modules, and pyright would not show them
+    beside the parameter, only in the block. *shows_default* adds what a shown default means;
+    *narrow_first* says why the signature requires ``narrow_with_as_version_first``.
+    """
+    lines = [f"Create a new ``{obj_type}`` and add it to the document."]
+    memo = schema.get_object_memo(obj_type)
+    if memo:
+        lines += ["", _sanitize_docstring(" ".join(memo.split())).replace("\\", "\\\\")]
+    notes: list[str] = []
+    if narrow_first:
+        notes.append("No call suits every release: narrow the document with ``as_version`` first.")
+    if shows_default:
+        notes.append("A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.")
+    if notes:
+        lines += ["", *notes]
+    url = io_reference_url(obj_type, schema.version, schema)
+    if url is not None:
+        lines += ["", f"EnergyPlus I/O Reference: {url.url}"]
+    return "\n".join(lines)
+
+
 def _creation_lines(
-    cls_name: str, fields: Iterable[tuple[str, str]], creation: _Creation, indent: str, sink: _CreationModules
+    cls_name: str,
+    fields: Iterable[tuple[str, str]],
+    creation: _Creation,
+    indent: str,
+    sink: _CreationModules,
+    schema: EpJSONSchema,
+    obj_type: str,
 ) -> list[str]:
     """Declare *cls_name*'s ``_creation_signature``, the signature ``IDFCollection.add`` captures.
 
@@ -1183,6 +1228,9 @@ def _creation_lines(
     ``narrow_with_as_version_first: Never``, which no argument satisfies, so the type checker names
     the way out (narrow the document with ``as_version``) instead of accepting a call some release
     refuses.
+
+    The signature carries the docstring an editor shows for the call (:func:`_creation_docstring`),
+    from *schema*, the release the class declares *obj_type* as.
     """
     params = ["self"]
     if creation.name == "required":
@@ -1211,7 +1259,13 @@ def _creation_lines(
     if required or optional:
         params.append("*")
     params += required + optional
-    return [f"{indent}_creation_signature: {sink.add(cls_name, ', '.join(params))}"]
+    doc = _creation_docstring(
+        schema,
+        obj_type,
+        shows_default=any(not param.endswith(" = ...") and " = " in param for param in optional),
+        narrow_first=bool(creation.required - settable),
+    )
+    return [f"{indent}_creation_signature: {sink.add(cls_name, ', '.join(params), doc)}"]
 
 
 @functools.cache
@@ -1613,6 +1667,8 @@ def _generate_base_class(
         _creation_for(obj_type, _versions_with(obj_type)),
         "    ",
         sink,
+        schema,
+        obj_type,
     )
     lines.extend(_generate_update(base, varying, "", _common_fields_name(obj_type), creation))
     return lines
