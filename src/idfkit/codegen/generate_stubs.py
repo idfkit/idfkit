@@ -1097,11 +1097,14 @@ class _CreationModules:
             classes of older ranges, read only where a file names an older release).
         alias: The prefix the generated stub imports the modules under (``_c``, ``_cv``).
         classes: Each module's class definitions, by bucket.
+        signatures: Each module's signatures alone, by bucket: the names a module imports are those
+            its signatures use, whatever a docstring says (a memo's "Any number of ...").
     """
 
     module: str = "_b"
     alias: str = "_c"
     classes: dict[int, list[str]] = dataclasses.field(default_factory=dict[int, list[str]])
+    signatures: dict[int, list[str]] = dataclasses.field(default_factory=dict[int, list[str]])
 
     @property
     def home(self) -> str:
@@ -1131,6 +1134,7 @@ class _CreationModules:
             textwrap.indent(f'"""{doc}\n"""', "        "),
             "",
         ])
+        self.signatures.setdefault(bucket, []).append(params)
         return f"{self.alias}{bucket}.{cls_name}"
 
     def _stubs(self) -> list[tuple[str, str]]:
@@ -1148,7 +1152,8 @@ class _CreationModules:
         out: dict[str, str] = {}
         for k in range(_CREATION_BUCKETS):
             body = "\n".join(self.classes.get(k, []))
-            typing_names = [n for n in ("Any", "Literal") if re.search(rf"\b{n}\b", body)]
+            used = "\n".join(self.signatures.get(k, []))
+            typing_names = [n for n in ("Any", "Literal") if re.search(rf"\b{n}\b", used)]
             header = [
                 '"""Creation signatures of generated classes (stub only).',
                 "",
@@ -1161,14 +1166,14 @@ class _CreationModules:
             ]
             if typing_names:
                 header.append(f"from typing import {', '.join(typing_names)}")
-            if re.search(r"\bNever\b", body):
+            if re.search(r"\bNever\b", used):
                 # A third-party import, in a block of its own after the standard library's (isort).
                 header.extend(
                     ["", "from typing_extensions import Never"]
                     if typing_names
                     else ["from typing_extensions import Never"]
                 )
-            own = [f"from .. import {name} as {alias}" for name, alias in self._stubs() if f"{alias}." in body]
+            own = [f"from .. import {name} as {alias}" for name, alias in self._stubs() if f"{alias}." in used]
             if own:
                 header.extend(["", *own])
             out[f"{self.module}{k}.pyi"] = "\n".join([*header, "", body]).rstrip() + "\n"

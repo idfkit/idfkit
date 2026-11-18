@@ -839,6 +839,15 @@ class TestCreationSignature:
         assert "from typing import Literal\n" in module
         ast.parse(module)
 
+    def test_a_docstring_imports_nothing(self) -> None:
+        # A schema memo can say "Any", "Never" or "_g."; only what the signature uses is imported.
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        sink.add("Cls", "self, /", "Any number of things. Never _g.Zone.")
+        module = next(source for source in sink.sources().values() if "class Cls:" in source)
+        assert "from typing" not in module
+        assert "typing_extensions" not in module
+        assert "_generated_types" not in module
+
 
 def _docstring_of(sink: gen._CreationModules, cls_name: str) -> str:  # pyright: ignore[reportPrivateUsage]
     """The docstring of the ``__call__`` *sink* filed for *cls_name*: what an editor shows for ``add()``."""
