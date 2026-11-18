@@ -60,6 +60,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `vertices=wall.vertices.as_list()` still type-checked; a list built ahead of the call is annotated
   with the item type, as one typed `list[dict[str, float]]` is no longer accepted. Run time was
   unchanged ([#297](https://github.com/idfkit/idfkit/pull/297)).
+- Hover and signature help on a typed `add()` (Pylance, pyright) showed the object type's own
+  documentation instead of the generic docstring of `IDFCollection.add`:
+  `doc["Schedule:Constant"].add(` read "Create a new `Schedule:Constant` and add it to the
+  document", the schema's memo ("Constant hourly value for entire year."), what a shown default
+  means, and a link to the type's EnergyPlus I/O Reference page on docs.idfkit.com, for the
+  document's release. Where the signature requires `narrow_with_as_version_first`, it said to
+  narrow with `as_version` first. A collection a type checker cannot narrow showed a short generic
+  text. The text was kept in the lazily read `idfkit/_creation` modules, so a cold type check
+  that makes no `add()` call was unchanged, and one that does stayed within measurement noise;
+  `help(IDFCollection.add)` and the API reference kept the full docstring
+  ([d451180](https://github.com/idfkit/idfkit/commit/d451180)).
 - **Breaking:** `idfkit check` gained `C006`, an error checked by default, so a run that passed
   before could fail on it. It reported an object type passed to `add()` that no target release has
   (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a choice value no target
