@@ -61,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   setting, and `copy()`, `migrate()` and `expand_objects()` kept it; a document pickled by an
   earlier release unpickled with it off, since its values were stored as written. Parse time did
   not change measurably (within ±3% on the largest EnergyPlus example files)
-  ([f69bef3](https://github.com/idfkit/idfkit/commit/f69bef3)).
+  ([#306](https://github.com/idfkit/idfkit/pull/306)).
 - **Breaking:** for type checking, a field that every release having it requires with no default
   lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;
   delete the `is None` guards pyright strict now flags ([#303](https://github.com/idfkit/idfkit/pull/303)).
