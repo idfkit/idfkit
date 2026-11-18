@@ -302,6 +302,20 @@ class TestHighLevelLoad:
         assert doc.version == (24, 1, 0)
         assert len(doc["Zone"]) == 1
 
+    def test_load_idf_accepts_path(self, idf_file: Path) -> None:
+        doc = load_idf(idf_file)
+        assert doc.version == (24, 1, 0)
+        assert len(doc["Zone"]) == 1
+
+    def test_load_idf_with_diagnostics_accepts_path(self, idf_file: Path) -> None:
+        result = load_idf_with_diagnostics(idf_file)
+        assert len(result.document["Zone"]) == 1
+
+    def test_load_epjson_accepts_path(self, epjson_file: Path) -> None:
+        doc = load_epjson(epjson_file)
+        assert doc.version == (24, 1, 0)
+        assert len(doc["Zone"]) == 1
+
 
 # ---------------------------------------------------------------------------
 # Edge cases

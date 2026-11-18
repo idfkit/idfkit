@@ -302,6 +302,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with a hand-written tuple of release types ending in `IDFDocument`, the pattern it warns against
   a few paragraphs earlier: once idfkit adopts a newer release, that tuple stops covering 26.2. It
   used `as_version(doc, since="22.2")` instead ([#296](https://github.com/idfkit/idfkit/pull/296)).
+- `load_idf()`, `load_idf_with_diagnostics()` and `load_epjson()` accepted a `pathlib.Path` at run time
+  but typed `path` as `str`, so `load_idf(Path("model.idf"))` was a type-checker error. They are now
+  typed `Path | str`, the same as `save_idf()`, `save_epjson()` and the parsers they call ([#299](https://github.com/idfkit/idfkit/pull/299)).
 - `migrate()`, `async_migrate()`, `plan_migration_chain()` and `simulate(..., auto_migrate=True)` matched a model's version to
   its release the way schema selection and `as_version` do. A model loaded from a file headed
   `Version, 9.0;` reads as 9.0.0 while the release is 9.0.1, so migrating it raised
