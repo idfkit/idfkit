@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class ConvergenceLimits:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         minimum_system_timestep: int | None = ...,
@@ -52,6 +53,7 @@ class Space:
 class GroundHeatTransferSlabMaterials:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         nmat_number_of_materials: float,
@@ -92,6 +94,7 @@ class RoomAirNodeAirflowNetworkHVACEquipment:
 class AnySizingPlant:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         plant_or_condenser_loop_name: str,

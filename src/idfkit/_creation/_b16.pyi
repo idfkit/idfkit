@@ -10,6 +10,8 @@ from typing import Literal
 
 from typing_extensions import Never
 
+from .. import _generated_types as _g
+
 class WindowInterzone:
     def __call__(
         self,
@@ -35,6 +37,7 @@ class WindowInterzone:
 class SurfacePropertyIncidentSolarMultiplier:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_name: str,
@@ -134,6 +137,7 @@ class SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion:
 class ZoneEarthtube:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -506,6 +510,7 @@ class AnyLifeCycleCostParameters:
 class OutputJSON:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         option_type: Literal["TimeSeries", "TimeSeriesAndTabular"],

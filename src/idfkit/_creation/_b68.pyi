@@ -73,6 +73,7 @@ class LightsInstance:
 class DaylightingDeviceLightWell:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         exterior_window_name: str,
@@ -177,6 +178,7 @@ class HVACTemplateSystemUnitaryHeatPumpAirToAir:
 class AnySizingZone:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_or_zonelist_name: str,
@@ -228,6 +230,7 @@ class AnySizingZone:
 class FanPerformanceNightVentilation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         fan_name: str,

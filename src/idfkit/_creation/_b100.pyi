@@ -12,7 +12,13 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class OutputControlIlluminanceMapStyle:
-    def __call__(self, /, *, column_separator: Literal["", "Comma", "Fixed", "Tab"] | None = "Comma") -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        column_separator: Literal["", "Comma", "Fixed", "Tab"] | None = "Comma",
+    ) -> None:
         """Create a new ``OutputControl:IlluminanceMap:Style`` and add it to the document.
 
         default style for the Daylighting Illuminance Map is comma -- this works well for importing into spreadsheet programs such as Excel(tm) but not so well for word processing programs -- there tab may be a better choice. fixed puts spaces between the 'columns'

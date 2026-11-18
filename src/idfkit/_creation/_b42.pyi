@@ -8,9 +8,12 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class SiteGroundTemperatureShallow:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         january_surface_ground_temperature: float | None = 13,
@@ -342,6 +345,7 @@ class PipeIndoor:
 class AnyOutputJSON:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         option_type: Literal["TimeSeries", "TimeSeriesAndTabular"],

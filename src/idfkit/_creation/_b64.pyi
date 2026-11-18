@@ -16,6 +16,7 @@ from .. import _generated_types as _g
 class HeatBalanceAlgorithm:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal[
@@ -73,6 +74,7 @@ class AnyConstructionComplexFenestrationState:
 class GroundHeatTransferBasementComBldg:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         january_average_temperature: float | None = 22,

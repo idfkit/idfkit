@@ -305,6 +305,14 @@ _TYPED_OBJECT_BASE = "_TypedIDFObject"
 _TYPED_GROUP_BASE = "_TypedExtensibleGroup"
 _NOT_A_FIELD = "_NotAFieldOfThisObjectType"
 _NOT_A_GROUP_FIELD = "_NotAFieldOfThisExtensibleGroup"
+# A type without a Name field takes no name. Its creation signature has a positional-only parameter
+# typed with this alias of ``Never``, which nothing satisfies, so a name passed by mistake
+# (``doc.output_variables.add("*", ...)``) reads ``parameter "this_type_has_no_name_field" of type
+# "_PassFieldsAsKeywords"`` under pyright, and ``expected "Never"`` under mypy, where both used to
+# report the arguments instead (``Expected 0 positional arguments``; mypy's ``gets multiple values
+# for keyword argument``, naming a field the call did pass).
+_NO_NAME_FIELD = "_PassFieldsAsKeywords"
+_NO_NAME_PARAM = "this_type_has_no_name_field"
 
 # The document methods every document type shares, through IDFDocumentAllVersions, which every
 # document type derives from (_generate_document_module).
@@ -320,6 +328,9 @@ def _generate_typed_bases() -> list[str]:
         "",
         f"class {_NOT_A_GROUP_FIELD}:",
         '    """No name is one: a type checker reports an undeclared field of a typed group against this type."""',
+        "",
+        f"{_NO_NAME_FIELD}: TypeAlias = Never",
+        '"""No value is one: a type checker reports a name given to a type without a Name field against this."""',
         "",
         f"class {_TYPED_OBJECT_BASE}(IDFObject):",
         '    """Stub-only base: an undeclared field name is a type error on a typed object."""',
@@ -1288,7 +1299,8 @@ def _creation_lines(
     The class body at *indent* gets the attribute; the signature itself goes to *sink*
     (:class:`_CreationModules`). *fields* are the keywords with the annotations the class's
     ``update`` ``TypedDict`` gives them, in field order. The name comes first, positional-only, when
-    the type has one; the fields follow, keyword-only: the required ones without a default and with
+    the type has one; a type without one takes ``this_type_has_no_name_field`` there instead, typed
+    with an alias of ``Never`` so that a name passed by mistake is reported as such. The fields follow, keyword-only: the required ones without a default and with
     ``None`` taken out (leaving one empty is what makes it missing), then the others with their
     schema default where the annotation admits it, and ``...`` otherwise.
 
@@ -1307,6 +1319,8 @@ def _creation_lines(
         params.append("name: str")
     elif creation.name == "optional":
         params.append('name: str = ""')
+    else:
+        params.append(f"{_NO_NAME_PARAM}: _g.{_NO_NAME_FIELD} = ...")
     params.append("/")
     defaults = dict(creation.defaults)
     required: list[str] = []

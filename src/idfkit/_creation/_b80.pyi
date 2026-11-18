@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class WindowGapSupportPillar:
     def __call__(self, name: str, /, *, spacing: float | None = 0.04, radius: float | None = 0.0004) -> None:
         """Create a new ``WindowGap:SupportPillar`` and add it to the document.
@@ -44,6 +46,7 @@ class CeilingAdiabatic:
 class SurfacePropertyHeatTransferAlgorithm:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_name: str,

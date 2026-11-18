@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class AnySimulationControl:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         do_zone_sizing_calculation: Literal["", "No", "Yes"] | None = "No",
@@ -32,7 +33,13 @@ class AnySimulationControl:
         """
 
 class AnyTimestep:
-    def __call__(self, /, *, number_of_timesteps_per_hour: int | None = 6) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        number_of_timesteps_per_hour: int | None = 6,
+    ) -> None:
         """Create a new ``Timestep`` and add it to the document.
 
         Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is used in the Zone Heat Balance Model calculation as the driving timestep for heat transfer and load calculations.
@@ -115,6 +122,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolNoReheat:
 class SolarCollectorUnglazedTranspiredMultisystem:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         solar_collector_name: str,

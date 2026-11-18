@@ -23,6 +23,7 @@ class MaterialInfraredTransparent:
 class GlobalGeometryRules:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         starting_vertex_position: Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"],
@@ -79,6 +80,7 @@ class AnyRoofCeilingDetailed:
 class RoomAirSettingsOneNodeDisplacementVentilation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -161,6 +163,7 @@ class CoilCoolingDXCurveFitOperatingMode:
 class AnyWaterHeaterSizing:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         waterheater_name: str,
@@ -220,6 +223,7 @@ class AnyTableIndependentVariable:
 class OutputEnergyManagementSystem:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         actuator_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"]

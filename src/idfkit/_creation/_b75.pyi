@@ -80,7 +80,7 @@ class FloorGroundContact:
         """
 
 class GroundHeatTransferSlabZFACE:
-    def __call__(self, /) -> None:
+    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
         """Create a new ``GroundHeatTransfer:Slab:ZFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) ZFACE: Z Direction cell face coordinates: m
@@ -119,6 +119,7 @@ class RoomAirModelType:
 class RoomAirSettingsCrossVentilation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -523,6 +524,7 @@ class CentralHeatPumpSystem:
 class ExternalInterfaceFunctionalMockupUnitExportToSchedule:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         schedule_name: str,

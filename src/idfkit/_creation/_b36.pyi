@@ -38,6 +38,7 @@ class AnyMaterial:
 class AnyMaterialPropertyHeatAndMoistureTransferThermalConductivity:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         material_name: str,
@@ -110,6 +111,7 @@ class DuctLossMakeupAir:
 class AnySizingSystem:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         airloop_name: str,
@@ -314,6 +316,7 @@ class RefrigerationCompressor:
 class OutputPreprocessorMessage:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         preprocessor_name: str | None = ...,

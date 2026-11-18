@@ -249,6 +249,7 @@ class ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1:
 class LifeCycleCostUsePriceEscalation_v8_9_to_v9_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         lcc_price_escalation_name: str,

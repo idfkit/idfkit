@@ -16,6 +16,7 @@ from .. import _generated_types as _g
 class ZoneAirHeatBalanceAlgorithm:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal["", "AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"]
@@ -33,6 +34,7 @@ class ZoneAirHeatBalanceAlgorithm:
 class SiteWeatherStation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         wind_sensor_height_above_ground: float | None = 10,
@@ -96,6 +98,7 @@ class WindowThermalModelParams:
 class AnySurfacePropertyConvectionCoefficients:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_name: str,
@@ -238,6 +241,7 @@ class AnyGasEquipment:
 class AnyHVACTemplateZoneWaterToAirHeatPump:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -333,7 +337,11 @@ class CoilHeatingDesuperheater:
 
 class OutdoorAirNodeList:
     def __call__(
-        self, /, *, nodes: Sequence[_g.OutdoorAirNodeListNodesItem | _g.OutdoorAirNodeListNodesGroup] = ...
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        nodes: Sequence[_g.OutdoorAirNodeListNodesItem | _g.OutdoorAirNodeListNodesGroup] = ...,
     ) -> None:
         """Create a new ``OutdoorAir:NodeList`` and add it to the document.
 

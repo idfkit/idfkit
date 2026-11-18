@@ -8,8 +8,16 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class AnyPerformancePrecisionTradeoffs:
-    def __call__(self, /, *, use_coil_direct_solutions: Literal["", "No", "Yes"] | None = "No") -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        use_coil_direct_solutions: Literal["", "No", "Yes"] | None = "No",
+    ) -> None:
         """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
 
         This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decreases in accuracy of results.
@@ -66,6 +74,7 @@ class DoorInterzone:
 class AnyHVACTemplateZoneFanCoil:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -171,6 +180,7 @@ class ZoneHVACPackagedTerminalAirConditioner:
 class ZoneHVACEquipmentConnections:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,

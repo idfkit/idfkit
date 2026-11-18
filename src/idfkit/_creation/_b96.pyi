@@ -410,6 +410,7 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
 class GroundHeatTransferSlabBoundConds:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         evtr_is_surface_evapotranspiration_modeled: Literal["FALSE", "TRUE"],

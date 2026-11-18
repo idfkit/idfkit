@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class AnyZoneAirHeatBalanceAlgorithm:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal["", "AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"]
@@ -106,6 +107,7 @@ class SurfacePropertyOtherSideCoefficients:
 class GroundHeatTransferBasementSimParameters:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         f_multiplier_for_the_adi_solution: float | None = ...,

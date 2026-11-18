@@ -8,9 +8,12 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class SurfaceConvectionAlgorithmOutside:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal["", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"]
@@ -132,6 +135,7 @@ class HVACTemplateSystemVAV:
 class AnySizingParameters:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         heating_sizing_factor: float | None = 1,
@@ -313,6 +317,7 @@ class ElectricLoadCenterInverterLookUpTable:
 class UtilityCostChargeBlock:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         utility_cost_charge_block_name: str,

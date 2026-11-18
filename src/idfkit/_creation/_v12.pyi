@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
+from .. import _generated_types as _g
 from .. import versioned as _vd
 
 class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
@@ -78,6 +79,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
 class SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_name: str,

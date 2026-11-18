@@ -46,6 +46,7 @@ class AnyFoundationKiva:
 class AnyZonePropertyUserViewFactorsBySurfaceName:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         view_factors: Sequence[
@@ -312,7 +313,15 @@ class PlantEquipmentOperationHeatingLoad:
         """
 
 class ExternalInterfaceFunctionalMockupUnitImport:
-    def __call__(self, /, *, fmu_file_name: str, fmu_timeout: float | None = 0, fmu_loggingon: int | None = 0) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        fmu_file_name: str,
+        fmu_timeout: float | None = 0,
+        fmu_loggingon: int | None = 0,
+    ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport`` and add it to the document.
 
         This object declares an FMU

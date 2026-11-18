@@ -10,6 +10,8 @@ from typing import Literal
 
 from typing_extensions import Never
 
+from .. import _generated_types as _g
+
 class Construction:
     def __call__(
         self,
@@ -88,6 +90,7 @@ class AnyHotWaterEquipment:
 class SpaceHVACEquipmentConnections:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         space_name: str,

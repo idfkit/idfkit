@@ -44,7 +44,13 @@ class ThermalStorageIceDetailed_v9_2_to_v25_1:
         """
 
 class OutputSQLite_v8_9_to_v9_4:
-    def __call__(self, /, *, option_type: Literal["Simple", "SimpleAndTabular"] | None = ...) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        option_type: Literal["Simple", "SimpleAndTabular"] | None = ...,
+    ) -> None:
         """Create a new ``Output:SQLite`` and add it to the document.
 
         Output from EnergyPlus can be written to an SQLite format file.
@@ -121,6 +127,7 @@ class AirflowNetworkSimulationControl_v9_5_to_v22_1:
 class ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_or_zonelist_name: str | None = ...,

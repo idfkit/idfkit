@@ -83,7 +83,12 @@ class WallExterior:
 
 class GroundHeatTransferBasementEquivSlab:
     def __call__(
-        self, /, *, apratio_the_area_to_perimeter_ratio_for_this_slab: float, equivsizing_flag: Literal["FALSE", "TRUE"]
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        apratio_the_area_to_perimeter_ratio_for_this_slab: float,
+        equivsizing_flag: Literal["FALSE", "TRUE"],
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:EquivSlab`` and add it to the document.
 
@@ -162,6 +167,7 @@ class ElectricEquipmentITEAirCooledInstance:
 class AirflowNetworkMultiZoneZone:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -411,6 +417,7 @@ class GeneratorFuelCell:
 class OutputDebuggingData:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         report_debugging_data: Literal["", "No", "Yes"] | None = "No",

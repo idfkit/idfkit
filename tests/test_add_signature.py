@@ -132,7 +132,7 @@ def test_a_missing_required_field_is_refused() -> None:
 def test_a_name_is_refused_for_a_type_without_one() -> None:
     doc = new_document()
     with pytest.raises(InvalidFieldError):
-        doc["Output:SQLite"].add("Out", option_type="Simple")  # pyright: ignore[reportCallIssue]
+        doc["Output:SQLite"].add("Out", option_type="Simple")  # pyright: ignore[reportArgumentType]
     assert doc["Output:SQLite"].add(option_type="Simple").option_type == "Simple"
 
 

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class ZoneGroup:
     def __call__(self, name: str, /, *, zone_list_name: str, zone_list_multiplier: int | None = 1) -> None:
         """Create a new ``ZoneGroup`` and add it to the document.
@@ -20,6 +22,7 @@ class ZoneGroup:
 class AnyWindowPropertyStormWindow:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         window_name: str,
@@ -191,6 +194,7 @@ class SetpointManagerSingleZoneHumidityMaximum:
 class OutputSurfacesDrawing:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         report_type: Literal["DXF", "DXF:WireFrame", "VRML"],

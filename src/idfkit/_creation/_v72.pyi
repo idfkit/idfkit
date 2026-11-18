@@ -8,11 +8,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from .. import _generated_types as _g
 from .. import versioned as _vd
 
 class ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_or_zonelist_name: str | None = ...,

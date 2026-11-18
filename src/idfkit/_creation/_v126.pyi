@@ -8,9 +8,17 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1:
     def __call__(
-        self, /, *, fmu_file_name: str, fmu_timeout: float | None = 0, fmu_loggingon: float | None = 0
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        fmu_file_name: str,
+        fmu_timeout: float | None = 0,
+        fmu_loggingon: float | None = 0,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport`` and add it to the document.
 
@@ -291,6 +299,7 @@ class CoilCoolingDXVariableSpeed_v23_2_to_v25_1:
 class OutputTableReportPeriod_v22_2_to_v25_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         name_: str,

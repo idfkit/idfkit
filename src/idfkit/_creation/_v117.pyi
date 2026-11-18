@@ -132,6 +132,7 @@ class CoilHeatingDXSingleSpeed_v8_9_to_v22_1:
 class FuelFactors_v9_3_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         existing_fuel_resource_name: Literal[

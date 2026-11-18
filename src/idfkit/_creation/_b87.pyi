@@ -16,6 +16,7 @@ from .. import _generated_types as _g
 class AnyZoneAirMassFlowConservation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]

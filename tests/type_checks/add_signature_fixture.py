@@ -74,7 +74,7 @@ def defaults(doc: IDFDocument[Any]) -> None:
 def names(doc: IDFDocument[Any]) -> None:
     doc.zones.add()  # pyright: ignore[reportCallIssue]  (Zone requires a name)
     assert_type(doc["Building"].add(), Building)  # the schema does not require Building's name
-    doc["Output:SQLite"].add("Out", option_type="Simple")  # pyright: ignore[reportCallIssue]  (no Name field)
+    doc["Output:SQLite"].add("Out", option_type="Simple")  # pyright: ignore[reportArgumentType]  (no Name field: this_type_has_no_name_field)
     doc["Timestep"].add(number_of_timesteps_per_hour=6)
 
 

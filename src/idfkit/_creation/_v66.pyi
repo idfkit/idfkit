@@ -14,6 +14,7 @@ from .. import versioned as _vd
 class OutputTableSummaryReports_v9_3:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         reports: Sequence[

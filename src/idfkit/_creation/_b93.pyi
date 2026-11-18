@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class ZonePropertyUserViewFactorsBySurfaceName:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_or_zonelist_or_space_or_spacelist_name: str | None = ...,
@@ -32,6 +33,7 @@ class ZonePropertyUserViewFactorsBySurfaceName:
 class AnyHVACTemplateZonePTAC:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,

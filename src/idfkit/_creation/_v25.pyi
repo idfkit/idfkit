@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class SiteLocation_v8_9_to_v24_1:
     def __call__(
         self,
@@ -88,6 +90,7 @@ class CoolingTowerTwoSpeed_v8_9_to_v22_1:
 class OutputJSON_v9_1_to_v25_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         option_type: Literal["TimeSeries", "TimeSeriesAndTabular"],

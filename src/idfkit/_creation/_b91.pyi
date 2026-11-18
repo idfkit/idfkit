@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class GlazedDoorInterzone:
     def __call__(
         self,
@@ -33,6 +35,7 @@ class GlazedDoorInterzone:
 class GroundHeatTransferSlabMatlProps:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         rho_slab_material_density: float | None = 2300,
@@ -222,6 +225,7 @@ class SetpointManagerSystemNodeResetHumidity:
 class OutputEnvironmentalImpactFactors:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         reporting_frequency: Literal["Annual", "Daily", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"]

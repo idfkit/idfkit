@@ -180,6 +180,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
 class OutputTableSummaryReports_v9_4:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         reports: Sequence[

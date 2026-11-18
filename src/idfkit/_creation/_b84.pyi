@@ -51,6 +51,7 @@ class WindowMaterialGapEquivalentLayer:
 class WindowPropertyStormWindow:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         window_name: str,
@@ -259,6 +260,7 @@ class PlantEquipmentOperationUserDefined:
 class OutputControlReportingTolerances:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         tolerance_for_time_heating_setpoint_not_met: float | None = 0.2,
@@ -274,6 +276,7 @@ class OutputControlReportingTolerances:
 class OutputMeterCumulativeMeterFileOnly:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         key_name: str,

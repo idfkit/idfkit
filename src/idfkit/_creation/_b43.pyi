@@ -12,7 +12,7 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class GroundHeatTransferSlabXFACE:
-    def __call__(self, /) -> None:
+    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
         """Create a new ``GroundHeatTransfer:Slab:XFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) XFACE: X Direction cell face coordinates: m
@@ -23,6 +23,7 @@ class GroundHeatTransferSlabXFACE:
 class AnyAirflowNetworkDistributionComponentCoil:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         coil_name: str,
@@ -421,6 +422,7 @@ class CurveRectangularHyperbola1:
 class FluidPropertiesSuperheated:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         fluid_name: str | None = ...,

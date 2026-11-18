@@ -804,7 +804,7 @@ class TestCreationSignature:
         creation = gen._Creation("none", frozenset({"a", "e"}), ())  # pyright: ignore[reportPrivateUsage]
         gen._creation_lines("Cls", fields, creation, "    ", sink, _LATEST, "Zone")  # pyright: ignore[reportPrivateUsage]
         assert _signature_of(sink, "Cls").startswith(
-            "    def __call__(self, /, *, narrow_with_as_version_first: Never, a: float"
+            "    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, narrow_with_as_version_first: Never, a: float"
         )
 
     def test_the_alias_of_a_required_key_is_not_offered(self) -> None:
@@ -821,7 +821,12 @@ class TestCreationSignature:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         creation = gen._Creation("none", frozenset(), ())  # pyright: ignore[reportPrivateUsage]
         gen._creation_lines("Bare", [], creation, "    ", sink, _LATEST, "Output:SQLite")  # pyright: ignore[reportPrivateUsage]
-        assert _signature_of(sink, "Bare") == "    def __call__(self, /) -> None:"
+        # The guard takes the place of the name, so a name passed by mistake is reported as such.
+        assert _signature_of(sink, "Bare") == (
+            "    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:"
+        )
+        module = next(source for source in sink.sources().values() if "class Bare:" in source)
+        assert "from .. import _generated_types as _g" in module
 
     def test_the_class_declares_the_signature_its_update_keywords_make(self) -> None:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]

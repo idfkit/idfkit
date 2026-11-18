@@ -34,6 +34,7 @@ class SiteGroundTemperatureUndisturbedKusudaAchenbach:
 class SurfacePropertyExposedFoundationPerimeter:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_name: str,
@@ -93,7 +94,13 @@ class DaylightingReferencePoint:
         """
 
 class OutputDaylightFactors:
-    def __call__(self, /, *, reporting_days: Literal["AllShadowCalculationDays", "SizingDays"]) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        reporting_days: Literal["AllShadowCalculationDays", "SizingDays"],
+    ) -> None:
         """Create a new ``Output:DaylightFactors`` and add it to the document.
 
         Reports hourly daylight factors for each exterior window for four sky types (clear, turbid clear, intermediate, and overcast).

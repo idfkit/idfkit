@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class AnyShadowCalculation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         maximum_figures_in_shadow_overlap_calculations: int | None = 15000,

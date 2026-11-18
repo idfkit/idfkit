@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class SiteWaterMainsTemperature:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"]
@@ -67,7 +68,7 @@ class InternalMass:
         """
 
 class GroundHeatTransferSlabYFACE:
-    def __call__(self, /) -> None:
+    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
         """Create a new ``GroundHeatTransfer:Slab:YFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) YFACE: Y Direction cell face coordinates: m,
@@ -199,6 +200,7 @@ class UtilityCostRatchet:
 class AnyOutputMeter:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         key_name: str,

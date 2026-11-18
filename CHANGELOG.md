@@ -34,7 +34,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   value EnergyPlus applies to a field left empty; `add()` stores only the fields passed. Leaving out
   a field the schema requires, or passing `None` for one, was a type error in pyright and mypy, as
   it is a `ValidationFailedError` (E001) at run time, and so was a name for a type without a Name
-  field (`doc["Output:SQLite"].add("x")`, an `InvalidFieldError` at run time). The required fields
+  field (`doc["Output:SQLite"].add("x")`, an `InvalidFieldError` at run time). Such a name was reported against
+  a parameter named for the mistake, `this_type_has_no_name_field` of type `_PassFieldsAsKeywords`
+  (mypy: `expected "Never"`), rather than as `Expected 0 positional arguments`, or, under mypy, as
+  `gets multiple values for keyword argument` naming a field the call did pass:
+  `doc.output_variables.add("*", variable_name=...)` pointed at the parameter, and the fix is
+  `key_value="*"`. The required fields
   and defaults were the release's: 9.4's through `IDFDocumentV9_4`. Through `AnyIDFDocument` a
   field was required where any release requires it, so no release refuses a call that
   type-checks, and a default was shown only where every release has the same one. Where no call
