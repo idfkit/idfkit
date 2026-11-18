@@ -22,6 +22,7 @@ from pathlib import Path
 import pytest
 
 from idfkit import IDFDocument, load_idf
+from idfkit.document import AnyIDFDocument
 from idfkit.exceptions import EnergyPlusNotFoundError
 from idfkit.simulation import SimulationResult, find_energyplus
 from idfkit.simulation.config import EnergyPlusConfig
@@ -345,7 +346,7 @@ class TestGroundHeatTransferControlWithoutWeather:
     """R3 follows GroundHeatTransfer:Control in the shipped slab example."""
 
     @pytest.fixture
-    def slab_model(self, energyplus: EnergyPlusConfig) -> IDFDocument:
+    def slab_model(self, energyplus: EnergyPlusConfig) -> AnyIDFDocument:
         return load_idf(str(energyplus.install_dir / "ExampleFiles" / "5ZoneAirCooledWithSlab.idf"))
 
     def test_enabled_slab_refused(self, slab_model: IDFDocument, energyplus: EnergyPlusConfig, tmp_path: Path) -> None:

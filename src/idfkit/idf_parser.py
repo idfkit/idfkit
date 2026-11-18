@@ -18,7 +18,7 @@ import time
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final, cast
+from typing import TYPE_CHECKING, Any, Final, Generic, cast
 
 from .cst import CSTNode, DocumentCST
 from .document import AnyIDFDocument, IDFDocument
@@ -29,7 +29,17 @@ from .schema import SIZING_SENTINELS
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from typing_extensions import TypeVar
+
     from .schema import EpJSONSchema, ParsingCache
+
+    # The document type a ParseResult carries: what every release has, unless the loader was told the
+    # release (load_idf_with_diagnostics(path, as_type=...) or since=/before=).
+    _DocT = TypeVar("_DocT", bound=AnyIDFDocument, default=AnyIDFDocument, covariant=True)
+else:
+    from typing import TypeVar
+
+    _DocT = TypeVar("_DocT", covariant=True)
 
 # Regex patterns for parsing
 # Components past the patch are accepted and ignored: DesignBuilder writes
@@ -226,7 +236,7 @@ def _field_offset(fields_raw: str, index: int) -> int | None:
 
 
 @dataclass(frozen=True, slots=True)
-class ParseResult:
+class ParseResult(Generic[_DocT]):
     """A document, and the recoverable findings from the parse that produced it.
 
     What `load_idf_with_diagnostics` hands back. The findings here are the ones that did NOT stop
@@ -236,9 +246,14 @@ class ParseResult:
 
     Field names match the other language's `ParseResult` exactly, so a reader moving between the
     two reads the same two names in the same order.
+
+    Generic in the document's type: ``ParseResult`` alone carries an ``AnyIDFDocument``, since a
+    file's release is known only once it is read, and
+    ``load_idf_with_diagnostics(path, as_type=IDFDocumentV9_4)`` returns a
+    ``ParseResult[IDFDocumentV9_4]``.
     """
 
-    document: IDFDocument
+    document: _DocT
     diagnostics: tuple[ParseDiagnostic, ...]
 
 
@@ -318,7 +333,7 @@ def parse_idf_with_diagnostics(
     *,
     strict: bool = True,
     preserve_formatting: bool = False,
-) -> ParseResult:
+) -> ParseResult[IDFDocument]:
     """Parse an IDF file, keeping the findings that did not stop the parse.
 
     The same work `parse_idf(..., strict_parsing=False)` does, handing back the recoverable

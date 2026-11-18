@@ -12,6 +12,9 @@ the ways code does that, and nothing cleverer:
   ``since=``/``before=`` keywords (``since`` inclusive, ``before`` exclusive) given a release
   string (``"9.4"``), a version tuple or a document type. A name bound exactly once to one of
   those (``_SINCE_9_4 = (IDFDocumentV9_4, ...)``) is followed.
+* **narrowing loaders.** ``load_idf``, ``load_epjson`` given ``as_type=``, ``since=`` or
+  ``before=``, read as ``as_version`` reads its arguments, and a name bound once to such a call
+  (``legacy = load_idf(path, as_type=IDFDocumentV9_4)``).
 * **version guards.** Inside ``if X.version <op> (9, 4, 0):``, where ``X`` is a name or a dotted
   attribute of one, the lookups on ``X`` (or on an ``as_version`` of ``X``) run only against the
   releases that satisfy the comparison, and inside its ``else`` against the others. ``<``,
@@ -243,6 +246,20 @@ def _intersect(a: Releases | None, b: Releases | None) -> Releases | None:
     return a & b
 
 
+# The loaders that take as_version's targets as keywords (as_type=, since=, before=). Their second
+# positional argument is a version override, not a document type.
+_NARROWING_LOADERS = frozenset({"load_idf", "load_epjson"})
+
+
+def is_narrowing_loader_call(node: ast.expr) -> bool:
+    """Whether *node* calls ``load_idf`` or ``load_epjson`` with ``as_type=``, ``since=`` or ``before=``."""
+    if not isinstance(node, ast.Call):
+        return False
+    func = node.func
+    name = func.id if isinstance(func, ast.Name) else func.attr if isinstance(func, ast.Attribute) else None
+    return name in _NARROWING_LOADERS and any(kw.arg in {"as_type", "since", "before"} for kw in node.keywords)
+
+
 def is_as_version_call(node: ast.expr) -> bool:
     """Whether *node* calls a function named ``as_version``."""
     if not isinstance(node, ast.Call):
@@ -270,9 +287,13 @@ class Narrower:
             inner = self.document(expr.args[0], scope, depth + 1)
             narrowed = self.as_version_releases(expr, scope)
             return DocumentRef(inner.bases | {text}, _intersect(inner.releases, narrowed))
+        if isinstance(expr, ast.Call) and is_narrowing_loader_call(expr):
+            return DocumentRef(frozenset({text}), self.loader_releases(expr, scope))
         if isinstance(expr, ast.Name):
             bound = self.table.value_of(expr.id, scope)
-            if bound is not None and (isinstance(bound[0], ast.Name) or is_as_version_call(bound[0])):
+            if bound is not None and (
+                isinstance(bound[0], ast.Name) or is_as_version_call(bound[0]) or is_narrowing_loader_call(bound[0])
+            ):
                 value, owner = bound
                 inner = self.document(value, owner, depth + 1)
                 # The value's names were read where it was bound. They name the same document here
@@ -299,6 +320,17 @@ class Narrower:
         """The releases an ``as_version(doc, ...)`` call accepts, or ``None`` when not read."""
         keywords = {kw.arg: kw.value for kw in call.keywords if kw.arg is not None}
         type_arg = call.args[1] if len(call.args) > 1 else keywords.get("document_type")
+        return self._target_releases(type_arg, keywords, scope)
+
+    def loader_releases(self, call: ast.Call, scope: Scope) -> Releases | None:
+        """The releases ``load_idf(path, as_type=...)`` (or ``since=``/``before=``) accepts, or ``None``."""
+        keywords = {kw.arg: kw.value for kw in call.keywords if kw.arg is not None}
+        return self._target_releases(keywords.get("as_type"), keywords, scope)
+
+    def _target_releases(
+        self, type_arg: ast.expr | None, keywords: dict[str, ast.expr], scope: Scope
+    ) -> Releases | None:
+        """The releases a document type, or ``since=``/``before=`` in *keywords*, accepts; ``None`` when not read."""
         since = keywords.get("since")
         before = keywords.get("before")
         if type_arg is not None:

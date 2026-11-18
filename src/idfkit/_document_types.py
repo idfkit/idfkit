@@ -364,6 +364,37 @@ def as_version(
     raise TypeError(msg)
 
 
+def check_target(document_type: object, since: object, before: object) -> None:
+    """Refuse, before a file is read, a release target no document could meet.
+
+    What the loaders (``load_idf(path, as_type=...)``, ``since=``, ``before=``) check up front, so a
+    misspelt bound fails at once rather than after a parse. Whether the document meets the target
+    is :func:`as_version`'s check, made once it is read.
+
+    Raises:
+        TypeError: If both a document type and a range are given, or the document type is not one.
+        ValueError: If a bound names no supported release, or the range holds none.
+    """
+    if document_type is not None and (since is not None or before is not None):
+        msg = "pass as_type= or since=/before=, not both"
+        raise TypeError(msg)
+    if document_type is not None:
+        candidates = _candidates(document_type)
+        if not candidates:
+            msg = "as_type= needs at least one document type"
+            raise TypeError(msg)
+        for candidate in candidates:
+            _resolve(candidate)
+        return
+    if since is None and before is None:
+        return
+    low = None if since is None else _release(since, "since")
+    high = None if before is None else _release(before, "before")
+    if not releases_between(low, high):
+        msg = f"No supported EnergyPlus release is {_describe_range(low, high)}"
+        raise ValueError(msg)
+
+
 def release_union(*members: type) -> Any:
     """The run-time value of a generated range alias, such as ``IDFDocumentSince9_6``: the union of *members*.
 

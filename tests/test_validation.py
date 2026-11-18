@@ -10,6 +10,7 @@ from unittest.mock import patch
 import pytest
 
 from idfkit import IDFDocument, load_epjson, new_document
+from idfkit.document import AnyIDFDocument
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.schema import get_schema
 from idfkit.validation import (
@@ -1063,7 +1064,7 @@ _CASES = [
 ]
 
 
-def _w004(doc: IDFDocument) -> list[ValidationError]:
+def _w004(doc: AnyIDFDocument) -> list[ValidationError]:
     return [w for w in validate_document(doc).warnings if w.code == "W004"]
 
 
@@ -1221,7 +1222,7 @@ class TestEmptyGroupOnlyObjectInEnergyPlus:
         except EnergyPlusNotFoundError:
             pytest.skip("EnergyPlus not installed")
 
-        def accepted(doc: IDFDocument, name: str) -> tuple[bool, str]:
+        def accepted(doc: AnyIDFDocument, name: str) -> tuple[bool, str]:
             path = tmp_path / f"{name}.idf"
             save_idf(doc, path)
             run = subprocess.run(  # noqa: S603 - the executable is the discovered EnergyPlus

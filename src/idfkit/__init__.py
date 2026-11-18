@@ -30,7 +30,6 @@ from importlib.metadata import version as _pkg_version
 from typing import TYPE_CHECKING, Literal, overload
 
 if TYPE_CHECKING:
-    from pathlib import Path
     from typing import TypeVar
 
     from ._compat import EppyDocumentMixin
@@ -49,6 +48,10 @@ except PackageNotFoundError:
 # The conformance corpus level this release declares (FR-024), generated from
 # [tool.idfkit.conformance] in pyproject.toml so the claim and the pin stay one fact.
 from ._conformance import CONFORMANCE_LEVEL
+
+# Loading functions: typed for any release unless the caller names one (see _loaders.pyi)
+from ._loaders import check_supported_version as _check_version
+from ._loaders import load_epjson, load_idf, load_idf_with_diagnostics
 from .cst import SourceSpan
 
 # Core classes
@@ -191,229 +194,6 @@ from .zoning import (
 )
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
-
-
-def _check_version(version: tuple[int, int, int]) -> None:
-    """Raise UnsupportedVersionError if *version* is not a known EnergyPlus release."""
-    if not is_supported_version(version):
-        raise UnsupportedVersionError(version, ENERGYPLUS_VERSIONS)
-
-
-@overload
-def load_idf(
-    path: Path | str,
-    version: tuple[int, int, int] | None = ...,
-    *,
-    strict_parsing: bool = ...,
-    strict: Literal[True] = ...,
-    preserve_formatting: bool = ...,
-) -> IDFDocument[Literal[True]]: ...
-
-
-@overload
-def load_idf(
-    path: Path | str,
-    version: tuple[int, int, int] | None = ...,
-    *,
-    strict_parsing: bool = ...,
-    strict: Literal[False],
-    preserve_formatting: bool = ...,
-) -> IDFDocument[Literal[False]]: ...
-
-
-def load_idf(
-    path: Path | str,
-    version: tuple[int, int, int] | None = None,
-    *,
-    strict_parsing: bool = True,
-    strict: bool = True,
-    preserve_formatting: bool = False,
-) -> IDFDocument[bool]:
-    """
-    Load an IDF file and return an IDFDocument.
-
-    Args:
-        path: Path to the IDF file
-        version: Optional version override (major, minor, patch)
-        strict_parsing: If True, fail fast on malformed IDF objects (default: True)
-        strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
-        preserve_formatting: When ``True``, build a Concrete Syntax Tree
-            (CST) so that :func:`write_idf` and :func:`save_idf`
-            reproduce the original
-            formatting, comments, and whitespace for unmodified objects.
-
-    Returns:
-        Parsed IDFDocument
-
-    Examples:
-        Load a DOE reference building and list its zones:
-
-            ```python
-            model = load_idf("RefBldgSmallOfficeNew2004.idf")
-            print(f"Loaded {len(model)} objects")
-            for zone in model["Zone"]:
-                print(zone.name)
-            ```
-
-        Override the version for a legacy model:
-
-            ```python
-            model = load_idf("pre_v9_building.idf", version=(9, 6, 0))
-            ```
-
-        Lossless round-trip:
-
-            ```python
-            model = load_idf("building.idf", preserve_formatting=True)
-            save_idf(model, "building_copy.idf")  # byte-identical
-            ```
-    """
-    from pathlib import Path
-
-    if version is not None:
-        _check_version(version)
-    return parse_idf(
-        Path(path),
-        version=version,
-        strict_parsing=strict_parsing,
-        strict=strict,
-        preserve_formatting=preserve_formatting,
-    )
-
-
-def load_idf_with_diagnostics(
-    path: Path | str,
-    version: tuple[int, int, int] | None = None,
-    *,
-    strict: bool = True,
-    preserve_formatting: bool = False,
-) -> ParseResult:
-    """
-    Load an IDF file, keeping the findings that did not stop the parse.
-
-    `load_idf` hands back the document and drops the recoverable findings; this hands back both.
-    The findings were always produced, but they went to the logging module and nowhere else, so
-    reaching them meant installing a handler before the parse. That is not one call, and it is not
-    the same findings the other language returns.
-
-    There is no `strict_parsing` parameter. A strict parse has no recoverable findings by
-    definition: the first one stops it. Findings that stop a parse still raise `IDFParseError`,
-    which carries them on `.diagnostics`, and that path is unchanged.
-
-    Every logging announcement still fires. A caller who installed a handler sees exactly what they
-    saw before.
-
-    Args:
-        path: Path to the IDF file
-        version: Optional version override (major, minor, patch)
-        strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
-        preserve_formatting: When ``True``, build a Concrete Syntax Tree (CST) so that
-            :func:`write_idf` and :func:`save_idf` reproduce the original formatting.
-
-    Returns:
-        A :class:`~idfkit.idf_parser.ParseResult`: the document, and the recoverable findings.
-
-    Examples:
-        Read a model that may be imperfect, and show what was wrong with it:
-
-            ```python
-            from idfkit import load_idf_with_diagnostics
-
-            result = load_idf_with_diagnostics("hand_edited.idf")
-            print(f"Loaded {len(result.document)} objects")
-            for finding in result.diagnostics:
-                print(f"{finding.code} at line {finding.line}: {finding.message}")
-            ```
-    """
-    from pathlib import Path
-
-    # Imported here rather than at module scope, deliberately. Binding it on the package would put
-    # `idfkit.parse_idf_with_diagnostics` in completion without an `__all__` entry to justify it,
-    # which the naming gate calls import leakage and refuses. The other language has no counterpart
-    # to register the name against: `parseIdf` already returns a result carrying diagnostics, so
-    # only the LOADER needed a second form there. It stays reachable at
-    # `idfkit.idf_parser.parse_idf_with_diagnostics`, the way `ParseDiagnostic` is reachable at
-    # `idfkit.exceptions.ParseDiagnostic`.
-    from .idf_parser import parse_idf_with_diagnostics
-
-    if version is not None:
-        _check_version(version)
-    return parse_idf_with_diagnostics(
-        Path(path),
-        version=version,
-        strict=strict,
-        preserve_formatting=preserve_formatting,
-    )
-
-
-@overload
-def load_epjson(
-    path: Path | str,
-    version: tuple[int, int, int] | None = ...,
-    *,
-    strict: Literal[True] = ...,
-    preserve_formatting: bool = ...,
-) -> IDFDocument[Literal[True]]: ...
-
-
-@overload
-def load_epjson(
-    path: Path | str,
-    version: tuple[int, int, int] | None = ...,
-    *,
-    strict: Literal[False],
-    preserve_formatting: bool = ...,
-) -> IDFDocument[Literal[False]]: ...
-
-
-def load_epjson(
-    path: Path | str,
-    version: tuple[int, int, int] | None = None,
-    *,
-    strict: bool = True,
-    preserve_formatting: bool = False,
-) -> IDFDocument[bool]:
-    """
-    Load an epJSON file and return an IDFDocument.
-
-    Args:
-        path: Path to the epJSON file
-        version: Optional version override (major, minor, patch)
-        strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
-        preserve_formatting: When ``True``, store the raw JSON text so
-            that :func:`write_epjson` and :func:`save_epjson` can
-            reproduce it byte-for-byte
-            when no objects have been modified.
-
-    Returns:
-        Parsed IDFDocument
-
-    Examples:
-        Load an epJSON model and iterate over zones:
-
-            ```python
-            model = load_epjson("SmallOffice.epJSON")
-            for zone in model["Zone"]:
-                print(zone.name, zone.x_origin)
-            ```
-
-        Specify an explicit EnergyPlus version:
-
-            ```python
-            model = load_epjson("SmallOffice.epJSON", version=(24, 1, 0))
-            ```
-    """
-    from pathlib import Path
-
-    if version is not None:
-        _check_version(version)
-    return parse_epjson(Path(path), version=version, strict=strict, preserve_formatting=preserve_formatting)
 
 
 @overload

@@ -124,11 +124,11 @@ def test_unsupported_target_raises() -> None:
         migrate(doc, target_version=(99, 0, 0), migrator=_StubMigrator([]))
 
 
-def _load_two_component_9_0(tmp_path: Path) -> IDFDocument:
+def _load_two_component_9_0(tmp_path: Path) -> IDFDocumentV9_0:
     """A document loaded from a file headed ``Version, 9.0;``: it reads as 9.0.0, the release is 9.0.1."""
     path = tmp_path / "v9_0.idf"
     path.write_text("Version,\n  9.0;\n", encoding="latin-1")
-    doc = load_idf(path)
+    doc = load_idf(path, as_type=IDFDocumentV9_0)
     assert doc.version == (9, 0, 0)
     return doc
 

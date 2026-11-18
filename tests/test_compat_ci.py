@@ -310,6 +310,39 @@ class TestAsVersionNarrowing:
 # ---------------------------------------------------------------------------
 
 
+class TestLoaderNarrowing:
+    """``load_idf``/``load_epjson`` given ``as_type=``, ``since=`` or ``before=`` narrow as ``as_version`` does."""
+
+    _LOAD = "from idfkit import load_epjson, load_idf\n"
+
+    def test_as_type(self) -> None:
+        source = _src(self._LOAD + 'load_idf("m.idf", as_type=IDFDocumentV9_6)["Space"]\n')
+        assert _releases(source, "Space") == frozenset({_V96})
+
+    def test_since_and_before(self) -> None:
+        source = _src(self._LOAD + 'load_epjson("m.epJSON", since="9.4", before="22.1")["Space"]\n')
+        assert _releases(source, "Space") == frozenset({_V94, (9, 5, 0), _V96})
+
+    def test_version_override_is_not_a_document_type(self) -> None:
+        # The second positional argument rewrites the release; it is not read as a target.
+        source = _src(self._LOAD + 'load_idf("m.idf", (9, 6, 0), since="9.4")["Space"]\n')
+        assert _releases(source, "Space") == _since(_V94)
+
+    def test_name_bound_once_is_followed(self) -> None:
+        source = _src(
+            self._LOAD + 'def f(path):\n    legacy = load_idf(path, as_type=IDFDocumentV9_4)\n    legacy["Space"]\n'
+        )
+        assert _releases(source, "Space") == frozenset({_V94})
+
+    def test_a_loader_without_a_target_is_not_narrowed(self) -> None:
+        source = _src(self._LOAD + 'load_idf("m.idf")["Space"]\n')
+        assert _releases(source, "Space") is None
+
+    def test_narrowing_removes_c001(self) -> None:
+        source = _src(self._LOAD + 'def f(path):\n    load_idf(path, since="9.6")["Space"]\n')
+        assert _codes(source, targets=_ALL) == []
+
+
 class TestVersionGuards:
     def test_greater_equal(self) -> None:
         source = _src('def f(doc):\n    if doc.version >= (9, 6, 0):\n        doc["Space"]\n')

@@ -59,7 +59,7 @@ from ._models import DEFAULT_RULES, DIAGNOSTIC_CODES, CompatSeverity, Diagnostic
 from ._sarif import format_sarif
 
 if TYPE_CHECKING:
-    from ..document import AnyIDFDocument, IDFDocument
+    from ..document import AnyIDFDocument
     from ..simulation.config import EnergyPlusConfig
 
 
@@ -740,7 +740,7 @@ def _write_migrate_output(
     return None
 
 
-def _load_source_idf(input_path: Path) -> IDFDocument:
+def _load_source_idf(input_path: Path) -> AnyIDFDocument:
     """Load the source IDF, exiting on any parse/IO error."""
     from .. import load_idf
 
