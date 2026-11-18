@@ -103,7 +103,8 @@ shades = doc.shading_building_detaileds  # Shading:Building:Detailed
 
 # A type a model holds at most one of is named in the singular. It is still the
 # collection, so add through it and read with .first().
-doc.output_sqlite.add(option_type="SimpleAndTabular")  # IDFCollection[OutputSQLite]
+if not doc.output_sqlite:  # IDFCollection[OutputSQLite]; a second one would raise DuplicateObjectError
+    doc.output_sqlite.add(option_type="SimpleAndTabular")
 building = doc.building.first()  # Building | None
 if building is not None:
     north = building.north_axis

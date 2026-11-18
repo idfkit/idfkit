@@ -927,13 +927,7 @@ def _generate_attr_properties(
         )
     for py_name, (idf_type, replacement) in (deprecated or {}).items():
         message = deprecated_plural_message(py_name, idf_type, replacement)
-        _emit_method(
-            lines,
-            f"def {py_name}(self) -> IDFCollection[{_to_class_name(idf_type)}]",
-            None,
-            decorators=("@property", f"@deprecated({message!r})"),
-            indent=indent,
-        )
+        lines.extend(_accessor_lines(py_name, _Accessor(_to_class_name(idf_type), message), indent))
     return lines
 
 
@@ -2082,7 +2076,7 @@ def _all_accessors(ver: Version) -> dict[str, tuple[str, str | None]]:
     """Every accessor of a document of *ver*, deprecated ones too: name -> (object type, message or ``None``)."""
     from idfkit.document import _build_resolver  # pyright: ignore[reportPrivateUsage]
 
-    resolver = _build_resolver(get_schema(ver))
+    resolver = get_schema(ver).accessor_resolver(_build_resolver)
     out: dict[str, tuple[str, str | None]] = {name: (t, None) for name, t in resolver.accessors().items()}
     for name, (obj_type, replacement) in resolver.deprecated_accessors().items():
         out[name] = (obj_type, deprecated_plural_message(name, obj_type, replacement))

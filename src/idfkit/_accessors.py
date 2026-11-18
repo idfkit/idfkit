@@ -166,8 +166,9 @@ class AccessorResolver:
         unique: The object types a model holds at most one of (``"maxProperties": 1``).
 
     Attributes:
-        attr_for: Canonical attribute name for every object type. Where a shorthand or a
-            member owns that name, the type is not reachable by it (see ``conflicts``).
+        attr_for: Canonical attribute name for every object type. Where a member, or a
+            shorthand for another type, owns that name, the type is not reachable by it
+            (see ``conflicts``).
         shorthands: The shorthands that were registered, after member clashes were removed.
         conflicts: Every name claimed twice, as ``{name: (loser, winner)}``.
         deprecated: Each deprecated plural with ``(object_type, replacement)``, where
@@ -221,20 +222,26 @@ class AccessorResolver:
             self._raw.setdefault(_underscore_key(obj_type), obj_type)
 
         # Last, the plural a unique type had before singular names existed, where nothing owns it
-        for obj_type in types:
-            if obj_type not in unique_set:
-                continue
-            plural = pluralize(snake_case(obj_type))
-            if plural == self.attr_for[obj_type] or plural in reserved_set or plural in self._exact:
-                continue
-            reachable = self._exact.get(self.attr_for[obj_type]) == obj_type
-            self.deprecated[plural] = (obj_type, self.attr_for[obj_type] if reachable else None)
+        self._register_deprecated_plurals([t for t in types if t in unique_set], reserved_set)
 
         # Suggestion and completion candidates: exactly the names that resolve exactly, so a
         # derived name that wins a collision with another derived name is still listed.
         self._candidates: dict[str, str] = dict(self._exact)
         # Sorted once here: completion calls names() on every keystroke.
         self._names = sorted(self._candidates)
+
+    def _register_deprecated_plurals(self, unique_types: list[str], reserved: set[str]) -> None:
+        """Record each unique type's old plural as a deprecated alias, where no other name owns it."""
+        for obj_type in unique_types:
+            plural = pluralize(snake_case(obj_type))
+            if plural == self.attr_for[obj_type] or plural in reserved or plural in self._exact:
+                continue
+            if plural in self.deprecated:
+                # Two unique types share a plural: the first keeps it, as with derived names.
+                self.conflicts[plural] = (obj_type, self.deprecated[plural][0])
+                continue
+            reachable = self._exact.get(self.attr_for[obj_type]) == obj_type
+            self.deprecated[plural] = (obj_type, self.attr_for[obj_type] if reachable else None)
 
     def resolve(self, attr: str) -> str | None:
         """Return the object type an attribute name refers to, or ``None``.
@@ -278,6 +285,16 @@ class AccessorResolver:
         still type-checks and is flagged where it is written.
         """
         return dict(sorted(self.deprecated.items()))
+
+    def declared_accessors(self) -> dict[str, str]:
+        """Every name the type stub declares, with its object type, sorted by name.
+
+        :meth:`accessors` plus :meth:`deprecated_accessors`: what a check of the stub's
+        accessor surface compares against.
+        """
+        declared = dict(self._candidates)
+        declared.update({name: obj_type for name, (obj_type, _) in self.deprecated.items()})
+        return dict(sorted(declared.items()))
 
     def names(self) -> list[str]:
         """Every canonical attribute name and shorthand, sorted, for ``__dir__``."""

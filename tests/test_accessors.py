@@ -547,6 +547,22 @@ def test_deprecated_plural_never_takes_a_name_already_owned() -> None:
     assert r.resolve("buildings") == "Building"
 
 
+def test_two_unique_types_sharing_a_plural_keep_the_first_and_record_the_clash() -> None:
+    # "Light:" snake-cases to "light" too, so both derive "lights" as their old plural.
+    r = AccessorResolver(["Light", "Light:"], unique=["Light", "Light:"])
+    assert r.deprecated == {"lights": ("Light", "light")}
+    assert r.conflicts["lights"] == ("Light:", "Light")
+
+
+def test_declared_accessors_are_the_canonical_names_and_the_deprecated_plurals() -> None:
+    r = AccessorResolver(["Output:SQLite", "Zone"], unique=["Output:SQLite"])
+    assert r.declared_accessors() == {
+        "output_sqlite": "Output:SQLite",
+        "output_sqlites": "Output:SQLite",
+        "zones": "Zone",
+    }
+
+
 def test_deprecated_plural_of_a_type_without_a_reachable_singular_points_at_the_subscript() -> None:
     r = AccessorResolver(["Version"], reserved={"version"}, unique=["Version"])
     assert r.deprecated == {"versions": ("Version", None)}
@@ -627,15 +643,26 @@ def all_obj_types(request: pytest.FixtureRequest) -> list[str]:
     return sorted(get_schema(version).object_types)
 
 
-def test_no_attribute_name_collisions(all_obj_types: list[str]) -> None:
-    r = AccessorResolver(all_obj_types)
+@pytest.fixture(params=ENERGYPLUS_VERSIONS, ids=lambda v: f"{v[0]}.{v[1]}.{v[2]}")
+def schema_resolver(request: pytest.FixtureRequest) -> tuple[list[str], AccessorResolver]:
+    """Every type of one bundled schema, and a resolver naming them as documents do: no shorthands or members."""
+    version: tuple[int, int, int] = request.param
+    schema = get_schema(version)
+    types = sorted(schema.object_types)
+    unique = [t for t in types if (schema.get_object_schema(t) or {}).get("maxProperties") == 1]
+    return types, AccessorResolver(types, unique=unique)
+
+
+def test_no_attribute_name_collisions(schema_resolver: tuple[list[str], AccessorResolver]) -> None:
+    _, r = schema_resolver
+    assert not r.conflicts, r.conflicts
     counts = collections.Counter(r.attr_for.values())
     dupes = {a: n for a, n in counts.items() if n > 1}
     assert not dupes, f"attribute name collisions: {dupes}"
 
 
-def test_every_type_resolves_from_every_alias_form(all_obj_types: list[str]) -> None:
-    r = AccessorResolver(all_obj_types)
+def test_every_type_resolves_from_every_alias_form(schema_resolver: tuple[list[str], AccessorResolver]) -> None:
+    all_obj_types, r = schema_resolver
     failures: list[tuple[str, str, str | None]] = []
     for obj_type in all_obj_types:
         for form in (r.attr_for[obj_type], obj_type.replace(":", "_")):
@@ -694,9 +721,9 @@ def test_canonical_names_do_not_change_meaning_between_versions() -> None:
     assert not moved, f"names that change type between versions: {moved}"
 
 
-def test_attribute_names_are_valid_identifiers(all_obj_types: list[str]) -> None:
-    r = AccessorResolver(all_obj_types)
-    bad = [a for a in r.attr_for.values() if not a.isidentifier()]
+def test_attribute_names_are_valid_identifiers(schema_resolver: tuple[list[str], AccessorResolver]) -> None:
+    _, r = schema_resolver
+    bad = [a for a in [*r.attr_for.values(), *r.deprecated] if not a.isidentifier()]
     assert not bad, f"not valid Python identifiers: {bad[:10]}"
 
 

@@ -143,7 +143,8 @@ shades = doc.shading_building_detaileds  # Shading:Building:Detailed
 
 # A type a model holds at most one of is named in the singular. It is still the
 # collection, so add through it and read with .first().
-doc.output_sqlite.add(option_type="SimpleAndTabular")  # IDFCollection[OutputSQLite]
+if not doc.output_sqlite:  # IDFCollection[OutputSQLite]; a second one would raise DuplicateObjectError
+    doc.output_sqlite.add(option_type="SimpleAndTabular")
 building = doc.building.first()  # Building | None
 if building is not None:
     north = building.north_axis
@@ -157,7 +158,7 @@ if building is not None:
 #     shading_fins       (Shading:Fin)
 ```
 
-Names are derived from the schema by rule, so object types added in a new EnergyPlus release are reachable with no change to idfkit. Three types the rule cannot split are named explicitly (`Output:SQLite` is `doc.output_sqlite`, not `doc.output_sq_lite`), and singular nouns ending in `s` get a real plural (`doc.window_material_gases`). Uniqueness is read from each release's schema: a type unique in one release and not in another is singular in the one and plural in the other, so `AnyIDFDocument` declares neither name; use `doc["Type:Name"]` there. The plural of a unique type (`doc.output_sqlites`, `doc.buildings`) still resolves but is deprecated: it raises `DeprecationWarning` at run time and is marked `@deprecated` in the stub, which pyright strict reports as an error. The name of every type, plus the shorthands, is declared in the type stub, so editors complete it and type checkers see `IDFCollection` of the generated class. The same names appear in `dir(doc)` for IPython and Jupyter.
+Names are derived from the schema by rule, so object types added in a new EnergyPlus release are reachable with no change to idfkit. Three types the rule cannot split are named explicitly (`Output:SQLite` is `doc.output_sqlite`, not `doc.output_sq_lite`), and singular nouns ending in `s` get a real plural (`doc.window_material_gases`). Uniqueness is read from each release's schema: a type unique in one release and not in another is singular in the one and plural in the other, so `AnyIDFDocument` declares neither name; use `doc["Type:Name"]` there. The plural of a unique type (`doc.output_sqlites`, `doc.buildings`) still resolves but is deprecated: it emits a `DeprecationWarning` at run time and is marked `@deprecated` in the stub, which pyright strict reports as an error. The name of every type, plus the shorthands, is declared in the type stub, so editors complete it and type checkers see `IDFCollection` of the generated class. The same names appear in `dir(doc)` for IPython and Jupyter.
 
 Resolution is strict about separators: `doc.z_o_n_e`, `doc.zone_`, `doc.airloophvacs` and the singular `doc.air_loop_hvac` all raise rather than guess. The raw type name with `_` in place of `:` resolves in any case (`doc.Site_Location`, `doc.ZONE`), as it did before derived names existed, but is untyped. A name owned by a real member wins over any accessor: `doc.version` is the version tuple, and the `Version` object is `doc["Version"]`.
 

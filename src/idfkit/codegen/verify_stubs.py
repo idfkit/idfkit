@@ -1013,9 +1013,10 @@ def _check_version(module: _Module, ver: Version, is_latest: bool, problems: lis
     if not is_latest:
         # A type missing from the overloads is reported above; its accessor is then expected untyped.
         # The deprecated plurals of the types a model holds at most one of are declared too.
-        resolver = _build_resolver(schema)
-        named = {**resolver.accessors(), **{name: t for name, (t, _) in resolver.deprecated_accessors().items()}}
-        expected_accessors = {name: f"IDFCollection[{classes.get(obj_type, '?')}]" for name, obj_type in named.items()}
+        expected_accessors = {
+            name: f"IDFCollection[{classes.get(obj_type, '?')}]"
+            for name, obj_type in _build_resolver(schema).declared_accessors().items()
+        }
         # Through IDFDocumentAllVersions it also has the shared document methods' properties (version, ...).
         shared = _properties(module, "_IDFDocumentMethods") if "_IDFDocumentMethods" in module.classes else {}
         accessors = {k: v for k, v in _properties(module, doc_name).items() if k not in shared}
