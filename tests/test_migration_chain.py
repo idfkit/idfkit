@@ -97,3 +97,9 @@ def test_plan_resolves_the_target_to_its_release() -> None:
 def test_normalize_target_refuses_a_tuple_of_another_length(target: tuple[int, ...]) -> None:
     with pytest.raises(UnsupportedVersionError):
         normalize_target(cast("Any", target))
+
+
+@pytest.mark.parametrize("target", ["25.2.9", (24, 1, 5), "9.0.2"])
+def test_a_patch_no_release_has_is_refused(target: Any) -> None:
+    with pytest.raises(UnsupportedVersionError):
+        normalize_target(target)

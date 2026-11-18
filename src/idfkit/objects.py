@@ -28,6 +28,27 @@ __all__ = [
     "to_python_name",
 ]
 
+
+@lru_cache(maxsize=2)
+def _folded_required_reads(group: bool) -> dict[str, tuple[str, ...]]:
+    """:data:`READ_REQUIRED` (or the group table) keyed by upper-cased object type."""
+    table = GROUP_READ_REQUIRED if group else READ_REQUIRED
+    return {obj_type.upper(): names for obj_type, names in table.items()}
+
+
+def _required_reads(obj_type: str, *, group: bool) -> tuple[str, ...] | None:
+    """The names *obj_type* reads as required, matching the type name case-insensitively.
+
+    An object added with ``addidfobject`` keeps its type as spelled (``material``); it is filed and
+    normalized case-insensitively, so its required reads are found the same way.
+    """
+    table = GROUP_READ_REQUIRED if group else READ_REQUIRED
+    found = table.get(obj_type)
+    if found is None:
+        found = _folded_required_reads(group).get(obj_type.upper())
+    return found
+
+
 if TYPE_CHECKING:
     from typing import ParamSpec
 
@@ -212,7 +233,7 @@ class ExtensibleGroup:
             if value is not None:
                 return value
         # Only the miss path pays for the required-key lookup.
-        required = GROUP_READ_REQUIRED.get(self._owner.obj_type)
+        required = _required_reads(self._owner.obj_type, group=True)
         if required is not None and name in required:
             raise self._missing(name)
         return None
@@ -407,8 +428,14 @@ class ExtensibleList(Generic[GroupT_co]):
             self._owner.data.pop(self._wrapper_key, None)
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
-    def _coerce_item(self, item: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
-        """A new dict for one group: blank slots dropped, choices in their schema's spelling."""
+    def _coerce_item(
+        self, item: Any, kwargs: dict[str, Any], tables: Mapping[str, ChoiceSpellings] | None = None
+    ) -> dict[str, Any]:
+        """A new dict for one group: blank slots dropped, choices in their schema's spelling.
+
+        *tables* are the owner's extensible choice tables, when the caller resolved them once for
+        several groups.
+        """
         if item is not None and kwargs:
             raise TypeError("pass either a dict/group OR keyword arguments, not both")  # noqa: TRY003
         if isinstance(item, ExtensibleGroup):
@@ -419,7 +446,7 @@ class ExtensibleList(Generic[GroupT_co]):
             group = without_blank_slots(kwargs)
         else:
             raise TypeError(f"expected dict, ExtensibleGroup, or kwargs; got {type(item).__name__}")  # noqa: TRY003
-        return self._owner._canonical_slots(group)  # pyright: ignore[reportPrivateUsage]
+        return self._owner._canonical_slots(group, tables, fresh=True)  # pyright: ignore[reportPrivateUsage]
 
     def _validate_inner(self, item: dict[str, Any]) -> None:
         unknown = [k for k in item if k not in self._inner_names]
@@ -482,7 +509,8 @@ class ExtensibleList(Generic[GroupT_co]):
         Raises ``TypeError`` for an item that is not a dict or group and ``ValueError`` for an
         unknown inner field, so a caller can reject the list before any write.
         """
-        coerced = [self._coerce_item(it, {}) for it in items]
+        tables = self._owner._choice_tables(extensible=True)  # pyright: ignore[reportPrivateUsage]
+        coerced = [self._coerce_item(it, {}, tables) for it in items]
         for it in coerced:
             self._validate_inner(it)
         return coerced
@@ -781,6 +809,20 @@ class IDFObject(EppyObjectMixin):
         base, _ = parse_extensible_index(python_key, extensibles)
         return base is not None
 
+    def _is_own_field(self, python_key: str) -> bool:
+        """Whether *python_key* is a fixed field of this object's release.
+
+        An object built by hand and added with ``addidfobject`` has no field order of its own; its
+        document's schema says which fields its type has.
+        """
+        field_order = self._field_order
+        if field_order is not None:
+            return python_key in field_order
+        doc = self._document
+        schema = doc.schema if doc is not None else None
+        pc = schema.get_parsing_cache(self._type) if schema is not None else None
+        return pc is not None and python_key in pc.field_names
+
     @property
     def name(self) -> str:
         """The object's name."""
@@ -872,11 +914,12 @@ class IDFObject(EppyObjectMixin):
                 )
 
         # A field every release requires reads as its value type: absent, it is an error rather
-        # than a None its type says cannot occur. Only the miss path pays for the lookup, and the
-        # type is tested first: most types require nothing, and that test is the cheaper one.
-        obj_type = self._type
-        if obj_type in READ_REQUIRED and python_key in READ_REQUIRED[obj_type]:
-            raise MissingRequiredFieldError(obj_type, self._name, python_key)
+        # than a None its type says cannot occur. Only the miss path pays for the lookup. The table
+        # spans every release, so the field must also be one of this object's own: a lax document
+        # reads a field its release lacks (a name from another release) as None, as any unknown name.
+        required = _required_reads(self._type, group=False)
+        if required is not None and python_key in required and self._is_own_field(python_key):
+            raise MissingRequiredFieldError(self._type, self._name, python_key)
 
         # Default: return None (eppy behaviour)
         return None
@@ -1079,14 +1122,23 @@ class IDFObject(EppyObjectMixin):
             return value
         return canonical_choice(self._choice_tables(extensible=True).get(name), value)
 
-    def _canonical_slots(self, slots: Mapping[str, Any]) -> dict[str, Any]:
+    def _canonical_slots(
+        self,
+        slots: Mapping[str, Any],
+        tables: Mapping[str, ChoiceSpellings] | None = None,
+        *,
+        fresh: bool = False,
+    ) -> dict[str, Any]:
         """A copy of one extensible group's *slots*, each choice in its schema's spelling.
 
-        The tables are resolved once for the whole group rather than once per slot.
+        The tables are resolved once for the whole group rather than once per slot, or passed in as
+        *tables* by a caller coercing several groups. With *fresh*, *slots* is a dict the caller
+        just built, returned as it is when no choice needs rewriting.
         """
-        tables = self._choice_tables(extensible=True)
+        if tables is None:
+            tables = self._choice_tables(extensible=True)
         if not tables:
-            return dict(slots)
+            return cast("dict[str, Any]", slots) if fresh else dict(slots)
         return {name: canonical_choice(tables.get(name), value) for name, value in slots.items()}
 
     def _set_field(self, python_key: str, value: Any) -> None:
@@ -1503,7 +1555,7 @@ class IDFCollection(Generic[_T_co]):
     _items: list[_T_co]
     _document: _ObjectFactory | _FromOlderPickle | None
 
-    def __init__(self, obj_type: str, document: AnyIDFDocument | None = None) -> None:
+    def __init__(self, obj_type: str, document: AnyIDFDocument | _ObjectFactory | None = None) -> None:
         self._type = obj_type
         self._by_name: dict[str, _T_co] = {}
         self._items: list[_T_co] = []

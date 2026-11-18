@@ -56,9 +56,12 @@ def normalize_target(
         raise TypeError(msg)
     normalized = normalize_version(target_version)
     # Matched to its release line as the source is, so "9.0" and a 9.0 file's (9, 0, 0) name 9.0.1.
-    # A tuple of another length is no version, not the release its first two numbers name.
-    release = find_release(normalized) if len(normalized) in {2, 3} else None
-    if release is None:
+    # A tuple of another length is no version, not the release its first two numbers name, and a
+    # patch no release has ("25.2.9") is a target that does not exist, not its line's release.
+    if len(normalized) not in {2, 3}:
+        raise UnsupportedVersionError(normalized, ENERGYPLUS_VERSIONS)
+    release = resolve_source_version(normalized)
+    if normalized[2:] not in {(), (0,), release[2:]}:
         raise UnsupportedVersionError(normalized, ENERGYPLUS_VERSIONS)
     return release
 

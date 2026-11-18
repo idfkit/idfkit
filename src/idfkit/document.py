@@ -127,6 +127,12 @@ _PYTHON_TO_IDF = {
 _IDF_TO_PYTHON = {v.upper(): k for k, v in _PYTHON_TO_IDF.items()}
 
 
+@functools.lru_cache(maxsize=32)
+def _surface_types_upper(schema: EpJSONSchema) -> frozenset[str]:
+    """The upper-cased types that provide ``SurfaceNames`` in *schema*: what a zone's surfaces are."""
+    return frozenset(t.upper() for t in schema.get_types_providing_reference("SurfaceNames"))
+
+
 @functools.cache
 def _object_types_by_folded_name() -> dict[str, str]:
     """Every object type of every bundled release, keyed by its case-folded name."""
@@ -480,7 +486,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 if existing_type.upper() == obj_type_upper:
                     return existing
 
-        detached = IDFCollection[IDFObject](canonical, self)  # pyright: ignore[reportArgumentType]  # .pyi types documents as AnyIDFDocument
+        # Built as a plain IDFCollection: subscripting it per call costs a generic alias each time.
+        detached: IDFCollection[IDFObject] = IDFCollection(canonical, self)
         return detached
 
     def _collection_for_write(self, obj_type: str, adopt: IDFCollection[Any] | None = None) -> IDFCollection[IDFObject]:
@@ -506,7 +513,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if adopt is not None and adopt.obj_type == canonical and adopt._document is self and not adopt:  # pyright: ignore[reportPrivateUsage]
             created: IDFCollection[IDFObject] = adopt
         else:
-            created = IDFCollection[IDFObject](canonical, self)  # pyright: ignore[reportArgumentType]  # .pyi types documents as AnyIDFDocument
+            created = IDFCollection(canonical, self)
         self._collections[canonical] = created
         return created
 
@@ -1085,11 +1092,17 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         stores them, so an object built elsewhere or copied from a document that
         opted out holds what its ``Literal`` types say.
         """
+        result = self._adopt(obj)
+        # Rewritten only once the object is accepted: a refused one (a duplicate name) stays as
+        # it was, in the document it came from. A rewrite is a change, so it is recorded as one.
         if self.normalize_choices and self._schema is not None:
             pc = self._schema.get_parsing_cache(obj.obj_type)
             if pc is not None:
+                before = dict(obj.data)
                 canonicalize_choices(obj.data, pc)
-        return self._adopt(obj)
+                if obj.data != before:
+                    obj._bump_version()  # pyright: ignore[reportPrivateUsage]
+        return result
 
     def _adopt(self, obj: IDFObject) -> IDFObject:
         """File *obj* as :meth:`addidfobject` does, with its values taken as they are.
@@ -1163,7 +1176,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> model.getobject("Zone", "Perimeter_ZN_South").name
             'Perimeter_ZN_South'
         """
-        obj = self.getobject(obj_type, old_name)
+        # Read here, not through getobject(), so a misspelt type is reported at the caller's line.
+        obj = self._read_collection(obj_type, stacklevel=2).get(old_name)
         if not obj:
             raise KeyError(f"No {obj_type} named '{old_name}'")  # noqa: TRY003
 
@@ -1457,7 +1471,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if self._schema is None:
             return []
         # Upper-cased, because addidfobject keeps an object's type as the caller spelled it.
-        surface_types = {t.upper() for t in self._schema.get_types_providing_reference("SurfaceNames")}
+        surface_types = _surface_types_upper(self._schema)
         return [
             obj
             for obj, field_name in self._references.get_referencing_with_fields(zone_name)

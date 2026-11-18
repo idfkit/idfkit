@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with matching `IDFDocumentSince<release>` and `IDFDocumentBefore<release>` types in
   `idfkit.versioned` ([#283](https://github.com/idfkit/idfkit/pull/283)).
 - `idfkit.versions.releases_between(since, before)` and `find_release(version)` were added
-  ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46), [#292](https://github.com/idfkit/idfkit/pull/292)).
+  ([#292](https://github.com/idfkit/idfkit/pull/292), [#295](https://github.com/idfkit/idfkit/pull/295)).
 - `new_document(IDFDocumentV9_4)` created a model of that release, typed for it
   ([#290](https://github.com/idfkit/idfkit/pull/290)).
 - `migrate()` and `async_migrate()` accepted a release's document type as `target_version` and
@@ -54,13 +54,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `as_type=` or `since=` when loading, or with `as_version()` ([#309](https://github.com/idfkit/idfkit/pull/309)).
 - `doc["Zoen"]`, `get_collection(...)` and the eppy lookups warned `idfkit.exceptions.UnknownObjectTypeWarning`,
   naming the closest type, for a type name in no bundled release, instead of silently returning an empty
-  collection; suites run with `filterwarnings = error` failed on such reads. ([#310](https://github.com/idfkit/idfkit/pull/310))
+  collection; suites run with `filterwarnings = error` failed on such reads ([#310](https://github.com/idfkit/idfkit/pull/310)).
 - **Breaking:** choice values were read and stored in the schema's spelling whatever the source's
   case (`WALL` read `"Wall"`), so the `Literal` types held on files you did not write; compare with
   the schema's spelling or `.casefold()`, or pass `normalize_choices=False` to keep values as written
   ([#306](https://github.com/idfkit/idfkit/pull/306)).
 - **Breaking:** for type checking, a type a model holds at most one of (`Building`, `Timestep`,
-  `Output:SQLite`, ...) is reached by its singular, `doc.building`, still returning the collection.
+  `Output:SQLite`, ...) was reached by its singular, `doc.building`, which still returned the collection.
   Replace `doc.output_sqlites` with `doc.output_sqlite`; for `Version`, use `doc["Version"]` ([#308](https://github.com/idfkit/idfkit/pull/308)).
 - **Breaking:** for type checking, an extensible group key that every release requires lost its
   `| None` (`vertex.vertex_z_coordinate` and `p["vertex_z_coordinate"]` from `as_list()` became
@@ -97,7 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#300](https://github.com/idfkit/idfkit/pull/300)).
 - **Breaking:** `idfkit check` (exit status 2) and `idfkit migrate --to` refused a release idfkit
   does not support, where `check` used the closest release and `migrate` the latest ([#287](https://github.com/idfkit/idfkit/pull/287),
-  [ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
+  [#295](https://github.com/idfkit/idfkit/pull/295)).
 - `idfkit check` continued past a file it could not parse, and `check_compatibility` gained
   `select`, `ignore`, `suppressions` and `package`, honouring suppression comments by default
   ([#287](https://github.com/idfkit/idfkit/pull/287)).
@@ -110,7 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - The plural accessor of such a type (`doc.output_sqlites`, `doc.buildings`) was deprecated: it still
-  works with a `DeprecationWarning`, and pyright strict reports it as an error ([#308](https://github.com/idfkit/idfkit/pull/308)).
+  worked with a `DeprecationWarning`, and pyright strict reported it as an error ([#308](https://github.com/idfkit/idfkit/pull/308)).
 
 - **Breaking:** `IDFCollection.add(obj)` was deprecated and became a type error; it still ran,
   with a `DeprecationWarning`, but raised `TypeError` for fields passed beside the object, which it
@@ -120,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - The bundled `developing-with-idfkit` reference's ceiling-height examples treated a whole-number
-  height such as `3`, stored as an `int`, as missing; they now accept any number
+  height such as `3`, stored as an `int`, as missing; they accepted any number
   ([#311](https://github.com/idfkit/idfkit/pull/311)).
 - `SimulationResult.errors` came back empty for runs that had failed with severe errors when the model had
   `Output:SQLite`, because it could read `eplusSqlite.err` instead of `eplus.err`; `csv` could likewise read

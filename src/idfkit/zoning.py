@@ -1043,7 +1043,11 @@ class ZonedBlock:
         """
         # Check before creating any surface, so an unsupported version does
         # not leave the document holding a half-built block.
-        if self.air_boundary and doc.schema is not None and "Construction:AirBoundary" not in doc.schema:
+        # A schema-less document is judged by its version, as _apply_air_boundaries' as_version is.
+        has_air_boundary = (
+            "Construction:AirBoundary" in doc.schema if doc.schema is not None else doc.version >= (9, 2, 0)
+        )
+        if self.air_boundary and not has_air_boundary:
             version = version_string(doc.version)
             msg = (
                 f"air_boundary=True needs Construction:AirBoundary, which EnergyPlus {version} does not have "

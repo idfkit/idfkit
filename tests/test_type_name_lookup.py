@@ -183,6 +183,11 @@ class TestUnknownNameWarning:
             read(doc)
         assert caught[0].filename == __file__
 
+    def test_rename_warns_at_the_callers_line(self, doc: IDFDocument) -> None:
+        with pytest.warns(UnknownObjectTypeWarning) as caught, pytest.raises(KeyError):
+            doc.rename("Zoen", "X", "Y")
+        assert caught[0].filename == __file__
+
     def test_popidfobject_warns_before_the_index_error(self, doc: IDFDocument) -> None:
         with pytest.warns(UnknownObjectTypeWarning), pytest.raises(IndexError):
             doc.popidfobject("Zoen", 0)

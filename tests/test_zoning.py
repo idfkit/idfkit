@@ -844,6 +844,12 @@ class TestAirBoundary:
             )
         assert len(list(doc.all_objects)) == before
 
+    def test_air_boundary_before_9_2_raises_without_a_schema(self) -> None:
+        doc = IDFDocument(version=(9, 1, 0))
+        with pytest.raises(ValueError, match="Construction:AirBoundary"):
+            create_block(doc, "Open", footprint_rectangle(50, 30), floor_to_floor=3, air_boundary=True)
+        assert not list(doc.all_objects)
+
     def test_courtyard_air_boundary_before_9_2_raises(self) -> None:
         doc = new_document(version=(9, 1, 0))
         before = len(list(doc.all_objects))

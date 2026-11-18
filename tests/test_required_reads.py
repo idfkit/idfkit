@@ -281,3 +281,22 @@ def test_the_error_survives_pickling(error: MissingRequiredFieldError) -> None:
     assert (copy.obj_type, copy.obj_name, copy.field_name) == (error.obj_type, error.obj_name, error.field_name)
     assert (copy.wrapper_key, copy.group_index) == (error.wrapper_key, error.group_index)
     assert str(copy) == str(error)
+
+
+def test_a_lax_document_reads_a_field_its_release_lacks_as_none() -> None:
+    """The table spans every release; a field from another release is unknown here, not missing."""
+    doc = new_document(version=(9, 4, 0), strict=False)
+    lights = doc.add("Lights", "L", zone_or_zonelist_name="Z", schedule_name="S", validate=False)
+    assert lights.zone_or_zonelist_or_space_or_spacelist_name is None
+    newer = new_document(version=(24, 1, 0), strict=False)
+    people = newer.add("People", "P", validate=False)
+    assert people.zone_or_zonelist_name is None
+    with pytest.raises(MissingRequiredFieldError):
+        _ = people.zone_or_zonelist_or_space_or_spacelist_name
+
+
+def test_an_object_added_under_a_mis_cased_type_reads_its_required_fields() -> None:
+    doc = new_document(version=(24, 1, 0))
+    doc.addidfobject(IDFObject(obj_type="material", name="M", data={"roughness": "Rough"}))
+    with pytest.raises(MissingRequiredFieldError, match="thickness"):
+        _ = doc["Material"]["M"].thickness

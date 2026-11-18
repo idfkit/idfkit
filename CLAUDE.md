@@ -32,7 +32,7 @@ uv sync
 # Run all quality checks (lint, format, type check, deptry)
 make check
 
-# Run every test, in parallel (pytest-xdist) with coverage, as CI does (about 2 minutes on 4 cores).
+# Run every test, in parallel (pytest-xdist) with coverage, as CI does (about 3 minutes on 4 cores).
 # Integration tests run too when EnergyPlus is installed, and are skipped otherwise.
 make test
 

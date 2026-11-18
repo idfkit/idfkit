@@ -14,30 +14,11 @@ from __future__ import annotations
 import calendar
 from collections.abc import Sequence
 from datetime import date
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     from ..document import AnyIDFDocument
     from ..objects import IDFObject
-
-# The choices of ScheduleTypeLimits' Numeric Type and Unit Type, in every supported release.
-_NumericType = Literal["Continuous", "Discrete"]
-_UnitType = Literal[
-    "ActivityLevel",
-    "Angle",
-    "Availability",
-    "Capacity",
-    "Control",
-    "ConvectionCoefficient",
-    "DeltaTemperature",
-    "Dimensionless",
-    "Mode",
-    "Percent",
-    "Power",
-    "PrecipitationRate",
-    "Temperature",
-    "Velocity",
-]
 
 
 def create_schedule_type_limits(
@@ -61,14 +42,15 @@ def create_schedule_type_limits(
     Returns:
         The created ``ScheduleTypeLimits`` object.
     """
-    # add() validates both choices against the schema at run time, as doc.add() did, so the casts
-    # only defer to that check; a blank unit_type leaves the field unset.
+    # The parameters are plain strings, so their choices are checked where they always were: add()
+    # validates both against the document's schema at run time. A blank unit_type leaves the field
+    # unset.
     return doc["ScheduleTypeLimits"].add(
         name,
         lower_limit_value=lower,
         upper_limit_value=upper,
-        numeric_type=cast("_NumericType", numeric_type),
-        unit_type=cast("_UnitType | None", unit_type or None),
+        numeric_type=cast("Any", numeric_type),
+        unit_type=cast("Any", unit_type or None),
     )
 
 

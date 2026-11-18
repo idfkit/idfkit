@@ -312,18 +312,30 @@ def _describe_range(low: tuple[int, int, int] | None, high: tuple[int, int, int]
     return f"from {version_string(low)} to before {version_string(high)}"
 
 
-def _check_range(doc: AnyIDFDocument, since: object, before: object) -> None:
-    """Raise unless *doc* is of a supported release from *since* (inclusive) to *before* (exclusive)."""
+def _range_members(
+    since: object, before: object
+) -> tuple[tuple[int, int, int] | None, tuple[int, int, int] | None, list[tuple[int, int, int]]]:
+    """The bounds *since* and *before* name, and the supported releases between them.
+
+    Raises:
+        ValueError: If a bound names no supported release, or the range holds none.
+    """
     low = None if since is None else _release(since, "since")
     high = None if before is None else _release(before, "before")
     members = releases_between(low, high)
-    if members and find_closest_version(doc.version) in members:
+    if not members:
+        msg = f"No supported EnergyPlus release is {_describe_range(low, high)}"
+        raise ValueError(msg)
+    return low, high, members
+
+
+def _check_range(doc: AnyIDFDocument, since: object, before: object) -> None:
+    """Raise unless *doc* is of a supported release from *since* (inclusive) to *before* (exclusive)."""
+    low, high, members = _range_members(since, before)
+    if find_closest_version(doc.version) in members:
         return
     # Only a refusal pays for the description.
     described = _describe_range(low, high)
-    if not members:
-        msg = f"No supported EnergyPlus release is {described}"
-        raise ValueError(msg)
     releases = ", ".join(version_string(v) for v in members)
     msg = f"The document is EnergyPlus {version_string(doc.version)}, not {described} ({releases})"
     raise TypeError(msg)
@@ -369,6 +381,13 @@ def as_version(
         msg = "as_version needs at least one document type"
         raise TypeError(msg)
     resolved = [_resolve(candidate) for candidate in candidates]
+    # A type argument states the document's strictness (``IDFDocumentV9_4[Literal[False]]``), which
+    # the type then promises through ``doc.strict``: refuse a document that has the other one, as the
+    # loaders and ``new_document`` refuse to create it.
+    stated = {value for candidate in candidates if (value := _stated_strictness(candidate)) is not None}
+    if stated and doc.strict not in stated:
+        msg = f"The document has strict={doc.strict}, so it cannot be typed as {document_type!r}"
+        raise TypeError(msg)
     release = find_closest_version(doc.version)
     if any(required is None or required == release for _, required in resolved):
         return cast("_D", doc)
@@ -408,11 +427,7 @@ def check_target(document_type: object, since: object, before: object) -> None:
         return
     if since is None and before is None:
         return
-    low = None if since is None else _release(since, "since")
-    high = None if before is None else _release(before, "before")
-    if not releases_between(low, high):
-        msg = f"No supported EnergyPlus release is {_describe_range(low, high)}"
-        raise ValueError(msg)
+    _range_members(since, before)
 
 
 def release_union(*members: type) -> Any:

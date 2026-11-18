@@ -24,6 +24,7 @@ from idfkit import (
     write_idf,
 )
 from idfkit.document import IDFDocument
+from idfkit.exceptions import DuplicateObjectError
 from idfkit.objects import IDFObject
 
 _V = (24, 1, 0)
@@ -451,3 +452,22 @@ def test_exhaustive_match_on_energyplus_example_file() -> None:
             case _:  # pragma: no cover - the failure this guards against
                 pytest.fail(f"{surface.name}: {surface.surface_type!r} is not in the schema's spelling")
     assert seen == {"Wall", "Floor", "Ceiling", "Roof"}
+
+
+def test_addidfobject_leaves_a_refused_object_as_it_was() -> None:
+    """A duplicate is refused before its choices are rewritten, so the source document is untouched."""
+    source = new_document(version=(24, 1, 0), normalize_choices=False)
+    kept = source.add("Material", "M", roughness="ROUGH", thickness=0.1, conductivity=1, density=1, specific_heat=100)
+    target = new_document(version=(24, 1, 0))
+    target.add("Material", "M", roughness="Rough", thickness=0.1, conductivity=1, density=1, specific_heat=100)
+    with pytest.raises(DuplicateObjectError):
+        target.addidfobject(kept)
+    assert kept.roughness == "ROUGH"
+
+
+def test_addidfobject_records_the_rewrite_as_a_change() -> None:
+    obj = IDFObject(obj_type="Material", name="M", data={"roughness": "ROUGH"})
+    before = obj.mutation_version
+    new_document(version=(24, 1, 0)).addidfobject(obj)
+    assert obj.roughness == "Rough"
+    assert obj.mutation_version > before
