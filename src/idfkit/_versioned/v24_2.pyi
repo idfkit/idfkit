@@ -8,21 +8,24 @@ Import it from :mod:`idfkit.versioned`.
 
 from __future__ import annotations
 
-from typing import Literal, overload
-
-from typing_extensions import Never
+from collections.abc import Sequence
+from typing import Literal, TypeAlias, overload
 
 from .. import _generated_types as _g
 from .. import versioned as _v
 from ..document import IDFDocumentAllVersions, Strict
-from ..objects import IDFCollection
+from ..objects import IDFCollection, IDFObject
 
-class _NotAnObjectTypeOfEnergyPlus24_2:
-    """Not a name of an object type EnergyPlus 24.2.0 has: indexing a document with one is a type error.
+class _NotAnObjectTypeNameOfEnergyPlus24_2:
+    """Not a name of an object type EnergyPlus 24.2.0 has: indexing a document with one is a type error."""
 
-    The last ``__getitem__`` overload of a document type takes this class, which no string is, so
-    a type checker that finds no overload for an object type name reports it against this type.
-    """
+_NotAnObjectTypeOfEnergyPlus24_2: TypeAlias = Sequence[_NotAnObjectTypeNameOfEnergyPlus24_2]
+"""Not a name of an object type EnergyPlus 24.2.0 has: indexing a document with one is a type error.
+
+The last ``__getitem__`` overload of a document type takes this type, which no string is, so a
+type checker that finds no overload for an object type name reports it against this type. It is
+a ``Sequence`` so that mypy reports that overload alone rather than list every one.
+"""
 
 class IDFDocumentV24_2(
     _v._Accessors_v8_9_to_v25_1,
@@ -3034,4 +3037,4 @@ class IDFDocumentV24_2(
         self, obj_type: Literal["PythonPlugin:OutputVariable"], /
     ) -> IDFCollection[_g.PythonPluginOutputVariable]: ...
     @overload
-    def __getitem__(self, obj_type: _NotAnObjectTypeOfEnergyPlus24_2, /) -> Never: ...
+    def __getitem__(self, obj_type: _NotAnObjectTypeOfEnergyPlus24_2, /) -> IDFCollection[IDFObject]: ...

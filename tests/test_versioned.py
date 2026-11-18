@@ -444,8 +444,16 @@ class TestCommittedStubs:
             # A release's last overload taking a name, which every name the release lacks would match.
             (
                 3,
-                r"obj_type: _NotAnObjectTypeOfEnergyPlus9_4, /\) -> Never",
-                "obj_type: str, /) -> Never",
+                r"obj_type: _NotAnObjectTypeOfEnergyPlus9_4, /\)",
+                "obj_type: str, /)",
+                "IDFDocumentV9_4: __getitem__ does not end with the one overload that matches no object type",
+            ),
+            # A release's last overload taking the class itself rather than a Sequence of it: mypy would
+            # then list every overload under a misspelled name instead of reporting this one alone.
+            (
+                3,
+                r"(?m)^_NotAnObjectTypeOfEnergyPlus9_4: TypeAlias = Sequence\[(\w+)\]",
+                r"_NotAnObjectTypeOfEnergyPlus9_4: TypeAlias = \1",
                 "IDFDocumentV9_4: __getitem__ does not end with the one overload that matches no object type",
             ),
             # A release's document that no longer derives from IDFDocumentAllVersions.

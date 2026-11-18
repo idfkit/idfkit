@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any, Literal, TypeAlias, TypedDict
 
-from typing_extensions import Never, Unpack
+from typing_extensions import Unpack
 
 from ._creation import _b0 as _c0
 from ._creation import _b1 as _c1
@@ -141,11 +141,11 @@ from ._creation import _b126 as _c126
 from ._creation import _b127 as _c127
 from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
 
-_NotAFieldOfThisObjectType: TypeAlias = Never
-"""No name is one: a type checker reports an undeclared field of a typed object against this type."""
+class _NotAFieldOfThisObjectType:
+    """No name is one: a type checker reports an undeclared field of a typed object against this type."""
 
-_NotAFieldOfThisExtensibleGroup: TypeAlias = Never
-"""No name is one: a type checker reports an undeclared field of a typed group against this type."""
+class _NotAFieldOfThisExtensibleGroup:
+    """No name is one: a type checker reports an undeclared field of a typed group against this type."""
 
 class _TypedIDFObject(IDFObject):
     """Stub-only base: an undeclared field name is a type error on a typed object."""

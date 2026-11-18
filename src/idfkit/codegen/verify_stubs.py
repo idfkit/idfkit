@@ -255,12 +255,16 @@ def _getitem_entries(module: _Module, name: str, problems: list[str]) -> dict[st
         if key in out:
             problems.append(f"{name}: {key!r} is overloaded twice")
         out[key] = value
-    # The last takes a class no string is: one taking str, or none at all, would let a name the
-    # release lacks type-check.
+    # The last takes a sequence of a class no string is: one taking str, or none at all, would let a
+    # name the release lacks type-check. A sequence, so that mypy reports that overload alone rather
+    # than list every one (generate_stubs._generate_not_an_object_type).
     last = overloads[-1][2] if overloads else ""
+    target = module.aliases.get(last, "")
+    element = target.removeprefix("Sequence[").removesuffix("]")
     if (
         not last.startswith("_NotAnObjectTypeOf")
-        or last not in module.classes
+        or target != f"Sequence[{element}]"
+        or element not in module.classes
         or any(key is None for key, _, _ in overloads[:-1])
     ):
         problems.append(f"{name}: __getitem__ does not end with the one overload that matches no object type")
