@@ -44,6 +44,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** for type checking, an extensible group key that every release requires lost its
+  `| None` (`vertex.vertex_z_coordinate` and `p["vertex_z_coordinate"]` from `as_list()` became
+  `float`), and a group dict without one became an error; delete the `is None` guards ([b19a6bd](https://github.com/idfkit/idfkit/commit/b19a6bd)).
+- **Breaking:** reading such a key from a group that lacks it, or calling `as_dict()` or `as_list()`
+  on it, raised `MissingRequiredFieldError` instead of giving `None` or an incomplete dict; use the
+  new `group.get(key)` to test whether it is set ([b19a6bd](https://github.com/idfkit/idfkit/commit/b19a6bd)).
+- **Breaking:** validation reported a group missing a required key as `E001`, so `add()` refused a
+  vertex without its z coordinate; pass `validate=False` to store one anyway ([b19a6bd](https://github.com/idfkit/idfkit/commit/b19a6bd)).
 - **Breaking:** for type checking, a field that every release having it requires with no default
   lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;
   delete the `is None` guards pyright strict now flags ([#303](https://github.com/idfkit/idfkit/pull/303)).
