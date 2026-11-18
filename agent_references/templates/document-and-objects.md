@@ -107,6 +107,8 @@ The classes exist only in the stubs: import them from `idfkit.document` inside `
 --8<-- "agent_references/snippets/document-and-objects.py:typed-object-parameter"
 ```
 
+A number field holds the value as it arrived. One loaded from IDF, which does not tell `3` from `3.0`, reads as a `float`. One given as `3` to `add()`, by assignment, by `update()` or in an epJSON file reads as the `int` `3`. The field's type says `float`, which accepts an `int` (PEP 484), so a type checker allows both. To tell a number from `"Autocalculate"` or `None`, test for the string and for `None`, as above. `isinstance(height, float)` is false for the `int` `3`, so it would treat a ceiling height of `3` as missing.
+
 An `Any<Class>` covers the releases idfkit supports. When idfkit adopts a release that drops or renames a field, that field leaves `Any<Class>`, and code using it stops type-checking: it would not work on that release either. A type the latest release no longer has, such as `DistrictHeating`, has no `Any<Class>`; annotate with its range class (`DistrictHeating_v8_9_to_v23_1`), imported from `idfkit.versioned` inside `if TYPE_CHECKING:`, since the range classes too exist only in the stubs.
 
 ### Reading and writing through `AnyIDFDocument`
