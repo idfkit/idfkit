@@ -210,18 +210,18 @@ if TYPE_CHECKING:  # the classes exist only in the stubs; importing them at run 
 def latest_ceiling(zone: Zone) -> float | None:
     """A latest-release Zone only: a 9.4 zone (Zone_v8_9_to_v9_4) is rejected."""
     height = zone.ceiling_height
-    return height if isinstance(height, float) else None
+    return None if height is None or isinstance(height, str) else float(height)
 
 
 def any_ceiling(zone: AnyZone) -> float | None:
     """A Zone of any release: the latest one, a 9.4 one, or one reached through AnyIDFDocument."""
     height = zone.ceiling_height
-    return height if isinstance(height, float) else None
+    return None if height is None or isinstance(height, str) else float(height)
 
 
-def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
-    """Extensible groups are typed too: vertices exist in every release."""
-    return sum(1 for vertex in surface.vertices if vertex.vertex_x_coordinate is not None)
+def top_height(surface: AnyBuildingSurfaceDetailed) -> float:
+    """Extensible groups are typed too: every release requires a vertex's coordinates, so they read as float."""
+    return max(vertex.vertex_z_coordinate for vertex in surface.vertices)
 
 
 any_ceiling(doc["Zone"]["Office"])
@@ -229,6 +229,8 @@ any_ceiling(as_version(load_idf("legacy.idf"), IDFDocumentV9_4)["Zone"]["Office"
 ```
 
 An `Any<Class>` covers the releases idfkit supports. When idfkit adopts a release that drops or renames a field, that field leaves `Any<Class>`, and code using it stops type-checking: it would not work on that release either. A type the latest release no longer has, such as `DistrictHeating`, has no `Any<Class>`; annotate with its range class (`DistrictHeating_v8_9_to_v23_1`), imported from `idfkit.versioned` inside `if TYPE_CHECKING:`, since the range classes too exist only in the stubs.
+
+A number field keeps a whole number in the type it arrived as. One loaded from IDF, which does not tell `3` from `3.0`, reads as a `float`. One given as `3` to `add()`, to an unset field by assignment or `update()`, or in an epJSON file reads as the `int` `3`; writing `3` over a field that already holds `3.0` changes nothing, so it stays `3.0`. The field's type says `float`, which accepts an `int` (PEP 484), so a type checker allows both. To tell a number from `"Autocalculate"` or `None`, test for the string and for `None`, as `latest_ceiling` and `any_ceiling` do. `isinstance(height, float)` is false for the `int` `3`, so it would treat a ceiling height of `3` as missing.
 
 ### Reading and writing through `AnyIDFDocument`
 
@@ -279,7 +281,7 @@ A type checker reads a range only from a release's type or a string literal. A b
 
 For releases that are not one range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, IDFDocumentV26_2))` returns the document typed as their union. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered. Name every release in a tuple by its own type, the latest included: `IDFDocumentV26_2`, not `IDFDocument`. `IDFDocument` stands for whichever release is latest when the code runs. Once idfkit supports a newer release, a tuple that ends in `IDFDocument` no longer covers the release that was latest when it was written, and `as_version` raises `TypeError` on a model of that release. A union written by hand to annotate with has the same flaw (pyright and mypy then reject a model of that release), a flaw the generated `IDFDocumentSince…` aliases do not have.
 
-A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one:
+A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one. Choices are read in the schema's spelling by default, so this holds on files that write them in another case (see Choice values are read in the schema's spelling):
 
 ```python
 from typing_extensions import assert_never
@@ -452,7 +454,53 @@ except MissingRequiredFieldError as err:  # an AttributeError naming the object 
     print(err.obj_type, err.obj_name, err.field_name)
 ```
 
-A blank value is stored as absent wherever it comes from (`add(..., f="")`, `obj.f = ""`, `""` or `null` in epJSON, an empty IDF field), so no field reads `""`, and `""` is not part of any field's type: clear a field with `None` in type-checked code. Choice values are read in the spelling of the file (`"WALL"`, `"hourly"`), which may differ in case from the `Literal` the type lists: compare them with `.casefold()` when the model was loaded from a file.
+The same holds inside extensible groups. A group key that every release having it requires with no default (a vertex's `vertex_x_coordinate`, `vertex_y_coordinate` and `vertex_z_coordinate`, a `ZoneList` group's `zone_name`, about 120 keys in 69 types) reads as its value type on the group (`wall.vertices[0].vertex_z_coordinate` is a `float`) and is a `Required` key of the group's item `TypedDict`, so `p["vertex_z_coordinate"]` on an item of `as_list()` is a `float` with no `.get()` default. `add()` refuses a group without one (`E001` on `vertices[1].vertex_z_coordinate`), and a dict that leaves one out, or gives it `None`, is a type error. A group that lacks one anyway (a hand-written file, `validate=False`) raises `MissingRequiredFieldError` when the key is read, and so do `as_dict()` and `as_list()`, rather than return a dict its type says is complete; the error's `wrapper_key` and `group_index` (1-based) say which group. `group.get(key)`, `getattr(group, key, None)` and `group.items()` give `None` instead, and `obj.data[wrapper]` holds the groups as stored.
+
+```python
+def top_of(surface: AnyBuildingSurfaceDetailed) -> float:
+    """A vertex's coordinates are required in every release: they read as float, no guard."""
+    return max(point["vertex_z_coordinate"] for point in surface.vertices.as_list())
+
+
+for surface in legacy["BuildingSurface:Detailed"]:
+    try:
+        print(surface.name, top_of(surface))
+    except MissingRequiredFieldError as err:  # a vertex lacks a coordinate
+        print(err.wrapper_key, err.group_index, err.field_name)  # "vertices", 2, "vertex_z_coordinate"
+        unset = [v.group_index for v in surface.vertices if v.get(err.field_name) is None]  # get() never raises
+```
+
+A blank value is stored as absent wherever it comes from (`add(..., f="")`, `obj.f = ""`, `""` or `null` in epJSON, an empty IDF field), so no field reads `""`, and `""` is not part of any field's type: clear a field with `None` in type-checked code.
+
+### Choice values are read in the schema's spelling
+
+A choice field reads in the spelling its schema declares, whatever case the source used: a surface the file calls `WALL` reads `surface_type == "Wall"`, the spelling its `Literal["Wall", "Floor", "Ceiling", "Roof"]` type lists. This holds for IDF and epJSON files, for values given to `doc.add()`, `update()` or assignment in another case (`doc.add("Material", "M", roughness="ROUGH", ...)` stores `"Rough"`; on a typed object only the `Literal` spelling type-checks anyway), for objects filed with `addidfobject()` or `copyidfobject()`, for extensible groups, and for the sizing keywords of a numeric field (`AUTOSIZE` reads `"Autosize"`). A numeric field that lists one sizing keyword reads the other as that one: where only `Autosize` is listed, `Autocalculate` reads `"Autosize"`, as EnergyPlus's own conversion treats it. Any other value that is no listed choice is kept as written, for `validate_document` to report. EnergyPlus reads choices case-insensitively, so this changes no simulation. A `preserve_formatting=True` load still writes every unmodified object byte for byte; an object you change is written with its choices in the schema's spelling. So an exhaustive `match` over a choice field is sound on models you did not write:
+
+```python
+from collections import Counter
+
+from typing_extensions import assert_never
+
+from idfkit import load_idf
+
+# 5ZoneAirCooled.idf writes WALL, FLOOR, CEILING and ROOF. Each choice is read in the spelling the
+# schema declares, so the Literal type holds and the match is exhaustive on a file of any case.
+model = load_idf("5ZoneAirCooled.idf")
+counts: Counter[str] = Counter()
+for srf in model.building_surfaces:
+    match srf.surface_type:
+        case "Wall" | "Floor" | "Ceiling" | "Roof":
+            counts[srf.surface_type] += 1
+        case _:
+            assert_never(srf.surface_type)
+
+# Opt out to keep the file's own text. The Literal type then does not hold: compare with casefold().
+raw = load_idf("5ZoneAirCooled.idf", normalize_choices=False)
+walls = [s for s in raw.building_surfaces if s.surface_type.casefold() == "wall"]
+assert raw.normalize_choices is False
+```
+
+To keep the source's text, pass `normalize_choices=False` to `load_idf`, `load_epjson`, `load_idf_with_diagnostics` or `new_document`; `doc.normalize_choices` reports the setting, and `doc.copy()`, `migrate()` and `expand_objects()` keep it. A document pickled by a release before the setting existed holds its values as written, and unpickles with it off. It is independent of `strict` and `preserve_formatting`. The stubs do not change with it: on such a document a choice field still has its `Literal` type but can hold any case, so compare with `.casefold()` and do not rely on an exhaustive `match`.
 
 ## Modifying objects
 
@@ -494,7 +542,7 @@ surface.vertices.append(vertex_x_coordinate=10.0, vertex_y_coordinate=0.0, verte
 print(len(surface.vertices))  # 4
 ```
 
-`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`. In type-checked code, a group passed to `add()` or `update()` is a dict typed by the group's item type, a `TypedDict` of the group's fields, all optional: `vertices=[{"vertex_x_coordinate": 0.0, ...}]` takes a sequence of `BuildingSurfaceDetailedVerticesItem`, or of the group objects themselves (`vertices=list(other.vertices)`), so editors complete the keys and a misspelled key or wrong value is a type error. `wall.vertices.as_list()` returns `list[BuildingSurfaceDetailedVerticesItem]`, so a copy passes straight back (`vertices=wall.vertices.as_list()`); its keys are optional, as a blank field is left out, so read one with `.get()`. To build groups ahead of a call, annotate the list with the item type (`points: list[BuildingSurfaceDetailedVerticesItem] = []`, imported from `idfkit.document`); a list typed `list[dict[str, float]]` is not accepted. Each item type is named after its object type and group (`ScheduleWeekCompactDataItem`, `ZoneListZonesItem`).
+`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`. In type-checked code, a group passed to `add()` or `update()` is a dict typed by the group's item type, a `TypedDict` of the group's fields, with the keys every release requires `Required` and the others optional (see Reading fields): `vertices=[{"vertex_x_coordinate": 0.0, ...}]` takes a sequence of `BuildingSurfaceDetailedVerticesItem`, or of the group objects themselves (`vertices=list(other.vertices)`), so editors complete the keys and a misspelled key or wrong value is a type error. `wall.vertices.as_list()` returns `list[BuildingSurfaceDetailedVerticesItem]`, so a copy passes straight back (`vertices=wall.vertices.as_list()`); a required key is always present, and an optional one is left out when blank, so read an optional one with `.get()`. To build groups ahead of a call, annotate the list with the item type (`points: list[BuildingSurfaceDetailedVerticesItem] = []`, imported from `idfkit.document`); a list typed `list[dict[str, float]]` is not accepted. Each item type is named after its object type and group (`ScheduleWeekCompactDataItem`, `ZoneListZonesItem`).
 
 ## Iterating the whole model
 

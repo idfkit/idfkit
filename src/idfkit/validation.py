@@ -329,6 +329,8 @@ def _validate_object(  # noqa: C901
                         code="E001",
                     )
                 )
+        if rules.group_required is not None:
+            errors.extend(_missing_group_keys(obj, *rules.group_required))
 
     # Check field types and ranges
     for field_name, value in data.items():
@@ -363,6 +365,37 @@ def _validate_object(  # noqa: C901
         if error is not None:
             errors.append(error)
 
+    return errors
+
+
+def _missing_group_keys(obj: IDFObject, wrapper: str, required: tuple[str, ...]) -> list[ValidationError]:
+    """``E001`` for each required key an extensible group of *obj* does not give.
+
+    The field is named as the group reads it, ``vertices[2].vertex_z_coordinate``. Reading such a
+    key raises :class:`~idfkit.exceptions.MissingRequiredFieldError` where every release requires it,
+    so ``add()`` refuses the group as it refuses an object without a required field.
+    """
+    groups: Any = obj.data.get(wrapper)
+    if not isinstance(groups, list):
+        return []
+    errors: list[ValidationError] = []
+    for index, group in enumerate(cast("list[Any]", groups)):
+        if not isinstance(group, dict):
+            continue
+        slot = cast("dict[str, Any]", group)
+        for key in required:
+            if is_blank_slot(slot.get(key)):
+                field = f"{wrapper}[{index}].{key}"
+                errors.append(
+                    ValidationError(
+                        severity=Severity.ERROR,
+                        obj_type=obj.obj_type,
+                        obj_name=obj.name,
+                        field=field,
+                        message=f"Required field '{field}' is missing",
+                        code="E001",
+                    )
+                )
     return errors
 
 
@@ -930,11 +963,15 @@ class _ObjectRules:
         fields: Compiled rule per known field. A field absent here is an unknown field.
         required: Names the schema marks required.
         contributing: Fields carrying ``reference``, so their value declares a name.
+        group_required: The extensible wrapper key and the keys the schema marks required, with no
+            default, in each of its groups, or None when the type has no group or its groups require
+            nothing.
     """
 
     fields: dict[str, _FieldRule]
     required: set[str]
     contributing: tuple[str, ...]
+    group_required: tuple[str, tuple[str, ...]] | None = None
 
 
 # Compiled object-type rules, keyed by schema version then object type.
@@ -964,9 +1001,29 @@ def _object_rules(schema: EpJSONSchema, obj_type: str) -> _ObjectRules | None:
         fields={name: _compile_field_rule(spec) for name, spec in properties.items() if spec},
         required=set(inner_schema.get("required", [])),
         contributing=tuple(name for name, spec in properties.items() if spec and spec.get("reference")),
+        group_required=_group_required(schema, obj_type, properties),
     )
     by_type[obj_type] = rules
     return rules
+
+
+def _group_required(
+    schema: EpJSONSchema, obj_type: str, properties: dict[str, Any]
+) -> tuple[str, tuple[str, ...]] | None:
+    """The wrapper key of *obj_type*'s extensible group and the keys each group must give, if any.
+
+    A key the schema requires but gives a default (``surrounding_surface_view_factor``) is left out:
+    EnergyPlus applies the default to a group without it, the group's item type does not require it,
+    and ``add()`` accepts the group as it accepts an object without such a field.
+    """
+    pc = schema.get_parsing_cache(obj_type)
+    wrapper = pc.ext_wrapper_key if pc is not None else None
+    if not wrapper:
+        return None
+    items: dict[str, Any] = properties.get(wrapper, {}).get("items", {})
+    keys: dict[str, Any] = items.get("properties", {})
+    required = tuple(key for key in items.get("required", []) if "default" not in keys.get(key, {}))
+    return (wrapper, required) if required else None
 
 
 # Reference lists that no field anywhere in a schema contributes to, keyed by schema version.

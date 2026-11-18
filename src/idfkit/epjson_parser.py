@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, cast
 from .document import AnyIDFDocument, IDFDocument
 from .exceptions import VersionNotFoundError
 from .objects import IDFObject, drop_blank_group_slots, is_blank_slot
+from .schema import canonicalize_choices
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ def parse_epjson(
     strict: bool = True,
     *,
     preserve_formatting: bool = False,
+    normalize_choices: bool = True,
 ) -> IDFDocument:
     """
     Parse an epJSON file into an IDFDocument.
@@ -45,6 +47,9 @@ def parse_epjson(
             :func:`~idfkit.writers.write_epjson` and
             :func:`~idfkit.writers.save_epjson` can reproduce it
             byte-for-byte when no objects have been modified.
+        normalize_choices: When ``True`` (the default), each choice value is stored in the
+            spelling its schema declares, whatever case the file used, as the field's
+            ``Literal`` type says. ``False`` keeps the file's text.
 
     Returns:
         Parsed IDFDocument
@@ -70,7 +75,9 @@ def parse_epjson(
         raise FileNotFoundError(f"epJSON file not found: {filepath}")  # noqa: TRY003
 
     parser = EpJSONParser(filepath, schema)
-    return parser.parse(version, strict=strict, preserve_formatting=preserve_formatting)
+    return parser.parse(
+        version, strict=strict, preserve_formatting=preserve_formatting, normalize_choices=normalize_choices
+    )
 
 
 def _bucket_flat_extensibles(fields_dict: dict[str, Any], pc: ParsingCache) -> dict[str, Any]:
@@ -141,6 +148,7 @@ class EpJSONParser:
         *,
         strict: bool = True,
         preserve_formatting: bool = False,
+        normalize_choices: bool = True,
     ) -> IDFDocument:
         """
         Parse the epJSON file into an IDFDocument.
@@ -149,6 +157,7 @@ class EpJSONParser:
             version: Optional version override
             strict: Enforce strict field access on the resulting document.
             preserve_formatting: Store raw JSON text for lossless round-tripping.
+            normalize_choices: Store each choice value in the spelling its schema declares.
 
         Returns:
             Parsed IDFDocument
@@ -174,10 +183,16 @@ class EpJSONParser:
             schema = get_schema(version)
 
         # Create document
-        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict)
+        doc = IDFDocument(
+            version=version,
+            schema=schema,
+            filepath=self._filepath,
+            strict=strict,
+            normalize_choices=normalize_choices,
+        )
 
         # Parse objects
-        self._parse_objects(data, doc, schema)
+        self._parse_objects(data, doc, schema, normalize_choices=normalize_choices)
 
         # Store raw text for lossless round-tripping (opt-in).
         if preserve_formatting:
@@ -224,9 +239,17 @@ class EpJSONParser:
         data: dict[str, Any],
         doc: AnyIDFDocument,
         schema: EpJSONSchema | None,
+        *,
+        normalize_choices: bool = True,
     ) -> None:
-        """Parse all objects from epJSON data into document."""
-        addidfobject = doc.addidfobject
+        """Parse all objects from epJSON data into document.
+
+        With *normalize_choices*, each choice is stored in the spelling its schema declares, as the
+        IDF parser stores it. EnergyPlus's own epJSON is already canonical; a hand-written or
+        converted file need not be.
+        """
+        # Values are normalized below while each object is built, so objects are filed as they are.
+        addidfobject = doc._adopt  # pyright: ignore[reportPrivateUsage]
 
         for obj_type, objects in data.items():
             if not isinstance(objects, dict):
@@ -266,12 +289,15 @@ class EpJSONParser:
                     fields_dict = drop_blank_group_slots(_bucket_flat_extensibles(fields_dict, pc), pc.ext_wrapper_key)
 
                 field_order = list(base_field_names) if base_field_names is not None else None
+                # A copy, without blank values ("" or null): a blank field is unset, as in IDF (idfkit#183).
+                obj_data = {key: value for key, value in fields_dict.items() if not is_blank_slot(value)}
+                if normalize_choices and pc is not None:
+                    canonicalize_choices(obj_data, pc)
 
                 obj = IDFObject(
                     obj_type=obj_type,
                     name=name,
-                    # A copy, without blank values ("" or null): a blank field is unset, as in IDF (idfkit#183).
-                    data={key: value for key, value in fields_dict.items() if not is_blank_slot(value)},
+                    data=obj_data,
                     schema=obj_schema,
                     field_order=field_order,
                     ref_fields=ref_fields,

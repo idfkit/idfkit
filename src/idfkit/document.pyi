@@ -55,6 +55,22 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         This property is read-only; set it via the constructor.
         """
     @property
+    def normalize_choices(self) -> bool:
+        """Whether choice values are stored in the spelling the schema declares.
+
+        When ``True`` (the default), a choice field holds its schema's spelling whatever case the
+        file, ``add()`` or an assignment used: a surface read from a file that says ``WALL``
+        has ``surface_type == "Wall"``, which is what its ``Literal["Wall", ...]`` type
+        promises. EnergyPlus matches choices case-insensitively, so this changes no simulation.
+
+        When ``False``, values are kept as written, and a choice field's ``Literal`` type does
+        not hold for a value read from a file or assigned in another case; compare such values
+        with ``str.casefold()``.
+
+        This property is read-only; set it via the loader or the constructor. A document pickled
+        by a release before the setting existed holds its values as written, and reports ``False``.
+        """
+    @property
     def schema(self) -> EpJSONSchema | None:
         """The EpJSON schema for validation and field info."""
     @property
@@ -358,6 +374,17 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         Overrides the eppy-compatibility method from
         :class:`~idfkit._compat.EppyDocumentMixin` to keep ``_version`` in sync
         when a ``Version`` object is added (e.g. during parsing or copy).
+
+        In a document that normalizes choices (the default), the object's choice
+        values are rewritten in the spelling its schema declares, as ``add()``
+        stores them, so an object built elsewhere or copied from a document that
+        opted out holds what its ``Literal`` types say.
+        """
+    def _adopt(self, obj: IDFObject) -> IDFObject:
+        """File *obj* as :meth:`addidfobject` does, with its values taken as they are.
+
+        For objects already in this document's spelling: the parsers', which normalize while
+        they read, and the twins :meth:`copy` makes of a document with the same setting.
         """
     def removeidfobject(self, obj: IDFObject) -> None:
         """Remove an object from the document.
@@ -556,9 +583,11 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         :meth:`render_object` answer for its objects.
 
         ``copy.deepcopy`` and ``pickle`` give the same result through the
-        default machinery, which needs no hooks here: every slot of a document
-        copies correctly on its own, and the schema travels by version (see
+        default machinery: every slot of a document copies correctly on its
+        own, and the schema travels by version (see
         :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
+        A document pickled by an earlier release has no ``normalize_choices``
+        slot, and reads it as ``False``.
         This method is the faster of the two, as it rebuilds the model
         object by object instead of walking every field through the memo.
 
@@ -5642,6 +5671,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
         filepath: Path | str | None = ...,
         *,
         strict: Strict = ...,
+        normalize_choices: bool = ...,
     ) -> None:
         """Initialize an IDFDocument.
 
@@ -5654,6 +5684,11 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
                 :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
                 typos early.  This value is immutable after construction.
+            normalize_choices: When ``True`` (the default), a choice value added or assigned
+                through this document is stored in the spelling its schema declares, whatever
+                its case: ``surface_type="WALL"`` reads back ``"Wall"``, so the ``Literal``
+                types of the stubs hold. ``False`` stores values as given. The loaders take
+                the same flag for values read from a file. Immutable after construction.
         """
 
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]:

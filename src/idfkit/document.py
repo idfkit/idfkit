@@ -41,6 +41,7 @@ from .objects import (
     refuse_unknown_fields_for_add,
 )
 from .references import ReferenceGraph
+from .schema import canonicalize_choices
 from .validation import validate_object
 from .versions import LATEST_VERSION
 
@@ -185,6 +186,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         "_collections",
         "_count_at_read",
         "_cst",
+        "_normalize_choices",
         "_raw_text",
         "_references",
         "_schedules_cache",
@@ -201,6 +203,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _references: ReferenceGraph
     _schedules_cache: dict[str, IDFObject] | None
     _strict: bool
+    _normalize_choices: bool
     _cst: DocumentCST | None
     _spans: dict[IDFObject, tuple[SourceSpan, CSTNode]] | None
     _raw_text: str | None
@@ -220,6 +223,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         filepath: Path | str | None = None,
         *,
         strict: bool = True,
+        normalize_choices: bool = True,
     ) -> None:
         """
         Initialize an IDFDocument.
@@ -233,6 +237,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
                 typos early.  This value is immutable after construction.
+            normalize_choices: When ``True`` (the default), a choice value added or assigned
+                through this document is stored in the spelling its schema declares, whatever
+                its case: ``surface_type="WALL"`` reads back ``"Wall"``, so the ``Literal``
+                types of the stubs hold. ``False`` stores values as given. The loaders take
+                the same flag for values read from a file. Immutable after construction.
         """
         self._version = version or LATEST_VERSION
         self.filepath = Path(filepath) if filepath else None
@@ -241,6 +250,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._references = ReferenceGraph()
         self._schedules_cache: dict[str, IDFObject] | None = None
         self._strict = strict
+        self._normalize_choices = normalize_choices
         self._cst: DocumentCST | None = None
         # Built once on the first ask. The retained tree does not change after the read.
         self._spans: dict[IDFObject, tuple[SourceSpan, CSTNode]] | None = None
@@ -257,6 +267,26 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         This property is read-only; set it via the constructor.
         """
         return self._strict
+
+    @property
+    def normalize_choices(self) -> bool:
+        """Whether choice values are stored in the spelling the schema declares.
+
+        When ``True`` (the default), a choice field holds its schema's spelling whatever case the
+        file, ``add()`` or an assignment used: a surface read from a file that says ``WALL``
+        has ``surface_type == "Wall"``, which is what its ``Literal["Wall", ...]`` type
+        promises. EnergyPlus matches choices case-insensitively, so this changes no simulation.
+
+        When ``False``, values are kept as written, and a choice field's ``Literal`` type does
+        not hold for a value read from a file or assigned in another case; compare such values
+        with ``str.casefold()``.
+
+        This property is read-only; set it via the loader or the constructor. A document pickled
+        by a release before the setting existed holds its values as written, and reports ``False``.
+        """
+        # Read with a default rather than restored by a __setstate__ hook: unpickling builds the
+        # object without __init__, and an older pickle has no such slot.
+        return getattr(self, "_normalize_choices", False)
 
     @property
     def version(self) -> tuple[int, int, int]:
@@ -998,6 +1028,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         # A blank under a key the type does not name is kept, so the unknown-key check below refuses it.
         known = parsing_cache.known_keys if parsing_cache is not None else frozenset[str]()
         field_data = {key: value for key, value in field_data.items() if key not in known or not is_blank_slot(value)}
+        # A choice is stored in its schema's spelling, so `surface_type="WALL"` reads back the "Wall"
+        # its Literal type promises. `field_data` is this call's own dict; groups are copied on change.
+        if parsing_cache is not None and self.normalize_choices:
+            canonicalize_choices(field_data, parsing_cache)
 
         # Create object
         obj = IDFObject(
@@ -1045,6 +1079,23 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Overrides the eppy-compatibility method from
         :class:`~idfkit._compat.EppyDocumentMixin` to keep ``_version`` in sync
         when a ``Version`` object is added (e.g. during parsing or copy).
+
+        In a document that normalizes choices (the default), the object's choice
+        values are rewritten in the spelling its schema declares, as ``add()``
+        stores them, so an object built elsewhere or copied from a document that
+        opted out holds what its ``Literal`` types say.
+        """
+        if self.normalize_choices and self._schema is not None:
+            pc = self._schema.get_parsing_cache(obj.obj_type)
+            if pc is not None:
+                canonicalize_choices(obj.data, pc)
+        return self._adopt(obj)
+
+    def _adopt(self, obj: IDFObject) -> IDFObject:
+        """File *obj* as :meth:`addidfobject` does, with its values taken as they are.
+
+        For objects already in this document's spelling: the parsers', which normalize while
+        they read, and the twins :meth:`copy` makes of a document with the same setting.
         """
         result = super().addidfobject(obj)
         if obj.obj_type.upper() == "VERSION":
@@ -1629,9 +1680,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         :meth:`render_object` answer for its objects.
 
         ``copy.deepcopy`` and ``pickle`` give the same result through the
-        default machinery, which needs no hooks here: every slot of a document
-        copies correctly on its own, and the schema travels by version (see
+        default machinery: every slot of a document copies correctly on its
+        own, and the schema travels by version (see
         :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
+        A document pickled by an earlier release has no ``normalize_choices``
+        slot, and reads it as ``False``.
         This method is the faster of the two, as it rebuilds the model
         object by object instead of walking every field through the memo.
 
@@ -1656,6 +1709,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             schema=self._schema,
             filepath=self.filepath,
             strict=self._strict,
+            normalize_choices=self.normalize_choices,
         )
 
         # Keyed by the object: IDFObject hashes by identity, and the tree below needs
@@ -1669,7 +1723,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 # copied document is the object as read, and this is the writer's clean/dirty flag:
                 # `None` would make a preserving write reformat every object the copy holds.
                 object.__setattr__(new_obj, "_source_text", obj.source_text)
-            new_doc.addidfobject(new_obj)
+            # A twin already holds the spelling this document's setting gives, and the copy shares it.
+            new_doc._adopt(new_obj)
             twins[obj] = new_obj
 
         # The tree ties to the original only through `node.obj`. Re-pointing each anchor at

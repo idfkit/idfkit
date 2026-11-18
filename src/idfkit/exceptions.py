@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from .objects import IDFObject
@@ -275,17 +275,52 @@ class MissingRequiredFieldError(IdfKitError, AttributeError):
 
     It inherits from ``AttributeError``, so ``getattr(obj, field, None)`` and ``hasattr`` keep
     working as the untyped way to ask whether the field is set, as does ``obj.get(field)``.
+
+    The same holds for a key of an extensible group that every release requires
+    (``vertex_x_coordinate``): reading it from a group that lacks it, or snapshotting that group with
+    ``as_dict()`` or ``as_list()``, raises this with :attr:`wrapper_key` and :attr:`group_index` set;
+    ``group.get(key)`` gives ``None`` instead.
+
+    Attributes:
+        obj_type: The object's type.
+        obj_name: The object's name, ``""`` for a type without one.
+        field_name: The field, or the group key, that has no value.
+        wrapper_key: The extensible group's wrapper (``vertices``), or ``None`` for a field.
+        group_index: The group's 1-based position in the wrapper, or ``None`` for a field.
     """
 
-    def __init__(self, obj_type: str, obj_name: str, field_name: str) -> None:
+    def __init__(self, obj_type: str, obj_name: str, field_name: str, *, group: tuple[str, int] | None = None) -> None:
         self.obj_type = obj_type
         self.obj_name = obj_name
         self.field_name = field_name
+        self.wrapper_key, self.group_index = group if group is not None else (None, None)
         label = f"{obj_type} {obj_name!r}" if obj_name else obj_type
-        super().__init__(
-            f"{label} has no value for its required field {field_name!r}. EnergyPlus refuses an object "
-            f"without it; set it, or read it with obj.get({field_name!r}) to get None when it is missing."
-        )
+        if group is None:
+            message = (
+                f"{label} has no value for its required field {field_name!r}. EnergyPlus refuses an object "
+                f"without it; set it, or read it with obj.get({field_name!r}) to get None when it is missing."
+            )
+        else:
+            where = f"{group[0]}[{group[1] - 1}]"
+            message = (
+                f"{label} has no value for the required key {field_name!r} of {where}. EnergyPlus refuses an "
+                f"object without it; set it, or read it with {where}.get({field_name!r}) to get None when it is "
+                "missing."
+            )
+        super().__init__(message)
+
+    def __reduce__(self) -> tuple[Any, ...]:
+        # BaseException pickles only self.args, the message; rebuild from the parts instead, so the
+        # error survives a process boundary (multiprocessing) with its attributes.
+        group = None if self.wrapper_key is None or self.group_index is None else (self.wrapper_key, self.group_index)
+        return (_rebuild_missing_required_field_error, (self.obj_type, self.obj_name, self.field_name, group))
+
+
+def _rebuild_missing_required_field_error(
+    obj_type: str, obj_name: str, field_name: str, group: tuple[str, int] | None
+) -> MissingRequiredFieldError:
+    """Unpickle a :class:`MissingRequiredFieldError` (see its ``__reduce__``)."""
+    return MissingRequiredFieldError(obj_type, obj_name, field_name, group=group)
 
 
 class VersionNotFoundError(IdfKitError):
