@@ -295,13 +295,14 @@ class TestAsVersionNarrowing:
     def test_narrowed_targets_still_report_what_they_lack(self) -> None:
         source = _src('def f(doc):\n    as_version(doc, since="9.4")["Space"]\n')
         diagnostics = check_compatibility(source, "t.py", _ALL)
-        assert [(d.code, d.to_version) for d in diagnostics] == [("C001", "9.4.0"), ("C001", "9.5.0")]
+        assert [(d.code, d.to_version, d.missing_in) for d in diagnostics] == [("C001", "9.4.0", ("9.4.0", "9.5.0"))]
+        assert diagnostics[0].message == "Object type 'Space' not found in 9.4.0, 9.5.0; added in 9.6.0"
 
     def test_c003_lists_only_the_narrowed_targets(self) -> None:
         source = _src('def f(doc):\n    as_version(doc, since="25.1").get_collection("Zoen")\n')
         diagnostics = check_compatibility(source, "t.py", _ALL)
         assert [d.code for d in diagnostics] == ["C003"]
-        assert "(25.1.0, 25.2.0, 26.1.0, 26.2.0)" in diagnostics[0].message
+        assert "(25.1.0 to 26.2.0)" in diagnostics[0].message
 
 
 # ---------------------------------------------------------------------------
@@ -828,8 +829,9 @@ class TestCliDiscoveryAndOutput:
         (project / "a.py").write_text(_GUARDED)
         _code, out, _ = _run(["check", "a.py", "--since", "9.4", "--before", "22.1"], capsys)
         lines = out.strip().splitlines()
-        assert lines[-1] == "Found 2 issues (0 errors, 2 warnings) in 1 file."
-        assert all(line.startswith("a.py:4:12: C001 [warning]") for line in lines[:-1])
+        # One finding names both releases that lack the type; the summary counts findings, not releases.
+        assert lines[-1] == "Found 1 issue (0 errors, 1 warning) in 1 file."
+        assert lines[:-1] == ["a.py:4:12: C001 [warning] Object type 'Space' not found in 9.4.0, 9.5.0; added in 9.6.0"]
 
     def test_output_order_is_stable(self, project: Path, capsys: pytest.CaptureFixture[str]) -> None:
         for name in ["b.py", "a.py", "c/z.py"]:
@@ -1030,3 +1032,64 @@ class TestReviewFixes:
         from idfkit.versions import releases_between as shared
 
         assert shared is releases_between
+
+
+# ---------------------------------------------------------------------------
+# One finding per literal for rules about a difference between releases
+# ---------------------------------------------------------------------------
+
+
+class TestOneFindingPerLiteral:
+    def test_c001_names_a_range_and_where_the_type_was_added(self) -> None:
+        (d,) = check_compatibility(_src('def f(doc):\n    doc["Space"]\n'), "t.py", _ALL)
+        assert d.code == "C001"
+        assert d.message == "Object type 'Space' not found in 8.9.0 to 9.5.0; added in 9.6.0"
+        assert d.missing_in == ("8.9.0", "9.0.1", "9.1.0", "9.2.0", "9.3.0", "9.4.0", "9.5.0")
+        assert (d.from_version, d.to_version) == ("9.6.0", "8.9.0")
+
+    def test_non_contiguous_targets_are_listed(self) -> None:
+        (d,) = check_compatibility(_src('doc["Space"]\n'), "t.py", [(8, 9, 0), (9, 2, 0), (9, 5, 0), (24, 1, 0)])
+        # 9.5.0 is followed by 24.1.0 among the targets, not by 9.6.0, so "added in" would not be exact.
+        assert d.message == "Object type 'Space' not found in 8.9.0, 9.2.0, 9.5.0; exists in 24.1.0"
+
+    def test_c002_once_with_where_the_value_was_added(self) -> None:
+        source = _src('def f(doc):\n    doc.add("Zone", "Z", zone_inside_convection_algorithm="ASTMC1340")\n')
+        (d,) = check_compatibility(source, "t.py", _ALL)
+        assert d.code == "C002"
+        assert d.message == (
+            "Choice value 'ASTMC1340' for Zone.zone_inside_convection_algorithm not found in 8.9.0 to 9.4.0; "
+            "added in 9.5.0"
+        )
+
+    def test_c002_where_a_value_was_removed(self) -> None:
+        source = _src(
+            'def f(doc):\n    doc.add("People", "P", mean_radiant_temperature_calculation_type="ZoneAveraged")\n'
+        )
+        (d,) = check_compatibility(source, "t.py", _ALL)
+        assert d.message.endswith("not found in 24.1.0 to 26.2.0; removed in 24.1.0")
+
+    def test_sarif_has_one_result_per_finding(self) -> None:
+        from idfkit.compat._sarif import format_sarif
+
+        diagnostics = check_compatibility(_src('def f(doc):\n    doc["Space"]\n'), "t.py", _ALL)
+        (result,) = json.loads(format_sarif(diagnostics))["runs"][0]["results"]
+        assert result["properties"]["missing_in"][0] == "8.9.0"
+        assert len(result["properties"]["missing_in"]) == 7
+
+    def test_text_output_and_summary_count_findings(self, project: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        (project / "a.py").write_text(_GUARDED)
+        _code, out, _ = _run(["check", "a.py", "--targets", "all"], capsys)
+        assert out.strip().splitlines() == [
+            "a.py:4:12: C001 [warning] Object type 'Space' not found in 8.9.0 to 9.5.0; added in 9.6.0",
+            "Found 1 issue (0 errors, 1 warning) in 1 file.",
+        ]
+
+
+class TestFormatReleases:
+    def test_runs(self) -> None:
+        from idfkit.compat._checker import format_releases
+
+        assert format_releases([(9, 4, 0)]) == "9.4.0"
+        assert format_releases([(9, 4, 0), (9, 5, 0)]) == "9.4.0, 9.5.0"
+        assert format_releases(ENERGYPLUS_VERSIONS) == "8.9.0 to 26.2.0"
+        assert format_releases([(8, 9, 0), (9, 0, 1), (9, 1, 0), (9, 3, 0)]) == "8.9.0 to 9.1.0, 9.3.0"

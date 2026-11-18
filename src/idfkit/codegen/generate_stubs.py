@@ -290,27 +290,28 @@ def _field_docstring(
 # Every typed class derives from one of these stub-only bases instead of IDFObject / ExtensibleGroup.
 # The runtime ``__getattr__``/``__setattr__`` take any ``str`` and return ``Any``, so a type checker
 # would resolve any undeclared name through them and accept ``material.thermal_resistance = 1.0`` on
-# a type that has no such field. Re-declaring both with a ``Never`` name turns that off: pyright
-# reports every undeclared name, read or assigned, and mypy reports every undeclared assignment.
+# a type that has no such field. Re-declaring both with a name type no string is turns that off:
+# pyright reports every undeclared name, read or assigned, and mypy reports every undeclared assignment.
 # Declared fields still resolve to their annotated types, because attribute lookup only falls back
 # to ``__getattr__`` for names the class does not declare. ``__getattr__`` returns ``object``, not
 # ``Never``: mypy does not check the name argument, and a ``Never`` read would fit anywhere and make
 # mypy treat the code after ``obj.typo()`` as unreachable, while ``object`` makes it report each use.
 # Plain ``IDFObject`` keeps the permissive signatures, so ``IDFCollection[IDFObject]`` is unaffected.
-# ``typing.Never`` is 3.11+, hence ``typing_extensions``; the import only exists in the stub, which
-# the type checker reads from its bundled typeshed, so it adds no runtime dependency.
 #
-# The ``Never`` is spelled through a type alias named for the mistake. pyright prints a parameter's
-# alias, so a misspelled field reads ``parameter "key" of type "_NotAFieldOfThisObjectType"`` rather
-# than ``of type "Never"``; mypy expands the alias, so what it reports is unchanged.
+# The name type is a class named for the mistake, never instantiated, so no name or value matches it
+# as none matches ``Never``. pyright reports a misspelled field as ``parameter "key" of type
+# "_NotAFieldOfThisObjectType"``. mypy, which does not check the name, reports the value against the
+# ``__setattr__`` value type: ``variable has type "_NotAFieldOfThisObjectType"``, where an alias of
+# ``Never`` read ``variable has type "Never"``, which names neither the field nor the mistake.
 _TYPED_OBJECT_BASE = "_TypedIDFObject"
 _TYPED_GROUP_BASE = "_TypedExtensibleGroup"
 _NOT_A_FIELD = "_NotAFieldOfThisObjectType"
 _NOT_A_GROUP_FIELD = "_NotAFieldOfThisExtensibleGroup"
 # A type without a Name field takes no name. Its creation signature has a positional-only parameter
-# typed with this alias of ``Never``, which nothing satisfies, so a name passed by mistake
+# typed with this class, which no value is, so a name passed by mistake
 # (``doc.output_variables.add("*", ...)``) reads ``parameter "this_type_has_no_name_field" of type
-# "_PassFieldsAsKeywords"`` under pyright, and ``expected "Never"`` under mypy, where both used to
+# "_PassFieldsAsKeywords"`` under pyright, and ``expected "_PassFieldsAsKeywords"`` under mypy (a class
+# rather than an alias of ``Never``, which mypy printed as ``expected "Never"``), where both used to
 # report the arguments instead (``Expected 0 positional arguments``; mypy's ``gets multiple values
 # for keyword argument``, naming a field the call did pass).
 _NO_NAME_FIELD = "_PassFieldsAsKeywords"
@@ -325,14 +326,14 @@ _ALL_VERSIONS_BASE = "IDFDocumentAllVersions[Strict]"
 def _generate_typed_bases() -> list[str]:
     """Emit the stub-only base classes that turn off the catch-all attribute access."""
     return [
-        f"{_NOT_A_FIELD}: TypeAlias = Never",
-        '"""No name is one: a type checker reports an undeclared field of a typed object against this type."""',
+        f"class {_NOT_A_FIELD}:",
+        '    """No name is one: a type checker reports an undeclared field of a typed object against this type."""',
         "",
-        f"{_NOT_A_GROUP_FIELD}: TypeAlias = Never",
-        '"""No name is one: a type checker reports an undeclared field of a typed group against this type."""',
+        f"class {_NOT_A_GROUP_FIELD}:",
+        '    """No name is one: a type checker reports an undeclared field of a typed group against this type."""',
         "",
-        f"{_NO_NAME_FIELD}: TypeAlias = Never",
-        '"""No value is one: a type checker reports a name given to a type without a Name field against this."""',
+        f"class {_NO_NAME_FIELD}:",
+        '    """No value is one: a type checker reports a name given to a type without a Name field against this."""',
         "",
         f"class {_TYPED_OBJECT_BASE}(IDFObject):",
         '    """Stub-only base: an undeclared field name is a type error on a typed object."""',
@@ -815,15 +816,36 @@ def _not_an_object_type(label: str) -> str:
     return f"_NotAnObjectTypeOf{label}"
 
 
+def _not_an_object_type_name(label: str) -> str:
+    """The class :func:`_not_an_object_type` is a ``Sequence`` of: never instantiated."""
+    return f"_NotAnObjectTypeNameOf{label}"
+
+
 def _generate_not_an_object_type(label: str, what: str) -> list[str]:
-    """The class behind :func:`_not_an_object_type`: never instantiated, so no argument matches it."""
+    """The type behind :func:`_not_an_object_type`: no string matches it, so no object type name does.
+
+    It is a ``Sequence`` of a class that is never instantiated, not that class itself, for mypy.
+    When no overload of a call matches, mypy looks for one whose parameter is roughly the argument's
+    type, treating a generic class in ``str``'s MRO as matching ``str`` whatever its argument, and if
+    it finds one reports that overload alone: ``Invalid index type "str" for "IDFDocument[...]";
+    expected type "Sequence[_NotAnObjectTypeNameOfEnergyPlus26_2]"``. Finding none, it lists every
+    overload under the error, one line per object type the document accepts, some 880 lines for
+    one misspelled name. ``Sequence`` is nominal, unlike ``Iterable`` or ``Container``, so the only
+    values that match are a sequence of the class and an empty ``[]`` or ``()``, which no code
+    indexes a document with. pyright prints the alias, so its message names the parameter type
+    ``_NotAnObjectTypeOfEnergyPlus26_2`` as it did when that was the class.
+    """
     return [
-        f"class {_not_an_object_type(label)}:",
-        f'    """Not a name of an object type {what}: indexing a document with one is a type error.',
+        f"class {_not_an_object_type_name(label)}:",
+        f'    """Not a name of an object type {what}: indexing a document with one is a type error."""',
         "",
-        "    The last ``__getitem__`` overload of a document type takes this class, which no string is, so",
-        "    a type checker that finds no overload for an object type name reports it against this type.",
-        '    """',
+        f"{_not_an_object_type(label)}: TypeAlias = Sequence[{_not_an_object_type_name(label)}]",
+        f'"""Not a name of an object type {what}: indexing a document with one is a type error.',
+        "",
+        "The last ``__getitem__`` overload of a document type takes this type, which no string is, so a",
+        "type checker that finds no overload for an object type name reports it against this type. It is",
+        "a ``Sequence`` so that mypy reports that overload alone rather than list every one.",
+        '"""',
         "",
     ]
 
@@ -856,7 +878,10 @@ def _generate_getitem(entries: Iterable[tuple[str, str]], label: str, doc: str |
         else:
             lines.append(f"{signature} ...")
     lines.append("    @overload")
-    lines.append(f"    def __getitem__(self, obj_type: {_not_an_object_type(label)}, /) -> Never: ...")
+    # What an unknown name returns at run time; mypy types the lookup with it after the error.
+    lines.append(
+        f"    def __getitem__(self, obj_type: {_not_an_object_type(label)}, /) -> IDFCollection[IDFObject]: ..."
+    )
     return lines
 
 
@@ -2209,14 +2234,13 @@ def generate_versioned_documents() -> dict[str, str]:
             "",
             "from __future__ import annotations",
             "",
-            "from typing import Literal, overload",
-            "",
-            "from typing_extensions import Never",
+            "from collections.abc import Sequence",
+            "from typing import Literal, TypeAlias, overload",
             "",
             "from .. import _generated_types as _g",
             "from .. import versioned as _v",
             "from ..document import IDFDocumentAllVersions, Strict",
-            "from ..objects import IDFCollection",
+            "from ..objects import IDFCollection, IDFObject",
             "",
             *_generate_not_an_object_type(label, f"EnergyPlus {version_string(ver)} has"),
             "",
@@ -2498,7 +2522,7 @@ def _generate_types_module(sink: _CreationModules | None = None) -> str:
     parts.append("from collections.abc import Mapping, Sequence")
     parts.append("from typing import Any, Literal, TypeAlias, TypedDict")
     parts.append("")
-    parts.append("from typing_extensions import Never, Unpack")
+    parts.append("from typing_extensions import Unpack")
     parts.append("")
     parts.extend(sink.imports())
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
@@ -2639,11 +2663,11 @@ def _generate_document_module() -> str:
     lines.append("")
     lines.append("from __future__ import annotations")
     lines.append("")
-    lines.append("from collections.abc import Iterator")
+    lines.append("from collections.abc import Iterator, Sequence")
     lines.append("from pathlib import Path")
     lines.append("from typing import Any, Generic, Literal, TypeAlias, TypeVar, overload")
     lines.append("")
-    lines.append("from typing_extensions import Never, Self")
+    lines.append("from typing_extensions import Self")
     lines.append("")
     lines.append("from ._accessors import AccessorResolver")
     lines.append("from ._compat import EppyDocumentMixin")

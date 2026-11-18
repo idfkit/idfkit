@@ -32,6 +32,7 @@ from idfkit.codegen.generate_stubs import (
     _format_constraints,  # pyright: ignore[reportPrivateUsage]
     _generate_attr_properties,  # pyright: ignore[reportPrivateUsage]
     _generate_getitem,  # pyright: ignore[reportPrivateUsage]
+    _generate_not_an_object_type,  # pyright: ignore[reportPrivateUsage]
     _generate_object_class,  # pyright: ignore[reportPrivateUsage]
     _sanitize_docstring,  # pyright: ignore[reportPrivateUsage]
     _schema_type_to_python,  # pyright: ignore[reportPrivateUsage]
@@ -483,8 +484,17 @@ class TestGenerateGetitem:
         text = "\n".join(lines)
         assert 'def __getitem__(self, obj_type: Literal["Zone"], /) -> IDFCollection[Zone]: ...' in text
         assert text.count("@overload") == 3
-        assert lines[-1] == "    def __getitem__(self, obj_type: _NotAnObjectTypeOfEnergyPlus24_1, /) -> Never: ..."
+        assert lines[-1] == (
+            "    def __getitem__(self, obj_type: _NotAnObjectTypeOfEnergyPlus24_1, /) -> IDFCollection[IDFObject]: ..."
+        )
         assert "TypedDict" not in text
+
+    def test_the_type_matching_nothing_is_a_sequence_so_mypy_reports_one_overload(self) -> None:
+        # mypy reports a call no overload matches against the one overload whose parameter is a
+        # generic class in str's MRO, whatever its argument; finding none, it lists every overload.
+        text = "\n".join(_generate_not_an_object_type("EnergyPlus24_1", "EnergyPlus 24.1.0 has"))
+        assert "class _NotAnObjectTypeNameOfEnergyPlus24_1:" in text
+        assert "_NotAnObjectTypeOfEnergyPlus24_1: TypeAlias = Sequence[_NotAnObjectTypeNameOfEnergyPlus24_1]" in text
 
 
 class TestGenerateAttrProperties:
@@ -550,10 +560,11 @@ class TestGenerateStubs:
         # Zone's declaration changed between releases, so it derives from its shared base.
         assert "class Zone(AnyZone):" in content
         assert "class AnyZone(_TypedIDFObject):" in content
-        # The stub-only bases switch off the catch-all attribute access with a Never name, spelled
-        # through an alias named for the mistake, which pyright prints in its message.
-        assert "_NotAFieldOfThisObjectType: TypeAlias = Never" in content
-        assert "_NotAFieldOfThisExtensibleGroup: TypeAlias = Never" in content
+        # The stub-only bases switch off the catch-all attribute access with a name type no string is,
+        # a class named for the mistake, which pyright prints for the name and mypy for the value.
+        assert "class _NotAFieldOfThisObjectType:" in content
+        assert "class _NotAFieldOfThisExtensibleGroup:" in content
+        assert "TypeAlias = Never" not in content
         assert "class _TypedIDFObject(IDFObject):" in content
         assert "def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ..." in content
         assert "class _TypedExtensibleGroup(ExtensibleGroup):" in content
@@ -562,7 +573,7 @@ class TestGenerateStubs:
             " -> None: ..." in content
         )
         # ReadOnly typed the entries of the TypedDict maps, which are gone; nothing else uses it.
-        assert "from typing_extensions import Never, Unpack" in content
+        assert "from typing_extensions import Unpack" in content
         # A trailing-underscore field is declared under both spellings the runtime accepts.
         assert "    cond_flag_is_the_basement_conditioned_: " in content
         assert "    cond_flag_is_the_basement_conditioned: " in content

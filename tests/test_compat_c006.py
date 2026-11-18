@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import json
 import textwrap
+import warnings
+from typing import Any
 
+import pytest
+
+from idfkit import new_document
 from idfkit.compat import check_compatibility
-from idfkit.compat._models import DEFAULT_RULES, DIAGNOSTIC_CODES, RULE_SEVERITIES, CompatSeverity
+from idfkit.compat._models import DEFAULT_RULES, DIAGNOSTIC_CODES, RULE_SEVERITIES, CompatSeverity, Diagnostic
 from idfkit.versions import ENERGYPLUS_VERSIONS
 
 _V89 = (8, 9, 0)
@@ -63,7 +69,7 @@ class TestObjectType:
             'def f(doc):\n    as_version(doc, since="25.1").add("Zoen", "Office")\n',
             targets=_ALL,
         )
-        assert "(25.1.0, 25.2.0, 26.1.0, 26.2.0)" in found
+        assert "(25.1.0 to 26.2.0)" in found
 
 
 class TestChoiceValue:
@@ -302,3 +308,209 @@ class TestArityAndValidation:
 
     def test_validate_false_still_raises_on_an_unknown_type(self) -> None:
         assert len(_check('doc = new_document()\ndoc.add("Zoen", "A", validate=False)\n')) == 1
+
+
+# ---------------------------------------------------------------------------
+# Field names: a keyword or dict key no target release has as a field of the type
+# ---------------------------------------------------------------------------
+
+
+def _diagnostics(body: str, *, targets: list[tuple[int, int, int]] | None = None, **kwargs: Any) -> list[Diagnostic]:
+    source = _IMP + textwrap.dedent(body)
+    return check_compatibility(source, "t.py", targets or [_V89, _V262], **kwargs)
+
+
+class TestFieldName:
+    def test_a_misspelled_keyword(self) -> None:
+        (diagnostic,) = _diagnostics('doc = new_document()\ndoc.add("Zone", "D", ceiling_hieght=3.0)\n')
+        assert diagnostic.code == "C006"
+        assert diagnostic.severity is CompatSeverity.ERROR
+        assert diagnostic.message == (
+            "Field 'ceiling_hieght' is not a field of Zone in any target version (8.9.0, 26.2.0); "
+            "add() refuses it, with or without validate=False; did you mean 'ceiling_height'?"
+        )
+        # A keyword's fix is the bare name, located at the keyword.
+        assert diagnostic.suggested_fix == "ceiling_height"
+        assert (diagnostic.line, diagnostic.col, diagnostic.end_col) == (3, 21, 35)
+
+    def test_validate_false_still_refuses_it(self) -> None:
+        found = _check('doc = new_document()\ndoc.add("Zone", "D", ceiling_hieght=3.0, validate=False)\n')
+        assert len(found) == 1
+        assert "'ceiling_hieght'" in found[0]
+
+    def test_add_parameters_are_not_fields(self) -> None:
+        assert _check('doc = new_document()\ndoc.add("Zone", name="D", validate=True, fields={})\n') == []
+
+    def test_dict_key(self) -> None:
+        (diagnostic,) = _diagnostics('doc = new_document()\ndoc.add("Zone", "D", {"ceilng_height": 3.0})\n')
+        assert "'ceilng_height'" in diagnostic.message
+        assert diagnostic.suggested_fix == '"ceiling_height"'
+
+    def test_fields_keyword_dict(self) -> None:
+        (diagnostic,) = _diagnostics('doc = new_document()\ndoc.add("Zone", "D", fields={"ceilng_height": 3.0})\n')
+        assert diagnostic.suggested_fix == '"ceiling_height"'
+
+    def test_a_display_spelling_is_refused_with_its_python_spelling(self) -> None:
+        """add() stores keys as given and refuses ``"Ceiling Height"``; update() would resolve it."""
+        (diagnostic,) = _diagnostics('doc = new_document()\ndoc.add("Zone", "D", {"Ceiling Height": 3.0})\n')
+        assert diagnostic.suggested_fix == '"ceiling_height"'
+
+    def test_a_key_that_is_not_an_identifier(self) -> None:
+        """Some fields start with a digit, so they can only be passed in a dict."""
+        body = (
+            'doc = new_document()\ndoc.add("Coil:Cooling:DX:SingleSpeed", "C", '
+            '{"2017_rated_evaporator_fan_power_per_volume_flow_rate": 1})\n'
+        )
+        assert _check(body, targets=[(22, 1, 0), _V262]) == []
+
+    def test_a_trailing_underscore_field_with_or_without_it(self) -> None:
+        for key in ("gas_or_gas_mixture_", "gas_or_gas_mixture"):
+            assert _check(f'doc = new_document()\ndoc.add("WindowMaterial:Gap", "G", {key}="Air")\n') == []
+
+    def test_extensible_wrapper_and_flat_spellings(self) -> None:
+        body = """\
+        doc = new_document()
+        doc.add("BuildingSurface:Detailed", "S", vertices=[])
+        doc.add("BuildingSurface:Detailed", "S", vertex_x_coordinate=0, vertex_x_coordinate_2=1, vertex_3_x_coordinate=2)
+        """
+        assert _check(body) == []
+
+    def test_a_misspelled_extensible_field(self) -> None:
+        (found,) = _check('doc = new_document()\ndoc.add("BuildingSurface:Detailed", "S", vertex_x_coordinat=0)\n')
+        assert "did you mean 'vertex_x_coordinate'?" in found
+
+    def test_a_field_some_target_has_is_not_reported(self) -> None:
+        body = (
+            'doc = new_document()\ndoc.add("People", "P", mean_radiant_temperature_calculation_type="ZoneAveraged")\n'
+        )
+        assert _check(body, targets=_ALL) == []
+
+    def test_an_unknown_type_reports_only_the_type(self) -> None:
+        (found,) = _check('doc = new_document()\ndoc.add("Zoen", "D", ceiling_hieght=3.0)\n')
+        assert "'Zoen'" in found
+
+    def test_a_type_some_target_lacks_is_not_checked(self) -> None:
+        assert _check('doc = new_document()\ndoc.add("Space", "S", flor_area=1)\n', targets=_ALL) == []
+
+    def test_unknown_receiver_with_more_than_the_type(self) -> None:
+        assert len(_check('def f(model):\n    model.add("Zone", "D", ceiling_hieght=3.0)\n')) == 1
+
+    def test_set_add_and_files_without_idfkit_are_not_read(self) -> None:
+        assert _check('seen = set()\nseen.add("Zone")\n') == []
+        assert _check('registry.add("Zone", "D", ceiling_hieght=3.0)\n', imports=False) == []
+
+    def test_double_star_is_not_read(self) -> None:
+        assert _check('doc = new_document()\ndoc.add("Zone", "D", **{"ceiling_hieght": 3.0})\n') == []
+
+
+class TestFieldNameReceivers:
+    def test_collection_add(self) -> None:
+        (found,) = _check('doc = new_document()\ndoc.zones.add("Office", ceiling_hieght=3.0)\n')
+        assert "not a field of Zone" in found
+
+    def test_collection_add_through_a_subscript_and_a_bound_name(self) -> None:
+        body = """\
+        doc = new_document()
+        doc["Zone"].add("A", ceiling_hieght=3.0)
+        zones = doc.zones
+        zones.add("B", ceiling_hieght=3.0)
+        """
+        assert len(_check(body)) == 2
+
+    def test_collection_name_argument_is_not_a_field(self) -> None:
+        assert _check('doc = new_document()\ndoc.zones.add("Office", ceiling_height=3.0)\n') == []
+
+    def test_narrowing_lists_only_the_releases_in_scope(self) -> None:
+        (found,) = _check(
+            'def f(doc):\n    as_version(doc, since="25.1").add("Zone", "D", ceiling_hieght=3.0)\n', targets=_ALL
+        )
+        assert "(25.1.0 to 26.2.0)" in found
+
+    def test_a_version_guard(self) -> None:
+        body = """\
+        def f(doc):
+            if doc.version >= (25, 1, 0):
+                doc.zones.add("D", ceiling_hieght=3.0)
+        """
+        (found,) = _check(body, targets=_ALL)
+        assert "(25.1.0 to 26.2.0)" in found
+
+
+class TestFieldNameSettings:
+    _BODY = 'doc = new_document()\ndoc.add("Zone", "D", ceiling_hieght=3.0)\n'
+
+    def test_suppression_comment(self) -> None:
+        body = self._BODY.replace("3.0)", "3.0)  # idfkit: ignore[C006]")
+        assert _diagnostics(body) == []
+
+    def test_select_and_ignore(self) -> None:
+        assert [d.code for d in _diagnostics(self._BODY, select=["C001"])] == []
+        assert _diagnostics(self._BODY, ignore=["C006"]) == []
+
+    def test_sarif(self) -> None:
+        from idfkit.compat._sarif import format_sarif
+
+        sarif = json.loads(format_sarif(_diagnostics(self._BODY)))
+        (result,) = sarif["runs"][0]["results"]
+        assert result["ruleId"] == "C006"
+        assert result["level"] == "error"
+        assert result["properties"]["suggested_fix"] == "ceiling_height"
+
+
+class TestFieldKeysMirrorTheRunTime:
+    """The checker accepts exactly the keys ``IDFDocument.add(validate=False)`` stores."""
+
+    @pytest.mark.parametrize(
+        "obj_type",
+        [
+            "Zone",
+            "BuildingSurface:Detailed",
+            "WindowMaterial:Gap",
+            "GroundHeatTransfer:Basement:ManualGrid",
+            "MaterialProperty:GlazingSpectralData",
+            "Coil:Cooling:DX:SingleSpeed",
+            "Output:SQLite",
+        ],
+    )
+    def test_accepts_matches_add(self, obj_type: str) -> None:
+        from idfkit.compat._checker import _field_keys  # pyright: ignore[reportPrivateUsage]
+        from idfkit.exceptions import InvalidFieldError
+        from idfkit.schema import get_schema
+
+        version = (24, 1, 0)
+        keys = _field_keys(version, obj_type)
+        assert keys is not None
+        pc = get_schema(version).get_parsing_cache(obj_type)
+        assert pc is not None
+        candidates = {*keys.known, *keys.aliases, *keys.extensibles}
+        candidates |= {f"{k}_2" for k in keys.extensibles} | {f"{k}_0" for k in keys.extensibles}
+        candidates |= {k + "x" for k in keys.known} | {k.upper() for k in keys.known} | {"wavelength_1", ""}
+        for key in sorted(candidates):
+            doc = new_document(version=version)
+            value: object = [] if key == pc.ext_wrapper_key else ""
+            name = "N" if pc.has_name else ""
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                try:
+                    doc.add(obj_type, name, {key: value}, validate=False)
+                except (InvalidFieldError, TypeError):
+                    stored = False
+                else:
+                    stored = True
+            assert keys.accepts(key) is stored, key
+
+
+# ---------------------------------------------------------------------------
+# The wording for a numeric field with choices (``Autocalculate``)
+# ---------------------------------------------------------------------------
+
+
+class TestNumericFieldValue:
+    def test_a_word_for_a_number(self) -> None:
+        (found,) = _check('doc = new_document()\ndoc.add("Zone", "D", ceiling_height="tall")\n')
+        assert "Value 'tall' for Zone.ceiling_height is neither a number nor one of the field's choices" in found
+        assert "(Autocalculate)" in found
+
+    def test_a_choice_field_keeps_its_wording(self) -> None:
+        (found,) = _check('doc = new_document()\ndoc.add("Zone", "D", zone_inside_convection_algorithm="Bogus")\n')
+        assert found.startswith("C006:Choice value 'Bogus'")

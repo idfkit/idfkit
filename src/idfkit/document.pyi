@@ -6,11 +6,11 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import Any, Generic, Literal, TypeAlias, TypeVar, overload
 
-from typing_extensions import Never, Self
+from typing_extensions import Self
 
 from ._accessors import AccessorResolver
 from ._compat import EppyDocumentMixin
@@ -574,12 +574,16 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
             True
         """
 
-class _NotAnObjectTypeOfEveryRelease:
-    """Not a name of an object type every supported EnergyPlus release has: indexing a document with one is a type error.
+class _NotAnObjectTypeNameOfEveryRelease:
+    """Not a name of an object type every supported EnergyPlus release has: indexing a document with one is a type error."""
 
-    The last ``__getitem__`` overload of a document type takes this class, which no string is, so
-    a type checker that finds no overload for an object type name reports it against this type.
-    """
+_NotAnObjectTypeOfEveryRelease: TypeAlias = Sequence[_NotAnObjectTypeNameOfEveryRelease]
+"""Not a name of an object type every supported EnergyPlus release has: indexing a document with one is a type error.
+
+The last ``__getitem__`` overload of a document type takes this type, which no string is, so a
+type checker that finds no overload for an object type name reports it against this type. It is
+a ``Sequence`` so that mypy reports that overload alone rather than list every one.
+"""
 
 class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     """A document as every supported EnergyPlus version has it.
@@ -3365,7 +3369,7 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
         self, obj_type: Literal["Output:PreprocessorMessage"], /
     ) -> IDFCollection[OutputPreprocessorMessage]: ...
     @overload
-    def __getitem__(self, obj_type: _NotAnObjectTypeOfEveryRelease, /) -> Never: ...
+    def __getitem__(self, obj_type: _NotAnObjectTypeOfEveryRelease, /) -> IDFCollection[IDFObject]: ...
     @property
     def air_conditioner_variable_refrigerant_flow_fluid_temperature_control_hrs(
         self,
@@ -5393,12 +5397,16 @@ about the release. Narrow with ``idfkit.versioned.as_version`` to reach what onl
 have.
 """
 
-class _NotAnObjectTypeOfEnergyPlus26_2:
-    """Not a name of an object type EnergyPlus 26.2.0 has: indexing a document with one is a type error.
+class _NotAnObjectTypeNameOfEnergyPlus26_2:
+    """Not a name of an object type EnergyPlus 26.2.0 has: indexing a document with one is a type error."""
 
-    The last ``__getitem__`` overload of a document type takes this class, which no string is, so
-    a type checker that finds no overload for an object type name reports it against this type.
-    """
+_NotAnObjectTypeOfEnergyPlus26_2: TypeAlias = Sequence[_NotAnObjectTypeNameOfEnergyPlus26_2]
+"""Not a name of an object type EnergyPlus 26.2.0 has: indexing a document with one is a type error.
+
+The last ``__getitem__`` overload of a document type takes this type, which no string is, so a
+type checker that finds no overload for an object type name reports it against this type. It is
+a ``Sequence`` so that mypy reports that overload alone rather than list every one.
+"""
 
 class IDFDocument(IDFDocumentAllVersions[Strict]):
     """Main container for an EnergyPlus model.
@@ -8514,7 +8522,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
         self, obj_type: Literal["PythonPlugin:OutputVariable"], /
     ) -> IDFCollection[PythonPluginOutputVariable]: ...
     @overload
-    def __getitem__(self, obj_type: _NotAnObjectTypeOfEnergyPlus26_2, /) -> Never: ...
+    def __getitem__(self, obj_type: _NotAnObjectTypeOfEnergyPlus26_2, /) -> IDFCollection[IDFObject]: ...
     @property
     def air_conditioner_variable_refrigerant_flow_fluid_temperature_control_hrs(
         self,
