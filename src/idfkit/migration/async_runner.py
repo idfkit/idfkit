@@ -256,7 +256,13 @@ async def _run_chain_async(
     )
     final_idf = work_root / "migrated.idf"
     await asyncio.to_thread(final_idf.write_text, current_text, "latin-1")
-    migrated = await asyncio.to_thread(parse_migrated_idf, final_idf, version=target, strict=model.strict)
+    migrated = await asyncio.to_thread(
+        parse_migrated_idf,
+        final_idf,
+        version=target,
+        strict=model.strict,
+        normalize_choices=model.normalize_choices,
+    )
     verify_migration_output(
         model,
         migrated,

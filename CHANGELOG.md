@@ -46,6 +46,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** choice values were read and stored in the schema's spelling whatever the source's
+  case (`WALL` read `"Wall"`), so the `Literal` types held on files you did not write; compare with
+  the schema's spelling or `.casefold()`, or pass `normalize_choices=False` to keep values as written
+  ([#306](https://github.com/idfkit/idfkit/pull/306)).
 - **Breaking:** for type checking, a type a model holds at most one of (`Building`, `Timestep`,
   `Output:SQLite`, ...) is reached by its singular, `doc.building`, still returning the collection.
   Replace `doc.output_sqlites` with `doc.output_sqlite`; for `Version`, use `doc["Version"]` ([#308](https://github.com/idfkit/idfkit/pull/308)).

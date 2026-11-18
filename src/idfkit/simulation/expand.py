@@ -386,7 +386,7 @@ def _parse_expanded(run_dir: Path, model: _DocT) -> _DocT:
 
     # The file carries the model's version line, so the result has the model's version. Strictness
     # is not in the file, so it is carried over, as model.copy() does when there is nothing to expand.
-    doc = parse_idf(run_dir / "expanded.idf", strict=model.strict)
+    doc = parse_idf(run_dir / "expanded.idf", strict=model.strict, normalize_choices=model.normalize_choices)
     # parse_idf records the scratch file as the document's filepath, and *run_dir* is deleted as
     # soon as the caller returns. See _detached_copy for why the result has no filepath at all.
     doc.filepath = None

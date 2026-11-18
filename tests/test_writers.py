@@ -345,8 +345,17 @@ class TestEpJSONChoiceSpelling:
         assert plant["plant_loop_volume"] == "Autocalculate"
         assert plant["maximum_loop_flow_rate"] == "Autosize"
 
-    def test_idf_output_keeps_the_authors_spelling(self, idf_path: Path) -> None:
+    def test_idf_output_writes_the_schema_spelling(self, idf_path: Path) -> None:
+        """Choices are read in the schema's spelling by default, so the IDF writer emits it too."""
         text = write_idf(parse_idf(idf_path), preserve_formatting=False)
+        assert "Counterclockwise" in text
+        assert "Hourly" in text
+        assert "Normal" in text
+        for authored in ("CounterClockWise", "hourly", "NORMAL", "AUTOCALCULATE"):
+            assert authored not in text
+
+    def test_idf_output_keeps_the_authors_spelling_on_opt_out(self, idf_path: Path) -> None:
+        text = write_idf(parse_idf(idf_path, normalize_choices=False), preserve_formatting=False)
         assert "CounterClockWise" in text
         assert "hourly" in text
         assert "NORMAL" in text

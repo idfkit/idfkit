@@ -384,3 +384,28 @@ for surface in legacy["BuildingSurface:Detailed"]:
         print(err.wrapper_key, err.group_index, err.field_name)  # "vertices", 2, "vertex_z_coordinate"
         unset = [v.group_index for v in surface.vertices if v.get(err.field_name) is None]  # get() never raises
 # --8<-- [end:read-required-groups]
+
+
+# --8<-- [start:choice-spelling]
+from collections import Counter
+
+from typing_extensions import assert_never
+
+from idfkit import load_idf
+
+# 5ZoneAirCooled.idf writes WALL, FLOOR, CEILING and ROOF. Each choice is read in the spelling the
+# schema declares, so the Literal type holds and the match is exhaustive on a file of any case.
+model = load_idf("5ZoneAirCooled.idf")
+counts: Counter[str] = Counter()
+for srf in model.building_surfaces:
+    match srf.surface_type:
+        case "Wall" | "Floor" | "Ceiling" | "Roof":
+            counts[srf.surface_type] += 1
+        case _:
+            assert_never(srf.surface_type)
+
+# Opt out to keep the file's own text. The Literal type then does not hold: compare with casefold().
+raw = load_idf("5ZoneAirCooled.idf", normalize_choices=False)
+walls = [s for s in raw.building_surfaces if s.surface_type.casefold() == "wall"]
+assert raw.normalize_choices is False
+# --8<-- [end:choice-spelling]

@@ -283,7 +283,9 @@ def _run_chain(
     )
     final_idf = work_root / "migrated.idf"
     final_idf.write_text(current_text, encoding="latin-1")
-    migrated = parse_migrated_idf(final_idf, version=target, strict=model.strict)
+    migrated = parse_migrated_idf(
+        final_idf, version=target, strict=model.strict, normalize_choices=model.normalize_choices
+    )
     verify_migration_output(
         model,
         migrated,

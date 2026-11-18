@@ -2840,6 +2840,7 @@ def _generate_document_module() -> str:
     # Properties
     emit("def version(self) -> tuple[int, int, int]", "IDFDocument.version", decorators=("@property",))
     emit("def strict(self) -> Strict", "IDFDocument.strict", decorators=("@property",))
+    emit("def normalize_choices(self) -> bool", "IDFDocument.normalize_choices", decorators=("@property",))
     emit("def schema(self) -> EpJSONSchema | None", "IDFDocument.schema", decorators=("@property",))
     emit("def cst(self) -> DocumentCST | None", "IDFDocument.cst", decorators=("@property",))
     emit("def raw_text(self) -> str | None", "IDFDocument.raw_text", decorators=("@property",))
@@ -2875,6 +2876,7 @@ def _generate_document_module() -> str:
         "IDFDocument.add",
     )
     emit("def addidfobject(self, obj: IDFObject) -> IDFObject", "IDFDocument.addidfobject")
+    emit("def _adopt(self, obj: IDFObject) -> IDFObject", "IDFDocument._adopt")
     emit("def removeidfobject(self, obj: IDFObject) -> None", "IDFDocument.removeidfobject")
     emit("def rename(self, obj_type: str, old_name: str, new_name: str) -> None", "IDFDocument.rename")
     emit(
@@ -2953,6 +2955,7 @@ def _generate_document_module() -> str:
     lines.append("        filepath: Path | str | None = ...,")
     lines.append("        *,")
     lines.append("        strict: Strict = ...,")
+    lines.append("        normalize_choices: bool = ...,")
     if init_doc:
         lines.append("    ) -> None:")
         lines.extend(_format_docstring_for_stub(init_doc, "        "))
