@@ -43,6 +43,7 @@ class SiteGroundDomainBasement_v8_9_to_v22_1:
         vertical_insulation_depth: float | None = ...,
         simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
         mesh_density_parameter: float | None = 4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundDomain:Basement`` and add it to the document.
 
@@ -109,6 +110,7 @@ class MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1:
         water_vapor_diffusion_resistance_factor_24: float | None = ...,
         relative_humidity_fraction_25: float | None = ...,
         water_vapor_diffusion_resistance_factor_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Diffusion`` and add it to the document.
 
@@ -161,6 +163,7 @@ class GeneratorMicroTurbine_v9_3_to_v9_4:
         nominal_exhaust_air_outlet_temperature: float | None = ...,
         exhaust_air_temperature_function_of_temperature_curve_name: str | None = ...,
         exhaust_air_temperature_function_of_part_load_ratio_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:MicroTurbine`` and add it to the document.
 
@@ -185,6 +188,7 @@ class FloorInterzone_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Interzone`` and add it to the document.
 

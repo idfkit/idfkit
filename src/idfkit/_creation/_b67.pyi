@@ -30,6 +30,7 @@ class Material:
         thermal_absorptance_inside_face: float | None = ...,
         solar_absorptance_inside_face: float | None = ...,
         visible_absorptance_inside_face: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Material`` and add it to the document.
 
@@ -40,7 +41,14 @@ class Material:
 
 class AnyInternalMass:
     def __call__(
-        self, name: str, /, *, narrow_with_as_version_first: Never, construction_name: str, surface_area: float
+        self,
+        name: str,
+        /,
+        *,
+        narrow_with_as_version_first: Never,
+        construction_name: str,
+        surface_area: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``InternalMass`` and add it to the document.
 
@@ -64,6 +72,7 @@ class AirflowNetworkDistributionDuctViewFactors:
             _g.AirflowNetworkDistributionDuctViewFactorsSurfacesItem
             | _g.AirflowNetworkDistributionDuctViewFactorsSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:DuctViewFactors`` and add it to the document.
 
@@ -80,6 +89,7 @@ class AirLoopHVACReturnPath:
         *,
         return_air_path_outlet_node_name: str,
         components: Sequence[_g.AirLoopHVACReturnPathComponentsItem | _g.AirLoopHVACReturnPathComponentsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:ReturnPath`` and add it to the document.
 
@@ -100,6 +110,7 @@ class WaterUseRainCollector:
         collection_loss_factor_schedule_name: str | None = ...,
         maximum_collection_rate: float | None = ...,
         surfaces: Sequence[_g.WaterUseRainCollectorSurfacesItem | _g.WaterUseRainCollectorSurfacesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterUse:RainCollector`` and add it to the document.
 
@@ -119,6 +130,7 @@ class OutputMeterCumulative:
             "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Meter:Cumulative`` and add it to the document.
 

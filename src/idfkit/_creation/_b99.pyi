@@ -51,6 +51,7 @@ class ConstructionComplexFenestrationState:
         layer_5_name: str | None = ...,
         layer_5_directional_front_absorptance_matrix_name: str | None = ...,
         layer_5_directional_back_absorptance_matrix_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:ComplexFenestrationState`` and add it to the document.
 
@@ -91,6 +92,7 @@ class RoomAirSettingsUnderFloorAirDistributionExterior:
         coefficient_e_in_formula_kc_a_gamma_b_c_d_gamma_e_gamma_2: float
         | Literal["Autocalculate"]
         | None = "Autocalculate",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAirSettings:UnderFloorAirDistributionExterior`` and add it to the document.
 
@@ -138,6 +140,7 @@ class HVACTemplateZoneConstantVolume:
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:ConstantVolume`` and add it to the document.
 
@@ -190,6 +193,7 @@ class HVACTemplatePlantMixedWaterLoop:
             "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
         ]
         | None = "SequentialLoad",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:MixedWaterLoop`` and add it to the document.
 
@@ -208,6 +212,7 @@ class DistrictCooling:
         chilled_water_outlet_node_name: str,
         nominal_capacity: float | Literal["Autosize"] | None = ...,
         capacity_fraction_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DistrictCooling`` and add it to the document.
 

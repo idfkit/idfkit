@@ -18,6 +18,7 @@ class Timestep:
         /,
         *,
         number_of_timesteps_per_hour: int | None = 6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Timestep`` and add it to the document.
 
@@ -42,6 +43,7 @@ class AirLoopHVAC:
         connector_list_name: str | None = ...,
         demand_side_outlet_node_name: str | None = ...,
         design_return_air_flow_fraction_of_supply_air_flow: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC`` and add it to the document.
 
@@ -62,6 +64,7 @@ class PlantComponentTemperatureSource:
         temperature_specification_type: Literal["Constant", "Scheduled"] | None = ...,
         source_temperature: float | None = ...,
         source_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantComponent:TemperatureSource`` and add it to the document.
 
@@ -84,6 +87,7 @@ class DemandManagerExteriorLights:
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
         lights: Sequence[_g.DemandManagerExteriorLightsLightsItem | _g.DemandManagerExteriorLightsLightsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:ExteriorLights`` and add it to the document.
 

@@ -49,6 +49,7 @@ class ElectricEquipmentITEAirCooled_v9_6_to_v22_1:
         supply_temperature_difference_schedule: str | None = ...,
         return_temperature_difference: float | None = ...,
         return_temperature_difference_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment:ITE:AirCooled`` and add it to the document.
 
@@ -101,6 +102,7 @@ class CoilCoolingDXTwoSpeed_v8_9_to_v23_1:
         low_speed_sensible_heat_ratio_function_of_temperature_curve_name: str | None = ...,
         low_speed_sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:TwoSpeed`` and add it to the document.
 
@@ -122,6 +124,7 @@ class SurfacePropertySurroundingSurfaces_v8_9_to_v26_1:
         surfaces: Sequence[
             _g.SurfacePropertySurroundingSurfacesSurfacesItem | _g.SurfacePropertySurroundingSurfacesSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:SurroundingSurfaces`` and add it to the document.
 
@@ -166,6 +169,7 @@ class CoilWaterHeatingDesuperheater_v9_2_to_v22_1:
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:Desuperheater`` and add it to the document.
 

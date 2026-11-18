@@ -29,6 +29,7 @@ class SiteGroundTemperatureFCfactorMethod:
         october_ground_temperature: float | None = 13,
         november_ground_temperature: float | None = 13,
         december_ground_temperature: float | None = 13,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundTemperature:FCfactorMethod`` and add it to the document.
 
@@ -53,6 +54,7 @@ class WindowMaterialScreenEquivalentLayer:
         screen_infrared_emissivity: float | None = 0.93,
         screen_wire_spacing: float | None = 0.025,
         screen_wire_diameter: float | None = 0.005,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Screen:EquivalentLayer`` and add it to the document.
 
@@ -71,6 +73,7 @@ class ShadingZoneDetailed:
         transmittance_schedule_name: str | None = ...,
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.ShadingZoneDetailedVerticesItem | _g.ShadingZoneDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Shading:Zone:Detailed`` and add it to the document.
 
@@ -92,6 +95,7 @@ class GroundHeatTransferBasementManualGrid:
         ibase_x_direction_cell_indicator_of_slab_edge_5_20_: float,
         jbase_y_direction_cell_indicator_of_slab_edge_5_20_: float,
         kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:ManualGrid`` and add it to the document.
 
@@ -130,6 +134,7 @@ class RoomAirNode:
         surface_19_name: str | None = ...,
         surface_20_name: str | None = ...,
         surface_21_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node`` and add it to the document.
 
@@ -148,6 +153,7 @@ class ZoneAirBalanceOutdoorAir:
         air_balance_method: Literal["None", "Quadrature"] | None = "Quadrature",
         induced_outdoor_air_due_to_unbalanced_duct_leakage: float | None = 0,
         induced_outdoor_air_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneAirBalance:OutdoorAir`` and add it to the document.
 
@@ -188,6 +194,7 @@ class AnyAirflowNetworkMultiZoneComponentDetailedOpening:
         width_factor_for_opening_factor_4: float | None = 0,
         height_factor_for_opening_factor_4: float | None = 0,
         start_height_factor_for_opening_factor_4: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Component:DetailedOpening`` and add it to the document.
 
@@ -211,6 +218,7 @@ class AirflowNetworkDistributionComponentDuct:
         overall_moisture_transmittance_coefficient_from_air_to_air: float | None = 0.001,
         outside_convection_coefficient: float | None = ...,
         inside_convection_coefficient: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Duct`` and add it to the document.
 
@@ -259,6 +267,7 @@ class HVACTemplateZoneVAVHeatAndCool:
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:VAV:HeatAndCool`` and add it to the document.
 
@@ -336,6 +345,7 @@ class SizingSystem:
         heating_coil_sizing_method: Literal["CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity", "None"]
         | None = "None",
         maximum_heating_capacity_to_cooling_capacity_sizing_ratio: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:System`` and add it to the document.
 
@@ -440,6 +450,7 @@ class AnyCoilCoolingDXMultiSpeed:
         speed_4_evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
         speed_4_rated_evaporative_condenser_pump_power_consumption: float | Literal["Autosize"] | None = ...,
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:MultiSpeed`` and add it to the document.
 
@@ -467,6 +478,7 @@ class AirLoopHVACDedicatedOutdoorAirSystem:
             _g.AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem
             | _g.AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:DedicatedOutdoorAirSystem`` and add it to the document.
 
@@ -519,6 +531,7 @@ class HeatPumpAirToWaterFuelFiredCooling:
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
         minimum_unloading_ratio: float | None = 0.25,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:AirToWater:FuelFired:Cooling`` and add it to the document.
 

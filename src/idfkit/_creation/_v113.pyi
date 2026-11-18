@@ -22,6 +22,7 @@ class HVACSystemRootFindingAlgorithm_v8_9_to_v22_1:
         ]
         | None = "RegulaFalsi",
         number_of_iterations_before_algorithm_switch: float | None = 5,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACSystemRootFindingAlgorithm`` and add it to the document.
 
@@ -40,6 +41,7 @@ class ZoneAirMassFlowConservation_v8_9_to_v9_4:
         infiltration_balancing_method: Literal["AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
         | None = "AddInfiltrationFlow",
         infiltration_balancing_zones: Literal["AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneAirMassFlowConservation`` and add it to the document.
 
@@ -72,6 +74,7 @@ class Zone_v8_9_to_v9_4:
         ]
         | None = ...,
         part_of_total_floor_area: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Zone`` and add it to the document.
 
@@ -100,6 +103,7 @@ class ConstructionInternalSource_v8_9_to_v9_3:
         layer_8: str | None = ...,
         layer_9: str | None = ...,
         layer_10: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:InternalSource`` and add it to the document.
 
@@ -162,6 +166,7 @@ class WindowShadingControl_v9_0_to_v9_1:
         fenestration_surfaces: Sequence[
             _g.WindowShadingControlFenestrationSurfacesItem | _g.WindowShadingControlFenestrationSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowShadingControl`` and add it to the document.
 
@@ -203,6 +208,7 @@ class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeFluidCooler:SingleSpeed`` and add it to the document.
 

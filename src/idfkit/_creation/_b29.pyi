@@ -24,6 +24,7 @@ class AnySimulationControl:
         run_simulation_for_weather_file_run_periods: Literal["No", "Yes"] | None = "Yes",
         do_hvac_sizing_simulation_for_sizing_periods: Literal["No", "Yes"] | None = "No",
         maximum_number_of_hvac_sizing_simulation_passes: int | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SimulationControl`` and add it to the document.
 
@@ -39,6 +40,7 @@ class AnyTimestep:
         /,
         *,
         number_of_timesteps_per_hour: int | None = 6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Timestep`` and add it to the document.
 
@@ -48,7 +50,9 @@ class AnyTimestep:
         """
 
 class ConstructionFfactorGroundFloor:
-    def __call__(self, name: str, /, *, f_factor: float, area: float, perimeterexposed: float) -> None:
+    def __call__(
+        self, name: str, /, *, f_factor: float, area: float, perimeterexposed: float, validate: bool = True
+    ) -> None:
         """Create a new ``Construction:FfactorGroundFloor`` and add it to the document.
 
         Alternate method of describing slab-on-grade or underground floor constructions
@@ -76,6 +80,7 @@ class AnyExteriorFuelEquipment:
         schedule_name: str,
         design_level: float,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Exterior:FuelEquipment`` and add it to the document.
 
@@ -91,6 +96,7 @@ class ZoneHVACVentilatedSlabSlabGroup:
         /,
         *,
         data: Sequence[_g.ZoneHVACVentilatedSlabSlabGroupDataItem | _g.ZoneHVACVentilatedSlabSlabGroupDataGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:VentilatedSlab:SlabGroup`` and add it to the document.
 
@@ -111,6 +117,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolNoReheat:
         zone_minimum_air_flow_fraction: float,
         availability_schedule_name: str | None = ...,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat`` and add it to the document.
 
@@ -130,6 +137,7 @@ class SolarCollectorUnglazedTranspiredMultisystem:
             _g.SolarCollectorUnglazedTranspiredMultisystemSystemsItem
             | _g.SolarCollectorUnglazedTranspiredMultisystemSystemsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollector:UnglazedTranspired:Multisystem`` and add it to the document.
 
@@ -145,6 +153,7 @@ class AnyMeterCustom:
         /,
         *,
         variable_details: Sequence[_g.MeterCustomVariableDetailsItem | _g.MeterCustomVariableDetailsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:Custom`` and add it to the document.
 

@@ -56,6 +56,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1:
         controlling_zone_or_thermostat_location: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
 
@@ -65,7 +66,9 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1:
         """
 
 class ZoneGroup_v8_9_to_v22_1:
-    def __call__(self, name: str, /, *, zone_list_name: str, zone_list_multiplier: float | None = 1) -> None:
+    def __call__(
+        self, name: str, /, *, zone_list_name: str, zone_list_multiplier: float | None = 1, validate: bool = True
+    ) -> None:
         """Create a new ``ZoneGroup`` and add it to the document.
 
         Adds a multiplier to a ZoneList. This can be used to reduce the amount of input necessary for simulating repetitive structures, such as the identical floors of a multi-story building.
@@ -117,6 +120,7 @@ class GeneratorMicroTurbine_v8_9_to_v9_2:
         nominal_exhaust_air_outlet_temperature: float | None = ...,
         exhaust_air_temperature_function_of_temperature_curve_name: str | None = ...,
         exhaust_air_temperature_function_of_part_load_ratio_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:MicroTurbine`` and add it to the document.
 
@@ -245,6 +249,7 @@ class AirLoopHVACUnitarySystem_v23_2:
         heat_recovery_water_outlet_node_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitarySystem`` and add it to the document.
 

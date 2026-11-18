@@ -156,6 +156,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v23_2_to_v25_1:
         speed_10_cop_function_of_temperature_curve_name: str | None = ...,
         speed_10_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` and add it to the document.
 
@@ -181,6 +182,7 @@ class LifeCycleCostRecurringCosts_v8_9_to_v22_1:
         repeat_period_years: float | None = 1,
         repeat_period_months: float | None = 0,
         annual_escalation_rate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:RecurringCosts`` and add it to the document.
 
@@ -204,6 +206,7 @@ class Roof_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Roof`` and add it to the document.
 
@@ -235,6 +238,7 @@ class AirTerminalSingleDuctSeriesPIUReheat_v8_9_to_v24_1:
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:SeriesPIU:Reheat`` and add it to the document.
 

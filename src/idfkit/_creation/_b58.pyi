@@ -41,6 +41,7 @@ class AnyWindowPropertyFrameAndDivider:
         inside_sill_solar_absorptance: float | None = 0,
         inside_reveal_depth: float | None = 0,
         inside_reveal_solar_absorptance: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowProperty:FrameAndDivider`` and add it to the document.
 
@@ -61,6 +62,7 @@ class DuctLossConduction:
         ambient_zone_name: str | None = ...,
         ambient_temperature_schedule_name: str | None = ...,
         ambient_humidity_ratio_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Duct:Loss:Conduction`` and add it to the document.
 
@@ -88,6 +90,7 @@ class ZoneControlThermostatStagedDualSetpoint:
         stage_2_cooling_temperature_offset: float | None = ...,
         stage_3_cooling_temperature_offset: float | None = ...,
         stage_4_cooling_temperature_offset: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:Thermostat:StagedDualSetpoint`` and add it to the document.
 
@@ -139,6 +142,7 @@ class AnyChillerElectric:
         heat_recovery_inlet_high_temperature_limit_schedule_name: str | None = ...,
         heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric`` and add it to the document.
 
@@ -149,7 +153,13 @@ class AnyChillerElectric:
 
 class EnergyManagementSystemInternalVariable:
     def __call__(
-        self, name: str, /, *, internal_data_type: str, internal_data_index_key_name: str | None = ...
+        self,
+        name: str,
+        /,
+        *,
+        internal_data_type: str,
+        internal_data_index_key_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:InternalVariable`` and add it to the document.
 
@@ -171,6 +181,7 @@ class GeneratorFuelCellElectricalStorage:
         simple_maximum_power_draw: float | None = ...,
         simple_maximum_power_store: float | None = ...,
         initial_charge_state: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelCell:ElectricalStorage`` and add it to the document.
 
@@ -196,6 +207,7 @@ class WaterUseWell:
         water_table_depth_mode: Literal["Constant", "Scheduled"] | None = ...,
         water_table_depth: float | None = ...,
         water_table_depth_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterUse:Well`` and add it to the document.
 
@@ -222,6 +234,7 @@ class FaultModelFoulingChiller:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         fouling_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:Fouling:Chiller`` and add it to the document.
 
@@ -255,6 +268,7 @@ class MeterCustom:
         ]
         | None = ...,
         variable_details: Sequence[_g.MeterCustomVariableDetailsItem | _g.MeterCustomVariableDetailsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:Custom`` and add it to the document.
 

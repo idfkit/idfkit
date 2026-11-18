@@ -26,6 +26,7 @@ class PerformancePrecisionTradeoffs:
         maxzonetempdiff: float | None = 0.3,
         maxalloweddeltemp: float | None = 0.002,
         use_representative_surfaces_for_calculations: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
 
@@ -67,6 +68,7 @@ class SiteGroundDomainBasement:
         vertical_insulation_depth: float | None = ...,
         simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
         mesh_density_parameter: int | None = 4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundDomain:Basement`` and add it to the document.
 
@@ -92,6 +94,7 @@ class WindowMaterialShadeEquivalentLayer:
         shade_material_infrared_transmittance: float | None = 0.05,
         front_side_shade_material_infrared_emissivity: float | None = 0.91,
         back_side_shade_material_infrared_emissivity: float | None = 0.91,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Shade:EquivalentLayer`` and add it to the document.
 
@@ -123,6 +126,7 @@ class MaterialPropertyVariableAbsorptance:
         thermal_absorptance_schedule_name_inside_face: str | None = ...,
         solar_absorptance_function_name_inside_face: str | None = ...,
         solar_absorptance_schedule_name_inside_face: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:VariableAbsorptance`` and add it to the document.
 
@@ -145,6 +149,7 @@ class SteamEquipmentDefinition:
         fraction_latent: float | None = 0,
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SteamEquipment:Definition`` and add it to the document.
 
@@ -182,6 +187,7 @@ class ZoneHVACLowTemperatureRadiantElectric:
         | None = "MeanAirTemperature",
         setpoint_control_type: Literal["HalfFlowPower", "ZeroFlowPower"] | None = "HalfFlowPower",
         heating_throttling_range: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:Electric`` and add it to the document.
 
@@ -199,6 +205,7 @@ class ZoneHVACEquipmentList:
         load_distribution_scheme: Literal["SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
         equipment: Sequence[_g.ZoneHVACEquipmentListEquipmentItem | _g.ZoneHVACEquipmentListEquipmentGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
 
@@ -227,6 +234,7 @@ class HeatExchangerAirToAirFlatPlate:
         ratio_of_supply_to_secondary_ha_values: float | None = ...,
         nominal_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         nominal_electric_power: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatExchanger:AirToAir:FlatPlate`` and add it to the document.
 
@@ -236,7 +244,7 @@ class HeatExchangerAirToAirFlatPlate:
         """
 
 class PipeAdiabaticSteam:
-    def __call__(self, name: str, /, *, inlet_node_name: str, outlet_node_name: str) -> None:
+    def __call__(self, name: str, /, *, inlet_node_name: str, outlet_node_name: str, validate: bool = True) -> None:
         """Create a new ``Pipe:Adiabatic:Steam`` and add it to the document.
 
         Passes Inlet Node state variables to Outlet Node state variables
@@ -255,6 +263,7 @@ class SolarCollectorFlatPlateWater:
         inlet_node_name: str,
         outlet_node_name: str,
         maximum_flow_rate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollector:FlatPlate:Water`` and add it to the document.
 
@@ -307,6 +316,7 @@ class CoolingTowerSingleSpeed:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:SingleSpeed`` and add it to the document.
 
@@ -366,6 +376,7 @@ class AnyHeatExchangerFluidToFluid:
         sizing_factor: float | None = 1,
         operation_minimum_temperature_limit: float | None = ...,
         operation_maximum_temperature_limit: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatExchanger:FluidToFluid`` and add it to the document.
 
@@ -594,6 +605,7 @@ class GeneratorFuelSupply:
         ]
         | None = ...,
         constituent_12_molar_fraction: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelSupply`` and add it to the document.
 
@@ -613,6 +625,7 @@ class FaultModelTemperatureSensorOffsetOutdoorAir:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         temperature_sensor_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:TemperatureSensorOffset:OutdoorAir`` and add it to the document.
 
@@ -881,6 +894,7 @@ class FluidPropertiesSaturated:
         property_value_248: float | None = ...,
         property_value_249: float | None = ...,
         property_value_250: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FluidProperties:Saturated`` and add it to the document.
 

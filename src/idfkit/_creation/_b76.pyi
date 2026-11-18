@@ -26,6 +26,7 @@ class ZoneBaseboardOutdoorTemperatureControlled:
         fraction_radiant: float | None = 0,
         end_use_subcategory: str | None = "General",
         design_zone_heating_setpoint: float | None = 20,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneBaseboard:OutdoorTemperatureControlled`` and add it to the document.
 
@@ -62,6 +63,7 @@ class AnyEnergyManagementSystemProgramCallingManager:
             _g.EnergyManagementSystemProgramCallingManagerProgramsItem
             | _g.EnergyManagementSystemProgramCallingManagerProgramsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:ProgramCallingManager`` and add it to the document.
 

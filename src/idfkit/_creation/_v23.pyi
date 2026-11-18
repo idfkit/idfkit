@@ -65,6 +65,7 @@ class People_v9_6_to_v22_1:
         ]
         | None = ...,
         ankle_level_air_velocity_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``People`` and add it to the document.
 
@@ -220,6 +221,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v22_2_to_v23_1:
         speed_10_cop_function_of_temperature_curve_name: str | None = ...,
         speed_10_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` and add it to the document.
 
@@ -290,6 +292,7 @@ class PythonPluginOutputVariable_v9_4_to_v23_1:
         ]
         | None = ...,
         end_use_subcategory: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:OutputVariable`` and add it to the document.
 

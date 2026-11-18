@@ -45,6 +45,7 @@ class BuildingSurfaceDetailed_v9_6_to_v24_2:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.BuildingSurfaceDetailedVerticesItem | _g.BuildingSurfaceDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``BuildingSurface:Detailed`` and add it to the document.
 
@@ -90,6 +91,7 @@ class CoolingTowerVariableSpeed_v8_9_to_v22_1:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:VariableSpeed`` and add it to the document.
 
@@ -208,6 +210,7 @@ class CoilCoolingDXMultiSpeed_v8_9_to_v9_2:
         speed_4_evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
         speed_4_rated_evaporative_condenser_pump_power_consumption: float | Literal["Autosize"] | None = ...,
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:MultiSpeed`` and add it to the document.
 

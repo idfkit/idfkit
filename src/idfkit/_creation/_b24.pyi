@@ -23,6 +23,7 @@ class RunPeriodControlSpecialDays:
         duration: float | None = 1,
         special_day_type: Literal["CustomDay1", "CustomDay2", "Holiday", "SummerDesignDay", "WinterDesignDay"]
         | None = "Holiday",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RunPeriodControl:SpecialDays`` and add it to the document.
 
@@ -39,6 +40,7 @@ class AnyMaterialPropertyPhaseChange:
         *,
         narrow_with_as_version_first: Never,
         temperature_coefficient_for_thermal_conductivity: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:PhaseChange`` and add it to the document.
 
@@ -62,6 +64,7 @@ class SurfacePropertySurroundingSurfaces:
         surfaces: Sequence[
             _g.SurfacePropertySurroundingSurfacesSurfacesItem | _g.SurfacePropertySurroundingSurfacesSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:SurroundingSurfaces`` and add it to the document.
 
@@ -80,6 +83,7 @@ class HVACTemplatePlantChillerObjectReference:
         chiller_object_type: Literal["Chiller:Electric:EIR", "Chiller:Electric:ReformulatedEIR"]
         | None = "Chiller:Electric:EIR",
         priority: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:Chiller:ObjectReference`` and add it to the document.
 
@@ -103,6 +107,7 @@ class AnyAirTerminalSingleDuctVAVNoReheat:
         fixed_minimum_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         minimum_air_flow_fraction_schedule_name: str | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:NoReheat`` and add it to the document.
 
@@ -195,6 +200,7 @@ class AnyCoilHeatingDXMultiSpeed:
         speed_4_nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:MultiSpeed`` and add it to the document.
 
@@ -212,6 +218,7 @@ class EnergyManagementSystemSubroutine:
         lines: Sequence[
             _g.EnergyManagementSystemSubroutineLinesItem | _g.EnergyManagementSystemSubroutineLinesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:Subroutine`` and add it to the document.
 
@@ -233,6 +240,7 @@ class OutputVariable:
         ]
         | None = "Hourly",
         schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Variable`` and add it to the document.
 

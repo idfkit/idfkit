@@ -53,6 +53,7 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1:
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         dehumidification_control_type: Literal["CoolReheat", "None"] | None = "None",
         heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` and add it to the document.
 
@@ -121,6 +122,7 @@ class EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2:
         ems_program_or_subroutine_name: str | None = ...,
         end_use_subcategory: str | None = ...,
         units: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:MeteredOutputVariable`` and add it to the document.
 
@@ -140,6 +142,7 @@ class ZoneHVACEquipmentList_v9_1:
         equipment: Sequence[
             _vd.ZoneHVACEquipmentListEquipmentItem_v9_1 | _vd.ZoneHVACEquipmentListEquipmentGroup_v9_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
 
@@ -223,6 +226,7 @@ class PlantComponentUserDefined_v8_9_to_v22_1:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantComponent:UserDefined`` and add it to the document.
 
@@ -244,6 +248,7 @@ class PythonPluginSearchPaths_v9_3:
         search_path_3: str | None = ...,
         search_path_4: str | None = ...,
         search_path_5: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:SearchPaths`` and add it to the document.
 
@@ -281,6 +286,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1:
         cooling_low_control_temperature_schedule_name: str | None = ...,
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
 

@@ -22,6 +22,7 @@ class ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3:
             _vd.ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v9_2_to_v9_3
             | _vd.ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v9_2_to_v9_3
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneProperty:UserViewFactors:bySurfaceName`` and add it to the document.
 

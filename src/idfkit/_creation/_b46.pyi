@@ -29,6 +29,7 @@ class AnyZoneControlThermostatStagedDualSetpoint:
         stage_2_cooling_temperature_offset: float | None = ...,
         stage_3_cooling_temperature_offset: float | None = ...,
         stage_4_cooling_temperature_offset: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:Thermostat:StagedDualSetpoint`` and add it to the document.
 
@@ -79,6 +80,7 @@ class FanComponentModel:
         normalized_motor_efficiency_curve_name: str | None = ...,
         vfd_efficiency_curve_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Fan:ComponentModel`` and add it to the document.
 
@@ -116,6 +118,7 @@ class HeatExchangerAirToAirSensibleAndLatent:
         latent_effectiveness_of_heating_air_flow_curve_name: str | None = ...,
         sensible_effectiveness_of_cooling_air_flow_curve_name: str | None = ...,
         latent_effectiveness_of_cooling_air_flow_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatExchanger:AirToAir:SensibleAndLatent`` and add it to the document.
 
@@ -156,6 +159,7 @@ class GeneratorMicroCHPNonNormalizedParameters:
         cool_down_power: float | None = ...,
         cool_down_delay_time: float | None = ...,
         restart_mode: Literal["MandatoryCoolDown", "OptionalCoolDown"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:MicroCHP:NonNormalizedParameters`` and add it to the document.
 
@@ -172,6 +176,7 @@ class AnyPythonPluginSearchPaths:
         *,
         add_current_working_directory_to_search_path: Literal["No", "Yes"] | None = "Yes",
         add_input_file_directory_to_search_path: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:SearchPaths`` and add it to the document.
 

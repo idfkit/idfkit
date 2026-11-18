@@ -12,7 +12,7 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class MaterialAirGap:
-    def __call__(self, name: str, /, *, thermal_resistance: float) -> None:
+    def __call__(self, name: str, /, *, thermal_resistance: float, validate: bool = True) -> None:
         """Create a new ``Material:AirGap`` and add it to the document.
 
         Air Space in Opaque Construction
@@ -40,6 +40,7 @@ class WindowMaterialGapEquivalentLayer:
         specific_heat_coefficient_c: float | None = ...,
         molecular_weight: float | None = ...,
         specific_heat_ratio: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Gap:EquivalentLayer`` and add it to the document.
 
@@ -61,6 +62,7 @@ class WindowPropertyStormWindow:
         month_that_storm_glass_layer_is_taken_off: int,
         day_of_month_that_storm_glass_layer_is_taken_off: int,
         distance_between_storm_glass_layer_and_adjacent_glass: float | None = 0.05,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowProperty:StormWindow`` and add it to the document.
 
@@ -92,6 +94,7 @@ class AnyDesignSpecificationOutdoorAir:
         outdoor_air_flow_air_changes_per_hour: float | None = 0,
         outdoor_air_schedule_name: str | None = ...,
         proportional_control_minimum_outdoor_air_flow_rate_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DesignSpecification:OutdoorAir`` and add it to the document.
 
@@ -101,7 +104,9 @@ class AnyDesignSpecificationOutdoorAir:
         """
 
 class ThermostatSetpointSingleHeating:
-    def __call__(self, name: str, /, *, setpoint_temperature_schedule_name: str | None = ...) -> None:
+    def __call__(
+        self, name: str, /, *, setpoint_temperature_schedule_name: str | None = ..., validate: bool = True
+    ) -> None:
         """Create a new ``ThermostatSetpoint:SingleHeating`` and add it to the document.
 
         Used for a heating only thermostat. The setpoint can be scheduled and varied throughout the simulation but only heating is allowed with this control type.
@@ -131,6 +136,7 @@ class AnyControllerMechanicalVentilation:
             _g.AnyControllerMechanicalVentilationZoneSpecificationsItem
             | _g.AnyControllerMechanicalVentilationZoneSpecificationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Controller:MechanicalVentilation`` and add it to the document.
 
@@ -164,6 +170,7 @@ class PumpConstantSpeed:
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pump:ConstantSpeed`` and add it to the document.
 
@@ -211,6 +218,7 @@ class AnyChillerElectricReformulatedEIR:
         heat_recovery_inlet_high_temperature_limit_schedule_name: str | None = ...,
         heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric:ReformulatedEIR`` and add it to the document.
 
@@ -247,6 +255,7 @@ class PlantEquipmentOperationUserDefined:
         equipment_9_name: str | None = ...,
         equipment_10_object_type: str | None = ...,
         equipment_10_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:UserDefined`` and add it to the document.
 
@@ -263,6 +272,7 @@ class OutputControlReportingTolerances:
         *,
         tolerance_for_time_heating_setpoint_not_met: float | None = 0.2,
         tolerance_for_time_cooling_setpoint_not_met: float | None = 0.2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:ReportingTolerances`` and add it to the document.
 
@@ -282,6 +292,7 @@ class OutputMeterCumulativeMeterFileOnly:
             "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Meter:Cumulative:MeterFileOnly`` and add it to the document.
 

@@ -42,6 +42,7 @@ class WindowMaterialBlindEquivalentLayer:
         front_side_slat_infrared_emissivity: float | None = 0.9,
         back_side_slat_infrared_emissivity: float | None = 0.9,
         slat_angle_control: Literal["BlockBeamSolar", "FixedSlatAngle", "MaximizeSolar"] | None = "FixedSlatAngle",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Blind:EquivalentLayer`` and add it to the document.
 
@@ -71,6 +72,7 @@ class AnyLights:
         return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
         return_air_heat_gain_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Lights`` and add it to the document.
 
@@ -102,6 +104,7 @@ class AnyDaylightingControls:
         control_data: Sequence[
             _g.AnyDaylightingControlsControlDataItem | _g.AnyDaylightingControlsControlDataGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Daylighting:Controls`` and add it to the document.
 
@@ -122,6 +125,7 @@ class DesignSpecificationOutdoorAirSpaceList:
             _g.DesignSpecificationOutdoorAirSpaceListSpaceSpecsItem
             | _g.DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DesignSpecification:OutdoorAir:SpaceList`` and add it to the document.
 
@@ -199,6 +203,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
             _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem
             | _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR`` and add it to the document.
 
@@ -238,6 +243,7 @@ class EnergyManagementSystemProgramCallingManager:
             _g.EnergyManagementSystemProgramCallingManagerProgramsItem
             | _g.EnergyManagementSystemProgramCallingManagerProgramsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:ProgramCallingManager`` and add it to the document.
 
@@ -257,6 +263,7 @@ class AnyExternalInterfaceFunctionalMockupUnitExportToActuator:
         actuated_component_control_type: str,
         fmu_variable_name: str,
         initial_value: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitExport:To:Actuator`` and add it to the document.
 
@@ -275,6 +282,7 @@ class SetpointManagerMultiZoneMinimumHumidityAverage:
         setpoint_node_or_nodelist_name: str,
         minimum_setpoint_humidity_ratio: float | None = 0.005,
         maximum_setpoint_humidity_ratio: float | None = 0.012,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:MultiZone:MinimumHumidity:Average`` and add it to the document.
 
@@ -297,6 +305,7 @@ class UtilityCostQualify:
         season: Literal["Annual", "Fall", "Spring", "Summer", "Winter"] | None = ...,
         threshold_test: Literal["Consecutive", "Count"] | None = "Consecutive",
         number_of_months: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UtilityCost:Qualify`` and add it to the document.
 

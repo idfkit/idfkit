@@ -22,6 +22,7 @@ class ZoneCapacitanceMultiplierResearchSpecial:
         humidity_capacity_multiplier: float | None = 1,
         carbon_dioxide_capacity_multiplier: float | None = 1,
         generic_contaminant_capacity_multiplier: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneCapacitanceMultiplier:ResearchSpecial`` and add it to the document.
 
@@ -40,6 +41,7 @@ class ZoneHVACLowTemperatureRadiantSurfaceGroup:
             _g.ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsItem
             | _g.ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:SurfaceGroup`` and add it to the document.
 
@@ -244,6 +246,7 @@ class PlantEquipmentOperationThermalEnergyStorage:
         component_10_setpoint_node_name: str | None = ...,
         component_10_flow_rate: float | Literal["Autosize"] | None = ...,
         component_10_operation_type: Literal["Cooling", "Dual", "Heating"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:ThermalEnergyStorage`` and add it to the document.
 
@@ -253,7 +256,7 @@ class PlantEquipmentOperationThermalEnergyStorage:
         """
 
 class AvailabilityManagerScheduledOn:
-    def __call__(self, name: str, /, *, schedule_name: str) -> None:
+    def __call__(self, name: str, /, *, schedule_name: str, validate: bool = True) -> None:
         """Create a new ``AvailabilityManager:ScheduledOn`` and add it to the document.
 
         Determines the availability of a loop or system: only controls the turn on action. Schedule overrides fan/pump schedule.
@@ -271,6 +274,7 @@ class SetpointManagerSingleZoneOneStageHeating:
         setpoint_node_or_nodelist_name: str,
         heating_stage_on_supply_air_setpoint_temperature: float | None = 99,
         heating_stage_off_supply_air_setpoint_temperature: float | None = -99,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:SingleZone:OneStageHeating`` and add it to the document.
 
@@ -288,6 +292,7 @@ class GeneratorFuelCellInverter:
         inverter_efficiency_calculation_mode: Literal["Constant", "Quadratic"] | None = ...,
         inverter_efficiency: float | None = ...,
         efficiency_function_of_dc_power_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelCell:Inverter`` and add it to the document.
 

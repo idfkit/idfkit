@@ -26,6 +26,7 @@ class AnyCeilingInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Ceiling:Interzone`` and add it to the document.
 
@@ -58,6 +59,7 @@ class DesignSpecificationOutdoorAir:
         outdoor_air_flow_air_changes_per_hour: float | None = 0,
         outdoor_air_schedule_name: str | None = ...,
         proportional_control_minimum_outdoor_air_flow_rate_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DesignSpecification:OutdoorAir`` and add it to the document.
 
@@ -139,6 +141,7 @@ class ZoneHVACIdealLoadsAirSystem:
             "Propane",
         ]
         | None = "DistrictCooling",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:IdealLoadsAirSystem`` and add it to the document.
 
@@ -171,6 +174,7 @@ class ZoneHVACOutdoorAirUnit:
         low_air_control_temperature_schedule_name: str | None = ...,
         airinlet_node_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:OutdoorAirUnit`` and add it to the document.
 
@@ -315,6 +319,7 @@ class AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
 
@@ -359,6 +364,7 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpPumped:
         heating_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         heating_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` and add it to the document.
 
@@ -378,6 +384,7 @@ class TemperingValve:
         stream_2_source_node_name: str,
         temperature_setpoint_node_name: str,
         pump_outlet_node_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``TemperingValve`` and add it to the document.
 

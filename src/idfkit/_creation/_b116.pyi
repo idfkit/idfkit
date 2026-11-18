@@ -29,6 +29,7 @@ class SiteGroundTemperatureBuildingSurface:
         october_ground_temperature: float | None = 18,
         november_ground_temperature: float | None = 18,
         december_ground_temperature: float | None = 18,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundTemperature:BuildingSurface`` and add it to the document.
 
@@ -92,6 +93,7 @@ class AnyWindowShadingControl:
         fenestration_surfaces: Sequence[
             _g.WindowShadingControlFenestrationSurfacesItem | _g.WindowShadingControlFenestrationSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowShadingControl`` and add it to the document.
 
@@ -114,6 +116,7 @@ class AnyRoomAirTemperaturePatternSurfaceMapping:
             _g.RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem
             | _g.RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:SurfaceMapping`` and add it to the document.
 
@@ -164,6 +167,7 @@ class AirflowNetworkMultiZoneWindPressureCoefficientArray:
         wind_direction_34: float | None = ...,
         wind_direction_35: float | None = ...,
         wind_direction_36: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:WindPressureCoefficientArray`` and add it to the document.
 
@@ -182,6 +186,7 @@ class AirflowNetworkDistributionComponentLeakageRatio:
         reference_pressure_difference: float,
         effective_leakage_ratio: float | None = ...,
         air_mass_flow_exponent: float | None = 0.65,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:LeakageRatio`` and add it to the document.
 
@@ -226,6 +231,7 @@ class ChillerAbsorptionIndirect:
         degree_of_subcooling_in_steam_generator: float | None = 1,
         degree_of_subcooling_in_steam_condensate_loop: float | None = 0,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Absorption:Indirect`` and add it to the document.
 
@@ -263,6 +269,7 @@ class CondenserLoop:
         | None = "SequentialLoad",
         pressure_simulation_type: Literal["LoopFlowCorrection", "None", "PumpPowerCorrection"] | None = "None",
         loop_circulation_time: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CondenserLoop`` and add it to the document.
 
@@ -326,6 +333,7 @@ class GeneratorMicroTurbine:
         nominal_exhaust_air_outlet_temperature: float | None = ...,
         exhaust_air_temperature_function_of_temperature_curve_name: str | None = ...,
         exhaust_air_temperature_function_of_part_load_ratio_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:MicroTurbine`` and add it to the document.
 

@@ -28,6 +28,7 @@ class ScheduleWeekRule:
         apply_friday: Literal["No", "Yes"] | None = "No",
         apply_saturday: Literal["No", "Yes"] | None = "No",
         date_ranges: Sequence[_g.ScheduleWeekRuleDateRangesItem | _g.ScheduleWeekRuleDateRangesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Week:Rule`` and add it to the document.
 
@@ -45,6 +46,7 @@ class AnyConstructionAirBoundary:
         air_exchange_method: Literal["None", "SimpleMixing"] | None = "None",
         simple_mixing_air_changes_per_hour: float | None = 0.5,
         simple_mixing_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:AirBoundary`` and add it to the document.
 
@@ -67,6 +69,7 @@ class HumidifierSteamElectric:
         air_inlet_node_name: str | None = ...,
         air_outlet_node_name: str | None = ...,
         water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Humidifier:Steam:Electric`` and add it to the document.
 
@@ -132,6 +135,7 @@ class HeatExchangerDesiccantBalancedFlowPerformanceDataType1:
         maximum_process_inlet_air_relative_humidity_for_humidity_ratio_equation: float,
         nominal_air_flow_rate: float | Literal["Autosize"] | None = ...,
         nominal_electric_power: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1`` and add it to the document.
 
@@ -184,6 +188,7 @@ class HeatPumpPlantLoopEIRHeating:
         minimum_heat_recovery_outlet_temperature: float | None = 4.5,
         heat_recovery_capacity_modifier_function_of_temperature_curve_name: str | None = ...,
         heat_recovery_electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:PlantLoop:EIR:Heating`` and add it to the document.
 
@@ -204,6 +209,7 @@ class GroundHeatExchangerResponseFactors:
         g_functions: Sequence[
             _g.GroundHeatExchangerResponseFactorsGFunctionsItem | _g.GroundHeatExchangerResponseFactorsGFunctionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:ResponseFactors`` and add it to the document.
 
@@ -257,6 +263,7 @@ class PhotovoltaicPerformanceSandia:
         sandia_database_parameter_ixx0: float | None = ...,
         sandia_database_parameter_c6: float | None = ...,
         sandia_database_parameter_c7: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:Sandia`` and add it to the document.
 

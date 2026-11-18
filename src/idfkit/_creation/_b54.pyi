@@ -69,6 +69,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferSorptionIsotherm:
         moisture_content_24: float | None = ...,
         relative_humidity_fraction_25: float | None = ...,
         moisture_content_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:SorptionIsotherm`` and add it to the document.
 
@@ -135,6 +136,7 @@ class MaterialPropertyHeatAndMoistureTransferSuction:
         liquid_transport_coefficient_24: float | None = ...,
         moisture_content_25: float | None = ...,
         liquid_transport_coefficient_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Suction`` and add it to the document.
 
@@ -152,6 +154,7 @@ class SurfaceConstructionAssignments:
         floor_construction_name: str | None = ...,
         wall_construction_name: str | None = ...,
         roof_ceiling_construction_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceConstructionAssignments`` and add it to the document.
 
@@ -177,6 +180,7 @@ class LightsDefinition:
         return_air_fraction_calculated_from_plenum_temperature: Literal["No", "Yes"] | None = "No",
         return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Lights:Definition`` and add it to the document.
 
@@ -198,6 +202,7 @@ class CoilHeatingDXVariableRefrigerantFlow:
         heating_capacity_ratio_modifier_function_of_temperature_curve_name: str,
         heating_capacity_modifier_function_of_flow_fraction_curve_name: str,
         availability_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:VariableRefrigerantFlow`` and add it to the document.
 
@@ -233,6 +238,7 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped:
         heating_cop_function_of_temperature_curve_name: str | None = ...,
         heating_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:Wrapped`` and add it to the document.
 
@@ -261,6 +267,7 @@ class AnyHeatPumpPlantLoopEIRCooling:
         reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = ...,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:PlantLoop:EIR:Cooling`` and add it to the document.
 
@@ -335,6 +342,7 @@ class PlantEquipmentOperationComponentSetpoint:
         setpoint_10_node_name: str | None = ...,
         component_10_flow_rate: float | Literal["Autosize"] | None = ...,
         operation_10_type: Literal["Cooling", "Dual", "Heating"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:ComponentSetpoint`` and add it to the document.
 
@@ -354,6 +362,7 @@ class FaultModelEnthalpySensorOffsetOutdoorAir:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         enthalpy_sensor_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:EnthalpySensorOffset:OutdoorAir`` and add it to the document.
 
@@ -379,6 +388,7 @@ class TableIndependentVariable:
         external_file_column_number: int | None = ...,
         external_file_starting_row_number: int | None = ...,
         values: Sequence[_g.TableIndependentVariableValuesItem | _g.TableIndependentVariableValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:IndependentVariable`` and add it to the document.
 

@@ -25,6 +25,7 @@ class OutputTableTimeBins_v8_9_to_v22_1:
         interval_count: float | None = ...,
         schedule_name: str | None = ...,
         variable_type: Literal["Energy", "Power", "Temperature", "VolumetricFlow"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:TimeBins`` and add it to the document.
 
@@ -324,6 +325,7 @@ class OutputControlSurfaceColorScheme_v8_9_to_v22_1:
         ]
         | None = ...,
         color_for_drawing_element_15: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:SurfaceColorScheme`` and add it to the document.
 
@@ -365,6 +367,7 @@ class TableTwoIndependentVariables_v8_9_to_v9_1:
             _vd.TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1
             | _vd.TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:TwoIndependentVariables`` and add it to the document.
 

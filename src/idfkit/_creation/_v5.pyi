@@ -31,6 +31,7 @@ class CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1:
         minimum_speed_level_for_scdwh_mode: float | None = 1,
         maximum_running_time_before_allowing_electric_resistance_heat_use_during_shdwh_mode: float | None = 360,
         minimum_speed_level_for_shdwh_mode: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:IntegratedHeatPump:AirSource`` and add it to the document.
 

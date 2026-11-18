@@ -30,6 +30,7 @@ class CeilingInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Ceiling:Interzone`` and add it to the document.
 
@@ -51,6 +52,7 @@ class ShadingBuilding:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Shading:Building`` and add it to the document.
 
@@ -70,6 +72,7 @@ class GroundHeatTransferSlabInsulation:
         rvins_r_value_of_vertical_insulation: float | None = 0,
         zvins_depth_of_vertical_insulation: float | None = 0,
         ivins_flag_is_there_vertical_insulation: Literal[0, 1] | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:Insulation`` and add it to the document.
 
@@ -106,6 +109,7 @@ class ElectricEquipmentITEAirCooledDefinition:
         supply_temperature_difference_schedule: str | None = ...,
         return_temperature_difference: float | None = ...,
         return_temperature_difference_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment:ITE:AirCooled:Definition`` and add it to the document.
 
@@ -133,6 +137,7 @@ class AirflowNetworkDistributionNode:
         ]
         | None = "Other",
         node_height: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Node`` and add it to the document.
 
@@ -142,7 +147,9 @@ class AirflowNetworkDistributionNode:
         """
 
 class AnyZoneControlHumidistat:
-    def __call__(self, name: str, /, *, narrow_with_as_version_first: Never, zone_name: str) -> None:
+    def __call__(
+        self, name: str, /, *, narrow_with_as_version_first: Never, zone_name: str, validate: bool = True
+    ) -> None:
         """Create a new ``ZoneControl:Humidistat`` and add it to the document.
 
         Specifies zone relative humidity setpoint schedules for humidifying and dehumidifying.
@@ -188,6 +195,7 @@ class CoilHeatingDXSingleSpeed:
         nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:SingleSpeed`` and add it to the document.
 
@@ -197,7 +205,9 @@ class CoilHeatingDXSingleSpeed:
         """
 
 class AnyAirLoopHVACOutdoorAirSystem:
-    def __call__(self, name: str, /, *, controller_list_name: str, outdoor_air_equipment_list_name: str) -> None:
+    def __call__(
+        self, name: str, /, *, controller_list_name: str, outdoor_air_equipment_list_name: str, validate: bool = True
+    ) -> None:
         """Create a new ``AirLoopHVAC:OutdoorAirSystem`` and add it to the document.
 
         Outdoor air subsystem for an AirLoopHVAC. Includes an outdoor air mixing box and optional outdoor air conditioning equipment such as heat recovery, preheat, and precool coils. From the perspective of the primary air loop the outdoor air system is treated as a single component.
@@ -207,7 +217,12 @@ class AnyAirLoopHVACOutdoorAirSystem:
 
 class BranchList:
     def __call__(
-        self, name: str, /, *, branches: Sequence[_g.BranchListBranchesItem | _g.BranchListBranchesGroup] = ...
+        self,
+        name: str,
+        /,
+        *,
+        branches: Sequence[_g.BranchListBranchesItem | _g.BranchListBranchesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``BranchList`` and add it to the document.
 
@@ -255,6 +270,7 @@ class AnyChillerElectricEIR:
         heat_recovery_inlet_high_temperature_limit_schedule_name: str | None = ...,
         heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric:EIR`` and add it to the document.
 
@@ -302,6 +318,7 @@ class ChillerHeaterPerformanceElectricEIR:
         | None = "LeavingCondenser",
         heating_mode_cooling_capacity_optimum_part_load_ratio: float | None = 1,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ChillerHeaterPerformance:Electric:EIR`` and add it to the document.
 

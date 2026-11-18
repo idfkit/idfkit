@@ -19,6 +19,7 @@ class DaylightingDeviceShelf:
         outside_shelf_name: str | None = ...,
         outside_shelf_construction_name: str | None = ...,
         view_factor_to_outside_shelf: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DaylightingDevice:Shelf`` and add it to the document.
 
@@ -49,6 +50,7 @@ class CoilHeatingWater:
         rated_outlet_air_temperature: float | None = 32.2,
         rated_ratio_for_air_and_water_convection: float | None = 0.5,
         design_water_temperature_difference: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Water`` and add it to the document.
 
@@ -152,6 +154,7 @@ class CoilHeatingDXMultiSpeed:
         speed_4_nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:MultiSpeed`` and add it to the document.
 
@@ -281,6 +284,7 @@ class AirLoopHVACUnitarySystem:
         heat_recovery_water_outlet_node_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitarySystem`` and add it to the document.
 
@@ -290,7 +294,7 @@ class AirLoopHVACUnitarySystem:
         """
 
 class AvailabilityManagerScheduledOff:
-    def __call__(self, name: str, /, *, schedule_name: str) -> None:
+    def __call__(self, name: str, /, *, schedule_name: str, validate: bool = True) -> None:
         """Create a new ``AvailabilityManager:ScheduledOff`` and add it to the document.
 
         Determines the availability of a loop or system: only controls the turn off action. Schedule overrides fan/pump schedule.
@@ -299,7 +303,7 @@ class AvailabilityManagerScheduledOff:
         """
 
 class AvailabilityManagerHighTemperatureTurnOff:
-    def __call__(self, name: str, /, *, sensor_node_name: str, temperature: float) -> None:
+    def __call__(self, name: str, /, *, sensor_node_name: str, temperature: float, validate: bool = True) -> None:
         """Create a new ``AvailabilityManager:HighTemperatureTurnOff`` and add it to the document.
 
         Overrides fan/pump schedules depending on temperature at sensor node.

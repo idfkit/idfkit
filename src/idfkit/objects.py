@@ -52,7 +52,9 @@ if TYPE_CHECKING:
     class _ObjectFactory(Protocol):
         """The document a collection creates its objects through (``IDFDocument``)."""
 
-        def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject: ...
+        def _create_in(
+            self, collection: IDFCollection[Any], name: str, fields: dict[str, Any], validate: bool = True
+        ) -> IDFObject: ...
 
         def _holds(self, collection: IDFCollection[Any]) -> bool: ...
 
@@ -1539,10 +1541,15 @@ class IDFCollection(Generic[_T_co]):
             ``as_version`` first. A field whose key is not a Python name (``100_outdoor_air_in_cooling``)
             is not a keyword here; set it with ``IDFDocument.add`` or after creation.
 
-            The object is always validated, as ``IDFDocument.add`` validates by default; for
-            unvalidated bulk loading use ``doc.add(obj_type, ..., validate=False)``. Fields are passed
-            by keyword only; extensible groups go under their wrapper key (``vertices=[{...}, ...]``),
-            as with ``IDFDocument.add``.
+            The object is validated unless ``validate=False`` is passed, as with ``IDFDocument.add``:
+            then its values, required fields and ranges are not checked, which suits bulk loading of
+            data already known good, but a key the schema does not name still raises
+            ``InvalidFieldError``. This form is meant to replace the string-keyed
+            ``doc.add(obj_type, ...)``, so it takes the same switch; it used to validate always.
+            ``validate=False`` relaxes no required field for the type checker: a call that leaves
+            one out is still a type error, so a call that type-checks is one that would also pass
+            validation. Fields are passed by keyword only; extensible groups go under their wrapper
+            key (``vertices=[{...}, ...]``), as with ``IDFDocument.add``.
 
             This method used to take an existing object and file it in the collection without
             validating it or linking it to the document. That form still runs, with a
@@ -1560,18 +1567,22 @@ class IDFCollection(Generic[_T_co]):
             Args:
                 *args: The object's name, the only positional argument; none for a type without a
                     Name field (``doc["Output:SQLite"].add(option_type="SimpleAndTabular")``).
-                **fields: Field values, by their Python field names.
+                **fields: Field values, by their Python field names, and ``validate``: ``False`` to
+                    skip validation as ``IDFDocument.add(..., validate=False)`` does (default
+                    ``True``).
 
             Returns:
                 The new object, typed as this collection's objects.
 
             Raises:
                 TypeError: If the collection belongs to no document (one constructed directly), a
-                    field is passed positionally, or the name is passed as ``name=``.
+                    field is passed positionally, the name is passed as ``name=``, or ``validate`` is
+                    not a bool.
                 UnknownObjectTypeError: If the collection's type is in no schema
                     (``doc.get_collection("Zoen")``).
                 ValidationFailedError: If validation fails (unknown fields, missing required fields,
                     invalid values).
+                InvalidFieldError: With ``validate=False``, if a field is not one of the type's.
                 DuplicateObjectError: If an object of the type already has the name, or the type is
                     a singleton that already has one.
 
@@ -1601,6 +1612,10 @@ class IDFCollection(Generic[_T_co]):
         if isinstance(legacy, IDFObject):
             # add(obj=...), the keyword spelling of the deprecated form.
             return self._append_deprecated(legacy)
+        validate = fields.pop("validate", True)
+        if not isinstance(validate, bool):
+            msg = f"add() takes validate=True or validate=False, not {validate!r}"
+            raise TypeError(msg)
         if "name" in fields:
             msg = f"add() takes the object's name positionally: add({fields['name']!r}, ...), not add(name=...)"
             raise TypeError(msg)
@@ -1620,7 +1635,7 @@ class IDFCollection(Generic[_T_co]):
             msg = f"add() takes 1 positional argument (the name) but {len(args)} were given; pass fields by keyword"
             raise TypeError(msg)
         name = cast("str", first) if args else ""
-        return document._create_in(self, name, fields)  # pyright: ignore[reportPrivateUsage]
+        return document._create_in(self, name, fields, validate)  # pyright: ignore[reportPrivateUsage]
 
     def _append_deprecated(self, obj: IDFObject) -> Any:
         """The deprecated ``add(obj)``: file an existing object as ``add`` used to, with a warning."""

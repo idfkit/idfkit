@@ -24,6 +24,7 @@ class ScheduleFile_v9_2_to_v9_6:
         column_separator: Literal["Comma", "Semicolon", "Space", "Tab"] | None = "Comma",
         interpolate_to_timestep: Literal["No", "Yes"] | None = "No",
         minutes_per_item: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:File`` and add it to the document.
 
@@ -55,6 +56,7 @@ class AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2:
         ],
         air_path_length: float,
         air_path_hydraulic_diameter: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Coil`` and add it to the document.
 
@@ -70,6 +72,7 @@ class Timestep_v8_9_to_v22_1:
         /,
         *,
         number_of_timesteps_per_hour: float | None = 6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Timestep`` and add it to the document.
 
@@ -107,6 +110,7 @@ class CoilCoolingDXCurveFitPerformance_v9_3_to_v23_1:
         | None = "Electricity",
         alternative_operating_mode_1: str | None = ...,
         alternative_operating_mode_2: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:Performance`` and add it to the document.
 

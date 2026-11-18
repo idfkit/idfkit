@@ -51,6 +51,7 @@ class ConstructionComplexFenestrationState_v8_9_to_v9_5:
         layer_5_name: str | None = ...,
         layer_5_directional_front_absoptance_matrix_name: str | None = ...,
         layer_5_directional_back_absoptance_matrix_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:ComplexFenestrationState`` and add it to the document.
 
@@ -96,6 +97,7 @@ class OutputControlFiles_v9_4_to_v24_1:
         output_screen: Literal["No", "Yes"] | None = "Yes",
         output_extshd: Literal["No", "Yes"] | None = "Yes",
         output_tarcog: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Files`` and add it to the document.
 

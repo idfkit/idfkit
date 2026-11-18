@@ -40,6 +40,7 @@ class FanSystemModel_v8_9_to_v22_1:
         end_use_subcategory: str | None = "General",
         number_of_speeds: float | None = 1,
         speed_fractions: Sequence[_g.FanSystemModelSpeedFractionsItem | _g.FanSystemModelSpeedFractionsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Fan:SystemModel`` and add it to the document.
 
@@ -106,6 +107,7 @@ class MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1:
         thermal_conductivity_24: float | None = ...,
         moisture_content_25: float | None = ...,
         thermal_conductivity_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity`` and add it to the document.
 
@@ -173,6 +175,7 @@ class People_v22_2_to_v23_2:
         ankle_level_air_velocity_schedule_name: str | None = ...,
         cold_stress_temperature_threshold: float | None = 15.56,
         heat_stress_temperature_threshold: float | None = 30,
+        validate: bool = True,
     ) -> None:
         """Create a new ``People`` and add it to the document.
 
@@ -195,6 +198,7 @@ class OutputIlluminanceMap_v8_9_to_v22_1:
         y_minimum_coordinate: float | None = 0,
         y_maximum_coordinate: float | None = 1,
         number_of_y_grid_points: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:IlluminanceMap`` and add it to the document.
 
@@ -238,6 +242,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1:
         fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir`` and add it to the document.
 
@@ -267,6 +272,7 @@ class AirTerminalSingleDuctVAVReheatVariableSpeedFan_v8_9_to_v9_2:
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         heating_convergence_tolerance: float | None = 0.001,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan`` and add it to the document.
 

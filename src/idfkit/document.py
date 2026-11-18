@@ -838,13 +838,15 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """Whether *collection* is the one this document stores its type's objects in."""
         return self._collections.get(collection.obj_type) is collection
 
-    def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject:
+    def _create_in(
+        self, collection: IDFCollection[Any], name: str, fields: dict[str, Any], validate: bool = True
+    ) -> IDFObject:
         """Create an object for [IDFCollection.add][idfkit.objects.IDFCollection.add].
 
-        Validated as ``add()`` validates by default. *collection* is the one the caller holds: if it
-        is the detached empty collection read for an absent type, it becomes the stored one.
+        Validated or not by *validate*, as ``add()`` is. *collection* is the one the caller holds: if
+        it is the detached empty collection read for an absent type, it becomes the stored one.
         """
-        return self._add(collection.obj_type, name, fields, True, collection)
+        return self._add(collection.obj_type, name, fields, validate, collection)
 
     def _add(
         self,

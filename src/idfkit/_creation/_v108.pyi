@@ -19,6 +19,7 @@ class WeatherPropertySkyTemperature_v8_9_to_v9_2:
         *,
         calculation_type: Literal["DifferenceScheduleDewPointValue", "DifferenceScheduleDryBulbValue", "ScheduleValue"],
         schedule_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WeatherProperty:SkyTemperature`` and add it to the document.
 
@@ -67,6 +68,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2:
             _g.ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:CoolingPanel:RadiantConvective:Water`` and add it to the document.
 
@@ -88,6 +90,7 @@ class ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1:
         wind_coefficient: float,
         shelter_factor: float,
         pressure_exponent: float | None = 0.67,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:FlowCoefficient`` and add it to the document.
 
@@ -133,6 +136,7 @@ class ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2:
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalAirConditioner`` and add it to the document.
 
@@ -185,6 +189,7 @@ class LifeCycleCostUsePriceEscalation_v9_3_to_v22_1:
         escalations: Sequence[
             _g.LifeCycleCostUsePriceEscalationEscalationsItem | _g.LifeCycleCostUsePriceEscalationEscalationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:UsePriceEscalation`` and add it to the document.
 
@@ -220,6 +225,7 @@ class CoilCoolingDXCurveFitOperatingMode_v22_2_to_v26_1:
         speed_8_name: str | None = ...,
         speed_9_name: str | None = ...,
         speed_10_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:OperatingMode`` and add it to the document.
 

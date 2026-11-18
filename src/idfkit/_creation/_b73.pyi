@@ -29,6 +29,7 @@ class RunPeriod:
         use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
         treat_weather_as_actual: Literal["No", "Yes"] | None = "No",
         first_hour_interpolation_starting_values: Literal["Hour1", "Hour24"] | None = "Hour24",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 
@@ -71,6 +72,7 @@ class WindowMaterialBlind:
         blind_right_side_opening_multiplier: float | None = 0.5,
         minimum_slat_angle: float | None = 0,
         maximum_slat_angle: float | None = 180,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Blind`` and add it to the document.
 
@@ -103,6 +105,7 @@ class SurfacePropertyHeatTransferAlgorithmMultipleSurface:
             "MoisturePenetrationDepthConductionTransferFunction",
         ]
         | None = "ConductionTransferFunction",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:HeatTransferAlgorithm:MultipleSurface`` and add it to the document.
 
@@ -134,6 +137,7 @@ class ZoneMixing:
         maximum_source_temperature_schedule_name: str | None = ...,
         minimum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneMixing`` and add it to the document.
 
@@ -154,6 +158,7 @@ class ZoneRefrigerationDoorMixing:
         door_height: float | None = 3,
         door_area: float | None = 9,
         door_protection_type: Literal["AirCurtain", "None", "StripCurtain"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneRefrigerationDoorMixing`` and add it to the document.
 
@@ -202,6 +207,7 @@ class AnyZoneHVACEvaporativeCoolerUnit:
         | None = ...,
         second_evaporative_cooler_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EvaporativeCoolerUnit`` and add it to the document.
 
@@ -235,6 +241,7 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpWrapped:
         heating_cop_function_of_temperature_curve_name: str | None = ...,
         heating_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:Wrapped`` and add it to the document.
 
@@ -267,6 +274,7 @@ class AnySolarCollectorPerformanceIntegralCollectorStorage:
         emissivity_of_inner_cover: float | None = 0.88,
         absorptance_of_absorber_plate: float | None = 0.96,
         emissivity_of_absorber_plate: float | None = 0.3,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollectorPerformance:IntegralCollectorStorage`` and add it to the document.
 
@@ -294,6 +302,7 @@ class HeatPumpWaterToWaterEquationFitHeating:
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
         companion_cooling_heat_pump_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:EquationFit:Heating`` and add it to the document.
 
@@ -312,6 +321,7 @@ class DistrictHeatingWater:
         hot_water_outlet_node_name: str,
         nominal_capacity: float | Literal["Autosize"] | None = ...,
         capacity_fraction_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DistrictHeating:Water`` and add it to the document.
 
@@ -352,6 +362,7 @@ class EvaporativeFluidCoolerSingleSpeed:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeFluidCooler:SingleSpeed`` and add it to the document.
 
@@ -408,6 +419,7 @@ class AnyThermalStorageChilledWaterStratified:
         node_8_additional_loss_coefficient: float | None = 0,
         node_9_additional_loss_coefficient: float | None = 0,
         node_10_additional_loss_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:ChilledWater:Stratified`` and add it to the document.
 
@@ -491,6 +503,7 @@ class PlantComponentUserDefined:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantComponent:UserDefined`` and add it to the document.
 
@@ -525,6 +538,7 @@ class AnyElectricLoadCenterStorageBattery:
         battery_life_calculation: Literal["No", "Yes"] | None = "No",
         number_of_cycle_bins: int | None = 10,
         battery_life_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Storage:Battery`` and add it to the document.
 
@@ -561,6 +575,7 @@ class CurveQuadraticLinear:
         | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:QuadraticLinear`` and add it to the document.
 
@@ -599,6 +614,7 @@ class ComponentCostLineItem:
         cost_per_volume_rate: float | None = ...,
         cost_per_energy_per_temperature_difference: float | None = ...,
         quantity: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComponentCost:LineItem`` and add it to the document.
 

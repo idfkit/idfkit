@@ -26,6 +26,7 @@ class CeilingInterzone_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Ceiling:Interzone`` and add it to the document.
 
@@ -80,6 +81,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1:
         maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None = "Autosize",
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         controlling_zone_or_thermostat_location: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
 
@@ -119,6 +121,7 @@ class GroundHeatExchangerSlinky_v8_9_to_v22_1:
         number_of_trenches: float | None = 1,
         horizontal_spacing_between_pipes: float | None = 2,
         maximum_length_of_simulation: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Slinky`` and add it to the document.
 
@@ -152,6 +155,7 @@ class RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1:
         lower_temperature_bound: float | None = ...,
         upper_heat_rate_bound: float | None = ...,
         lower_heat_rate_bound: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:TwoGradient`` and add it to the document.
 
@@ -187,6 +191,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         fan_delay_time: float | None = 60,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
