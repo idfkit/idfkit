@@ -633,8 +633,10 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
             wrong on its own terms: probing five misspelled names used to leave
             five junk keys in ``collections``, visible to every later iteration
             over the document.  The empty collection returned for an absent type
-            is detached, so adding to it does not add to the document; use
-            [add][idfkit.document.IDFDocument.add] for that.
+            is detached: it is stored only when an object is created through it
+            with [IDFCollection.add][idfkit.objects.IDFCollection.add], which adds
+            the object to the document as [add][idfkit.document.IDFDocument.add]
+            does.
 
             ``@idfkit/core`` resolves and declines to store on exactly the same
             terms, in ``IdfDocument.all()``.
@@ -5504,8 +5506,10 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
             wrong on its own terms: probing five misspelled names used to leave
             five junk keys in ``collections``, visible to every later iteration
             over the document.  The empty collection returned for an absent type
-            is detached, so adding to it does not add to the document; use
-            [add][idfkit.document.IDFDocument.add] for that.
+            is detached: it is stored only when an object is created through it
+            with [IDFCollection.add][idfkit.objects.IDFCollection.add], which adds
+            the object to the document as [add][idfkit.document.IDFDocument.add]
+            does.
 
             ``@idfkit/core`` resolves and declines to store on exactly the same
             terms, in ``IdfDocument.all()``.

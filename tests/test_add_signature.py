@@ -111,8 +111,8 @@ def test_the_name_is_the_only_positional_argument() -> None:
     doc = new_document()
     with pytest.raises(TypeError, match="takes 1 positional argument"):
         doc.zones.add("Office", 2)  # pyright: ignore[reportCallIssue]
-    # The name is positional-only: by keyword it is a field, which no type has (as before 1.3).
-    with pytest.raises(ValidationFailedError, match="Unknown field 'name'"):
+    # The name is positional-only.
+    with pytest.raises(TypeError, match=r"not add\(name=\.\.\.\)"):
         doc.zones.add(name="Office")  # pyright: ignore[reportCallIssue]
     assert doc.zones.add("Office").name == "Office"
 
@@ -131,5 +131,8 @@ def test_adding_an_existing_object_still_warns_and_files_it() -> None:
     with pytest.warns(DeprecationWarning, match="deprecated"):
         filed = target.add(zone)  # pyright: ignore[reportArgumentType, reportCallIssue]
     assert filed is zone
+    other = source.zones.add("Lab")
+    with pytest.warns(DeprecationWarning, match="deprecated"):
+        assert target.add(obj=other) is other  # pyright: ignore[reportCallIssue]
     assert isinstance(filed, IDFObject)
     assert zone in list(target)

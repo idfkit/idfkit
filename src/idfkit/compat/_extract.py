@@ -124,6 +124,15 @@ def _accessor_type(attr: str) -> str | None:
     return get_schema(LATEST_VERSION).accessor_resolver(_build_resolver).resolve(attr)
 
 
+@lru_cache(maxsize=4096)
+def _is_object_type(key: str) -> bool:
+    """Whether *key* names an object type of the latest schema, in any case."""
+    from ..schema import get_schema
+    from ..versions import LATEST_VERSION
+
+    return get_schema(LATEST_VERSION).resolve_type_name(key) is not None
+
+
 def _call_name(node: ast.Call) -> str | None:
     func = node.func
     if isinstance(func, ast.Name):
@@ -390,25 +399,30 @@ class _LiteralVisitor(ast.NodeVisitor):
 
         ``doc.add("Zone", "Office")`` takes an object type first, and a collection's
         ``doc.zones.add("Office")`` a name, so the two must not be confused. A receiver is a
-        collection when it is ``doc["Zone"]``, a document accessor (``doc.zones``),
-        ``doc.get_collection("Zone")``, a name bound once to one of those, or a parameter annotated
-        ``IDFCollection[...]``; the object type is returned when it can be read. It is a document
-        when it is a call that returns one (``new_document()``, ``load_idf(...)``,
-        ``as_version(...)``), a name bound once to one, or a parameter annotated with a document
-        type. Anything else is unknown. The third item is the document expression a collection was
-        read from, in the current scope, for narrowing.
+        collection when it is ``doc["Zone"]`` (a key that names an object type, or any key on a
+        receiver known to be a document: ``docs["base"]`` may be a document held in a dict), a
+        document accessor (``doc.zones``), ``doc.get_collection("Zone")``, a name bound once to one
+        of those, or a parameter annotated ``IDFCollection[...]``; the object type is returned when
+        it can be read. It is a document when it is a call that returns one (``new_document()``,
+        ``load_idf(...)``, ``as_version(...)``), a name bound once to one, or a parameter annotated
+        with a document type. Anything else is unknown. The third item is the document expression a
+        collection was read from, when it means the same in *scope*, for narrowing.
         """
         if depth > 8:
             return "unknown", None, None
         if isinstance(expr, ast.Subscript):
             key = expr.slice
-            if isinstance(key, ast.Constant) and isinstance(key.value, str):
-                return "collection", key.value, expr.value if depth == 0 else None
+            if (
+                isinstance(key, ast.Constant)
+                and isinstance(key.value, str)
+                and (_is_object_type(key.value) or self._receiver(expr.value, scope, depth + 1)[0] == "document")
+            ):
+                return "collection", key.value, expr.value
             return "unknown", None, None
         if isinstance(expr, ast.Attribute):
             obj_type = _accessor_type(expr.attr)
             if obj_type is not None:
-                return "collection", obj_type, expr.value if depth == 0 else None
+                return "collection", obj_type, expr.value
             return "unknown", None, None
         if isinstance(expr, ast.Call):
             return self._receiver_of_call(expr, scope, depth)
@@ -423,7 +437,7 @@ class _LiteralVisitor(ast.NodeVisitor):
         if name == "get_collection" and isinstance(expr.func, ast.Attribute):
             arg = expr.args[0] if expr.args else None
             obj_type = arg.value if isinstance(arg, ast.Constant) and isinstance(arg.value, str) else None
-            return "collection", obj_type, expr.func.value if depth == 0 else None
+            return "collection", obj_type, expr.func.value
         if name in _DOCUMENT_FACTORIES:
             return "document", None, None
         if name == "copy" and isinstance(expr.func, ast.Attribute):
@@ -437,8 +451,10 @@ class _LiteralVisitor(ast.NodeVisitor):
     ) -> tuple[_ReceiverKind, str | None, ast.expr | None]:
         bound = self._table.value_of(expr.id, scope)
         if bound is not None:
-            kind, obj_type, _ = self._receiver(bound[0], bound[1], depth + 1)
-            return kind, obj_type, None
+            kind, obj_type, document = self._receiver(bound[0], bound[1], depth + 1)
+            # The document a bound collection was read from narrows it only where that expression
+            # means the same: when the name is bound in the scope it is read in.
+            return kind, obj_type, document if bound[1] is scope else None
         owner = self._table.lookup(expr.id, scope)
         if owner is not None and len(owner.bindings.get(expr.id, [])) == 1:
             return _annotation_kind(self._annotations.get(id(owner), {}).get(expr.id)), None, None
@@ -450,8 +466,19 @@ class _LiteralVisitor(ast.NodeVisitor):
         """A collection's ``add(name, **fields)``: the first argument is a name, the keywords its fields."""
         if obj_type is None:
             return
-        receiver_text = self._receiver_text(receiver)
         releases = self._releases(document) if document is not None else None
+        self._keyword_choice_literals(node, obj_type, self._receiver_text(receiver), releases, in_idfkit_add=True)
+
+    def _keyword_choice_literals(
+        self,
+        node: ast.Call,
+        obj_type: str,
+        receiver_text: str,
+        releases: Releases | None,
+        *,
+        in_idfkit_add: bool,
+    ) -> None:
+        """Choice values passed by keyword: ``add(..., field="value")``."""
         for kw in node.keywords:
             if kw.arg is not None and isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
                 self.literals.append(
@@ -465,7 +492,7 @@ class _LiteralVisitor(ast.NodeVisitor):
                         field_name=kw.arg,
                         receiver=receiver_text,
                         releases=releases,
-                        in_idfkit_add=True,
+                        in_idfkit_add=in_idfkit_add,
                     )
                 )
 
@@ -506,24 +533,7 @@ class _LiteralVisitor(ast.NodeVisitor):
             )
         )
 
-        # Extract choice values from keyword arguments
-        for kw in node.keywords:
-            if kw.arg is not None and isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
-                self.literals.append(
-                    ExtractedLiteral(
-                        value=kw.value.value,
-                        kind=LiteralKind.CHOICE_VALUE,
-                        line=kw.value.lineno,
-                        col=kw.value.col_offset,
-                        end_col=_end_col(kw.value),
-                        obj_type=obj_type_value,
-                        field_name=kw.arg,
-                        receiver=receiver_text,
-                        releases=releases,
-                        in_idfkit_add=in_idfkit_add,
-                    )
-                )
-
+        self._keyword_choice_literals(node, obj_type_value, receiver_text, releases, in_idfkit_add=in_idfkit_add)
         self._dict_choice_literals(node, obj_type_value, receiver_text, releases, in_idfkit_add)
 
     def _dict_choice_literals(

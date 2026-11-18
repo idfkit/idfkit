@@ -7,7 +7,7 @@ for cross-version EnergyPlus compatibility issues.
 from __future__ import annotations
 
 import difflib
-from collections.abc import Collection
+from collections.abc import Collection, Mapping
 from functools import lru_cache
 
 from ..schema import EpJSONSchema, get_schema
@@ -319,7 +319,7 @@ def _check_object_type(
             literal,
             f"Object type '{literal.value}' is not in any target version",
             "add() raises UnknownObjectTypeError for it",
-            _closest(literal.value, list(_types_by_folded_name(tuple(sorted(scope))).values())),
+            _closest(literal.value, _types_by_folded_name(tuple(sorted(scope)))),
             filename,
             out,
             scope=scope,
@@ -382,9 +382,7 @@ def _check_get_collection(
     receiver = literal.receiver or "model"
 
     if not present_in:
-        by_folded = _types_by_folded_name(tuple(sorted(scope)))
-        close = difflib.get_close_matches(literal.value.casefold(), list(by_folded), n=1, cutoff=0.6)
-        suggestion = by_folded[close[0]] if close else None
+        suggestion = _closest(literal.value, _types_by_folded_name(tuple(sorted(scope))))
         hint = f"; did you mean '{suggestion}'?" if suggestion else ""
         out.append(
             Diagnostic(
@@ -496,7 +494,10 @@ def _check_choice_value(
             literal,
             f"Choice value '{literal.value}' for {obj_type}.{field_name} is not in any target version",
             "add() raises ValidationFailedError for it, and EnergyPlus rejects it",
-            _closest(literal.value, sorted(_choices_of(indices[max(scope)], obj_type, field_name) or ())),
+            _closest(
+                literal.value,
+                {c.casefold(): c for c in sorted(_choices_of(indices[max(scope)], obj_type, field_name) or ())},
+            ),
             filename,
             out,
             scope=scope,
@@ -529,9 +530,8 @@ def _check_choice_value(
         )
 
 
-def _closest(value: str, candidates: list[str]) -> str | None:
-    """The candidate closest to *value*, compared case-insensitively, or ``None`` if none is close."""
-    by_folded = {c.casefold(): c for c in candidates}
+def _closest(value: str, by_folded: Mapping[str, str]) -> str | None:
+    """The name closest to *value* among *by_folded*'s, keyed by case-folded name, or ``None`` if none is close."""
     close = difflib.get_close_matches(value.casefold(), list(by_folded), n=1, cutoff=0.6)
     return by_folded[close[0]] if close else None
 
