@@ -107,10 +107,25 @@ class TestLoadingTheIndexOffline:
 
         The nudge cannot write its throttle timestamp, so it gives up before
         reaching for the network. Nothing else about the load is affected.
+
+        Root ignores directory permission bits, so ``chmod`` alone does not make
+        the directory unwritable when the suite runs as uid 0 (CI containers,
+        cloud sandboxes). ``Path.touch`` is therefore also made to raise the
+        ``PermissionError`` a non-root user would get for any path inside the
+        cache, which keeps the test meaningful whatever the uid.
         """
         cache = tmp_path / "read-only-cache"
         cache.mkdir()
         cache.chmod(0o500)
+
+        real_touch = Path.touch
+
+        def refuse_inside_cache(self: Path, mode: int = 0o666, exist_ok: bool = True) -> None:
+            if self.is_relative_to(cache):
+                raise PermissionError(13, "Permission denied", str(self))
+            real_touch(self, mode=mode, exist_ok=exist_ok)
+
+        monkeypatch.setattr(Path, "touch", refuse_inside_cache)
         monkeypatch.setenv(_CACHE_DIR_ENV_VAR, str(cache))
         monkeypatch.delenv(_DISABLE_UPDATE_CHECK_ENV_VAR, raising=False)
         try:
