@@ -12,7 +12,7 @@ import warnings
 from collections.abc import Callable, Container, Iterator, Mapping, Sequence
 from copy import deepcopy
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError, RefusedEntry, format_refused
@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 if TYPE_CHECKING:
-    from typing import ParamSpec, Protocol
+    from typing import ParamSpec
 
     from .document import AnyIDFDocument
     from .schema import ParsingCache
@@ -36,15 +36,17 @@ if TYPE_CHECKING:
     _P = ParamSpec("_P")
 
     class _Creatable(Protocol[_P]):
-        """An object class whose ``update()`` keywords are typed, as every generated class's are.
+        """An object class with a creation signature, as every generated class has.
 
-        ``IDFCollection.add`` takes its keywords from this signature, so a collection typed
-        ``IDFCollection[Zone]`` accepts exactly ``Zone.update``'s fields and value types. The
-        signature is read from the class the collection is already typed with: no overload is
-        resolved, so a call costs a type checker the same whatever the object type.
+        ``IDFCollection.add`` takes its parameters from this signature, so a collection typed
+        ``IDFCollection[Material]`` takes the name (or none, for a type without a Name field),
+        requires the fields the schema requires, and accepts the other fields with their value
+        types and defaults. The signature is read from the class the collection is already typed
+        with: no overload is resolved, so a call costs a type checker the same whatever the object
+        type. ``IDFObject``'s own accepts any name and fields, for untyped collections.
         """
 
-        def update(self, values: Mapping[str, Any] | None = ..., /, *args: _P.args, **kwargs: _P.kwargs) -> None: ...
+        def _creation_signature(self, /, *args: _P.args, **kwargs: _P.kwargs) -> None: ...
 
     class _ObjectFactory(Protocol):
         """The document a collection creates its objects through (``IDFDocument``)."""
@@ -52,6 +54,17 @@ if TYPE_CHECKING:
         def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject: ...
 
         def _holds(self, collection: IDFCollection[Any]) -> bool: ...
+
+
+_ItemT = TypeVar("_ItemT")
+_Item_co = TypeVar("_Item_co", covariant=True)
+
+
+# Defined at run time, as ExtensibleList.as_list names it: typing.get_type_hints resolves it.
+class _Snapshot(Protocol[_Item_co]):
+    """A group class whose ``as_dict()`` is typed, as every generated group class's is."""
+
+    def as_dict(self) -> _Item_co: ...
 
 
 # Field name conversion patterns
@@ -424,7 +437,11 @@ class ExtensibleList(Generic[GroupT_co]):
         for it in coerced:
             self.append(it)
 
-    def as_list(self) -> list[dict[str, Any]]:
+    # Typed through the group class's as_dict(): a generated group gives its item TypedDict
+    # (BuildingSurfaceDetailedVerticesItem), so the list passes back to add() and update() checked;
+    # an untyped ExtensibleGroup gives dict[str, Any]. Python has no way to also say the element is
+    # an ExtensibleGroup, as every list's element already is.
+    def as_list(self: ExtensibleList[_Snapshot[_ItemT]]) -> list[_ItemT]:  # pyright: ignore[reportInvalidTypeArguments]
         """Snapshot the wrapper as a plain list of plain dicts."""
         return [g.as_dict() for g in self]
 
@@ -1093,6 +1110,20 @@ class IDFObject(EppyObjectMixin):
         for key, value in group.values():
             setattr(self, key, value)
 
+    if TYPE_CHECKING:
+        # What IDFCollection.add takes to create an object of this class (stub-only): here any name
+        # and fields, which the run-time validator checks, for the collections a type checker cannot
+        # narrow. Each generated class declares its own, from the schema: the name only for a type
+        # with a Name field, the required fields without a default, the others with their schema
+        # default. Editors show the docstring of the one a call takes its parameters from.
+        def _creation_signature(self, name: str = "", /, **fields: Any) -> None:
+            """Create an object of this collection's type and add it to the document.
+
+            The object type is not known to the type checker here (``doc.get_collection(obj_type)``),
+            so any name and fields are accepted, and validated at run time. ``doc["Zone"]`` and
+            ``doc.zones`` type the fields of their object type.
+            """
+
     def _examine(self, key: str, value: Any) -> RefusedEntry | None:
         """Classify one :meth:`update` entry with the tests ``__setattr__`` applies to it."""
         if key[:1] == "_":
@@ -1222,8 +1253,8 @@ class IDFObject(EppyObjectMixin):
 # a typed collection be passed to code that takes IDFCollection[IDFObject].
 #
 # Covariance is sound here because no public method takes an object of the element type: add()
-# takes a name and fields and creates the object itself, of the collection's own type. (It took an
-# object up to 1.3.0rc1, through which a Material could be filed in doc["Zone"]; that is _append now.)
+# takes a name and fields and creates the object itself, of the collection's own type. (Its former,
+# deprecated form took an object, through which a Material could be filed in doc["Zone"]; that is _append now.)
 _T_co = TypeVar("_T_co", bound=IDFObject, covariant=True)
 _ObjT = TypeVar("_ObjT", bound=IDFObject)
 _D = TypeVar("_D")
@@ -1415,7 +1446,7 @@ class IDFCollection(Generic[_T_co]):
         (``IDFDocument.add``, ``addidfobject``). It does not validate, link the object to a
         document, index its references, or check that the object is of this collection's type,
         and an object filed in the empty collection read for an absent type is not in the
-        document; hence private. It was public as ``add(obj)`` up to idfkit 1.3.0rc1.
+        document; hence private. It is what the deprecated ``add(obj)`` does.
 
         Raises:
             DuplicateObjectError: If an object with the same name exists
@@ -1431,76 +1462,121 @@ class IDFCollection(Generic[_T_co]):
         self._items.append(obj)
         return obj
 
-    # The self type names only what add() reads from the element class, its typed update()
-    # signature; Python has no intersection type to also say the element is an IDFObject, which every
+    # The self type names only what add() reads from the element class, its creation signature;
+    # Python has no intersection type to also say the element is an IDFObject, which every
     # collection's element already is. The bound is checked where it matters, on IDFCollection[X].
-    def add(
-        self: IDFCollection[_Creatable[_P]],  # pyright: ignore[reportInvalidTypeArguments]
-        name: str = "",
-        /,
-        *args: _P.args,
-        **fields: _P.kwargs,
-    ) -> _T_co:
-        """Create an object of this collection's type and add it to the document.
+    #
+    # Type checkers read the declaration without a docstring, and run time, help() and doc tools
+    # (griffe takes the last definition) the one under ``else``. pyright gives a call the docstring of
+    # the creation signature it takes the parameters from only when the method has none of its own
+    # (FunctionType.applyParamSpecValue), so an editor's hover and signature help show the object
+    # type's, generated from the schema ("Create a new ``Schedule:Constant``...", its memo and its
+    # docs page), rather than this generic one. Type checkers skip the body under ``else``, so it only
+    # delegates to _add, which they check. Editors built on jedi (pylsp, IPython) read the declaration
+    # under TYPE_CHECKING whatever the order, so they show no docstring for add(): the price of
+    # pyright's per-type one.
+    if TYPE_CHECKING:
 
-        The typed form of [IDFDocument.add][idfkit.document.IDFDocument.add]: the same object,
-        validated and indexed the same way, but the keywords are the object type's own fields,
-        checked by the type checker, and the result is the collection's object class.
-        ``doc["Zone"].add("Office", ceiling_height=3.0)`` returns a ``Zone``, and a misspelled
-        field (``ceiling_hieght=``) or a value the field does not accept
-        (``zone_inside_convection_algorithm="Tarp"``) is a type error, as it is on assignment.
-        Through a document narrowed to a release (``IDFDocumentV9_4``) the fields are that
-        release's, and through ``AnyIDFDocument`` only those every release accepts.
+        def add(
+            self: IDFCollection[_Creatable[_P]],  # pyright: ignore[reportInvalidTypeArguments]
+            /,
+            *args: _P.args,
+            **fields: _P.kwargs,
+        ) -> _T_co: ...
 
-        The object is always validated, as ``IDFDocument.add`` validates by default; for
-        unvalidated bulk loading use ``doc.add(obj_type, ..., validate=False)``. Fields are passed
-        by keyword only; extensible groups go under their wrapper key (``vertices=[{...}, ...]``),
-        as with ``IDFDocument.add``.
+    else:
 
-        Up to idfkit 1.3.0rc1 this method took an existing object and filed it in the collection
-        without validating it or linking it to the document. That form still runs, with a
-        ``DeprecationWarning``, and will be removed; file an existing object with
-        ``IDFDocument.addidfobject``, which puts it in the document. Type checkers accept only the
-        form above.
+        def add(
+            self: IDFCollection[_Creatable[_P]],  # pyright: ignore[reportInvalidTypeArguments]
+            /,
+            *args: _P.args,
+            **fields: _P.kwargs,
+        ) -> _T_co:
+            """Create an object of this collection's type and add it to the document.
 
-        A type with no objects yet is read as an empty collection that is not stored in the
-        document (reading never adds to it). Adding through such a collection stores it, so it
-        holds the new object: ``zones = doc["Zone"]; zones.add("A")`` leaves ``"A"`` in
-        ``zones``. If the type was stored meanwhile through another path, the object goes to the
-        document's collection.
+            The typed form of [IDFDocument.add][idfkit.document.IDFDocument.add]: the same object,
+            validated and indexed the same way, but the keywords are the object type's own fields,
+            checked by the type checker, and the result is the collection's object class.
+            ``doc["Zone"].add("Office", ceiling_height=3.0)`` returns a ``Zone``, and a misspelled
+            field (``ceiling_hieght=``) or a value the field does not accept
+            (``zone_inside_convection_algorithm="Bogus"``) is a type error, as it is on assignment.
+            Through a document narrowed to a release (``IDFDocumentV9_4``) the fields are that
+            release's, and through ``AnyIDFDocument`` only those every release accepts.
 
-        Args:
-            name: The object's name; leave it empty for a type without a Name field
-                (``doc["Output:SQLite"].add(option_type="SimpleAndTabular")``).
-            **fields: Field values, by their Python field names.
+            The parameters are those of the object class's creation signature, generated from the
+            schema, so an editor's signature help lists them: the name first, for a type with a Name
+            field; then the fields the schema requires, with no default; then the others with their
+            schema default (``thermal_absorptance: float | None = 0.9``), or ``...`` where the schema
+            gives none (or one that is not a plain number or string). A shown default is the value EnergyPlus applies to a field left
+            empty: ``add()`` stores only the fields passed. Leaving out a required field
+            (``doc.materials.add("XPS")``) is a type error, as it is a ``ValidationFailedError`` at run
+            time, and so is a name for a type without a Name field (``doc["Output:SQLite"].add("x")``),
+            an ``InvalidFieldError``. Through ``AnyIDFDocument`` a field is required where any release
+            requires it, so no release refuses a call that type-checks; where no call suits every
+            release (a required field renamed between releases), the signature requires
+            ``narrow_with_as_version_first``, which nothing satisfies: narrow the document with
+            ``as_version`` first. A field whose key is not a Python name (``100_outdoor_air_in_cooling``)
+            is not a keyword here; set it with ``IDFDocument.add`` or after creation.
 
-        Returns:
-            The new object, typed as this collection's objects.
+            The object is always validated, as ``IDFDocument.add`` validates by default; for
+            unvalidated bulk loading use ``doc.add(obj_type, ..., validate=False)``. Fields are passed
+            by keyword only; extensible groups go under their wrapper key (``vertices=[{...}, ...]``),
+            as with ``IDFDocument.add``.
 
-        Raises:
-            TypeError: If the collection belongs to no document (one constructed directly), a
-                field is passed positionally, or the name is passed as ``name=``.
-            UnknownObjectTypeError: If the collection's type is in no schema
-                (``doc.get_collection("Zoen")``).
-            ValidationFailedError: If validation fails (unknown fields, missing required fields,
-                invalid values).
-            DuplicateObjectError: If an object of the type already has the name, or the type is
-                a singleton that already has one.
+            This method used to take an existing object and file it in the collection without
+            validating it or linking it to the document. That form still runs, with a
+            ``DeprecationWarning`` (and a ``TypeError`` for fields passed beside the object, which it
+            would drop), and will be removed; file an existing object with
+            ``IDFDocument.addidfobject``, which puts it in the document. Type checkers accept only the
+            form above.
 
-        Examples:
-            >>> from idfkit import new_document
-            >>> model = new_document()
-            >>> office = model["Zone"].add("Office", ceiling_height=3.0)
-            >>> office.ceiling_height
-            3.0
-            >>> model.zones.add("Lab").name
-            'Lab'
-            >>> [zone.name for zone in model["Zone"]]
-            ['Office', 'Lab']
-        """
-        if isinstance(cast("object", name), IDFObject):
-            return self._append_deprecated(cast("IDFObject", name))
-        legacy = fields.get("obj") if not args and len(fields) == 1 and not name else None
+            A type with no objects yet is read as an empty collection that is not stored in the
+            document (reading never adds to it). Adding through such a collection stores it, so it
+            holds the new object: ``zones = doc["Zone"]; zones.add("A")`` leaves ``"A"`` in
+            ``zones``. If the type was stored meanwhile through another path, the object goes to the
+            document's collection.
+
+            Args:
+                *args: The object's name, the only positional argument; none for a type without a
+                    Name field (``doc["Output:SQLite"].add(option_type="SimpleAndTabular")``).
+                **fields: Field values, by their Python field names.
+
+            Returns:
+                The new object, typed as this collection's objects.
+
+            Raises:
+                TypeError: If the collection belongs to no document (one constructed directly), a
+                    field is passed positionally, or the name is passed as ``name=``.
+                UnknownObjectTypeError: If the collection's type is in no schema
+                    (``doc.get_collection("Zoen")``).
+                ValidationFailedError: If validation fails (unknown fields, missing required fields,
+                    invalid values).
+                DuplicateObjectError: If an object of the type already has the name, or the type is
+                    a singleton that already has one.
+
+            Examples:
+                >>> from idfkit import new_document
+                >>> model = new_document()
+                >>> office = model["Zone"].add("Office", ceiling_height=3.0)
+                >>> office.ceiling_height
+                3.0
+                >>> model.zones.add("Lab").name
+                'Lab'
+                >>> [zone.name for zone in model["Zone"]]
+                ['Office', 'Lab']
+            """
+            return self._add(args, fields)
+
+    def _add(self, args: tuple[object, ...], fields: dict[str, Any]) -> Any:
+        """The run-time body of :meth:`add`, here so that type checkers check it (see the note there)."""
+        first = args[0] if args else None
+        if isinstance(first, IDFObject):
+            if len(args) > 1 or fields:
+                # It files the object as it is: fields beside it would be dropped without a word.
+                msg = "add(obj) takes the object alone; set its fields on the object, or create one with add(name, **fields)"
+                raise TypeError(msg)
+            return self._append_deprecated(first)
+        legacy = fields.get("obj") if not args and len(fields) == 1 else None
         if isinstance(legacy, IDFObject):
             # add(obj=...), the keyword spelling of the deprecated form.
             return self._append_deprecated(legacy)
@@ -1519,20 +1595,20 @@ class IDFCollection(Generic[_T_co]):
                 "collection unpickled from an idfkit release before 1.3); use IDFDocument.add"
             )
             raise TypeError(msg)
-        if args:
-            msg = f"add() takes 1 positional argument (the name) but {len(args) + 1} were given; pass fields by keyword"
+        if len(args) > 1:
+            msg = f"add() takes 1 positional argument (the name) but {len(args)} were given; pass fields by keyword"
             raise TypeError(msg)
-        obj = document._create_in(self, name, fields)  # pyright: ignore[reportPrivateUsage]
-        return cast("_T_co", obj)
+        name = cast("str", first) if args else ""
+        return document._create_in(self, name, fields)  # pyright: ignore[reportPrivateUsage]
 
     def _append_deprecated(self, obj: IDFObject) -> Any:
-        """``add(obj)`` as it behaved up to idfkit 1.3.0rc1, with a warning."""
+        """The deprecated ``add(obj)``: file an existing object as ``add`` used to, with a warning."""
         warnings.warn(
             "IDFCollection.add(obj) is deprecated: it files the object in the collection without validating "
             "it or adding it to the document. Use doc.addidfobject(obj) to add an existing object, or "
             "collection.add(name, **fields) to create one.",
             DeprecationWarning,
-            stacklevel=3,
+            stacklevel=4,  # _append_deprecated <- _add <- add <- the caller
         )
         return cast("IDFCollection[IDFObject]", self)._append(obj)
 

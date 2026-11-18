@@ -57,10 +57,12 @@ class IDFDocumentV22_1(
     _v._Accessors_v9_4_to_v26_2,
     _v._Accessors_v9_5_to_v22_1,
     _v._Accessors_v9_5_to_v23_2,
+    _v._Accessors_v9_5_to_v25_1,
     _v._Accessors_v9_5_to_v26_2,
     _v._Accessors_v9_6_to_v22_1,
     _v._Accessors_v9_6_to_v23_1,
     _v._Accessors_v9_6_to_v23_2,
+    _v._Accessors_v9_6_to_v24_1,
     _v._Accessors_v9_6_to_v24_2,
     _v._Accessors_v9_6_to_v25_1,
     _v._Accessors_v9_6_to_v26_1,
@@ -489,7 +491,7 @@ class IDFDocumentV22_1(
         self, obj_type: Literal["WindowProperty:StormWindow"], /
     ) -> IDFCollection[_v.WindowPropertyStormWindow_v8_9_to_v22_1]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["InternalMass"], /) -> IDFCollection[_g.InternalMass]: ...
+    def __getitem__(self, obj_type: Literal["InternalMass"], /) -> IDFCollection[_v.InternalMass_v9_6_to_v24_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["Shading:Site"], /) -> IDFCollection[_g.ShadingSite]: ...
     @overload
@@ -817,7 +819,9 @@ class IDFDocumentV22_1(
         self, obj_type: Literal["ZoneBaseboard:OutdoorTemperatureControlled"], /
     ) -> IDFCollection[_v.ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["SwimmingPool:Indoor"], /) -> IDFCollection[_g.SwimmingPoolIndoor]: ...
+    def __getitem__(
+        self, obj_type: Literal["SwimmingPool:Indoor"], /
+    ) -> IDFCollection[_v.SwimmingPoolIndoor_v8_9_to_v22_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneContaminantSourceAndSink:CarbonDioxide"], /
@@ -1277,7 +1281,7 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneControl:ContaminantController"], /
-    ) -> IDFCollection[_g.ZoneControlContaminantController]: ...
+    ) -> IDFCollection[_v.ZoneControlContaminantController_v8_9_to_v26_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:IdealLoadsAirSystem"], /
@@ -1347,7 +1351,7 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:Baseboard:RadiantConvective:Water"], /
-    ) -> IDFCollection[_g.ZoneHVACBaseboardRadiantConvectiveWater]: ...
+    ) -> IDFCollection[_v.ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:Baseboard:RadiantConvective:Steam:Design"], /
@@ -1355,7 +1359,7 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:Baseboard:RadiantConvective:Steam"], /
-    ) -> IDFCollection[_g.ZoneHVACBaseboardRadiantConvectiveSteam]: ...
+    ) -> IDFCollection[_v.ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:Baseboard:RadiantConvective:Electric"], /
@@ -1375,7 +1379,7 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:VariableFlow"], /
-    ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantVariableFlow]: ...
+    ) -> IDFCollection[_v.ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:VariableFlow:Design"], /
@@ -1383,7 +1387,7 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:ConstantFlow"], /
-    ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantConstantFlow]: ...
+    ) -> IDFCollection[_v.ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:ConstantFlow:Design"], /
@@ -1399,7 +1403,7 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:HighTemperatureRadiant"], /
-    ) -> IDFCollection[_g.ZoneHVACHighTemperatureRadiant]: ...
+    ) -> IDFCollection[_v.ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:VentilatedSlab"], /
@@ -2035,7 +2039,7 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["EvaporativeFluidCooler:SingleSpeed"], /
-    ) -> IDFCollection[_v.EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1]: ...
+    ) -> IDFCollection[_v.EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["EvaporativeFluidCooler:TwoSpeed"], /
@@ -2277,11 +2281,11 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Schedule"], /
-    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToSchedule]: ...
+    ) -> IDFCollection[_v.ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Actuator"], /
-    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToActuator]: ...
+    ) -> IDFCollection[_v.ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Variable"], /
@@ -2591,7 +2595,7 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["PhotovoltaicPerformance:Simple"], /
-    ) -> IDFCollection[_g.PhotovoltaicPerformanceSimple]: ...
+    ) -> IDFCollection[_v.PhotovoltaicPerformanceSimple_v8_9_to_v25_2]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["PhotovoltaicPerformance:EquivalentOne-Diode"], /

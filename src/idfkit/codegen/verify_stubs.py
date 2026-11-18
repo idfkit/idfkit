@@ -14,6 +14,14 @@ than repeated:
 * every type's class has exactly the version's fields, each with the version's value type, and
   its extensible group exactly the version's inner fields;
 * every class's ``update`` keywords are exactly its fields;
+* every class's creation signature, which ``IDFCollection.add`` takes, has the name exactly when
+  the type has a Name field (required when the schema requires it) and exactly the ``update``
+  keywords (but the spelling without ``_`` of a required key ending in ``_``), with the same value
+  types; a keyword has no default exactly when the schema requires the field (then without
+  ``None``), and a default it shows is the schema's. Through ``AnyIDFDocument`` a field is
+  required where any version requires it, a default is shown only where every version has it,
+  and a type some version requires a field of that the class cannot take requires
+  ``narrow_with_as_version_first``, which no call satisfies;
 * a version's document has exactly the version's attribute accessors, each typed with the class
   of its object type in that version;
 * ``AnyIDFDocument`` offers exactly the types every version has, each with exactly the fields
@@ -32,7 +40,7 @@ from __future__ import annotations
 import ast
 import dataclasses
 import functools
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -54,6 +62,25 @@ class _Class:
     # ``__getitem__`` overloads in order: the literal object type each takes (``None`` for one that
     # takes anything else), the type it returns, and its parameter's annotation.
     getitem: list[tuple[str | None, str, str]] = dataclasses.field(default_factory=list[tuple[str | None, str, str]])
+    # The annotation of ``_creation_signature`` (``_c3.Material``), when the class declares one.
+    creation: str | None = None
+    # What ``as_dict()`` returns, for a group class that types its snapshot.
+    snapshot: str | None = None
+
+
+@dataclasses.dataclass(frozen=True)
+class _CreationSignature:
+    """The ``__call__`` of a creation signature class in ``idfkit/_creation``.
+
+    Attributes:
+        name: ``"required"``, ``"optional"`` (with a default) or ``"none"``: the positional name.
+        params: Each keyword with its annotation and its default's source, ``None`` for none.
+        doc: Its docstring, which an editor shows for ``add()``; ``None`` for none.
+    """
+
+    name: str
+    params: dict[str, tuple[str, str | None]]
+    doc: str | None = None
 
 
 @dataclasses.dataclass
@@ -63,12 +90,25 @@ class _Module:
     classes: dict[str, _Class] = dataclasses.field(default_factory=dict[str, _Class])
     # Module-level ``Name: TypeAlias = Target``: the alias and the class it names.
     aliases: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
+    # ``from ._creation import _b3 as _c3``: the alias and the module it names.
+    imports: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
+    # The creation signatures, by module and class: ``("_b3", "Material")``.
+    signatures: dict[tuple[str, str], _CreationSignature] = dataclasses.field(
+        default_factory=dict[tuple[str, str], _CreationSignature]
+    )
+    # Classes whose creation signature was found right for an expectation, so another release
+    # that expects the same of the same class is not checked again.
+    creation_checked: set[tuple[str, str]] = dataclasses.field(default_factory=set[tuple[str, str]])
 
 
 @functools.cache
 def _norm(annotation: str) -> str:
-    """Normalise an annotation's spelling, so line wrapping and the ``_g.`` and ``_v.`` prefixes do not count."""
-    return ast.unparse(ast.parse(annotation.replace("_g.", "").replace("_v.", ""), mode="eval"))
+    """Normalise an annotation's spelling, so line wrapping and the module prefixes do not count.
+
+    ``_g.`` and ``_vd.`` are how the creation modules reach ``_generated_types`` and ``versioned``,
+    ``_v.`` how a release's document module reaches ``versioned``.
+    """
+    return ast.unparse(ast.parse(annotation.replace("_g.", "").replace("_vd.", "").replace("_v.", ""), mode="eval"))
 
 
 def _base_name(node: ast.expr) -> str:
@@ -101,11 +141,16 @@ def _read_class(node: ast.ClassDef) -> _Class:
     cls = _Class([_base_name(b) for b in node.bases], {}, {})
     for item in node.body:
         if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
-            cls.fields[item.target.id] = _norm(ast.unparse(item.annotation))
+            if item.target.id == "_creation_signature":
+                cls.creation = ast.unparse(item.annotation)
+            else:
+                cls.fields[item.target.id] = _norm(ast.unparse(item.annotation))
         elif not isinstance(item, ast.FunctionDef):
             continue
         elif (overload := _getitem_overload(item)) is not None:
             cls.getitem.append(overload)
+        elif item.name == "as_dict" and item.returns is not None:
+            cls.snapshot = _norm(ast.unparse(item.returns))
         elif item.returns is not None and any(ast.unparse(d) == "property" for d in item.decorator_list):
             cls.properties[item.name] = _norm(ast.unparse(item.returns))
         elif (
@@ -119,10 +164,52 @@ def _read_class(node: ast.ClassDef) -> _Class:
     return cls
 
 
+# The parameter a creation signature requires when no call can satisfy every release it serves.
+_NARROW_FIRST = "narrow_with_as_version_first"
+
+# The positional-only parameter a type without a Name field takes in place of the name.
+_NO_NAME_PARAM = "this_type_has_no_name_field"
+
+
+def _read_signature(node: ast.ClassDef) -> _CreationSignature | None:
+    """The ``__call__`` of a class in a creation module, or ``None`` when it has none."""
+    for item in node.body:
+        if isinstance(item, ast.FunctionDef) and item.name == "__call__":
+            args = item.args
+            positional = args.posonlyargs[1:]
+            # A type without a Name field takes the guard there, which nothing satisfies; one that
+            # takes nothing positional reads "unguarded", which no expected signature is.
+            name = "unguarded"
+            if [arg.arg for arg in positional] == [_NO_NAME_PARAM]:
+                guard = positional[0].annotation
+                typed = guard is not None and ast.unparse(guard).rpartition(".")[2] == "_PassFieldsAsKeywords"
+                name = "none" if typed and args.defaults else "unguarded"
+            elif positional:
+                name = "optional" if args.defaults else "required"
+            params: dict[str, tuple[str, str | None]] = {}
+            for arg, default in zip(args.kwonlyargs, args.kw_defaults, strict=True):
+                annotation = _norm(ast.unparse(arg.annotation)) if arg.annotation is not None else ""
+                params[arg.arg] = (annotation, None if default is None else ast.unparse(default))
+            return _CreationSignature(name, params, ast.get_docstring(item))
+    return None
+
+
+def _read_creation(sources: Mapping[str, str], module: _Module) -> _Module:
+    """Read the creation modules (``_b3`` -> its source) into *module*."""
+    for name, source in sources.items():
+        for node in ast.parse(source).body:
+            if isinstance(node, ast.ClassDef) and (signature := _read_signature(node)) is not None:
+                module.signatures[name, node.name] = signature
+    return module
+
+
 def _read(source: str, module: _Module | None = None) -> _Module:
     module = module if module is not None else _Module()
     for node in ast.parse(source).body:
-        if isinstance(node, ast.ClassDef):
+        if isinstance(node, ast.ImportFrom) and node.module == "_creation":
+            for alias in node.names:
+                module.imports[alias.asname or alias.name] = alias.name
+        elif isinstance(node, ast.ClassDef):
             module.classes[node.name] = _read_class(node)
         elif (
             isinstance(node, ast.AnnAssign)
@@ -322,13 +409,217 @@ def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problem
             group_cls = _collection_class(annotation)
             if group_cls not in module.classes or _members_of(_fields(module, group_cls)) != inner:
                 problems.append(f"{where}: group {group_cls} does not hold the version's inner fields")
-        keywords[wrapper] = frozenset({"list[Any]"})
+            item = _item_name(group_cls)
+            if item not in module.classes or _members_of(_fields(module, item)) != inner:
+                problems.append(f"{where}: {item} does not hold the version's inner fields")
+            _check_snapshot(module, group_cls, where, problems)
+            keywords[wrapper] = frozenset({_group_items(group_cls)})
     if actual != expected:
         missing = sorted(set(expected) - set(actual))
         extra = sorted(set(actual) - set(expected))
         retyped = sorted(k for k in set(actual) & set(expected) if actual[k] != expected[k])
         problems.append(f"{where}: missing {missing}, extra {extra}, mistyped {retyped}")
     _check_update(module, cls, keywords, where, problems)
+    _check_creation(module, cls, [_schema_of(ver)], obj_type, where, problems)
+
+
+def _schema_of(ver: Version) -> EpJSONSchema:
+    from idfkit.schema import get_schema
+
+    return get_schema(ver)
+
+
+@dataclasses.dataclass(frozen=True)
+class _ExpectedCreation:
+    """What a creation signature must say, read from the schemas of the releases it serves."""
+
+    name: str
+    required: frozenset[str]
+    # Each field with a default every release agrees on, with that default.
+    defaults: dict[str, object]
+    # The spellings without the trailing underscore of keys ending in "_": not offered.
+    hidden: frozenset[str]
+    # One release requires the name and another refuses it: no call suits them all.
+    name_conflict: bool = False
+
+
+def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedCreation:
+    """The name, required fields and defaults *obj_type*'s creation must have to suit all *schemas*.
+
+    A field is required when its schema lists it in ``required`` and gives it no default, as the
+    run-time validator refuses an object without it; over several releases, when any one does, so
+    that no release refuses a call that type-checks. A default must be one every release has. The
+    name is required when any release's schema marks it ``is_required``, refused when no release
+    has a Name field, refused too when the others take an optional one, and optional otherwise; one
+    release requiring it and another refusing it is a conflict no call resolves.
+    """
+    from idfkit.schema import trailing_underscore_aliases
+
+    kinds: set[str] = set()
+    required: set[str] = set()
+    hidden: set[str] = set()
+    defaults: dict[str, object] | None = None
+    for schema in schemas:
+        inner: dict[str, Any] = schema.get_inner_schema(obj_type) or {}
+        properties: dict[str, dict[str, Any]] = inner.get("properties", {})
+        listed: list[str] = inner.get("required", [])
+        own = {f for f in listed if "default" not in properties.get(f, {})}
+        required |= own
+        aliases = trailing_underscore_aliases(schema.get_field_names(obj_type))
+        hidden |= {alias for alias, key in aliases.items() if alias != key}
+        own_defaults = {f: p["default"] for f, p in properties.items() if "default" in p}
+        if defaults is None:
+            defaults = own_defaults
+        else:
+            defaults = {f: v for f, v in defaults.items() if f in own_defaults and own_defaults[f] == v}
+        object_schema: dict[str, Any] = schema.get_object_schema(obj_type) or {}
+        name_schema: dict[str, Any] = object_schema.get("name") or {}
+        if not schema.has_name(obj_type):
+            kinds.add("none")
+        else:
+            kinds.add("required" if name_schema.get("is_required") else "optional")
+    name = "required" if "required" in kinds else "none" if "none" in kinds else "optional"
+    conflict = {"none", "required"} <= kinds
+    return _ExpectedCreation(name, frozenset(required), defaults or {}, frozenset(hidden), conflict)
+
+
+def _creation_of(module: _Module, cls: str) -> tuple[str, _CreationSignature | None] | None:
+    """The annotation of *cls*'s nearest ``_creation_signature`` and the signature it names."""
+    for item in reversed(_linearise(module, cls)):
+        annotation = module.classes[item].creation if item in module.classes else None
+        if annotation is not None:
+            alias, _, name = annotation.partition(".")
+            return annotation, module.signatures.get((module.imports.get(alias, alias), name))
+    return None
+
+
+def _update_keywords(module: _Module, cls: str) -> dict[str, frozenset[str]]:
+    """The ``update`` keywords of *cls* with their value types: its nearest ``_<Class>Fields``."""
+    for item in reversed(_linearise(module, cls)):
+        fields_cls = f"_{item}Fields"
+        if fields_cls in module.classes:
+            return _members_of(_fields(module, fields_cls))
+    return {}
+
+
+def _check_creation(
+    module: _Module, cls: str, schemas: list[EpJSONSchema], obj_type: str, where: str, problems: list[str]
+) -> None:
+    """Check the creation signature of *cls* against its ``update`` keywords and *schemas*."""
+    found = _creation_of(module, cls)
+    if found is None:
+        problems.append(f"{where}: no creation signature")
+        return
+    annotation, signature = found
+    if signature is None:
+        problems.append(f"{where}: creation signature {annotation} not defined")
+        return
+    expected = _expected_creation(schemas, obj_type)
+    memo = (cls, repr(expected))
+    if memo in module.creation_checked:
+        return
+    before = len(problems)
+    _check_signature(module, cls, signature, expected, where, problems)
+    _check_signature_doc(signature, obj_type, where, problems)
+    if len(problems) == before:
+        module.creation_checked.add(memo)
+
+
+def _check_signature(
+    module: _Module,
+    cls: str,
+    signature: _CreationSignature,
+    expected: _ExpectedCreation,
+    where: str,
+    problems: list[str],
+) -> None:
+    """Check one creation signature of *cls* against what it is *expected* to say."""
+    if signature.name == "unguarded" and expected.name == "none":
+        problems.append(f"{where}: add() does not refuse a name with {_NO_NAME_PARAM}: _PassFieldsAsKeywords")
+    elif signature.name != expected.name:
+        problems.append(f"{where}: the name is {signature.name} in add(), {expected.name} in the schema")
+    keywords = {k: v for k, v in _update_keywords(module, cls).items() if k not in expected.hidden}
+    params = dict(signature.params)
+    # A required field the class takes no value for: no call suits every release it serves.
+    settable = {k for k, members in keywords.items() if members != frozenset({"None"})}
+    guard = params.pop(_NARROW_FIRST, None)
+    if expected.required - settable or expected.name_conflict:
+        if guard != ("Never", None):
+            problems.append(f"{where}: add() can satisfy no release's required fields or name but does not say so")
+    elif guard is not None:
+        problems.append(f"{where}: add() requires {_NARROW_FIRST}, though every required field can be given")
+    if set(params) != set(keywords):
+        problems.append(f"{where}: add() keywords differ from the update keywords")
+        return
+    for field, (param_type, default) in params.items():
+        problem = _param_problem(field, param_type, default, keywords[field], expected)
+        if problem is not None:
+            problems.append(f"{where}: {problem}")
+
+
+# What an editor shows for add() on a typed collection opens with (see generate_stubs._creation_docstring).
+_CREATION_DOC_SUMMARY = "Create a new ``{}`` and add it to the document."
+_NARROW_FIRST_NOTE = "narrow the document with ``as_version`` first"
+
+
+def _check_signature_doc(signature: _CreationSignature, obj_type: str, where: str, problems: list[str]) -> None:
+    """Check the docstring an editor shows for ``add()``: it names *obj_type*, and says to narrow when it must."""
+    doc = signature.doc
+    if doc is None or not doc.startswith(_CREATION_DOC_SUMMARY.format(obj_type)):
+        problems.append(f"{where}: add() is not documented as creating a {obj_type}")
+        return
+    if (_NARROW_FIRST in signature.params) != (_NARROW_FIRST_NOTE in doc):
+        problems.append(f"{where}: add()'s docstring and {_NARROW_FIRST} disagree on narrowing first")
+
+
+def _param_problem(
+    field: str, param_type: str, default: str | None, members: frozenset[str], expected: _ExpectedCreation
+) -> str | None:
+    """What is wrong with one keyword of a creation signature, typed like *members* in ``update``."""
+    if default is None:
+        if field not in expected.required:
+            return f"add() requires {field}, which the schema does not"
+        # Required: given a value, so not None.
+        return (
+            None if _union_members(param_type) == members - {"None"} else f"add() types required {field} unlike update"
+        )
+    if field in expected.required and members != frozenset({"None"}):
+        return f"add() does not require {field}, which the schema requires"
+    if _union_members(param_type) != members:
+        return f"add() types {field} unlike update"
+    if default != "..." and (field not in expected.defaults or ast.literal_eval(default) != expected.defaults[field]):
+        return f"add() shows {field} = {default}, not the schema's default"
+    return None
+
+
+def _item_name(group_cls: str) -> str:
+    """``BuildingSurfaceDetailedVerticesItem``: the ``TypedDict`` of one group of *group_cls*.
+
+    A naming convention, not something the schema says, so it is the generator's, as
+    :func:`_to_class_name` is.
+    """
+    from idfkit.codegen.generate_stubs import _group_item_name  # pyright: ignore[reportPrivateUsage]
+
+    return _group_item_name(group_cls)
+
+
+def _group_items(group_cls: str) -> str:
+    """What a group's wrapper keyword takes: a sequence of dicts typed by the item type, or of groups."""
+    return _norm(f"Sequence[{_item_name(group_cls)} | {group_cls}]")
+
+
+def _check_snapshot(module: _Module, group_cls: str, where: str, problems: list[str]) -> None:
+    """Check *group_cls*'s ``as_dict()`` gives its item type, so ``as_list()`` passes back to ``add()``."""
+    snapshot = next(
+        (
+            module.classes[c].snapshot
+            for c in reversed(_linearise(module, group_cls))
+            if c in module.classes and module.classes[c].snapshot
+        ),
+        None,
+    )
+    if snapshot != _item_name(group_cls):
+        problems.append(f"{where}: {group_cls}.as_dict() does not give {_item_name(group_cls)}")
 
 
 def _check_update(
@@ -351,7 +642,11 @@ def _check_update(
 
 
 def verify(
-    types_source: str, document_source: str, versioned_sources: Iterable[str], versions: tuple[Version, ...]
+    types_source: str,
+    document_source: str,
+    versioned_sources: Iterable[str],
+    versions: tuple[Version, ...],
+    creation_sources: Mapping[str, str],
 ) -> list[str]:
     """Report every way the generated stubs misdescribe a supported version; empty when none.
 
@@ -363,11 +658,14 @@ def verify(
         versions: The releases the stubs were generated to describe, oldest first; the last is the
             one ``IDFDocument`` is typed for. Passed rather than read from the generator, which may
             be running as ``__main__``, a second copy of its module.
+        creation_sources: The modules of ``_creation`` by module name (``_b3``), which hold the
+            creation signatures the classes name.
     """
     sources = list(versioned_sources)
     module = _read(document_source, _read(types_source))
     for source in sources:
         module = _read(source, module)
+    _read_creation(creation_sources, module)
     problems: list[str] = []
     for ver in versions:
         _check_version(module, ver, ver == versions[-1], problems)
@@ -530,7 +828,7 @@ def _check_writable(
         return
     groups = set(_group_names(module, cls))
     keywords = {
-        k: "list[Any]" if k in groups else klass.setters.get(k, v)
+        k: _group_items(_collection_class(v)) if k in groups else klass.setters.get(k, v)
         for k, v in _fields(module, cls).items()
         if k != "name"
     }
@@ -576,6 +874,12 @@ def _check_any_group(
         writable = _union_members(setters.get(name, read)) - {"Never"}
         if not all(all(_admitted(m, i[name]) for m in writable) for i in inner):
             problems.append(f"{group_cls}.{name}: writable values some version rejects")
+    # A group passed as a dict is written, so its keys take what assigning the field takes.
+    item = _item_name(group_cls)
+    writable_fields = {name: setters.get(name, read) for name, read in _fields(module, group_cls).items()}
+    if item not in module.classes or _members_of(_fields(module, item)) != _members_of(writable_fields):
+        problems.append(f"{item}: its keys are not the writable fields of {group_cls}")
+    _check_snapshot(module, group_cls, group_cls, problems)
 
 
 def _check_version(module: _Module, ver: Version, is_latest: bool, problems: list[str]) -> None:
@@ -632,6 +936,15 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
         problems.append(f"AnyIDFDocument: types are not those every version has: missing {missing}, extra {extra}")
     for obj_type, annotation in entries.items():
         _check_any_entry(module, obj_type, annotation, schemas, type_sets, problems)
+    # A type some version lacks is not an entry, but its Any<Class> is public, for annotations
+    # (IDFCollection[AnySpace]): checked the same way, against the versions that have it.
+    from idfkit.codegen.generate_stubs import _to_class_name  # pyright: ignore[reportPrivateUsage]
+
+    latest_types = type_sets[-1]
+    for obj_type in sorted(latest_types - common):
+        any_cls = f"Any{_to_class_name(obj_type)}"
+        if module.aliases.get(any_cls, any_cls) in module.classes:
+            _check_any_entry(module, obj_type, f"IDFCollection[{any_cls}]", schemas, type_sets, problems)
 
 
 def _check_any_entry(
@@ -669,6 +982,7 @@ def _check_any_entry(
             if not decl[name] <= admitted:
                 problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: does not admit every version's values")
                 break
+    _check_creation(module, cls, having, obj_type, f"AnyIDFDocument[{obj_type!r}] ({cls})", problems)
 
 
 def _intersection(sets: list[set[str]]) -> set[str]:

@@ -43,7 +43,7 @@ save_idf(doc, "out.idf")
 | `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys: it returns an untyped `IDFCollection[IDFObject]` whatever the name. It delegates to `doc[obj_type]`; there is no behavioural difference. Use it when the name is a variable (`for t in TYPES: doc.get_collection(t)`); for a literal name write `doc["Zone"]`, which is typed and checked. |
 | `doc.<attr>` | Typed attribute accessor for any schema type: the `snake_case` plural (`doc.air_loop_hvacs` is `IDFCollection[AirLoopHVAC]`). Hand-written shorthands also resolve and keep their meaning (`doc.building_surfaces` → `BuildingSurface:Detailed`, `doc.ideal_loads` → `ZoneHVAC:IdealLoadsAirSystem`). A typo raises `AttributeError` naming the closest matches. |
 | `doc.add(obj_type, name="", **fields)` | Create and insert an object. Returns the new `IDFObject`. Leave `name` empty for a type without a Name field. |
-| `doc.<attr>.add("Name", **fields)`, `doc[obj_type].add(...)` | The typed form of `doc.add()`: the same validated object, but the keywords are the type's own fields (checked by pyright and mypy) and the result is the type's class (`doc.zones.add("Office")` is a `Zone`). The name is positional only, and empty or left out for a type without a Name field: `add(name="Office")` raises `TypeError`. Always validates; use `doc.add(..., validate=False)` for unvalidated bulk loading. To add an object you already hold, use `doc.addidfobject(obj)`: `collection.add(obj)` is deprecated (it filed the object in the collection only, unvalidated). |
+| `doc.<attr>.add("Name", **fields)`, `doc[obj_type].add(...)` | The typed form of `doc.add()`: the same validated object, but the parameters are the type's own (checked by pyright and mypy: the name only for a type with a Name field, the required fields, the others with their schema defaults) and the result is the type's class (`doc.zones.add("Office")` is a `Zone`). The name is positional only, and left out for a type without a Name field: `add(name="Office")` raises `TypeError`. Always validates; use `doc.add(..., validate=False)` for unvalidated bulk loading. To add an object you already hold, use `doc.addidfobject(obj)`: `collection.add(obj)` is deprecated (it filed the object in the collection only, unvalidated). |
 | `doc.rename(obj_type, old, new)` | Rename + cascade updates through every reference. |
 | `doc.removeidfobject(obj)` | Delete an object. |
 | `doc.copy()` | Independent deep copy that shares the schema and keeps the preserved formatting of a `preserve_formatting=True` read. The fast way to make an in-process variant. |
@@ -78,8 +78,9 @@ A keyword that is not a field of the type is refused, never stored, whatever its
 `add()` takes the type name and fields as strings, so a type checker checks neither: `doc.add("Zone", "Lab", ceiling_hieght=3.0)` type-checks and fails only when it runs, and the result is a plain `IDFObject`. In type-checked code, add through the collection instead:
 
 ```python
-# Through the collection: the keywords are the type's own fields, checked by the type checker,
-# and the result is the type's class (Zone, Material, ...), not a plain IDFObject.
+# Through the collection: the parameters are the type's own, checked by the type checker, and the
+# result is the type's class (Zone, Material, ...), not a plain IDFObject. Signature help shows the
+# required fields with no default and the others with the schema's default.
 office_zone = doc.zones.add("Office", x_origin=0.0, ceiling_height=3.0)
 office_zone.multiplier = 2  # typed: an int, checked on assignment
 
@@ -94,10 +95,13 @@ insulation = doc["Material"].add(
 doc["Output:SQLite"].add(option_type="SimpleAndTabular")  # a type without a Name field: no name
 
 # doc.zones.add("Lab", ceiling_hieght=3.0)                       # error: No parameter named "ceiling_hieght"
-# doc.zones.add("Lab", zone_inside_convection_algorithm="Tarp")  # error: not one of the field's choices
+# doc.zones.add("Lab", zone_inside_convection_algorithm="Bogus")  # error: not one of the field's choices
+# doc["Material"].add("XPS_50mm", thickness=0.05)                 # error: Arguments missing for parameters
+#                                                                 #   "roughness", "conductivity", "density", ...
+# doc["Output:SQLite"].add("Out", option_type="Simple")          # error: parameter "this_type_has_no_name_field"
 ```
 
-`doc.zones.add(...)` runs `doc.add("Zone", ...)` with validation on, so behaviour, validation errors and reference indexing are the same; the difference is the types. Its keywords are those of the class's `update()`, so they follow the document's type: through `IDFDocumentV9_4` the fields are 9.4's, and through `AnyIDFDocument` only fields and values every release accepts. The name is positional and optional (empty for a type without a Name field); fields are keywords only. A type with no objects yet is read as an empty collection that is not stored in the document, and adding through it stores it, so `zones = doc.zones; zones.add("A")` leaves the zone in `zones`.
+`doc.zones.add(...)` runs `doc.add("Zone", ...)` with validation on, so behaviour, validation errors and reference indexing are the same; the difference is the types. Its parameters come from the class's creation signature, generated from the schema, and an editor's signature help (Pylance, pyright) lists them as `doc.materials.add(` is typed: the name first, positional-only; then the fields the schema requires, with no default (`roughness: Literal[...]`, `thickness: float`, ...); then the others with their schema default (`thermal_absorptance: float | None = 0.9`), or `= ...` where the schema gives none (or one that is not a plain number or string). A shown default is the value EnergyPlus applies to a field left empty: `add()` stores only the fields you pass, so `material.thermal_absorptance` reads `None` until you set it. Leaving out a required field is a type error (`Arguments missing for parameters "roughness", ...`), as it is a `ValidationFailedError` (E001) at run time, and so is passing `None` for one. A type without a Name field takes no name: `doc["Output:SQLite"].add("x")` is a type error naming the parameter `this_type_has_no_name_field` (of type `_PassFieldsAsKeywords`), as it raises `InvalidFieldError`; pass the type's first field as a keyword instead (`doc.output_variables.add(key_value="*", ...)`); a type whose schema requires a name (most) must be given one, and a few (`Building`) default it to `""`. The parameters follow the document's type: through `IDFDocumentV9_4` the fields, value types and required fields are 9.4's, and through `AnyIDFDocument` only fields and values every release accepts, with a field required where any release requires it (so no release refuses a call that type-checks) and a default shown only where every release has it. Where no call suits every release, because a required field was renamed between releases (`People`, `Lights`, `InternalMass`), the signature requires `narrow_with_as_version_first`, which nothing satisfies: the error `Argument missing for parameter "narrow_with_as_version_first"` means narrow the document with `as_version(doc, since=...)` and add through that. A field whose key ends in `_` (`gas_or_gas_mixture_` on `WindowMaterial:Gap`) is offered under that key only. A field whose key is not a Python name (`100_outdoor_air_in_cooling` on `Sizing:System`) cannot be a keyword: set it with `doc.add(...)` or after creation. A collection a type checker cannot narrow (`doc.get_collection(obj_type)`) accepts any name and fields, as `doc.add()` does. Hover and signature help on a typed `add(` show the object type's own documentation rather than a generic one: its schema memo, its EnergyPlus I/O Reference page on docs.idfkit.com, and, where the signature requires `narrow_with_as_version_first`, that note. Per-field docs (units, ranges) are not in the signature help; hover the field on the typed object (`material.thickness`) or use `doc.describe(obj_type)`. Fields are keywords only. A type with no objects yet is read as an empty collection that is not stored in the document, and adding through it stores it, so `zones = doc.zones; zones.add("A")` leaves the zone in `zones`.
 
 Prefer the attribute accessor (`doc.zones`, `doc.output_variables`) or a collection held in a variable when creating many objects in one function: a type checker resolves `doc["Output:Variable"]` through one overload per object type, which costs time for a type listed late in the schema, while an accessor and the collection's `add()` itself cost the same for every type.
 
@@ -365,7 +369,7 @@ def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:
 
 ```
 
-Up to idfkit 1.3.0rc1, the document types were `TypedDict` subclasses to pyright, which narrows those on `in` by its own rules: `"Space" in doc` retyped an `AnyIDFDocument` as the latest release (so a 9.6 or 22.1 model then raised `InvalidFieldError` on `ceiling_height`), and the body of `"Zone" not in doc` was skipped as unreachable.
+The document types used to be `TypedDict` subclasses to pyright, which narrows those on `in` by its own rules: `"Space" in doc` retyped an `AnyIDFDocument` as the latest release (so a 9.6 or 22.1 model then raised `InvalidFieldError` on `ceiling_height`), and the body of `"Zone" not in doc` was skipped as unreachable.
 
 ### Checking: pyright versus `idfkit check`
 
@@ -444,7 +448,7 @@ surface.vertices.append(vertex_x_coordinate=10.0, vertex_y_coordinate=0.0, verte
 print(len(surface.vertices))  # 4
 ```
 
-`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`.
+`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`. In type-checked code, a group passed to `add()` or `update()` is a dict typed by the group's item type, a `TypedDict` of the group's fields, all optional: `vertices=[{"vertex_x_coordinate": 0.0, ...}]` takes a sequence of `BuildingSurfaceDetailedVerticesItem`, or of the group objects themselves (`vertices=list(other.vertices)`), so editors complete the keys and a misspelled key or wrong value is a type error. `wall.vertices.as_list()` returns `list[BuildingSurfaceDetailedVerticesItem]`, so a copy passes straight back (`vertices=wall.vertices.as_list()`); its keys are optional, as a blank field is left out, so read one with `.get()`. To build groups ahead of a call, annotate the list with the item type (`points: list[BuildingSurfaceDetailedVerticesItem] = []`, imported from `idfkit.document`); a list typed `list[dict[str, float]]` is not accepted. Each item type is named after its object type and group (`ScheduleWeekCompactDataItem`, `ZoneListZonesItem`).
 
 ## Iterating the whole model
 

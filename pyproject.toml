@@ -134,6 +134,7 @@ exclude = [
     "src/idfkit/document.pyi",
     "src/idfkit/versioned.pyi",
     "src/idfkit/_versioned",
+    "src/idfkit/_creation",
 ]
 
 # The codegen modules are maintainer tools, not library code. They are never imported by an
@@ -145,8 +146,8 @@ exclude = [
 #
 # reportTypedDictNotRequiredAccess is on everywhere. It was suppressed for the package while the
 # document stub was a total=False TypedDict; the document types are no TypedDicts at all now (they
-# index through __getitem__ overloads), so the rule has nothing generated to report and stays on for
-# idfkit's own code.
+# index through __getitem__ overloads). The generated group items are (total=False), and the rule
+# reports reading one of their keys unchecked, which is right: as_dict() leaves out a blank field.
 [[tool.pyright.executionEnvironments]]
 root = "src/idfkit/codegen"
 pythonVersion = "3.11"
@@ -263,6 +264,8 @@ ignore = [
 "src/idfkit/__init__.py" = ["F403"]  # TYPE_CHECKING star import from _generated_types
 "src/idfkit/document.pyi" = ["F405"]  # star import from _generated_types
 "src/idfkit/_generated_types.pyi" = ["F401"]  # re-exports for document.pyi
+# The creation signatures name their parameters after the schema's fields, `type` and `filter` among them.
+"src/idfkit/_creation/*.pyi" = ["A002"]
 
 [tool.ruff.format]
 preview = true
