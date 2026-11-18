@@ -14,9 +14,12 @@ under "type-name lookup".  The two must stay in step.
 
 from __future__ import annotations
 
+import warnings
+from collections.abc import Callable
+
 import pytest
 
-from idfkit import IDFDocument, new_document
+from idfkit import IDFDocument, UnknownObjectTypeWarning, new_document
 from idfkit.objects import IDFCollection, IDFObject
 
 
@@ -105,14 +108,16 @@ class TestMiscasedName:
 
 class TestUnknownName:
     def test_unknown_name_is_empty_rather_than_raising(self, doc: IDFDocument) -> None:
-        assert len(doc["Zoen"]) == 0
+        with pytest.warns(UnknownObjectTypeWarning):
+            assert len(doc["Zoen"]) == 0
 
     def test_unknown_name_is_not_contained(self, doc: IDFDocument) -> None:
         assert "Zoen" not in doc
 
     def test_unknown_name_keeps_the_written_spelling_on_the_collection(self, doc: IDFDocument) -> None:
         # Nothing resolves it, so the collection reports the name asked for.
-        assert doc["Zoen"].obj_type == "Zoen"
+        with pytest.warns(UnknownObjectTypeWarning):
+            assert doc["Zoen"].obj_type == "Zoen"
 
     def test_the_write_path_still_rejects_the_typo(self, doc: IDFDocument) -> None:
         from idfkit.exceptions import UnknownObjectTypeError
@@ -132,6 +137,126 @@ class TestUnknownName:
         assert doc.schema.resolve_type_name("zone") == "Zone"
 
 
+class TestUnknownNameWarning:
+    """A name no bundled release has warns; the lookup still returns empty rather than raising.
+
+    The test is "in no bundled release", never "in this document's schema", so a document without
+    a schema answers the same way, and probing a real type the release lacks stays silent.
+    """
+
+    def test_a_typo_warns_and_names_the_closest_real_type(self, doc: IDFDocument) -> None:
+        with pytest.warns(UnknownObjectTypeWarning, match=r"'Zoen'.*Did you mean 'Zone'\?") as caught:
+            assert len(doc["Zoen"]) == 0
+        warning = caught[0].message
+        assert isinstance(warning, UnknownObjectTypeWarning)
+        assert warning.obj_type == "Zoen"
+        assert warning.suggestion == "Zone"
+
+    def test_the_suggestion_is_matched_case_insensitively(self, doc: IDFDocument) -> None:
+        with pytest.warns(UnknownObjectTypeWarning, match="Did you mean 'BuildingSurface:Detailed'"):
+            _ = doc["buildingsurface:detialed"]
+
+    def test_a_name_close_to_nothing_warns_without_a_suggestion(self, doc: IDFDocument) -> None:
+        with pytest.warns(UnknownObjectTypeWarning) as caught:
+            _ = doc["Qqqqqqqqqqqq"]
+        assert "Did you mean" not in str(caught[0].message)
+
+    def test_get_collection_warns(self, doc: IDFDocument) -> None:
+        with pytest.warns(UnknownObjectTypeWarning, match="Did you mean 'Zone'"):
+            assert len(doc.get_collection("Zoen")) == 0
+
+    @pytest.mark.parametrize(
+        "read",
+        [
+            pytest.param(lambda d: d["Zoen"], id="getitem"),
+            pytest.param(lambda d: d.get_collection("Zoen"), id="get_collection"),
+            pytest.param(lambda d: d.idfobjects["ZOEN"], id="idfobjects"),
+            pytest.param(lambda d: d.getobject("Zoen", "X"), id="getobject"),
+            pytest.param(lambda d: d.removeallidfobjects("Zoen"), id="removeallidfobjects"),
+        ],
+    )
+    def test_every_name_keyed_read_warns_at_the_callers_line(
+        self, doc: IDFDocument, read: Callable[[IDFDocument], object]
+    ) -> None:
+        with pytest.warns(UnknownObjectTypeWarning) as caught:
+            read(doc)
+        assert caught[0].filename == __file__
+
+    def test_popidfobject_warns_before_the_index_error(self, doc: IDFDocument) -> None:
+        with pytest.warns(UnknownObjectTypeWarning), pytest.raises(IndexError):
+            doc.popidfobject("Zoen", 0)
+
+    @pytest.mark.parametrize("name", ["Lights", "lights", "ZONE", "zone"])
+    def test_a_real_type_does_not_warn(self, doc: IDFDocument, name: str) -> None:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            _ = doc[name], doc.get_collection(name)
+
+    def test_a_real_type_this_release_lacks_does_not_warn(self) -> None:
+        model = new_document(version=(9, 4, 0))
+        assert model.schema is not None
+        assert model.schema.resolve_type_name("Space") is None
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            assert len(model["Space"]) == 0
+            assert len(model.get_collection("Space")) == 0
+
+    def test_a_type_only_newer_releases_have_does_not_warn_on_an_old_release(self) -> None:
+        model = new_document(version=(9, 1, 0))
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            assert len(model["Construction:AirBoundary"]) == 0
+
+    def test_a_document_without_a_schema_answers_the_same(self, schemaless: IDFDocument) -> None:
+        with pytest.warns(UnknownObjectTypeWarning, match="Did you mean 'Zone'"):
+            assert len(schemaless["Zoen"]) == 0
+        with pytest.warns(UnknownObjectTypeWarning, match="Did you mean 'Zone'"):
+            assert len(schemaless.get_collection("Zoen")) == 0
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            _ = schemaless["Zone"], schemaless["Space"]
+
+    def test_membership_never_warns(self, doc: IDFDocument, schemaless: IDFDocument) -> None:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            assert "Zoen" not in doc
+            assert "Zoen" not in schemaless
+            assert "ZOEN" not in doc.idfobjects
+
+    def test_the_collection_returned_with_the_warning_is_detached(self, doc: IDFDocument) -> None:
+        before = list(doc.collections)
+        with pytest.warns(UnknownObjectTypeWarning):
+            orphan = doc["Zoen"]
+        orphan._append(IDFObject(obj_type="Zoen", name="X", data={}))  # pyright: ignore[reportPrivateUsage]
+        assert list(doc.collections) == before
+        with pytest.warns(UnknownObjectTypeWarning):
+            assert len(doc["Zoen"]) == 0
+
+    def test_attribute_access_still_raises_rather_than_warning(self, doc: IDFDocument) -> None:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            with pytest.raises(AttributeError, match="zoens"):
+                _ = doc.zoens  # pyright: ignore[reportAttributeAccessIssue]
+
+    def test_the_warning_can_be_filtered_by_class(self, doc: IDFDocument) -> None:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            warnings.filterwarnings("ignore", category=UnknownObjectTypeWarning)
+            assert len(doc["Zoen"]) == 0
+
+    def test_it_is_a_user_warning_shown_by_default(self) -> None:
+        assert issubclass(UnknownObjectTypeWarning, UserWarning)
+        assert not issubclass(UnknownObjectTypeWarning, DeprecationWarning)
+
+    def test_the_generated_set_is_every_bundled_releases_types(self) -> None:
+        from idfkit._object_types import ALL_OBJECT_TYPES
+        from idfkit.schema import get_schema
+        from idfkit.versions import ENERGYPLUS_VERSIONS
+
+        expected = {t for ver in ENERGYPLUS_VERSIONS for t in get_schema(ver).object_types}
+        assert expected == ALL_OBJECT_TYPES
+
+
 class TestSchemalessDocument:
     def test_a_present_type_is_found_case_insensitively(self, schemaless: IDFDocument) -> None:
         obj = IDFObject(obj_type="Zone", name="Z1", data={})
@@ -143,19 +268,22 @@ class TestSchemalessDocument:
 
     def test_an_absent_type_is_empty_and_never_raises(self, schemaless: IDFDocument) -> None:
         assert len(schemaless["Zone"]) == 0
-        assert len(schemaless["Zoen"]) == 0
+        with pytest.warns(UnknownObjectTypeWarning):
+            assert len(schemaless["Zoen"]) == 0
         assert "Zoen" not in schemaless
 
     def test_reading_leaves_the_document_untouched(self, schemaless: IDFDocument) -> None:
-        _ = schemaless["Zone"], schemaless["zone"], schemaless["Zoen"]
+        with pytest.warns(UnknownObjectTypeWarning):
+            _ = schemaless["Zone"], schemaless["zone"], schemaless["Zoen"]
         assert schemaless.collections == {}
 
 
 class TestNoMutationOnRead:
     def test_reading_an_absent_type_adds_no_collection(self, doc: IDFDocument) -> None:
         before = list(doc.collections)
-        for name in ("Lights", "People", "Zoen", "NotAThing", "zone", "ZONE"):
-            _ = doc[name]
+        with pytest.warns(UnknownObjectTypeWarning):
+            for name in ("Lights", "People", "Zoen", "NotAThing", "zone", "ZONE"):
+                _ = doc[name]
         assert list(doc.collections) == before
 
     def test_membership_tests_add_no_collection(self, doc: IDFDocument) -> None:
@@ -174,8 +302,9 @@ class TestNoMutationOnRead:
         assert doc["Lights"] is not doc["Lights"]
 
     def test_keys_and_items_stay_clean_after_probing(self, doc: IDFDocument) -> None:
-        for name in ("Zoen", "NotAThing", "Lights"):
-            _ = doc[name]
+        with pytest.warns(UnknownObjectTypeWarning):
+            for name in ("Zoen", "NotAThing", "Lights"):
+                _ = doc[name]
         assert "Zoen" not in doc.keys()  # noqa: SIM118  # doc.keys() is a method, not a mapping view
         assert "Zoen" not in [t for t, _ in doc.items()]
         assert "Zoen" not in list(doc)
