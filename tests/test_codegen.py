@@ -5,12 +5,12 @@ from __future__ import annotations
 import ast
 import json
 import sys
-from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+from conftest import generated_document_pyi, generated_stubs
 
 from idfkit.codegen import generate_stubs as gen
 from idfkit.codegen.generate_doc_locations import (
@@ -38,14 +38,13 @@ from idfkit.codegen.generate_stubs import (
     _schema_type_to_python,  # pyright: ignore[reportPrivateUsage]
     _to_class_name,  # pyright: ignore[reportPrivateUsage]
     _truncate_text,  # pyright: ignore[reportPrivateUsage]
-    generate_document_pyi,
     generate_stubs,
 )
 from idfkit.codegen.generate_stubs import (
     main as stubs_main,
 )
 from idfkit.schema import EpJSONSchema, get_schema
-from idfkit.versions import LATEST_VERSION
+from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
 
 # =========================================================================
 # generate_doc_locations tests
@@ -555,7 +554,7 @@ class TestBuildVersionAvailability:
 class TestGenerateStubs:
     def test_generates_valid_output(self) -> None:
         # Use a specific version to keep it fast
-        content = generate_stubs((24, 1, 0))
+        content = generated_stubs((24, 1, 0))
         assert "Auto-generated type stubs" in content
         # Zone's declaration changed between releases, so it derives from its shared base.
         assert "class Zone(AnyZone):" in content
@@ -583,14 +582,15 @@ class TestGenerateStubs:
         # Validate that the output is syntactically valid Python
         ast.parse(content)
 
+    @pytest.mark.slow
     def test_default_version(self) -> None:
-        content = generate_stubs()
+        content = generated_stubs()
         assert "Auto-generated type stubs" in content
 
 
 class TestGenerateDocumentPyi:
     def test_generates_valid_output(self) -> None:
-        content = generate_document_pyi((24, 1, 0))
+        content = generated_document_pyi((24, 1, 0))
         assert "class IDFDocument" in content
         assert "def __init__" in content
         assert "@property" in content
@@ -599,45 +599,18 @@ class TestGenerateDocumentPyi:
         ast.parse(content)
 
 
-@pytest.fixture
-def _preserve_generated_stubs() -> Iterator[tuple[Path, Path]]:
-    """Back up and restore generated stub files around a test."""
-    import idfkit.codegen.generate_stubs as stubs_mod
-
-    real_base = Path(stubs_mod.__file__).resolve().parent.parent
-    types_file = real_base / "_generated_types.pyi"
-    doc_file = real_base / "document.pyi"
-    documents_dir = real_base / "_versioned"
-    creation_dir = real_base / "_creation"
-    generated = [
-        types_file,
-        doc_file,
-        real_base / "versioned.pyi",
-        real_base / "versioned.py",
-        real_base / "_read_required.py",
-    ]
-    generated += sorted(documents_dir.glob("*.pyi"))
-    generated += sorted(creation_dir.glob("*.pyi"))
-    backups = {path: path.read_text(encoding="utf-8") if path.exists() else None for path in generated}
-
-    yield types_file, doc_file
-
-    for path, backup in backups.items():
-        if backup is not None:
-            path.write_text(backup, encoding="utf-8")
-        elif path.exists():
-            path.unlink()
-    # A generation for an older release writes modules the committed set does not have.
-    for path in [*documents_dir.glob("*.pyi"), *creation_dir.glob("*.pyi")]:
-        if path not in backups:
-            path.unlink()
-
-
 class TestStubsMain:
+    @pytest.mark.slow
     def test_main_writes_files(self, tmp_path: Path) -> None:
         """Cover lines 589-616: main() function."""
         import idfkit.codegen.generate_stubs as stubs_mod
 
+        # Modules a generation for 24.1 does not write: 24.1's own, as when a release has become the
+        # latest since the last generation, and a creation module no longer generated.
+        stale = [tmp_path / "_versioned" / "v24_1.pyi", tmp_path / "_creation" / "_stale.pyi"]
+        for path in stale:
+            path.parent.mkdir(exist_ok=True)
+            path.write_text("", encoding="utf-8")
         fake_file = str(tmp_path / "codegen" / "generate_stubs.py")
         with (
             patch.object(stubs_mod, "__file__", fake_file),
@@ -654,43 +627,54 @@ class TestStubsMain:
         # One module per release older than the one generated for.
         assert (tmp_path / "_versioned" / "__init__.pyi").exists()
         assert (tmp_path / "_versioned" / "v23_2.pyi").exists()
-        assert not (tmp_path / "_versioned" / "v24_1.pyi").exists()
+        # A stale module is removed, or it would still define a type versioned.pyi no longer has.
+        assert not any(path.exists() for path in stale)
 
     def test_main_default_version(self, tmp_path: Path) -> None:
-        """Cover main() with no version argument."""
+        """main() with no version argument writes the stubs for every bundled release, into the package.
+
+        What it writes for them is not generated again here: TestAdoption generates and verifies the
+        stubs for every release, and ``make check-stubs`` regenerates the committed ones.
+        """
         import idfkit.codegen.generate_stubs as stubs_mod
+
+        written: list[tuple[Path, tuple[tuple[int, int, int], ...]]] = []
+
+        def write_stubs(base_path: Path) -> None:
+            written.append((base_path, stubs_mod.SUPPORTED.versions))
 
         fake_file = str(tmp_path / "codegen" / "generate_stubs.py")
         with (
             patch.object(stubs_mod, "__file__", fake_file),
-            patch("subprocess.run"),
+            patch.object(stubs_mod, "_write_stubs", write_stubs),
             patch.object(sys, "argv", ["prog"]),
         ):
             stubs_main()
-        assert (tmp_path / "_generated_types.pyi").exists()
+        assert written == [(tmp_path, ENERGYPLUS_VERSIONS)]
 
+    @pytest.mark.slow
     @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-    @pytest.mark.usefixtures("_preserve_generated_stubs")
     def test_main_via_module_execution(self, tmp_path: Path) -> None:
-        """Cover line 620: if __name__ == '__main__'.
+        """Running the module as a script calls main(), as ``python -m idfkit.codegen.generate_stubs`` does.
 
-        ``runpy.run_module(run_name="__main__")`` re-imports the module fresh
-        and resets ``__file__`` to the real on-disk path, so the
-        ``patch.object(stubs_mod, "__file__", ...)`` does *not* take effect for
-        this test.  The ``_preserve_generated_stubs`` fixture backs up and
-        restores the real stub files so this test does not corrupt them.
+        The module runs as a second copy of itself named ``__main__``, as it does from the command
+        line. The copy is placed at ``tmp_path/codegen/``, so that the package directory main()
+        writes into (the module's grandparent) is ``tmp_path``: running the real module would
+        rewrite the committed stubs, which other tests read, possibly at the same moment in another
+        pytest-xdist worker.
         """
         import runpy
+        import shutil
 
         import idfkit.codegen.generate_stubs as stubs_mod
 
-        fake_file = str(tmp_path / "codegen" / "generate_stubs.py")
-        with (
-            patch.object(stubs_mod, "__file__", fake_file),
-            patch("subprocess.run"),
-            patch.object(sys, "argv", ["prog", "24.1.0"]),
-        ):
-            runpy.run_module("idfkit.codegen.generate_stubs", run_name="__main__")
+        script = tmp_path / "codegen" / "generate_stubs.py"
+        script.parent.mkdir()
+        shutil.copyfile(stubs_mod.__file__, script)
+        with patch("subprocess.run"), patch.object(sys, "argv", ["prog", "24.1.0"]):
+            runpy.run_path(str(script), run_name="__main__")
+        assert (tmp_path / "_generated_types.pyi").stat().st_size > 0
+        assert (tmp_path / "_versioned" / "v23_2.pyi").exists()
 
 
 class TestGenerateFieldsWithSinceVersion:
@@ -1000,7 +984,7 @@ class TestCreationAcrossReleases:
         # Version's default differs in every release; its fields and required fields do not.
         class_for, _ = gen._class_assignment()  # pyright: ignore[reportPrivateUsage]
         assert {class_for["Version", v] for v in gen._versions_with("Version")} == {"_g.Version"}  # pyright: ignore[reportPrivateUsage]
-        assert "AnyVersion: TypeAlias = Version" in generate_stubs()
+        assert "AnyVersion: TypeAlias = Version" in generated_stubs()
 
     def test_a_release_that_requires_other_fields_gets_a_subclass_of_its_range_class(self) -> None:
         # ZoneControl:ContaminantController's fields are typed alike in every release, but 26.2

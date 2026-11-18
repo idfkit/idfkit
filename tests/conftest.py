@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fnmatch
+import functools
 import json
 from pathlib import Path
 
@@ -12,6 +13,32 @@ from idfkit import IDFDocument, new_document
 from idfkit.objects import IDFObject
 from idfkit.references import ReferenceGraph
 from idfkit.schema import EpJSONSchema, get_schema
+
+# ---------------------------------------------------------------------------
+# Generated stubs, once per session
+# ---------------------------------------------------------------------------
+#
+# A stub generation takes seconds (more under coverage), and several tests only read what it
+# produced. They share one generation per worker; the output is a string, so no test can change
+# what the next one reads. Call these outside ``supported_up_to``: they are keyed on the version
+# argument, not on the supported releases a generation for ``None`` describes.
+
+
+@functools.cache
+def generated_stubs(version: tuple[int, int, int] | None = None) -> str:
+    """``generate_stubs(version)`` (``_generated_types.pyi``), generated once per session."""
+    from idfkit.codegen.generate_stubs import generate_stubs
+
+    return generate_stubs(version)
+
+
+@functools.cache
+def generated_document_pyi(version: tuple[int, int, int] | None = None) -> str:
+    """``generate_document_pyi(version)`` (``document.pyi``), generated once per session."""
+    from idfkit.codegen.generate_stubs import generate_document_pyi
+
+    return generate_document_pyi(version)
+
 
 # ---------------------------------------------------------------------------
 # Weather admission refusals

@@ -920,6 +920,7 @@ class TestReviewFixes:
         source = _src('def f(doc):\n    if doc.version < (9, 4, 0):\n        doc.add("Space", "S")\n')
         assert _codes(source, [(9, 0, 0), _V262]) == _codes(source, [(9, 0, 1), _V262]) == ["C001"]
 
+    @pytest.mark.slow
     def test_long_elif_chain_is_walked_without_recursion(self) -> None:
         branches = "".join(
             f"    elif doc.version >= ({25 - i % 10}, 1, 0):\n        doc['Space']\n" for i in range(600)

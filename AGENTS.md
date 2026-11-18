@@ -45,14 +45,18 @@ Every commit must pass:
 
 ```bash
 make check    # lock validation, pre-commit (ruff format + lint), pyright strict, deptry
-make test     # pytest with coverage (unit tests, doctests)
+make test     # every test, in parallel (pytest-xdist), with coverage
 ```
 
 ### Running Tests
 
 ```bash
-# All unit tests (no EnergyPlus needed)
+# Every test, as CI runs them, in parallel with coverage (about 2 minutes on 4 cores).
+# Includes the integration tests when EnergyPlus is installed; they are skipped otherwise.
 make test
+
+# Edit-and-rerun loop: leaves out the `slow` and `integration` tests and coverage (under a minute)
+make test-fast
 
 # Single test file
 uv run pytest tests/test_document.py -v
@@ -63,6 +67,12 @@ uv run pytest tests/test_document.py::test_add_object -v
 # Integration tests (requires EnergyPlus)
 ENERGYPLUS_DIR=/usr/local/EnergyPlus-24-2-0 uv run pytest -m integration -v
 ```
+
+Tests that take seconds each (stub generation, the full stub verification) are marked
+`@pytest.mark.slow`. Mark a new test `slow` when it takes seconds and something else in the suite
+or `make check` covers the same ground faster; `make test` and CI still run it. Tests run in
+parallel worker processes, so a test must not write outside its `tmp_path`: in particular not into
+`src/idfkit/`, which other workers read at the same time.
 
 Default `pytest` runs doctests from `src/idfkit/` but excludes `simulation/`, `weather/`, `schedules/`, `thermal/`, and `visualization/` modules (they need external dependencies or EnergyPlus).
 

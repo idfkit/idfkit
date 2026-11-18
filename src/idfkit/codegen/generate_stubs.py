@@ -2990,5 +2990,5 @@ def _write_stubs(base_path: Path) -> None:
     print(f"Generated {documents_dir} ({len(document_paths)} modules)")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - run from a copy by test_main_via_module_execution
     main()

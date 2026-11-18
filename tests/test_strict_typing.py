@@ -6,6 +6,7 @@ import inspect
 from pathlib import Path
 
 import pytest
+from conftest import generated_document_pyi, generated_stubs
 
 from idfkit import IDFObject, new_document
 from idfkit.objects import IDFCollection
@@ -119,9 +120,7 @@ class TestStubGeneration:
     """Test the codegen module for generating type stubs."""
 
     def test_generate_stubs_produces_content(self) -> None:
-        from idfkit.codegen.generate_stubs import generate_stubs
-
-        content = generate_stubs((24, 1, 0))
+        content = generated_stubs((24, 1, 0))
         # Zone's declaration changed between releases, so it derives from its shared base.
         assert "class Zone(AnyZone):" in content
         assert "class AnyZone(_TypedIDFObject):" in content
@@ -129,24 +128,18 @@ class TestStubGeneration:
         assert "\nclass Material(" in content
 
     def test_generate_stubs_has_typed_fields(self) -> None:
-        from idfkit.codegen.generate_stubs import generate_stubs
-
-        content = generate_stubs((24, 1, 0))
+        content = generated_stubs((24, 1, 0))
         assert "x_origin: float | None" in content
         assert "y_origin: float | None" in content
 
     def test_generate_stubs_skips_invalid_identifiers(self) -> None:
-        from idfkit.codegen.generate_stubs import generate_stubs
-
-        content = generate_stubs((24, 1, 0))
+        content = generated_stubs((24, 1, 0))
         # Field names starting with digits should be skipped
         assert "def 100_" not in content
         assert "def 2017_" not in content
 
     def test_generate_document_pyi_types_lookups_with_overloads(self) -> None:
-        from idfkit.codegen.generate_stubs import generate_document_pyi
-
-        content = generate_document_pyi((24, 1, 0))
+        content = generated_document_pyi((24, 1, 0))
         assert "class IDFDocument(IDFDocumentAllVersions[Strict]):" in content
         assert 'def __getitem__(self, obj_type: Literal["Zone"], /) -> IDFCollection[Zone]' in content
         # Not a TypedDict: pyright would narrow it on `"Zone" in doc` by rules the document does not follow.
@@ -154,9 +147,7 @@ class TestStubGeneration:
         assert "get_collection" in content
 
     def test_generate_document_pyi_has_generic_strict(self) -> None:
-        from idfkit.codegen.generate_stubs import generate_document_pyi
-
-        content = generate_document_pyi((24, 1, 0))
+        content = generated_document_pyi((24, 1, 0))
         assert "Generic[Strict]" in content
         assert "TypeVar" in content
 
@@ -239,10 +230,9 @@ class TestStubRuntimeConsistency:
     """Verify that document.pyi declares every public method/property of the runtime class."""
 
     def test_document_pyi_covers_all_public_methods(self) -> None:
-        from idfkit.codegen.generate_stubs import generate_document_pyi
         from idfkit.document import IDFDocument
 
-        pyi_content = generate_document_pyi((24, 1, 0))
+        pyi_content = generated_document_pyi((24, 1, 0))
 
         # Collect public methods/properties defined directly on IDFDocument
         # (not inherited from EppyDocumentMixin or object)
@@ -270,10 +260,9 @@ class TestStubRuntimeConsistency:
 
     def test_document_pyi_method_signatures_match(self) -> None:
         """Check that stub parameter names match runtime parameter names."""
-        from idfkit.codegen.generate_stubs import generate_document_pyi
         from idfkit.document import IDFDocument
 
-        pyi_content = generate_document_pyi((24, 1, 0))
+        pyi_content = generated_document_pyi((24, 1, 0))
 
         # Spot-check key method signatures
         for method_name in ("add", "rename", "get_referencing", "get_references"):

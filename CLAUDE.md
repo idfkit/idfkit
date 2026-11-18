@@ -32,8 +32,12 @@ uv sync
 # Run all quality checks (lint, format, type check, deptry)
 make check
 
-# Run tests (unit tests only, no EnergyPlus required)
+# Run every test, in parallel (pytest-xdist) with coverage, as CI does (about 2 minutes on 4 cores).
+# Integration tests run too when EnergyPlus is installed, and are skipped otherwise.
 make test
+
+# Edit-and-rerun loop: skip the `slow` and `integration` tests and coverage (under a minute)
+make test-fast
 
 # Run a single test
 uv run pytest tests/test_file.py::test_function -v
@@ -152,6 +156,12 @@ Use pytest fixtures (in `conftest.py`) for shared test setup. Key fixtures:
 - `reference_graph` - Pre-populated ReferenceGraph
 
 Tests marked `@pytest.mark.integration` require an EnergyPlus installation.
+
+Tests marked `@pytest.mark.slow` take seconds each (stub generation, the full stub verification);
+`make test-fast` skips them and `make test` and CI run them. Tests run in parallel worker processes
+(`-n auto --dist worksteal`), so a test must write only under its `tmp_path`, never into
+`src/idfkit/`, which other workers are reading. Expensive results a test only reads, such as a stub
+generation, are shared per session: see `generated_stubs()` in `tests/conftest.py`.
 
 Note: Doctest modules for `simulation/`, `weather/`, `schedules/`, `thermal/`, and `visualization/` are excluded from default test runs (they require external dependencies or EnergyPlus).
 
