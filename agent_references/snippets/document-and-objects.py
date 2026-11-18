@@ -324,13 +324,13 @@ if TYPE_CHECKING:  # the classes exist only in the stubs; importing them at run 
 def latest_ceiling(zone: Zone) -> float | None:
     """A latest-release Zone only: a 9.4 zone (Zone_v8_9_to_v9_4) is rejected."""
     height = zone.ceiling_height
-    return height if isinstance(height, float) else None
+    return None if height is None or isinstance(height, str) else float(height)
 
 
 def any_ceiling(zone: AnyZone) -> float | None:
     """A Zone of any release: the latest one, a 9.4 one, or one reached through AnyIDFDocument."""
     height = zone.ceiling_height
-    return height if isinstance(height, float) else None
+    return None if height is None or isinstance(height, str) else float(height)
 
 
 def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:

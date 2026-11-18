@@ -210,13 +210,13 @@ if TYPE_CHECKING:  # the classes exist only in the stubs; importing them at run 
 def latest_ceiling(zone: Zone) -> float | None:
     """A latest-release Zone only: a 9.4 zone (Zone_v8_9_to_v9_4) is rejected."""
     height = zone.ceiling_height
-    return height if isinstance(height, float) else None
+    return None if height is None or isinstance(height, str) else float(height)
 
 
 def any_ceiling(zone: AnyZone) -> float | None:
     """A Zone of any release: the latest one, a 9.4 one, or one reached through AnyIDFDocument."""
     height = zone.ceiling_height
-    return height if isinstance(height, float) else None
+    return None if height is None or isinstance(height, str) else float(height)
 
 
 def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
@@ -229,6 +229,8 @@ any_ceiling(as_version(load_idf("legacy.idf"), IDFDocumentV9_4)["Zone"]["Office"
 ```
 
 An `Any<Class>` covers the releases idfkit supports. When idfkit adopts a release that drops or renames a field, that field leaves `Any<Class>`, and code using it stops type-checking: it would not work on that release either. A type the latest release no longer has, such as `DistrictHeating`, has no `Any<Class>`; annotate with its range class (`DistrictHeating_v8_9_to_v23_1`), imported from `idfkit.versioned` inside `if TYPE_CHECKING:`, since the range classes too exist only in the stubs.
+
+A number field keeps a whole number in the type it arrived as. One loaded from IDF, which does not tell `3` from `3.0`, reads as a `float`. One given as `3` to `add()`, to an unset field by assignment or `update()`, or in an epJSON file reads as the `int` `3`; writing `3` over a field that already holds `3.0` changes nothing, so it stays `3.0`. The field's type says `float`, which accepts an `int` (PEP 484), so a type checker allows both. To tell a number from `"Autocalculate"` or `None`, test for the string and for `None`, as `latest_ceiling` and `any_ceiling` do. `isinstance(height, float)` is false for the `int` `3`, so it would treat a ceiling height of `3` as missing.
 
 ### Reading and writing through `AnyIDFDocument`
 

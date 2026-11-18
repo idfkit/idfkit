@@ -99,6 +99,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The bundled `developing-with-idfkit` reference's ceiling-height examples treated a whole-number
+  height such as `3`, stored as an `int`, as missing; they now accept any number
+  ([#311](https://github.com/idfkit/idfkit/pull/311)).
 - `SimulationResult.errors` came back empty for runs that had failed with severe errors when the model had
   `Output:SQLite`, because it could read `eplusSqlite.err` instead of `eplus.err`; `csv` could likewise read
   `eplusMeter.csv`. The lookup came to find each output by name in every `output_suffix` style
