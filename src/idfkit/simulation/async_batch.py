@@ -310,6 +310,7 @@ async def _async_run_job(
             cache=cache,
             fs=fs,
             on_progress=job_cb,
+            auto_migrate=job.auto_migrate,
         )
     except Exception as exc:
         # Catch all exceptions (SimulationError, ExpandObjectsError,

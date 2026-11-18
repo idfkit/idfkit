@@ -151,7 +151,8 @@ save_idf(doc, "out.idf")
 ```python
 from idfkit import new_document, save_idf
 
-doc = new_document()
+doc = new_document()  # the latest release; simulate() needs the model's release installed
+# or new_document(version=idfkit.simulation.find_energyplus().version) to match the EnergyPlus you have
 doc.add("Zone", "Office", x_origin=0.0, y_origin=0.0)
 save_idf(doc, "new_building.idf")
 ```

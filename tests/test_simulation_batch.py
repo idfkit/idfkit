@@ -71,6 +71,7 @@ class TestSimulationJob:
         assert job.readvars is False
         assert job.timeout == 3600.0
         assert job.extra_args is None
+        assert job.auto_migrate is False
 
     def test_custom_fields(self) -> None:
         model = new_document()
@@ -303,6 +304,16 @@ class TestSimulateBatch:
             result = simulate_batch(jobs, energyplus=mock_config)
         assert not result[0].success
         assert result[0].run_dir == out_dir
+
+    def test_auto_migrate_is_forwarded_to_simulate(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        with patch("idfkit.simulation.batch.simulate", side_effect=RuntimeError("stop")) as mock_simulate:
+            jobs = [
+                SimulationJob(model=new_document(), weather=weather_file, auto_migrate=True),
+                SimulationJob(model=new_document(), weather=weather_file),
+            ]
+            simulate_batch(jobs, energyplus=mock_config, max_workers=1)
+        flags = sorted(call.kwargs["auto_migrate"] for call in mock_simulate.call_args_list)
+        assert flags == [False, True]
 
     def test_progress_cleanup_called_on_error(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """progress_cleanup is called when simulate_batch raises after resolve_on_progress."""

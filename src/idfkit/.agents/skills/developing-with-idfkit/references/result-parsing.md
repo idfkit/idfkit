@@ -63,7 +63,7 @@ for warn in errs.warnings:
 ```python
 ts = result.sql.get_timeseries(
     variable_name="Zone Mean Air Temperature",
-    key_value="Office",  # zone, surface, system name; "*" for environment vars
+    key_value="Office",  # zone, surface, system name; "*" (default) only if one key is reported
     frequency="Hourly",  # optional filter
     environment=None,  # None=all, "annual", or "sizing"
 )
@@ -75,9 +75,20 @@ ts.values  # tuple[float, ...]
 df = ts.to_dataframe()
 ```
 
-`get_timeseries` is case-insensitive on key value and raises `KeyError` if the variable isn't in the database (typically because you didn't add an `Output:Variable` for it in the IDF — see [Output variable discovery](#output-variable-discovery)).
+`get_timeseries` matches the variable name, key value and frequency case-insensitively. It must resolve to exactly one reported series, so the default `key_value="*"` works only for a variable reported for a single key (site `Environment` variables, a meter): for a per-zone variable it raises, listing the keys, rather than returning one zone at random. Pass `frequency` when the variable is reported at several (e.g. `"Hourly"` and `"Monthly"`); the error lists them. Use `environment="annual"` to skip design-day data when both ran.
 
-Use `frequency` to disambiguate when the same variable is reported at multiple frequencies (e.g. `"Hourly"`, `"Daily"`, `"Monthly"`). Use `environment="annual"` to skip design-day data when both ran.
+Every lookup failure raises `ResultLookupError`, a `KeyError` subclass whose message names the closest variable, key or report spelling ("Did you mean ...?") and the keys reported. A variable missing from the database usually means you didn't add an `Output:Variable` for it in the IDF — see [Output variable discovery](#output-variable-discovery). `get_tabular_value` raises it too, naming the first of report, `report_for`, table, row and column that matches nothing.
+
+```python
+from idfkit.exceptions import ResultLookupError
+
+try:
+    ts = result.sql.get_timeseries("Zone Air Temperature")  # reported for every zone
+except ResultLookupError as e:
+    print(e)  # ... is reported for 6 keys (PLENUM-1, SPACE1-1, ...); pass key_value= to pick one.
+    print(e.available)  # ('PLENUM-1', 'SPACE1-1', ...): the keys you can pass
+ts = result.sql.get_timeseries("zone air temperature", "space1-1")  # case-insensitive
+```
 
 ## Tabular reports
 

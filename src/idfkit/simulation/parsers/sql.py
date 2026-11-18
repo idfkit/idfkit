@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import contextlib
 import sqlite3
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
+from ...exceptions import ResultLookupError, closest_names
 from ._timeutil import FREQUENCY_MAP, REFERENCE_YEAR, make_timestamp
 
 if TYPE_CHECKING:
@@ -170,6 +172,35 @@ _ANNUAL_ENV_TYPE = 3  # WeatherFileRunPeriod
 Environment = Literal["sizing", "annual"]
 
 
+def _unique(values: Iterable[str]) -> list[str]:
+    """*values* without repeats, in first-seen order."""
+    return list(dict.fromkeys(values))
+
+
+def _listing(values: Sequence[str], limit: int = 10) -> str:
+    """Up to *limit* of *values*, comma-separated, then how many were left out."""
+    shown = ", ".join(v or "''" for v in values[:limit])
+    if len(values) > limit:
+        shown += f" and {len(values) - limit} more"
+    return shown
+
+
+def _count(values: Sequence[str], noun: str) -> str:
+    return f"{len(values)} {noun}{'' if len(values) == 1 else 's'}"
+
+
+def _did_you_mean(close: Sequence[str]) -> str:
+    if not close:
+        return ""
+    quoted = [f"'{c}'" for c in close]
+    head = ", ".join(quoted[:-1])
+    return f" Did you mean {head + ' or ' if head else ''}{quoted[-1]}?"
+
+
+def _for_key(key_value: str) -> str:
+    return "" if key_value == "*" else f" for key '{key_value}'"
+
+
 class SQLResult:
     """Query interface for an EnergyPlus SQLite output database.
 
@@ -238,11 +269,18 @@ class SQLResult:
     ) -> TimeSeriesResult:
         """Retrieve a time series for a variable.
 
+        The variable name, key and frequency all match case-insensitively, as
+        EnergyPlus matches them. The lookup must resolve to one reported series:
+        when a variable is reported for several keys (one per zone, say) or at
+        several frequencies, name the one you want, and the error lists them.
+
         Args:
             variable_name: The output variable name.
-            key_value: The key value (e.g. zone name). Use ``"*"`` for
-                environment-level variables. Case-insensitive matching.
-            frequency: Optional frequency filter (e.g. ``"Hourly"``).
+            key_value: The key value (e.g. zone name). The default ``"*"`` accepts
+                any key, so it suits variables reported for a single key, such as
+                the ``Environment`` site variables and meters.
+            frequency: Optional frequency filter (e.g. ``"Hourly"``). Needed only
+                when the variable is reported at more than one frequency.
             environment: Filter by environment type. ``None`` (default)
                 returns all data, ``"annual"`` returns only weather-file
                 run period data, and ``"sizing"`` returns only design-day data.
@@ -251,42 +289,14 @@ class SQLResult:
             A TimeSeriesResult with timestamps and values.
 
         Raises:
-            KeyError: If the variable is not found in the database.
+            ResultLookupError: A ``KeyError`` subclass, if the variable, key or
+                frequency is not in the database (with the closest names and the
+                reported keys), or if several keys or frequencies match.
             ValueError: If *environment* is not a recognized value.
         """
-        cur = self._conn.cursor()
-
-        # Find the matching ReportDataDictionary entry
-        query = (
-            "SELECT rdd.ReportDataDictionaryIndex, rdd.Name, rdd.KeyValue, rdd.Units "
-            "FROM ReportDataDictionary rdd "
-            "WHERE rdd.Name = ?"
-        )
-        params: list[object] = [variable_name]
-
-        if key_value != "*":
-            query += " AND UPPER(rdd.KeyValue) = UPPER(?)"
-            params.append(key_value)
-
-        if frequency is not None:
-            query += " AND rdd.ReportingFrequency = ?"
-            params.append(frequency)
-
-        cur.execute(query, params)
-        row = cur.fetchone()
-        if row is None:
-            raise KeyError(f"Variable not found: {variable_name!r} (key={key_value!r})")  # noqa: TRY003
-
-        rdd_index, name, key_val, units = row
-
-        # Get the reporting frequency
-        cur.execute(
-            "SELECT ReportingFrequency FROM ReportDataDictionary WHERE ReportDataDictionaryIndex = ?",
-            (rdd_index,),
-        )
-        freq_row = cur.fetchone()
-        raw_freq: str = str(freq_row[0]) if freq_row else ""
+        rdd_index, name, key_val, units, raw_freq = self._find_variable(variable_name, key_value, frequency)
         freq: str = FREQUENCY_MAP.get(raw_freq, raw_freq) if raw_freq else "Unknown"
+        cur = self._conn.cursor()
 
         # Retrieve time-series data, filtering out warmup periods.
         # COALESCE handles EnergyPlus versions where WarmupFlag is NULL.
@@ -331,6 +341,64 @@ class SQLResult:
             timestamps=tuple(timestamps),
             values=tuple(values),
         )
+
+    def _find_variable(
+        self, variable_name: str, key_value: str, frequency: str | None
+    ) -> tuple[int, str, str, str, str]:
+        """Resolve one ``ReportDataDictionary`` row: ``(index, name, key, units, raw frequency)``.
+
+        Raises:
+            ResultLookupError: If no row, or more than one, matches.
+        """
+        cur = self._conn.cursor()
+        cur.execute(
+            "SELECT ReportDataDictionaryIndex, Name, COALESCE(KeyValue, ''), COALESCE(Units, ''), "
+            "COALESCE(ReportingFrequency, '') FROM ReportDataDictionary "
+            "WHERE Name = ? COLLATE NOCASE ORDER BY ReportDataDictionaryIndex",
+            (variable_name,),
+        )
+        rows: list[tuple[int, str, str, str, str]] = cur.fetchall()
+        if not rows:
+            cur.execute("SELECT DISTINCT Name FROM ReportDataDictionary")
+            names = [str(r[0]) for r in cur.fetchall()]
+            close = closest_names(variable_name, names, n=3)
+            msg = f"Variable '{variable_name}' is not in this run's output."
+            msg += _did_you_mean(close)
+            msg += " Request it with an Output:Variable (or Output:Meter) object; list_variables() shows what was reported."
+            raise ResultLookupError(msg, suggestions=close)
+        name = rows[0][1]
+
+        if key_value != "*":
+            keys = _unique(row[2] for row in rows)
+            wanted = key_value.casefold()
+            rows = [row for row in rows if row[2].casefold() == wanted]
+            if not rows:
+                close = closest_names(key_value, keys)
+                msg = f"Variable '{name}' has no key '{key_value}'." + _did_you_mean(close)
+                msg += f" It is reported for {_count(keys, 'key')}: {_listing(keys)}."
+                raise ResultLookupError(msg, suggestions=close, available=keys)
+
+        if frequency is not None:
+            freqs = _unique(row[4] for row in rows)
+            wanted = frequency.casefold()
+            rows = [row for row in rows if wanted in (row[4].casefold(), FREQUENCY_MAP.get(row[4], row[4]).casefold())]
+            if not rows:
+                msg = f"Variable '{name}'{_for_key(key_value)} is not reported at frequency '{frequency}'."
+                msg += f" It is reported at: {_listing(freqs)}."
+                raise ResultLookupError(msg, available=freqs)
+
+        keys = _unique(row[2] for row in rows)
+        if len(keys) > 1:
+            msg = f"Variable '{name}' is reported for {_count(keys, 'key')} ({_listing(keys)}); pass key_value= to pick one."
+            raise ResultLookupError(msg, available=keys)
+        freqs = _unique(row[4] for row in rows)
+        if len(freqs) > 1:
+            msg = (
+                f"Variable '{name}'{_for_key(key_value)} is reported at {len(freqs)} frequencies "
+                f"({_listing(freqs)}); pass frequency= to pick one."
+            )
+            raise ResultLookupError(msg, available=freqs)
+        return rows[0]
 
     def get_tabular_data(
         self,
@@ -419,7 +487,9 @@ class SQLResult:
             The cell value as a string.
 
         Raises:
-            KeyError: If no matching row is found or if multiple rows match.
+            ResultLookupError: A ``KeyError`` subclass, if no row matches (naming the
+                first argument that matches nothing, with the closest spellings) or
+                if several rows match.
         """
         rows = self.get_tabular_data(
             report_name=report_name,
@@ -429,18 +499,46 @@ class SQLResult:
             report_for=report_for,
         )
         if len(rows) == 0:
-            msg = (
-                f"No tabular data found: report={report_name!r}, table={table_name!r}, "
-                f"row={row_name!r}, column={column_name!r}"
-            )
-            raise KeyError(msg)
+            self._raise_tabular_not_found({
+                "ReportName": ("report", report_name),
+                "ReportForString": ("report_for", report_for),
+                "TableName": ("table", table_name),
+                "RowName": ("row", row_name),
+                "ColumnName": ("column", column_name),
+            })
         if len(rows) > 1:
             msg = (
-                f"Multiple rows found ({len(rows)}): report={report_name!r}, table={table_name!r}, "
-                f"row={row_name!r}, column={column_name!r}"
+                f"Multiple rows found ({len(rows)}): report='{report_name}', table='{table_name}', "
+                f"row='{row_name}', column='{column_name}', report_for='{report_for}'"
             )
-            raise KeyError(msg)
+            raise ResultLookupError(msg)
         return rows[0].value
+
+    def _raise_tabular_not_found(self, filters: dict[str, tuple[str, str]]) -> NoReturn:
+        """Name the first of *filters* (column -> (label, value)) that matches nothing, with its spellings.
+
+        Raises:
+            ResultLookupError: Always.
+        """
+        cur = self._conn.cursor()
+        conditions: list[str] = []
+        params: list[str] = []
+        scope = ""
+        for column, (label, value) in filters.items():
+            where = f" WHERE {' AND '.join(conditions)}" if conditions else ""
+            cur.execute(f"SELECT DISTINCT {column} FROM TabularDataWithStrings{where}", params)  # noqa: S608
+            options = sorted(str(r[0]) for r in cur.fetchall() if r[0] is not None)
+            if value not in options:
+                close = closest_names(value, options, n=3)
+                msg = f"No tabular {label} '{value}'{scope}." + _did_you_mean(close)
+                hint = "list_reports() lists them all" if label == "report" else f"Available: {_listing(options)}"
+                msg = f"{msg} {hint}."
+                raise ResultLookupError(msg, suggestions=close, available=options)
+            conditions.append(f"{column} = ?")
+            params.append(value)
+            scope = f" in {label} '{value}'" if not scope else f"{scope}, {label} '{value}'"
+        msg = "No tabular data found for " + ", ".join(f"{label}='{value}'" for label, value in filters.values())
+        raise ResultLookupError(msg)  # pragma: no cover -- every filter matched, so a row exists
 
     def list_variables(self) -> list[VariableInfo]:
         """List all available variables in the database.
@@ -501,8 +599,12 @@ class SQLResult:
 
         Args:
             variable_name: The output variable name.
-            key_value: The key value. Use ``"*"`` for environment-level variables.
-            frequency: Optional frequency filter.
+            key_value: The key value (case-insensitive). The default ``"*"``
+                works only when the variable is reported for a single key
+                (e.g. site variables and meters); pass the zone or object
+                name otherwise.
+            frequency: Optional frequency filter. Required when the variable
+                is reported at more than one frequency.
             environment: Filter by environment type (``None`` by default
                 for all data, ``"annual"`` for run periods, ``"sizing"`` for
                 design days).
@@ -512,7 +614,9 @@ class SQLResult:
 
         Raises:
             ImportError: If pandas is not installed.
-            KeyError: If the variable is not found.
+            ResultLookupError: If the variable, key or frequency is not found,
+                or if several keys or frequencies match (a ``KeyError``
+                subclass, as in [get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries]).
         """
         ts = self.get_timeseries(variable_name, key_value, frequency, environment)
         return ts.to_dataframe()

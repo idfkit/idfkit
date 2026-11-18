@@ -217,6 +217,13 @@ class TestAsyncSimulateBatch:
         assert result.all_succeeded
 
     @pytest.mark.asyncio
+    async def test_auto_migrate_is_forwarded(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        with patch("idfkit.simulation.async_batch.async_simulate", side_effect=RuntimeError("stop")) as mock_sim:
+            job = SimulationJob(model=new_document(), weather=weather_file, auto_migrate=True)
+            await async_simulate_batch([job], energyplus=mock_config)
+        assert mock_sim.call_args.kwargs["auto_migrate"] is True
+
+    @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
     async def test_multiple_jobs(self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_exec.return_value = _make_mock_process()

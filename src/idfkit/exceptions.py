@@ -214,6 +214,30 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
         return (type(self), (self.obj_type, self.version, self.suggestion))
 
 
+class ResultLookupError(IdfKitError, KeyError):
+    """Raised when a simulation-result lookup finds no output, or several where it needs one.
+
+    Raised by [SQLResult.get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries]
+    and [SQLResult.get_tabular_value][idfkit.simulation.parsers.sql.SQLResult.get_tabular_value].
+    Inherits from ``KeyError`` so code catching ``KeyError`` keeps working; unlike a plain
+    ``KeyError``, ``str()`` gives the message as written, not its ``repr()``.
+
+    Attributes:
+        suggestions: The closest names the database does have ("did you mean"), closest first.
+        available: The keys, frequencies or names that matched or could be passed instead.
+    """
+
+    def __init__(self, message: str, *, suggestions: Sequence[str] = (), available: Sequence[str] = ()) -> None:
+        super().__init__(message)
+        self.message = message
+        self.suggestions = tuple(suggestions)
+        self.available = tuple(available)
+
+    def __str__(self) -> str:
+        # KeyError.__str__ gives repr() of its argument: quoted, with a literal "\n".
+        return self.message
+
+
 class UnknownObjectTypeWarning(UserWarning):
     """Warned when a document is read by an object type name no bundled EnergyPlus release has.
 
@@ -548,11 +572,24 @@ class VersionMismatchError(IdfKitError):
         target_str = f"{target[0]}.{target[1]}.{target[2]}"
         msg = f"Model version {current_str} does not match target EnergyPlus version {target_str}."
         if self.direction == "backward":
-            msg += "\nBackward migration is not supported: EnergyPlus ships no reverse transition binaries."
-        elif self.migration_chain:
-            steps = " -> ".join(f"{a[0]}.{a[1]}.{a[2]}->{b[0]}.{b[1]}.{b[2]}" for a, b in self.migration_chain)
-            msg += f"\nMigration chain: {steps}"
-            msg += "\nCall idfkit.migrate(model, target_version=...) to migrate explicitly."
+            msg += (
+                "\nBackward migration is not supported: EnergyPlus ships no reverse transition binaries."
+                f"\nTo fix it, either build the model at {target_str}"
+                f" (new_document(version=({target[0]}, {target[1]}, {target[2]})),"
+                " or version=idfkit.simulation.find_energyplus().version for whatever is installed),"
+                f" or install EnergyPlus {current_str} and pass"
+                f' energyplus=idfkit.simulation.find_energyplus(version="{current_str}").'
+            )
+        else:
+            if self.migration_chain:
+                steps = " -> ".join(f"{a[0]}.{a[1]}.{a[2]}->{b[0]}.{b[1]}.{b[2]}" for a, b in self.migration_chain)
+                msg += f"\nMigration chain: {steps}"
+            msg += (
+                "\nTo fix it, pass auto_migrate=True to simulate() (or to each SimulationJob in a batch)"
+                " to migrate a copy before the run,"
+                f" or call idfkit.migrate(model, target_version=({target[0]}, {target[1]}, {target[2]}))"
+                " to migrate it once and keep the result."
+            )
         super().__init__(msg)
 
 

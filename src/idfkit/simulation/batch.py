@@ -58,6 +58,9 @@ class SimulationJob:
             ``IDFKIT_PREPROCESSOR_TIMEOUT`` environment variable, falling
             back to 120 s.
         extra_args: Additional command-line arguments.
+        auto_migrate: Forward-migrate a copy of the model to the installed
+            EnergyPlus version before the run, as
+            ``simulate(..., auto_migrate=True)`` does.
     """
 
     model: object  # IDFDocument — use object to avoid import at class level
@@ -73,6 +76,7 @@ class SimulationJob:
     timeout: float = 3600.0
     preprocessor_timeout: float | None = None
     extra_args: tuple[str, ...] | None = None
+    auto_migrate: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -278,6 +282,7 @@ def _run_job(
             cache=cache,
             fs=fs,
             on_progress=job_cb,
+            auto_migrate=job.auto_migrate,
         )
     except Exception as exc:
         # Catch all exceptions (SimulationError, ExpandObjectsError,

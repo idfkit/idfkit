@@ -9,8 +9,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
+from ...exceptions import ResultLookupError
+
 if TYPE_CHECKING:
-    from ..parsers.sql import SQLResult
+    from ..parsers.sql import SQLResult, TimeSeriesResult
     from . import PlotBackend
 
 
@@ -123,12 +125,23 @@ def plot_temperature_profile(
     )
 
 
+def _zone_temperature(sql: SQLResult, zone: str, frequency: str | None) -> TimeSeriesResult:
+    """Read a zone's mean air temperature, preferring hourly data when *frequency* is ``None``."""
+    try:
+        return sql.get_timeseries("Zone Mean Air Temperature", zone, frequency=frequency)
+    except ResultLookupError as exc:
+        if frequency is not None or not any(f.casefold() == "hourly" for f in exc.available):
+            raise
+    return sql.get_timeseries("Zone Mean Air Temperature", zone, frequency="Hourly")
+
+
 def plot_comfort_hours(
     sql: SQLResult,
     zones: Sequence[str],
     *,
     comfort_min: float = 20.0,
     comfort_max: float = 26.0,
+    frequency: str | None = None,
     backend: PlotBackend | None = None,
     title: str = "Comfort Hours by Zone and Month",
 ) -> Any:
@@ -142,11 +155,19 @@ def plot_comfort_hours(
         zones: Zone names to analyze.
         comfort_min: Minimum comfort temperature (default 20C).
         comfort_max: Maximum comfort temperature (default 26C).
+        frequency: Reporting frequency of ``Zone Mean Air Temperature`` to
+            read (e.g. ``"Hourly"`` or ``"Timestep"``). When ``None`` and the
+            variable is reported at several frequencies, ``"Hourly"`` is used.
         backend: Plotting backend to use. Auto-detects if not provided.
         title: Plot title.
 
     Returns:
         A figure object from the backend.
+
+    Raises:
+        ResultLookupError: If the variable is not reported for a zone, or is
+            reported at several frequencies, none of them hourly, and
+            *frequency* is ``None``.
     """
     if backend is None:
         from . import get_default_backend
@@ -159,7 +180,7 @@ def plot_comfort_hours(
     data: list[list[float]] = []
 
     for zone in zones:
-        ts = sql.get_timeseries("Zone Mean Air Temperature", zone)
+        ts = _zone_temperature(sql, zone, frequency)
 
         # Count hours per month
         month_hours: dict[int, int] = dict.fromkeys(range(1, 13), 0)
