@@ -8,6 +8,7 @@ stored in the schema's spelling, an exhaustive ``match`` that type-checks falls 
 from __future__ import annotations
 
 import json
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -341,6 +342,24 @@ class TestAssignment:
         obj["reports"].append(report_name="zonecomponentloadsummary")
         assert [g["report_name"] for g in obj.data["reports"]] == ["allsummary", "zonecomponentloadsummary"]
 
+    def test_flat_extensible_write(self) -> None:
+        doc = new_document(_V)
+        obj = doc.add("Output:Table:SummaryReports", reports=[{"report_name": "AllSummary"}])
+        with pytest.warns(DeprecationWarning):
+            obj.report_2_name = "zonecomponentloadsummary"
+        assert obj.data["reports"][1] == {"report_name": "ZoneComponentLoadSummary"}
+
+    def test_str_subclass_is_stored_as_plain_schema_spelling(self) -> None:
+        class Roughness(str, Enum):
+            ROUGH = "ROUGH"
+
+        doc = new_document(_V)
+        mat = _material(doc, Roughness.ROUGH)
+        assert mat.roughness == "Rough"
+        assert type(mat.roughness) is str
+        mat.roughness = Roughness.ROUGH  # pyright: ignore[reportAttributeAccessIssue]
+        assert type(mat.roughness) is str
+
     def test_detached_object_is_not_normalized(self) -> None:
         obj = IDFObject("Material", "M", data={"roughness": "rough"})
         obj.roughness = "ROUGH"
@@ -350,6 +369,28 @@ class TestAssignment:
 # ---------------------------------------------------------------------------
 # The flag
 # ---------------------------------------------------------------------------
+
+
+class TestAdoption:
+    """``addidfobject`` and ``copyidfobject`` file an object built elsewhere, as ``add()`` would."""
+
+    def test_addidfobject_normalizes(self) -> None:
+        doc = new_document(_V)
+        obj = IDFObject("Material", "M", data={"roughness": "ROUGH", "thickness": 0.1})
+        doc.addidfobject(obj)
+        assert doc["Material"]["M"].roughness == "Rough"
+
+    def test_copy_from_opt_out_document(self, odd_case_idf: Path) -> None:
+        raw = load_idf(odd_case_idf, normalize_choices=False)
+        doc = new_document(_V)
+        copied = doc.copyidfobject(raw["Material"]["M1"])
+        assert copied.roughness == "MediumSmooth"
+        assert raw["Material"]["M1"].roughness == "mediumSMOOTH"
+
+    def test_opt_out_document_adopts_as_given(self) -> None:
+        doc = new_document(_V, normalize_choices=False)
+        doc.addidfobject(IDFObject("Material", "M", data={"roughness": "ROUGH"}))
+        assert doc["Material"]["M"].roughness == "ROUGH"
 
 
 class TestFlag:
@@ -369,6 +410,19 @@ class TestFlag:
 
         doc = new_document(_V, normalize_choices=False)
         assert pickle.loads(pickle.dumps(doc)).normalize_choices is False  # noqa: S301
+
+    def test_older_pickle_restores_with_the_setting_off(self) -> None:
+        """A document pickled before the setting existed still adds, copies and reports it."""
+        doc = new_document(_V)
+        reduced = doc.__reduce_ex__(2)
+        restore, args, state = reduced[0], reduced[1], reduced[2]
+        _, slots = state
+        older_slots = {key: value for key, value in slots.items() if key != "_normalize_choices"}
+        older = restore(*args)
+        older.__setstate__((None, older_slots))
+        assert older.normalize_choices is False
+        assert _material(older, "ROUGH").roughness == "ROUGH"
+        assert older.copy().normalize_choices is False
 
     def test_is_read_only(self) -> None:
         doc = new_document(_V)

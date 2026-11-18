@@ -2756,6 +2756,7 @@ def _generate_document_module() -> str:
         "IDFDocument.add",
     )
     emit("def addidfobject(self, obj: IDFObject) -> IDFObject", "IDFDocument.addidfobject")
+    emit("def _adopt(self, obj: IDFObject) -> IDFObject", "IDFDocument._adopt")
     emit("def removeidfobject(self, obj: IDFObject) -> None", "IDFDocument.removeidfobject")
     emit("def rename(self, obj_type: str, old_name: str, new_name: str) -> None", "IDFDocument.rename")
     emit(

@@ -248,7 +248,8 @@ class EpJSONParser:
         IDF parser stores it. EnergyPlus's own epJSON is already canonical; a hand-written or
         converted file need not be.
         """
-        addidfobject = doc.addidfobject
+        # Values are normalized below while each object is built, so objects are filed as they are.
+        addidfobject = doc._adopt  # pyright: ignore[reportPrivateUsage]
 
         for obj_type, objects in data.items():
             if not isinstance(objects, dict):

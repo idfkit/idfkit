@@ -238,6 +238,25 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """
         return self._normalize_choices
 
+    def __setstate__(self, state: Any) -> None:
+        """Restore a pickled or deep-copied document.
+
+        Every slot is restored as the default machinery would. A document pickled before
+        ``normalize_choices`` existed holds its choices as they were written, so it comes back
+        with the setting off, which describes its values, rather than without the slot.
+        """
+        slots: dict[str, Any] = {}
+        if isinstance(state, tuple):
+            slot_state = cast("tuple[Any, Any]", state)[1]
+            if isinstance(slot_state, dict):
+                slots = cast("dict[str, Any]", slot_state)
+        elif isinstance(state, dict):
+            slots = cast("dict[str, Any]", state)
+        for key, value in slots.items():
+            object.__setattr__(self, key, value)
+        if "_normalize_choices" not in slots:
+            object.__setattr__(self, "_normalize_choices", False)
+
     @property
     def version(self) -> tuple[int, int, int]:
         """EnergyPlus version tuple ``(major, minor, patch)``.
@@ -974,6 +993,23 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Overrides the eppy-compatibility method from
         :class:`~idfkit._compat.EppyDocumentMixin` to keep ``_version`` in sync
         when a ``Version`` object is added (e.g. during parsing or copy).
+
+        In a document that normalizes choices (the default), the object's choice
+        values are rewritten in the spelling its schema declares, as ``add()``
+        stores them, so an object built elsewhere or copied from a document that
+        opted out holds what its ``Literal`` types say.
+        """
+        if self._normalize_choices and self._schema is not None:
+            pc = self._schema.get_parsing_cache(obj.obj_type)
+            if pc is not None:
+                canonicalize_choices(obj.data, pc)
+        return self._adopt(obj)
+
+    def _adopt(self, obj: IDFObject) -> IDFObject:
+        """File *obj* as :meth:`addidfobject` does, with its values taken as they are.
+
+        For objects already in this document's spelling: the parsers', which normalize while
+        they read, and the twins :meth:`copy` makes of a document with the same setting.
         """
         result = super().addidfobject(obj)
         if obj.obj_type.upper() == "VERSION":
@@ -1558,9 +1594,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         :meth:`render_object` answer for its objects.
 
         ``copy.deepcopy`` and ``pickle`` give the same result through the
-        default machinery, which needs no hooks here: every slot of a document
-        copies correctly on its own, and the schema travels by version (see
+        default machinery: every slot of a document copies correctly on its
+        own, and the schema travels by version (see
         :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
+        The only hook, :meth:`__setstate__`, fills in a slot that a document
+        pickled by an earlier release does not have.
         This method is the faster of the two, as it rebuilds the model
         object by object instead of walking every field through the memo.
 
@@ -1599,7 +1637,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 # copied document is the object as read, and this is the writer's clean/dirty flag:
                 # `None` would make a preserving write reformat every object the copy holds.
                 object.__setattr__(new_obj, "_source_text", obj.source_text)
-            new_doc.addidfobject(new_obj)
+            # A twin already holds the spelling this document's setting gives, and the copy shares it.
+            new_doc._adopt(new_obj)
             twins[obj] = new_obj
 
         # The tree ties to the original only through `node.obj`. Re-pointing each anchor at

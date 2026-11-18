@@ -48,16 +48,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   source used, so a choice field held the value its `Literal` type promised. A surface that
   EnergyPlus's own `5ZoneAirCooled.idf` calls `WALL` read `surface_type == "Wall"`, and an
   exhaustive `match` ending in `assert_never` no longer fell through on a model someone else wrote.
-  This applied to IDF and epJSON files, to `add()`, assignment, `update()` and extensible groups,
-  and to the sizing keywords of numeric fields (`AUTOSIZE` read `"Autosize"`). A value that is no
-  listed choice was kept as written. EnergyPlus reads choices in any case, so no simulation changed;
+  This applied to IDF and epJSON files, to `add()`, assignment, `update()`, extensible groups,
+  `addidfobject()` and `copyidfobject()`, and to the sizing keywords of numeric fields (`AUTOSIZE`
+  read `"Autosize"`; where a field listed only `Autosize`, `Autocalculate` read `"Autosize"` too, as
+  EnergyPlus's own conversion treats it). Any other value that is no listed choice was kept as
+  written. EnergyPlus reads choices in any case, so no simulation changed;
   the IDF writer emitted the schema's spelling for objects it formatted, and a
   `preserve_formatting=True` load still wrote every unmodified object byte for byte. Code that
   compared against the file's text (`== "WALL"`) needs the schema's spelling or `.casefold()`.
   Pass `normalize_choices=False` to `load_idf`, `load_epjson`, `load_idf_with_diagnostics`,
   `new_document` or `IDFDocument()` to keep values as written; `doc.normalize_choices` reported the
-  setting, and `copy()`, `migrate()` and `expand_objects()` kept it. Parse time did not change
-  measurably (within ±3% on the largest EnergyPlus example files).
+  setting, and `copy()`, `migrate()` and `expand_objects()` kept it; a document pickled by an
+  earlier release unpickled with it off, since its values were stored as written. Parse time did
+  not change measurably (within ±3% on the largest EnergyPlus example files)
+  ([f69bef3](https://github.com/idfkit/idfkit/commit/f69bef3)).
 - **Breaking:** for type checking, a field that every release having it requires with no default
   lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;
   delete the `is None` guards pyright strict now flags ([#303](https://github.com/idfkit/idfkit/pull/303)).

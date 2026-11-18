@@ -368,6 +368,17 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         Overrides the eppy-compatibility method from
         :class:`~idfkit._compat.EppyDocumentMixin` to keep ``_version`` in sync
         when a ``Version`` object is added (e.g. during parsing or copy).
+
+        In a document that normalizes choices (the default), the object's choice
+        values are rewritten in the spelling its schema declares, as ``add()``
+        stores them, so an object built elsewhere or copied from a document that
+        opted out holds what its ``Literal`` types say.
+        """
+    def _adopt(self, obj: IDFObject) -> IDFObject:
+        """File *obj* as :meth:`addidfobject` does, with its values taken as they are.
+
+        For objects already in this document's spelling: the parsers', which normalize while
+        they read, and the twins :meth:`copy` makes of a document with the same setting.
         """
     def removeidfobject(self, obj: IDFObject) -> None:
         """Remove an object from the document.
@@ -566,9 +577,11 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         :meth:`render_object` answer for its objects.
 
         ``copy.deepcopy`` and ``pickle`` give the same result through the
-        default machinery, which needs no hooks here: every slot of a document
-        copies correctly on its own, and the schema travels by version (see
+        default machinery: every slot of a document copies correctly on its
+        own, and the schema travels by version (see
         :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
+        The only hook, :meth:`__setstate__`, fills in a slot that a document
+        pickled by an earlier release does not have.
         This method is the faster of the two, as it rebuilds the model
         object by object instead of walking every field through the memo.
 

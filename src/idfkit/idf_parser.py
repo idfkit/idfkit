@@ -559,7 +559,8 @@ class IDFParser:
         type_cache: dict[str, ParsingCache | None] = {}
         canonical_cache: dict[str, str] = {}
         encoding = self._encoding
-        addidfobject = doc.addidfobject
+        # Values are normalized while the fields are read, so objects are filed as they are.
+        addidfobject = doc._adopt  # pyright: ignore[reportPrivateUsage]
         skipped_types: set[str] = set()
 
         # Every match ends at a `;`, so nothing past the last one can match. Bounding the scan there

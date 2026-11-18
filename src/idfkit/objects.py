@@ -12,13 +12,12 @@ import warnings
 from collections.abc import Callable, Container, Iterator, Mapping, Sequence
 from copy import deepcopy
 from functools import lru_cache
-from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
 from ._read_required import READ_REQUIRED
 from .exceptions import InvalidFieldError, MissingRequiredFieldError, RefusedEntry, format_refused
-from .schema import canonical_choice, trailing_underscore_aliases
+from .schema import NO_CHOICE_SPELLINGS, canonical_choice, trailing_underscore_aliases
 
 __all__ = [
     "ExtensibleGroup",
@@ -76,9 +75,6 @@ _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
 # Group numbers are 1-based ASCII without leading zeros: "_0_" names no group.
 _EXTENSIBLE_NUMBER_PATTERN = re.compile(r"^(.+?)_([1-9][0-9]*)_(.+)$")
 _GROUP_NUMBER_PATTERN = re.compile(r"[1-9][0-9]*")
-
-#: The tables of an object whose writes are not normalized (see ``IDFObject._choice_tables``).
-_NO_TABLES: Mapping[str, ChoiceSpellings] = MappingProxyType({})
 
 
 def parse_extensible_index(
@@ -267,9 +263,8 @@ class ExtensibleGroup:
                     f"{k!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
                 )
         slot = self._slot()
-        owner = self._owner
-        for name, value in merged.items():
-            assign_slot(slot, name, owner._canonical_slot_value(name, value))  # pyright: ignore[reportPrivateUsage]
+        for name, value in self._owner._canonical_slots(merged).items():  # pyright: ignore[reportPrivateUsage]
+            assign_slot(slot, name, value)
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def __eq__(self, other: object) -> bool:
@@ -371,8 +366,7 @@ class ExtensibleList(Generic[GroupT_co]):
             group = without_blank_slots(kwargs)
         else:
             raise TypeError(f"expected dict, ExtensibleGroup, or kwargs; got {type(item).__name__}")  # noqa: TRY003
-        owner = self._owner
-        return {name: owner._canonical_slot_value(name, value) for name, value in group.items()}  # pyright: ignore[reportPrivateUsage]
+        return self._owner._canonical_slots(group)  # pyright: ignore[reportPrivateUsage]
 
     def _validate_inner(self, item: dict[str, Any]) -> None:
         unknown = [k for k in item if k not in self._inner_names]
@@ -1008,19 +1002,29 @@ class IDFObject(EppyObjectMixin):
         its type: a detached object has no document to say which spelling is canonical.
         """
         doc = self._document
-        if doc is None or not getattr(doc, "_normalize_choices", True):
-            return _NO_TABLES
+        if doc is None or not doc.normalize_choices:
+            return NO_CHOICE_SPELLINGS
         schema = doc.schema
         pc = schema.get_parsing_cache(self._type) if schema is not None else None
         if pc is None:
-            return _NO_TABLES
+            return NO_CHOICE_SPELLINGS
         return pc.ext_choice_spellings if extensible else pc.choice_spellings
 
     def _canonical_slot_value(self, name: str, value: Any) -> Any:
         """*value* for the extensible slot *name*, in its schema's spelling when it is a choice."""
-        if type(value) is not str:
+        if not isinstance(value, str):
             return value
         return canonical_choice(self._choice_tables(extensible=True).get(name), value)
+
+    def _canonical_slots(self, slots: Mapping[str, Any]) -> dict[str, Any]:
+        """A copy of one extensible group's *slots*, each choice in its schema's spelling.
+
+        The tables are resolved once for the whole group rather than once per slot.
+        """
+        tables = self._choice_tables(extensible=True)
+        if not tables:
+            return dict(slots)
+        return {name: canonical_choice(tables.get(name), value) for name, value in slots.items()}
 
     def _set_field(self, python_key: str, value: Any) -> None:
         """Centralized data-field write with reference graph notification.
@@ -1041,7 +1045,7 @@ class IDFObject(EppyObjectMixin):
         over a field that is already unset is therefore not a change either, so
         ``obj.f = obj.f`` on a blank field leaves the object untouched.
         """
-        if type(value) is str:
+        if isinstance(value, str):
             value = canonical_choice(self._choice_tables(extensible=False).get(python_key), value)
         data = self._data
         blank = is_blank_slot(value)

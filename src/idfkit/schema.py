@@ -43,6 +43,9 @@ ChoiceSpellings = Mapping[str, str]
 
 _NO_SPELLINGS: Final[Mapping[str, ChoiceSpellings]] = MappingProxyType({})
 
+#: The spelling tables of a type with no choice field; shared and read-only.
+NO_CHOICE_SPELLINGS: Final[Mapping[str, ChoiceSpellings]] = _NO_SPELLINGS
+
 
 def _no_spellings() -> Mapping[str, ChoiceSpellings]:
     """Return the shared empty spelling table.
@@ -95,9 +98,13 @@ def canonical_choice(spellings: ChoiceSpellings | None, value: Any) -> Any:
     EnergyPlus matches choices case-insensitively, so ``"WALL"`` and ``"Wall"`` are the same value.
     The typed stubs declare the schema's spelling (``Literal["Wall", ...]``), so a value is stored
     in that spelling for the type to hold whatever case the source used. Only a string that folds
-    to a listed choice changes; anything else, a number or an unlisted string, is returned as is.
+    to an entry of *spellings* changes; anything else, a number or an unlisted string, is returned
+    as is. A numeric field that declares one sizing keyword also maps the other one to it
+    (``Autocalculate`` reads ``"Autosize"`` where only ``Autosize`` is listed), as EnergyPlus's
+    ``ConvertInputFormat`` does (see :func:`_choice_spellings`). A ``str`` subclass, such as a
+    ``StrEnum`` member, is matched by its text and stored as a plain ``str``.
     """
-    if spellings and type(value) is str:
+    if spellings and isinstance(value, str):
         return spellings.get(value.casefold(), value)
     return value
 
@@ -114,7 +121,7 @@ def canonicalize_choices(data: dict[str, Any], pc: ParsingCache) -> None:
     if spellings:
         for key, value in data.items():
             table = spellings.get(key)
-            if table is not None and type(value) is str:
+            if table is not None and isinstance(value, str):
                 data[key] = table.get(value.casefold(), value)
     wrapper_key = pc.ext_wrapper_key
     if pc.ext_choice_spellings and wrapper_key is not None:

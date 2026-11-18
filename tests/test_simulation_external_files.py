@@ -203,7 +203,8 @@ class TestUncacheableReason:
         model.add("ExternalInterface", "", name_of_external_interface=mode, validate=False)
         reason = uncacheable_reason(model)
         assert reason is not None
-        assert mode in reason
+        # The reason names the interface in its schema spelling, however the model wrote it.
+        assert mode.casefold() in reason.casefold()
 
     def test_fmu_import_is_cacheable(self) -> None:
         """An imported FMU is a file the key hashes, so the run stays cacheable."""
