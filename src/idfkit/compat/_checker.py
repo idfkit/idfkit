@@ -174,7 +174,7 @@ def check_compatibility(
         raise ValueError(msg)
     enabled = enabled_rules(select, ignore)
 
-    literals = extract_literals(source, filename, package=package)
+    literals = extract_literals(source, filename, package=package, version=max(targets))
 
     indices: dict[tuple[int, int, int], SchemaIndex] = {v: _get_index(v) for v in targets}
     allowed_types = _build_allowed_types(indices, include_groups, exclude_groups)

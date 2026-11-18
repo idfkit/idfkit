@@ -217,6 +217,9 @@ class EppyDocumentMixin:
         """
         # A loader leaves a nameless object's name empty; a hand-built one may not.
         refuse_name_for_nameless_type(obj.obj_type, obj.name, object.__getattribute__(obj, "_schema"))
+        # Filed first: a duplicate name is refused there, and a refused object must not be left
+        # linked to this document, where renaming it would rewrite the real object's references.
+        self._collection_for_write(obj.obj_type)._append(obj)  # pyright: ignore[reportPrivateUsage]
         object.__setattr__(obj, "_document", self)
 
         if object.__getattribute__(obj, "_ref_fields") is None and self._schema:
@@ -226,7 +229,6 @@ class EppyDocumentMixin:
                 self._compute_ref_fields(self._schema, obj.obj_type),
             )
 
-        self._collection_for_write(obj.obj_type)._append(obj)  # pyright: ignore[reportPrivateUsage]
         self._index_object_references(obj)
         return obj
 

@@ -37,11 +37,11 @@ class ExtractedLiteral:
             ``None`` for a subscript.
         receiver: Source text of the object the method was called on or subscripted
             (``"doc"`` for ``doc.get_collection("Zone")`` and ``doc["Zone"]``), or ``None``.
-        in_idfkit_add: Whether the literal is an argument of a call that can only be idfkit's
-            ``add()``: the file imports idfkit and the call passes more than its first argument
-            (``set.add`` and the like take one), and, for an object type, the receiver is known to
-            be a document, not a collection, whose ``add()`` takes a name first. Only such literals
-            are reported as ``C006``.
+        in_idfkit_add: Whether the literal is an argument of idfkit's ``add()`` that raises when no
+            release accepts it, the only literals reported as ``C006``. The file imports idfkit;
+            an object type is on a receiver known to be a document with a schema (a collection's
+            ``add()`` takes a name first); a choice value is in a call given more than its first
+            argument (``set.add`` takes one) and without ``validate=False``.
         releases: The supported releases the literal's code can run against, when the code
             around it narrows the document (``as_version(doc, IDFDocumentV9_4)[...]``, or a lookup
             inside ``if doc.version >= (9, 4, 0):``); ``None`` when nothing narrows it.

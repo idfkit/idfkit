@@ -364,7 +364,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 if existing_type.upper() == obj_type_upper:
                     return existing
 
-        return IDFCollection(canonical, self)
+        detached = IDFCollection[IDFObject](canonical, self)  # pyright: ignore[reportArgumentType]  # .pyi types documents as AnyIDFDocument
+        return detached
 
     def _collection_for_write(self, obj_type: str, adopt: IDFCollection[Any] | None = None) -> IDFCollection[IDFObject]:
         """Get the collection objects of *obj_type* are filed under, creating and storing it if absent.
@@ -389,7 +390,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if adopt is not None and adopt.obj_type == canonical and adopt._document is self and not adopt:  # pyright: ignore[reportPrivateUsage]
             created: IDFCollection[IDFObject] = adopt
         else:
-            created = IDFCollection(canonical, self)
+            created = IDFCollection[IDFObject](canonical, self)  # pyright: ignore[reportArgumentType]  # .pyi types documents as AnyIDFDocument
         self._collections[canonical] = created
         return created
 
@@ -831,6 +832,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data = dict(fields) if fields else {}
         field_data.update(kwargs)
         return self._add(obj_type, name, field_data, validate, None)
+
+    def _holds(self, collection: IDFCollection[Any]) -> bool:
+        """Whether *collection* is the one this document stores its type's objects in."""
+        return self._collections.get(collection.obj_type) is collection
 
     def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject:
         """Create an object for [IDFCollection.add][idfkit.objects.IDFCollection.add].
