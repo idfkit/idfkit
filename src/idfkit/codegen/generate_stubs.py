@@ -1307,7 +1307,10 @@ def _creation_lines(
         params.append("*")
     params += required + optional
     doc = _creation_docstring(schema, obj_type, narrow_first=narrow_first)
-    return [f"{indent}_creation_signature: {sink.add(cls_name, ', '.join(params), doc)}"]
+    # Each class's signature is its own, unrelated to its base's: an override mypy reports as an
+    # incompatible assignment (pyright does not), as the generated update and as_dict overrides are.
+    annotation = sink.add(cls_name, ", ".join(params), doc)
+    return [f"{indent}_creation_signature: {annotation}  # type: ignore[assignment]"]
 
 
 @functools.cache

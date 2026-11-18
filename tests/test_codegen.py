@@ -775,7 +775,7 @@ class TestCreationSignature:
         lines = gen._creation_lines("Cls", fields, creation, "    ", sink, _LATEST, "Zone")  # pyright: ignore[reportPrivateUsage]
         assert len(lines) == 1
         assert lines[0].startswith("    _creation_signature: _c")
-        assert lines[0].endswith(".Cls")
+        assert lines[0].endswith(".Cls  # type: ignore[assignment]")
         assert _signature_of(sink, "Cls") == (
             '    def __call__(self, name: str, /, *, a: float, b: Literal["X", "Y"] | None = "X", '
             'c: float | None = 0.5, d: Literal["X", "Y"] | None = ...) -> None:'
