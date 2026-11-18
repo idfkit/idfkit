@@ -1,5 +1,8 @@
 """Tests for IDFObject and IDFCollection classes."""
 
+# The collection tests file objects with the private _insert, which IDFDocument.add calls.
+# pyright: reportPrivateUsage=false
+
 from __future__ import annotations
 
 import pytest
@@ -344,34 +347,34 @@ class TestIDFCollection:
     def test_add_and_getitem_by_name(self) -> None:
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="MyZone")
-        coll.add(obj)
+        coll._insert(obj)
         assert coll["MyZone"] is obj
 
     def test_add_case_insensitive_lookup(self) -> None:
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="MyZone")
-        coll.add(obj)
+        coll._insert(obj)
         assert coll["myzone"] is obj
         assert coll["MYZONE"] is obj
 
     def test_add_duplicate_raises(self) -> None:
         coll = IDFCollection("Zone")
-        coll.add(IDFObject(obj_type="Zone", name="MyZone"))
+        coll._insert(IDFObject(obj_type="Zone", name="MyZone"))
         with pytest.raises(DuplicateObjectError):
-            coll.add(IDFObject(obj_type="Zone", name="MyZone"))
+            coll._insert(IDFObject(obj_type="Zone", name="MyZone"))
 
     def test_add_empty_name_allowed(self) -> None:
         coll = IDFCollection("Zone")
         obj1 = IDFObject(obj_type="Zone", name="")
         obj2 = IDFObject(obj_type="Zone", name="")
-        coll.add(obj1)
-        coll.add(obj2)  # Multiple empty names are OK
+        coll._insert(obj1)
+        coll._insert(obj2)  # Multiple empty names are OK
         assert len(coll) == 2
 
     def test_getitem_by_index(self) -> None:
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="MyZone")
-        coll.add(obj)
+        coll._insert(obj)
         assert coll[0] is obj
 
     def test_getitem_missing_name_raises(self) -> None:
@@ -382,36 +385,36 @@ class TestIDFCollection:
     def test_remove(self) -> None:
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="MyZone")
-        coll.add(obj)
+        coll._insert(obj)
         coll.remove(obj)
         assert len(coll) == 0
         assert "MyZone" not in coll
 
     def test_contains_by_name(self) -> None:
         coll = IDFCollection("Zone")
-        coll.add(IDFObject(obj_type="Zone", name="MyZone"))
+        coll._insert(IDFObject(obj_type="Zone", name="MyZone"))
         assert "MyZone" in coll
         assert "Other" not in coll
 
     def test_contains_by_object(self) -> None:
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="MyZone")
-        coll.add(obj)
+        coll._insert(obj)
         assert obj in coll
 
     def test_iter(self) -> None:
         coll = IDFCollection("Zone")
         obj1 = IDFObject(obj_type="Zone", name="A")
         obj2 = IDFObject(obj_type="Zone", name="B")
-        coll.add(obj1)
-        coll.add(obj2)
+        coll._insert(obj1)
+        coll._insert(obj2)
         items = list(coll)
         assert items == [obj1, obj2]
 
     def test_len(self) -> None:
         coll = IDFCollection("Zone")
         assert len(coll) == 0
-        coll.add(IDFObject(obj_type="Zone", name="A"))
+        coll._insert(IDFObject(obj_type="Zone", name="A"))
         assert len(coll) == 1
 
     def test_bool_empty(self) -> None:
@@ -420,18 +423,18 @@ class TestIDFCollection:
 
     def test_bool_nonempty(self) -> None:
         coll = IDFCollection("Zone")
-        coll.add(IDFObject(obj_type="Zone", name="A"))
+        coll._insert(IDFObject(obj_type="Zone", name="A"))
         assert coll
 
     def test_repr(self) -> None:
         coll = IDFCollection("Zone")
-        coll.add(IDFObject(obj_type="Zone", name="A"))
+        coll._insert(IDFObject(obj_type="Zone", name="A"))
         assert repr(coll) == "IDFCollection(Zone, count=1)"
 
     def test_get_existing(self) -> None:
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="A")
-        coll.add(obj)
+        coll._insert(obj)
         assert coll.get("A") is obj
 
     def test_get_missing(self) -> None:
@@ -442,7 +445,7 @@ class TestIDFCollection:
     def test_first_nonempty(self) -> None:
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="A")
-        coll.add(obj)
+        coll._insert(obj)
         assert coll.first() is obj
 
     def test_first_empty(self) -> None:
@@ -452,7 +455,7 @@ class TestIDFCollection:
     def test_to_list(self) -> None:
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="A")
-        coll.add(obj)
+        coll._insert(obj)
         result = coll.to_list()
         assert result == [obj]
         # to_list() should return a copy, not the internal list
@@ -461,15 +464,15 @@ class TestIDFCollection:
 
     def test_to_dict(self) -> None:
         coll = IDFCollection("Zone")
-        coll.add(IDFObject(obj_type="Zone", name="A", data={"x": 1}))
+        coll._insert(IDFObject(obj_type="Zone", name="A", data={"x": 1}))
         result = coll.to_dict()
         assert result == [{"name": "A", "x": 1}]
 
     def test_filter(self) -> None:
         coll = IDFCollection("Zone")
-        coll.add(IDFObject(obj_type="Zone", name="A", data={"x_origin": 1.0}))
-        coll.add(IDFObject(obj_type="Zone", name="B", data={"x_origin": 5.0}))
-        coll.add(IDFObject(obj_type="Zone", name="C", data={"x_origin": 10.0}))
+        coll._insert(IDFObject(obj_type="Zone", name="A", data={"x_origin": 1.0}))
+        coll._insert(IDFObject(obj_type="Zone", name="B", data={"x_origin": 5.0}))
+        coll._insert(IDFObject(obj_type="Zone", name="C", data={"x_origin": 10.0}))
         result = coll.filter(lambda o: o.x_origin > 3.0)
         assert len(result) == 2
         assert result[0].name == "B"
@@ -478,7 +481,7 @@ class TestIDFCollection:
     def test_by_name_property(self) -> None:
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="MyZone")
-        coll.add(obj)
+        coll._insert(obj)
         assert "MYZONE" in coll.by_name
         assert coll.by_name["MYZONE"] is obj
 
@@ -486,7 +489,7 @@ class TestIDFCollection:
         """Empty key falls back to first item."""
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="")
-        coll.add(obj)
+        coll._insert(obj)
         assert coll[""] is obj
 
     def test_getitem_empty_key_no_items_raises(self) -> None:
@@ -503,7 +506,7 @@ class TestIDFCollection:
     def test_contains_empty_key_true(self) -> None:
         """Empty key __contains__ returns True when items exist."""
         coll = IDFCollection("Zone")
-        coll.add(IDFObject(obj_type="Zone", name=""))
+        coll._insert(IDFObject(obj_type="Zone", name=""))
         assert "" in coll
 
 
@@ -649,7 +652,7 @@ class TestIDFObjectStrict:
         """get('') when items exist returns first item."""
         coll = IDFCollection("Zone")
         obj = IDFObject(obj_type="Zone", name="")
-        coll.add(obj)
+        coll._insert(obj)
         assert coll.get("") is obj
 
 

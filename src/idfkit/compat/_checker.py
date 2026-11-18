@@ -551,7 +551,7 @@ def _report_add_literal(
     Unlike ``C001`` and ``C002``, which report a literal some targets accept and others do not,
     this is wrong on every release the code can run on: the call fails when it runs. pyright does
     not see it, as ``add()`` takes its type name and fields as plain strings; the typed
-    ``doc["Zone"].create(...)`` is checked by the type checker instead.
+    ``doc["Zone"].add(name, ...)`` is checked by the type checker instead.
     """
     hint = f"; did you mean '{suggestion}'?" if suggestion else ""
     out.append(

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import ast
 import re
+from functools import lru_cache
+from typing import Literal
 
 from ._models import ExtractedLiteral, LiteralKind
 from ._narrow import ALL_RELEASES, DocumentRef, Guard, Narrower, Releases, Scope, ScopeTable, escapes, rebinds
@@ -95,6 +97,58 @@ def _end_col(node: ast.expr) -> int:
     return node.col_offset
 
 
+# Calls whose result is a document: a name bound once to one, or a parameter annotated with a
+# document type, is a document receiver (see _LiteralVisitor._receiver).
+_DOCUMENT_FACTORIES = frozenset({
+    "new_document",
+    "load_idf",
+    "load_epjson",
+    "parse_idf",
+    "parse_epjson",
+    "as_version",
+    "IDFDocument",
+})
+
+_ReceiverKind = Literal["document", "collection", "unknown"]
+
+
+@lru_cache(maxsize=4096)
+def _accessor_type(attr: str) -> str | None:
+    """The object type a document attribute such as ``zones`` names, read from the latest schema."""
+    if attr.startswith("_"):
+        return None
+    from ..document import _build_resolver  # pyright: ignore[reportPrivateUsage]
+    from ..schema import get_schema
+    from ..versions import LATEST_VERSION
+
+    return get_schema(LATEST_VERSION).accessor_resolver(_build_resolver).resolve(attr)
+
+
+def _call_name(node: ast.Call) -> str | None:
+    func = node.func
+    if isinstance(func, ast.Name):
+        return func.id
+    if isinstance(func, ast.Attribute):
+        return func.attr
+    return None
+
+
+def _annotation_kind(annotation: ast.expr | None) -> _ReceiverKind:
+    """What a parameter annotated *annotation* is: a document type, ``IDFCollection[...]``, or unknown."""
+    if annotation is None:
+        return "unknown"
+    if isinstance(annotation, ast.Constant) and isinstance(annotation.value, str):
+        text = annotation.value
+    else:
+        text = ast.unparse(annotation)
+    head = text.split("[", 1)[0].strip().rsplit(".", 1)[-1]
+    if head == "IDFCollection":
+        return "collection"
+    if "IDFDocument" in head:
+        return "document"
+    return "unknown"
+
+
 class _LiteralVisitor(ast.NodeVisitor):
     """AST visitor that collects idfkit-relevant string literals."""
 
@@ -111,6 +165,8 @@ class _LiteralVisitor(ast.NodeVisitor):
         # Whether a statement rebinds a document, keyed by (statement, document bases): an elif
         # chain asks this of every tail of the chain, which would otherwise be quadratic.
         self._rebinds_memo: dict[tuple[int, frozenset[str]], bool] = {}
+        # Parameter annotations of each function scope, by id(scope), read by _receiver.
+        self._annotations: dict[int, dict[str, ast.expr | None]] = {}
 
     # ------------------------------------------------------------------
     # Scopes and version guards
@@ -142,6 +198,9 @@ class _LiteralVisitor(ast.NodeVisitor):
             self.visit(child)
         saved_scope, saved_guards = self._scope, self._guards
         self._scope, self._guards = self._table.scope_for(node, saved_scope), []
+        if not isinstance(node, ast.ClassDef):
+            params = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
+            self._annotations[id(self._scope)] = {a.arg: a.annotation for a in params}
         try:
             for child in inner:
                 self.visit(child)
@@ -324,8 +383,100 @@ class _LiteralVisitor(ast.NodeVisitor):
             )
         )
 
+    def _receiver(
+        self, expr: ast.expr, scope: Scope, depth: int = 0
+    ) -> tuple[_ReceiverKind, str | None, ast.expr | None]:
+        """What the receiver of an ``add()`` call is known to be.
+
+        ``doc.add("Zone", "Office")`` takes an object type first, and a collection's
+        ``doc.zones.add("Office")`` a name, so the two must not be confused. A receiver is a
+        collection when it is ``doc["Zone"]``, a document accessor (``doc.zones``),
+        ``doc.get_collection("Zone")``, a name bound once to one of those, or a parameter annotated
+        ``IDFCollection[...]``; the object type is returned when it can be read. It is a document
+        when it is a call that returns one (``new_document()``, ``load_idf(...)``,
+        ``as_version(...)``), a name bound once to one, or a parameter annotated with a document
+        type. Anything else is unknown. The third item is the document expression a collection was
+        read from, in the current scope, for narrowing.
+        """
+        if depth > 8:
+            return "unknown", None, None
+        if isinstance(expr, ast.Subscript):
+            key = expr.slice
+            if isinstance(key, ast.Constant) and isinstance(key.value, str):
+                return "collection", key.value, expr.value if depth == 0 else None
+            return "unknown", None, None
+        if isinstance(expr, ast.Attribute):
+            obj_type = _accessor_type(expr.attr)
+            if obj_type is not None:
+                return "collection", obj_type, expr.value if depth == 0 else None
+            return "unknown", None, None
+        if isinstance(expr, ast.Call):
+            return self._receiver_of_call(expr, scope, depth)
+        if isinstance(expr, ast.Name):
+            return self._receiver_of_name(expr, scope, depth)
+        return "unknown", None, None
+
+    def _receiver_of_call(
+        self, expr: ast.Call, scope: Scope, depth: int
+    ) -> tuple[_ReceiverKind, str | None, ast.expr | None]:
+        name = _call_name(expr)
+        if name == "get_collection" and isinstance(expr.func, ast.Attribute):
+            arg = expr.args[0] if expr.args else None
+            obj_type = arg.value if isinstance(arg, ast.Constant) and isinstance(arg.value, str) else None
+            return "collection", obj_type, expr.func.value if depth == 0 else None
+        if name in _DOCUMENT_FACTORIES:
+            return "document", None, None
+        if name == "copy" and isinstance(expr.func, ast.Attribute):
+            inner, _, _ = self._receiver(expr.func.value, scope, depth + 1)
+            if inner == "document":
+                return "document", None, None
+        return "unknown", None, None
+
+    def _receiver_of_name(
+        self, expr: ast.Name, scope: Scope, depth: int
+    ) -> tuple[_ReceiverKind, str | None, ast.expr | None]:
+        bound = self._table.value_of(expr.id, scope)
+        if bound is not None:
+            kind, obj_type, _ = self._receiver(bound[0], bound[1], depth + 1)
+            return kind, obj_type, None
+        owner = self._table.lookup(expr.id, scope)
+        if owner is not None and len(owner.bindings.get(expr.id, [])) == 1:
+            return _annotation_kind(self._annotations.get(id(owner), {}).get(expr.id)), None, None
+        return "unknown", None, None
+
+    def _handle_collection_add(
+        self, node: ast.Call, receiver: ast.expr, obj_type: str | None, document: ast.expr | None
+    ) -> None:
+        """A collection's ``add(name, **fields)``: the first argument is a name, the keywords its fields."""
+        if obj_type is None:
+            return
+        receiver_text = self._receiver_text(receiver)
+        releases = self._releases(document) if document is not None else None
+        for kw in node.keywords:
+            if kw.arg is not None and isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
+                self.literals.append(
+                    ExtractedLiteral(
+                        value=kw.value.value,
+                        kind=LiteralKind.CHOICE_VALUE,
+                        line=kw.value.lineno,
+                        col=kw.value.col_offset,
+                        end_col=_end_col(kw.value),
+                        obj_type=obj_type,
+                        field_name=kw.arg,
+                        receiver=receiver_text,
+                        releases=releases,
+                        in_idfkit_add=True,
+                    )
+                )
+
     def _handle_add_call(self, node: ast.Call, func: ast.Attribute) -> None:
         receiver = func.value
+        kind: _ReceiverKind = "unknown"
+        if self._has_idfkit_import:
+            kind, collection_type, document = self._receiver(receiver, self._scope)
+            if kind == "collection":
+                self._handle_collection_add(node, receiver, collection_type, document)
+                return
         if not node.args:
             return
         first_arg = node.args[0]
@@ -337,6 +488,9 @@ class _LiteralVisitor(ast.NodeVisitor):
         releases = self._releases(receiver)
         # idfkit's add() is called with a name, fields or both; set.add and its kin take one argument.
         in_idfkit_add = self._has_idfkit_import and len(node.args) + len(node.keywords) > 1
+        # A type name no release has is reported (C006) only on a receiver known to be a document:
+        # a collection's add() takes a name first, and an unknown receiver may be one.
+        type_in_idfkit_add = in_idfkit_add and kind == "document"
 
         self.literals.append(
             ExtractedLiteral(
@@ -348,7 +502,7 @@ class _LiteralVisitor(ast.NodeVisitor):
                 call="add",
                 receiver=receiver_text,
                 releases=releases,
-                in_idfkit_add=in_idfkit_add,
+                in_idfkit_add=type_in_idfkit_add,
             )
         )
 
@@ -370,7 +524,17 @@ class _LiteralVisitor(ast.NodeVisitor):
                     )
                 )
 
-        # Extract choice values from a dict-literal third positional arg.
+        self._dict_choice_literals(node, obj_type_value, receiver_text, releases, in_idfkit_add)
+
+    def _dict_choice_literals(
+        self,
+        node: ast.Call,
+        obj_type_value: str,
+        receiver_text: str | None,
+        releases: frozenset[tuple[int, int, int]] | None,
+        in_idfkit_add: bool,
+    ) -> None:
+        """Choice values in a dict literal of ``doc.add("Type", "Name", {"field": "value"})``."""
         # Pattern: doc.add("Type", "Name", {"field": "value", ...})
         dict_arg: ast.Dict | None = None
         if len(node.args) >= 3 and isinstance(node.args[2], ast.Dict):

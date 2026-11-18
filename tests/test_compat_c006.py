@@ -11,7 +11,7 @@ from idfkit.versions import ENERGYPLUS_VERSIONS
 _V89 = (8, 9, 0)
 _V262 = (26, 2, 0)
 _ALL = list(ENERGYPLUS_VERSIONS)
-_IMP = "from idfkit import new_document, as_version\n"
+_IMP = "from idfkit import new_document, as_version, load_idf, load_epjson\n"
 
 
 def _check(body: str, *, imports: bool = True, targets: list[tuple[int, int, int]] | None = None) -> list[str]:
@@ -119,3 +119,54 @@ class TestGroupFilter:
             source, "t.py", [_V89, _V262], select=["C006"], include_groups={"Simulation Parameters"}
         )
         assert [d.code for d in diagnostics] == ["C006"]
+
+
+class TestReceivers:
+    """``doc.add("Zone", "Office")`` takes a type first, a collection's ``add("Office")`` a name."""
+
+    def test_collection_add_names_are_not_types(self) -> None:
+        source = """\
+doc = new_document()
+doc.zones.add("Office", ceiling_height=3.0)
+doc["Zone"].add("Lab")
+zones = doc.zones
+zones.add("Core", multiplier=1)
+doc.get_collection("Zone").add("Annex")
+"""
+        assert _check(source) == []
+
+    def test_collection_add_choices_are_checked_against_its_type(self) -> None:
+        for receiver in ['doc["Zone"]', "doc.zones", 'doc.get_collection("Zone")']:
+            source = f'doc = new_document()\n{receiver}.add("A", zone_inside_convection_algorithm="Bogus")\n'
+            (found,) = _check(source)
+            assert "Zone.zone_inside_convection_algorithm" in found
+
+    def test_a_name_bound_to_a_collection(self) -> None:
+        source = 'doc = new_document()\nzones = doc["Zone"]\nzones.add("A", zone_inside_convection_algorithm="Bogus")\n'
+        assert len(_check(source)) == 1
+
+    def test_a_parameter_annotated_as_a_collection(self) -> None:
+        source = 'def f(zones: "IDFCollection[Zone]") -> None:\n    zones.add("Office", multiplier=1)\n'
+        assert _check(source) == []
+
+    def test_a_parameter_annotated_as_a_document(self) -> None:
+        for annotation in ["IDFDocument", "AnyIDFDocument", "IDFDocumentV9_4", '"IDFDocument[Any]"']:
+            source = f'def f(doc: {annotation}) -> None:\n    doc.add("Zoen", "Office")\n'
+            assert len(_check(source)) == 1, annotation
+
+    def test_documents_from_factories(self) -> None:
+        for binding in ["new_document()", 'load_idf("m.idf")', 'load_epjson("m.epJSON")', "new_document().copy()"]:
+            assert len(_check(f'doc = {binding}\ndoc.add("Zoen", "Office")\n')) == 1, binding
+
+    def test_an_unknown_receiver_reports_no_type(self) -> None:
+        """An unannotated parameter may be a collection, whose first argument is a name."""
+        assert _check('def f(thing):\n    thing.add("Office", multiplier=1)\n') == []
+
+    def test_an_unknown_receiver_still_reports_choices(self) -> None:
+        source = 'def f(doc):\n    doc.add("Zone", "A", zone_inside_convection_algorithm="Bogus")\n'
+        assert len(_check(source)) == 1
+
+    def test_c001_is_not_read_from_a_collection_name(self) -> None:
+        source = 'doc = new_document()\ndoc.zones.add("Space", multiplier=1)\n'
+        diagnostics = check_compatibility(_IMP + source, "t.py", [_V89, _V262])
+        assert diagnostics == []

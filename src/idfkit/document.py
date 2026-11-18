@@ -831,7 +831,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         return self._add(obj_type, name, field_data, validate, None)
 
     def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject:
-        """Create an object for [IDFCollection.create][idfkit.objects.IDFCollection.create].
+        """Create an object for [IDFCollection.add][idfkit.objects.IDFCollection.add].
 
         Validated as ``add()`` validates by default. *collection* is the one the caller holds: if it
         is the detached empty collection read for an absent type, it becomes the stored one.
@@ -911,7 +911,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 raise ValidationFailedError(errors)
 
         # Add to collection (the write path: this may create the collection)
-        self._collection_for_write(resolved_obj_type, adopt).add(obj)
+        self._collection_for_write(resolved_obj_type, adopt)._insert(obj)  # pyright: ignore[reportPrivateUsage]
 
         # Index references
         self._index_object_references(obj)

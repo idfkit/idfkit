@@ -45,13 +45,13 @@ material = doc.add(
 # --8<-- [end:add-object]
 
 
-# --8<-- [start:typed-create]
+# --8<-- [start:typed-collection-add]
 # Through the collection: the keywords are the type's own fields, checked by the type checker,
 # and the result is the type's class (Zone, Material, ...), not a plain IDFObject.
-office_zone = doc.zones.create("Office", x_origin=0.0, ceiling_height=3.0)
+office_zone = doc.zones.add("Office", x_origin=0.0, ceiling_height=3.0)
 office_zone.multiplier = 2  # typed: an int, checked on assignment
 
-insulation = doc["Material"].create(
+insulation = doc["Material"].add(
     "XPS_25mm",
     roughness="Rough",
     thickness=0.025,
@@ -59,11 +59,11 @@ insulation = doc["Material"].create(
     density=35.0,
     specific_heat=1400.0,
 )
-doc["Output:SQLite"].create(option_type="SimpleAndTabular")  # a type without a Name field: no name
+doc["Output:SQLite"].add(option_type="SimpleAndTabular")  # a type without a Name field: no name
 
-# doc.zones.create("Lab", ceiling_hieght=3.0)                       # error: No parameter named "ceiling_hieght"
-# doc.zones.create("Lab", zone_inside_convection_algorithm="Tarp")  # error: not one of the field's choices
-# --8<-- [end:typed-create]
+# doc.zones.add("Lab", ceiling_hieght=3.0)                       # error: No parameter named "ceiling_hieght"
+# doc.zones.add("Lab", zone_inside_convection_algorithm="Tarp")  # error: not one of the field's choices
+# --8<-- [end:typed-collection-add]
 
 
 # --8<-- [start:lookup]

@@ -418,7 +418,7 @@ class TestCollectionReferencing:
     def test_objects_outside_a_document_reference_nothing(self) -> None:
         collection: IDFCollection[IDFObject] = IDFCollection("Zone")
         assert collection.referencing("Office") == []
-        collection.add(
+        collection._insert(  # pyright: ignore[reportPrivateUsage]
             IDFObject(obj_type="Lights", name="L", data={"zone_or_zonelist_or_space_or_spacelist_name": "Z"})
         )
         assert collection.referencing("Z") == []
@@ -426,7 +426,7 @@ class TestCollectionReferencing:
     def test_a_collection_built_by_hand_answers_only_for_its_own_objects(self) -> None:
         doc = self._model()
         subset: IDFCollection[IDFObject] = IDFCollection("BuildingSurface:Detailed")
-        subset.add(doc["BuildingSurface:Detailed"]["Office_Wall"])
+        subset._insert(doc["BuildingSurface:Detailed"]["Office_Wall"])  # pyright: ignore[reportPrivateUsage]
         assert [s.name for s in subset.referencing("Office")] == ["Office_Wall"]
 
     def test_a_document_pickled_before_referencing_existed_answers(self) -> None:
