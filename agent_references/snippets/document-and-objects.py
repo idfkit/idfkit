@@ -328,3 +328,31 @@ def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
 any_ceiling(doc["Zone"]["Office"])
 any_ceiling(as_version(load_idf("legacy.idf"), IDFDocumentV9_4)["Zone"]["Office"])
 # --8<-- [end:typed-object-parameter]
+
+
+# --8<-- [start:read-required]
+from idfkit import MissingRequiredFieldError
+
+if TYPE_CHECKING:
+    from idfkit.document import AnyMaterial
+
+
+def r_value(mat: AnyMaterial) -> float:
+    """thickness and conductivity are required in every release: they read as float, no guard."""
+    return mat.thickness / mat.conductivity
+
+
+absorptance = doc.materials["Concrete"].thermal_absorptance  # float | None: it has a default
+effective = absorptance if absorptance is not None else 0.9  # the value EnergyPlus applies
+
+legacy = load_idf("hand_written.idf")  # a file EnergyPlus would refuse may lack a required field
+for mat in legacy.materials:
+    if mat.get("thickness") is None:  # the untyped check: None when unset, never raises
+        print(f"{mat.name} has no thickness")
+        continue
+    print(r_value(mat))
+try:
+    print(legacy.materials["Brick"].thickness)
+except MissingRequiredFieldError as err:  # an AttributeError naming the object and the field
+    print(err.obj_type, err.obj_name, err.field_name)
+# --8<-- [end:read-required]

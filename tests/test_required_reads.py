@@ -27,7 +27,7 @@ def test_every_listed_field_is_required_with_no_default_in_each_release_that_has
             continue
         properties = inner.get("properties", {})
         listed = set(inner.get("required", []))
-        for field in fields & set(schema.get_field_names(obj_type)):
+        for field in set(fields) & set(schema.get_field_names(obj_type)):
             assert field in listed, (obj_type, field, version)
             assert "default" not in properties.get(field, {}), (obj_type, field, version)
 
@@ -82,3 +82,21 @@ def test_add_stores_a_blank_as_unset() -> None:
     zone = doc.add("Zone", "Z", {"ceiling_height": ""})
     assert "ceiling_height" not in zone.data
     assert zone.ceiling_height is None
+
+
+def test_the_table_lists_every_field_required_everywhere_it_exists() -> None:
+    # The other direction: a field missing from the table reads | None and returns None when unset,
+    # which is honest but loses the guarantee; the table must be the whole rule, not part of it.
+    required: dict[str, set[str]] = {}
+    optional: dict[str, set[str]] = {}
+    for version in ENERGYPLUS_VERSIONS:
+        schema = get_schema(version)
+        for obj_type in schema.object_types:
+            inner = schema.get_inner_schema(obj_type) or {}
+            properties = inner.get("properties", {})
+            listed = {f for f in inner.get("required", []) if "default" not in properties.get(f, {})}
+            for field in schema.get_field_names(obj_type):
+                if field.isidentifier():
+                    (required if field in listed else optional).setdefault(obj_type, set()).add(field)
+    expected = {t: fields - optional.get(t, set()) for t, fields in required.items()}
+    assert {t: set(f) for t, f in READ_REQUIRED.items()} == {t: f for t, f in expected.items() if f}

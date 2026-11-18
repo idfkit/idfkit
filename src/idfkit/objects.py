@@ -728,6 +728,12 @@ class IDFObject(EppyObjectMixin):
     def __getattr__(self, key: str) -> Any:  # noqa: C901
         """Get field value by attribute name.
 
+        An unset field reads ``None``, except a field that every supported release
+        requires with no default (``Material.thickness``): its type says it always has
+        a value, so reading it unset raises
+        :class:`~idfkit.exceptions.MissingRequiredFieldError`, an ``AttributeError``.
+        ``obj.get(field)`` and ``getattr(obj, field, None)`` give ``None`` for it instead.
+
         When the parent document has ``strict=True``, accessing a field
         name that is neither present in the data dict nor recognised by
         the schema raises ``AttributeError`` instead of returning
@@ -1045,6 +1051,9 @@ class IDFObject(EppyObjectMixin):
 
     def get(self, key: str, default: Any = None) -> Any:
         """Get field value with default.
+
+        *default* when the field is unset or holds ``None``. Unlike attribute access, this never
+        raises for an unset required field, so it is the way to ask whether one is set.
 
         Examples:
             >>> from idfkit import new_document

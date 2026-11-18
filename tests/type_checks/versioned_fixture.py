@@ -156,7 +156,7 @@ def write_safe_fuel(doc: AnyIDFDocument) -> None:
     print(fuel)
     heater.heater_fuel_type = "NaturalGas"  # every version accepts it
     heater.update(heater_fuel_type="Electricity")
-    heater.heater_fuel_type = None
+    heater.heater_fuel_type = None  # pyright: ignore[reportAttributeAccessIssue]  (every release requires it: not cleared)
 
 
 def correct_calls() -> None:

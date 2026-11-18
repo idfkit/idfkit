@@ -204,6 +204,16 @@ uv run idfkit check src/ --targets all      # --from/--to compares one migration
 
 mypy sees the document's methods, properties and accessors, but collapses a union of release types into what they share (see Code for a range of releases), and under a lookup error it lists every object type name the document accepts, so prefer pyright for idfkit code.
 
+## Reading fields
+
+Reading a field gives its value, or `None` when it is unset. The exception is a field that every release having it requires with no default (`Material.thickness`, `BuildingSurface:Detailed.zone_name`, `Construction.outside_layer`, about 2,700 fields): it reads as its value type, never `None` (`float`, not `float | None`), so arithmetic on it needs no guard. `add()` refuses an object without it, and assigning `None` to it, or passing `None` to `update()`, is a type error. An object can still lack one when it comes from a file EnergyPlus would refuse, or from `doc.add(..., validate=False)`; reading the field then raises `MissingRequiredFieldError`, an `AttributeError` naming the object and the field, instead of returning `None`. To ask whether such a field is set without raising, use `obj.get("thickness")` (or `getattr(obj, "thickness", None)`), and `validate_document(doc)` lists every missing one (`E001`). A field with a schema default reads `None` when blank, not the default: EnergyPlus applies the default, idfkit stores only what was written.
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:read-required"
+```
+
+A blank value is stored as absent wherever it comes from (`add(..., f="")`, `obj.f = ""`, `""` or `null` in epJSON, an empty IDF field), so no field reads `""`, and `""` is not part of any field's type: clear a field with `None` in type-checked code. Choice values are read in the spelling of the file (`"WALL"`, `"hourly"`), which may differ in case from the `Literal` the type lists: compare them with `.casefold()` when the model was loaded from a file.
+
 ## Modifying objects
 
 Field access is via attribute. Setting a value re-validates against the schema and updates the reference graph automatically:
@@ -239,6 +249,20 @@ Some object types have repeated field groups — vertices on a surface, branches
 ```
 
 ## Common mistakes
+
+!!! failure "guarding a required field against None"
+
+    ```python
+    if material.thickness is None:  # pyright strict: reportUnnecessaryComparison; it is a float
+        raise ValueError(material.name)
+    ```
+
+!!! success "read it; check with get() only when the model may be incomplete"
+
+    ```python
+    r = material.thickness / material.conductivity  # raises MissingRequiredFieldError if unset
+    if material.get("thickness") is None: ...  # the untyped check, for loaded files
+    ```
 
 !!! failure "guarding a release-specific lookup with `in`"
 

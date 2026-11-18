@@ -187,9 +187,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     reported without failing the run. The text output ended with a summary line.
   - In idfkit's own source, relative imports counted as idfkit imports, and `make check` started
     running `idfkit check` over `src/` against every release ([#287](https://github.com/idfkit/idfkit/pull/287)).
+- `MissingRequiredFieldError`, raised when a required field is read from an object that does not
+  hold it (see Changed). It names the object, the field and `obj.get(field)` as the way to ask
+  whether it is set, and it is an `AttributeError`, so `getattr(obj, field, None)` and `hasattr`
+  kept working as the untyped check ([#PRREF](https://github.com/idfkit/idfkit/pull/PRREF)).
 
 ### Changed
 
+- **Breaking:** for type checking, a field that every release having it requires with no default
+  read as its value type instead of `| None`: `material.thickness` was a `float`, `surface.zone_name`
+  a `str`, so `material.thickness / material.conductivity` type-checked with no guard. That was
+  2,745 fields in 665 types, 2,612 of the 2,622 that 26.2 requires; a field some release leaves
+  optional or gives a default still read `| None` (`BuildingSurface:Detailed.construction_name`,
+  optional from 26.2). Assigning `None` to such a field, or passing it to `update()`, became a type
+  error, as it leaves an object EnergyPlus refuses. Under pyright strict an existing
+  `if material.thickness is None:` guard was reported as `reportUnnecessaryComparison`; delete it.
+  mypy reported nothing. Type-checking time was unchanged and `_generated_types.pyi` 2.2% smaller
+  ([#PRREF](https://github.com/idfkit/idfkit/pull/PRREF)).
+- **Breaking:** reading such a field from an object that lacks it raised `MissingRequiredFieldError`
+  instead of returning `None`, so a read typed `float` never gave `None`. Only an object that
+  EnergyPlus would refuse lacks one: one loaded from a file that omits it (none of the 769 example
+  files EnergyPlus 26.2 ships does), created with `IDFDocument.add(..., validate=False)`, or cleared
+  through an untyped write. `obj.get(field)` and `getattr(obj, field, None)` still gave `None`, and
+  `validate_document` still reported the object (E001). Reading a field that is not required, or an
+  unset field of an object outside a document, was unchanged
+  ([#PRREF](https://github.com/idfkit/idfkit/pull/PRREF)).
+- **Breaking:** for type checking only, `""` was no longer a value of any field type:
+  `zone.ceiling_height` read `float | Literal["Autocalculate"] | None` where it read
+  `float | Literal["", "Autocalculate"] | None`. A blank field is stored as absent and reads `None`
+  (see Fixed), so `""` was never read back. Assigning `""` still cleared a field at run time; in
+  typed code clear it with `None` ([#PRREF](https://github.com/idfkit/idfkit/pull/PRREF)).
 - **Breaking:** for type checking only, a typed extensible group's snapshot was typed by its item
   type: `ExtensibleList.as_list()` returned `list[BuildingSurfaceDetailedVerticesItem]` where it
   returned `list[dict[str, Any]]`, and the group's `as_dict()` the item where it returned
@@ -289,6 +316,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `IDFDocument.add()`, `IDFCollection.add()` and `load_epjson()` stored a blank value (`""`, or
+  `null` in epJSON) as the field's value, so reading it gave `""` or `None` from a field that was
+  present, and `write_epjson` wrote the `""` back. They now leave the field unset, as the IDF parser
+  and assignment already did ([#183](https://github.com/idfkit/idfkit/issues/183)). A blank under a
+  key the type does not have is still refused ([#PRREF](https://github.com/idfkit/idfkit/pull/PRREF)).
 - `IDFDocument.addidfobject` left an object it refused as a duplicate linked to the document, so
   renaming that object afterwards rewrote the references to the object it duplicated. It is filed
   before it is linked, and a refused object stays unlinked. The deprecation message of

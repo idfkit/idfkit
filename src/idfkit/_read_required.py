@@ -7,27 +7,28 @@ read type is not optional, and reading it from an object that lacks it raises
 
 from __future__ import annotations
 
-READ_REQUIRED: dict[str, frozenset[str]] = {
-    "AirConditioner:VariableRefrigerantFlow": frozenset(["zone_terminal_unit_list_name"]),
-    "AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl": frozenset([
+# Tuples of string literals are constants of the compiled module: importing it builds no set.
+READ_REQUIRED: dict[str, tuple[str, ...]] = {
+    "AirConditioner:VariableRefrigerantFlow": ("zone_terminal_unit_list_name",),
+    "AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl": (
         "heat_pump_name",
         "outdoor_unit_condensing_temperature_function_of_subcooling_curve_name",
         "outdoor_unit_evaporating_temperature_function_of_superheating_curve_name",
         "zone_terminal_unit_list_name",
-    ]),
-    "AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR": frozenset([
+    ),
+    "AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR": (
         "outdoor_unit_condensing_temperature_function_of_subcooling_curve_name",
         "outdoor_unit_evaporating_temperature_function_of_superheating_curve_name",
         "zone_terminal_unit_list_name",
-    ]),
-    "AirLoopHVAC": frozenset([
+    ),
+    "AirLoopHVAC": (
         "branch_list_name",
         "demand_side_inlet_node_names",
         "supply_side_inlet_node_name",
         "supply_side_outlet_node_names",
-    ]),
-    "AirLoopHVAC:ControllerList": frozenset(["controller_1_name", "controller_1_object_type"]),
-    "AirLoopHVAC:DedicatedOutdoorAirSystem": frozenset([
+    ),
+    "AirLoopHVAC:ControllerList": ("controller_1_name", "controller_1_object_type"),
+    "AirLoopHVAC:DedicatedOutdoorAirSystem": (
         "airloophvac_mixer_name",
         "airloophvac_splitter_name",
         "number_of_airloophvac",
@@ -35,17 +36,17 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "precool_design_temperature",
         "preheat_design_humidity_ratio",
         "preheat_design_temperature",
-    ]),
-    "AirLoopHVAC:ExhaustSystem": frozenset(["fan_name", "fan_object_type", "zone_mixer_name"]),
-    "AirLoopHVAC:Mixer": frozenset(["outlet_node_name"]),
-    "AirLoopHVAC:OutdoorAirSystem": frozenset(["outdoor_air_equipment_list_name"]),
-    "AirLoopHVAC:OutdoorAirSystem:EquipmentList": frozenset(["component_1_name", "component_1_object_type"]),
-    "AirLoopHVAC:ReturnPath": frozenset(["return_air_path_outlet_node_name"]),
-    "AirLoopHVAC:ReturnPlenum": frozenset(["outlet_node_name", "zone_name", "zone_node_name"]),
-    "AirLoopHVAC:Splitter": frozenset(["inlet_node_name"]),
-    "AirLoopHVAC:SupplyPath": frozenset(["supply_air_path_inlet_node_name"]),
-    "AirLoopHVAC:SupplyPlenum": frozenset(["inlet_node_name", "zone_name", "zone_node_name"]),
-    "AirLoopHVAC:Unitary:Furnace:HeatCool": frozenset([
+    ),
+    "AirLoopHVAC:ExhaustSystem": ("fan_name", "fan_object_type", "zone_mixer_name"),
+    "AirLoopHVAC:Mixer": ("outlet_node_name",),
+    "AirLoopHVAC:OutdoorAirSystem": ("outdoor_air_equipment_list_name",),
+    "AirLoopHVAC:OutdoorAirSystem:EquipmentList": ("component_1_name", "component_1_object_type"),
+    "AirLoopHVAC:ReturnPath": ("return_air_path_outlet_node_name",),
+    "AirLoopHVAC:ReturnPlenum": ("outlet_node_name", "zone_name", "zone_node_name"),
+    "AirLoopHVAC:Splitter": ("inlet_node_name",),
+    "AirLoopHVAC:SupplyPath": ("supply_air_path_inlet_node_name",),
+    "AirLoopHVAC:SupplyPlenum": ("inlet_node_name", "zone_name", "zone_node_name"),
+    "AirLoopHVAC:Unitary:Furnace:HeatCool": (
         "controlling_zone_or_thermostat_location",
         "cooling_coil_name",
         "cooling_coil_object_type",
@@ -57,8 +58,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "heating_supply_air_flow_rate",
         "supply_fan_name",
         "supply_fan_object_type",
-    ]),
-    "AirLoopHVAC:Unitary:Furnace:HeatOnly": frozenset([
+    ),
+    "AirLoopHVAC:Unitary:Furnace:HeatOnly": (
         "controlling_zone_or_thermostat_location",
         "furnace_air_inlet_node_name",
         "furnace_air_outlet_node_name",
@@ -67,8 +68,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "heating_supply_air_flow_rate",
         "supply_fan_name",
         "supply_fan_object_type",
-    ]),
-    "AirLoopHVAC:UnitaryHeatCool": frozenset([
+    ),
+    "AirLoopHVAC:UnitaryHeatCool": (
         "controlling_zone_or_thermostat_location",
         "cooling_coil_name",
         "cooling_coil_object_type",
@@ -80,8 +81,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "supply_fan_object_type",
         "unitary_system_air_inlet_node_name",
         "unitary_system_air_outlet_node_name",
-    ]),
-    "AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass": frozenset([
+    ),
+    "AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "bypass_duct_mixer_node_name",
@@ -99,8 +100,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "supply_air_fan_name",
         "supply_air_fan_object_type",
         "supply_air_fan_placement",
-    ]),
-    "AirLoopHVAC:UnitaryHeatOnly": frozenset([
+    ),
+    "AirLoopHVAC:UnitaryHeatOnly": (
         "controlling_zone_or_thermostat_location",
         "heating_coil_name",
         "heating_coil_object_type",
@@ -109,8 +110,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "supply_fan_object_type",
         "unitary_system_air_inlet_node_name",
         "unitary_system_air_outlet_node_name",
-    ]),
-    "AirLoopHVAC:UnitaryHeatPump:AirToAir": frozenset([
+    ),
+    "AirLoopHVAC:UnitaryHeatPump:AirToAir": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "controlling_zone_or_thermostat_location",
@@ -125,8 +126,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "supplemental_heating_coil_object_type",
         "supply_air_fan_name",
         "supply_air_fan_object_type",
-    ]),
-    "AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed": frozenset([
+    ),
+    "AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "controlling_zone_or_thermostat_location",
@@ -142,8 +143,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "supply_air_fan_name",
         "supply_air_fan_object_type",
         "supply_air_fan_placement",
-    ]),
-    "AirLoopHVAC:UnitaryHeatPump:WaterToAir": frozenset([
+    ),
+    "AirLoopHVAC:UnitaryHeatPump:WaterToAir": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "controlling_zone_or_thermostat_location",
@@ -157,40 +158,40 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "supply_air_fan_name",
         "supply_air_fan_object_type",
         "supply_air_flow_rate",
-    ]),
-    "AirLoopHVAC:UnitarySystem": frozenset(["air_inlet_node_name", "air_outlet_node_name"]),
-    "AirLoopHVAC:ZoneMixer": frozenset(["outlet_node_name"]),
-    "AirLoopHVAC:ZoneSplitter": frozenset(["inlet_node_name"]),
-    "AirTerminal:DualDuct:ConstantVolume": frozenset([
+    ),
+    "AirLoopHVAC:UnitarySystem": ("air_inlet_node_name", "air_outlet_node_name"),
+    "AirLoopHVAC:ZoneMixer": ("outlet_node_name",),
+    "AirLoopHVAC:ZoneSplitter": ("inlet_node_name",),
+    "AirTerminal:DualDuct:ConstantVolume": (
         "air_outlet_node_name",
         "cold_air_inlet_node_name",
         "hot_air_inlet_node_name",
         "maximum_air_flow_rate",
-    ]),
-    "AirTerminal:DualDuct:VAV": frozenset([
+    ),
+    "AirTerminal:DualDuct:VAV": (
         "air_outlet_node_name",
         "cold_air_inlet_node_name",
         "hot_air_inlet_node_name",
         "maximum_damper_air_flow_rate",
-    ]),
-    "AirTerminal:DualDuct:VAV:OutdoorAir": frozenset([
+    ),
+    "AirTerminal:DualDuct:VAV:OutdoorAir": (
         "air_outlet_node_name",
         "design_specification_outdoor_air_object_name",
         "maximum_terminal_air_flow_rate",
         "outdoor_air_inlet_node_name",
-    ]),
-    "AirTerminal:SingleDuct:ConstantVolume:CooledBeam": frozenset([
+    ),
+    "AirTerminal:SingleDuct:ConstantVolume:CooledBeam": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "cooled_beam_type",
         "supply_air_inlet_node_name",
         "supply_air_outlet_node_name",
-    ]),
-    "AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam": frozenset([
+    ),
+    "AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam": (
         "primary_air_inlet_node_name",
         "primary_air_outlet_node_name",
-    ]),
-    "AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction": frozenset([
+    ),
+    "AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction": (
         "air_outlet_node_name",
         "heating_coil_name",
         "heating_coil_object_type",
@@ -198,57 +199,57 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "maximum_total_air_flow_rate",
         "supply_air_inlet_node_name",
         "zone_mixer_name",
-    ]),
-    "AirTerminal:SingleDuct:ConstantVolume:NoReheat": frozenset([
+    ),
+    "AirTerminal:SingleDuct:ConstantVolume:NoReheat": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "maximum_air_flow_rate",
-    ]),
-    "AirTerminal:SingleDuct:ConstantVolume:Reheat": frozenset([
+    ),
+    "AirTerminal:SingleDuct:ConstantVolume:Reheat": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "maximum_air_flow_rate",
         "reheat_coil_name",
         "reheat_coil_object_type",
-    ]),
-    "AirTerminal:SingleDuct:Mixer": frozenset([
+    ),
+    "AirTerminal:SingleDuct:Mixer": (
         "mixer_connection_type",
         "mixer_outlet_node_name",
         "mixer_primary_air_inlet_node_name",
         "mixer_secondary_air_inlet_node_name",
         "zonehvac_unit_object_name",
         "zonehvac_unit_object_type",
-    ]),
-    "AirTerminal:SingleDuct:ParallelPIU:Reheat": frozenset([
+    ),
+    "AirTerminal:SingleDuct:ParallelPIU:Reheat": (
         "fan_on_flow_fraction",
         "maximum_primary_air_flow_rate",
         "maximum_secondary_air_flow_rate",
         "minimum_primary_air_flow_fraction",
         "reheat_coil_name",
         "reheat_coil_object_type",
-    ]),
-    "AirTerminal:SingleDuct:SeriesPIU:Reheat": frozenset([
+    ),
+    "AirTerminal:SingleDuct:SeriesPIU:Reheat": (
         "maximum_air_flow_rate",
         "maximum_primary_air_flow_rate",
         "minimum_primary_air_flow_fraction",
         "reheat_coil_name",
         "reheat_coil_object_type",
-    ]),
-    "AirTerminal:SingleDuct:Uncontrolled": frozenset(["maximum_air_flow_rate", "zone_supply_air_node_name"]),
-    "AirTerminal:SingleDuct:UserDefined": frozenset([
+    ),
+    "AirTerminal:SingleDuct:Uncontrolled": ("maximum_air_flow_rate", "zone_supply_air_node_name"),
+    "AirTerminal:SingleDuct:UserDefined": (
         "number_of_plant_loop_connections",
         "plant_connection_1_inlet_node_name",
         "plant_connection_1_outlet_node_name",
         "primary_air_inlet_node_name",
         "primary_air_outlet_node_name",
-    ]),
-    "AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat": frozenset([
+    ),
+    "AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "maximum_air_flow_rate",
         "zone_minimum_air_flow_fraction",
-    ]),
-    "AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat": frozenset([
+    ),
+    "AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "damper_air_outlet_node_name",
@@ -256,21 +257,17 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "reheat_coil_name",
         "reheat_coil_object_type",
         "zone_minimum_air_flow_fraction",
-    ]),
-    "AirTerminal:SingleDuct:VAV:NoReheat": frozenset([
-        "air_inlet_node_name",
-        "air_outlet_node_name",
-        "maximum_air_flow_rate",
-    ]),
-    "AirTerminal:SingleDuct:VAV:Reheat": frozenset([
+    ),
+    "AirTerminal:SingleDuct:VAV:NoReheat": ("air_inlet_node_name", "air_outlet_node_name", "maximum_air_flow_rate"),
+    "AirTerminal:SingleDuct:VAV:Reheat": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "damper_air_outlet_node_name",
         "maximum_air_flow_rate",
         "reheat_coil_name",
         "reheat_coil_object_type",
-    ]),
-    "AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan": frozenset([
+    ),
+    "AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan": (
         "fan_name",
         "fan_object_type",
         "heating_coil_name",
@@ -278,117 +275,104 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "maximum_cooling_air_flow_rate",
         "maximum_heating_air_flow_rate",
         "zone_minimum_air_flow_fraction",
-    ]),
-    "AirflowNetwork:Distribution:Component:Coil": frozenset([
+    ),
+    "AirflowNetwork:Distribution:Component:Coil": (
         "air_path_hydraulic_diameter",
         "air_path_length",
         "coil_name",
         "coil_object_type",
-    ]),
-    "AirflowNetwork:Distribution:Component:ConstantPressureDrop": frozenset([
-        "pressure_difference_across_the_component"
-    ]),
-    "AirflowNetwork:Distribution:Component:Duct": frozenset([
-        "cross_section_area",
-        "duct_length",
-        "hydraulic_diameter",
-    ]),
-    "AirflowNetwork:Distribution:Component:Fan": frozenset(["fan_name"]),
-    "AirflowNetwork:Distribution:Component:HeatExchanger": frozenset([
+    ),
+    "AirflowNetwork:Distribution:Component:ConstantPressureDrop": ("pressure_difference_across_the_component",),
+    "AirflowNetwork:Distribution:Component:Duct": ("cross_section_area", "duct_length", "hydraulic_diameter"),
+    "AirflowNetwork:Distribution:Component:Fan": ("fan_name",),
+    "AirflowNetwork:Distribution:Component:HeatExchanger": (
         "air_path_hydraulic_diameter",
         "air_path_length",
         "heatexchanger_name",
         "heatexchanger_object_type",
-    ]),
-    "AirflowNetwork:Distribution:Component:Leak": frozenset(["air_mass_flow_coefficient"]),
-    "AirflowNetwork:Distribution:Component:LeakageRatio": frozenset([
-        "maximum_flow_rate",
-        "reference_pressure_difference",
-    ]),
-    "AirflowNetwork:Distribution:Component:OutdoorAirFlow": frozenset([
+    ),
+    "AirflowNetwork:Distribution:Component:Leak": ("air_mass_flow_coefficient",),
+    "AirflowNetwork:Distribution:Component:LeakageRatio": ("maximum_flow_rate", "reference_pressure_difference"),
+    "AirflowNetwork:Distribution:Component:OutdoorAirFlow": (
         "air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions",
         "outdoor_air_mixer_name",
-    ]),
-    "AirflowNetwork:Distribution:Component:ReliefAirFlow": frozenset([
+    ),
+    "AirflowNetwork:Distribution:Component:ReliefAirFlow": (
         "air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions",
         "outdoor_air_mixer_name",
-    ]),
-    "AirflowNetwork:Distribution:Component:TerminalUnit": frozenset([
+    ),
+    "AirflowNetwork:Distribution:Component:TerminalUnit": (
         "air_path_hydraulic_diameter",
         "air_path_length",
         "terminal_unit_name",
         "terminal_unit_object_type",
-    ]),
-    "AirflowNetwork:Distribution:DuctViewFactors": frozenset(["linkage_name"]),
-    "AirflowNetwork:Distribution:Linkage": frozenset(["component_name", "node_1_name", "node_2_name"]),
-    "AirflowNetwork:IntraZone:Linkage": frozenset(["node_1_name", "node_2_name"]),
-    "AirflowNetwork:IntraZone:Node": frozenset(["roomair_node_airflownetwork_name", "zone_name"]),
-    "AirflowNetwork:MultiZone:Component:DetailedOpening": frozenset([
+    ),
+    "AirflowNetwork:Distribution:DuctViewFactors": ("linkage_name",),
+    "AirflowNetwork:Distribution:Linkage": ("component_name", "node_1_name", "node_2_name"),
+    "AirflowNetwork:IntraZone:Linkage": ("node_1_name", "node_2_name"),
+    "AirflowNetwork:IntraZone:Node": ("roomair_node_airflownetwork_name", "zone_name"),
+    "AirflowNetwork:MultiZone:Component:DetailedOpening": (
         "air_mass_flow_coefficient_when_opening_is_closed",
         "number_of_sets_of_opening_factor_data",
         "opening_factor_2",
-    ]),
-    "AirflowNetwork:MultiZone:Component:HorizontalOpening": frozenset([
+    ),
+    "AirflowNetwork:MultiZone:Component:HorizontalOpening": (
         "air_mass_flow_coefficient_when_opening_is_closed",
         "discharge_coefficient",
-    ]),
-    "AirflowNetwork:MultiZone:Component:SimpleOpening": frozenset([
+    ),
+    "AirflowNetwork:MultiZone:Component:SimpleOpening": (
         "air_mass_flow_coefficient_when_opening_is_closed",
         "discharge_coefficient",
         "minimum_density_difference_for_two_way_flow",
-    ]),
-    "AirflowNetwork:MultiZone:Component:ZoneExhaustFan": frozenset([
-        "air_mass_flow_coefficient_when_the_zone_exhaust_fan_is_off_at_reference_conditions"
-    ]),
-    "AirflowNetwork:MultiZone:ExternalNode": frozenset(["wind_pressure_coefficient_curve_name"]),
-    "AirflowNetwork:MultiZone:SpecifiedFlowRate": frozenset(["air_flow_value"]),
-    "AirflowNetwork:MultiZone:Surface": frozenset(["leakage_component_name", "surface_name"]),
-    "AirflowNetwork:MultiZone:Surface:Crack": frozenset(["air_mass_flow_coefficient_at_reference_conditions"]),
-    "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea": frozenset(["effective_leakage_area"]),
-    "AirflowNetwork:MultiZone:WindPressureCoefficientArray": frozenset(["wind_direction_1", "wind_direction_2"]),
-    "AirflowNetwork:MultiZone:WindPressureCoefficientValues": frozenset([
+    ),
+    "AirflowNetwork:MultiZone:Component:ZoneExhaustFan": (
+        "air_mass_flow_coefficient_when_the_zone_exhaust_fan_is_off_at_reference_conditions",
+    ),
+    "AirflowNetwork:MultiZone:ExternalNode": ("wind_pressure_coefficient_curve_name",),
+    "AirflowNetwork:MultiZone:SpecifiedFlowRate": ("air_flow_value",),
+    "AirflowNetwork:MultiZone:Surface": ("leakage_component_name", "surface_name"),
+    "AirflowNetwork:MultiZone:Surface:Crack": ("air_mass_flow_coefficient_at_reference_conditions",),
+    "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea": ("effective_leakage_area",),
+    "AirflowNetwork:MultiZone:WindPressureCoefficientArray": ("wind_direction_1", "wind_direction_2"),
+    "AirflowNetwork:MultiZone:WindPressureCoefficientValues": (
         "airflownetwork_multizone_windpressurecoefficientarray_name",
         "wind_pressure_coefficient_value_1",
         "wind_pressure_coefficient_value_2",
-    ]),
-    "AirflowNetwork:MultiZone:Zone": frozenset(["zone_name"]),
-    "AirflowNetwork:ZoneControl:PressureController": frozenset([
+    ),
+    "AirflowNetwork:MultiZone:Zone": ("zone_name",),
+    "AirflowNetwork:ZoneControl:PressureController": (
         "control_object_name",
         "control_object_type",
         "control_zone_name",
         "pressure_setpoint_schedule_name",
-    ]),
-    "AvailabilityManager:DifferentialThermostat": frozenset([
+    ),
+    "AvailabilityManager:DifferentialThermostat": (
         "cold_node_name",
         "hot_node_name",
         "temperature_difference_on_limit",
-    ]),
-    "AvailabilityManager:HighTemperatureTurnOff": frozenset(["sensor_node_name", "temperature"]),
-    "AvailabilityManager:HighTemperatureTurnOn": frozenset(["sensor_node_name", "temperature"]),
-    "AvailabilityManager:HybridVentilation": frozenset(["control_zone_name", "ventilation_control_mode_schedule_name"]),
-    "AvailabilityManager:LowTemperatureTurnOff": frozenset(["sensor_node_name", "temperature"]),
-    "AvailabilityManager:LowTemperatureTurnOn": frozenset(["sensor_node_name", "temperature"]),
-    "AvailabilityManager:NightCycle": frozenset(["applicability_schedule_name", "fan_schedule_name"]),
-    "AvailabilityManager:NightVentilation": frozenset([
-        "applicability_schedule_name",
-        "control_zone_name",
-        "fan_schedule_name",
-    ]),
-    "AvailabilityManager:OptimumStart": frozenset(["applicability_schedule_name", "fan_schedule_name"]),
-    "AvailabilityManager:Scheduled": frozenset(["schedule_name"]),
-    "AvailabilityManager:ScheduledOff": frozenset(["schedule_name"]),
-    "AvailabilityManager:ScheduledOn": frozenset(["schedule_name"]),
-    "Boiler:HotWater": frozenset([
+    ),
+    "AvailabilityManager:HighTemperatureTurnOff": ("sensor_node_name", "temperature"),
+    "AvailabilityManager:HighTemperatureTurnOn": ("sensor_node_name", "temperature"),
+    "AvailabilityManager:HybridVentilation": ("control_zone_name", "ventilation_control_mode_schedule_name"),
+    "AvailabilityManager:LowTemperatureTurnOff": ("sensor_node_name", "temperature"),
+    "AvailabilityManager:LowTemperatureTurnOn": ("sensor_node_name", "temperature"),
+    "AvailabilityManager:NightCycle": ("applicability_schedule_name", "fan_schedule_name"),
+    "AvailabilityManager:NightVentilation": ("applicability_schedule_name", "control_zone_name", "fan_schedule_name"),
+    "AvailabilityManager:OptimumStart": ("applicability_schedule_name", "fan_schedule_name"),
+    "AvailabilityManager:Scheduled": ("schedule_name",),
+    "AvailabilityManager:ScheduledOff": ("schedule_name",),
+    "AvailabilityManager:ScheduledOn": ("schedule_name",),
+    "Boiler:HotWater": (
         "boiler_water_inlet_node_name",
         "boiler_water_outlet_node_name",
         "fuel_type",
         "nominal_thermal_efficiency",
-    ]),
-    "Boiler:Steam": frozenset(["fuel_type"]),
-    "BuildingSurface:Detailed": frozenset(["outside_boundary_condition", "surface_type", "zone_name"]),
-    "Ceiling:Adiabatic": frozenset(["construction_name", "zone_name"]),
-    "Ceiling:Interzone": frozenset(["construction_name", "outside_boundary_condition_object", "zone_name"]),
-    "CentralHeatPumpSystem": frozenset([
+    ),
+    "Boiler:Steam": ("fuel_type",),
+    "BuildingSurface:Detailed": ("outside_boundary_condition", "surface_type", "zone_name"),
+    "Ceiling:Adiabatic": ("construction_name", "zone_name"),
+    "Ceiling:Interzone": ("construction_name", "outside_boundary_condition_object", "zone_name"),
+    "CentralHeatPumpSystem": (
         "chiller_heater_modules_control_schedule_name_1",
         "chiller_heater_modules_performance_component_name_1",
         "chiller_heater_modules_performance_component_object_type_1",
@@ -398,16 +382,16 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "heating_loop_outlet_node_name",
         "source_loop_inlet_node_name",
         "source_loop_outlet_node_name",
-    ]),
-    "Chiller:Absorption": frozenset([
+    ),
+    "Chiller:Absorption": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "condenser_inlet_node_name",
         "condenser_outlet_node_name",
         "nominal_capacity",
         "nominal_pumping_power",
-    ]),
-    "Chiller:Absorption:Indirect": frozenset([
+    ),
+    "Chiller:Absorption:Indirect": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "condenser_inlet_node_name",
@@ -415,34 +399,34 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "generator_heat_input_function_of_part_load_ratio_curve_name",
         "nominal_capacity",
         "nominal_pumping_power",
-    ]),
-    "Chiller:CombustionTurbine": frozenset([
+    ),
+    "Chiller:CombustionTurbine": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "nominal_capacity",
         "nominal_cop",
         "temperature_rise_coefficient",
-    ]),
-    "Chiller:ConstantCOP": frozenset([
+    ),
+    "Chiller:ConstantCOP": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "nominal_capacity",
         "nominal_cop",
-    ]),
-    "Chiller:Electric": frozenset([
+    ),
+    "Chiller:Electric": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "nominal_capacity",
         "nominal_cop",
         "temperature_rise_coefficient",
-    ]),
-    "Chiller:Electric:ASHRAE205": frozenset([
+    ),
+    "Chiller:Electric:ASHRAE205": (
         "ambient_temperature_indicator",
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "representation_file_name",
-    ]),
-    "Chiller:Electric:EIR": frozenset([
+    ),
+    "Chiller:Electric:EIR": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "cooling_capacity_function_of_temperature_curve_name",
@@ -450,8 +434,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "electric_input_to_cooling_output_ratio_function_of_temperature_curve_name",
         "reference_capacity",
         "reference_cop",
-    ]),
-    "Chiller:Electric:ReformulatedEIR": frozenset([
+    ),
+    "Chiller:Electric:ReformulatedEIR": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "condenser_inlet_node_name",
@@ -461,31 +445,31 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "electric_input_to_cooling_output_ratio_function_of_temperature_curve_name",
         "reference_capacity",
         "reference_cop",
-    ]),
-    "Chiller:EngineDriven": frozenset([
+    ),
+    "Chiller:EngineDriven": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "fuel_type",
         "nominal_capacity",
         "nominal_cop",
         "temperature_rise_coefficient",
-    ]),
-    "ChillerHeater:Absorption:DirectFired": frozenset([
+    ),
+    "ChillerHeater:Absorption:DirectFired": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "condenser_inlet_node_name",
         "hot_water_inlet_node_name",
         "hot_water_outlet_node_name",
-    ]),
-    "ChillerHeater:Absorption:DoubleEffect": frozenset([
+    ),
+    "ChillerHeater:Absorption:DoubleEffect": (
         "chilled_water_inlet_node_name",
         "chilled_water_outlet_node_name",
         "condenser_inlet_node_name",
         "exhaust_source_object_type",
         "hot_water_inlet_node_name",
         "hot_water_outlet_node_name",
-    ]),
-    "ChillerHeaterPerformance:Electric:EIR": frozenset([
+    ),
+    "ChillerHeaterPerformance:Electric:EIR": (
         "cooling_mode_cooling_capacity_function_of_temperature_curve_name",
         "cooling_mode_electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_name",
         "cooling_mode_electric_input_to_cooling_output_ratio_function_of_temperature_curve_name",
@@ -494,21 +478,18 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "heating_mode_electric_input_to_cooling_output_ratio_function_of_temperature_curve_name",
         "reference_cooling_mode_cop",
         "reference_cooling_mode_evaporator_capacity",
-    ]),
-    "Coil:Cooling:DX": frozenset([
+    ),
+    "Coil:Cooling:DX": (
         "condenser_inlet_node_name",
         "condenser_outlet_node_name",
         "evaporator_inlet_node_name",
         "evaporator_outlet_node_name",
         "performance_object_name",
-    ]),
-    "Coil:Cooling:DX:CurveFit:OperatingMode": frozenset(["speed_1_name"]),
-    "Coil:Cooling:DX:CurveFit:Performance": frozenset(["base_operating_mode"]),
-    "Coil:Cooling:DX:CurveFit:Speed": frozenset([
-        "evaporator_air_flow_rate_fraction",
-        "gross_total_cooling_capacity_fraction",
-    ]),
-    "Coil:Cooling:DX:MultiSpeed": frozenset([
+    ),
+    "Coil:Cooling:DX:CurveFit:OperatingMode": ("speed_1_name",),
+    "Coil:Cooling:DX:CurveFit:Performance": ("base_operating_mode",),
+    "Coil:Cooling:DX:CurveFit:Speed": ("evaporator_air_flow_rate_fraction", "gross_total_cooling_capacity_fraction"),
+    "Coil:Cooling:DX:MultiSpeed": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "fuel_type",
@@ -529,8 +510,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "speed_2_rated_air_flow_rate",
         "speed_2_total_cooling_capacity_function_of_flow_fraction_curve_name",
         "speed_2_total_cooling_capacity_function_of_temperature_curve_name",
-    ]),
-    "Coil:Cooling:DX:SingleSpeed": frozenset([
+    ),
+    "Coil:Cooling:DX:SingleSpeed": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "energy_input_ratio_function_of_flow_fraction_curve_name",
@@ -541,8 +522,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "rated_air_flow_rate",
         "total_cooling_capacity_function_of_flow_fraction_curve_name",
         "total_cooling_capacity_function_of_temperature_curve_name",
-    ]),
-    "Coil:Cooling:DX:SingleSpeed:ThermalStorage": frozenset([
+    ),
+    "Coil:Cooling:DX:SingleSpeed:ThermalStorage": (
         "charge_only_mode_available",
         "condenser_air_inlet_node_name",
         "condenser_air_outlet_node_name",
@@ -558,8 +539,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "storage_tank_ambient_temperature_node_name",
         "storage_tank_to_ambient_u_value_times_area_heat_transfer_coefficient",
         "storage_type",
-    ]),
-    "Coil:Cooling:DX:TwoSpeed": frozenset([
+    ),
+    "Coil:Cooling:DX:TwoSpeed": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "energy_input_ratio_function_of_flow_fraction_curve_name",
@@ -575,14 +556,14 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "part_load_fraction_correlation_curve_name",
         "total_cooling_capacity_function_of_flow_fraction_curve_name",
         "total_cooling_capacity_function_of_temperature_curve_name",
-    ]),
-    "Coil:Cooling:DX:TwoStageWithHumidityControlMode": frozenset([
+    ),
+    "Coil:Cooling:DX:TwoStageWithHumidityControlMode": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "normal_mode_stage_1_coil_performance_name",
         "normal_mode_stage_1_coil_performance_object_type",
-    ]),
-    "Coil:Cooling:DX:VariableRefrigerantFlow": frozenset([
+    ),
+    "Coil:Cooling:DX:VariableRefrigerantFlow": (
         "coil_air_inlet_node",
         "coil_air_outlet_node",
         "cooling_capacity_modifier_curve_function_of_flow_fraction_name",
@@ -590,15 +571,15 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "gross_rated_sensible_heat_ratio",
         "gross_rated_total_cooling_capacity",
         "rated_air_flow_rate",
-    ]),
-    "Coil:Cooling:DX:VariableRefrigerantFlow:FluidTemperatureControl": frozenset([
+    ),
+    "Coil:Cooling:DX:VariableRefrigerantFlow:FluidTemperatureControl": (
         "coil_air_inlet_node",
         "coil_air_outlet_node",
         "indoor_unit_evaporating_temperature_function_of_superheating_curve_name",
         "rated_sensible_heat_ratio",
         "rated_total_cooling_capacity",
-    ]),
-    "Coil:Cooling:DX:VariableSpeed": frozenset([
+    ),
+    "Coil:Cooling:DX:VariableSpeed": (
         "energy_part_load_fraction_curve_name",
         "indoor_air_inlet_node_name",
         "indoor_air_outlet_node_name",
@@ -610,20 +591,20 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "speed_1_reference_unit_rated_air_flow_rate",
         "speed_1_total_cooling_capacity_function_of_air_flow_fraction_curve_name",
         "speed_1_total_cooling_capacity_function_of_temperature_curve_name",
-    ]),
-    "Coil:Cooling:Water": frozenset([
+    ),
+    "Coil:Cooling:Water": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "Coil:Cooling:Water:DetailedGeometry": frozenset([
+    ),
+    "Coil:Cooling:Water:DetailedGeometry": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "Coil:Cooling:WaterToAirHeatPump:EquationFit": frozenset([
+    ),
+    "Coil:Cooling:WaterToAirHeatPump:EquationFit": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "cooling_power_consumption_coefficient_1",
@@ -653,8 +634,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "total_cooling_capacity_curve_name",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "Coil:Cooling:WaterToAirHeatPump:ParameterEstimation": frozenset([
+    ),
+    "Coil:Cooling:WaterToAirHeatPump:ParameterEstimation": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "compressor_efficiency",
@@ -670,8 +651,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "superheat_temperature_at_the_evaporator_outlet",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit": frozenset([
+    ),
+    "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit": (
         "energy_part_load_fraction_curve_name",
         "indoor_air_inlet_node_name",
         "indoor_air_outlet_node_name",
@@ -690,9 +671,9 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "speed_1_waste_heat_function_of_temperature_curve_name",
         "water_to_refrigerant_hx_water_inlet_node_name",
         "water_to_refrigerant_hx_water_outlet_node_name",
-    ]),
-    "Coil:DX:ASHRAE205:Performance": frozenset(["representation_file_name"]),
-    "Coil:Heating:DX:MultiSpeed": frozenset([
+    ),
+    "Coil:DX:ASHRAE205:Performance": ("representation_file_name",),
+    "Coil:Heating:DX:MultiSpeed": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "fuel_type",
@@ -713,8 +694,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "speed_2_heating_capacity_function_of_temperature_curve_name",
         "speed_2_part_load_fraction_correlation_curve_name",
         "speed_2_rated_air_flow_rate",
-    ]),
-    "Coil:Heating:DX:SingleSpeed": frozenset([
+    ),
+    "Coil:Heating:DX:SingleSpeed": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "energy_input_ratio_function_of_flow_fraction_curve_name",
@@ -725,22 +706,22 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "heating_capacity_function_of_temperature_curve_name",
         "part_load_fraction_correlation_curve_name",
         "rated_air_flow_rate",
-    ]),
-    "Coil:Heating:DX:VariableRefrigerantFlow": frozenset([
+    ),
+    "Coil:Heating:DX:VariableRefrigerantFlow": (
         "coil_air_inlet_node",
         "coil_air_outlet_node",
         "gross_rated_heating_capacity",
         "heating_capacity_modifier_function_of_flow_fraction_curve_name",
         "heating_capacity_ratio_modifier_function_of_temperature_curve_name",
         "rated_air_flow_rate",
-    ]),
-    "Coil:Heating:DX:VariableRefrigerantFlow:FluidTemperatureControl": frozenset([
+    ),
+    "Coil:Heating:DX:VariableRefrigerantFlow:FluidTemperatureControl": (
         "coil_air_inlet_node",
         "coil_air_outlet_node",
         "indoor_unit_condensing_temperature_function_of_subcooling_curve_name",
         "rated_total_heating_capacity",
-    ]),
-    "Coil:Heating:DX:VariableSpeed": frozenset([
+    ),
+    "Coil:Heating:DX:VariableSpeed": (
         "energy_part_load_fraction_curve_name",
         "indoor_air_inlet_node_name",
         "indoor_air_outlet_node_name",
@@ -751,42 +732,42 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "speed_1_reference_unit_gross_rated_heating_cop",
         "speed_1_reference_unit_rated_air_flow_rate",
         "speed_1_total_heating_capacity_function_of_air_flow_fraction_curve_name",
-    ]),
-    "Coil:Heating:Desuperheater": frozenset([
+    ),
+    "Coil:Heating:Desuperheater": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "heating_source_name",
         "heating_source_object_type",
-    ]),
-    "Coil:Heating:Electric": frozenset(["air_inlet_node_name", "air_outlet_node_name"]),
-    "Coil:Heating:Electric:MultiStage": frozenset([
+    ),
+    "Coil:Heating:Electric": ("air_inlet_node_name", "air_outlet_node_name"),
+    "Coil:Heating:Electric:MultiStage": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "number_of_stages",
         "stage_1_efficiency",
         "stage_1_nominal_capacity",
-    ]),
-    "Coil:Heating:Fuel": frozenset(["air_inlet_node_name", "air_outlet_node_name"]),
-    "Coil:Heating:Gas:MultiStage": frozenset([
+    ),
+    "Coil:Heating:Fuel": ("air_inlet_node_name", "air_outlet_node_name"),
+    "Coil:Heating:Gas:MultiStage": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "number_of_stages",
         "stage_1_gas_burner_efficiency",
         "stage_1_nominal_capacity",
-    ]),
-    "Coil:Heating:Steam": frozenset([
+    ),
+    "Coil:Heating:Steam": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "Coil:Heating:Water": frozenset([
+    ),
+    "Coil:Heating:Water": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "Coil:Heating:WaterToAirHeatPump:EquationFit": frozenset([
+    ),
+    "Coil:Heating:WaterToAirHeatPump:EquationFit": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "gross_rated_heating_capacity",
@@ -808,8 +789,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "rated_water_flow_rate",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "Coil:Heating:WaterToAirHeatPump:ParameterEstimation": frozenset([
+    ),
+    "Coil:Heating:WaterToAirHeatPump:ParameterEstimation": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "compressor_efficiency",
@@ -824,8 +805,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "superheat_temperature_at_the_evaporator_outlet",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit": frozenset([
+    ),
+    "Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit": (
         "energy_part_load_fraction_curve_name",
         "indoor_air_inlet_node_name",
         "indoor_air_outlet_node_name",
@@ -844,21 +825,21 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "speed_1_waste_heat_function_of_temperature_curve_name",
         "water_to_refrigerant_hx_water_inlet_node_name",
         "water_to_refrigerant_hx_water_outlet_node_name",
-    ]),
-    "Coil:UserDefined": frozenset([
+    ),
+    "Coil:UserDefined": (
         "air_connection_1_inlet_node_name",
         "air_connection_1_outlet_node_name",
         "model_setup_and_sizing_program_calling_manager_name",
         "number_of_air_connections",
-    ]),
-    "Coil:WaterHeating:AirToWaterHeatPump:Pumped": frozenset([
+    ),
+    "Coil:WaterHeating:AirToWaterHeatPump:Pumped": (
         "condenser_water_inlet_node_name",
         "condenser_water_outlet_node_name",
         "evaporator_air_inlet_node_name",
         "evaporator_air_outlet_node_name",
         "rated_heating_capacity",
-    ]),
-    "Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed": frozenset([
+    ),
+    "Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed": (
         "condenser_water_inlet_node_name",
         "condenser_water_outlet_node_name",
         "evaporator_air_inlet_node_name",
@@ -875,13 +856,13 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "speed_1_total_wh_capacity_function_of_air_flow_fraction_curve_name",
         "speed_1_total_wh_capacity_function_of_temperature_curve_name",
         "speed_1_total_wh_capacity_function_of_water_flow_fraction_curve_name",
-    ]),
-    "Coil:WaterHeating:AirToWaterHeatPump:Wrapped": frozenset([
+    ),
+    "Coil:WaterHeating:AirToWaterHeatPump:Wrapped": (
         "evaporator_air_inlet_node_name",
         "evaporator_air_outlet_node_name",
         "rated_heating_capacity",
-    ]),
-    "Coil:WaterHeating:Desuperheater": frozenset([
+    ),
+    "Coil:WaterHeating:Desuperheater": (
         "heating_source_name",
         "heating_source_object_type",
         "maximum_inlet_water_temperature_for_heat_reclaim",
@@ -892,8 +873,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "water_flow_rate",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "CoilPerformance:DX:Cooling": frozenset([
+    ),
+    "CoilPerformance:DX:Cooling": (
         "energy_input_ratio_function_of_flow_fraction_curve_name",
         "energy_input_ratio_function_of_temperature_curve_name",
         "gross_rated_sensible_heat_ratio",
@@ -902,49 +883,46 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "rated_air_flow_rate",
         "total_cooling_capacity_function_of_flow_fraction_curve_name",
         "total_cooling_capacity_function_of_temperature_curve_name",
-    ]),
-    "CoilSystem:Cooling:DX": frozenset([
+    ),
+    "CoilSystem:Cooling:DX": (
         "cooling_coil_name",
         "cooling_coil_object_type",
         "dx_cooling_coil_system_inlet_node_name",
         "dx_cooling_coil_system_outlet_node_name",
         "dx_cooling_coil_system_sensor_node_name",
-    ]),
-    "CoilSystem:Cooling:DX:HeatExchangerAssisted": frozenset([
+    ),
+    "CoilSystem:Cooling:DX:HeatExchangerAssisted": (
         "cooling_coil_name",
         "cooling_coil_object_type",
         "heat_exchanger_name",
         "heat_exchanger_object_type",
-    ]),
-    "CoilSystem:Cooling:Water": frozenset([
+    ),
+    "CoilSystem:Cooling:Water": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "cooling_coil_name",
         "cooling_coil_object_type",
-    ]),
-    "CoilSystem:Cooling:Water:HeatExchangerAssisted": frozenset([
+    ),
+    "CoilSystem:Cooling:Water:HeatExchangerAssisted": (
         "cooling_coil_name",
         "cooling_coil_object_type",
         "heat_exchanger_name",
         "heat_exchanger_object_type",
-    ]),
-    "CoilSystem:Heating:DX": frozenset(["heating_coil_name", "heating_coil_object_type"]),
-    "CoilSystem:IntegratedHeatPump:AirSource": frozenset([
-        "space_cooling_coil_name",
-        "supply_hot_water_flow_sensor_node_name",
-    ]),
-    "ComplexFenestrationProperty:SolarAbsorbedLayers": frozenset([
+    ),
+    "CoilSystem:Heating:DX": ("heating_coil_name", "heating_coil_object_type"),
+    "CoilSystem:IntegratedHeatPump:AirSource": ("space_cooling_coil_name", "supply_hot_water_flow_sensor_node_name"),
+    "ComplexFenestrationProperty:SolarAbsorbedLayers": (
         "construction_name",
         "fenestration_surface",
         "layer_1_solar_radiation_absorbed_schedule_name",
-    ]),
-    "ComponentCost:LineItem": frozenset(["item_name", "line_item_type"]),
-    "CondenserEquipmentOperationSchemes": frozenset([
+    ),
+    "ComponentCost:LineItem": ("item_name", "line_item_type"),
+    "CondenserEquipmentOperationSchemes": (
         "control_scheme_1_name",
         "control_scheme_1_object_type",
         "control_scheme_1_schedule_name",
-    ]),
-    "CondenserLoop": frozenset([
+    ),
+    "CondenserLoop": (
         "condenser_demand_side_branch_list_name",
         "condenser_demand_side_connector_list_name",
         "condenser_equipment_operation_scheme_name",
@@ -958,13 +936,13 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "maximum_loop_flow_rate",
         "maximum_loop_temperature",
         "minimum_loop_temperature",
-    ]),
-    "Connector:Mixer": frozenset(["outlet_branch_name"]),
-    "Connector:Splitter": frozenset(["inlet_branch_name"]),
-    "ConnectorList": frozenset(["connector_1_name", "connector_1_object_type"]),
-    "Construction": frozenset(["outside_layer"]),
-    "Construction:CfactorUndergroundWall": frozenset(["c_factor", "height"]),
-    "Construction:ComplexFenestrationState": frozenset([
+    ),
+    "Connector:Mixer": ("outlet_branch_name",),
+    "Connector:Splitter": ("inlet_branch_name",),
+    "ConnectorList": ("connector_1_name", "connector_1_object_type"),
+    "Construction": ("outside_layer",),
+    "Construction:CfactorUndergroundWall": ("c_factor", "height"),
+    "Construction:ComplexFenestrationState": (
         "basis_matrix_name",
         "outside_layer_directional_back_absoptance_matrix_name",
         "outside_layer_directional_back_absorptance_matrix_name",
@@ -976,58 +954,53 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "visible_optical_complex_back_transmittance_matrix_name",
         "visible_optical_complex_front_transmittance_matrix_name",
         "window_thermal_model",
-    ]),
-    "Construction:FfactorGroundFloor": frozenset(["area", "f_factor", "perimeterexposed"]),
-    "Construction:InternalSource": frozenset([
+    ),
+    "Construction:FfactorGroundFloor": ("area", "f_factor", "perimeterexposed"),
+    "Construction:InternalSource": (
         "dimensions_for_the_ctf_calculation",
         "outside_layer",
         "source_present_after_layer_number",
         "temperature_calculation_requested_after_layer_number",
         "tube_spacing",
-    ]),
-    "Construction:WindowEquivalentLayer": frozenset(["outside_layer"]),
-    "ConstructionProperty:InternalHeatSource": frozenset([
+    ),
+    "Construction:WindowEquivalentLayer": ("outside_layer",),
+    "ConstructionProperty:InternalHeatSource": (
         "dimensions_for_the_ctf_calculation",
         "temperature_calculation_requested_after_layer_number",
         "thermal_source_present_after_layer_number",
         "tube_spacing",
-    ]),
-    "Controller:OutdoorAir": frozenset([
+    ),
+    "Controller:OutdoorAir": (
         "actuator_node_name",
         "maximum_outdoor_air_flow_rate",
         "minimum_outdoor_air_flow_rate",
         "mixed_air_node_name",
         "relief_air_outlet_node_name",
         "return_air_node_name",
-    ]),
-    "Controller:WaterCoil": frozenset([
-        "actuator_node_name",
-        "actuator_variable",
-        "control_variable",
-        "sensor_node_name",
-    ]),
-    "CoolingTower:SingleSpeed": frozenset([
+    ),
+    "Controller:WaterCoil": ("actuator_node_name", "actuator_variable", "control_variable", "sensor_node_name"),
+    "CoolingTower:SingleSpeed": (
         "design_air_flow_rate",
         "design_fan_power",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "CoolingTower:TwoSpeed": frozenset([
+    ),
+    "CoolingTower:TwoSpeed": (
         "high_fan_speed_air_flow_rate",
         "high_fan_speed_fan_power",
         "low_fan_speed_air_flow_rate",
         "low_fan_speed_fan_power",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "CoolingTower:VariableSpeed": frozenset([
+    ),
+    "CoolingTower:VariableSpeed": (
         "design_air_flow_rate",
         "design_fan_power",
         "design_water_flow_rate",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "CoolingTower:VariableSpeed:Merkel": frozenset([
+    ),
+    "CoolingTower:VariableSpeed:Merkel": (
         "design_air_flow_rate",
         "design_fan_power",
         "design_water_flow_rate",
@@ -1037,8 +1010,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "u_factor_times_area_modifier_function_of_wetbulb_temperature_difference_curve_name",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "CoolingTowerPerformance:CoolTools": frozenset([
+    ),
+    "CoolingTowerPerformance:CoolTools": (
         "coefficient_1",
         "coefficient_10",
         "coefficient_11",
@@ -1082,8 +1055,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "minimum_inlet_air_wet_bulb_temperature",
         "minimum_range_temperature",
         "minimum_water_flow_rate_ratio",
-    ]),
-    "CoolingTowerPerformance:YorkCalc": frozenset([
+    ),
+    "CoolingTowerPerformance:YorkCalc": (
         "coefficient_1",
         "coefficient_10",
         "coefficient_11",
@@ -1120,9 +1093,9 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "minimum_inlet_air_wet_bulb_temperature",
         "minimum_range_temperature",
         "minimum_water_flow_rate_ratio",
-    ]),
-    "CurrencyType": frozenset(["monetary_unit"]),
-    "Curve:Bicubic": frozenset([
+    ),
+    "CurrencyType": ("monetary_unit",),
+    "Curve:Bicubic": (
         "coefficient10_x_y_2",
         "coefficient1_constant",
         "coefficient2_x",
@@ -1137,8 +1110,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "maximum_value_of_y",
         "minimum_value_of_x",
         "minimum_value_of_y",
-    ]),
-    "Curve:Biquadratic": frozenset([
+    ),
+    "Curve:Biquadratic": (
         "coefficient1_constant",
         "coefficient2_x",
         "coefficient3_x_2",
@@ -1149,8 +1122,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "maximum_value_of_y",
         "minimum_value_of_x",
         "minimum_value_of_y",
-    ]),
-    "Curve:ChillerPartLoadWithLift": frozenset([
+    ),
+    "Curve:ChillerPartLoadWithLift": (
         "coefficient10_c10",
         "coefficient11_c11",
         "coefficient12_c12",
@@ -1169,16 +1142,16 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "minimum_value_of_x",
         "minimum_value_of_y",
         "minimum_value_of_z",
-    ]),
-    "Curve:Cubic": frozenset([
+    ),
+    "Curve:Cubic": (
         "coefficient1_constant",
         "coefficient2_x",
         "coefficient3_x_2",
         "coefficient4_x_3",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Curve:CubicLinear": frozenset([
+    ),
+    "Curve:CubicLinear": (
         "coefficient1_constant",
         "coefficient2_x",
         "coefficient3_x_2",
@@ -1189,8 +1162,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "maximum_value_of_y",
         "minimum_value_of_x",
         "minimum_value_of_y",
-    ]),
-    "Curve:DoubleExponentialDecay": frozenset([
+    ),
+    "Curve:DoubleExponentialDecay": (
         "coefficient1_c1",
         "coefficient2_c2",
         "coefficient3_c3",
@@ -1200,30 +1173,30 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "coefficient5_c5",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Curve:Exponent": frozenset([
+    ),
+    "Curve:Exponent": (
         "coefficient1_constant",
         "coefficient2_constant",
         "coefficient3_constant",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Curve:ExponentialDecay": frozenset([
+    ),
+    "Curve:ExponentialDecay": (
         "coefficient1_c1",
         "coefficient2_c2",
         "coefficient3_c3",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Curve:ExponentialSkewNormal": frozenset([
+    ),
+    "Curve:ExponentialSkewNormal": (
         "coefficient1_c1",
         "coefficient2_c2",
         "coefficient3_c3",
         "coefficient4_c4",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Curve:FanPressureRise": frozenset([
+    ),
+    "Curve:FanPressureRise": (
         "coefficient1_c1",
         "coefficient2_c2",
         "coefficient3_c3",
@@ -1232,10 +1205,10 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "maximum_value_of_qfan",
         "minimum_value_of_psm",
         "minimum_value_of_qfan",
-    ]),
-    "Curve:Functional:PressureDrop": frozenset(["diameter"]),
-    "Curve:Linear": frozenset(["coefficient1_constant", "coefficient2_x", "maximum_value_of_x", "minimum_value_of_x"]),
-    "Curve:QuadLinear": frozenset([
+    ),
+    "Curve:Functional:PressureDrop": ("diameter",),
+    "Curve:Linear": ("coefficient1_constant", "coefficient2_x", "maximum_value_of_x", "minimum_value_of_x"),
+    "Curve:QuadLinear": (
         "coefficient1_constant",
         "coefficient2_w",
         "coefficient3_x",
@@ -1249,15 +1222,15 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "minimum_value_of_x",
         "minimum_value_of_y",
         "minimum_value_of_z",
-    ]),
-    "Curve:Quadratic": frozenset([
+    ),
+    "Curve:Quadratic": (
         "coefficient1_constant",
         "coefficient2_x",
         "coefficient3_x_2",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Curve:QuadraticLinear": frozenset([
+    ),
+    "Curve:QuadraticLinear": (
         "coefficient1_constant",
         "coefficient2_x",
         "coefficient3_x_2",
@@ -1268,8 +1241,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "maximum_value_of_y",
         "minimum_value_of_x",
         "minimum_value_of_y",
-    ]),
-    "Curve:Quartic": frozenset([
+    ),
+    "Curve:Quartic": (
         "coefficient1_constant",
         "coefficient2_x",
         "coefficient3_x_2",
@@ -1277,8 +1250,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "coefficient5_x_4",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Curve:QuintLinear": frozenset([
+    ),
+    "Curve:QuintLinear": (
         "coefficient1_constant",
         "coefficient2_v",
         "coefficient3_w",
@@ -1295,22 +1268,22 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "minimum_value_of_x",
         "minimum_value_of_y",
         "minimum_value_of_z",
-    ]),
-    "Curve:RectangularHyperbola1": frozenset([
+    ),
+    "Curve:RectangularHyperbola1": (
         "coefficient1_c1",
         "coefficient2_c2",
         "coefficient3_c3",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Curve:RectangularHyperbola2": frozenset([
+    ),
+    "Curve:RectangularHyperbola2": (
         "coefficient1_c1",
         "coefficient2_c2",
         "coefficient3_c3",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Curve:Sigmoid": frozenset([
+    ),
+    "Curve:Sigmoid": (
         "coefficient1_c1",
         "coefficient2_c2",
         "coefficient3_c3",
@@ -1318,151 +1291,128 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "coefficient5_c5",
         "maximum_value_of_x",
         "minimum_value_of_x",
-    ]),
-    "Daylighting:Controls": frozenset(["zone_name", "zone_or_space_name"]),
-    "Daylighting:DELight:ComplexFenestration": frozenset([
-        "building_surface_name",
-        "complex_fenestration_type",
-        "window_name",
-    ]),
-    "Daylighting:ReferencePoint": frozenset([
+    ),
+    "Daylighting:Controls": ("zone_name", "zone_or_space_name"),
+    "Daylighting:DELight:ComplexFenestration": ("building_surface_name", "complex_fenestration_type", "window_name"),
+    "Daylighting:ReferencePoint": (
         "x_coordinate_of_reference_point",
         "y_coordinate_of_reference_point",
         "zone_name",
         "zone_or_space_name",
-    ]),
-    "DaylightingDevice:LightWell": frozenset([
+    ),
+    "DaylightingDevice:LightWell": (
         "area_of_bottom_of_well",
         "exterior_window_name",
         "height_of_well",
         "perimeter_of_bottom_of_well",
         "visible_reflectance_of_well_walls",
-    ]),
-    "DaylightingDevice:Shelf": frozenset(["window_name"]),
-    "DaylightingDevice:Tubular": frozenset([
-        "construction_name",
-        "diameter",
-        "diffuser_name",
-        "dome_name",
-        "total_length",
-    ]),
-    "Dehumidifier:Desiccant:System": frozenset([
+    ),
+    "DaylightingDevice:Shelf": ("window_name",),
+    "DaylightingDevice:Tubular": ("construction_name", "diameter", "diffuser_name", "dome_name", "total_length"),
+    "Dehumidifier:Desiccant:System": (
         "desiccant_heat_exchanger_name",
         "desiccant_heat_exchanger_object_type",
         "regeneration_air_fan_name",
         "regeneration_air_fan_object_type",
         "sensor_node_name",
-    ]),
-    "DemandManager:ElectricEquipment": frozenset(["limit_control", "selection_control"]),
-    "DemandManager:ExteriorLights": frozenset(["limit_control", "selection_control"]),
-    "DemandManager:Lights": frozenset(["limit_control", "selection_control"]),
-    "DemandManager:Thermostats": frozenset([
+    ),
+    "DemandManager:ElectricEquipment": ("limit_control", "selection_control"),
+    "DemandManager:ExteriorLights": ("limit_control", "selection_control"),
+    "DemandManager:Lights": ("limit_control", "selection_control"),
+    "DemandManager:Thermostats": (
         "maximum_cooling_setpoint_reset",
         "maximum_heating_setpoint_reset",
         "reset_control",
         "selection_control",
-    ]),
-    "DemandManager:Ventilation": frozenset(["limit_control"]),
-    "DemandManagerAssignmentList": frozenset([
+    ),
+    "DemandManager:Ventilation": ("limit_control",),
+    "DemandManagerAssignmentList": (
         "demand_limit_safety_fraction",
         "demand_manager_priority",
         "demand_window_length",
         "meter_name",
-    ]),
-    "DistrictCooling": frozenset(["chilled_water_inlet_node_name", "chilled_water_outlet_node_name"]),
-    "DistrictHeating": frozenset(["hot_water_inlet_node_name", "hot_water_outlet_node_name"]),
-    "DistrictHeating:Steam": frozenset(["steam_inlet_node_name", "steam_outlet_node_name"]),
-    "DistrictHeating:Water": frozenset(["hot_water_inlet_node_name", "hot_water_outlet_node_name"]),
-    "Door": frozenset(["building_surface_name", "construction_name"]),
-    "Door:Interzone": frozenset(["building_surface_name", "construction_name"]),
-    "Duct": frozenset(["inlet_node_name", "outlet_node_name"]),
-    "Duct:Loss:Conduction": frozenset(["airflownetwork_distribution_linkage_name", "airloophvac_name"]),
-    "Duct:Loss:Leakage": frozenset(["airflownetwork_distribution_linkage_name", "airloophvac_name"]),
-    "Duct:Loss:MakeupAir": frozenset(["airflownetwork_distribution_linkage_name", "airloophvac_name"]),
-    "ElectricEquipment": frozenset([
-        "schedule_name",
-        "zone_or_zonelist_name",
-        "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "ElectricEquipment:ITE:AirCooled": frozenset([
+    ),
+    "DistrictCooling": ("chilled_water_inlet_node_name", "chilled_water_outlet_node_name"),
+    "DistrictHeating": ("hot_water_inlet_node_name", "hot_water_outlet_node_name"),
+    "DistrictHeating:Steam": ("steam_inlet_node_name", "steam_outlet_node_name"),
+    "DistrictHeating:Water": ("hot_water_inlet_node_name", "hot_water_outlet_node_name"),
+    "Door": ("building_surface_name", "construction_name"),
+    "Door:Interzone": ("building_surface_name", "construction_name"),
+    "Duct": ("inlet_node_name", "outlet_node_name"),
+    "Duct:Loss:Conduction": ("airflownetwork_distribution_linkage_name", "airloophvac_name"),
+    "Duct:Loss:Leakage": ("airflownetwork_distribution_linkage_name", "airloophvac_name"),
+    "Duct:Loss:MakeupAir": ("airflownetwork_distribution_linkage_name", "airloophvac_name"),
+    "ElectricEquipment": ("schedule_name", "zone_or_zonelist_name", "zone_or_zonelist_or_space_or_spacelist_name"),
+    "ElectricEquipment:ITE:AirCooled": (
         "air_flow_function_of_loading_and_air_temperature_curve_name",
         "cpu_power_input_function_of_loading_and_air_temperature_curve_name",
         "design_fan_air_flow_rate_per_power_input",
         "fan_power_input_function_of_flow_curve_name",
         "zone_name",
         "zone_or_space_name",
-    ]),
-    "ElectricEquipment:ITE:AirCooled:Definition": frozenset([
+    ),
+    "ElectricEquipment:ITE:AirCooled:Definition": (
         "air_flow_function_of_loading_and_air_temperature_curve_name",
         "cpu_power_input_function_of_loading_and_air_temperature_curve_name",
         "design_fan_air_flow_rate_per_power_input",
         "fan_power_input_function_of_flow_curve_name",
-    ]),
-    "ElectricEquipment:ITE:AirCooled:Instance": frozenset([
+    ),
+    "ElectricEquipment:ITE:AirCooled:Instance": (
         "electricequipment_ite_aircooled_definition_name",
         "zone_or_space_name",
-    ]),
-    "ElectricEquipment:Instance": frozenset([
+    ),
+    "ElectricEquipment:Instance": (
         "electric_equipment_definition_name",
         "schedule_name",
         "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "ElectricLoadCenter:Storage:LiIonNMCBattery": frozenset([
+    ),
+    "ElectricLoadCenter:Storage:LiIonNMCBattery": (
         "battery_mass",
         "battery_surface_area",
         "number_of_cells_in_series",
         "number_of_strings_in_parallel",
-    ]),
-    "EnergyManagementSystem:Actuator": frozenset([
+    ),
+    "EnergyManagementSystem:Actuator": (
         "actuated_component_control_type",
         "actuated_component_type",
         "actuated_component_unique_name",
-    ]),
-    "EnergyManagementSystem:ConstructionIndexVariable": frozenset(["construction_object_name"]),
-    "EnergyManagementSystem:CurveOrTableIndexVariable": frozenset(["curve_or_table_object_name"]),
-    "EnergyManagementSystem:InternalVariable": frozenset(["internal_data_type"]),
-    "EnergyManagementSystem:MeteredOutputVariable": frozenset([
+    ),
+    "EnergyManagementSystem:ConstructionIndexVariable": ("construction_object_name",),
+    "EnergyManagementSystem:CurveOrTableIndexVariable": ("curve_or_table_object_name",),
+    "EnergyManagementSystem:InternalVariable": ("internal_data_type",),
+    "EnergyManagementSystem:MeteredOutputVariable": (
         "ems_variable_name",
         "end_use_category",
         "group_type",
         "resource_type",
         "update_frequency",
-    ]),
-    "EnergyManagementSystem:OutputVariable": frozenset([
-        "ems_variable_name",
-        "type_of_data_in_variable",
-        "update_frequency",
-    ]),
-    "EnergyManagementSystem:Program": frozenset(["lines"]),
-    "EnergyManagementSystem:Sensor": frozenset(["output_variable_or_output_meter_name"]),
-    "EnergyManagementSystem:TrendVariable": frozenset(["ems_variable_name", "number_of_timesteps_to_be_logged"]),
-    "EvaporativeCooler:Direct:CelDekPad": frozenset([
+    ),
+    "EnergyManagementSystem:OutputVariable": ("ems_variable_name", "type_of_data_in_variable", "update_frequency"),
+    "EnergyManagementSystem:Sensor": ("output_variable_or_output_meter_name",),
+    "EnergyManagementSystem:TrendVariable": ("ems_variable_name", "number_of_timesteps_to_be_logged"),
+    "EvaporativeCooler:Direct:CelDekPad": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "recirculating_water_pump_power_consumption",
-    ]),
-    "EvaporativeCooler:Direct:ResearchSpecial": frozenset([
-        "air_inlet_node_name",
-        "air_outlet_node_name",
-        "sensor_node_name",
-    ]),
-    "EvaporativeCooler:Indirect:CelDekPad": frozenset([
+    ),
+    "EvaporativeCooler:Direct:ResearchSpecial": ("air_inlet_node_name", "air_outlet_node_name", "sensor_node_name"),
+    "EvaporativeCooler:Indirect:CelDekPad": (
         "indirect_heat_exchanger_effectiveness",
         "primary_air_inlet_node_name",
         "primary_air_outlet_node_name",
         "recirculating_water_pump_power_consumption",
         "secondary_air_fan_delta_pressure",
         "secondary_air_fan_flow_rate",
-    ]),
-    "EvaporativeCooler:Indirect:ResearchSpecial": frozenset([
+    ),
+    "EvaporativeCooler:Indirect:ResearchSpecial": (
         "cooler_wetbulb_design_effectiveness",
         "primary_air_inlet_node_name",
         "primary_air_outlet_node_name",
         "secondary_air_inlet_node_name",
         "secondary_air_outlet_node_name",
         "sensor_node_name",
-    ]),
-    "EvaporativeCooler:Indirect:WetCoil": frozenset([
+    ),
+    "EvaporativeCooler:Indirect:WetCoil": (
         "coil_maximum_efficiency",
         "primary_air_inlet_node_name",
         "primary_air_outlet_node_name",
@@ -1471,15 +1421,15 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "secondary_air_fan_flow_rate",
         "secondary_air_fan_total_efficiency",
         "secondary_air_inlet_node_name",
-    ]),
-    "EvaporativeFluidCooler:SingleSpeed": frozenset([
+    ),
+    "EvaporativeFluidCooler:SingleSpeed": (
         "design_air_flow_rate",
         "design_air_flow_rate_fan_power",
         "design_spray_water_flow_rate",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "EvaporativeFluidCooler:TwoSpeed": frozenset([
+    ),
+    "EvaporativeFluidCooler:TwoSpeed": (
         "design_spray_water_flow_rate",
         "high_fan_speed_air_flow_rate",
         "high_fan_speed_fan_power",
@@ -1488,38 +1438,38 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "performance_input_method",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "Exterior:FuelEquipment": frozenset(["design_level", "fuel_use_type", "schedule_name"]),
-    "Exterior:Lights": frozenset(["design_level", "schedule_name"]),
-    "Exterior:WaterEquipment": frozenset(["design_level", "schedule_name"]),
-    "ExternalInterface": frozenset(["name_of_external_interface"]),
-    "ExternalInterface:Actuator": frozenset([
+    ),
+    "Exterior:FuelEquipment": ("design_level", "fuel_use_type", "schedule_name"),
+    "Exterior:Lights": ("design_level", "schedule_name"),
+    "Exterior:WaterEquipment": ("design_level", "schedule_name"),
+    "ExternalInterface": ("name_of_external_interface",),
+    "ExternalInterface:Actuator": (
         "actuated_component_control_type",
         "actuated_component_type",
         "actuated_component_unique_name",
-    ]),
-    "ExternalInterface:FunctionalMockupUnitExport:From:Variable": frozenset([
+    ),
+    "ExternalInterface:FunctionalMockupUnitExport:From:Variable": (
         "fmu_variable_name",
         "output_variable_index_key_name",
         "output_variable_name",
-    ]),
-    "ExternalInterface:FunctionalMockupUnitExport:To:Actuator": frozenset([
+    ),
+    "ExternalInterface:FunctionalMockupUnitExport:To:Actuator": (
         "actuated_component_control_type",
         "actuated_component_type",
         "actuated_component_unique_name",
         "fmu_variable_name",
-    ]),
-    "ExternalInterface:FunctionalMockupUnitExport:To:Schedule": frozenset(["fmu_variable_name", "schedule_name"]),
-    "ExternalInterface:FunctionalMockupUnitExport:To:Variable": frozenset(["fmu_variable_name", "initial_value"]),
-    "ExternalInterface:FunctionalMockupUnitImport": frozenset(["fmu_file_name"]),
-    "ExternalInterface:FunctionalMockupUnitImport:From:Variable": frozenset([
+    ),
+    "ExternalInterface:FunctionalMockupUnitExport:To:Schedule": ("fmu_variable_name", "schedule_name"),
+    "ExternalInterface:FunctionalMockupUnitExport:To:Variable": ("fmu_variable_name", "initial_value"),
+    "ExternalInterface:FunctionalMockupUnitImport": ("fmu_file_name",),
+    "ExternalInterface:FunctionalMockupUnitImport:From:Variable": (
         "fmu_file_name",
         "fmu_instance_name",
         "fmu_variable_name",
         "output_variable_index_key_name",
         "output_variable_name",
-    ]),
-    "ExternalInterface:FunctionalMockupUnitImport:To:Actuator": frozenset([
+    ),
+    "ExternalInterface:FunctionalMockupUnitImport:To:Actuator": (
         "actuated_component_control_type",
         "actuated_component_type",
         "actuated_component_unique_name",
@@ -1527,22 +1477,22 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "fmu_instance_name",
         "fmu_variable_name",
         "initial_value",
-    ]),
-    "ExternalInterface:FunctionalMockupUnitImport:To:Schedule": frozenset([
+    ),
+    "ExternalInterface:FunctionalMockupUnitImport:To:Schedule": (
         "fmu_file_name",
         "fmu_instance_name",
         "fmu_variable_name",
         "initial_value",
-    ]),
-    "ExternalInterface:FunctionalMockupUnitImport:To:Variable": frozenset([
+    ),
+    "ExternalInterface:FunctionalMockupUnitImport:To:Variable": (
         "fmu_file_name",
         "fmu_instance_name",
         "fmu_variable_name",
         "initial_value",
-    ]),
-    "ExternalInterface:Schedule": frozenset(["initial_value"]),
-    "ExternalInterface:Variable": frozenset(["initial_value"]),
-    "Fan:ComponentModel": frozenset([
+    ),
+    "ExternalInterface:Schedule": ("initial_value",),
+    "ExternalInterface:Variable": ("initial_value",),
+    "Fan:ComponentModel": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "belt_maximum_torque",
@@ -1560,52 +1510,44 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "normalized_dimensionless_airflow_curve_name_stall_region",
         "normalized_fan_static_efficiency_curve_name_non_stall_region",
         "normalized_fan_static_efficiency_curve_name_stall_region",
-    ]),
-    "Fan:ConstantVolume": frozenset(["air_inlet_node_name", "air_outlet_node_name", "pressure_rise"]),
-    "Fan:OnOff": frozenset(["air_inlet_node_name", "air_outlet_node_name", "pressure_rise"]),
-    "Fan:SystemModel": frozenset([
+    ),
+    "Fan:ConstantVolume": ("air_inlet_node_name", "air_outlet_node_name", "pressure_rise"),
+    "Fan:OnOff": ("air_inlet_node_name", "air_outlet_node_name", "pressure_rise"),
+    "Fan:SystemModel": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "design_maximum_air_flow_rate",
         "design_pressure_rise",
-    ]),
-    "Fan:VariableVolume": frozenset(["air_inlet_node_name", "air_outlet_node_name", "pressure_rise"]),
-    "Fan:ZoneExhaust": frozenset(["air_inlet_node_name", "air_outlet_node_name", "pressure_rise"]),
-    "FanPerformance:NightVentilation": frozenset([
-        "fan_name",
-        "fan_total_efficiency",
-        "motor_efficiency",
-        "pressure_rise",
-    ]),
-    "FaultModel:EnthalpySensorOffset:OutdoorAir": frozenset(["controller_object_name", "controller_object_type"]),
-    "FaultModel:EnthalpySensorOffset:ReturnAir": frozenset(["controller_object_name", "controller_object_type"]),
-    "FaultModel:Fouling:AirFilter": frozenset([
+    ),
+    "Fan:VariableVolume": ("air_inlet_node_name", "air_outlet_node_name", "pressure_rise"),
+    "Fan:ZoneExhaust": ("air_inlet_node_name", "air_outlet_node_name", "pressure_rise"),
+    "FanPerformance:NightVentilation": ("fan_name", "fan_total_efficiency", "motor_efficiency", "pressure_rise"),
+    "FaultModel:EnthalpySensorOffset:OutdoorAir": ("controller_object_name", "controller_object_type"),
+    "FaultModel:EnthalpySensorOffset:ReturnAir": ("controller_object_name", "controller_object_type"),
+    "FaultModel:Fouling:AirFilter": (
         "fan_curve_name",
         "fan_name",
         "fan_object_type",
         "pressure_fraction_schedule_name",
-    ]),
-    "FaultModel:Fouling:Boiler": frozenset(["boiler_object_name", "boiler_object_type"]),
-    "FaultModel:Fouling:Chiller": frozenset(["chiller_object_name", "chiller_object_type"]),
-    "FaultModel:Fouling:Coil": frozenset(["coil_name"]),
-    "FaultModel:Fouling:CoolingTower": frozenset(["cooling_tower_object_name", "cooling_tower_object_type"]),
-    "FaultModel:Fouling:EvaporativeCooler": frozenset([
-        "evaporative_cooler_object_name",
-        "evaporative_cooler_object_type",
-    ]),
-    "FaultModel:HumidistatOffset": frozenset(["humidistat_name"]),
-    "FaultModel:HumiditySensorOffset:OutdoorAir": frozenset(["controller_object_name", "controller_object_type"]),
-    "FaultModel:PressureSensorOffset:OutdoorAir": frozenset(["controller_object_name", "controller_object_type"]),
-    "FaultModel:TemperatureSensorOffset:ChillerSupplyWater": frozenset(["chiller_object_name", "chiller_object_type"]),
-    "FaultModel:TemperatureSensorOffset:CoilSupplyAir": frozenset(["coil_object_name", "coil_object_type"]),
-    "FaultModel:TemperatureSensorOffset:CondenserSupplyWater": frozenset([
+    ),
+    "FaultModel:Fouling:Boiler": ("boiler_object_name", "boiler_object_type"),
+    "FaultModel:Fouling:Chiller": ("chiller_object_name", "chiller_object_type"),
+    "FaultModel:Fouling:Coil": ("coil_name",),
+    "FaultModel:Fouling:CoolingTower": ("cooling_tower_object_name", "cooling_tower_object_type"),
+    "FaultModel:Fouling:EvaporativeCooler": ("evaporative_cooler_object_name", "evaporative_cooler_object_type"),
+    "FaultModel:HumidistatOffset": ("humidistat_name",),
+    "FaultModel:HumiditySensorOffset:OutdoorAir": ("controller_object_name", "controller_object_type"),
+    "FaultModel:PressureSensorOffset:OutdoorAir": ("controller_object_name", "controller_object_type"),
+    "FaultModel:TemperatureSensorOffset:ChillerSupplyWater": ("chiller_object_name", "chiller_object_type"),
+    "FaultModel:TemperatureSensorOffset:CoilSupplyAir": ("coil_object_name", "coil_object_type"),
+    "FaultModel:TemperatureSensorOffset:CondenserSupplyWater": (
         "cooling_tower_object_name",
         "cooling_tower_object_type",
-    ]),
-    "FaultModel:TemperatureSensorOffset:OutdoorAir": frozenset(["controller_object_name", "controller_object_type"]),
-    "FaultModel:TemperatureSensorOffset:ReturnAir": frozenset(["controller_object_name", "controller_object_type"]),
-    "FaultModel:ThermostatOffset": frozenset(["thermostat_name"]),
-    "FenestrationSurface:Detailed": frozenset([
+    ),
+    "FaultModel:TemperatureSensorOffset:OutdoorAir": ("controller_object_name", "controller_object_type"),
+    "FaultModel:TemperatureSensorOffset:ReturnAir": ("controller_object_name", "controller_object_type"),
+    "FaultModel:ThermostatOffset": ("thermostat_name",),
+    "FenestrationSurface:Detailed": (
         "building_surface_name",
         "surface_type",
         "vertex_1_x_coordinate",
@@ -1617,12 +1559,12 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "vertex_3_x_coordinate",
         "vertex_3_y_coordinate",
         "vertex_3_z_coordinate",
-    ]),
-    "Floor:Adiabatic": frozenset(["construction_name", "zone_name"]),
-    "Floor:Detailed": frozenset(["construction_name", "outside_boundary_condition", "zone_name"]),
-    "Floor:GroundContact": frozenset(["construction_name", "zone_name"]),
-    "Floor:Interzone": frozenset(["construction_name", "outside_boundary_condition_object", "zone_name"]),
-    "FluidCooler:SingleSpeed": frozenset([
+    ),
+    "Floor:Adiabatic": ("construction_name", "zone_name"),
+    "Floor:Detailed": ("construction_name", "outside_boundary_condition", "zone_name"),
+    "Floor:GroundContact": ("construction_name", "zone_name"),
+    "Floor:Interzone": ("construction_name", "outside_boundary_condition_object", "zone_name"),
+    "FluidCooler:SingleSpeed": (
         "design_air_flow_rate",
         "design_air_flow_rate_fan_power",
         "design_entering_air_temperature",
@@ -1631,8 +1573,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "design_water_flow_rate",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "FluidCooler:TwoSpeed": frozenset([
+    ),
+    "FluidCooler:TwoSpeed": (
         "design_entering_air_temperature",
         "design_entering_air_wet_bulb_temperature",
         "design_entering_water_temperature",
@@ -1643,20 +1585,16 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "low_fan_speed_fan_power",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "FluidProperties:GlycolConcentration": frozenset(["glycol_type"]),
-    "FluidProperties:Name": frozenset(["fluid_name", "fluid_type"]),
-    "GasEquipment": frozenset([
-        "schedule_name",
-        "zone_or_zonelist_name",
-        "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "GasEquipment:Instance": frozenset([
+    ),
+    "FluidProperties:GlycolConcentration": ("glycol_type",),
+    "FluidProperties:Name": ("fluid_name", "fluid_type"),
+    "GasEquipment": ("schedule_name", "zone_or_zonelist_name", "zone_or_zonelist_or_space_or_spacelist_name"),
+    "GasEquipment:Instance": (
         "gas_equipment_definition_name",
         "schedule_name",
         "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "Generator:FuelCell": frozenset([
+    ),
+    "Generator:FuelCell": (
         "air_supply_name",
         "auxiliary_heater_name",
         "electrical_storage_name",
@@ -1665,23 +1603,23 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "inverter_name",
         "power_module_name",
         "water_supply_name",
-    ]),
-    "Generator:FuelCell:AirSupply": frozenset([
+    ),
+    "Generator:FuelCell:AirSupply": (
         "air_intake_heat_recovery_mode",
         "air_supply_constituent_mode",
         "air_supply_rate_calculation_mode",
-    ]),
-    "Generator:FuelCell:PowerModule": frozenset(["efficiency_curve_name"]),
-    "Generator:MicroTurbine": frozenset([
+    ),
+    "Generator:FuelCell:PowerModule": ("efficiency_curve_name",),
+    "Generator:MicroTurbine": (
         "electrical_efficiency_function_of_part_load_ratio_curve_name",
         "electrical_efficiency_function_of_temperature_curve_name",
         "electrical_power_function_of_temperature_and_elevation_curve_name",
         "reference_electrical_efficiency_using_lower_heating_value",
         "reference_electrical_power_output",
-    ]),
-    "Generator:PVWatts": frozenset(["array_type", "dc_system_capacity", "module_type"]),
-    "Generator:Photovoltaic": frozenset(["surface_name"]),
-    "Generator:WindTurbine": frozenset([
+    ),
+    "Generator:PVWatts": ("array_type", "dc_system_capacity", "module_type"),
+    "Generator:Photovoltaic": ("surface_name",),
+    "Generator:WindTurbine": (
         "cut_in_wind_speed",
         "cut_out_wind_speed",
         "overall_height",
@@ -1689,19 +1627,19 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "rated_rotor_speed",
         "rated_wind_speed",
         "rotor_diameter",
-    ]),
-    "GeometryTransform": frozenset(["current_aspect_ratio", "new_aspect_ratio"]),
-    "GlazedDoor": frozenset(["building_surface_name", "construction_name"]),
-    "GlazedDoor:Interzone": frozenset(["building_surface_name", "construction_name"]),
-    "GlobalGeometryRules": frozenset(["coordinate_system", "starting_vertex_position", "vertex_entry_direction"]),
-    "GroundHeatExchanger:HorizontalTrench": frozenset([
+    ),
+    "GeometryTransform": ("current_aspect_ratio", "new_aspect_ratio"),
+    "GlazedDoor": ("building_surface_name", "construction_name"),
+    "GlazedDoor:Interzone": ("building_surface_name", "construction_name"),
+    "GlobalGeometryRules": ("coordinate_system", "starting_vertex_position", "vertex_entry_direction"),
+    "GroundHeatExchanger:HorizontalTrench": (
         "design_flow_rate",
         "inlet_node_name",
         "outlet_node_name",
         "undisturbed_ground_temperature_model_name",
         "undisturbed_ground_temperature_model_type",
-    ]),
-    "GroundHeatExchanger:Pond": frozenset([
+    ),
+    "GroundHeatExchanger:Pond": (
         "fluid_inlet_node_name",
         "fluid_outlet_node_name",
         "ground_thermal_conductivity",
@@ -1712,16 +1650,16 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "number_of_tubing_circuits",
         "pond_area",
         "pond_depth",
-    ]),
-    "GroundHeatExchanger:ResponseFactors": frozenset(["ghe_vertical_properties_object_name", "number_of_boreholes"]),
-    "GroundHeatExchanger:Slinky": frozenset([
+    ),
+    "GroundHeatExchanger:ResponseFactors": ("ghe_vertical_properties_object_name", "number_of_boreholes"),
+    "GroundHeatExchanger:Slinky": (
         "inlet_node_name",
         "outlet_node_name",
         "undisturbed_ground_temperature_model_name",
         "undisturbed_ground_temperature_model_type",
-    ]),
-    "GroundHeatExchanger:Surface": frozenset(["construction_name", "fluid_inlet_node_name", "fluid_outlet_node_name"]),
-    "GroundHeatExchanger:System": frozenset([
+    ),
+    "GroundHeatExchanger:Surface": ("construction_name", "fluid_inlet_node_name", "fluid_outlet_node_name"),
+    "GroundHeatExchanger:System": (
         "design_flow_rate",
         "ground_thermal_conductivity",
         "ground_thermal_heat_capacity",
@@ -1729,14 +1667,14 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "outlet_node_name",
         "undisturbed_ground_temperature_model_name",
         "undisturbed_ground_temperature_model_type",
-    ]),
-    "GroundHeatExchanger:Vertical:Array": frozenset([
+    ),
+    "GroundHeatExchanger:Vertical:Array": (
         "borehole_spacing",
         "ghe_vertical_properties_object_name",
         "number_of_boreholes_in_x_direction",
         "number_of_boreholes_in_y_direction",
-    ]),
-    "GroundHeatExchanger:Vertical:Properties": frozenset([
+    ),
+    "GroundHeatExchanger:Vertical:Properties": (
         "borehole_diameter",
         "borehole_length",
         "depth_of_top_of_borehole",
@@ -1747,28 +1685,21 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "pipe_thermal_heat_capacity",
         "pipe_thickness",
         "u_tube_distance",
-    ]),
-    "GroundHeatExchanger:Vertical:Single": frozenset([
-        "ghe_vertical_properties_object_name",
-        "x_location",
-        "y_location",
-    ]),
-    "GroundHeatExchanger:Vertical:Sizing:Rectangle": frozenset([
+    ),
+    "GroundHeatExchanger:Vertical:Single": ("ghe_vertical_properties_object_name", "x_location", "y_location"),
+    "GroundHeatExchanger:Vertical:Sizing:Rectangle": (
         "available_borehole_field_length",
         "available_borehole_field_width",
         "maximum_number_of_boreholes",
         "sizingperiod_weatherfiledays_name",
-    ]),
-    "GroundHeatTransfer:Basement:AutoGrid": frozenset([
+    ),
+    "GroundHeatTransfer:Basement:AutoGrid": (
         "slabx_x_dimension_of_the_building_slab",
         "slaby_y_dimension_of_the_building_slab",
-    ]),
-    "GroundHeatTransfer:Basement:EquivSlab": frozenset([
-        "apratio_the_area_to_perimeter_ratio_for_this_slab",
-        "equivsizing_flag",
-    ]),
-    "GroundHeatTransfer:Basement:Insulation": frozenset(["insfull_flag_is_the_wall_fully_insulated_"]),
-    "GroundHeatTransfer:Basement:ManualGrid": frozenset([
+    ),
+    "GroundHeatTransfer:Basement:EquivSlab": ("apratio_the_area_to_perimeter_ratio_for_this_slab", "equivsizing_flag"),
+    "GroundHeatTransfer:Basement:Insulation": ("insfull_flag_is_the_wall_fully_insulated_",),
+    "GroundHeatTransfer:Basement:ManualGrid": (
         "ibase_x_direction_cell_indicator_of_slab_edge_5_20_",
         "jbase_y_direction_cell_indicator_of_slab_edge_5_20_",
         "kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_",
@@ -1776,50 +1707,50 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "ny_number_of_cells_in_the_y_direction_20_",
         "nzag_number_of_cells_in_the_z_direction_above_grade_4_always_",
         "nzbg_number_of_cells_in_z_direction_below_grade_10_35_",
-    ]),
-    "GroundHeatTransfer:Basement:MatlProps": frozenset(["nmat_number_of_materials_in_this_domain"]),
-    "GroundHeatTransfer:Slab:AutoGrid": frozenset([
+    ),
+    "GroundHeatTransfer:Basement:MatlProps": ("nmat_number_of_materials_in_this_domain",),
+    "GroundHeatTransfer:Slab:AutoGrid": (
         "slabx_x_dimension_of_the_building_slab",
         "slaby_y_dimension_of_the_building_slab",
-    ]),
-    "GroundHeatTransfer:Slab:BoundConds": frozenset([
+    ),
+    "GroundHeatTransfer:Slab:BoundConds": (
         "evtr_is_surface_evapotranspiration_modeled",
         "fixbc_is_the_lower_boundary_at_a_fixed_temperature",
         "usrhflag_is_the_ground_surface_h_specified_by_the_user_",
-    ]),
-    "GroundHeatTransfer:Slab:EquivalentSlab": frozenset(["apratio_the_area_to_perimeter_ratio_for_this_slab"]),
-    "GroundHeatTransfer:Slab:ManualGrid": frozenset([
+    ),
+    "GroundHeatTransfer:Slab:EquivalentSlab": ("apratio_the_area_to_perimeter_ratio_for_this_slab",),
+    "GroundHeatTransfer:Slab:ManualGrid": (
         "ibox_x_direction_cell_indicator_of_slab_edge",
         "jbox_y_direction_cell_indicator_of_slab_edge",
         "nx_number_of_cells_in_the_x_direction",
         "ny_number_of_cells_in_the_y_direction",
         "nz_number_of_cells_in_the_z_direction",
-    ]),
-    "GroundHeatTransfer:Slab:Materials": frozenset(["nmat_number_of_materials"]),
-    "HVACTemplate:Plant:Boiler": frozenset(["boiler_type"]),
-    "HVACTemplate:Plant:Boiler:ObjectReference": frozenset(["boiler_name"]),
-    "HVACTemplate:Plant:Chiller": frozenset(["chiller_type", "nominal_cop"]),
-    "HVACTemplate:Plant:Chiller:ObjectReference": frozenset(["chiller_name"]),
-    "HVACTemplate:Plant:Tower": frozenset(["tower_type"]),
-    "HVACTemplate:Plant:Tower:ObjectReference": frozenset(["cooling_tower_name"]),
-    "HVACTemplate:System:Unitary": frozenset(["control_zone_or_thermostat_location_name", "heating_coil_type"]),
-    "HVACTemplate:System:UnitaryHeatPump:AirToAir": frozenset(["control_zone_or_thermostat_location_name"]),
-    "HVACTemplate:Zone:BaseboardHeat": frozenset(["zone_name"]),
-    "HVACTemplate:Zone:ConstantVolume": frozenset(["template_constant_volume_system_name", "zone_name"]),
-    "HVACTemplate:Zone:DualDuct": frozenset(["template_dual_duct_system_name", "zone_name"]),
-    "HVACTemplate:Zone:FanCoil": frozenset(["zone_name"]),
-    "HVACTemplate:Zone:IdealLoadsAirSystem": frozenset(["zone_name"]),
-    "HVACTemplate:Zone:PTAC": frozenset(["zone_name"]),
-    "HVACTemplate:Zone:PTHP": frozenset(["zone_name"]),
-    "HVACTemplate:Zone:Unitary": frozenset(["template_unitary_system_name", "zone_name"]),
-    "HVACTemplate:Zone:VAV": frozenset(["template_vav_system_name", "zone_name"]),
-    "HVACTemplate:Zone:VAV:FanPowered": frozenset(["template_vav_system_name", "zone_name"]),
-    "HVACTemplate:Zone:VAV:HeatAndCool": frozenset(["template_vav_system_name", "zone_name"]),
-    "HVACTemplate:Zone:VRF": frozenset(["template_vrf_system_name", "zone_name"]),
-    "HVACTemplate:Zone:WaterToAirHeatPump": frozenset(["zone_name"]),
-    "HeaderedPumps:ConstantSpeed": frozenset(["inlet_node_name", "outlet_node_name"]),
-    "HeaderedPumps:VariableSpeed": frozenset(["inlet_node_name", "outlet_node_name"]),
-    "HeatExchanger:AirToAir:FlatPlate": frozenset([
+    ),
+    "GroundHeatTransfer:Slab:Materials": ("nmat_number_of_materials",),
+    "HVACTemplate:Plant:Boiler": ("boiler_type",),
+    "HVACTemplate:Plant:Boiler:ObjectReference": ("boiler_name",),
+    "HVACTemplate:Plant:Chiller": ("chiller_type", "nominal_cop"),
+    "HVACTemplate:Plant:Chiller:ObjectReference": ("chiller_name",),
+    "HVACTemplate:Plant:Tower": ("tower_type",),
+    "HVACTemplate:Plant:Tower:ObjectReference": ("cooling_tower_name",),
+    "HVACTemplate:System:Unitary": ("control_zone_or_thermostat_location_name", "heating_coil_type"),
+    "HVACTemplate:System:UnitaryHeatPump:AirToAir": ("control_zone_or_thermostat_location_name",),
+    "HVACTemplate:Zone:BaseboardHeat": ("zone_name",),
+    "HVACTemplate:Zone:ConstantVolume": ("template_constant_volume_system_name", "zone_name"),
+    "HVACTemplate:Zone:DualDuct": ("template_dual_duct_system_name", "zone_name"),
+    "HVACTemplate:Zone:FanCoil": ("zone_name",),
+    "HVACTemplate:Zone:IdealLoadsAirSystem": ("zone_name",),
+    "HVACTemplate:Zone:PTAC": ("zone_name",),
+    "HVACTemplate:Zone:PTHP": ("zone_name",),
+    "HVACTemplate:Zone:Unitary": ("template_unitary_system_name", "zone_name"),
+    "HVACTemplate:Zone:VAV": ("template_vav_system_name", "zone_name"),
+    "HVACTemplate:Zone:VAV:FanPowered": ("template_vav_system_name", "zone_name"),
+    "HVACTemplate:Zone:VAV:HeatAndCool": ("template_vav_system_name", "zone_name"),
+    "HVACTemplate:Zone:VRF": ("template_vrf_system_name", "zone_name"),
+    "HVACTemplate:Zone:WaterToAirHeatPump": ("zone_name",),
+    "HeaderedPumps:ConstantSpeed": ("inlet_node_name", "outlet_node_name"),
+    "HeaderedPumps:VariableSpeed": ("inlet_node_name", "outlet_node_name"),
+    "HeatExchanger:AirToAir:FlatPlate": (
         "nominal_secondary_air_flow_rate",
         "nominal_secondary_air_inlet_temperature",
         "nominal_supply_air_inlet_temperature",
@@ -1828,22 +1759,22 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "secondary_air_outlet_node_name",
         "supply_air_inlet_node_name",
         "supply_air_outlet_node_name",
-    ]),
-    "HeatExchanger:AirToAir:SensibleAndLatent": frozenset([
+    ),
+    "HeatExchanger:AirToAir:SensibleAndLatent": (
         "exhaust_air_inlet_node_name",
         "exhaust_air_outlet_node_name",
         "nominal_supply_air_flow_rate",
         "supply_air_inlet_node_name",
         "supply_air_outlet_node_name",
-    ]),
-    "HeatExchanger:Desiccant:BalancedFlow": frozenset([
+    ),
+    "HeatExchanger:Desiccant:BalancedFlow": (
         "heat_exchanger_performance_name",
         "process_air_inlet_node_name",
         "process_air_outlet_node_name",
         "regeneration_air_inlet_node_name",
         "regeneration_air_outlet_node_name",
-    ]),
-    "HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1": frozenset([
+    ),
+    "HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1": (
         "humidity_ratio_equation_coefficient_1",
         "humidity_ratio_equation_coefficient_2",
         "humidity_ratio_equation_coefficient_3",
@@ -1893,8 +1824,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "temperature_equation_coefficient_6",
         "temperature_equation_coefficient_7",
         "temperature_equation_coefficient_8",
-    ]),
-    "HeatExchanger:FluidToFluid": frozenset([
+    ),
+    "HeatExchanger:FluidToFluid": (
         "heat_exchanger_u_factor_times_area_value",
         "loop_demand_side_design_flow_rate",
         "loop_demand_side_inlet_node_name",
@@ -1902,23 +1833,23 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "loop_supply_side_design_flow_rate",
         "loop_supply_side_inlet_node_name",
         "loop_supply_side_outlet_node_name",
-    ]),
-    "HeatPump:AirToWater": frozenset(["air_inlet_node_name", "air_outlet_node_name"]),
-    "HeatPump:AirToWater:FuelFired:Cooling": frozenset([
+    ),
+    "HeatPump:AirToWater": ("air_inlet_node_name", "air_outlet_node_name"),
+    "HeatPump:AirToWater:FuelFired:Cooling": (
         "fuel_energy_input_ratio_function_of_plr_curve_name",
         "fuel_energy_input_ratio_function_of_temperature_curve_name",
         "normalized_capacity_function_of_temperature_curve_name",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "HeatPump:AirToWater:FuelFired:Heating": frozenset([
+    ),
+    "HeatPump:AirToWater:FuelFired:Heating": (
         "fuel_energy_input_ratio_function_of_plr_curve_name",
         "fuel_energy_input_ratio_function_of_temperature_curve_name",
         "normalized_capacity_function_of_temperature_curve_name",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "HeatPump:PlantLoop:EIR:Cooling": frozenset([
+    ),
+    "HeatPump:PlantLoop:EIR:Cooling": (
         "capacity_modifier_function_of_temperature_curve_name",
         "electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name",
         "electric_input_to_output_ratio_modifier_function_of_temperature_curve_name",
@@ -1926,8 +1857,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "load_side_outlet_node_name",
         "source_side_inlet_node_name",
         "source_side_outlet_node_name",
-    ]),
-    "HeatPump:PlantLoop:EIR:Heating": frozenset([
+    ),
+    "HeatPump:PlantLoop:EIR:Heating": (
         "capacity_modifier_function_of_temperature_curve_name",
         "electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name",
         "electric_input_to_output_ratio_modifier_function_of_temperature_curve_name",
@@ -1935,8 +1866,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "load_side_outlet_node_name",
         "source_side_inlet_node_name",
         "source_side_outlet_node_name",
-    ]),
-    "HeatPump:WaterToWater:EIR:Cooling": frozenset([
+    ),
+    "HeatPump:WaterToWater:EIR:Cooling": (
         "capacity_modifier_function_of_temperature_curve_name",
         "electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name",
         "electric_input_to_output_ratio_modifier_function_of_temperature_curve_name",
@@ -1944,8 +1875,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "load_side_outlet_node_name",
         "source_side_inlet_node_name",
         "source_side_outlet_node_name",
-    ]),
-    "HeatPump:WaterToWater:EIR:Heating": frozenset([
+    ),
+    "HeatPump:WaterToWater:EIR:Heating": (
         "capacity_modifier_function_of_temperature_curve_name",
         "electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name",
         "electric_input_to_output_ratio_modifier_function_of_temperature_curve_name",
@@ -1953,8 +1884,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "load_side_outlet_node_name",
         "source_side_inlet_node_name",
         "source_side_outlet_node_name",
-    ]),
-    "HeatPump:WaterToWater:EquationFit:Cooling": frozenset([
+    ),
+    "HeatPump:WaterToWater:EquationFit:Cooling": (
         "cooling_capacity_coefficient_1",
         "cooling_capacity_coefficient_2",
         "cooling_capacity_coefficient_3",
@@ -1975,8 +1906,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "reference_source_side_flow_rate",
         "source_side_inlet_node_name",
         "source_side_outlet_node_name",
-    ]),
-    "HeatPump:WaterToWater:EquationFit:Heating": frozenset([
+    ),
+    "HeatPump:WaterToWater:EquationFit:Heating": (
         "heating_capacity_coefficient_1",
         "heating_capacity_coefficient_2",
         "heating_capacity_coefficient_3",
@@ -1997,82 +1928,74 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "reference_source_side_flow_rate",
         "source_side_inlet_node_name",
         "source_side_outlet_node_name",
-    ]),
-    "HeatPump:WaterToWater:ParameterEstimation:Cooling": frozenset([
+    ),
+    "HeatPump:WaterToWater:ParameterEstimation:Cooling": (
         "load_side_inlet_node_name",
         "load_side_outlet_node_name",
         "source_side_inlet_node_name",
         "source_side_outlet_node_name",
-    ]),
-    "HeatPump:WaterToWater:ParameterEstimation:Heating": frozenset([
+    ),
+    "HeatPump:WaterToWater:ParameterEstimation:Heating": (
         "load_side_inlet_node_name",
         "load_side_outlet_node_name",
         "source_side_inlet_node_name",
         "source_side_outlet_node_name",
-    ]),
-    "HotWaterEquipment": frozenset([
-        "schedule_name",
-        "zone_or_zonelist_name",
-        "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "HotWaterEquipment:Instance": frozenset([
+    ),
+    "HotWaterEquipment": ("schedule_name", "zone_or_zonelist_name", "zone_or_zonelist_or_space_or_spacelist_name"),
+    "HotWaterEquipment:Instance": (
         "hot_water_equipment_definition_name",
         "schedule_name",
         "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "HybridModel:Zone": frozenset(["begin_day_of_month", "begin_month", "end_day_of_month", "end_month", "zone_name"]),
-    "IndoorLivingWall": frozenset(["schedule_name", "surface_name"]),
-    "InternalMass": frozenset(["surface_area", "zone_name"]),
-    "LifeCycleCost:UseAdjustment": frozenset(["resource"]),
-    "LifeCycleCost:UsePriceEscalation": frozenset(["lcc_price_escalation_name", "resource"]),
-    "Lights": frozenset(["schedule_name", "zone_or_zonelist_name", "zone_or_zonelist_or_space_or_spacelist_name"]),
-    "Lights:Instance": frozenset([
-        "lights_definition_name",
-        "schedule_name",
-        "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "LoadProfile:Plant": frozenset([
+    ),
+    "HybridModel:Zone": ("begin_day_of_month", "begin_month", "end_day_of_month", "end_month", "zone_name"),
+    "IndoorLivingWall": ("schedule_name", "surface_name"),
+    "InternalMass": ("surface_area", "zone_name"),
+    "LifeCycleCost:UseAdjustment": ("resource",),
+    "LifeCycleCost:UsePriceEscalation": ("lcc_price_escalation_name", "resource"),
+    "Lights": ("schedule_name", "zone_or_zonelist_name", "zone_or_zonelist_or_space_or_spacelist_name"),
+    "Lights:Instance": ("lights_definition_name", "schedule_name", "zone_or_zonelist_or_space_or_spacelist_name"),
+    "LoadProfile:Plant": (
         "flow_rate_fraction_schedule_name",
         "inlet_node_name",
         "load_schedule_name",
         "outlet_node_name",
         "peak_flow_rate",
-    ]),
-    "Material": frozenset(["conductivity", "density", "roughness", "specific_heat", "thickness"]),
-    "Material:AirGap": frozenset(["thermal_resistance"]),
-    "Material:NoMass": frozenset(["roughness", "thermal_resistance"]),
-    "MaterialProperty:HeatAndMoistureTransfer:Diffusion": frozenset([
+    ),
+    "Material": ("conductivity", "density", "roughness", "specific_heat", "thickness"),
+    "Material:AirGap": ("thermal_resistance",),
+    "Material:NoMass": ("roughness", "thermal_resistance"),
+    "MaterialProperty:HeatAndMoistureTransfer:Diffusion": (
         "material_name",
         "number_of_data_pairs",
         "relative_humidity_fraction_1",
         "water_vapor_diffusion_resistance_factor_1",
-    ]),
-    "MaterialProperty:HeatAndMoistureTransfer:Redistribution": frozenset([
+    ),
+    "MaterialProperty:HeatAndMoistureTransfer:Redistribution": (
         "liquid_transport_coefficient_1",
         "material_name",
         "moisture_content_1",
         "number_of_redistribution_points",
-    ]),
-    "MaterialProperty:HeatAndMoistureTransfer:Settings": frozenset(["material_name", "porosity"]),
-    "MaterialProperty:HeatAndMoistureTransfer:SorptionIsotherm": frozenset([
+    ),
+    "MaterialProperty:HeatAndMoistureTransfer:Settings": ("material_name", "porosity"),
+    "MaterialProperty:HeatAndMoistureTransfer:SorptionIsotherm": (
         "material_name",
         "moisture_content_1",
         "number_of_isotherm_coordinates",
         "relative_humidity_fraction_1",
-    ]),
-    "MaterialProperty:HeatAndMoistureTransfer:Suction": frozenset([
+    ),
+    "MaterialProperty:HeatAndMoistureTransfer:Suction": (
         "liquid_transport_coefficient_1",
         "material_name",
         "moisture_content_1",
         "number_of_suction_points",
-    ]),
-    "MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity": frozenset([
+    ),
+    "MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity": (
         "material_name",
         "moisture_content_1",
         "number_of_thermal_coordinates",
         "thermal_conductivity_1",
-    ]),
-    "MaterialProperty:MoisturePenetrationDepth:Settings": frozenset([
+    ),
+    "MaterialProperty:MoisturePenetrationDepth:Settings": (
         "coating_layer_thickness",
         "coating_layer_water_vapor_diffusion_resistance_factor",
         "moisture_equation_coefficient_a",
@@ -2080,16 +2003,16 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "moisture_equation_coefficient_c",
         "moisture_equation_coefficient_d",
         "water_vapor_diffusion_resistance_factor",
-    ]),
-    "MaterialProperty:PhaseChange": frozenset([
+    ),
+    "MaterialProperty:PhaseChange": (
         "enthalpy_1",
         "enthalpy_2",
         "enthalpy_3",
         "temperature_1",
         "temperature_2",
         "temperature_3",
-    ]),
-    "MaterialProperty:PhaseChangeHysteresis": frozenset([
+    ),
+    "MaterialProperty:PhaseChangeHysteresis": (
         "high_temperature_difference_of_freezing_curve",
         "high_temperature_difference_of_melting_curve",
         "latent_heat_during_the_entire_phase_change_process",
@@ -2103,45 +2026,41 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "solid_state_density",
         "solid_state_specific_heat",
         "solid_state_thermal_conductivity",
-    ]),
-    "MaterialProperty:VariableAbsorptance": frozenset(["reference_material_name"]),
-    "MaterialProperty:VariableThermalConductivity": frozenset([
+    ),
+    "MaterialProperty:VariableAbsorptance": ("reference_material_name",),
+    "MaterialProperty:VariableThermalConductivity": (
         "temperature_1",
         "temperature_2",
         "temperature_3",
         "thermal_conductivity_1",
         "thermal_conductivity_2",
         "thermal_conductivity_3",
-    ]),
-    "Matrix:TwoDimension": frozenset(["number_of_columns", "number_of_rows"]),
-    "Meter:CustomDecrement": frozenset(["source_meter_name"]),
-    "OtherEquipment": frozenset([
-        "schedule_name",
-        "zone_or_zonelist_name",
-        "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "OtherEquipment:Instance": frozenset([
+    ),
+    "Matrix:TwoDimension": ("number_of_columns", "number_of_rows"),
+    "Meter:CustomDecrement": ("source_meter_name",),
+    "OtherEquipment": ("schedule_name", "zone_or_zonelist_name", "zone_or_zonelist_or_space_or_spacelist_name"),
+    "OtherEquipment:Instance": (
         "other_equipment_definition_name",
         "schedule_name",
         "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "OutdoorAir:Mixer": frozenset([
+    ),
+    "OutdoorAir:Mixer": (
         "mixed_air_node_name",
         "outdoor_air_stream_node_name",
         "relief_air_stream_node_name",
         "return_air_stream_node_name",
-    ]),
-    "Output:DaylightFactors": frozenset(["reporting_days"]),
-    "Output:IlluminanceMap": frozenset(["zone_name", "zone_or_space_name"]),
-    "Output:JSON": frozenset(["option_type"]),
-    "Output:Meter": frozenset(["key_name"]),
-    "Output:Meter:Cumulative": frozenset(["key_name"]),
-    "Output:Meter:Cumulative:MeterFileOnly": frozenset(["key_name"]),
-    "Output:Meter:MeterFileOnly": frozenset(["key_name"]),
-    "Output:Schedules": frozenset(["key_field"]),
-    "Output:Surfaces:Drawing": frozenset(["report_type"]),
-    "Output:Surfaces:List": frozenset(["report_type"]),
-    "Output:Table:ReportPeriod": frozenset([
+    ),
+    "Output:DaylightFactors": ("reporting_days",),
+    "Output:IlluminanceMap": ("zone_name", "zone_or_space_name"),
+    "Output:JSON": ("option_type",),
+    "Output:Meter": ("key_name",),
+    "Output:Meter:Cumulative": ("key_name",),
+    "Output:Meter:Cumulative:MeterFileOnly": ("key_name",),
+    "Output:Meter:MeterFileOnly": ("key_name",),
+    "Output:Schedules": ("key_field",),
+    "Output:Surfaces:Drawing": ("report_type",),
+    "Output:Surfaces:List": ("report_type",),
+    "Output:Table:ReportPeriod": (
         "begin_day_of_month",
         "begin_hour_of_day",
         "begin_month",
@@ -2149,28 +2068,28 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "end_hour_of_day",
         "end_month",
         "name_",
-    ]),
-    "Output:Table:TimeBins": frozenset(["variable_name"]),
-    "Output:Variable": frozenset(["variable_name"]),
-    "OutputControl:Sizing:Style": frozenset(["column_separator"]),
-    "People": frozenset([
+    ),
+    "Output:Table:TimeBins": ("variable_name",),
+    "Output:Variable": ("variable_name",),
+    "OutputControl:Sizing:Style": ("column_separator",),
+    "People": (
         "activity_level_schedule_name",
         "number_of_people_schedule_name",
         "zone_or_zonelist_name",
         "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "People:Instance": frozenset([
+    ),
+    "People:Instance": (
         "activity_level_schedule_name",
         "number_of_people_schedule_name",
         "people_definition_name",
         "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "PhotovoltaicPerformance:Simple": frozenset(["fraction_of_surface_area_with_active_solar_cells"]),
-    "Pipe:Adiabatic": frozenset(["inlet_node_name", "outlet_node_name"]),
-    "Pipe:Adiabatic:Steam": frozenset(["inlet_node_name", "outlet_node_name"]),
-    "Pipe:Indoor": frozenset(["construction_name", "fluid_inlet_node_name", "fluid_outlet_node_name"]),
-    "Pipe:Outdoor": frozenset(["construction_name", "fluid_inlet_node_name", "fluid_outlet_node_name"]),
-    "Pipe:Underground": frozenset([
+    ),
+    "PhotovoltaicPerformance:Simple": ("fraction_of_surface_area_with_active_solar_cells",),
+    "Pipe:Adiabatic": ("inlet_node_name", "outlet_node_name"),
+    "Pipe:Adiabatic:Steam": ("inlet_node_name", "outlet_node_name"),
+    "Pipe:Indoor": ("construction_name", "fluid_inlet_node_name", "fluid_outlet_node_name"),
+    "Pipe:Outdoor": ("construction_name", "fluid_inlet_node_name", "fluid_outlet_node_name"),
+    "Pipe:Underground": (
         "construction_name",
         "fluid_inlet_node_name",
         "fluid_outlet_node_name",
@@ -2178,8 +2097,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "sun_exposure",
         "undisturbed_ground_temperature_model_name",
         "undisturbed_ground_temperature_model_type",
-    ]),
-    "PipingSystem:Underground:Domain": frozenset([
+    ),
+    "PipingSystem:Underground:Domain": (
         "number_of_pipe_circuits_entered_for_this_domain",
         "soil_density",
         "soil_specific_heat",
@@ -2192,8 +2111,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "ymax",
         "z_direction_mesh_type",
         "zmax",
-    ]),
-    "PipingSystem:Underground:PipeCircuit": frozenset([
+    ),
+    "PipingSystem:Underground:PipeCircuit": (
         "circuit_inlet_node",
         "circuit_outlet_node",
         "design_flow_rate",
@@ -2204,76 +2123,76 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "pipe_specific_heat",
         "pipe_thermal_conductivity",
         "radial_thickness_of_inner_radial_near_pipe_mesh_region",
-    ]),
-    "PipingSystem:Underground:PipeSegment": frozenset(["flow_direction", "x_position", "y_position"]),
-    "PlantComponent:TemperatureSource": frozenset(["design_volume_flow_rate", "inlet_node", "outlet_node"]),
-    "PlantComponent:UserDefined": frozenset([
+    ),
+    "PipingSystem:Underground:PipeSegment": ("flow_direction", "x_position", "y_position"),
+    "PlantComponent:TemperatureSource": ("design_volume_flow_rate", "inlet_node", "outlet_node"),
+    "PlantComponent:UserDefined": (
         "number_of_plant_loop_connections",
         "plant_connection_1_inlet_node_name",
         "plant_connection_1_loading_mode",
         "plant_connection_1_loop_flow_request_mode",
         "plant_connection_1_outlet_node_name",
-    ]),
-    "PlantEquipmentOperation:ChillerHeaterChangeover": frozenset([
+    ),
+    "PlantEquipmentOperation:ChillerHeaterChangeover": (
         "outdoor_high_temperature",
         "outdoor_low_temperature",
         "primary_cooling_plant_setpoint_temperature",
         "primary_heating_plant_setpoint_at_outdoor_high_temperature",
         "primary_heating_plant_setpoint_at_outdoor_low_temperature",
-    ]),
-    "PlantEquipmentOperation:ComponentSetpoint": frozenset([
+    ),
+    "PlantEquipmentOperation:ComponentSetpoint": (
         "component_1_flow_rate",
         "demand_calculation_1_node_name",
         "equipment_1_name",
         "equipment_1_object_type",
         "operation_1_type",
         "setpoint_1_node_name",
-    ]),
-    "PlantEquipmentOperation:CoolingLoad": frozenset(["load_range_1_lower_limit", "load_range_1_upper_limit"]),
-    "PlantEquipmentOperation:HeatingLoad": frozenset([
+    ),
+    "PlantEquipmentOperation:CoolingLoad": ("load_range_1_lower_limit", "load_range_1_upper_limit"),
+    "PlantEquipmentOperation:HeatingLoad": (
         "load_range_1_lower_limit",
         "load_range_1_upper_limit",
         "range_1_equipment_list_name",
-    ]),
-    "PlantEquipmentOperation:OutdoorDewpoint": frozenset([
+    ),
+    "PlantEquipmentOperation:OutdoorDewpoint": (
         "dewpoint_temperature_range_1_lower_limit",
         "dewpoint_temperature_range_1_upper_limit",
         "range_1_equipment_list_name",
-    ]),
-    "PlantEquipmentOperation:OutdoorDewpointDifference": frozenset([
+    ),
+    "PlantEquipmentOperation:OutdoorDewpointDifference": (
         "dewpoint_temperature_difference_range_1_lower_limit",
         "dewpoint_temperature_difference_range_1_upper_limit",
         "range_1_equipment_list_name",
         "reference_temperature_node_name",
-    ]),
-    "PlantEquipmentOperation:OutdoorDryBulb": frozenset([
+    ),
+    "PlantEquipmentOperation:OutdoorDryBulb": (
         "dry_bulb_temperature_range_1_lower_limit",
         "dry_bulb_temperature_range_1_upper_limit",
         "range_1_equipment_list_name",
-    ]),
-    "PlantEquipmentOperation:OutdoorDryBulbDifference": frozenset([
+    ),
+    "PlantEquipmentOperation:OutdoorDryBulbDifference": (
         "dry_bulb_temperature_difference_range_1_lower_limit",
         "dry_bulb_temperature_difference_range_1_upper_limit",
         "range_1_equipment_list_name",
         "reference_temperature_node_name",
-    ]),
-    "PlantEquipmentOperation:OutdoorRelativeHumidity": frozenset([
+    ),
+    "PlantEquipmentOperation:OutdoorRelativeHumidity": (
         "range_1_equipment_list_name",
         "relative_humidity_range_1_lower_limit",
         "relative_humidity_range_1_upper_limit",
-    ]),
-    "PlantEquipmentOperation:OutdoorWetBulb": frozenset([
+    ),
+    "PlantEquipmentOperation:OutdoorWetBulb": (
         "range_1_equipment_list_name",
         "wet_bulb_temperature_range_1_lower_limit",
         "wet_bulb_temperature_range_1_upper_limit",
-    ]),
-    "PlantEquipmentOperation:OutdoorWetBulbDifference": frozenset([
+    ),
+    "PlantEquipmentOperation:OutdoorWetBulbDifference": (
         "range_1_equipment_list_name",
         "reference_temperature_node_name",
         "wet_bulb_temperature_difference_range_1_lower_limit",
         "wet_bulb_temperature_difference_range_1_upper_limit",
-    ]),
-    "PlantEquipmentOperation:ThermalEnergyStorage": frozenset([
+    ),
+    "PlantEquipmentOperation:ThermalEnergyStorage": (
         "charging_availability_schedule",
         "charging_chilled_water_temperature",
         "component_1_demand_calculation_node_name",
@@ -2284,15 +2203,15 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "component_1_setpoint_node_name",
         "non_charging_chilled_water_temperature",
         "on_peak_schedule",
-    ]),
-    "PlantEquipmentOperation:Uncontrolled": frozenset(["equipment_list_name"]),
-    "PlantEquipmentOperation:UserDefined": frozenset(["main_model_program_calling_manager_name"]),
-    "PlantEquipmentOperationSchemes": frozenset([
+    ),
+    "PlantEquipmentOperation:Uncontrolled": ("equipment_list_name",),
+    "PlantEquipmentOperation:UserDefined": ("main_model_program_calling_manager_name",),
+    "PlantEquipmentOperationSchemes": (
         "control_scheme_1_name",
         "control_scheme_1_object_type",
         "control_scheme_1_schedule_name",
-    ]),
-    "PlantLoop": frozenset([
+    ),
+    "PlantLoop": (
         "demand_side_branch_list_name",
         "demand_side_inlet_node_name",
         "demand_side_outlet_node_name",
@@ -2304,62 +2223,52 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "plant_side_branch_list_name",
         "plant_side_inlet_node_name",
         "plant_side_outlet_node_name",
-    ]),
-    "Pump:ConstantSpeed": frozenset(["inlet_node_name", "outlet_node_name"]),
-    "Pump:VariableSpeed": frozenset(["inlet_node_name", "outlet_node_name"]),
-    "Pump:VariableSpeed:Condensate": frozenset(["inlet_node_name", "outlet_node_name"]),
-    "PythonPlugin:Instance": frozenset(["plugin_class_name", "python_module_name"]),
-    "PythonPlugin:OutputVariable": frozenset([
-        "python_plugin_variable_name",
-        "type_of_data_in_variable",
-        "update_frequency",
-    ]),
-    "PythonPlugin:TrendVariable": frozenset(["name_of_a_python_plugin_variable", "number_of_timesteps_to_be_logged"]),
-    "Refrigeration:AirChiller": frozenset([
+    ),
+    "Pump:ConstantSpeed": ("inlet_node_name", "outlet_node_name"),
+    "Pump:VariableSpeed": ("inlet_node_name", "outlet_node_name"),
+    "Pump:VariableSpeed:Condensate": ("inlet_node_name", "outlet_node_name"),
+    "PythonPlugin:Instance": ("plugin_class_name", "python_module_name"),
+    "PythonPlugin:OutputVariable": ("python_plugin_variable_name", "type_of_data_in_variable", "update_frequency"),
+    "PythonPlugin:TrendVariable": ("name_of_a_python_plugin_variable", "number_of_timesteps_to_be_logged"),
+    "Refrigeration:AirChiller": (
         "capacity_rating_type",
         "defrost_schedule_name",
         "rated_air_flow",
         "rated_cooling_source_temperature",
         "rated_temperature_difference_dt1",
         "rated_total_heating_power",
-    ]),
-    "Refrigeration:Case": frozenset(["latent_case_credit_curve_name", "zone_name"]),
-    "Refrigeration:Compressor": frozenset([
+    ),
+    "Refrigeration:Case": ("latent_case_credit_curve_name", "zone_name"),
+    "Refrigeration:Compressor": (
         "refrigeration_compressor_capacity_curve_name",
         "refrigeration_compressor_power_curve_name",
-    ]),
-    "Refrigeration:CompressorRack": frozenset(["compressor_rack_cop_function_of_temperature_curve_name"]),
-    "Refrigeration:Condenser:Cascade": frozenset([
-        "rated_condensing_temperature",
-        "rated_effective_total_heat_rejection_rate",
-    ]),
-    "Refrigeration:Condenser:EvaporativeCooled": frozenset([
-        "rated_effective_total_heat_rejection_rate",
-        "rated_fan_power",
-    ]),
-    "Refrigeration:Condenser:WaterCooled": frozenset(["rated_condensing_temperature", "rated_water_inlet_temperature"]),
-    "Refrigeration:GasCooler:AirCooled": frozenset(["rated_total_heat_rejection_rate_curve_name"]),
-    "Refrigeration:SecondarySystem": frozenset([
+    ),
+    "Refrigeration:CompressorRack": ("compressor_rack_cop_function_of_temperature_curve_name",),
+    "Refrigeration:Condenser:Cascade": ("rated_condensing_temperature", "rated_effective_total_heat_rejection_rate"),
+    "Refrigeration:Condenser:EvaporativeCooled": ("rated_effective_total_heat_rejection_rate", "rated_fan_power"),
+    "Refrigeration:Condenser:WaterCooled": ("rated_condensing_temperature", "rated_water_inlet_temperature"),
+    "Refrigeration:GasCooler:AirCooled": ("rated_total_heat_rejection_rate_curve_name",),
+    "Refrigeration:SecondarySystem": (
         "circulating_fluid_name",
         "circulating_fluid_type",
         "evaporator_approach_temperature_difference",
         "evaporator_evaporating_temperature",
         "refrigerated_case_or_walkin_or_caseandwalkinlist_name",
-    ]),
-    "Refrigeration:System": frozenset([
+    ),
+    "Refrigeration:System": (
         "compressor_or_compressorlist_name",
         "minimum_condensing_temperature",
         "refrigeration_condenser_name",
         "refrigeration_system_working_fluid_type",
-    ]),
-    "Refrigeration:TranscriticalSystem": frozenset([
+    ),
+    "Refrigeration:TranscriticalSystem": (
         "high_pressure_compressor_or_compressorlist_name",
         "medium_temperature_refrigerated_case_or_walkin_or_caseandwalkinlist_name",
         "refrigeration_gas_cooler_name",
         "refrigeration_system_working_fluid_type",
         "system_type",
-    ]),
-    "Refrigeration:WalkIn": frozenset([
+    ),
+    "Refrigeration:WalkIn": (
         "defrost_schedule_name",
         "insulated_floor_surface_area",
         "operating_temperature",
@@ -2367,43 +2276,43 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "rated_cooling_source_temperature",
         "rated_total_heating_power",
         "rated_total_lighting_power",
-    ]),
-    "Roof": frozenset(["construction_name", "zone_name"]),
-    "RoofCeiling:Detailed": frozenset(["construction_name", "outside_boundary_condition", "zone_name"]),
-    "RoomAir:Node": frozenset(["height_of_nodal_control_volume_center", "node_type", "zone_name"]),
-    "RoomAir:Node:AirflowNetwork": frozenset(["zone_name"]),
-    "RoomAir:TemperaturePattern:ConstantGradient": frozenset([
+    ),
+    "Roof": ("construction_name", "zone_name"),
+    "RoofCeiling:Detailed": ("construction_name", "outside_boundary_condition", "zone_name"),
+    "RoomAir:Node": ("height_of_nodal_control_volume_center", "node_type", "zone_name"),
+    "RoomAir:Node:AirflowNetwork": ("zone_name",),
+    "RoomAir:TemperaturePattern:ConstantGradient": (
         "control_integer_for_pattern_control_schedule_name",
         "room_air_temperature_pattern_constant_gradient_name",
-    ]),
-    "RoomAir:TemperaturePattern:NondimensionalHeight": frozenset(["control_integer_for_pattern_control_schedule_name"]),
-    "RoomAir:TemperaturePattern:SurfaceMapping": frozenset(["control_integer_for_pattern_control_schedule_name"]),
-    "RoomAir:TemperaturePattern:TwoGradient": frozenset([
+    ),
+    "RoomAir:TemperaturePattern:NondimensionalHeight": ("control_integer_for_pattern_control_schedule_name",),
+    "RoomAir:TemperaturePattern:SurfaceMapping": ("control_integer_for_pattern_control_schedule_name",),
+    "RoomAir:TemperaturePattern:TwoGradient": (
         "control_integer_for_pattern_control_schedule_name",
         "room_air_temperature_pattern_two_gradient_name",
-    ]),
-    "RoomAir:TemperaturePattern:UserDefined": frozenset(["pattern_control_schedule_name", "zone_name"]),
-    "RoomAirModelType": frozenset(["zone_name"]),
-    "RoomAirSettings:AirflowNetwork": frozenset(["zone_name"]),
-    "RoomAirSettings:CrossVentilation": frozenset(["gain_distribution_schedule_name", "zone_name"]),
-    "RoomAirSettings:OneNodeDisplacementVentilation": frozenset(["zone_name"]),
-    "RoomAirSettings:ThreeNodeDisplacementVentilation": frozenset(["gain_distribution_schedule_name", "zone_name"]),
-    "RoomAirSettings:UnderFloorAirDistributionExterior": frozenset(["zone_name"]),
-    "RoomAirSettings:UnderFloorAirDistributionInterior": frozenset(["zone_name"]),
-    "RunPeriod": frozenset(["begin_day_of_month", "begin_month", "end_day_of_month", "end_month"]),
-    "RunPeriod:CustomRange": frozenset([
+    ),
+    "RoomAir:TemperaturePattern:UserDefined": ("pattern_control_schedule_name", "zone_name"),
+    "RoomAirModelType": ("zone_name",),
+    "RoomAirSettings:AirflowNetwork": ("zone_name",),
+    "RoomAirSettings:CrossVentilation": ("gain_distribution_schedule_name", "zone_name"),
+    "RoomAirSettings:OneNodeDisplacementVentilation": ("zone_name",),
+    "RoomAirSettings:ThreeNodeDisplacementVentilation": ("gain_distribution_schedule_name", "zone_name"),
+    "RoomAirSettings:UnderFloorAirDistributionExterior": ("zone_name",),
+    "RoomAirSettings:UnderFloorAirDistributionInterior": ("zone_name",),
+    "RunPeriod": ("begin_day_of_month", "begin_month", "end_day_of_month", "end_month"),
+    "RunPeriod:CustomRange": (
         "begin_day_of_month",
         "begin_month",
         "begin_year",
         "end_day_of_month",
         "end_month",
         "end_year",
-    ]),
-    "RunPeriodControl:DaylightSavingTime": frozenset(["end_date", "start_date"]),
-    "RunPeriodControl:SpecialDays": frozenset(["start_date"]),
-    "Schedule:File": frozenset(["column_number", "file_name", "rows_to_skip_at_top"]),
-    "Schedule:File:Shading": frozenset(["file_name"]),
-    "Schedule:Week:Daily": frozenset([
+    ),
+    "RunPeriodControl:DaylightSavingTime": ("end_date", "start_date"),
+    "RunPeriodControl:SpecialDays": ("start_date",),
+    "Schedule:File": ("column_number", "file_name", "rows_to_skip_at_top"),
+    "Schedule:File:Shading": ("file_name",),
+    "Schedule:Week:Daily": (
         "customday1_schedule_day_name",
         "customday2_schedule_day_name",
         "friday_schedule_day_name",
@@ -2416,99 +2325,87 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "tuesday_schedule_day_name",
         "wednesday_schedule_day_name",
         "winterdesignday_schedule_day_name",
-    ]),
-    "Schedule:Week:Rule": frozenset(["day_schedule_name", "rule_priority_order", "schedule_year_rules_name"]),
-    "Schedule:Year": frozenset(["end_day_1", "end_month_1", "schedule_week_name_1", "start_day_1", "start_month_1"]),
-    "Schedule:Year:Rules": frozenset(["default_day_schedule_name"]),
-    "SetpointManager:Coldest": frozenset(["hvac_air_loop_name", "setpoint_node_or_nodelist_name"]),
-    "SetpointManager:CondenserEnteringReset": frozenset([
+    ),
+    "Schedule:Week:Rule": ("day_schedule_name", "rule_priority_order", "schedule_year_rules_name"),
+    "Schedule:Year": ("end_day_1", "end_month_1", "schedule_week_name_1", "start_day_1", "start_month_1"),
+    "Schedule:Year:Rules": ("default_day_schedule_name",),
+    "SetpointManager:Coldest": ("hvac_air_loop_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:CondenserEnteringReset": (
         "default_condenser_entering_water_temperature_schedule_name",
         "minimum_design_wetbulb_temperature_curve_name",
         "minimum_outside_air_wetbulb_temperature_curve_name",
         "optimized_cond_entering_water_temperature_curve_name",
         "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:CondenserEnteringReset:Ideal": frozenset(["setpoint_node_or_nodelist_name"]),
-    "SetpointManager:FollowGroundTemperature": frozenset(["setpoint_node_or_nodelist_name"]),
-    "SetpointManager:FollowOutdoorAirTemperature": frozenset(["setpoint_node_or_nodelist_name"]),
-    "SetpointManager:FollowSystemNodeTemperature": frozenset(["setpoint_node_or_nodelist_name"]),
-    "SetpointManager:MixedAir": frozenset([
+    ),
+    "SetpointManager:CondenserEnteringReset:Ideal": ("setpoint_node_or_nodelist_name",),
+    "SetpointManager:FollowGroundTemperature": ("setpoint_node_or_nodelist_name",),
+    "SetpointManager:FollowOutdoorAirTemperature": ("setpoint_node_or_nodelist_name",),
+    "SetpointManager:FollowSystemNodeTemperature": ("setpoint_node_or_nodelist_name",),
+    "SetpointManager:MixedAir": (
         "fan_inlet_node_name",
         "fan_outlet_node_name",
         "reference_setpoint_node_name",
         "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:MultiZone:Cooling:Average": frozenset(["hvac_air_loop_name", "setpoint_node_or_nodelist_name"]),
-    "SetpointManager:MultiZone:Heating:Average": frozenset(["hvac_air_loop_name", "setpoint_node_or_nodelist_name"]),
-    "SetpointManager:MultiZone:Humidity:Maximum": frozenset(["hvac_air_loop_name", "setpoint_node_or_nodelist_name"]),
-    "SetpointManager:MultiZone:Humidity:Minimum": frozenset(["hvac_air_loop_name", "setpoint_node_or_nodelist_name"]),
-    "SetpointManager:MultiZone:MaximumHumidity:Average": frozenset([
-        "hvac_air_loop_name",
-        "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:MultiZone:MinimumHumidity:Average": frozenset([
-        "hvac_air_loop_name",
-        "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:OutdoorAirPretreat": frozenset([
+    ),
+    "SetpointManager:MultiZone:Cooling:Average": ("hvac_air_loop_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:MultiZone:Heating:Average": ("hvac_air_loop_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:MultiZone:Humidity:Maximum": ("hvac_air_loop_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:MultiZone:Humidity:Minimum": ("hvac_air_loop_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:MultiZone:MaximumHumidity:Average": ("hvac_air_loop_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:MultiZone:MinimumHumidity:Average": ("hvac_air_loop_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:OutdoorAirPretreat": (
         "mixed_air_stream_node_name",
         "outdoor_air_stream_node_name",
         "return_air_stream_node_name",
         "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:OutdoorAirReset": frozenset([
+    ),
+    "SetpointManager:OutdoorAirReset": (
         "outdoor_high_temperature",
         "outdoor_low_temperature",
         "setpoint_at_outdoor_high_temperature",
         "setpoint_at_outdoor_low_temperature",
         "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:ReturnAirBypassFlow": frozenset(["hvac_air_loop_name"]),
-    "SetpointManager:ReturnTemperature:ChilledWater": frozenset([
+    ),
+    "SetpointManager:ReturnAirBypassFlow": ("hvac_air_loop_name",),
+    "SetpointManager:ReturnTemperature:ChilledWater": (
         "plant_loop_supply_inlet_node",
         "plant_loop_supply_outlet_node",
         "return_temperature_setpoint_input_type",
-    ]),
-    "SetpointManager:ReturnTemperature:HotWater": frozenset([
+    ),
+    "SetpointManager:ReturnTemperature:HotWater": (
         "plant_loop_supply_inlet_node",
         "plant_loop_supply_outlet_node",
         "return_temperature_setpoint_input_type",
-    ]),
-    "SetpointManager:Scheduled": frozenset(["control_variable", "schedule_name", "setpoint_node_or_nodelist_name"]),
-    "SetpointManager:Scheduled:DualSetpoint": frozenset([
+    ),
+    "SetpointManager:Scheduled": ("control_variable", "schedule_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:Scheduled:DualSetpoint": (
         "high_setpoint_schedule_name",
         "low_setpoint_schedule_name",
         "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:SingleZone:Cooling": frozenset([
+    ),
+    "SetpointManager:SingleZone:Cooling": (
         "control_zone_name",
         "setpoint_node_or_nodelist_name",
         "zone_inlet_node_name",
         "zone_node_name",
-    ]),
-    "SetpointManager:SingleZone:Heating": frozenset([
+    ),
+    "SetpointManager:SingleZone:Heating": (
         "control_zone_name",
         "setpoint_node_or_nodelist_name",
         "zone_inlet_node_name",
         "zone_node_name",
-    ]),
-    "SetpointManager:SingleZone:Humidity:Maximum": frozenset([
-        "control_zone_air_node_name",
-        "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:SingleZone:Humidity:Minimum": frozenset([
-        "control_zone_air_node_name",
-        "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:SingleZone:OneStageCooling": frozenset(["control_zone_name", "setpoint_node_or_nodelist_name"]),
-    "SetpointManager:SingleZone:OneStageHeating": frozenset(["control_zone_name", "setpoint_node_or_nodelist_name"]),
-    "SetpointManager:SingleZone:Reheat": frozenset([
+    ),
+    "SetpointManager:SingleZone:Humidity:Maximum": ("control_zone_air_node_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:SingleZone:Humidity:Minimum": ("control_zone_air_node_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:SingleZone:OneStageCooling": ("control_zone_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:SingleZone:OneStageHeating": ("control_zone_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:SingleZone:Reheat": (
         "control_zone_name",
         "setpoint_node_or_nodelist_name",
         "zone_inlet_node_name",
         "zone_node_name",
-    ]),
-    "SetpointManager:SystemNodeReset:Humidity": frozenset([
+    ),
+    "SetpointManager:SystemNodeReset:Humidity": (
         "control_variable",
         "high_reference_humidity_ratio",
         "low_reference_humidity_ratio",
@@ -2516,8 +2413,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "setpoint_at_high_reference_humidity_ratio",
         "setpoint_at_low_reference_humidity_ratio",
         "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:SystemNodeReset:Temperature": frozenset([
+    ),
+    "SetpointManager:SystemNodeReset:Temperature": (
         "control_variable",
         "high_reference_temperature",
         "low_reference_temperature",
@@ -2525,38 +2422,38 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "setpoint_at_high_reference_temperature",
         "setpoint_at_low_reference_temperature",
         "setpoint_node_or_nodelist_name",
-    ]),
-    "SetpointManager:Warmest": frozenset(["hvac_air_loop_name", "setpoint_node_or_nodelist_name"]),
-    "SetpointManager:WarmestTemperatureFlow": frozenset(["hvac_air_loop_name", "setpoint_node_or_nodelist_name"]),
-    "Shading:Fin": frozenset(["window_or_door_name"]),
-    "Shading:Fin:Projection": frozenset(["window_or_door_name"]),
-    "Shading:Overhang": frozenset(["window_or_door_name"]),
-    "Shading:Overhang:Projection": frozenset(["window_or_door_name"]),
-    "Shading:Zone:Detailed": frozenset(["base_surface_name"]),
-    "ShadingProperty:Reflectance": frozenset(["shading_surface_name"]),
-    "Site:GroundDomain:Basement": frozenset([
+    ),
+    "SetpointManager:Warmest": ("hvac_air_loop_name", "setpoint_node_or_nodelist_name"),
+    "SetpointManager:WarmestTemperatureFlow": ("hvac_air_loop_name", "setpoint_node_or_nodelist_name"),
+    "Shading:Fin": ("window_or_door_name",),
+    "Shading:Fin:Projection": ("window_or_door_name",),
+    "Shading:Overhang": ("window_or_door_name",),
+    "Shading:Overhang:Projection": ("window_or_door_name",),
+    "Shading:Zone:Detailed": ("base_surface_name",),
+    "ShadingProperty:Reflectance": ("shading_surface_name",),
+    "Site:GroundDomain:Basement": (
         "basement_floor_boundary_condition_model_name",
         "basement_wall_boundary_condition_model_name",
         "undisturbed_ground_temperature_model_name",
         "undisturbed_ground_temperature_model_type",
-    ]),
-    "Site:GroundDomain:Slab": frozenset([
+    ),
+    "Site:GroundDomain:Slab": (
         "slab_boundary_condition_model_name",
         "slab_location",
         "undisturbed_ground_temperature_model_name",
         "undisturbed_ground_temperature_model_type",
-    ]),
-    "Site:GroundTemperature:Undisturbed:FiniteDifference": frozenset([
+    ),
+    "Site:GroundTemperature:Undisturbed:FiniteDifference": (
         "soil_density",
         "soil_specific_heat",
         "soil_thermal_conductivity",
-    ]),
-    "Site:GroundTemperature:Undisturbed:KusudaAchenbach": frozenset([
+    ),
+    "Site:GroundTemperature:Undisturbed:KusudaAchenbach": (
         "soil_density",
         "soil_specific_heat",
         "soil_thermal_conductivity",
-    ]),
-    "Site:GroundTemperature:Undisturbed:Xing": frozenset([
+    ),
+    "Site:GroundTemperature:Undisturbed:Xing": (
         "average_soil_surface_tempeature",
         "average_soil_surface_temperature",
         "phase_shift_of_temperature_amplitude_1",
@@ -2566,15 +2463,15 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "soil_surface_temperature_amplitude_1",
         "soil_surface_temperature_amplitude_2",
         "soil_thermal_conductivity",
-    ]),
-    "Site:SpectrumData": frozenset(["spectrum_data_type"]),
-    "Sizing:Plant": frozenset([
+    ),
+    "Site:SpectrumData": ("spectrum_data_type",),
+    "Sizing:Plant": (
         "design_loop_exit_temperature",
         "loop_design_temperature_difference",
         "loop_type",
         "plant_or_condenser_loop_name",
-    ]),
-    "Sizing:System": frozenset([
+    ),
+    "Sizing:System": (
         "airloop_name",
         "central_cooling_design_supply_air_temperature",
         "central_heating_design_supply_air_temperature",
@@ -2582,29 +2479,29 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "precool_design_temperature",
         "preheat_design_humidity_ratio",
         "preheat_design_temperature",
-    ]),
-    "Sizing:Zone": frozenset([
+    ),
+    "Sizing:Zone": (
         "zone_cooling_design_supply_air_humidity_ratio",
         "zone_heating_design_supply_air_humidity_ratio",
         "zone_or_zonelist_name",
-    ]),
-    "SizingPeriod:DesignDay": frozenset(["day_of_month", "day_type", "month", "wind_direction", "wind_speed"]),
-    "SizingPeriod:WeatherFileConditionType": frozenset(["period_selection"]),
-    "SizingPeriod:WeatherFileDays": frozenset(["begin_day_of_month", "begin_month", "end_day_of_month", "end_month"]),
-    "SolarCollector:FlatPlate:PhotovoltaicThermal": frozenset(["surface_name"]),
-    "SolarCollector:FlatPlate:Water": frozenset([
+    ),
+    "SizingPeriod:DesignDay": ("day_of_month", "day_type", "month", "wind_direction", "wind_speed"),
+    "SizingPeriod:WeatherFileConditionType": ("period_selection",),
+    "SizingPeriod:WeatherFileDays": ("begin_day_of_month", "begin_month", "end_day_of_month", "end_month"),
+    "SolarCollector:FlatPlate:PhotovoltaicThermal": ("surface_name",),
+    "SolarCollector:FlatPlate:Water": (
         "inlet_node_name",
         "outlet_node_name",
         "solarcollectorperformance_name",
         "surface_name",
-    ]),
-    "SolarCollector:IntegralCollectorStorage": frozenset([
+    ),
+    "SolarCollector:IntegralCollectorStorage": (
         "inlet_node_name",
         "integralcollectorstorageparameters_name",
         "outlet_node_name",
         "surface_name",
-    ]),
-    "SolarCollector:UnglazedTranspired": frozenset([
+    ),
+    "SolarCollector:UnglazedTranspired": (
         "boundary_conditions_model_name",
         "diameter_of_perforations_in_collector",
         "distance_between_perforations_in_collector",
@@ -2614,78 +2511,64 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "roughness_of_collector",
         "solar_absorbtivity_of_collector_surface",
         "thermal_emissivity_of_collector_surface",
-    ]),
-    "SolarCollector:UnglazedTranspired:Multisystem": frozenset(["solar_collector_name"]),
-    "SolarCollectorPerformance:FlatPlate": frozenset([
+    ),
+    "SolarCollector:UnglazedTranspired:Multisystem": ("solar_collector_name",),
+    "SolarCollectorPerformance:FlatPlate": (
         "coefficient_1_of_efficiency_equation",
         "coefficient_2_of_efficiency_equation",
         "gross_area",
         "test_correlation_type",
         "test_flow_rate",
-    ]),
-    "SolarCollectorPerformance:PhotovoltaicThermal:BIPVT": frozenset([
+    ),
+    "SolarCollectorPerformance:PhotovoltaicThermal:BIPVT": (
         "boundary_conditions_model_name",
         "effective_plenum_gap_thickness_behind_pv_modules",
-    ]),
-    "SolarCollectorPerformance:PhotovoltaicThermal:Simple": frozenset([
-        "fraction_of_surface_area_with_active_thermal_collector"
-    ]),
-    "Space": frozenset(["zone_name"]),
-    "SpaceHVAC:EquipmentConnections": frozenset(["space_air_node_name", "space_name"]),
-    "SpaceHVAC:ZoneEquipmentMixer": frozenset(["zone_equipment_inlet_node_name", "zone_name"]),
-    "SpaceHVAC:ZoneEquipmentSplitter": frozenset(["zone_equipment_name", "zone_equipment_object_type", "zone_name"]),
-    "SpaceHVAC:ZoneReturnMixer": frozenset(["zone_name", "zone_return_air_node_name"]),
-    "SteamEquipment": frozenset([
-        "schedule_name",
-        "zone_or_zonelist_name",
-        "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "SteamEquipment:Instance": frozenset([
+    ),
+    "SolarCollectorPerformance:PhotovoltaicThermal:Simple": ("fraction_of_surface_area_with_active_thermal_collector",),
+    "Space": ("zone_name",),
+    "SpaceHVAC:EquipmentConnections": ("space_air_node_name", "space_name"),
+    "SpaceHVAC:ZoneEquipmentMixer": ("zone_equipment_inlet_node_name", "zone_name"),
+    "SpaceHVAC:ZoneEquipmentSplitter": ("zone_equipment_name", "zone_equipment_object_type", "zone_name"),
+    "SpaceHVAC:ZoneReturnMixer": ("zone_name", "zone_return_air_node_name"),
+    "SteamEquipment": ("schedule_name", "zone_or_zonelist_name", "zone_or_zonelist_or_space_or_spacelist_name"),
+    "SteamEquipment:Instance": (
         "schedule_name",
         "steam_equipment_definition_name",
         "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "SurfaceContaminantSourceAndSink:Generic:BoundaryLayerDiffusion": frozenset(["schedule_name", "surface_name"]),
-    "SurfaceContaminantSourceAndSink:Generic:DepositionVelocitySink": frozenset(["schedule_name", "surface_name"]),
-    "SurfaceContaminantSourceAndSink:Generic:PressureDriven": frozenset(["generation_schedule_name", "surface_name"]),
-    "SurfaceControl:MovableInsulation": frozenset([
-        "insulation_type",
-        "material_name",
-        "schedule_name",
-        "surface_name",
-    ]),
-    "SurfaceProperties:VaporCoefficients": frozenset(["surface_name"]),
-    "SurfaceProperty:ConvectionCoefficients": frozenset([
+    ),
+    "SurfaceContaminantSourceAndSink:Generic:BoundaryLayerDiffusion": ("schedule_name", "surface_name"),
+    "SurfaceContaminantSourceAndSink:Generic:DepositionVelocitySink": ("schedule_name", "surface_name"),
+    "SurfaceContaminantSourceAndSink:Generic:PressureDriven": ("generation_schedule_name", "surface_name"),
+    "SurfaceControl:MovableInsulation": ("insulation_type", "material_name", "schedule_name", "surface_name"),
+    "SurfaceProperties:VaporCoefficients": ("surface_name",),
+    "SurfaceProperty:ConvectionCoefficients": (
         "convection_coefficient_1_location",
         "convection_coefficient_1_type",
         "surface_name",
-    ]),
-    "SurfaceProperty:ConvectionCoefficients:MultipleSurface": frozenset([
+    ),
+    "SurfaceProperty:ConvectionCoefficients:MultipleSurface": (
         "convection_coefficient_1_location",
         "convection_coefficient_1_type",
         "surface_type",
-    ]),
-    "SurfaceProperty:ExposedFoundationPerimeter": frozenset(["exposed_perimeter_calculation_method", "surface_name"]),
-    "SurfaceProperty:ExteriorNaturalVentedCavity": frozenset([
-        "boundary_conditions_model_name",
-        "roughness_of_exterior_surface",
-    ]),
-    "SurfaceProperty:HeatBalanceSourceTerm": frozenset(["surface_name"]),
-    "SurfaceProperty:HeatTransferAlgorithm": frozenset(["surface_name"]),
-    "SurfaceProperty:HeatTransferAlgorithm:Construction": frozenset(["construction_name"]),
-    "SurfaceProperty:HeatTransferAlgorithm:MultipleSurface": frozenset(["surface_type"]),
-    "SurfaceProperty:IncidentSolarMultiplier": frozenset(["surface_name"]),
-    "SurfaceProperty:OtherSideCoefficients": frozenset(["combined_convective_radiative_film_coefficient"]),
-    "SurfaceProperty:SolarIncidentInside": frozenset([
+    ),
+    "SurfaceProperty:ExposedFoundationPerimeter": ("exposed_perimeter_calculation_method", "surface_name"),
+    "SurfaceProperty:ExteriorNaturalVentedCavity": ("boundary_conditions_model_name", "roughness_of_exterior_surface"),
+    "SurfaceProperty:HeatBalanceSourceTerm": ("surface_name",),
+    "SurfaceProperty:HeatTransferAlgorithm": ("surface_name",),
+    "SurfaceProperty:HeatTransferAlgorithm:Construction": ("construction_name",),
+    "SurfaceProperty:HeatTransferAlgorithm:MultipleSurface": ("surface_type",),
+    "SurfaceProperty:IncidentSolarMultiplier": ("surface_name",),
+    "SurfaceProperty:OtherSideCoefficients": ("combined_convective_radiative_film_coefficient",),
+    "SurfaceProperty:SolarIncidentInside": (
         "construction_name",
         "inside_surface_incident_sun_solar_radiation_schedule_name",
         "surface_name",
-    ]),
-    "SurfaceProperty:Underwater": frozenset([
+    ),
+    "SurfaceProperty:Underwater": (
         "distance_from_surface_centroid_to_leading_edge_of_boundary_layer",
         "free_stream_water_temperature_schedule",
-    ]),
-    "SwimmingPool:Indoor": frozenset([
+    ),
+    "SwimmingPool:Indoor": (
         "activity_factor_schedule_name",
         "average_depth",
         "cover_schedule_name",
@@ -2694,31 +2577,27 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "pool_water_outlet_node",
         "setpoint_temperature_schedule",
         "surface_name",
-    ]),
-    "Table:Lookup": frozenset(["independent_variable_list_name"]),
-    "TemperingValve": frozenset([
+    ),
+    "Table:Lookup": ("independent_variable_list_name",),
+    "TemperingValve": (
         "inlet_node_name",
         "outlet_node_name",
         "pump_outlet_node_name",
         "stream_2_source_node_name",
         "temperature_setpoint_node_name",
-    ]),
-    "ThermalStorage:ChilledWater:Mixed": frozenset(["ambient_temperature_indicator"]),
-    "ThermalStorage:ChilledWater:Stratified": frozenset([
-        "ambient_temperature_indicator",
-        "tank_height",
-        "tank_volume",
-    ]),
-    "ThermalStorage:HotWater:Stratified": frozenset(["ambient_temperature_indicator", "tank_height", "tank_volume"]),
-    "ThermalStorage:Ice:Detailed": frozenset([
+    ),
+    "ThermalStorage:ChilledWater:Mixed": ("ambient_temperature_indicator",),
+    "ThermalStorage:ChilledWater:Stratified": ("ambient_temperature_indicator", "tank_height", "tank_volume"),
+    "ThermalStorage:HotWater:Stratified": ("ambient_temperature_indicator", "tank_height", "tank_volume"),
+    "ThermalStorage:Ice:Detailed": (
         "capacity",
         "charging_curve_variable_specifications",
         "discharging_curve_variable_specifications",
         "inlet_node_name",
         "outlet_node_name",
-    ]),
-    "ThermalStorage:Ice:Simple": frozenset(["capacity", "ice_storage_type", "inlet_node_name", "outlet_node_name"]),
-    "ThermalStorage:PCM": frozenset([
+    ),
+    "ThermalStorage:Ice:Simple": ("capacity", "ice_storage_type", "inlet_node_name", "outlet_node_name"),
+    "ThermalStorage:PCM": (
         "availability_schedule_name",
         "pcm_material_name",
         "plant_side_design_flow_rate",
@@ -2728,47 +2607,45 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "use_side_design_flow_rate",
         "use_side_inlet_node_name",
         "use_side_outlet_node_name",
-    ]),
-    "ThermalStorage:Sizing": frozenset(["on_peak_period_end_time", "on_peak_period_start_time"]),
-    "ThermostatSetpoint:ThermalComfort:Fanger:DualSetpoint": frozenset([
+    ),
+    "ThermalStorage:Sizing": ("on_peak_period_end_time", "on_peak_period_start_time"),
+    "ThermostatSetpoint:ThermalComfort:Fanger:DualSetpoint": (
         "fanger_thermal_comfort_cooling_schedule_name",
         "fanger_thermal_comfort_heating_schedule_name",
-    ]),
-    "ThermostatSetpoint:ThermalComfort:Fanger:SingleCooling": frozenset(["fanger_thermal_comfort_schedule_name"]),
-    "ThermostatSetpoint:ThermalComfort:Fanger:SingleHeating": frozenset(["fanger_thermal_comfort_schedule_name"]),
-    "ThermostatSetpoint:ThermalComfort:Fanger:SingleHeatingOrCooling": frozenset([
-        "fanger_thermal_comfort_schedule_name"
-    ]),
-    "UnitarySystemPerformance:Multispeed": frozenset(["number_of_speeds_for_cooling", "number_of_speeds_for_heating"]),
-    "UtilityCost:Charge:Block": frozenset([
+    ),
+    "ThermostatSetpoint:ThermalComfort:Fanger:SingleCooling": ("fanger_thermal_comfort_schedule_name",),
+    "ThermostatSetpoint:ThermalComfort:Fanger:SingleHeating": ("fanger_thermal_comfort_schedule_name",),
+    "ThermostatSetpoint:ThermalComfort:Fanger:SingleHeatingOrCooling": ("fanger_thermal_comfort_schedule_name",),
+    "UnitarySystemPerformance:Multispeed": ("number_of_speeds_for_cooling", "number_of_speeds_for_heating"),
+    "UtilityCost:Charge:Block": (
         "category_variable_name",
         "source_variable",
         "tariff_name",
         "utility_cost_charge_block_name",
-    ]),
-    "UtilityCost:Charge:Simple": frozenset([
+    ),
+    "UtilityCost:Charge:Simple": (
         "category_variable_name",
         "cost_per_unit_value_or_variable_name",
         "source_variable",
         "tariff_name",
         "utility_cost_charge_simple_name",
-    ]),
-    "UtilityCost:Computation": frozenset(["tariff_name"]),
-    "UtilityCost:Qualify": frozenset([
+    ),
+    "UtilityCost:Computation": ("tariff_name",),
+    "UtilityCost:Qualify": (
         "tariff_name",
         "threshold_value_or_variable_name",
         "utility_cost_qualify_name",
         "variable_name",
-    ]),
-    "UtilityCost:Ratchet": frozenset(["adjustment_source_variable", "baseline_source_variable", "tariff_name"]),
-    "UtilityCost:Tariff": frozenset(["output_meter_name"]),
-    "UtilityCost:Variable": frozenset(["tariff_name"]),
-    "Wall:Adiabatic": frozenset(["construction_name", "zone_name"]),
-    "Wall:Detailed": frozenset(["construction_name", "outside_boundary_condition", "zone_name"]),
-    "Wall:Exterior": frozenset(["construction_name", "zone_name"]),
-    "Wall:Interzone": frozenset(["construction_name", "outside_boundary_condition_object", "zone_name"]),
-    "Wall:Underground": frozenset(["construction_name", "zone_name"]),
-    "WaterHeater:HeatPump:PumpedCondenser": frozenset([
+    ),
+    "UtilityCost:Ratchet": ("adjustment_source_variable", "baseline_source_variable", "tariff_name"),
+    "UtilityCost:Tariff": ("output_meter_name",),
+    "UtilityCost:Variable": ("tariff_name",),
+    "Wall:Adiabatic": ("construction_name", "zone_name"),
+    "Wall:Detailed": ("construction_name", "outside_boundary_condition", "zone_name"),
+    "Wall:Exterior": ("construction_name", "zone_name"),
+    "Wall:Interzone": ("construction_name", "outside_boundary_condition_object", "zone_name"),
+    "Wall:Underground": ("construction_name", "zone_name"),
+    "WaterHeater:HeatPump:PumpedCondenser": (
         "compressor_location",
         "compressor_setpoint_temperature_schedule_name",
         "condenser_water_inlet_node_name",
@@ -2777,8 +2654,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "fan_name",
         "inlet_air_configuration",
         "tank_name",
-    ]),
-    "WaterHeater:HeatPump:WrappedCondenser": frozenset([
+    ),
+    "WaterHeater:HeatPump:WrappedCondenser": (
         "compressor_location",
         "compressor_setpoint_temperature_schedule_name",
         "condenser_top_location",
@@ -2786,15 +2663,15 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "fan_name",
         "inlet_air_configuration",
         "tank_name",
-    ]),
-    "WaterHeater:Mixed": frozenset([
+    ),
+    "WaterHeater:Mixed": (
         "ambient_temperature_indicator",
         "heater_fuel_type",
         "heater_thermal_efficiency",
         "setpoint_temperature_schedule_name",
-    ]),
-    "WaterHeater:Sizing": frozenset(["waterheater_name"]),
-    "WaterHeater:Stratified": frozenset([
+    ),
+    "WaterHeater:Sizing": ("waterheater_name",),
+    "WaterHeater:Stratified": (
         "ambient_temperature_indicator",
         "heater_1_setpoint_temperature_schedule_name",
         "heater_2_setpoint_temperature_schedule_name",
@@ -2802,14 +2679,14 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "heater_thermal_efficiency",
         "tank_height",
         "tank_volume",
-    ]),
-    "WaterUse:Equipment": frozenset(["peak_flow_rate"]),
-    "WaterUse:RainCollector": frozenset(["storage_tank_name"]),
-    "WaterUse:Storage": frozenset(["water_temperature_schedule_name"]),
-    "WaterUse:Well": frozenset(["storage_tank_name"]),
-    "Window": frozenset(["building_surface_name", "construction_name"]),
-    "Window:Interzone": frozenset(["building_surface_name", "construction_name"]),
-    "WindowMaterial:Blind": frozenset([
+    ),
+    "WaterUse:Equipment": ("peak_flow_rate",),
+    "WaterUse:RainCollector": ("storage_tank_name",),
+    "WaterUse:Storage": ("water_temperature_schedule_name",),
+    "WaterUse:Well": ("storage_tank_name",),
+    "Window": ("building_surface_name", "construction_name"),
+    "Window:Interzone": ("building_surface_name", "construction_name"),
+    "WindowMaterial:Blind": (
         "back_side_slat_beam_solar_reflectance",
         "back_side_slat_diffuse_solar_reflectance",
         "front_side_slat_beam_solar_reflectance",
@@ -2817,60 +2694,60 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "slat_beam_visible_transmittance",
         "slat_separation",
         "slat_width",
-    ]),
-    "WindowMaterial:Blind:EquivalentLayer": frozenset([
+    ),
+    "WindowMaterial:Blind:EquivalentLayer": (
         "back_side_slat_beam_diffuse_solar_reflectance",
         "back_side_slat_diffuse_diffuse_solar_reflectance",
         "front_side_slat_beam_diffuse_solar_reflectance",
         "front_side_slat_diffuse_diffuse_solar_reflectance",
         "slat_separation",
         "slat_width",
-    ]),
-    "WindowMaterial:Drape:EquivalentLayer": frozenset([
+    ),
+    "WindowMaterial:Drape:EquivalentLayer": (
         "back_side_drape_beam_diffuse_solar_reflectance",
         "back_side_drape_beam_diffuse_solar_transmittance",
         "front_side_drape_beam_diffuse_solar_reflectance",
         "front_side_drape_beam_diffuse_solar_transmittance",
-    ]),
-    "WindowMaterial:Gap": frozenset(["gas_or_gas_mixture_", "thickness"]),
-    "WindowMaterial:Gap:EquivalentLayer": frozenset(["gap_vent_type", "gas_type", "thickness"]),
-    "WindowMaterial:Gas": frozenset(["gas_type", "thickness"]),
-    "WindowMaterial:GasMixture": frozenset([
+    ),
+    "WindowMaterial:Gap": ("gas_or_gas_mixture_", "thickness"),
+    "WindowMaterial:Gap:EquivalentLayer": ("gap_vent_type", "gas_type", "thickness"),
+    "WindowMaterial:Gas": ("gas_type", "thickness"),
+    "WindowMaterial:GasMixture": (
         "gas_1_fraction",
         "gas_1_type",
         "gas_2_fraction",
         "gas_2_type",
         "number_of_gases_in_mixture",
         "thickness",
-    ]),
-    "WindowMaterial:Glazing": frozenset(["optical_data_type", "thickness"]),
-    "WindowMaterial:Glazing:EquivalentLayer": frozenset([
+    ),
+    "WindowMaterial:Glazing": ("optical_data_type", "thickness"),
+    "WindowMaterial:Glazing:EquivalentLayer": (
         "back_side_beam_beam_solar_reflectance",
         "back_side_beam_beam_solar_transmittance",
         "front_side_beam_beam_solar_reflectance",
         "front_side_beam_beam_solar_transmittance",
-    ]),
-    "WindowMaterial:Glazing:RefractionExtinctionMethod": frozenset([
+    ),
+    "WindowMaterial:Glazing:RefractionExtinctionMethod": (
         "solar_extinction_coefficient",
         "solar_index_of_refraction",
         "thickness",
         "visible_extinction_coefficient",
         "visible_index_of_refraction",
-    ]),
-    "WindowMaterial:Screen": frozenset([
+    ),
+    "WindowMaterial:Screen": (
         "diffuse_solar_reflectance",
         "diffuse_visible_reflectance",
         "screen_material_diameter",
         "screen_material_spacing",
-    ]),
-    "WindowMaterial:Screen:EquivalentLayer": frozenset([
+    ),
+    "WindowMaterial:Screen:EquivalentLayer": (
         "screen_beam_beam_visible_transmittance",
         "screen_beam_diffuse_solar_reflectance",
         "screen_beam_diffuse_solar_transmittance",
         "screen_beam_diffuse_visible_reflectance",
         "screen_beam_diffuse_visible_transmittance",
-    ]),
-    "WindowMaterial:Shade": frozenset([
+    ),
+    "WindowMaterial:Shade": (
         "conductivity",
         "infrared_hemispherical_emissivity",
         "infrared_transmittance",
@@ -2879,70 +2756,66 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "thickness",
         "visible_reflectance",
         "visible_transmittance",
-    ]),
-    "WindowMaterial:Shade:EquivalentLayer": frozenset([
+    ),
+    "WindowMaterial:Shade:EquivalentLayer": (
         "back_side_shade_beam_diffuse_solar_reflectance",
         "back_side_shade_beam_diffuse_solar_transmittance",
         "front_side_shade_beam_diffuse_solar_reflectance",
         "front_side_shade_beam_diffuse_solar_transmittance",
-    ]),
-    "WindowMaterial:SimpleGlazingSystem": frozenset(["solar_heat_gain_coefficient", "u_factor"]),
-    "WindowProperty:ShadingControl": frozenset(["shading_control_type", "shading_type"]),
-    "WindowProperty:StormWindow": frozenset([
+    ),
+    "WindowMaterial:SimpleGlazingSystem": ("solar_heat_gain_coefficient", "u_factor"),
+    "WindowProperty:ShadingControl": ("shading_control_type", "shading_type"),
+    "WindowProperty:StormWindow": (
         "day_of_month_that_storm_glass_layer_is_put_on",
         "day_of_month_that_storm_glass_layer_is_taken_off",
         "month_that_storm_glass_layer_is_put_on",
         "month_that_storm_glass_layer_is_taken_off",
         "storm_glass_layer_name",
         "window_name",
-    ]),
-    "WindowShadingControl": frozenset(["shading_control_type", "shading_type", "zone_name"]),
-    "ZoneAirBalance:OutdoorAir": frozenset(["zone_name"]),
-    "ZoneBaseboard:OutdoorTemperatureControlled": frozenset([
+    ),
+    "WindowShadingControl": ("shading_control_type", "shading_type", "zone_name"),
+    "ZoneAirBalance:OutdoorAir": ("zone_name",),
+    "ZoneBaseboard:OutdoorTemperatureControlled": (
         "schedule_name",
         "zone_name",
         "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "ZoneContaminantSourceAndSink:CarbonDioxide": frozenset(["schedule_name", "zone_name"]),
-    "ZoneContaminantSourceAndSink:Generic:Constant": frozenset([
-        "generation_schedule_name",
-        "removal_schedule_name",
-        "zone_name",
-    ]),
-    "ZoneContaminantSourceAndSink:Generic:CutoffModel": frozenset(["schedule_name", "zone_name"]),
-    "ZoneContaminantSourceAndSink:Generic:DecaySource": frozenset(["schedule_name", "zone_name"]),
-    "ZoneContaminantSourceAndSink:Generic:DepositionRateSink": frozenset(["schedule_name", "zone_name"]),
-    "ZoneControl:ContaminantController": frozenset(["zone_name"]),
-    "ZoneControl:Humidistat": frozenset([
+    ),
+    "ZoneContaminantSourceAndSink:CarbonDioxide": ("schedule_name", "zone_name"),
+    "ZoneContaminantSourceAndSink:Generic:Constant": ("generation_schedule_name", "removal_schedule_name", "zone_name"),
+    "ZoneContaminantSourceAndSink:Generic:CutoffModel": ("schedule_name", "zone_name"),
+    "ZoneContaminantSourceAndSink:Generic:DecaySource": ("schedule_name", "zone_name"),
+    "ZoneContaminantSourceAndSink:Generic:DepositionRateSink": ("schedule_name", "zone_name"),
+    "ZoneControl:ContaminantController": ("zone_name",),
+    "ZoneControl:Humidistat": (
         "humidifying_relative_humidity_setpoint_schedule_name",
         "humidifying_setpoint_schedule_name",
         "zone_name",
-    ]),
-    "ZoneControl:Thermostat": frozenset([
+    ),
+    "ZoneControl:Thermostat": (
         "control_1_name",
         "control_1_object_type",
         "control_type_schedule_name",
         "zone_or_zonelist_name",
-    ]),
-    "ZoneControl:Thermostat:OperativeTemperature": frozenset(["radiative_fraction_input_mode", "thermostat_name"]),
-    "ZoneControl:Thermostat:StagedDualSetpoint": frozenset([
+    ),
+    "ZoneControl:Thermostat:OperativeTemperature": ("radiative_fraction_input_mode", "thermostat_name"),
+    "ZoneControl:Thermostat:StagedDualSetpoint": (
         "number_of_cooling_stages",
         "number_of_heating_stages",
         "stage_1_cooling_temperature_offset",
         "stage_1_heating_temperature_offset",
         "zone_or_zonelist_name",
-    ]),
-    "ZoneControl:Thermostat:TemperatureAndHumidity": frozenset([
+    ),
+    "ZoneControl:Thermostat:TemperatureAndHumidity": (
         "dehumidifying_relative_humidity_setpoint_schedule_name",
         "thermostat_name",
-    ]),
-    "ZoneControl:Thermostat:ThermalComfort": frozenset([
+    ),
+    "ZoneControl:Thermostat:ThermalComfort": (
         "thermal_comfort_control_1_name",
         "thermal_comfort_control_1_object_type",
         "thermal_comfort_control_type_schedule_name",
         "zone_or_zonelist_name",
-    ]),
-    "ZoneCoolTower:Shower": frozenset([
+    ),
+    "ZoneCoolTower:Shower": (
         "airflow_outlet_area",
         "effective_tower_height",
         "maximum_air_flow_rate",
@@ -2952,9 +2825,9 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "rated_power_consumption",
         "zone_name",
         "zone_or_space_name",
-    ]),
-    "ZoneCrossMixing": frozenset(["source_zone_name", "source_zone_or_space_name", "zone_name", "zone_or_space_name"]),
-    "ZoneEarthtube": frozenset([
+    ),
+    "ZoneCrossMixing": ("source_zone_name", "source_zone_or_space_name", "zone_name", "zone_or_space_name"),
+    "ZoneEarthtube": (
         "amplitude_of_soil_surface_temperature",
         "average_soil_surface_temperature",
         "delta_temperature",
@@ -2964,43 +2837,43 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "phase_constant_of_soil_surface_temperature",
         "schedule_name",
         "zone_name",
-    ]),
-    "ZoneEarthtube:Parameters": frozenset(["earth_tube_model_parameters_name"]),
-    "ZoneGroup": frozenset(["zone_list_name"]),
-    "ZoneHVAC:AirDistributionUnit": frozenset([
+    ),
+    "ZoneEarthtube:Parameters": ("earth_tube_model_parameters_name",),
+    "ZoneGroup": ("zone_list_name",),
+    "ZoneHVAC:AirDistributionUnit": (
         "air_distribution_unit_outlet_node_name",
         "air_terminal_name",
         "air_terminal_object_type",
-    ]),
-    "ZoneHVAC:Baseboard:Convective:Water": frozenset([
+    ),
+    "ZoneHVAC:Baseboard:Convective:Water": (
         "inlet_node_name",
         "maximum_water_flow_rate",
         "outlet_node_name",
         "u_factor_times_area_value",
-    ]),
-    "ZoneHVAC:Baseboard:RadiantConvective:Electric": frozenset(["fraction_radiant"]),
-    "ZoneHVAC:Baseboard:RadiantConvective:Steam": frozenset([
+    ),
+    "ZoneHVAC:Baseboard:RadiantConvective:Electric": ("fraction_radiant",),
+    "ZoneHVAC:Baseboard:RadiantConvective:Steam": (
         "fraction_radiant",
         "inlet_node_name",
         "maximum_steam_flow_rate",
         "outlet_node_name",
-    ]),
-    "ZoneHVAC:Baseboard:RadiantConvective:Steam:Design": frozenset(["fraction_radiant"]),
-    "ZoneHVAC:Baseboard:RadiantConvective:Water": frozenset([
+    ),
+    "ZoneHVAC:Baseboard:RadiantConvective:Steam:Design": ("fraction_radiant",),
+    "ZoneHVAC:Baseboard:RadiantConvective:Water": (
         "fraction_radiant",
         "inlet_node_name",
         "maximum_water_flow_rate",
         "outlet_node_name",
-    ]),
-    "ZoneHVAC:Baseboard:RadiantConvective:Water:Design": frozenset(["fraction_radiant"]),
-    "ZoneHVAC:CoolingPanel:RadiantConvective:Water": frozenset([
+    ),
+    "ZoneHVAC:Baseboard:RadiantConvective:Water:Design": ("fraction_radiant",),
+    "ZoneHVAC:CoolingPanel:RadiantConvective:Water": (
         "availability_schedule_name",
         "fraction_radiant",
         "maximum_chilled_water_flow_rate",
         "water_inlet_node_name",
         "water_outlet_node_name",
-    ]),
-    "ZoneHVAC:Dehumidifier:DX": frozenset([
+    ),
+    "ZoneHVAC:Dehumidifier:DX": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "energy_factor_curve_name",
@@ -3009,20 +2882,16 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "rated_energy_factor",
         "rated_water_removal",
         "water_removal_curve_name",
-    ]),
-    "ZoneHVAC:EnergyRecoveryVentilator": frozenset([
+    ),
+    "ZoneHVAC:EnergyRecoveryVentilator": (
         "exhaust_air_fan_name",
         "exhaust_air_flow_rate",
         "heat_exchanger_name",
         "supply_air_fan_name",
         "supply_air_flow_rate",
-    ]),
-    "ZoneHVAC:EquipmentConnections": frozenset([
-        "zone_air_node_name",
-        "zone_conditioning_equipment_list_name",
-        "zone_name",
-    ]),
-    "ZoneHVAC:EvaporativeCoolerUnit": frozenset([
+    ),
+    "ZoneHVAC:EquipmentConnections": ("zone_air_node_name", "zone_conditioning_equipment_list_name", "zone_name"),
+    "ZoneHVAC:EvaporativeCoolerUnit": (
         "cooler_outlet_node_name",
         "cooler_unit_control_method",
         "design_supply_air_flow_rate",
@@ -3032,14 +2901,14 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "outdoor_air_inlet_node_name",
         "supply_air_fan_name",
         "supply_air_fan_object_type",
-    ]),
-    "ZoneHVAC:ExhaustControl": frozenset(["inlet_node_name", "outlet_node_name", "zone_name"]),
-    "ZoneHVAC:ForcedAir:UserDefined": frozenset([
+    ),
+    "ZoneHVAC:ExhaustControl": ("inlet_node_name", "outlet_node_name", "zone_name"),
+    "ZoneHVAC:ForcedAir:UserDefined": (
         "number_of_plant_loop_connections",
         "primary_air_inlet_node_name",
         "primary_air_outlet_node_name",
-    ]),
-    "ZoneHVAC:FourPipeFanCoil": frozenset([
+    ),
+    "ZoneHVAC:FourPipeFanCoil": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "capacity_control_method",
@@ -3053,12 +2922,12 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "maximum_supply_air_flow_rate",
         "supply_air_fan_name",
         "supply_air_fan_object_type",
-    ]),
-    "ZoneHVAC:HighTemperatureRadiant": frozenset(["fuel_type", "zone_name"]),
-    "ZoneHVAC:HybridUnitaryHVAC": frozenset(["outdoor_air_node_name", "return_air_node_name", "supply_air_node_name"]),
-    "ZoneHVAC:IdealLoadsAirSystem": frozenset(["zone_supply_air_node_name"]),
-    "ZoneHVAC:LowTemperatureRadiant:Electric": frozenset(["heating_setpoint_temperature_schedule_name"]),
-    "ZoneHVAC:OutdoorAirUnit": frozenset([
+    ),
+    "ZoneHVAC:HighTemperatureRadiant": ("fuel_type", "zone_name"),
+    "ZoneHVAC:HybridUnitaryHVAC": ("outdoor_air_node_name", "return_air_node_name", "supply_air_node_name"),
+    "ZoneHVAC:IdealLoadsAirSystem": ("zone_supply_air_node_name",),
+    "ZoneHVAC:LowTemperatureRadiant:Electric": ("heating_setpoint_temperature_schedule_name",),
+    "ZoneHVAC:OutdoorAirUnit": (
         "airoutlet_node_name",
         "outdoor_air_flow_rate",
         "outdoor_air_node_name",
@@ -3067,8 +2936,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "supply_fan_name",
         "supply_fanoutlet_node_name",
         "zone_name",
-    ]),
-    "ZoneHVAC:PackagedTerminalAirConditioner": frozenset([
+    ),
+    "ZoneHVAC:PackagedTerminalAirConditioner": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "cooling_coil_name",
@@ -3081,8 +2950,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "heating_supply_air_flow_rate",
         "supply_air_fan_name",
         "supply_air_fan_object_type",
-    ]),
-    "ZoneHVAC:PackagedTerminalHeatPump": frozenset([
+    ),
+    "ZoneHVAC:PackagedTerminalHeatPump": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "cooling_coil_name",
@@ -3098,20 +2967,20 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "supplemental_heating_coil_object_type",
         "supply_air_fan_name",
         "supply_air_fan_object_type",
-    ]),
-    "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow": frozenset([
+    ),
+    "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow": (
         "terminal_unit_air_inlet_node_name",
         "terminal_unit_air_outlet_node_name",
-    ]),
-    "ZoneHVAC:UnitHeater": frozenset([
+    ),
+    "ZoneHVAC:UnitHeater": (
         "heating_coil_name",
         "heating_coil_object_type",
         "maximum_supply_air_flow_rate",
         "supply_air_fan_name",
         "supply_air_fan_object_type",
         "supply_air_fan_operation_during_no_heating",
-    ]),
-    "ZoneHVAC:UnitVentilator": frozenset([
+    ),
+    "ZoneHVAC:UnitVentilator": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "coil_option",
@@ -3123,8 +2992,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "outdoor_air_control_type",
         "supply_air_fan_name",
         "supply_air_fan_object_type",
-    ]),
-    "ZoneHVAC:VentilatedSlab": frozenset([
+    ),
+    "ZoneHVAC:VentilatedSlab": (
         "coil_option_type",
         "cooling_high_air_temperature_schedule_name",
         "cooling_high_control_temperature_schedule_name",
@@ -3148,8 +3017,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "return_air_node_name",
         "slab_in_node_name",
         "zone_name",
-    ]),
-    "ZoneHVAC:WaterToAirHeatPump": frozenset([
+    ),
+    "ZoneHVAC:WaterToAirHeatPump": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "cooling_coil_name",
@@ -3164,8 +3033,8 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "supplemental_heating_coil_object_type",
         "supply_air_fan_name",
         "supply_air_fan_object_type",
-    ]),
-    "ZoneHVAC:WindowAirConditioner": frozenset([
+    ),
+    "ZoneHVAC:WindowAirConditioner": (
         "air_inlet_node_name",
         "air_outlet_node_name",
         "cooling_coil_object_type",
@@ -3177,37 +3046,34 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "outdoor_air_mixer_object_type",
         "supply_air_fan_name",
         "supply_air_fan_object_type",
-    ]),
-    "ZoneInfiltration:DesignFlowRate": frozenset([
-        "zone_or_zonelist_name",
-        "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "ZoneInfiltration:EffectiveLeakageArea": frozenset([
+    ),
+    "ZoneInfiltration:DesignFlowRate": ("zone_or_zonelist_name", "zone_or_zonelist_or_space_or_spacelist_name"),
+    "ZoneInfiltration:EffectiveLeakageArea": (
         "effective_air_leakage_area",
         "stack_coefficient",
         "wind_coefficient",
         "zone_name",
         "zone_or_space_name",
-    ]),
-    "ZoneInfiltration:FlowCoefficient": frozenset([
+    ),
+    "ZoneInfiltration:FlowCoefficient": (
         "flow_coefficient",
         "shelter_factor",
         "stack_coefficient",
         "wind_coefficient",
         "zone_name",
         "zone_or_space_name",
-    ]),
-    "ZoneMRTCalculation": frozenset(["zone_name"]),
-    "ZoneMixing": frozenset(["source_zone_name", "source_zone_or_space_name", "zone_name", "zone_or_space_name"]),
-    "ZoneRefrigerationDoorMixing": frozenset([
+    ),
+    "ZoneMRTCalculation": ("zone_name",),
+    "ZoneMixing": ("source_zone_name", "source_zone_or_space_name", "zone_name", "zone_or_space_name"),
+    "ZoneRefrigerationDoorMixing": (
         "schedule_name",
         "zone_1_name",
         "zone_2_name",
         "zone_or_space_name_1",
         "zone_or_space_name_2",
-    ]),
-    "ZoneTerminalUnitList": frozenset(["zone_terminal_unit_list_name"]),
-    "ZoneThermalChimney": frozenset([
+    ),
+    "ZoneTerminalUnitList": ("zone_terminal_unit_list_name",),
+    "ZoneThermalChimney": (
         "cross_sectional_area_of_air_channel_outlet",
         "cross_sectional_areas_of_air_channel_inlet_1",
         "distance_from_top_of_thermal_chimney_to_inlet_1",
@@ -3215,10 +3081,7 @@ READ_REQUIRED: dict[str, frozenset[str]] = {
         "zone_1_name",
         "zone_name",
         "zone_or_space_name_1",
-    ]),
-    "ZoneVentilation:DesignFlowRate": frozenset([
-        "zone_or_zonelist_name",
-        "zone_or_zonelist_or_space_or_spacelist_name",
-    ]),
-    "ZoneVentilation:WindandStackOpenArea": frozenset(["zone_name", "zone_or_space_name"]),
+    ),
+    "ZoneVentilation:DesignFlowRate": ("zone_or_zonelist_name", "zone_or_zonelist_or_space_or_spacelist_name"),
+    "ZoneVentilation:WindandStackOpenArea": ("zone_name", "zone_or_space_name"),
 }

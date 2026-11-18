@@ -11,6 +11,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 | Task | Reference |
 |---|---|
 | Build, load, query, or modify a model | [document-and-objects.md](references/document-and-objects.md) |
+| Read fields without `None` guards; handle a model missing a required field (`MissingRequiredFieldError`) | [document-and-objects.md](references/document-and-objects.md) |
 | Type a model of an older EnergyPlus release for that release | [document-and-objects.md](references/document-and-objects.md) |
 | Write typed code for any release, one release, or a range of releases; choose between pyright and `idfkit check` | [document-and-objects.md](references/document-and-objects.md) |
 | Parse `.idf` / `.epJSON` files | [parsing-idf-epjson.md](references/parsing-idf-epjson.md) |

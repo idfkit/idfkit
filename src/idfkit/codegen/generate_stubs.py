@@ -1021,7 +1021,8 @@ def read_required() -> dict[str, frozenset[str]]:
         for obj_type in schema.object_types:
             info = _creation_info(schema, obj_type)
             names = [f for f in schema.get_field_names(obj_type) if f.isidentifier()]
-            required.setdefault(obj_type, set()).update(info.required)
+            # Fields only: an extensible group's wrapper (``lines``) reads as a list view, never None.
+            required.setdefault(obj_type, set()).update(f for f in info.required if f in names)
             optional.setdefault(obj_type, set()).update(f for f in names if f not in info.required)
     return {
         obj_type: frozenset(fields - optional.get(obj_type, set()))
@@ -2848,10 +2849,11 @@ def generate_read_required_py() -> str:
         "",
         "from __future__ import annotations",
         "",
-        "READ_REQUIRED: dict[str, frozenset[str]] = {",
+        "# Tuples of string literals are constants of the compiled module: importing it builds no set.",
+        "READ_REQUIRED: dict[str, tuple[str, ...]] = {",
     ]
     for obj_type, fields in read_required().items():
-        lines.append(f"    {obj_type!r}: frozenset({sorted(fields)!r}),")
+        lines.append(f"    {obj_type!r}: {tuple(sorted(fields))!r},")
     lines += ["}", ""]
     return "\n".join(lines)
 
