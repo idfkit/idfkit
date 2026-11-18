@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   it is a `ValidationFailedError` (E001) at run time, and so was a name for a type without a Name
   field (`doc["Output:SQLite"].add("x")`, an `InvalidFieldError` at run time). Such a name was reported against
   a parameter named for the mistake, `this_type_has_no_name_field` of type `_PassFieldsAsKeywords`
-  (mypy: `expected "Never"`), rather than as `Expected 0 positional arguments`, or, under mypy, as
+  (mypy: `expected "_PassFieldsAsKeywords"`), rather than as `Expected 0 positional arguments`, or, under mypy, as
   `gets multiple values for keyword argument` naming a field the call did pass:
   `doc.output_variables.add("*", variable_name=...)` pointed at the parameter, and the fix is
   `key_value="*"`. The required fields
@@ -212,6 +212,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- For type checking only, mypy reported a misspelled or missing object type in one line:
+  `doc["Zoen"]` read `Invalid index type "str" for "IDFDocument[Literal[True]]"; expected type
+  "Sequence[_NotAnObjectTypeNameOfEnergyPlus26_2]"  [index]`, where it printed
+  `No overload variant of "__getitem__"` under `[call-overload]` followed by one line for every
+  object type the document accepts, some 880 lines. The last `__getitem__` overload takes a
+  `Sequence` of a class no string is, which mypy reports alone, and returns
+  `IDFCollection[IDFObject]`, so mypy types the lookup as that rather than `Any`. pyright's message
+  still names `_NotAnObjectTypeOfEnergyPlus26_2`, with a detail line naming the `Sequence`, and
+  pyright no longer rejects the meaningless `doc[[]]`. A misspelled field assigned to under mypy
+  read `variable has type "_NotAFieldOfThisObjectType"` rather than `variable has type "Never"`:
+  the type is a class no value is, where it was an alias of `Never`, and pyright's messages are
+  unchanged. `_PassFieldsAsKeywords` became a class for the same reason ([#302](https://github.com/idfkit/idfkit/pull/302)).
 - **Breaking:** `idfkit check` reported a literal some target releases lack once, not once per
   release: `doc["Space"]` checked with `--targets all` gave one `C001` finding, `Object type 'Space'
   not found in 8.9.0 to 9.5.0; added in 9.6.0`, where it printed seven lines, one for each release
