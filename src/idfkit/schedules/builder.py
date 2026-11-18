@@ -14,7 +14,7 @@ from __future__ import annotations
 import calendar
 from collections.abc import Sequence
 from datetime import date
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 if TYPE_CHECKING:
     from ..document import AnyIDFDocument
