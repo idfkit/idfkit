@@ -42,7 +42,6 @@ class IDFDocumentV9_1(
     _v._Accessors_v8_9_to_v26_2,
     _v._Accessors_v9_0_to_v9_1,
     _v._Accessors_v9_0_to_v9_2,
-    _v._Accessors_v9_0_to_v9_5,
     _v._Accessors_v9_0_to_v22_1,
     _v._Accessors_v9_0_to_v23_1,
     _v._Accessors_v9_0_to_v25_1,
@@ -737,7 +736,7 @@ class IDFDocumentV9_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["AirflowNetwork:MultiZone:ReferenceCrackConditions"], /
-    ) -> IDFCollection[_g.AirflowNetworkMultiZoneReferenceCrackConditions]: ...
+    ) -> IDFCollection[_v.AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["Daylighting:Controls"], /
@@ -985,7 +984,7 @@ class IDFDocumentV9_1(
         self, obj_type: Literal["Site:GroundTemperature:Shallow"], /
     ) -> IDFCollection[_g.SiteGroundTemperatureShallow]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["RunPeriod"], /) -> IDFCollection[_v.RunPeriod_v9_0_to_v9_5]: ...
+    def __getitem__(self, obj_type: Literal["RunPeriod"], /) -> IDFCollection[_v.RunPeriod_v9_0_to_v9_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["HVACTemplate:Zone:PTHP"], /) -> IDFCollection[_g.HVACTemplateZonePTHP]: ...
     @overload
@@ -1187,7 +1186,7 @@ class IDFDocumentV9_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneControl:ContaminantController"], /
-    ) -> IDFCollection[_g.ZoneControlContaminantController]: ...
+    ) -> IDFCollection[_v.ZoneControlContaminantController_v8_9_to_v26_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["Shading:Fin"], /) -> IDFCollection[_g.ShadingFin]: ...
     @overload
@@ -1389,7 +1388,7 @@ class IDFDocumentV9_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Actuator"], /
-    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToActuator]: ...
+    ) -> IDFCollection[_v.ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["Wall:Detailed"], /) -> IDFCollection[_v.WallDetailed_v8_9_to_v9_5]: ...
     @overload
@@ -1519,7 +1518,7 @@ class IDFDocumentV9_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["PhotovoltaicPerformance:Simple"], /
-    ) -> IDFCollection[_g.PhotovoltaicPerformanceSimple]: ...
+    ) -> IDFCollection[_v.PhotovoltaicPerformanceSimple_v8_9_to_v25_2]: ...
     @overload
     def __getitem__(self, obj_type: Literal["GeometryTransform"], /) -> IDFCollection[_g.GeometryTransform]: ...
     @overload
@@ -1537,11 +1536,13 @@ class IDFDocumentV9_1(
     @overload
     def __getitem__(self, obj_type: Literal["Floor:Adiabatic"], /) -> IDFCollection[_v.FloorAdiabatic_v8_9_to_v9_5]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["SwimmingPool:Indoor"], /) -> IDFCollection[_g.SwimmingPoolIndoor]: ...
+    def __getitem__(
+        self, obj_type: Literal["SwimmingPool:Indoor"], /
+    ) -> IDFCollection[_v.SwimmingPoolIndoor_v8_9_to_v22_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["AirLoopHVAC:OutdoorAirSystem"], /
-    ) -> IDFCollection[_v.AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5]: ...
+    ) -> IDFCollection[_v.AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["Meter:CustomDecrement"], /
@@ -1693,7 +1694,7 @@ class IDFDocumentV9_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["EvaporativeFluidCooler:SingleSpeed"], /
-    ) -> IDFCollection[_v.EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1]: ...
+    ) -> IDFCollection[_v.EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["ZoneTerminalUnitList"], /) -> IDFCollection[_g.ZoneTerminalUnitList]: ...
     @overload
@@ -1747,7 +1748,7 @@ class IDFDocumentV9_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ZoneHVAC:HighTemperatureRadiant"], /
-    ) -> IDFCollection[_g.ZoneHVACHighTemperatureRadiant]: ...
+    ) -> IDFCollection[_v.ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["WaterUse:Storage"], /) -> IDFCollection[_g.WaterUseStorage]: ...
     @overload
@@ -2587,7 +2588,7 @@ class IDFDocumentV9_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["Table:TwoIndependentVariables"], /
-    ) -> IDFCollection[_v.TableTwoIndependentVariables_v8_9_to_v9_1]: ...
+    ) -> IDFCollection[_v.TableTwoIndependentVariables_v9_0_to_v9_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["HVACTemplate:Plant:MixedWaterLoop"], /
@@ -2719,7 +2720,7 @@ class IDFDocumentV9_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Schedule"], /
-    ) -> IDFCollection[_g.ExternalInterfaceFunctionalMockupUnitExportToSchedule]: ...
+    ) -> IDFCollection[_v.ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["SurfaceProperty:Underwater"], /

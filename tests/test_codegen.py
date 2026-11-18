@@ -12,6 +12,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from idfkit.codegen import generate_stubs as gen
 from idfkit.codegen.generate_doc_locations import (
     _ANCHOR_RE,  # pyright: ignore[reportPrivateUsage]
     _ANCHOR_STRIP_RE,  # pyright: ignore[reportPrivateUsage]
@@ -42,7 +43,8 @@ from idfkit.codegen.generate_stubs import (
 from idfkit.codegen.generate_stubs import (
     main as stubs_main,
 )
-from idfkit.schema import EpJSONSchema
+from idfkit.schema import EpJSONSchema, get_schema
+from idfkit.versions import LATEST_VERSION
 
 # =========================================================================
 # generate_doc_locations tests
@@ -446,8 +448,19 @@ class TestGenerateObjectClass:
         mock_schema.get_field_names.return_value = []
         mock_schema.is_extensible.return_value = False
         mock_schema.get_object_memo.return_value = None
-        lines = _generate_object_class(mock_schema, "FakeEmpty")
+        lines = _generate_object_class(mock_schema, "FakeEmpty", emit_update=False)
         assert lines == ["class FakeEmpty(_TypedIDFObject): ..."]
+
+    def test_class_with_no_fields_declares_its_creation_signature(self, schema: EpJSONSchema) -> None:
+        # A type with no field at all still says what add() takes: here nothing, not even a name.
+        mock_schema = MagicMock()
+        mock_schema.get_field_names.return_value = []
+        mock_schema.get_object_memo.return_value = None
+        mock_schema.get_inner_schema.return_value = {}
+        mock_schema.has_name.return_value = False
+        lines = _generate_object_class(mock_schema, "FakeEmpty")
+        assert lines[0] == "class FakeEmpty(_TypedIDFObject):"
+        assert lines[-1].startswith("    _creation_signature: _c")
 
     def test_class_with_no_fields_but_docstring(self, schema: EpJSONSchema) -> None:
         """Cover line 304: no-fields type that has a docstring."""
@@ -583,8 +596,10 @@ def _preserve_generated_stubs() -> Iterator[tuple[Path, Path]]:
     types_file = real_base / "_generated_types.pyi"
     doc_file = real_base / "document.pyi"
     documents_dir = real_base / "_versioned"
+    creation_dir = real_base / "_creation"
     generated = [types_file, doc_file, real_base / "versioned.pyi", real_base / "versioned.py"]
     generated += sorted(documents_dir.glob("*.pyi"))
+    generated += sorted(creation_dir.glob("*.pyi"))
     backups = {path: path.read_text(encoding="utf-8") if path.exists() else None for path in generated}
 
     yield types_file, doc_file
@@ -595,7 +610,7 @@ def _preserve_generated_stubs() -> Iterator[tuple[Path, Path]]:
         elif path.exists():
             path.unlink()
     # A generation for an older release writes modules the committed set does not have.
-    for path in documents_dir.glob("*.pyi"):
+    for path in [*documents_dir.glob("*.pyi"), *creation_dir.glob("*.pyi")]:
         if path not in backups:
             path.unlink()
 
@@ -692,3 +707,352 @@ class TestGenerateFieldsWithSinceVersion:
         )
         # "Since:" should NOT appear for this field (same version as type)
         assert not any("Since: 8.9.0" in line for line in lines)
+
+
+# =========================================================================
+# The creation signature: what IDFCollection.add() takes
+# =========================================================================
+
+
+_LATEST = get_schema(LATEST_VERSION)
+
+
+def _signature_of(sink: gen._CreationModules, cls_name: str) -> str:  # pyright: ignore[reportPrivateUsage]
+    """The ``__call__`` line *sink* filed for *cls_name*."""
+    for lines in sink.classes.values():
+        for i, line in enumerate(lines):
+            if line == f"class {cls_name}:":
+                return lines[i + 1]
+    pytest.fail(f"no creation signature for {cls_name}")
+
+
+class TestCreationSignature:
+    @pytest.mark.parametrize(
+        ("value", "rendered"),
+        [
+            (0.9, "0.9"),
+            (-1.5, "-1.5"),
+            (2.0, "2"),  # some releases give an integer field's default as a float
+            (6, "6"),
+            ("Rough", '"Rough"'),
+            ("", '""'),
+            (True, None),  # booleans are not shown
+            (1e-05, None),  # exponent notation is not shown
+            ([1, 2], None),
+            ("x" * 41, None),  # long strings are not shown
+            ('say "hi"', None),
+            ("back\\slash", None),
+        ],
+    )
+    def test_render_default(self, value: object, rendered: str | None) -> None:
+        assert gen._render_default(value) == rendered  # pyright: ignore[reportPrivateUsage]
+
+    def test_required_fields_are_those_the_schema_requires_without_default(self) -> None:
+        info = gen._creation_info(get_schema(LATEST_VERSION), "Material")  # pyright: ignore[reportPrivateUsage]
+        assert info.name == "required"
+        assert info.required == {"roughness", "thickness", "conductivity", "density", "specific_heat"}
+        assert ("thermal_absorptance", "0.9") in info.defaults
+
+    @pytest.mark.parametrize(
+        ("obj_type", "kind"), [("Zone", "required"), ("Building", "optional"), ("Output:SQLite", "none")]
+    )
+    def test_name_kind(self, obj_type: str, kind: str) -> None:
+        assert gen._creation_info(get_schema(LATEST_VERSION), obj_type).name == kind  # pyright: ignore[reportPrivateUsage]
+
+    def test_rendering(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        creation = gen._Creation(  # pyright: ignore[reportPrivateUsage]
+            "required",
+            frozenset({"a"}),
+            (("b", '"X"'), ("c", "0.5"), ("d", '"Z"')),
+        )
+        fields = [
+            ("a", "float | None"),
+            ("b", 'Literal["X", "Y"] | None'),
+            ("c", "float | None"),
+            ("d", 'Literal["X", "Y"] | None'),  # its default is not one of its values: "..."
+        ]
+        lines = gen._creation_lines("Cls", fields, creation, "    ", sink, _LATEST, "Zone")  # pyright: ignore[reportPrivateUsage]
+        assert len(lines) == 1
+        assert lines[0].startswith("    _creation_signature: _c")
+        assert lines[0].endswith(".Cls  # type: ignore[assignment]")
+        assert _signature_of(sink, "Cls") == (
+            '    def __call__(self, name: str, /, *, a: float, b: Literal["X", "Y"] | None = "X", '
+            'c: float | None = 0.5, d: Literal["X", "Y"] | None = ...) -> None:'
+        )
+
+    @pytest.mark.parametrize(
+        "fields",
+        [
+            [("a", "float | None")],  # "e" is required but not declared (renamed in some release)
+            [("a", "float | None"), ("e", "None")],  # declared, but only None is safe to write
+        ],
+    )
+    def test_a_required_field_no_value_can_be_given_for_asks_to_narrow(self, fields: list[tuple[str, str]]) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        creation = gen._Creation("none", frozenset({"a", "e"}), ())  # pyright: ignore[reportPrivateUsage]
+        gen._creation_lines("Cls", fields, creation, "    ", sink, _LATEST, "Zone")  # pyright: ignore[reportPrivateUsage]
+        assert _signature_of(sink, "Cls").startswith(
+            "    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, narrow_with_as_version_first: Never, a: float"
+        )
+
+    def test_the_alias_of_a_required_key_is_not_offered(self) -> None:
+        # The run time takes either spelling of gas_or_gas_mixture_, but not both: offering the
+        # alias beside the required key would type-check a call the run time refuses.
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        lines = _generate_object_class(get_schema(LATEST_VERSION), "WindowMaterial:Gap", sink=sink)
+        assert any(line.strip() == "gas_or_gas_mixture: str | None" for line in lines)  # still an attribute
+        signature = _signature_of(sink, "WindowMaterialGap")
+        assert "gas_or_gas_mixture_: str," in signature
+        assert "gas_or_gas_mixture:" not in signature
+
+    def test_nameless_type_without_fields(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        creation = gen._Creation("none", frozenset(), ())  # pyright: ignore[reportPrivateUsage]
+        gen._creation_lines("Bare", [], creation, "    ", sink, _LATEST, "Output:SQLite")  # pyright: ignore[reportPrivateUsage]
+        # The guard takes the place of the name, so a name passed by mistake is reported as such.
+        assert _signature_of(sink, "Bare") == (
+            "    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:"
+        )
+        module = next(source for source in sink.sources().values() if "class Bare:" in source)
+        assert "from .. import _generated_types as _g" in module
+
+    def test_the_class_declares_the_signature_its_update_keywords_make(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        lines = _generate_object_class(get_schema(LATEST_VERSION), "Material", sink=sink)
+        assert any(line.startswith("    _creation_signature: _c") for line in lines)
+        signature = _signature_of(sink, "Material")
+        assert "self, name: str, /, *, roughness: Literal[" in signature
+        assert "thickness: float, conductivity: float, density: float, specific_heat: float," in signature
+        assert "thermal_absorptance: float | None = 0.9" in signature
+
+    def test_modules_import_only_what_they_use(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        sources = sink.sources()
+        assert len(sources) == gen._CREATION_BUCKETS  # pyright: ignore[reportPrivateUsage]
+        assert not any("from typing" in source for source in sources.values())
+        gen._creation_lines(  # pyright: ignore[reportPrivateUsage]
+            "Cls",
+            [("a", 'Literal["X"] | None')],
+            gen._Creation("none", frozenset(), ()),  # pyright: ignore[reportPrivateUsage]
+            "    ",
+            sink,
+            _LATEST,
+            "Zone",
+        )
+        module = next(source for source in sink.sources().values() if "class Cls:" in source)
+        assert "from typing import Literal\n" in module
+        ast.parse(module)
+
+    def test_a_docstring_imports_nothing(self) -> None:
+        # A schema memo can say "Any", "Never" or "_g."; only what the signature uses is imported.
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        sink.add("Cls", "self, /", "Any number of things. Never _g.Zone.")
+        module = next(source for source in sink.sources().values() if "class Cls:" in source)
+        assert "from typing" not in module
+        assert "typing_extensions" not in module
+        assert "_generated_types" not in module
+
+
+def _docstring_of(sink: gen._CreationModules, cls_name: str) -> str:  # pyright: ignore[reportPrivateUsage]
+    """The docstring of the ``__call__`` *sink* filed for *cls_name*: what an editor shows for ``add()``."""
+    for source in sink.sources().values():
+        for node in ast.parse(source).body:
+            if isinstance(node, ast.ClassDef) and node.name == cls_name:
+                call = node.body[0]
+                assert isinstance(call, ast.FunctionDef)
+                doc = ast.get_docstring(call)
+                assert doc is not None
+                return doc
+    pytest.fail(f"no creation signature for {cls_name}")
+
+
+class TestCreationDocstring:
+    """The creation signature's docstring is the one an editor shows for ``add()`` on the type."""
+
+    def test_names_the_type_gives_its_memo_whole_and_links_its_page(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Schedule:Constant", sink=sink)
+        assert _docstring_of(sink, "ScheduleConstant") == (
+            "Create a new ``Schedule:Constant`` and add it to the document.\n\n"
+            "Constant hourly value for entire year.\n\n"
+            "EnergyPlus I/O Reference: "
+            "https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduleconstant"
+        )
+
+    def test_the_memo_is_not_truncated(self) -> None:
+        memo = _LATEST.get_object_memo("Material:NoMass")
+        assert memo is not None
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Material:NoMass", sink=sink)
+        assert " ".join(memo.split()) in _docstring_of(sink, "MaterialNoMass")
+
+    def test_a_name_one_release_requires_and_another_refuses_is_a_conflict(self) -> None:
+        # Output:Table:ReportPeriod has no Name field before 25.2 and requires one from it on.
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        versions = gen._versions_with("Output:Table:ReportPeriod")  # pyright: ignore[reportPrivateUsage]
+        creation = gen._creation_for("Output:Table:ReportPeriod", versions)  # pyright: ignore[reportPrivateUsage]
+        assert creation.name_conflict
+        gen._creation_lines(
+            "Cls", [("a", "float | None")], creation, "    ", sink, _LATEST, "Output:Table:ReportPeriod"
+        )  # pyright: ignore[reportPrivateUsage]
+        assert "narrow_with_as_version_first: Never" in _signature_of(sink, "Cls")
+
+    def test_says_to_narrow_where_no_call_suits_every_release(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        generate_stubs(sink=sink)
+        assert "narrow the document with ``as_version`` first" in _docstring_of(sink, "AnyPeople")
+        assert "narrow the document" not in _docstring_of(sink, "People")
+
+    def test_an_older_release_links_its_own_documentation(self) -> None:
+        sink = gen._CreationModules("_v", "_cv")  # pyright: ignore[reportPrivateUsage]
+        gen.generate_versioned_pyi(sink)
+        doc = _docstring_of(sink, "InternalMass_v9_2_to_v9_5")
+        assert doc.startswith("Create a new ``InternalMass`` and add it to the document.")
+        assert "https://docs.idfkit.com/v9.5/" in doc
+
+    def test_a_docstring_survives_quotes_and_backslashes(self) -> None:
+        schema = MagicMock(spec=EpJSONSchema)
+        schema.version = LATEST_VERSION
+        schema.get_object_memo.return_value = 'A "quoted" C:\\path memo'
+        schema.get_group.return_value = None
+        doc = gen._creation_docstring(schema, "Not:AType", narrow_first=False)  # pyright: ignore[reportPrivateUsage]
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        sink.add("Cls", "self, /", doc)
+        assert (
+            _docstring_of(sink, "Cls")
+            == "Create a new ``Not:AType`` and add it to the document.\n\nA 'quoted' C:\\path memo"
+        )
+
+
+class TestCreationAcrossReleases:
+    """Any<Class> requires what any release requires; each release's class requires its own."""
+
+    def test_no_subclass_requires_more_than_its_base(self) -> None:
+        # IDFCollection is covariant: a subclass's collection passes for its base's, whose add()
+        # would then accept a call the subclass's releases refuse.
+        runs = gen._build_type_runs()  # pyright: ignore[reportPrivateUsage]
+        for obj_type, run, piece, cls_name, base in gen._piece_classes():  # pyright: ignore[reportPrivateUsage]
+            sub = gen._creation_for(obj_type, piece)  # pyright: ignore[reportPrivateUsage]
+            if base.startswith("_g.Any"):
+                assert not gen._relaxes(sub, gen._class_creation(obj_type, run)), cls_name  # pyright: ignore[reportPrivateUsage]
+                assert obj_type in gen._shared_layout(), cls_name  # pyright: ignore[reportPrivateUsage]
+            else:
+                assert gen._relaxes(sub, gen._class_creation(obj_type, run)), cls_name  # pyright: ignore[reportPrivateUsage]
+        stricter = {cls for _, _, _, cls, base in gen._piece_classes() if base.startswith("_g.Any")}  # pyright: ignore[reportPrivateUsage]
+        assert "BuildingSurfaceDetailed_v25_1_to_v26_1" in stricter
+        assert runs
+
+    def test_any_class_requires_what_any_release_requires(self) -> None:
+        # EnergyManagementSystem:Program: 8.9 requires no lines, every later release does.
+        versions = gen._versions_with("EnergyManagementSystem:Program")  # pyright: ignore[reportPrivateUsage]
+        creation = gen._creation_for("EnergyManagementSystem:Program", versions)  # pyright: ignore[reportPrivateUsage]
+        assert creation.required == {"lines"}
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        stub = generate_stubs(sink=sink)
+        # 26.2 requires them too, so the latest class serves every release: Any<Class> is an alias.
+        assert "AnyEnergyManagementSystemProgram: TypeAlias = EnergyManagementSystemProgram" in stub
+        assert (
+            "lines: Sequence[_g.EnergyManagementSystemProgramLinesItem | _g.EnergyManagementSystemProgramLinesGroup])"
+            in _signature_of(sink, "EnergyManagementSystemProgram")
+        )
+        # BuildingSurface:Detailed: 8.9 to 26.1 require the construction, 26.2 does not.
+        assert "construction_name: str," in _signature_of(sink, "AnyBuildingSurfaceDetailed")
+        assert "construction_name: str | None = ..." in _signature_of(sink, "BuildingSurfaceDetailed")
+
+    def test_any_class_asks_to_narrow_when_no_call_suits_every_release(self) -> None:
+        # People's zone is required everywhere but renamed in 9.6, so AnyPeople does not declare it.
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        generate_stubs(sink=sink)
+        assert "narrow_with_as_version_first: Never" in _signature_of(sink, "AnyPeople")
+        assert "narrow_with_as_version_first" not in _signature_of(sink, "People")
+        assert "narrow_with_as_version_first" not in _signature_of(sink, "AnyMaterial")
+
+    def test_any_class_shows_a_default_only_where_every_release_agrees(self) -> None:
+        obj_type = "HeatExchanger:Desiccant:BalancedFlow"
+        versions = gen._versions_with(obj_type)  # pyright: ignore[reportPrivateUsage]
+        defaults = {
+            dict(gen._creation_info(get_schema(v), obj_type).defaults).get("economizer_lockout")  # pyright: ignore[reportPrivateUsage]
+            for v in versions
+        }
+        assert len(defaults) > 1
+        assert "economizer_lockout" not in dict(gen._creation_for(obj_type, versions).defaults)  # pyright: ignore[reportPrivateUsage]
+
+    def test_a_default_alone_does_not_make_a_class(self) -> None:
+        # Version's default differs in every release; its fields and required fields do not.
+        class_for, _ = gen._class_assignment()  # pyright: ignore[reportPrivateUsage]
+        assert {class_for["Version", v] for v in gen._versions_with("Version")} == {"_g.Version"}  # pyright: ignore[reportPrivateUsage]
+        assert "AnyVersion: TypeAlias = Version" in generate_stubs()
+
+    def test_a_release_that_requires_other_fields_gets_a_subclass_of_its_range_class(self) -> None:
+        # ZoneControl:ContaminantController's fields are typed alike in every release, but 26.2
+        # alone requires the CO2 schedule: the older releases get a subclass of the latest class.
+        class_for, _ = gen._class_assignment()  # pyright: ignore[reportPrivateUsage]
+        obj_type = "ZoneControl:ContaminantController"
+        assert class_for[obj_type, LATEST_VERSION] == "_g.ZoneControlContaminantController"
+        older = class_for[obj_type, (26, 1, 0)]
+        assert older == "ZoneControlContaminantController_v8_9_to_v26_1"
+        stub = gen.generate_versioned_pyi()
+        assert f"class {older}(_g.ZoneControlContaminantController):" in stub
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            # Classes of ranges that ended before the latest release keep their names: these split
+            # into pieces with other required fields or name, and stay their pieces' base.
+            "RunPeriod_v9_0_to_v9_5",
+            "AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5",
+            "EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1",
+            "TableTwoIndependentVariables_v8_9_to_v9_1",
+        ],
+    )
+    def test_a_range_class_keeps_its_name(self, name: str) -> None:
+        assert f"class {name}(" in gen.generate_versioned_pyi()
+
+    def test_the_release_class_signature_requires_its_release_fields(self) -> None:
+        sink = gen._CreationModules("_v", "_cv")  # pyright: ignore[reportPrivateUsage]
+        gen.generate_versioned_pyi(sink)
+        class_for, _ = gen._class_assignment()  # pyright: ignore[reportPrivateUsage]
+        signature = _signature_of(sink, class_for["InternalMass", (9, 4, 0)])
+        assert "zone_or_zonelist_name: str," in signature
+        assert "construction_name: str," in signature
+        latest_sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        generate_stubs(sink=latest_sink)
+        latest = _signature_of(latest_sink, "InternalMass")
+        assert "surface_area: float" in latest
+        assert "construction_name: str | None = ..." in latest
+
+
+class TestExtensibleGroupItems:
+    """Every extensible group is taken as a list of dicts typed by the group's item TypedDict."""
+
+    def test_item_name(self) -> None:
+        assert gen._group_item_name("BuildingSurfaceDetailedVerticesGroup") == "BuildingSurfaceDetailedVerticesItem"  # pyright: ignore[reportPrivateUsage]
+        assert (
+            gen._group_item_name("ScheduleWeekCompactDataGroup_v8_9_to_v9_4")  # pyright: ignore[reportPrivateUsage]
+            == "ScheduleWeekCompactDataItem_v8_9_to_v9_4"
+        )
+
+    def test_group_class_comes_with_its_item_and_a_typed_as_dict(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        text = "\n".join(_generate_object_class(get_schema(LATEST_VERSION), "BuildingSurface:Detailed", sink=sink))
+        assert "class BuildingSurfaceDetailedVerticesItem(TypedDict, total=False):" in text
+        assert "    vertex_x_coordinate: float | None" in text
+        assert "    def as_dict(self) -> BuildingSurfaceDetailedVerticesItem: ..." in text
+        # The update keyword: dicts or groups, in any sequence.
+        assert (
+            "    vertices: Sequence[BuildingSurfaceDetailedVerticesItem | BuildingSurfaceDetailedVerticesGroup]" in text
+        )
+        signature = _signature_of(sink, "BuildingSurfaceDetailed")
+        assert (
+            "vertices: Sequence[_g.BuildingSurfaceDetailedVerticesItem | _g.BuildingSurfaceDetailedVerticesGroup] = ..."
+            in signature
+        )
+
+    def test_creation_modules_import_the_stub_their_items_live_in(self) -> None:
+        sink = gen._CreationModules("_v", "_cv")  # pyright: ignore[reportPrivateUsage]
+        gen.generate_versioned_pyi(sink)
+        sources = "\n".join(sink.sources().values())
+        assert "from .. import versioned as _vd" in sources
+        assert "from .. import _generated_types as _g" in sources
+        assert "_vd._" not in sources  # private names stay private: items are public

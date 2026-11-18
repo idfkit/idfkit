@@ -6,11 +6,139 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any, Literal, TypeAlias, TypedDict
 
 from typing_extensions import Never, Unpack
 
+from ._creation import _b0 as _c0
+from ._creation import _b1 as _c1
+from ._creation import _b2 as _c2
+from ._creation import _b3 as _c3
+from ._creation import _b4 as _c4
+from ._creation import _b5 as _c5
+from ._creation import _b6 as _c6
+from ._creation import _b7 as _c7
+from ._creation import _b8 as _c8
+from ._creation import _b9 as _c9
+from ._creation import _b10 as _c10
+from ._creation import _b11 as _c11
+from ._creation import _b12 as _c12
+from ._creation import _b13 as _c13
+from ._creation import _b14 as _c14
+from ._creation import _b15 as _c15
+from ._creation import _b16 as _c16
+from ._creation import _b17 as _c17
+from ._creation import _b18 as _c18
+from ._creation import _b19 as _c19
+from ._creation import _b20 as _c20
+from ._creation import _b21 as _c21
+from ._creation import _b22 as _c22
+from ._creation import _b23 as _c23
+from ._creation import _b24 as _c24
+from ._creation import _b25 as _c25
+from ._creation import _b26 as _c26
+from ._creation import _b27 as _c27
+from ._creation import _b28 as _c28
+from ._creation import _b29 as _c29
+from ._creation import _b30 as _c30
+from ._creation import _b31 as _c31
+from ._creation import _b32 as _c32
+from ._creation import _b33 as _c33
+from ._creation import _b34 as _c34
+from ._creation import _b35 as _c35
+from ._creation import _b36 as _c36
+from ._creation import _b37 as _c37
+from ._creation import _b38 as _c38
+from ._creation import _b39 as _c39
+from ._creation import _b40 as _c40
+from ._creation import _b41 as _c41
+from ._creation import _b42 as _c42
+from ._creation import _b43 as _c43
+from ._creation import _b44 as _c44
+from ._creation import _b45 as _c45
+from ._creation import _b46 as _c46
+from ._creation import _b47 as _c47
+from ._creation import _b48 as _c48
+from ._creation import _b49 as _c49
+from ._creation import _b50 as _c50
+from ._creation import _b51 as _c51
+from ._creation import _b52 as _c52
+from ._creation import _b53 as _c53
+from ._creation import _b54 as _c54
+from ._creation import _b55 as _c55
+from ._creation import _b56 as _c56
+from ._creation import _b57 as _c57
+from ._creation import _b58 as _c58
+from ._creation import _b59 as _c59
+from ._creation import _b60 as _c60
+from ._creation import _b61 as _c61
+from ._creation import _b62 as _c62
+from ._creation import _b63 as _c63
+from ._creation import _b64 as _c64
+from ._creation import _b65 as _c65
+from ._creation import _b66 as _c66
+from ._creation import _b67 as _c67
+from ._creation import _b68 as _c68
+from ._creation import _b69 as _c69
+from ._creation import _b70 as _c70
+from ._creation import _b71 as _c71
+from ._creation import _b72 as _c72
+from ._creation import _b73 as _c73
+from ._creation import _b74 as _c74
+from ._creation import _b75 as _c75
+from ._creation import _b76 as _c76
+from ._creation import _b77 as _c77
+from ._creation import _b78 as _c78
+from ._creation import _b79 as _c79
+from ._creation import _b80 as _c80
+from ._creation import _b81 as _c81
+from ._creation import _b82 as _c82
+from ._creation import _b83 as _c83
+from ._creation import _b84 as _c84
+from ._creation import _b85 as _c85
+from ._creation import _b86 as _c86
+from ._creation import _b87 as _c87
+from ._creation import _b88 as _c88
+from ._creation import _b89 as _c89
+from ._creation import _b90 as _c90
+from ._creation import _b91 as _c91
+from ._creation import _b92 as _c92
+from ._creation import _b93 as _c93
+from ._creation import _b94 as _c94
+from ._creation import _b95 as _c95
+from ._creation import _b96 as _c96
+from ._creation import _b97 as _c97
+from ._creation import _b98 as _c98
+from ._creation import _b99 as _c99
+from ._creation import _b100 as _c100
+from ._creation import _b101 as _c101
+from ._creation import _b102 as _c102
+from ._creation import _b103 as _c103
+from ._creation import _b104 as _c104
+from ._creation import _b105 as _c105
+from ._creation import _b106 as _c106
+from ._creation import _b107 as _c107
+from ._creation import _b108 as _c108
+from ._creation import _b109 as _c109
+from ._creation import _b110 as _c110
+from ._creation import _b111 as _c111
+from ._creation import _b112 as _c112
+from ._creation import _b113 as _c113
+from ._creation import _b114 as _c114
+from ._creation import _b115 as _c115
+from ._creation import _b116 as _c116
+from ._creation import _b117 as _c117
+from ._creation import _b118 as _c118
+from ._creation import _b119 as _c119
+from ._creation import _b120 as _c120
+from ._creation import _b121 as _c121
+from ._creation import _b122 as _c122
+from ._creation import _b123 as _c123
+from ._creation import _b124 as _c124
+from ._creation import _b125 as _c125
+from ._creation import _b126 as _c126
+from ._creation import _b127 as _c127
 from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
 
 _NotAFieldOfThisObjectType: TypeAlias = Never
@@ -18,6 +146,9 @@ _NotAFieldOfThisObjectType: TypeAlias = Never
 
 _NotAFieldOfThisExtensibleGroup: TypeAlias = Never
 """No name is one: a type checker reports an undeclared field of a typed group against this type."""
+
+_PassFieldsAsKeywords: TypeAlias = Never
+"""No value is one: a type checker reports a name given to a type without a Name field against this."""
 
 class _TypedIDFObject(IDFObject):
     """Stub-only base: an undeclared field name is a type error on a typed object."""
@@ -42,6 +173,7 @@ class Version(_TypedIDFObject):
     """Default: 26.2"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_VersionFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c95.Version  # type: ignore[assignment]
 
 class _VersionFields(TypedDict, total=False):
     version_identifier: str | None
@@ -76,6 +208,7 @@ class AnySimulationControl(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySimulationControlFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c29.AnySimulationControl  # type: ignore[assignment]
 
 class _AnySimulationControlFields(_SimulationControlCommonFields, total=False):
     maximum_number_of_hvac_sizing_simulation_passes: int | None
@@ -87,6 +220,7 @@ class SimulationControl(AnySimulationControl):
     """the entire set of SizingPeriod:* objects may be repeated to fine tune size results this input sets a limit on the num...; Default: 1; Range: >= 1"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SimulationControlFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c114.SimulationControl  # type: ignore[assignment]
 
 class _SimulationControlFields(_SimulationControlCommonFields, total=False):
     maximum_number_of_hvac_sizing_simulation_passes: int | None
@@ -103,6 +237,7 @@ class AnyPerformancePrecisionTradeoffs(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPerformancePrecisionTradeoffsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c45.AnyPerformancePrecisionTradeoffs  # type: ignore[assignment]
 
 class _AnyPerformancePrecisionTradeoffsFields(_PerformancePrecisionTradeoffsCommonFields, total=False): ...
 
@@ -128,6 +263,7 @@ class PerformancePrecisionTradeoffs(AnyPerformancePrecisionTradeoffs):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PerformancePrecisionTradeoffsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.PerformancePrecisionTradeoffs  # type: ignore[assignment]
 
 class _PerformancePrecisionTradeoffsFields(_PerformancePrecisionTradeoffsCommonFields, total=False):
     zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
@@ -190,6 +326,7 @@ class AnyBuilding(_TypedIDFObject):
     @minimum_number_of_warmup_days.setter
     def minimum_number_of_warmup_days(self, value: int | None) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyBuildingFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.AnyBuilding  # type: ignore[assignment]
 
 class _AnyBuildingFields(_BuildingCommonFields, total=False):
     maximum_number_of_warmup_days: int | None
@@ -206,6 +343,7 @@ class Building(AnyBuilding):
     """Optional. Provides inherited construction assignments for surfaces and sub-surfaces in the building. Assignments refe...; Since: 26.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c2.Building  # type: ignore[assignment]
 
 class _BuildingFields(_BuildingCommonFields, total=False):
     maximum_number_of_warmup_days: int | None
@@ -217,10 +355,16 @@ class _ShadowCalculationCommonFields(TypedDict, total=False):
     output_external_shading_calculation_results: Literal["", "No", "Yes"] | None
     disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None
     disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None
-    shading_zone_groups: list[Any]
+    shading_zone_groups: Sequence[ShadowCalculationShadingZoneGroupsItem | ShadowCalculationShadingZoneGroupsGroup]
 
 class ShadowCalculationShadingZoneGroupsGroup(_TypedExtensibleGroup):
     """One shading_zone_groups group inside :class:`AnyShadowCalculation`."""
+
+    shading_zone_group_zonelist_name: str | None
+    def as_dict(self) -> ShadowCalculationShadingZoneGroupsItem: ...  # type: ignore[override]
+
+class ShadowCalculationShadingZoneGroupsItem(TypedDict, total=False):
+    """One group of :class:`ShadowCalculationShadingZoneGroupsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     shading_zone_group_zonelist_name: str | None
 
@@ -251,6 +395,7 @@ class AnyShadowCalculation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyShadowCalculationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c117.AnyShadowCalculation  # type: ignore[assignment]
 
 class _AnyShadowCalculationFields(_ShadowCalculationCommonFields, total=False):
     maximum_figures_in_shadow_overlap_calculations: int | None
@@ -275,6 +420,7 @@ class ShadowCalculation(AnyShadowCalculation):
     """Number of pixels in both dimensions of the surface rendering; Default: 512; Since: 9.3.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadowCalculationFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c26.ShadowCalculation  # type: ignore[assignment]
 
 class _ShadowCalculationFields(_ShadowCalculationCommonFields, total=False):
     shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
@@ -301,6 +447,7 @@ class AnySurfaceConvectionAlgorithmInside(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySurfaceConvectionAlgorithmInsideFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.AnySurfaceConvectionAlgorithmInside  # type: ignore[assignment]
 
 class _AnySurfaceConvectionAlgorithmInsideFields(_SurfaceConvectionAlgorithmInsideCommonFields, total=False):
     algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
@@ -314,6 +461,7 @@ class SurfaceConvectionAlgorithmInside(AnySurfaceConvectionAlgorithmInside):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.SurfaceConvectionAlgorithmInside  # type: ignore[assignment]
 
 class _SurfaceConvectionAlgorithmInsideFields(_SurfaceConvectionAlgorithmInsideCommonFields, total=False):
     algorithm: Literal["", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
@@ -327,6 +475,7 @@ class SurfaceConvectionAlgorithmOutside(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c111.SurfaceConvectionAlgorithmOutside  # type: ignore[assignment]
 
 class _SurfaceConvectionAlgorithmOutsideFields(TypedDict, total=False):
     algorithm: Literal["", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"] | None
@@ -355,6 +504,7 @@ class HeatBalanceAlgorithm(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatBalanceAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c64.HeatBalanceAlgorithm  # type: ignore[assignment]
 
 class _HeatBalanceAlgorithmFields(TypedDict, total=False):
     algorithm: (
@@ -389,6 +539,7 @@ class HeatBalanceSettingsConductionFiniteDifference(_TypedIDFObject):
         /,
         **kwargs: Unpack[_HeatBalanceSettingsConductionFiniteDifferenceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.HeatBalanceSettingsConductionFiniteDifference  # type: ignore[assignment]
 
 class _HeatBalanceSettingsConductionFiniteDifferenceFields(TypedDict, total=False):
     difference_scheme: Literal["", "CrankNicholsonSecondOrder", "FullyImplicitFirstOrder"] | None
@@ -408,6 +559,7 @@ class AnyZoneAirHeatBalanceAlgorithm(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneAirHeatBalanceAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.AnyZoneAirHeatBalanceAlgorithm  # type: ignore[assignment]
 
 class _AnyZoneAirHeatBalanceAlgorithmFields(_ZoneAirHeatBalanceAlgorithmCommonFields, total=False): ...
 
@@ -422,6 +574,7 @@ class ZoneAirHeatBalanceAlgorithm(AnyZoneAirHeatBalanceAlgorithm):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneAirHeatBalanceAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.ZoneAirHeatBalanceAlgorithm  # type: ignore[assignment]
 
 class _ZoneAirHeatBalanceAlgorithmFields(_ZoneAirHeatBalanceAlgorithmCommonFields, total=False):
     do_space_heat_balance_for_sizing: Literal["", "No", "Yes"] | None
@@ -442,6 +595,7 @@ class ZoneAirContaminantBalance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneAirContaminantBalanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.ZoneAirContaminantBalance  # type: ignore[assignment]
 
 class _ZoneAirContaminantBalanceFields(TypedDict, total=False):
     carbon_dioxide_concentration: Literal["", "No", "Yes"] | None
@@ -464,6 +618,7 @@ class AnyZoneAirMassFlowConservation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneAirMassFlowConservationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c87.AnyZoneAirMassFlowConservation  # type: ignore[assignment]
 
 class _AnyZoneAirMassFlowConservationFields(_ZoneAirMassFlowConservationCommonFields, total=False): ...
 
@@ -479,6 +634,7 @@ class ZoneAirMassFlowConservation(AnyZoneAirMassFlowConservation):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneAirMassFlowConservationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c114.ZoneAirMassFlowConservation  # type: ignore[assignment]
 
 class _ZoneAirMassFlowConservationFields(_ZoneAirMassFlowConservationCommonFields, total=False):
     adjust_zone_mixing_and_return_for_air_mass_flow_balance: (
@@ -506,6 +662,7 @@ class ZoneCapacitanceMultiplierResearchSpecial(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneCapacitanceMultiplierResearchSpecialFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c120.ZoneCapacitanceMultiplierResearchSpecial  # type: ignore[assignment]
 
 class _ZoneCapacitanceMultiplierResearchSpecialFields(TypedDict, total=False):
     zone_or_zonelist_name: str | None
@@ -523,6 +680,7 @@ class AnyTimestep(_TypedIDFObject):
     @number_of_timesteps_per_hour.setter
     def number_of_timesteps_per_hour(self, value: int | None) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyTimestepFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c29.AnyTimestep  # type: ignore[assignment]
 
 class _AnyTimestepFields(_TimestepCommonFields, total=False):
     number_of_timesteps_per_hour: int | None
@@ -534,6 +692,7 @@ class Timestep(AnyTimestep):
     """Number in hour: normal validity 4 to 60: 6 suggested Must be evenly divisible into 60 Allowable values include 1, 2, ...; Default: 6; Range: >= 1, <= 60"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TimestepFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c122.Timestep  # type: ignore[assignment]
 
 class _TimestepFields(_TimestepCommonFields, total=False):
     number_of_timesteps_per_hour: int | None
@@ -561,6 +720,7 @@ class AnyConvergenceLimits(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyConvergenceLimitsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c81.AnyConvergenceLimits  # type: ignore[assignment]
 
 class _AnyConvergenceLimitsFields(_ConvergenceLimitsCommonFields, total=False):
     minimum_system_timestep: int | None
@@ -581,6 +741,7 @@ class ConvergenceLimits(AnyConvergenceLimits):
     """Controls the maximum number of plant system solver iterations within a single HVAC iteration Smaller values might dec...; Default: 8; Range: >= 2"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConvergenceLimitsFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.ConvergenceLimits  # type: ignore[assignment]
 
 class _ConvergenceLimitsFields(_ConvergenceLimitsCommonFields, total=False):
     minimum_system_timestep: int | None
@@ -609,6 +770,7 @@ class AnyHVACSystemRootFindingAlgorithm(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHVACSystemRootFindingAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.AnyHVACSystemRootFindingAlgorithm  # type: ignore[assignment]
 
 class _AnyHVACSystemRootFindingAlgorithmFields(_HVACSystemRootFindingAlgorithmCommonFields, total=False):
     number_of_iterations_before_algorithm_switch: int | None
@@ -622,6 +784,7 @@ class HVACSystemRootFindingAlgorithm(AnyHVACSystemRootFindingAlgorithm):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACSystemRootFindingAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c95.HVACSystemRootFindingAlgorithm  # type: ignore[assignment]
 
 class _HVACSystemRootFindingAlgorithmFields(_HVACSystemRootFindingAlgorithmCommonFields, total=False):
     number_of_iterations_before_algorithm_switch: int | None
@@ -635,6 +798,7 @@ class ComplianceBuilding(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComplianceBuildingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.ComplianceBuilding  # type: ignore[assignment]
 
 class _ComplianceBuildingFields(TypedDict, total=False):
     building_rotation_for_appendix_g: float | None
@@ -658,6 +822,7 @@ class AnySiteLocation(_TypedIDFObject):
     """[m]; Default: 0.0; Range: >= -300.0, < 8900.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySiteLocationFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c11.AnySiteLocation  # type: ignore[assignment]
 
 class _AnySiteLocationFields(_SiteLocationCommonFields, total=False): ...
 
@@ -668,6 +833,7 @@ class SiteLocation(AnySiteLocation):
     """Default: No; Since: 24.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteLocationFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.SiteLocation  # type: ignore[assignment]
 
 class _SiteLocationFields(_SiteLocationCommonFields, total=False):
     keep_site_location_information: Literal["", "No", "Yes"] | None
@@ -685,6 +851,7 @@ class SiteVariableLocation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteVariableLocationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c115.SiteVariableLocation  # type: ignore[assignment]
 
 class _SiteVariableLocationFields(TypedDict, total=False):
     building_location_latitude_schedule: str | None
@@ -851,6 +1018,7 @@ class AnySizingPeriodDesignDay(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySizingPeriodDesignDayFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c106.AnySizingPeriodDesignDay  # type: ignore[assignment]
 
 class _AnySizingPeriodDesignDayFields(_SizingPeriodDesignDayCommonFields, total=False):
     month: int | None
@@ -874,6 +1042,7 @@ class SizingPeriodDesignDay(AnySizingPeriodDesignDay):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodDesignDayFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c34.SizingPeriodDesignDay  # type: ignore[assignment]
 
 class _SizingPeriodDesignDayFields(_SizingPeriodDesignDayCommonFields, total=False):
     month: int | None
@@ -947,6 +1116,7 @@ class AnySizingPeriodWeatherFileDays(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySizingPeriodWeatherFileDaysFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.AnySizingPeriodWeatherFileDays  # type: ignore[assignment]
 
 class _AnySizingPeriodWeatherFileDaysFields(_SizingPeriodWeatherFileDaysCommonFields, total=False):
     begin_month: int | None
@@ -969,6 +1139,7 @@ class SizingPeriodWeatherFileDays(AnySizingPeriodWeatherFileDays):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodWeatherFileDaysFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c82.SizingPeriodWeatherFileDays  # type: ignore[assignment]
 
 class _SizingPeriodWeatherFileDaysFields(_SizingPeriodWeatherFileDaysCommonFields, total=False):
     begin_month: int | None
@@ -1027,6 +1198,7 @@ class SizingPeriodWeatherFileConditionType(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodWeatherFileConditionTypeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c12.SizingPeriodWeatherFileConditionType  # type: ignore[assignment]
 
 class _SizingPeriodWeatherFileConditionTypeFields(TypedDict, total=False):
     period_selection: (
@@ -1118,6 +1290,7 @@ class AnyRunPeriod(_TypedIDFObject):
     """Default: Yes"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyRunPeriodFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c123.AnyRunPeriod  # type: ignore[assignment]
 
 class _AnyRunPeriodFields(_RunPeriodCommonFields, total=False):
     begin_month: int | None
@@ -1153,6 +1326,7 @@ class RunPeriod(AnyRunPeriod):
     """When the weather data timestep is longer than the simulation timestep, weather data is interpolated. For the first ho...; Default: Hour24; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriodFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.RunPeriod  # type: ignore[assignment]
 
 class _RunPeriodFields(_RunPeriodCommonFields, total=False):
     begin_month: int | None
@@ -1180,6 +1354,7 @@ class RunPeriodControlSpecialDays(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriodControlSpecialDaysFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c24.RunPeriodControlSpecialDays  # type: ignore[assignment]
 
 class _RunPeriodControlSpecialDaysFields(TypedDict, total=False):
     start_date: str | None
@@ -1196,6 +1371,7 @@ class RunPeriodControlDaylightSavingTime(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriodControlDaylightSavingTimeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.RunPeriodControlDaylightSavingTime  # type: ignore[assignment]
 
 class _RunPeriodControlDaylightSavingTimeFields(TypedDict, total=False):
     start_date: str | None
@@ -1233,6 +1409,7 @@ class AnyWeatherPropertySkyTemperature(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWeatherPropertySkyTemperatureFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.AnyWeatherPropertySkyTemperature  # type: ignore[assignment]
 
 class _AnyWeatherPropertySkyTemperatureFields(_WeatherPropertySkyTemperatureCommonFields, total=False):
     calculation_type: (
@@ -1262,6 +1439,7 @@ class WeatherPropertySkyTemperature(AnyWeatherPropertySkyTemperature):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WeatherPropertySkyTemperatureFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.WeatherPropertySkyTemperature  # type: ignore[assignment]
 
 class _WeatherPropertySkyTemperatureFields(_WeatherPropertySkyTemperatureCommonFields, total=False):
     calculation_type: (
@@ -1294,6 +1472,7 @@ class SiteWeatherStation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteWeatherStationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.SiteWeatherStation  # type: ignore[assignment]
 
 class _SiteWeatherStationFields(TypedDict, total=False):
     wind_sensor_height_above_ground: float | None
@@ -1314,6 +1493,7 @@ class SiteHeightVariation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteHeightVariationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.SiteHeightVariation  # type: ignore[assignment]
 
 class _SiteHeightVariationFields(TypedDict, total=False):
     wind_speed_profile_exponent: float | None
@@ -1351,6 +1531,7 @@ class SiteGroundTemperatureBuildingSurface(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureBuildingSurfaceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c116.SiteGroundTemperatureBuildingSurface  # type: ignore[assignment]
 
 class _SiteGroundTemperatureBuildingSurfaceFields(TypedDict, total=False):
     january_ground_temperature: float | None
@@ -1397,6 +1578,7 @@ class SiteGroundTemperatureFCfactorMethod(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureFCfactorMethodFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.SiteGroundTemperatureFCfactorMethod  # type: ignore[assignment]
 
 class _SiteGroundTemperatureFCfactorMethodFields(TypedDict, total=False):
     january_ground_temperature: float | None
@@ -1443,6 +1625,7 @@ class SiteGroundTemperatureShallow(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureShallowFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c42.SiteGroundTemperatureShallow  # type: ignore[assignment]
 
 class _SiteGroundTemperatureShallowFields(TypedDict, total=False):
     january_surface_ground_temperature: float | None
@@ -1489,6 +1672,7 @@ class SiteGroundTemperatureDeep(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureDeepFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.SiteGroundTemperatureDeep  # type: ignore[assignment]
 
 class _SiteGroundTemperatureDeepFields(TypedDict, total=False):
     january_deep_ground_temperature: float | None
@@ -1526,6 +1710,7 @@ class SiteGroundTemperatureUndisturbedFiniteDifference(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SiteGroundTemperatureUndisturbedFiniteDifferenceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.SiteGroundTemperatureUndisturbedFiniteDifference  # type: ignore[assignment]
 
 class _SiteGroundTemperatureUndisturbedFiniteDifferenceFields(TypedDict, total=False):
     soil_thermal_conductivity: float | None
@@ -1557,6 +1742,7 @@ class SiteGroundTemperatureUndisturbedKusudaAchenbach(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SiteGroundTemperatureUndisturbedKusudaAchenbachFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.SiteGroundTemperatureUndisturbedKusudaAchenbach  # type: ignore[assignment]
 
 class _SiteGroundTemperatureUndisturbedKusudaAchenbachFields(TypedDict, total=False):
     soil_thermal_conductivity: float | None
@@ -1599,6 +1785,7 @@ class AnySiteGroundTemperatureUndisturbedXing(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnySiteGroundTemperatureUndisturbedXingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.AnySiteGroundTemperatureUndisturbedXing  # type: ignore[assignment]
 
 class _AnySiteGroundTemperatureUndisturbedXingFields(
     _SiteGroundTemperatureUndisturbedXingCommonFields, total=False
@@ -1613,6 +1800,7 @@ class SiteGroundTemperatureUndisturbedXing(AnySiteGroundTemperatureUndisturbedXi
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureUndisturbedXingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.SiteGroundTemperatureUndisturbedXing  # type: ignore[assignment]
 
 class _SiteGroundTemperatureUndisturbedXingFields(_SiteGroundTemperatureUndisturbedXingCommonFields, total=False):
     average_soil_surface_temperature: float | None
@@ -1709,6 +1897,7 @@ class AnySiteGroundDomainSlab(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySiteGroundDomainSlabFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c59.AnySiteGroundDomainSlab  # type: ignore[assignment]
 
 class _AnySiteGroundDomainSlabFields(_SiteGroundDomainSlabCommonFields, total=False):
     mesh_density_parameter: int | None
@@ -1722,6 +1911,7 @@ class SiteGroundDomainSlab(AnySiteGroundDomainSlab):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundDomainSlabFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c63.SiteGroundDomainSlab  # type: ignore[assignment]
 
 class _SiteGroundDomainSlabFields(_SiteGroundDomainSlabCommonFields, total=False):
     mesh_density_parameter: int | None
@@ -1812,6 +2002,7 @@ class AnySiteGroundDomainBasement(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySiteGroundDomainBasementFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c9.AnySiteGroundDomainBasement  # type: ignore[assignment]
 
 class _AnySiteGroundDomainBasementFields(_SiteGroundDomainBasementCommonFields, total=False):
     mesh_density_parameter: int | None
@@ -1825,6 +2016,7 @@ class SiteGroundDomainBasement(AnySiteGroundDomainBasement):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundDomainBasementFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.SiteGroundDomainBasement  # type: ignore[assignment]
 
 class _SiteGroundDomainBasementFields(_SiteGroundDomainBasementCommonFields, total=False):
     mesh_density_parameter: int | None
@@ -1860,6 +2052,7 @@ class SiteGroundReflectance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundReflectanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.SiteGroundReflectance  # type: ignore[assignment]
 
 class _SiteGroundReflectanceFields(TypedDict, total=False):
     january_ground_reflectance: float | None
@@ -1886,6 +2079,7 @@ class SiteGroundReflectanceSnowModifier(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundReflectanceSnowModifierFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.SiteGroundReflectanceSnowModifier  # type: ignore[assignment]
 
 class _SiteGroundReflectanceSnowModifierFields(TypedDict, total=False):
     ground_reflected_solar_modifier: float | None
@@ -1911,6 +2105,7 @@ class AnySiteWaterMainsTemperature(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySiteWaterMainsTemperatureFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.AnySiteWaterMainsTemperature  # type: ignore[assignment]
 
 class _AnySiteWaterMainsTemperatureFields(_SiteWaterMainsTemperatureCommonFields, total=False):
     calculation_method: Literal["Correlation", "Schedule"] | None
@@ -1928,6 +2123,7 @@ class SiteWaterMainsTemperature(AnySiteWaterMainsTemperature):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteWaterMainsTemperatureFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.SiteWaterMainsTemperature  # type: ignore[assignment]
 
 class _SiteWaterMainsTemperatureFields(_SiteWaterMainsTemperatureCommonFields, total=False):
     calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
@@ -1946,6 +2142,7 @@ class SitePrecipitation(_TypedIDFObject):
     """meters of water per year from average weather statistics; [m/yr]; Range: >= 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SitePrecipitationFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c81.SitePrecipitation  # type: ignore[assignment]
 
 class _SitePrecipitationFields(TypedDict, total=False):
     precipitation_model_type: Literal["ScheduleAndDesignLevel"] | None
@@ -1964,6 +2161,7 @@ class RoofIrrigation(_TypedIDFObject):
     """Used with SmartSchedule to set the saturation level at which no irrigation is allowed.; [percent]; Default: 40.0; Range: >= 0.0, <= 100.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofIrrigationFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.RoofIrrigation  # type: ignore[assignment]
 
 class _RoofIrrigationFields(TypedDict, total=False):
     irrigation_model_type: Literal["Schedule", "SmartSchedule"] | None
@@ -1981,6 +2179,7 @@ class SiteSolarAndVisibleSpectrum(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteSolarAndVisibleSpectrumFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.SiteSolarAndVisibleSpectrum  # type: ignore[assignment]
 
 class _SiteSolarAndVisibleSpectrumFields(TypedDict, total=False):
     spectrum_data_method: Literal["", "Default", "UserDefined"] | None
@@ -1989,6 +2188,13 @@ class _SiteSolarAndVisibleSpectrumFields(TypedDict, total=False):
 
 class SiteSpectrumDataExtensionsGroup(_TypedExtensibleGroup):
     """One extensions group inside :class:`SiteSpectrumData`."""
+
+    wavelength: float | None
+    spectrum: float | None
+    def as_dict(self) -> SiteSpectrumDataExtensionsItem: ...  # type: ignore[override]
+
+class SiteSpectrumDataExtensionsItem(TypedDict, total=False):
+    """One group of :class:`SiteSpectrumDataExtensionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     wavelength: float | None
     spectrum: float | None
@@ -2006,6 +2212,7 @@ class SiteSpectrumData(_TypedIDFObject):
     extensions: ExtensibleList[SiteSpectrumDataExtensionsGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteSpectrumDataFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c33.SiteSpectrumData  # type: ignore[assignment]
 
 class _SiteSpectrumDataFields(TypedDict, total=False):
     spectrum_data_type: Literal["Solar", "Visible"] | None
@@ -2013,7 +2220,7 @@ class _SiteSpectrumDataFields(TypedDict, total=False):
     spectrum: float | None
     wavelength_1: float | None
     spectrum_2: float | None
-    extensions: list[Any]
+    extensions: Sequence[SiteSpectrumDataExtensionsItem | SiteSpectrumDataExtensionsGroup]
 
 class ScheduleTypeLimits(_TypedIDFObject):
     """ScheduleTypeLimits specifies the data types and limits for the values contained in schedules"""
@@ -2049,6 +2256,7 @@ class ScheduleTypeLimits(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleTypeLimitsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.ScheduleTypeLimits  # type: ignore[assignment]
 
 class _ScheduleTypeLimitsFields(TypedDict, total=False):
     lower_limit_value: float | None
@@ -2129,6 +2337,7 @@ class ScheduleDayHourly(_TypedIDFObject):
     """Default: 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleDayHourlyFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c106.ScheduleDayHourly  # type: ignore[assignment]
 
 class _ScheduleDayHourlyFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -2162,6 +2371,13 @@ class ScheduleDayIntervalDataGroup(_TypedExtensibleGroup):
 
     time: str | None
     value_until_time: float | None
+    def as_dict(self) -> ScheduleDayIntervalDataItem: ...  # type: ignore[override]
+
+class ScheduleDayIntervalDataItem(TypedDict, total=False):
+    """One group of :class:`ScheduleDayIntervalDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    time: str | None
+    value_until_time: float | None
 
 class ScheduleDayInterval(_TypedIDFObject):
     """A Schedule:Day:Interval contains a full day of values with specified end times for each value Currently, is set up to..."""
@@ -2174,19 +2390,26 @@ class ScheduleDayInterval(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleDayIntervalFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.ScheduleDayInterval  # type: ignore[assignment]
 
 class _ScheduleDayIntervalFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
-    data: list[Any]
+    data: Sequence[ScheduleDayIntervalDataItem | ScheduleDayIntervalDataGroup]
 
 class _ScheduleDayListCommonFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
-    extensions: list[Any]
+    extensions: Sequence[ScheduleDayListExtensionsItem | ScheduleDayListExtensionsGroup]
 
 class ScheduleDayListExtensionsGroup(_TypedExtensibleGroup):
     """One extensions group inside :class:`AnyScheduleDayList`."""
+
+    value: float | None
+    def as_dict(self) -> ScheduleDayListExtensionsItem: ...  # type: ignore[override]
+
+class ScheduleDayListExtensionsItem(TypedDict, total=False):
+    """One group of :class:`ScheduleDayListExtensionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     value: float | None
 
@@ -2205,6 +2428,7 @@ class AnyScheduleDayList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyScheduleDayListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.AnyScheduleDayList  # type: ignore[assignment]
 
 class _AnyScheduleDayListFields(_ScheduleDayListCommonFields, total=False):
     minutes_per_item: int | None
@@ -2216,6 +2440,7 @@ class ScheduleDayList(AnyScheduleDayList):
     """Must be evenly divisible into 60; Range: >= 1, <= 60"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleDayListFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c109.ScheduleDayList  # type: ignore[assignment]
 
 class _ScheduleDayListFields(_ScheduleDayListCommonFields, total=False):
     minutes_per_item: int | None
@@ -2237,6 +2462,7 @@ class ScheduleWeekDaily(_TypedIDFObject):
     customday2_schedule_day_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleWeekDailyFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.ScheduleWeekDaily  # type: ignore[assignment]
 
 class _ScheduleWeekDailyFields(TypedDict, total=False):
     sunday_schedule_day_name: str | None
@@ -2257,6 +2483,13 @@ class ScheduleWeekCompactDataGroup(_TypedExtensibleGroup):
 
     daytype_list: str | None
     schedule_day_name: str | None
+    def as_dict(self) -> ScheduleWeekCompactDataItem: ...  # type: ignore[override]
+
+class ScheduleWeekCompactDataItem(TypedDict, total=False):
+    """One group of :class:`ScheduleWeekCompactDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    daytype_list: str | None
+    schedule_day_name: str | None
 
 class ScheduleWeekCompact(_TypedIDFObject):
     """Compact definition for Schedule:Day:List"""
@@ -2266,9 +2499,10 @@ class ScheduleWeekCompact(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleWeekCompactFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.ScheduleWeekCompact  # type: ignore[assignment]
 
 class _ScheduleWeekCompactFields(TypedDict, total=False):
-    data: list[Any]
+    data: Sequence[ScheduleWeekCompactDataItem | ScheduleWeekCompactDataGroup]
 
 class _ScheduleYearCommonFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -2279,11 +2513,22 @@ class AnyScheduleYear(_TypedIDFObject):
     schedule_type_limits_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyScheduleYearFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c89.AnyScheduleYear  # type: ignore[assignment]
 
 class _AnyScheduleYearFields(_ScheduleYearCommonFields, total=False): ...
 
 class ScheduleYearScheduleWeeksGroup(_TypedExtensibleGroup):
     """One schedule_weeks group inside :class:`ScheduleYear`."""
+
+    schedule_week_name: str | None
+    start_month: int | None
+    start_day: int | None
+    end_month: int | None
+    end_day: int | None
+    def as_dict(self) -> ScheduleYearScheduleWeeksItem: ...  # type: ignore[override]
+
+class ScheduleYearScheduleWeeksItem(TypedDict, total=False):
+    """One group of :class:`ScheduleYearScheduleWeeksGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     schedule_week_name: str | None
     start_month: int | None
@@ -2297,12 +2542,19 @@ class ScheduleYear(AnyScheduleYear):
     schedule_weeks: ExtensibleList[ScheduleYearScheduleWeeksGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleYearFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c1.ScheduleYear  # type: ignore[assignment]
 
 class _ScheduleYearFields(_ScheduleYearCommonFields, total=False):
-    schedule_weeks: list[Any]
+    schedule_weeks: Sequence[ScheduleYearScheduleWeeksItem | ScheduleYearScheduleWeeksGroup]
 
 class ScheduleCompactDataGroup(_TypedExtensibleGroup):
     """One data group inside :class:`ScheduleCompact`."""
+
+    field: float | str | None
+    def as_dict(self) -> ScheduleCompactDataItem: ...  # type: ignore[override]
+
+class ScheduleCompactDataItem(TypedDict, total=False):
+    """One group of :class:`ScheduleCompactDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     field: float | str | None
 
@@ -2313,10 +2565,11 @@ class ScheduleCompact(_TypedIDFObject):
     data: ExtensibleList[ScheduleCompactDataGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleCompactFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c33.ScheduleCompact  # type: ignore[assignment]
 
 class _ScheduleCompactFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
-    data: list[Any]
+    data: Sequence[ScheduleCompactDataItem | ScheduleCompactDataGroup]
 
 class ScheduleConstant(_TypedIDFObject):
     """Constant hourly value for entire year."""
@@ -2326,6 +2579,7 @@ class ScheduleConstant(_TypedIDFObject):
     """Default: 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleConstantFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c63.ScheduleConstant  # type: ignore[assignment]
 
 class _ScheduleConstantFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -2348,6 +2602,7 @@ class ScheduleYearRules(_TypedIDFObject):
     """If blank, the Default Day Schedule is used for Custom Day 2."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleYearRulesFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.ScheduleYearRules  # type: ignore[assignment]
 
 class _ScheduleYearRulesFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -2360,6 +2615,15 @@ class _ScheduleYearRulesFields(TypedDict, total=False):
 
 class ScheduleWeekRuleDateRangesGroup(_TypedExtensibleGroup):
     """One date_ranges group inside :class:`ScheduleWeekRule`."""
+
+    start_month: int | None
+    start_day: int | None
+    end_month: int | None
+    end_day: int | None
+    def as_dict(self) -> ScheduleWeekRuleDateRangesItem: ...  # type: ignore[override]
+
+class ScheduleWeekRuleDateRangesItem(TypedDict, total=False):
+    """One group of :class:`ScheduleWeekRuleDateRangesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     start_month: int | None
     start_day: int | None
@@ -2390,6 +2654,7 @@ class ScheduleWeekRule(_TypedIDFObject):
     date_ranges: ExtensibleList[ScheduleWeekRuleDateRangesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleWeekRuleFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c30.ScheduleWeekRule  # type: ignore[assignment]
 
 class _ScheduleWeekRuleFields(TypedDict, total=False):
     schedule_year_rules_name: str | None
@@ -2402,7 +2667,7 @@ class _ScheduleWeekRuleFields(TypedDict, total=False):
     apply_thursday: Literal["", "No", "Yes"] | None
     apply_friday: Literal["", "No", "Yes"] | None
     apply_saturday: Literal["", "No", "Yes"] | None
-    date_ranges: list[Any]
+    date_ranges: Sequence[ScheduleWeekRuleDateRangesItem | ScheduleWeekRuleDateRangesGroup]
 
 class ScheduleFileShading(_TypedIDFObject):
     """A Schedule:File:Shading points to a CSV file that has 8760-8784 hours of sunlit fraction data for all or some of the ..."""
@@ -2413,6 +2678,7 @@ class ScheduleFileShading(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleFileShadingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c114.ScheduleFileShading  # type: ignore[assignment]
 
 class _ScheduleFileShadingFields(TypedDict, total=False):
     file_name: str | None
@@ -2449,6 +2715,7 @@ class AnyScheduleFile(_TypedIDFObject):
     @minutes_per_item.setter
     def minutes_per_item(self, value: int | None) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyScheduleFileFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.AnyScheduleFile  # type: ignore[assignment]
 
 class _AnyScheduleFileFields(_ScheduleFileCommonFields, total=False):
     column_number: int | None
@@ -2471,6 +2738,7 @@ class ScheduleFile(AnyScheduleFile):
     """'No' means do not include Daylight Savings Time in the schedule, instead, use the schedule directly from the Schedule...; Default: Yes; Since: 22.1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleFileFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c38.ScheduleFile  # type: ignore[assignment]
 
 class _ScheduleFileFields(_ScheduleFileCommonFields, total=False):
     column_number: int | None
@@ -2509,6 +2777,7 @@ class AnyMaterial(_TypedIDFObject):
     """Default: 0.7; Range: >= 0.0, <= 1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyMaterialFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.AnyMaterial  # type: ignore[assignment]
 
 class _AnyMaterialFields(_MaterialCommonFields, total=False): ...
 
@@ -2523,6 +2792,7 @@ class Material(AnyMaterial):
     """When blank, this value is equal to the Visible Absorptance field above. When entered, the Visible Absorptance field a...; Range: >= 0.0, <= 1.0; Since: 26.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c67.Material  # type: ignore[assignment]
 
 class _MaterialFields(_MaterialCommonFields, total=False):
     thermal_absorptance_inside_face: float | None
@@ -2550,6 +2820,7 @@ class AnyMaterialNoMass(_TypedIDFObject):
     """Default: 0.7; Range: >= 0.0, <= 1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyMaterialNoMassFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.AnyMaterialNoMass  # type: ignore[assignment]
 
 class _AnyMaterialNoMassFields(_MaterialNoMassCommonFields, total=False): ...
 
@@ -2564,6 +2835,7 @@ class MaterialNoMass(AnyMaterialNoMass):
     """When blank, this value is equal to the Visible Absorptance field above. When entered, the Visible Absorptance field a...; Range: >= 0.0, <= 1.0; Since: 26.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialNoMassFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c109.MaterialNoMass  # type: ignore[assignment]
 
 class _MaterialNoMassFields(_MaterialNoMassCommonFields, total=False):
     thermal_absorptance_inside_face: float | None
@@ -2573,6 +2845,8 @@ class _MaterialNoMassFields(_MaterialNoMassCommonFields, total=False):
 class MaterialInfraredTransparent(_TypedIDFObject):
     """Special infrared transparent material. Similar to a Material:Nomass with low thermal resistance. High absorptance in ..."""
 
+    _creation_signature: _c28.MaterialInfraredTransparent  # type: ignore[assignment]
+
 class MaterialAirGap(_TypedIDFObject):
     """Air Space in Opaque Construction"""
 
@@ -2580,6 +2854,7 @@ class MaterialAirGap(_TypedIDFObject):
     """[m2-K/W]; Range: > 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialAirGapFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.MaterialAirGap  # type: ignore[assignment]
 
 class _MaterialAirGapFields(TypedDict, total=False):
     thermal_resistance: float | None
@@ -2627,6 +2902,7 @@ class MaterialRoofVegetation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialRoofVegetationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c26.MaterialRoofVegetation  # type: ignore[assignment]
 
 class _MaterialRoofVegetationFields(TypedDict, total=False):
     height_of_plants: float | None
@@ -2661,6 +2937,7 @@ class WindowMaterialSimpleGlazingSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialSimpleGlazingSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c85.WindowMaterialSimpleGlazingSystem  # type: ignore[assignment]
 
 class _WindowMaterialSimpleGlazingSystemFields(TypedDict, total=False):
     u_factor: float | None
@@ -2713,6 +2990,7 @@ class WindowMaterialGlazing(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGlazingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c125.WindowMaterialGlazing  # type: ignore[assignment]
 
 class _WindowMaterialGlazingFields(TypedDict, total=False):
     optical_data_type: Literal["BSDF", "Spectral", "SpectralAndAngle", "SpectralAverage"] | None
@@ -2741,6 +3019,13 @@ class WindowMaterialGlazingGroupThermochromicTemperatureDataGroup(_TypedExtensib
 
     optical_data_temperature: float | None
     window_material_glazing_name: str | None
+    def as_dict(self) -> WindowMaterialGlazingGroupThermochromicTemperatureDataItem: ...  # type: ignore[override]
+
+class WindowMaterialGlazingGroupThermochromicTemperatureDataItem(TypedDict, total=False):
+    """One group of :class:`WindowMaterialGlazingGroupThermochromicTemperatureDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    optical_data_temperature: float | None
+    window_material_glazing_name: str | None
 
 class WindowMaterialGlazingGroupThermochromic(_TypedIDFObject):
     """thermochromic glass at different temperatures"""
@@ -2753,9 +3038,13 @@ class WindowMaterialGlazingGroupThermochromic(_TypedIDFObject):
         /,
         **kwargs: Unpack[_WindowMaterialGlazingGroupThermochromicFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.WindowMaterialGlazingGroupThermochromic  # type: ignore[assignment]
 
 class _WindowMaterialGlazingGroupThermochromicFields(TypedDict, total=False):
-    temperature_data: list[Any]
+    temperature_data: Sequence[
+        WindowMaterialGlazingGroupThermochromicTemperatureDataItem
+        | WindowMaterialGlazingGroupThermochromicTemperatureDataGroup
+    ]
 
 class WindowMaterialGlazingRefractionExtinctionMethod(_TypedIDFObject):
     """Glass material properties for Windows or Glass Doors Index of Refraction/Extinction Coefficient input method Not to b..."""
@@ -2787,6 +3076,7 @@ class WindowMaterialGlazingRefractionExtinctionMethod(_TypedIDFObject):
         /,
         **kwargs: Unpack[_WindowMaterialGlazingRefractionExtinctionMethodFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c50.WindowMaterialGlazingRefractionExtinctionMethod  # type: ignore[assignment]
 
 class _WindowMaterialGlazingRefractionExtinctionMethodFields(TypedDict, total=False):
     thickness: float | None
@@ -2830,6 +3120,7 @@ class WindowMaterialGas(_TypedIDFObject):
     """Used only if Gas Type = Custom; Range: > 1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGasFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.WindowMaterialGas  # type: ignore[assignment]
 
 class _WindowMaterialGasFields(TypedDict, total=False):
     gas_type: Literal["Air", "Argon", "Custom", "Krypton", "Xenon"] | None
@@ -2857,6 +3148,7 @@ class WindowGapSupportPillar(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowGapSupportPillarFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c80.WindowGapSupportPillar  # type: ignore[assignment]
 
 class _WindowGapSupportPillarFields(TypedDict, total=False):
     spacing: float | None
@@ -2875,6 +3167,7 @@ class WindowGapDeflectionState(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowGapDeflectionStateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.WindowGapDeflectionState  # type: ignore[assignment]
 
 class _WindowGapDeflectionStateFields(TypedDict, total=False):
     deflected_thickness: float | None
@@ -2917,6 +3210,7 @@ class AnyWindowMaterialGasMixture(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWindowMaterialGasMixtureFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.AnyWindowMaterialGasMixture  # type: ignore[assignment]
 
 class _AnyWindowMaterialGasMixtureFields(_WindowMaterialGasMixtureCommonFields, total=False):
     number_of_gases_in_mixture: int | None
@@ -2930,6 +3224,7 @@ class WindowMaterialGasMixture(AnyWindowMaterialGasMixture):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGasMixtureFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.WindowMaterialGasMixture  # type: ignore[assignment]
 
 class _WindowMaterialGasMixtureFields(_WindowMaterialGasMixtureCommonFields, total=False):
     number_of_gases_in_mixture: int | None
@@ -2951,6 +3246,7 @@ class WindowMaterialGap(_TypedIDFObject):
     """Alias of :attr:`gas_or_gas_mixture_`, the same field without the trailing underscore."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGapFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c123.WindowMaterialGap  # type: ignore[assignment]
 
 class _WindowMaterialGapFields(TypedDict, total=False):
     thickness: float | None
@@ -2995,6 +3291,7 @@ class WindowMaterialShade(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialShadeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.WindowMaterialShade  # type: ignore[assignment]
 
 class _WindowMaterialShadeFields(TypedDict, total=False):
     solar_transmittance: float | None
@@ -3079,6 +3376,7 @@ class AnyWindowMaterialComplexShade(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWindowMaterialComplexShadeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c106.AnyWindowMaterialComplexShade  # type: ignore[assignment]
 
 class _AnyWindowMaterialComplexShadeFields(_WindowMaterialComplexShadeCommonFields, total=False):
     layer_type: Literal["", "BSDF", "OtherShadingType", "Perforated", "Woven"] | None
@@ -3094,6 +3392,7 @@ class WindowMaterialComplexShade(AnyWindowMaterialComplexShade):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialComplexShadeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c106.WindowMaterialComplexShade  # type: ignore[assignment]
 
 class _WindowMaterialComplexShadeFields(_WindowMaterialComplexShadeCommonFields, total=False):
     layer_type: (
@@ -3163,6 +3462,7 @@ class WindowMaterialBlind(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialBlindFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.WindowMaterialBlind  # type: ignore[assignment]
 
 class _WindowMaterialBlindFields(TypedDict, total=False):
     slat_orientation: Literal["", "Horizontal", "Vertical"] | None
@@ -3229,6 +3529,7 @@ class WindowMaterialScreen(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialScreenFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.WindowMaterialScreen  # type: ignore[assignment]
 
 class _WindowMaterialScreenFields(TypedDict, total=False):
     reflected_beam_transmittance_accounting_method: (
@@ -3276,6 +3577,7 @@ class WindowMaterialShadeEquivalentLayer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialShadeEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.WindowMaterialShadeEquivalentLayer  # type: ignore[assignment]
 
 class _WindowMaterialShadeEquivalentLayerFields(TypedDict, total=False):
     shade_beam_beam_solar_transmittance: float | None
@@ -3323,6 +3625,7 @@ class WindowMaterialDrapeEquivalentLayer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialDrapeEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c89.WindowMaterialDrapeEquivalentLayer  # type: ignore[assignment]
 
 class _WindowMaterialDrapeEquivalentLayerFields(TypedDict, total=False):
     drape_beam_beam_solar_transmittance_at_normal_incidence: float | None
@@ -3392,6 +3695,7 @@ class WindowMaterialBlindEquivalentLayer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialBlindEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c102.WindowMaterialBlindEquivalentLayer  # type: ignore[assignment]
 
 class _WindowMaterialBlindEquivalentLayerFields(TypedDict, total=False):
     slat_orientation: Literal["", "Horizontal", "Vertical"] | None
@@ -3445,6 +3749,7 @@ class WindowMaterialScreenEquivalentLayer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialScreenEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.WindowMaterialScreenEquivalentLayer  # type: ignore[assignment]
 
 class _WindowMaterialScreenEquivalentLayerFields(TypedDict, total=False):
     screen_beam_beam_solar_transmittance: float | Literal["", "Autocalculate"] | None
@@ -3554,6 +3859,7 @@ class AnyWindowMaterialGlazingEquivalentLayer(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyWindowMaterialGlazingEquivalentLayerFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.AnyWindowMaterialGlazingEquivalentLayer  # type: ignore[assignment]
 
 class _AnyWindowMaterialGlazingEquivalentLayerFields(
     _WindowMaterialGlazingEquivalentLayerCommonFields, total=False
@@ -3568,6 +3874,7 @@ class WindowMaterialGlazingEquivalentLayer(AnyWindowMaterialGlazingEquivalentLay
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGlazingEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.WindowMaterialGlazingEquivalentLayer  # type: ignore[assignment]
 
 class _WindowMaterialGlazingEquivalentLayerFields(_WindowMaterialGlazingEquivalentLayerCommonFields, total=False):
     thermal_resistance: float | None
@@ -3606,6 +3913,7 @@ class WindowMaterialGapEquivalentLayer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGapEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.WindowMaterialGapEquivalentLayer  # type: ignore[assignment]
 
 class _WindowMaterialGapEquivalentLayerFields(TypedDict, total=False):
     gas_type: Literal["AIR", "ARGON", "CUSTOM", "KRYPTON", "XENON"] | None
@@ -3651,6 +3959,7 @@ class MaterialPropertyMoisturePenetrationDepthSettings(_TypedIDFObject):
         /,
         **kwargs: Unpack[_MaterialPropertyMoisturePenetrationDepthSettingsFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.MaterialPropertyMoisturePenetrationDepthSettings  # type: ignore[assignment]
 
 class _MaterialPropertyMoisturePenetrationDepthSettingsFields(TypedDict, total=False):
     water_vapor_diffusion_resistance_factor: float | None
@@ -3675,11 +3984,19 @@ class AnyMaterialPropertyPhaseChange(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyMaterialPropertyPhaseChangeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c24.AnyMaterialPropertyPhaseChange  # type: ignore[assignment]
 
 class _AnyMaterialPropertyPhaseChangeFields(_MaterialPropertyPhaseChangeCommonFields, total=False): ...
 
 class MaterialPropertyPhaseChangeValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`MaterialPropertyPhaseChange`."""
+
+    temperature: float | None
+    enthalpy: float | None
+    def as_dict(self) -> MaterialPropertyPhaseChangeValuesItem: ...  # type: ignore[override]
+
+class MaterialPropertyPhaseChangeValuesItem(TypedDict, total=False):
+    """One group of :class:`MaterialPropertyPhaseChangeValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     temperature: float | None
     enthalpy: float | None
@@ -3692,9 +4009,10 @@ class MaterialPropertyPhaseChange(AnyMaterialPropertyPhaseChange):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialPropertyPhaseChangeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c61.MaterialPropertyPhaseChange  # type: ignore[assignment]
 
 class _MaterialPropertyPhaseChangeFields(_MaterialPropertyPhaseChangeCommonFields, total=False):
-    values: list[Any]
+    values: Sequence[MaterialPropertyPhaseChangeValuesItem | MaterialPropertyPhaseChangeValuesGroup]
 
 class MaterialPropertyPhaseChangeHysteresis(_TypedIDFObject):
     """Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) wi..."""
@@ -3729,6 +4047,7 @@ class MaterialPropertyPhaseChangeHysteresis(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialPropertyPhaseChangeHysteresisFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c13.MaterialPropertyPhaseChangeHysteresis  # type: ignore[assignment]
 
 class _MaterialPropertyPhaseChangeHysteresisFields(TypedDict, total=False):
     latent_heat_during_the_entire_phase_change_process: float | None
@@ -3756,6 +4075,7 @@ class AnyMaterialPropertyVariableThermalConductivity(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyMaterialPropertyVariableThermalConductivityFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.AnyMaterialPropertyVariableThermalConductivity  # type: ignore[assignment]
 
 class _AnyMaterialPropertyVariableThermalConductivityFields(
     _MaterialPropertyVariableThermalConductivityCommonFields, total=False
@@ -3763,6 +4083,13 @@ class _AnyMaterialPropertyVariableThermalConductivityFields(
 
 class MaterialPropertyVariableThermalConductivityValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`MaterialPropertyVariableThermalConductivity`."""
+
+    temperature: float | None
+    thermal_conductivity: float | None
+    def as_dict(self) -> MaterialPropertyVariableThermalConductivityValuesItem: ...  # type: ignore[override]
+
+class MaterialPropertyVariableThermalConductivityValuesItem(TypedDict, total=False):
+    """One group of :class:`MaterialPropertyVariableThermalConductivityValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     temperature: float | None
     thermal_conductivity: float | None
@@ -3778,11 +4105,14 @@ class MaterialPropertyVariableThermalConductivity(AnyMaterialPropertyVariableThe
         /,
         **kwargs: Unpack[_MaterialPropertyVariableThermalConductivityFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c26.MaterialPropertyVariableThermalConductivity  # type: ignore[assignment]
 
 class _MaterialPropertyVariableThermalConductivityFields(
     _MaterialPropertyVariableThermalConductivityCommonFields, total=False
 ):
-    values: list[Any]
+    values: Sequence[
+        MaterialPropertyVariableThermalConductivityValuesItem | MaterialPropertyVariableThermalConductivityValuesGroup
+    ]
 
 class _MaterialPropertyVariableAbsorptanceCommonFields(TypedDict, total=False):
     reference_material_name: str | None
@@ -3817,6 +4147,7 @@ class AnyMaterialPropertyVariableAbsorptance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyMaterialPropertyVariableAbsorptanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.AnyMaterialPropertyVariableAbsorptance  # type: ignore[assignment]
 
 class _AnyMaterialPropertyVariableAbsorptanceFields(_MaterialPropertyVariableAbsorptanceCommonFields, total=False): ...
 
@@ -3839,6 +4170,7 @@ class MaterialPropertyVariableAbsorptance(AnyMaterialPropertyVariableAbsorptance
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialPropertyVariableAbsorptanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.MaterialPropertyVariableAbsorptance  # type: ignore[assignment]
 
 class _MaterialPropertyVariableAbsorptanceFields(_MaterialPropertyVariableAbsorptanceCommonFields, total=False):
     control_signal_inside_face: (
@@ -3865,6 +4197,7 @@ class MaterialPropertyHeatAndMoistureTransferSettings(_TypedIDFObject):
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSettingsFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c61.MaterialPropertyHeatAndMoistureTransferSettings  # type: ignore[assignment]
 
 class _MaterialPropertyHeatAndMoistureTransferSettingsFields(TypedDict, total=False):
     material_name: str | None
@@ -4040,6 +4373,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferSorptionIsotherm(_TypedIDFObject
         /,
         **kwargs: Unpack[_AnyMaterialPropertyHeatAndMoistureTransferSorptionIsothermFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.AnyMaterialPropertyHeatAndMoistureTransferSorptionIsotherm  # type: ignore[assignment]
 
 class _AnyMaterialPropertyHeatAndMoistureTransferSorptionIsothermFields(
     _MaterialPropertyHeatAndMoistureTransferSorptionIsothermCommonFields, total=False
@@ -4060,6 +4394,7 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm(
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c38.MaterialPropertyHeatAndMoistureTransferSorptionIsotherm  # type: ignore[assignment]
 
 class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields(
     _MaterialPropertyHeatAndMoistureTransferSorptionIsothermCommonFields, total=False
@@ -4235,6 +4570,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferSuction(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyMaterialPropertyHeatAndMoistureTransferSuctionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c12.AnyMaterialPropertyHeatAndMoistureTransferSuction  # type: ignore[assignment]
 
 class _AnyMaterialPropertyHeatAndMoistureTransferSuctionFields(
     _MaterialPropertyHeatAndMoistureTransferSuctionCommonFields, total=False
@@ -4253,6 +4589,7 @@ class MaterialPropertyHeatAndMoistureTransferSuction(AnyMaterialPropertyHeatAndM
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSuctionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.MaterialPropertyHeatAndMoistureTransferSuction  # type: ignore[assignment]
 
 class _MaterialPropertyHeatAndMoistureTransferSuctionFields(
     _MaterialPropertyHeatAndMoistureTransferSuctionCommonFields, total=False
@@ -4428,6 +4765,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferRedistribution(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyMaterialPropertyHeatAndMoistureTransferRedistributionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.AnyMaterialPropertyHeatAndMoistureTransferRedistribution  # type: ignore[assignment]
 
 class _AnyMaterialPropertyHeatAndMoistureTransferRedistributionFields(
     _MaterialPropertyHeatAndMoistureTransferRedistributionCommonFields, total=False
@@ -4446,6 +4784,7 @@ class MaterialPropertyHeatAndMoistureTransferRedistribution(AnyMaterialPropertyH
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferRedistributionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c18.MaterialPropertyHeatAndMoistureTransferRedistribution  # type: ignore[assignment]
 
 class _MaterialPropertyHeatAndMoistureTransferRedistributionFields(
     _MaterialPropertyHeatAndMoistureTransferRedistributionCommonFields, total=False
@@ -4621,6 +4960,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferDiffusion(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyMaterialPropertyHeatAndMoistureTransferDiffusionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.AnyMaterialPropertyHeatAndMoistureTransferDiffusion  # type: ignore[assignment]
 
 class _AnyMaterialPropertyHeatAndMoistureTransferDiffusionFields(
     _MaterialPropertyHeatAndMoistureTransferDiffusionCommonFields, total=False
@@ -4639,6 +4979,7 @@ class MaterialPropertyHeatAndMoistureTransferDiffusion(AnyMaterialPropertyHeatAn
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferDiffusionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.MaterialPropertyHeatAndMoistureTransferDiffusion  # type: ignore[assignment]
 
 class _MaterialPropertyHeatAndMoistureTransferDiffusionFields(
     _MaterialPropertyHeatAndMoistureTransferDiffusionCommonFields, total=False
@@ -4814,6 +5155,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferThermalConductivity(_TypedIDFObj
         /,
         **kwargs: Unpack[_AnyMaterialPropertyHeatAndMoistureTransferThermalConductivityFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.AnyMaterialPropertyHeatAndMoistureTransferThermalConductivity  # type: ignore[assignment]
 
 class _AnyMaterialPropertyHeatAndMoistureTransferThermalConductivityFields(
     _MaterialPropertyHeatAndMoistureTransferThermalConductivityCommonFields, total=False
@@ -4834,6 +5176,7 @@ class MaterialPropertyHeatAndMoistureTransferThermalConductivity(
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferThermalConductivityFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c52.MaterialPropertyHeatAndMoistureTransferThermalConductivity  # type: ignore[assignment]
 
 class _MaterialPropertyHeatAndMoistureTransferThermalConductivityFields(
     _MaterialPropertyHeatAndMoistureTransferThermalConductivityCommonFields, total=False
@@ -4842,6 +5185,15 @@ class _MaterialPropertyHeatAndMoistureTransferThermalConductivityFields(
 
 class MaterialPropertyGlazingSpectralDataExtensionsGroup(_TypedExtensibleGroup):
     """One extensions group inside :class:`MaterialPropertyGlazingSpectralData`."""
+
+    wavelength: float | None
+    transmittance: float | None
+    front_reflectance: float | None
+    back_reflectance: float | None
+    def as_dict(self) -> MaterialPropertyGlazingSpectralDataExtensionsItem: ...  # type: ignore[override]
+
+class MaterialPropertyGlazingSpectralDataExtensionsItem(TypedDict, total=False):
+    """One group of :class:`MaterialPropertyGlazingSpectralDataExtensionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     wavelength: float | None
     transmittance: float | None
@@ -4876,6 +5228,7 @@ class MaterialPropertyGlazingSpectralData(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialPropertyGlazingSpectralDataFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.MaterialPropertyGlazingSpectralData  # type: ignore[assignment]
 
 class _MaterialPropertyGlazingSpectralDataFields(TypedDict, total=False):
     wavelength_1: float | None
@@ -4894,7 +5247,9 @@ class _MaterialPropertyGlazingSpectralDataFields(TypedDict, total=False):
     transmittance_4: float | None
     front_reflectance_4: float | None
     back_reflectance_4: float | None
-    extensions: list[Any]
+    extensions: Sequence[
+        MaterialPropertyGlazingSpectralDataExtensionsItem | MaterialPropertyGlazingSpectralDataExtensionsGroup
+    ]
 
 class Construction(_TypedIDFObject):
     """Start with outside layer and work your way to the inside layer Up to 10 layers total, 8 for windows Enter the materia..."""
@@ -4911,6 +5266,7 @@ class Construction(_TypedIDFObject):
     layer_10: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c22.Construction  # type: ignore[assignment]
 
 class _ConstructionFields(TypedDict, total=False):
     outside_layer: str | None
@@ -4935,6 +5291,7 @@ class ConstructionCfactorUndergroundWall(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionCfactorUndergroundWallFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.ConstructionCfactorUndergroundWall  # type: ignore[assignment]
 
 class _ConstructionCfactorUndergroundWallFields(TypedDict, total=False):
     c_factor: float | None
@@ -4953,6 +5310,7 @@ class ConstructionFfactorGroundFloor(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionFfactorGroundFloorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c29.ConstructionFfactorGroundFloor  # type: ignore[assignment]
 
 class _ConstructionFfactorGroundFloorFields(TypedDict, total=False):
     f_factor: float | None
@@ -4991,6 +5349,7 @@ class AnyConstructionPropertyInternalHeatSource(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyConstructionPropertyInternalHeatSourceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.AnyConstructionPropertyInternalHeatSource  # type: ignore[assignment]
 
 class _AnyConstructionPropertyInternalHeatSourceFields(
     _ConstructionPropertyInternalHeatSourceCommonFields, total=False
@@ -5012,6 +5371,7 @@ class ConstructionPropertyInternalHeatSource(AnyConstructionPropertyInternalHeat
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionPropertyInternalHeatSourceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.ConstructionPropertyInternalHeatSource  # type: ignore[assignment]
 
 class _ConstructionPropertyInternalHeatSourceFields(_ConstructionPropertyInternalHeatSourceCommonFields, total=False):
     thermal_source_present_after_layer_number: int | None
@@ -5036,6 +5396,7 @@ class AnyConstructionAirBoundary(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyConstructionAirBoundaryFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c30.AnyConstructionAirBoundary  # type: ignore[assignment]
 
 class _AnyConstructionAirBoundaryFields(_ConstructionAirBoundaryCommonFields, total=False): ...
 
@@ -5045,6 +5406,7 @@ class ConstructionAirBoundary(AnyConstructionAirBoundary):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionAirBoundaryFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.ConstructionAirBoundary  # type: ignore[assignment]
 
 class _ConstructionAirBoundaryFields(_ConstructionAirBoundaryCommonFields, total=False): ...
 
@@ -5078,6 +5440,7 @@ class WindowThermalModelParams(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowThermalModelParamsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.WindowThermalModelParams  # type: ignore[assignment]
 
 class _WindowThermalModelParamsFields(TypedDict, total=False):
     standard: Literal["", "EN673Declared", "EN673Design", "ISO15099"] | None
@@ -5106,6 +5469,7 @@ class WindowsCalculationEngine(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowsCalculationEngineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c39.WindowsCalculationEngine  # type: ignore[assignment]
 
 class _WindowsCalculationEngineFields(TypedDict, total=False):
     windows_engine: Literal["", "BuiltInWindowsModel", "ExternalWindowsModel"] | None
@@ -5156,6 +5520,7 @@ class AnyConstructionComplexFenestrationState(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyConstructionComplexFenestrationStateFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c64.AnyConstructionComplexFenestrationState  # type: ignore[assignment]
 
 class _AnyConstructionComplexFenestrationStateFields(
     _ConstructionComplexFenestrationStateCommonFields, total=False
@@ -5206,6 +5571,7 @@ class ConstructionComplexFenestrationState(AnyConstructionComplexFenestrationSta
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionComplexFenestrationStateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c99.ConstructionComplexFenestrationState  # type: ignore[assignment]
 
 class _ConstructionComplexFenestrationStateFields(_ConstructionComplexFenestrationStateCommonFields, total=False):
     outside_layer_directional_front_absorptance_matrix_name: str | None
@@ -5246,6 +5612,7 @@ class ConstructionWindowEquivalentLayer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionWindowEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c42.ConstructionWindowEquivalentLayer  # type: ignore[assignment]
 
 class _ConstructionWindowEquivalentLayerFields(TypedDict, total=False):
     outside_layer: str | None
@@ -5269,6 +5636,7 @@ class ConstructionWindowDataFile(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionWindowDataFileFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c42.ConstructionWindowDataFile  # type: ignore[assignment]
 
 class _ConstructionWindowDataFileFields(TypedDict, total=False):
     file_name: str | None
@@ -5294,6 +5662,7 @@ class ConstructionAssignmentSet(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionAssignmentSetFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.ConstructionAssignmentSet  # type: ignore[assignment]
 
 class _ConstructionAssignmentSetFields(TypedDict, total=False):
     exterior_surface_construction_assignments_name: str | None
@@ -5314,6 +5683,7 @@ class SurfaceConstructionAssignments(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceConstructionAssignmentsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.SurfaceConstructionAssignments  # type: ignore[assignment]
 
 class _SurfaceConstructionAssignmentsFields(TypedDict, total=False):
     floor_construction_name: str | None
@@ -5335,6 +5705,7 @@ class SubSurfaceConstructionAssignments(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SubSurfaceConstructionAssignmentsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c125.SubSurfaceConstructionAssignments  # type: ignore[assignment]
 
 class _SubSurfaceConstructionAssignmentsFields(TypedDict, total=False):
     fixed_window_construction_name: str | None
@@ -5377,6 +5748,7 @@ class AnyGlobalGeometryRules(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGlobalGeometryRulesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.AnyGlobalGeometryRules  # type: ignore[assignment]
 
 class _AnyGlobalGeometryRulesFields(_GlobalGeometryRulesCommonFields, total=False):
     starting_vertex_position: (
@@ -5405,6 +5777,7 @@ class GlobalGeometryRules(AnyGlobalGeometryRules):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GlobalGeometryRulesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c28.GlobalGeometryRules  # type: ignore[assignment]
 
 class _GlobalGeometryRulesFields(_GlobalGeometryRulesCommonFields, total=False):
     starting_vertex_position: (
@@ -5426,6 +5799,7 @@ class GeometryTransform(_TypedIDFObject):
     """Aspect ratio to transform to during run; Range: > 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeometryTransformFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.GeometryTransform  # type: ignore[assignment]
 
 class _GeometryTransformFields(TypedDict, total=False):
     plane_of_transform: Literal["", "XY"] | None
@@ -5436,10 +5810,16 @@ class _SpaceCommonFields(TypedDict, total=False):
     zone_name: str | None
     floor_area: float | Literal["", "Autocalculate"] | None
     space_type: str | None
-    tags: list[Any]
+    tags: Sequence[SpaceTagsItem | SpaceTagsGroup]
 
 class SpaceTagsGroup(_TypedExtensibleGroup):
     """One tags group inside :class:`AnySpace`."""
+
+    tag: str | None
+    def as_dict(self) -> SpaceTagsItem: ...  # type: ignore[override]
+
+class SpaceTagsItem(TypedDict, total=False):
+    """One group of :class:`SpaceTagsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     tag: str | None
 
@@ -5454,6 +5834,7 @@ class AnySpace(_TypedIDFObject):
     tags: ExtensibleList[SpaceTagsGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySpaceFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.AnySpace  # type: ignore[assignment]
 
 class _AnySpaceFields(_SpaceCommonFields, total=False): ...
 
@@ -5468,6 +5849,7 @@ class Space(AnySpace):
     """Optional. Overrides the Building-level Construction Assignment Set for surfaces in this Space.; Since: 26.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.Space  # type: ignore[assignment]
 
 class _SpaceFields(_SpaceCommonFields, total=False):
     ceiling_height: float | Literal["", "Autocalculate"] | None
@@ -5478,6 +5860,12 @@ class SpaceListSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceList`."""
 
     space_name: str | None
+    def as_dict(self) -> SpaceListSpacesItem: ...  # type: ignore[override]
+
+class SpaceListSpacesItem(TypedDict, total=False):
+    """One group of :class:`SpaceListSpacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    space_name: str | None
 
 class SpaceList(_TypedIDFObject):
     """Defines a list of Spaces which can be referenced as a group. The SpaceList name may be used elsewhere in the input to...; Since: 9.6.0"""
@@ -5485,9 +5873,10 @@ class SpaceList(_TypedIDFObject):
     spaces: ExtensibleList[SpaceListSpacesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceListFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.SpaceList  # type: ignore[assignment]
 
 class _SpaceListFields(TypedDict, total=False):
-    spaces: list[Any]
+    spaces: Sequence[SpaceListSpacesItem | SpaceListSpacesGroup]
 
 class _ZoneCommonFields(TypedDict, total=False):
     direction_of_relative_north: float | None
@@ -5547,6 +5936,7 @@ class AnyZone(_TypedIDFObject):
     """Default: Yes"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c2.AnyZone  # type: ignore[assignment]
 
 class _AnyZoneFields(_ZoneCommonFields, total=False):
     type: int | None
@@ -5569,6 +5959,7 @@ class Zone(AnyZone):
     """Will default to same value as SurfaceConvectionAlgorithm:Inside object setting this field overrides the default Surfa..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c57.Zone  # type: ignore[assignment]
 
 class _ZoneFields(_ZoneCommonFields, total=False):
     type: int | None
@@ -5582,6 +5973,12 @@ class ZoneListZonesGroup(_TypedExtensibleGroup):
     """One zones group inside :class:`ZoneList`."""
 
     zone_name: str | None
+    def as_dict(self) -> ZoneListZonesItem: ...  # type: ignore[override]
+
+class ZoneListZonesItem(TypedDict, total=False):
+    """One group of :class:`ZoneListZonesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zone_name: str | None
 
 class ZoneList(_TypedIDFObject):
     """Defines a list of thermal zones which can be referenced as a group. The ZoneList name may be used elsewhere in the in..."""
@@ -5589,9 +5986,10 @@ class ZoneList(_TypedIDFObject):
     zones: ExtensibleList[ZoneListZonesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneListFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.ZoneList  # type: ignore[assignment]
 
 class _ZoneListFields(TypedDict, total=False):
-    zones: list[Any]
+    zones: Sequence[ZoneListZonesItem | ZoneListZonesGroup]
 
 class _ZoneGroupCommonFields(TypedDict, total=False):
     zone_list_name: str | None
@@ -5605,6 +6003,7 @@ class AnyZoneGroup(_TypedIDFObject):
     @zone_list_multiplier.setter
     def zone_list_multiplier(self, value: int | None) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneGroupFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c110.AnyZoneGroup  # type: ignore[assignment]
 
 class _AnyZoneGroupFields(_ZoneGroupCommonFields, total=False):
     zone_list_multiplier: int | None
@@ -5616,6 +6015,7 @@ class ZoneGroup(AnyZoneGroup):
     """Default: 1; Range: >= 1"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneGroupFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c92.ZoneGroup  # type: ignore[assignment]
 
 class _ZoneGroupFields(_ZoneGroupCommonFields, total=False):
     zone_list_multiplier: int | None
@@ -5629,10 +6029,18 @@ class _BuildingSurfaceDetailedCommonFields(TypedDict, total=False):
     wind_exposure: Literal["", "NoWind", "WindExposed"] | None
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: Sequence[BuildingSurfaceDetailedVerticesItem | BuildingSurfaceDetailedVerticesGroup]
 
 class BuildingSurfaceDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`AnyBuildingSurfaceDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> BuildingSurfaceDetailedVerticesItem: ...  # type: ignore[override]
+
+class BuildingSurfaceDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`BuildingSurfaceDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -5709,6 +6117,7 @@ class AnyBuildingSurfaceDetailed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyBuildingSurfaceDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c14.AnyBuildingSurfaceDetailed  # type: ignore[assignment]
 
 class _AnyBuildingSurfaceDetailedFields(_BuildingSurfaceDetailedCommonFields, total=False):
     outside_boundary_condition: (
@@ -5764,6 +6173,7 @@ class BuildingSurfaceDetailed(AnyBuildingSurfaceDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.BuildingSurfaceDetailed  # type: ignore[assignment]
 
 class _BuildingSurfaceDetailedFields(_BuildingSurfaceDetailedCommonFields, total=False):
     space_name: str | None
@@ -5798,10 +6208,18 @@ class _WallDetailedCommonFields(TypedDict, total=False):
     wind_exposure: Literal["", "NoWind", "WindExposed"] | None
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: Sequence[WallDetailedVerticesItem | WallDetailedVerticesGroup]
 
 class WallDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`AnyWallDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> WallDetailedVerticesItem: ...  # type: ignore[override]
+
+class WallDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`WallDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -5875,6 +6293,7 @@ class AnyWallDetailed(_TypedIDFObject):
     vertices: ExtensibleList[WallDetailedVerticesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWallDetailedFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.AnyWallDetailed  # type: ignore[assignment]
 
 class _AnyWallDetailedFields(_WallDetailedCommonFields, total=False):
     outside_boundary_condition: (
@@ -5928,6 +6347,7 @@ class WallDetailed(AnyWallDetailed):
     )
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallDetailedFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.WallDetailed  # type: ignore[assignment]
 
 class _WallDetailedFields(_WallDetailedCommonFields, total=False):
     space_name: str | None
@@ -5962,10 +6382,18 @@ class _RoofCeilingDetailedCommonFields(TypedDict, total=False):
     wind_exposure: Literal["", "NoWind", "WindExposed"] | None
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: Sequence[RoofCeilingDetailedVerticesItem | RoofCeilingDetailedVerticesGroup]
 
 class RoofCeilingDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`AnyRoofCeilingDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> RoofCeilingDetailedVerticesItem: ...  # type: ignore[override]
+
+class RoofCeilingDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`RoofCeilingDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -6037,6 +6465,7 @@ class AnyRoofCeilingDetailed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyRoofCeilingDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c28.AnyRoofCeilingDetailed  # type: ignore[assignment]
 
 class _AnyRoofCeilingDetailedFields(_RoofCeilingDetailedCommonFields, total=False):
     outside_boundary_condition: (
@@ -6088,6 +6517,7 @@ class RoofCeilingDetailed(AnyRoofCeilingDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofCeilingDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.RoofCeilingDetailed  # type: ignore[assignment]
 
 class _RoofCeilingDetailedFields(_RoofCeilingDetailedCommonFields, total=False):
     space_name: str | None
@@ -6120,10 +6550,18 @@ class _FloorDetailedCommonFields(TypedDict, total=False):
     wind_exposure: Literal["", "NoWind", "WindExposed"] | None
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: Sequence[FloorDetailedVerticesItem | FloorDetailedVerticesGroup]
 
 class FloorDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`AnyFloorDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> FloorDetailedVerticesItem: ...  # type: ignore[override]
+
+class FloorDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`FloorDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -6197,6 +6635,7 @@ class AnyFloorDetailed(_TypedIDFObject):
     vertices: ExtensibleList[FloorDetailedVerticesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyFloorDetailedFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.AnyFloorDetailed  # type: ignore[assignment]
 
 class _AnyFloorDetailedFields(_FloorDetailedCommonFields, total=False):
     outside_boundary_condition: (
@@ -6250,6 +6689,7 @@ class FloorDetailed(AnyFloorDetailed):
     )
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorDetailedFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.FloorDetailed  # type: ignore[assignment]
 
 class _FloorDetailedFields(_FloorDetailedCommonFields, total=False):
     space_name: str | None
@@ -6310,6 +6750,7 @@ class AnyWallExterior(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWallExteriorFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c109.AnyWallExterior  # type: ignore[assignment]
 
 class _AnyWallExteriorFields(_WallExteriorCommonFields, total=False): ...
 
@@ -6320,6 +6761,7 @@ class WallExterior(AnyWallExterior):
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallExteriorFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.WallExterior  # type: ignore[assignment]
 
 class _WallExteriorFields(_WallExteriorCommonFields, total=False):
     space_name: str | None
@@ -6358,6 +6800,7 @@ class AnyWallAdiabatic(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWallAdiabaticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.AnyWallAdiabatic  # type: ignore[assignment]
 
 class _AnyWallAdiabaticFields(_WallAdiabaticCommonFields, total=False): ...
 
@@ -6368,6 +6811,7 @@ class WallAdiabatic(AnyWallAdiabatic):
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallAdiabaticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.WallAdiabatic  # type: ignore[assignment]
 
 class _WallAdiabaticFields(_WallAdiabaticCommonFields, total=False):
     space_name: str | None
@@ -6408,6 +6852,7 @@ class AnyWallUnderground(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWallUndergroundFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.AnyWallUnderground  # type: ignore[assignment]
 
 class _AnyWallUndergroundFields(_WallUndergroundCommonFields, total=False): ...
 
@@ -6418,6 +6863,7 @@ class WallUnderground(AnyWallUnderground):
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallUndergroundFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c39.WallUnderground  # type: ignore[assignment]
 
 class _WallUndergroundFields(_WallUndergroundCommonFields, total=False):
     space_name: str | None
@@ -6459,6 +6905,7 @@ class AnyWallInterzone(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWallInterzoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c82.AnyWallInterzone  # type: ignore[assignment]
 
 class _AnyWallInterzoneFields(_WallInterzoneCommonFields, total=False): ...
 
@@ -6469,6 +6916,7 @@ class WallInterzone(AnyWallInterzone):
     """Space for the inside face of the surface (optional, see description of Space object for more details).; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallInterzoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c125.WallInterzone  # type: ignore[assignment]
 
 class _WallInterzoneFields(_WallInterzoneCommonFields, total=False):
     space_name: str | None
@@ -6507,6 +6955,7 @@ class AnyRoof(_TypedIDFObject):
     """Along Y Axis; [m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyRoofFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c22.AnyRoof  # type: ignore[assignment]
 
 class _AnyRoofFields(_RoofCommonFields, total=False): ...
 
@@ -6517,6 +6966,7 @@ class Roof(AnyRoof):
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c45.Roof  # type: ignore[assignment]
 
 class _RoofFields(_RoofCommonFields, total=False):
     space_name: str | None
@@ -6557,6 +7007,7 @@ class AnyCeilingAdiabatic(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCeilingAdiabaticFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c109.AnyCeilingAdiabatic  # type: ignore[assignment]
 
 class _AnyCeilingAdiabaticFields(_CeilingAdiabaticCommonFields, total=False): ...
 
@@ -6567,6 +7018,7 @@ class CeilingAdiabatic(AnyCeilingAdiabatic):
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CeilingAdiabaticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c80.CeilingAdiabatic  # type: ignore[assignment]
 
 class _CeilingAdiabaticFields(_CeilingAdiabaticCommonFields, total=False):
     space_name: str | None
@@ -6610,6 +7062,7 @@ class AnyCeilingInterzone(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCeilingInterzoneFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c90.AnyCeilingInterzone  # type: ignore[assignment]
 
 class _AnyCeilingInterzoneFields(_CeilingInterzoneCommonFields, total=False): ...
 
@@ -6620,6 +7073,7 @@ class CeilingInterzone(AnyCeilingInterzone):
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CeilingInterzoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.CeilingInterzone  # type: ignore[assignment]
 
 class _CeilingInterzoneFields(_CeilingInterzoneCommonFields, total=False):
     space_name: str | None
@@ -6660,6 +7114,7 @@ class AnyFloorGroundContact(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyFloorGroundContactFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c115.AnyFloorGroundContact  # type: ignore[assignment]
 
 class _AnyFloorGroundContactFields(_FloorGroundContactCommonFields, total=False): ...
 
@@ -6672,6 +7127,7 @@ class FloorGroundContact(AnyFloorGroundContact):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorGroundContactFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.FloorGroundContact  # type: ignore[assignment]
 
 class _FloorGroundContactFields(_FloorGroundContactCommonFields, total=False):
     space_name: str | None
@@ -6710,6 +7166,7 @@ class AnyFloorAdiabatic(_TypedIDFObject):
     """Along Y Axis; [m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyFloorAdiabaticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c34.AnyFloorAdiabatic  # type: ignore[assignment]
 
 class _AnyFloorAdiabaticFields(_FloorAdiabaticCommonFields, total=False): ...
 
@@ -6720,6 +7177,7 @@ class FloorAdiabatic(AnyFloorAdiabatic):
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorAdiabaticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.FloorAdiabatic  # type: ignore[assignment]
 
 class _FloorAdiabaticFields(_FloorAdiabaticCommonFields, total=False):
     space_name: str | None
@@ -6761,6 +7219,7 @@ class AnyFloorInterzone(_TypedIDFObject):
     """Along Y Axis; [m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyFloorInterzoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c21.AnyFloorInterzone  # type: ignore[assignment]
 
 class _AnyFloorInterzoneFields(_FloorInterzoneCommonFields, total=False): ...
 
@@ -6771,6 +7230,7 @@ class FloorInterzone(AnyFloorInterzone):
     """Space for the inside face of the surface (optional, see description of Space object for more details).; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorInterzoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.FloorInterzone  # type: ignore[assignment]
 
 class _FloorInterzoneFields(_FloorInterzoneCommonFields, total=False):
     space_name: str | None
@@ -6860,6 +7320,7 @@ class AnyFenestrationSurfaceDetailed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyFenestrationSurfaceDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.AnyFenestrationSurfaceDetailed  # type: ignore[assignment]
 
 class _AnyFenestrationSurfaceDetailedFields(_FenestrationSurfaceDetailedCommonFields, total=False):
     surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
@@ -6886,6 +7347,7 @@ class FenestrationSurfaceDetailed(AnyFenestrationSurfaceDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FenestrationSurfaceDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c109.FenestrationSurfaceDetailed  # type: ignore[assignment]
 
 class _FenestrationSurfaceDetailedFields(_FenestrationSurfaceDetailedCommonFields, total=False):
     surface_type: (
@@ -6934,6 +7396,7 @@ class AnyWindow(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWindowFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.AnyWindow  # type: ignore[assignment]
 
 class _AnyWindowFields(_WindowCommonFields, total=False): ...
 
@@ -6941,6 +7404,7 @@ class Window(AnyWindow):
     """Allows for simplified entry of Windows."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.Window  # type: ignore[assignment]
 
 class _WindowFields(_WindowCommonFields, total=False): ...
 
@@ -6963,6 +7427,7 @@ class Door(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DoorFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.Door  # type: ignore[assignment]
 
 class _DoorFields(TypedDict, total=False):
     construction_name: str | None
@@ -7004,6 +7469,7 @@ class AnyGlazedDoor(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGlazedDoorFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c14.AnyGlazedDoor  # type: ignore[assignment]
 
 class _AnyGlazedDoorFields(_GlazedDoorCommonFields, total=False): ...
 
@@ -7011,6 +7477,7 @@ class GlazedDoor(AnyGlazedDoor):
     """Allows for simplified entry of glass Doors."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GlazedDoorFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c52.GlazedDoor  # type: ignore[assignment]
 
 class _GlazedDoorFields(_GlazedDoorCommonFields, total=False): ...
 
@@ -7035,6 +7502,7 @@ class WindowInterzone(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowInterzoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.WindowInterzone  # type: ignore[assignment]
 
 class _WindowInterzoneFields(TypedDict, total=False):
     construction_name: str | None
@@ -7067,6 +7535,7 @@ class DoorInterzone(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DoorInterzoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c45.DoorInterzone  # type: ignore[assignment]
 
 class _DoorInterzoneFields(TypedDict, total=False):
     construction_name: str | None
@@ -7101,6 +7570,7 @@ class GlazedDoorInterzone(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GlazedDoorInterzoneFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c91.GlazedDoorInterzone  # type: ignore[assignment]
 
 class _GlazedDoorInterzoneFields(TypedDict, total=False):
     construction_name: str | None
@@ -7138,10 +7608,18 @@ class _WindowShadingControlCommonFields(TypedDict, total=False):
     setpoint_2: float | None
     daylighting_control_object_name: str | None
     multiple_surface_control_type: Literal["", "Group", "Sequential"] | None
-    fenestration_surfaces: list[Any]
+    fenestration_surfaces: Sequence[
+        WindowShadingControlFenestrationSurfacesItem | WindowShadingControlFenestrationSurfacesGroup
+    ]
 
 class WindowShadingControlFenestrationSurfacesGroup(_TypedExtensibleGroup):
     """One fenestration_surfaces group inside :class:`AnyWindowShadingControl`."""
+
+    fenestration_surface_name: str | None
+    def as_dict(self) -> WindowShadingControlFenestrationSurfacesItem: ...  # type: ignore[override]
+
+class WindowShadingControlFenestrationSurfacesItem(TypedDict, total=False):
+    """One group of :class:`WindowShadingControlFenestrationSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     fenestration_surface_name: str | None
 
@@ -7253,6 +7731,7 @@ class AnyWindowShadingControl(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWindowShadingControlFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c116.AnyWindowShadingControl  # type: ignore[assignment]
 
 class _AnyWindowShadingControlFields(_WindowShadingControlCommonFields, total=False):
     shading_control_sequence_number: int | None
@@ -7322,6 +7801,7 @@ class WindowShadingControl(AnyWindowShadingControl):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowShadingControlFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c112.WindowShadingControl  # type: ignore[assignment]
 
 class _WindowShadingControlFields(_WindowShadingControlCommonFields, total=False):
     shading_control_sequence_number: int | None
@@ -7438,6 +7918,7 @@ class AnyWindowPropertyFrameAndDivider(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWindowPropertyFrameAndDividerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c58.AnyWindowPropertyFrameAndDivider  # type: ignore[assignment]
 
 class _AnyWindowPropertyFrameAndDividerFields(_WindowPropertyFrameAndDividerCommonFields, total=False):
     number_of_horizontal_dividers: int | None
@@ -7483,6 +7964,7 @@ class WindowPropertyFrameAndDivider(AnyWindowPropertyFrameAndDivider):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowPropertyFrameAndDividerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c52.WindowPropertyFrameAndDivider  # type: ignore[assignment]
 
 class _WindowPropertyFrameAndDividerFields(_WindowPropertyFrameAndDividerCommonFields, total=False):
     number_of_horizontal_dividers: int | None
@@ -7537,6 +8019,7 @@ class WindowPropertyAirflowControl(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowPropertyAirflowControlFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.WindowPropertyAirflowControl  # type: ignore[assignment]
 
 class _WindowPropertyAirflowControlFields(TypedDict, total=False):
     airflow_source: Literal["", "IndoorAir", "OutdoorAir"] | None
@@ -7580,6 +8063,7 @@ class AnyWindowPropertyStormWindow(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWindowPropertyStormWindowFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c92.AnyWindowPropertyStormWindow  # type: ignore[assignment]
 
 class _AnyWindowPropertyStormWindowFields(_WindowPropertyStormWindowCommonFields, total=False):
     month_that_storm_glass_layer_is_put_on: int | None
@@ -7602,6 +8086,7 @@ class WindowPropertyStormWindow(AnyWindowPropertyStormWindow):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowPropertyStormWindowFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.WindowPropertyStormWindow  # type: ignore[assignment]
 
 class _WindowPropertyStormWindowFields(_WindowPropertyStormWindowCommonFields, total=False):
     month_that_storm_glass_layer_is_put_on: int | None
@@ -7622,6 +8107,7 @@ class AnyInternalMass(_TypedIDFObject):
     """[m2]; Range: > 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyInternalMassFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c67.AnyInternalMass  # type: ignore[assignment]
 
 class _AnyInternalMassFields(_InternalMassCommonFields, total=False): ...
 
@@ -7634,6 +8120,7 @@ class InternalMass(AnyInternalMass):
     """Space(s) the surface is a part of. This field is ignored when a ZoneList Name is specified for Zone or ZoneList Name....; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_InternalMassFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.InternalMass  # type: ignore[assignment]
 
 class _InternalMassFields(_InternalMassCommonFields, total=False):
     zone_or_zonelist_name: str | None
@@ -7658,6 +8145,7 @@ class ShadingSite(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingSiteFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c108.ShadingSite  # type: ignore[assignment]
 
 class _ShadingSiteFields(TypedDict, total=False):
     azimuth_angle: float | None
@@ -7687,6 +8175,7 @@ class ShadingBuilding(_TypedIDFObject):
     """[m]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingBuildingFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.ShadingBuilding  # type: ignore[assignment]
 
 class _ShadingBuildingFields(TypedDict, total=False):
     azimuth_angle: float | None
@@ -7699,6 +8188,14 @@ class _ShadingBuildingFields(TypedDict, total=False):
 
 class ShadingSiteDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingSiteDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> ShadingSiteDetailedVerticesItem: ...  # type: ignore[override]
+
+class ShadingSiteDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`ShadingSiteDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -7716,14 +8213,23 @@ class ShadingSiteDetailed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingSiteDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c15.ShadingSiteDetailed  # type: ignore[assignment]
 
 class _ShadingSiteDetailedFields(TypedDict, total=False):
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: Sequence[ShadingSiteDetailedVerticesItem | ShadingSiteDetailedVerticesGroup]
 
 class ShadingBuildingDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingBuildingDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+    def as_dict(self) -> ShadingBuildingDetailedVerticesItem: ...  # type: ignore[override]
+
+class ShadingBuildingDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`ShadingBuildingDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
@@ -7741,11 +8247,12 @@ class ShadingBuildingDetailed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingBuildingDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.ShadingBuildingDetailed  # type: ignore[assignment]
 
 class _ShadingBuildingDetailedFields(TypedDict, total=False):
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: Sequence[ShadingBuildingDetailedVerticesItem | ShadingBuildingDetailedVerticesGroup]
 
 class ShadingOverhang(_TypedIDFObject):
     """Overhangs are usually flat shading surfaces that reference a window or door."""
@@ -7763,6 +8270,7 @@ class ShadingOverhang(_TypedIDFObject):
     """[m]; Range: >= 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingOverhangFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.ShadingOverhang  # type: ignore[assignment]
 
 class _ShadingOverhangFields(TypedDict, total=False):
     window_or_door_name: str | None
@@ -7790,6 +8298,7 @@ class ShadingOverhangProjection(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingOverhangProjectionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.ShadingOverhangProjection  # type: ignore[assignment]
 
 class _ShadingOverhangProjectionFields(TypedDict, total=False):
     window_or_door_name: str | None
@@ -7825,6 +8334,7 @@ class ShadingFin(_TypedIDFObject):
     """[m]; Range: >= 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingFinFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c21.ShadingFin  # type: ignore[assignment]
 
 class _ShadingFinFields(TypedDict, total=False):
     window_or_door_name: str | None
@@ -7867,6 +8377,7 @@ class ShadingFinProjection(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingFinProjectionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.ShadingFinProjection  # type: ignore[assignment]
 
 class _ShadingFinProjectionFields(TypedDict, total=False):
     window_or_door_name: str | None
@@ -7887,6 +8398,14 @@ class ShadingZoneDetailedVerticesGroup(_TypedExtensibleGroup):
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
+    def as_dict(self) -> ShadingZoneDetailedVerticesItem: ...  # type: ignore[override]
+
+class ShadingZoneDetailedVerticesItem(TypedDict, total=False):
+    """One group of :class:`ShadingZoneDetailedVerticesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
 
 class ShadingZoneDetailed(_TypedIDFObject):
     """used For fins, overhangs, elements that shade the building, are attached to the building but are not part of the heat..."""
@@ -7901,12 +8420,13 @@ class ShadingZoneDetailed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingZoneDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.ShadingZoneDetailed  # type: ignore[assignment]
 
 class _ShadingZoneDetailedFields(TypedDict, total=False):
     base_surface_name: str | None
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
+    vertices: Sequence[ShadingZoneDetailedVerticesItem | ShadingZoneDetailedVerticesGroup]
 
 class ShadingPropertyReflectance(_TypedIDFObject):
     """If this object is not defined for a shading surface the default values listed in following fields will be used in the..."""
@@ -7924,6 +8444,7 @@ class ShadingPropertyReflectance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingPropertyReflectanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c18.ShadingPropertyReflectance  # type: ignore[assignment]
 
 class _ShadingPropertyReflectanceFields(TypedDict, total=False):
     shading_surface_name: str | None
@@ -7951,6 +8472,7 @@ class SurfacePropertyHeatTransferAlgorithm(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c80.SurfacePropertyHeatTransferAlgorithm  # type: ignore[assignment]
 
 class _SurfacePropertyHeatTransferAlgorithmFields(TypedDict, total=False):
     surface_name: str | None
@@ -8000,6 +8522,7 @@ class SurfacePropertyHeatTransferAlgorithmMultipleSurface(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmMultipleSurfaceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.SurfacePropertyHeatTransferAlgorithmMultipleSurface  # type: ignore[assignment]
 
 class _SurfacePropertyHeatTransferAlgorithmMultipleSurfaceFields(TypedDict, total=False):
     surface_type: (
@@ -8031,6 +8554,12 @@ class SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup(_TypedExtensib
     """One surface group inside :class:`SurfacePropertyHeatTransferAlgorithmSurfaceList`."""
 
     surface_name: str | None
+    def as_dict(self) -> SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceItem: ...  # type: ignore[override]
+
+class SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
 
 class SurfacePropertyHeatTransferAlgorithmSurfaceList(_TypedIDFObject):
     """Determines which Heat Balance Algorithm will be used for a list of surfaces Allows selectively overriding the global ..."""
@@ -8054,6 +8583,7 @@ class SurfacePropertyHeatTransferAlgorithmSurfaceList(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmSurfaceListFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.SurfacePropertyHeatTransferAlgorithmSurfaceList  # type: ignore[assignment]
 
 class _SurfacePropertyHeatTransferAlgorithmSurfaceListFields(TypedDict, total=False):
     algorithm: (
@@ -8066,7 +8596,10 @@ class _SurfacePropertyHeatTransferAlgorithmSurfaceListFields(TypedDict, total=Fa
         ]
         | None
     )
-    surface: list[Any]
+    surface: Sequence[
+        SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceItem
+        | SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup
+    ]
 
 class SurfacePropertyHeatTransferAlgorithmConstruction(_TypedIDFObject):
     """Determines which Heat Balance Algorithm will be used for surfaces that have a specific type of construction Allows se..."""
@@ -8090,6 +8623,7 @@ class SurfacePropertyHeatTransferAlgorithmConstruction(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmConstructionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.SurfacePropertyHeatTransferAlgorithmConstruction  # type: ignore[assignment]
 
 class _SurfacePropertyHeatTransferAlgorithmConstructionFields(TypedDict, total=False):
     algorithm: (
@@ -8116,6 +8650,7 @@ class SurfacePropertyHeatBalanceSourceTerm(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyHeatBalanceSourceTermFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.SurfacePropertyHeatBalanceSourceTerm  # type: ignore[assignment]
 
 class _SurfacePropertyHeatBalanceSourceTermFields(TypedDict, total=False):
     surface_name: str | None
@@ -8133,6 +8668,7 @@ class SurfaceControlMovableInsulation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceControlMovableInsulationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.SurfaceControlMovableInsulation  # type: ignore[assignment]
 
 class _SurfaceControlMovableInsulationFields(TypedDict, total=False):
     insulation_type: Literal["Inside", "Outside"] | None
@@ -8173,6 +8709,7 @@ class SurfacePropertyOtherSideCoefficients(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyOtherSideCoefficientsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.SurfacePropertyOtherSideCoefficients  # type: ignore[assignment]
 
 class _SurfacePropertyOtherSideCoefficientsFields(TypedDict, total=False):
     combined_convective_radiative_film_coefficient: float | None
@@ -8210,6 +8747,7 @@ class SurfacePropertyOtherSideConditionsModel(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfacePropertyOtherSideConditionsModelFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.SurfacePropertyOtherSideConditionsModel  # type: ignore[assignment]
 
 class _SurfacePropertyOtherSideConditionsModelFields(TypedDict, total=False):
     type_of_modeling: (
@@ -8236,6 +8774,7 @@ class SurfacePropertyUnderwater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyUnderwaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c49.SurfacePropertyUnderwater  # type: ignore[assignment]
 
 class _SurfacePropertyUnderwaterFields(TypedDict, total=False):
     distance_from_surface_centroid_to_leading_edge_of_boundary_layer: float | None
@@ -8258,10 +8797,19 @@ class _FoundationKivaCommonFields(TypedDict, total=False):
     footing_wall_construction_name: str | None
     footing_material_name: str | None
     footing_depth: float | None
-    blocks: list[Any]
+    blocks: Sequence[FoundationKivaBlocksItem | FoundationKivaBlocksGroup]
 
 class FoundationKivaBlocksGroup(_TypedExtensibleGroup):
     """One blocks group inside :class:`AnyFoundationKiva`."""
+
+    custom_block_material_name: str | None
+    custom_block_depth: float | None
+    custom_block_x_position: float | None
+    custom_block_z_position: float | None
+    def as_dict(self) -> FoundationKivaBlocksItem: ...  # type: ignore[override]
+
+class FoundationKivaBlocksItem(TypedDict, total=False):
+    """One group of :class:`FoundationKivaBlocksGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     custom_block_material_name: str | None
     custom_block_depth: float | None
@@ -8299,6 +8847,7 @@ class AnyFoundationKiva(_TypedIDFObject):
     blocks: ExtensibleList[FoundationKivaBlocksGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyFoundationKivaFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.AnyFoundationKiva  # type: ignore[assignment]
 
 class _AnyFoundationKivaFields(_FoundationKivaCommonFields, total=False): ...
 
@@ -8309,6 +8858,7 @@ class FoundationKiva(AnyFoundationKiva):
     """Indoor air temperature used for Kiva initialization (prior to warmup period) If left blank, indoor air temperature wi...; [C]; Since: 9.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FoundationKivaFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c14.FoundationKiva  # type: ignore[assignment]
 
 class _FoundationKivaFields(_FoundationKivaCommonFields, total=False):
     initial_indoor_air_temperature: float | None
@@ -8344,6 +8894,7 @@ class FoundationKivaSettings(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FoundationKivaSettingsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.FoundationKivaSettings  # type: ignore[assignment]
 
 class _FoundationKivaSettingsFields(TypedDict, total=False):
     soil_conductivity: float | None
@@ -8373,6 +8924,12 @@ class AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup(_TypedExtensible
     def surface_segment_exposed(self) -> Literal["No", "Yes", ""] | None: ...
     @surface_segment_exposed.setter
     def surface_segment_exposed(self, value: Literal["No", "Yes"] | None) -> None: ...
+    def as_dict(self) -> AnySurfacePropertyExposedFoundationPerimeterSurfacesItem: ...  # type: ignore[override]
+
+class AnySurfacePropertyExposedFoundationPerimeterSurfacesItem(TypedDict, total=False):
+    """One group of :class:`AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_segment_exposed: Literal["No", "Yes"] | None
 
 class AnySurfacePropertyExposedFoundationPerimeter(_TypedIDFObject):
     """``SurfaceProperty:ExposedFoundationPerimeter`` as every supported EnergyPlus version declares it."""
@@ -8394,14 +8951,24 @@ class AnySurfacePropertyExposedFoundationPerimeter(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnySurfacePropertyExposedFoundationPerimeterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c50.AnySurfacePropertyExposedFoundationPerimeter  # type: ignore[assignment]
 
 class _AnySurfacePropertyExposedFoundationPerimeterFields(
     _SurfacePropertyExposedFoundationPerimeterCommonFields, total=False
 ):
-    surfaces: list[Any]
+    surfaces: Sequence[
+        AnySurfacePropertyExposedFoundationPerimeterSurfacesItem
+        | AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup
+    ]
 
 class SurfacePropertyExposedFoundationPerimeterSurfacesGroup(AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup):
     """One surfaces group inside :class:`SurfacePropertyExposedFoundationPerimeter`."""
+
+    surface_segment_exposed: Literal["", "No", "Yes"] | None
+    def as_dict(self) -> SurfacePropertyExposedFoundationPerimeterSurfacesItem: ...  # type: ignore[override]
+
+class SurfacePropertyExposedFoundationPerimeterSurfacesItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertyExposedFoundationPerimeterSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_segment_exposed: Literal["", "No", "Yes"] | None
 
@@ -8416,11 +8983,14 @@ class SurfacePropertyExposedFoundationPerimeter(AnySurfacePropertyExposedFoundat
         /,
         **kwargs: Unpack[_SurfacePropertyExposedFoundationPerimeterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.SurfacePropertyExposedFoundationPerimeter  # type: ignore[assignment]
 
 class _SurfacePropertyExposedFoundationPerimeterFields(
     _SurfacePropertyExposedFoundationPerimeterCommonFields, total=False
 ):
-    surfaces: list[Any]
+    surfaces: Sequence[
+        SurfacePropertyExposedFoundationPerimeterSurfacesItem | SurfacePropertyExposedFoundationPerimeterSurfacesGroup
+    ]
 
 class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections(_TypedIDFObject):
     """Options to change the individual convection model equations for dynamic selection when using AdaptiveConvectiongAlgor..."""
@@ -8948,6 +9518,7 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideAdaptiveModelSelectionsFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.SurfaceConvectionAlgorithmInsideAdaptiveModelSelections  # type: ignore[assignment]
 
 class _SurfaceConvectionAlgorithmInsideAdaptiveModelSelectionsFields(TypedDict, total=False):
     simple_buoyancy_vertical_wall_equation_source: (
@@ -9471,6 +10042,7 @@ class SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideAdaptiveModelSelectionsFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections  # type: ignore[assignment]
 
 class _SurfaceConvectionAlgorithmOutsideAdaptiveModelSelectionsFields(TypedDict, total=False):
     wind_convection_windward_vertical_wall_equation_source: (
@@ -9568,6 +10140,7 @@ class SurfaceConvectionAlgorithmInsideUserCurve(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideUserCurveFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.SurfaceConvectionAlgorithmInsideUserCurve  # type: ignore[assignment]
 
 class _SurfaceConvectionAlgorithmInsideUserCurveFields(TypedDict, total=False):
     reference_temperature_for_convection_heat_transfer: (
@@ -9598,6 +10171,7 @@ class SurfaceConvectionAlgorithmOutsideUserCurve(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideUserCurveFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.SurfaceConvectionAlgorithmOutsideUserCurve  # type: ignore[assignment]
 
 class _SurfaceConvectionAlgorithmOutsideUserCurveFields(TypedDict, total=False):
     wind_speed_type_for_curve: (
@@ -9849,6 +10423,7 @@ class AnySurfacePropertyConvectionCoefficients(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnySurfacePropertyConvectionCoefficientsFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.AnySurfacePropertyConvectionCoefficients  # type: ignore[assignment]
 
 class _AnySurfacePropertyConvectionCoefficientsFields(_SurfacePropertyConvectionCoefficientsCommonFields, total=False):
     convection_coefficient_1_type: (
@@ -10055,6 +10630,7 @@ class SurfacePropertyConvectionCoefficients(AnySurfacePropertyConvectionCoeffici
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyConvectionCoefficientsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c112.SurfacePropertyConvectionCoefficients  # type: ignore[assignment]
 
 class _SurfacePropertyConvectionCoefficientsFields(_SurfacePropertyConvectionCoefficientsCommonFields, total=False):
     convection_coefficient_1_type: (
@@ -10430,6 +11006,7 @@ class AnySurfacePropertyConvectionCoefficientsMultipleSurface(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnySurfacePropertyConvectionCoefficientsMultipleSurfaceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c113.AnySurfacePropertyConvectionCoefficientsMultipleSurface  # type: ignore[assignment]
 
 class _AnySurfacePropertyConvectionCoefficientsMultipleSurfaceFields(
     _SurfacePropertyConvectionCoefficientsMultipleSurfaceCommonFields, total=False
@@ -10643,6 +11220,7 @@ class SurfacePropertyConvectionCoefficientsMultipleSurface(AnySurfacePropertyCon
         /,
         **kwargs: Unpack[_SurfacePropertyConvectionCoefficientsMultipleSurfaceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.SurfacePropertyConvectionCoefficientsMultipleSurface  # type: ignore[assignment]
 
 class _SurfacePropertyConvectionCoefficientsMultipleSurfaceFields(
     _SurfacePropertyConvectionCoefficientsMultipleSurfaceCommonFields, total=False
@@ -10764,6 +11342,7 @@ class SurfacePropertiesVaporCoefficients(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertiesVaporCoefficientsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.SurfacePropertiesVaporCoefficients  # type: ignore[assignment]
 
 class _SurfacePropertiesVaporCoefficientsFields(TypedDict, total=False):
     surface_name: str | None
@@ -10774,6 +11353,12 @@ class _SurfacePropertiesVaporCoefficientsFields(TypedDict, total=False):
 
 class SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup(_TypedExtensibleGroup):
     """One surface group inside :class:`SurfacePropertyExteriorNaturalVentedCavity`."""
+
+    surface_name: str | None
+    def as_dict(self) -> SurfacePropertyExteriorNaturalVentedCavitySurfaceItem: ...  # type: ignore[override]
+
+class SurfacePropertyExteriorNaturalVentedCavitySurfaceItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
 
@@ -10809,6 +11394,7 @@ class SurfacePropertyExteriorNaturalVentedCavity(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfacePropertyExteriorNaturalVentedCavityFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.SurfacePropertyExteriorNaturalVentedCavity  # type: ignore[assignment]
 
 class _SurfacePropertyExteriorNaturalVentedCavityFields(TypedDict, total=False):
     boundary_conditions_model_name: str | None
@@ -10823,7 +11409,9 @@ class _SurfacePropertyExteriorNaturalVentedCavityFields(TypedDict, total=False):
     )
     effectiveness_for_perforations_with_respect_to_wind: float | None
     discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None
-    surface: list[Any]
+    surface: Sequence[
+        SurfacePropertyExteriorNaturalVentedCavitySurfaceItem | SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup
+    ]
 
 class SurfacePropertySolarIncidentInside(_TypedIDFObject):
     """Used to provide incident solar radiation on the inside of the surface. Reference surface-construction pair and if tha..."""
@@ -10836,6 +11424,7 @@ class SurfacePropertySolarIncidentInside(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertySolarIncidentInsideFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.SurfacePropertySolarIncidentInside  # type: ignore[assignment]
 
 class _SurfacePropertySolarIncidentInsideFields(TypedDict, total=False):
     surface_name: str | None
@@ -10855,6 +11444,7 @@ class SurfacePropertyIncidentSolarMultiplier(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyIncidentSolarMultiplierFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.SurfacePropertyIncidentSolarMultiplier  # type: ignore[assignment]
 
 class _SurfacePropertyIncidentSolarMultiplierFields(TypedDict, total=False):
     surface_name: str | None
@@ -10879,6 +11469,7 @@ class AnySurfacePropertyLocalEnvironment(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySurfacePropertyLocalEnvironmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.AnySurfacePropertyLocalEnvironment  # type: ignore[assignment]
 
 class _AnySurfacePropertyLocalEnvironmentFields(_SurfacePropertyLocalEnvironmentCommonFields, total=False): ...
 
@@ -10893,6 +11484,7 @@ class SurfacePropertyLocalEnvironment(AnySurfacePropertyLocalEnvironment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyLocalEnvironmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.SurfacePropertyLocalEnvironment  # type: ignore[assignment]
 
 class _SurfacePropertyLocalEnvironmentFields(_SurfacePropertyLocalEnvironmentCommonFields, total=False):
     sunlit_fraction_schedule_name: str | None
@@ -10909,6 +11501,7 @@ class ZonePropertyLocalEnvironment(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZonePropertyLocalEnvironmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.ZonePropertyLocalEnvironment  # type: ignore[assignment]
 
 class _ZonePropertyLocalEnvironmentFields(TypedDict, total=False):
     zone_name: str | None
@@ -10917,10 +11510,18 @@ class _ZonePropertyLocalEnvironmentFields(TypedDict, total=False):
 class _SurfacePropertySurroundingSurfacesCommonFields(TypedDict, total=False):
     sky_temperature_schedule_name: str | None
     ground_temperature_schedule_name: str | None
-    surfaces: list[Any]
+    surfaces: Sequence[SurfacePropertySurroundingSurfacesSurfacesItem | SurfacePropertySurroundingSurfacesSurfacesGroup]
 
 class SurfacePropertySurroundingSurfacesSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`AnySurfacePropertySurroundingSurfaces`."""
+
+    surrounding_surface_name: str | None
+    surrounding_surface_view_factor: float | None
+    surrounding_surface_temperature_schedule_name: str | None
+    def as_dict(self) -> SurfacePropertySurroundingSurfacesSurfacesItem: ...  # type: ignore[override]
+
+class SurfacePropertySurroundingSurfacesSurfacesItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertySurroundingSurfacesSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surrounding_surface_name: str | None
     surrounding_surface_view_factor: float | None
@@ -10945,6 +11546,7 @@ class AnySurfacePropertySurroundingSurfaces(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySurfacePropertySurroundingSurfacesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.AnySurfacePropertySurroundingSurfaces  # type: ignore[assignment]
 
 class _AnySurfacePropertySurroundingSurfacesFields(_SurfacePropertySurroundingSurfacesCommonFields, total=False):
     sky_view_factor: float | None
@@ -10961,6 +11563,7 @@ class SurfacePropertySurroundingSurfaces(AnySurfacePropertySurroundingSurfaces):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertySurroundingSurfacesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c24.SurfacePropertySurroundingSurfaces  # type: ignore[assignment]
 
 class _SurfacePropertySurroundingSurfacesFields(_SurfacePropertySurroundingSurfacesCommonFields, total=False):
     sky_view_factor: float | Literal["", "Autocalculate"] | None
@@ -10968,6 +11571,15 @@ class _SurfacePropertySurroundingSurfacesFields(_SurfacePropertySurroundingSurfa
 
 class SurfacePropertyGroundSurfacesGroundSurfacesGroup(_TypedExtensibleGroup):
     """One ground_surfaces group inside :class:`SurfacePropertyGroundSurfaces`."""
+
+    ground_surface_name: str | None
+    ground_surface_view_factor: float | None
+    ground_surface_temperature_schedule_name: str | None
+    ground_surface_reflectance_schedule_name: str | None
+    def as_dict(self) -> SurfacePropertyGroundSurfacesGroundSurfacesItem: ...  # type: ignore[override]
+
+class SurfacePropertyGroundSurfacesGroundSurfacesItem(TypedDict, total=False):
+    """One group of :class:`SurfacePropertyGroundSurfacesGroundSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     ground_surface_name: str | None
     ground_surface_view_factor: float | None
@@ -10982,9 +11594,12 @@ class SurfacePropertyGroundSurfaces(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyGroundSurfacesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.SurfacePropertyGroundSurfaces  # type: ignore[assignment]
 
 class _SurfacePropertyGroundSurfacesFields(TypedDict, total=False):
-    ground_surfaces: list[Any]
+    ground_surfaces: Sequence[
+        SurfacePropertyGroundSurfacesGroundSurfacesItem | SurfacePropertyGroundSurfacesGroundSurfacesGroup
+    ]
 
 class ComplexFenestrationPropertySolarAbsorbedLayers(_TypedIDFObject):
     """Used to provide solar radiation absorbed in fenestration layers. References surface-construction pair and if that pai..."""
@@ -11008,6 +11623,7 @@ class ComplexFenestrationPropertySolarAbsorbedLayers(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ComplexFenestrationPropertySolarAbsorbedLayersFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.ComplexFenestrationPropertySolarAbsorbedLayers  # type: ignore[assignment]
 
 class _ComplexFenestrationPropertySolarAbsorbedLayersFields(TypedDict, total=False):
     fenestration_surface: str | None
@@ -11019,10 +11635,21 @@ class _ComplexFenestrationPropertySolarAbsorbedLayersFields(TypedDict, total=Fal
     layer_5_solar_radiation_absorbed_schedule_name: str | None
 
 class _ZonePropertyUserViewFactorsBySurfaceNameCommonFields(TypedDict, total=False):
-    view_factors: list[Any]
+    view_factors: Sequence[
+        ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem
+        | ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup
+    ]
 
 class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup(_TypedExtensibleGroup):
     """One view_factors group inside :class:`AnyZonePropertyUserViewFactorsBySurfaceName`."""
+
+    from_surface: str | None
+    to_surface: str | None
+    view_factor: float | None
+    def as_dict(self) -> ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem: ...  # type: ignore[override]
+
+class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem(TypedDict, total=False):
+    """One group of :class:`ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     from_surface: str | None
     to_surface: str | None
@@ -11039,6 +11666,7 @@ class AnyZonePropertyUserViewFactorsBySurfaceName(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZonePropertyUserViewFactorsBySurfaceNameFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.AnyZonePropertyUserViewFactorsBySurfaceName  # type: ignore[assignment]
 
 class _AnyZonePropertyUserViewFactorsBySurfaceNameFields(
     _ZonePropertyUserViewFactorsBySurfaceNameCommonFields, total=False
@@ -11056,6 +11684,7 @@ class ZonePropertyUserViewFactorsBySurfaceName(AnyZonePropertyUserViewFactorsByS
         /,
         **kwargs: Unpack[_ZonePropertyUserViewFactorsBySurfaceNameFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c93.ZonePropertyUserViewFactorsBySurfaceName  # type: ignore[assignment]
 
 class _ZonePropertyUserViewFactorsBySurfaceNameFields(
     _ZonePropertyUserViewFactorsBySurfaceNameCommonFields, total=False
@@ -11064,6 +11693,13 @@ class _ZonePropertyUserViewFactorsBySurfaceNameFields(
 
 class ZoneMRTCalculationPeopleNamesGroup(_TypedExtensibleGroup):
     """One people_names group inside :class:`ZoneMRTCalculation`."""
+
+    people_name: str | None
+    mrt_weighting_factor: float | None
+    def as_dict(self) -> ZoneMRTCalculationPeopleNamesItem: ...  # type: ignore[override]
+
+class ZoneMRTCalculationPeopleNamesItem(TypedDict, total=False):
+    """One group of :class:`ZoneMRTCalculationPeopleNamesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     people_name: str | None
     mrt_weighting_factor: float | None
@@ -11078,10 +11714,11 @@ class ZoneMRTCalculation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneMRTCalculationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c13.ZoneMRTCalculation  # type: ignore[assignment]
 
 class _ZoneMRTCalculationFields(TypedDict, total=False):
     zone_name: str | None
-    people_names: list[Any]
+    people_names: Sequence[ZoneMRTCalculationPeopleNamesItem | ZoneMRTCalculationPeopleNamesGroup]
 
 class GroundHeatTransferControl(_TypedIDFObject):
     """Object determines if the Slab and Basement preprocessors are going to be executed."""
@@ -11094,6 +11731,7 @@ class GroundHeatTransferControl(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferControlFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c12.GroundHeatTransferControl  # type: ignore[assignment]
 
 class _GroundHeatTransferControlFields(TypedDict, total=False):
     run_basement_preprocessor: Literal["", "No", "Yes"] | None
@@ -11124,6 +11762,7 @@ class GroundHeatTransferSlabMaterials(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabMaterialsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.GroundHeatTransferSlabMaterials  # type: ignore[assignment]
 
 class _GroundHeatTransferSlabMaterialsFields(TypedDict, total=False):
     nmat_number_of_materials: float | None
@@ -11155,6 +11794,7 @@ class GroundHeatTransferSlabMatlProps(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabMatlPropsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c91.GroundHeatTransferSlabMatlProps  # type: ignore[assignment]
 
 class _GroundHeatTransferSlabMatlPropsFields(TypedDict, total=False):
     rho_slab_material_density: float | None
@@ -11183,6 +11823,7 @@ class GroundHeatTransferSlabBoundConds(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabBoundCondsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.GroundHeatTransferSlabBoundConds  # type: ignore[assignment]
 
 class _GroundHeatTransferSlabBoundCondsFields(TypedDict, total=False):
     evtr_is_surface_evapotranspiration_modeled: Literal["FALSE", "TRUE"] | None
@@ -11233,6 +11874,7 @@ class GroundHeatTransferSlabBldgProps(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabBldgPropsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.GroundHeatTransferSlabBldgProps  # type: ignore[assignment]
 
 class _GroundHeatTransferSlabBldgPropsFields(TypedDict, total=False):
     iyrs_number_of_years_to_iterate: float | None
@@ -11270,6 +11912,7 @@ class GroundHeatTransferSlabInsulation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabInsulationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.GroundHeatTransferSlabInsulation  # type: ignore[assignment]
 
 class _GroundHeatTransferSlabInsulationFields(TypedDict, total=False):
     rins_r_value_of_under_slab_insulation: float | None
@@ -11293,6 +11936,7 @@ class GroundHeatTransferSlabEquivalentSlab(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabEquivalentSlabFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c9.GroundHeatTransferSlabEquivalentSlab  # type: ignore[assignment]
 
 class _GroundHeatTransferSlabEquivalentSlabFields(TypedDict, total=False):
     apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
@@ -11317,6 +11961,7 @@ class GroundHeatTransferSlabAutoGrid(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabAutoGridFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.GroundHeatTransferSlabAutoGrid  # type: ignore[assignment]
 
 class _GroundHeatTransferSlabAutoGridFields(TypedDict, total=False):
     slabx_x_dimension_of_the_building_slab: float | None
@@ -11342,6 +11987,7 @@ class GroundHeatTransferSlabManualGrid(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabManualGridFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.GroundHeatTransferSlabManualGrid  # type: ignore[assignment]
 
 class _GroundHeatTransferSlabManualGridFields(TypedDict, total=False):
     nx_number_of_cells_in_the_x_direction: float | None
@@ -11353,11 +11999,17 @@ class _GroundHeatTransferSlabManualGridFields(TypedDict, total=False):
 class GroundHeatTransferSlabXFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) XFACE: X Direction cell face coordinates: m"""
 
+    _creation_signature: _c43.GroundHeatTransferSlabXFACE  # type: ignore[assignment]
+
 class GroundHeatTransferSlabYFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) YFACE: Y Direction cell face coordinates: m,"""
 
+    _creation_signature: _c27.GroundHeatTransferSlabYFACE  # type: ignore[assignment]
+
 class GroundHeatTransferSlabZFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) ZFACE: Z Direction cell face coordinates: m"""
+
+    _creation_signature: _c75.GroundHeatTransferSlabZFACE  # type: ignore[assignment]
 
 class GroundHeatTransferBasementSimParameters(_TypedIDFObject):
     """Specifies certain parameters that control the Basement preprocessor ground heat transfer simulation."""
@@ -11375,6 +12027,7 @@ class GroundHeatTransferBasementSimParameters(_TypedIDFObject):
         /,
         **kwargs: Unpack[_GroundHeatTransferBasementSimParametersFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.GroundHeatTransferBasementSimParameters  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementSimParametersFields(TypedDict, total=False):
     f_multiplier_for_the_adi_solution: float | None
@@ -11426,6 +12079,7 @@ class GroundHeatTransferBasementMatlProps(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementMatlPropsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c69.GroundHeatTransferBasementMatlProps  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementMatlPropsFields(TypedDict, total=False):
     nmat_number_of_materials_in_this_domain: float | None
@@ -11461,6 +12115,7 @@ class GroundHeatTransferBasementInsulation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementInsulationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.GroundHeatTransferBasementInsulation  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementInsulationFields(TypedDict, total=False):
     rext_r_value_of_any_exterior_insulation: float | None
@@ -11490,6 +12145,7 @@ class GroundHeatTransferBasementSurfaceProps(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementSurfacePropsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c69.GroundHeatTransferBasementSurfaceProps  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementSurfacePropsFields(TypedDict, total=False):
     albedo_surface_albedo_for_no_snow_conditions: float | None
@@ -11518,6 +12174,7 @@ class GroundHeatTransferBasementBldgData(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementBldgDataFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.GroundHeatTransferBasementBldgData  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementBldgDataFields(TypedDict, total=False):
     dwall_wall_thickness: float | None
@@ -11549,6 +12206,7 @@ class GroundHeatTransferBasementInterior(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementInteriorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.GroundHeatTransferBasementInterior  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementInteriorFields(TypedDict, total=False):
     cond_flag_is_the_basement_conditioned_: Literal["", "FALSE", "TRUE"] | None
@@ -11593,6 +12251,7 @@ class GroundHeatTransferBasementComBldg(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementComBldgFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c64.GroundHeatTransferBasementComBldg  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementComBldgFields(TypedDict, total=False):
     january_average_temperature: float | None
@@ -11620,6 +12279,7 @@ class GroundHeatTransferBasementEquivSlab(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementEquivSlabFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.GroundHeatTransferBasementEquivSlab  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementEquivSlabFields(TypedDict, total=False):
     apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
@@ -11641,6 +12301,7 @@ class GroundHeatTransferBasementEquivAutoGrid(_TypedIDFObject):
         /,
         **kwargs: Unpack[_GroundHeatTransferBasementEquivAutoGridFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.GroundHeatTransferBasementEquivAutoGrid  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementEquivAutoGridFields(TypedDict, total=False):
     clearance_distance_from_outside_of_wall_to_edge_of_3_d_ground_domain: float | None
@@ -11668,6 +12329,7 @@ class GroundHeatTransferBasementAutoGrid(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementAutoGridFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c38.GroundHeatTransferBasementAutoGrid  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementAutoGridFields(TypedDict, total=False):
     clearance_distance_from_outside_of_wall_to_edge_: float | None
@@ -11710,6 +12372,7 @@ class GroundHeatTransferBasementManualGrid(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementManualGridFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.GroundHeatTransferBasementManualGrid  # type: ignore[assignment]
 
 class _GroundHeatTransferBasementManualGridFields(TypedDict, total=False):
     nx_number_of_cells_in_the_x_direction_20_: float | None
@@ -11730,11 +12393,17 @@ class _GroundHeatTransferBasementManualGridFields(TypedDict, total=False):
 class GroundHeatTransferBasementXFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) XFACE: X Direction cell face coordinates: m"""
 
+    _creation_signature: _c66.GroundHeatTransferBasementXFACE  # type: ignore[assignment]
+
 class GroundHeatTransferBasementYFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) YFACE: Y Direction cell face coordinates: m"""
 
+    _creation_signature: _c114.GroundHeatTransferBasementYFACE  # type: ignore[assignment]
+
 class GroundHeatTransferBasementZFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) ZFACE: Z Direction cell face coordinates: m"""
+
+    _creation_signature: _c34.GroundHeatTransferBasementZFACE  # type: ignore[assignment]
 
 class RoomAirModelType(_TypedIDFObject):
     """Selects the type of room air model to be used in a given zone. If no RoomAirModelType object is specified then the de..."""
@@ -11759,6 +12428,7 @@ class RoomAirModelType(_TypedIDFObject):
     """Default: Direct"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirModelTypeFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.RoomAirModelType  # type: ignore[assignment]
 
 class _RoomAirModelTypeFields(TypedDict, total=False):
     zone_name: str | None
@@ -11790,6 +12460,7 @@ class RoomAirTemperaturePatternUserDefined(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirTemperaturePatternUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.RoomAirTemperaturePatternUserDefined  # type: ignore[assignment]
 
 class _RoomAirTemperaturePatternUserDefinedFields(TypedDict, total=False):
     zone_name: str | None
@@ -11826,6 +12497,7 @@ class AnyRoomAirTemperaturePatternConstantGradient(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyRoomAirTemperaturePatternConstantGradientFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c95.AnyRoomAirTemperaturePatternConstantGradient  # type: ignore[assignment]
 
 class _AnyRoomAirTemperaturePatternConstantGradientFields(
     _RoomAirTemperaturePatternConstantGradientCommonFields, total=False
@@ -11844,6 +12516,7 @@ class RoomAirTemperaturePatternConstantGradient(AnyRoomAirTemperaturePatternCons
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternConstantGradientFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c32.RoomAirTemperaturePatternConstantGradient  # type: ignore[assignment]
 
 class _RoomAirTemperaturePatternConstantGradientFields(
     _RoomAirTemperaturePatternConstantGradientCommonFields, total=False
@@ -11915,6 +12588,7 @@ class AnyRoomAirTemperaturePatternTwoGradient(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyRoomAirTemperaturePatternTwoGradientFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c123.AnyRoomAirTemperaturePatternTwoGradient  # type: ignore[assignment]
 
 class _AnyRoomAirTemperaturePatternTwoGradientFields(_RoomAirTemperaturePatternTwoGradientCommonFields, total=False):
     control_integer_for_pattern_control_schedule_name: int | None
@@ -11928,6 +12602,7 @@ class RoomAirTemperaturePatternTwoGradient(AnyRoomAirTemperaturePatternTwoGradie
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirTemperaturePatternTwoGradientFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.RoomAirTemperaturePatternTwoGradient  # type: ignore[assignment]
 
 class _RoomAirTemperaturePatternTwoGradientFields(_RoomAirTemperaturePatternTwoGradientCommonFields, total=False):
     control_integer_for_pattern_control_schedule_name: int | None
@@ -11936,10 +12611,19 @@ class _RoomAirTemperaturePatternNondimensionalHeightCommonFields(TypedDict, tota
     thermostat_offset: float | None
     return_air_offset: float | None
     exhaust_air_offset: float | None
-    pairs: list[Any]
+    pairs: Sequence[
+        RoomAirTemperaturePatternNondimensionalHeightPairsItem | RoomAirTemperaturePatternNondimensionalHeightPairsGroup
+    ]
 
 class RoomAirTemperaturePatternNondimensionalHeightPairsGroup(_TypedExtensibleGroup):
     """One pairs group inside :class:`AnyRoomAirTemperaturePatternNondimensionalHeight`."""
+
+    pair_zeta_nondimensional_height: float | None
+    pair_delta_adjacent_air_temperature: float | None
+    def as_dict(self) -> RoomAirTemperaturePatternNondimensionalHeightPairsItem: ...  # type: ignore[override]
+
+class RoomAirTemperaturePatternNondimensionalHeightPairsItem(TypedDict, total=False):
+    """One group of :class:`RoomAirTemperaturePatternNondimensionalHeightPairsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     pair_zeta_nondimensional_height: float | None
     pair_delta_adjacent_air_temperature: float | None
@@ -11964,6 +12648,7 @@ class AnyRoomAirTemperaturePatternNondimensionalHeight(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyRoomAirTemperaturePatternNondimensionalHeightFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.AnyRoomAirTemperaturePatternNondimensionalHeight  # type: ignore[assignment]
 
 class _AnyRoomAirTemperaturePatternNondimensionalHeightFields(
     _RoomAirTemperaturePatternNondimensionalHeightCommonFields, total=False
@@ -11982,6 +12667,7 @@ class RoomAirTemperaturePatternNondimensionalHeight(AnyRoomAirTemperaturePattern
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternNondimensionalHeightFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.RoomAirTemperaturePatternNondimensionalHeight  # type: ignore[assignment]
 
 class _RoomAirTemperaturePatternNondimensionalHeightFields(
     _RoomAirTemperaturePatternNondimensionalHeightCommonFields, total=False
@@ -11992,10 +12678,20 @@ class _RoomAirTemperaturePatternSurfaceMappingCommonFields(TypedDict, total=Fals
     thermostat_offset: float | None
     return_air_offset: float | None
     exhaust_air_offset: float | None
-    surface_deltas: list[Any]
+    surface_deltas: Sequence[
+        RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem
+        | RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup
+    ]
 
 class RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup(_TypedExtensibleGroup):
     """One surface_deltas group inside :class:`AnyRoomAirTemperaturePatternSurfaceMapping`."""
+
+    surface_name_pair: str | None
+    delta_adjacent_air_temperature_pair: float | None
+    def as_dict(self) -> RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem: ...  # type: ignore[override]
+
+class RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem(TypedDict, total=False):
+    """One group of :class:`RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name_pair: str | None
     delta_adjacent_air_temperature_pair: float | None
@@ -12020,6 +12716,7 @@ class AnyRoomAirTemperaturePatternSurfaceMapping(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyRoomAirTemperaturePatternSurfaceMappingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c116.AnyRoomAirTemperaturePatternSurfaceMapping  # type: ignore[assignment]
 
 class _AnyRoomAirTemperaturePatternSurfaceMappingFields(
     _RoomAirTemperaturePatternSurfaceMappingCommonFields, total=False
@@ -12038,6 +12735,7 @@ class RoomAirTemperaturePatternSurfaceMapping(AnyRoomAirTemperaturePatternSurfac
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternSurfaceMappingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.RoomAirTemperaturePatternSurfaceMapping  # type: ignore[assignment]
 
 class _RoomAirTemperaturePatternSurfaceMappingFields(_RoomAirTemperaturePatternSurfaceMappingCommonFields, total=False):
     control_integer_for_pattern_control_schedule_name: int | None
@@ -12072,6 +12770,7 @@ class RoomAirNode(_TypedIDFObject):
     surface_21_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirNodeFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.RoomAirNode  # type: ignore[assignment]
 
 class _RoomAirNodeFields(TypedDict, total=False):
     node_type: Literal["Ceiling", "Control", "Floor", "Inlet", "MundtRoom", "Return"] | None
@@ -12114,6 +12813,7 @@ class RoomAirSettingsOneNodeDisplacementVentilation(_TypedIDFObject):
         /,
         **kwargs: Unpack[_RoomAirSettingsOneNodeDisplacementVentilationFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c28.RoomAirSettingsOneNodeDisplacementVentilation  # type: ignore[assignment]
 
 class _RoomAirSettingsOneNodeDisplacementVentilationFields(TypedDict, total=False):
     zone_name: str | None
@@ -12142,6 +12842,7 @@ class RoomAirSettingsThreeNodeDisplacementVentilation(_TypedIDFObject):
         /,
         **kwargs: Unpack[_RoomAirSettingsThreeNodeDisplacementVentilationFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c82.RoomAirSettingsThreeNodeDisplacementVentilation  # type: ignore[assignment]
 
 class _RoomAirSettingsThreeNodeDisplacementVentilationFields(TypedDict, total=False):
     zone_name: str | None
@@ -12164,6 +12865,7 @@ class RoomAirSettingsCrossVentilation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirSettingsCrossVentilationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.RoomAirSettingsCrossVentilation  # type: ignore[assignment]
 
 class _RoomAirSettingsCrossVentilationFields(TypedDict, total=False):
     zone_name: str | None
@@ -12210,6 +12912,7 @@ class RoomAirSettingsUnderFloorAirDistributionInterior(_TypedIDFObject):
         /,
         **kwargs: Unpack[_RoomAirSettingsUnderFloorAirDistributionInteriorFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.RoomAirSettingsUnderFloorAirDistributionInterior  # type: ignore[assignment]
 
 class _RoomAirSettingsUnderFloorAirDistributionInteriorFields(TypedDict, total=False):
     zone_name: str | None
@@ -12268,6 +12971,7 @@ class RoomAirSettingsUnderFloorAirDistributionExterior(_TypedIDFObject):
         /,
         **kwargs: Unpack[_RoomAirSettingsUnderFloorAirDistributionExteriorFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c99.RoomAirSettingsUnderFloorAirDistributionExterior  # type: ignore[assignment]
 
 class _RoomAirSettingsUnderFloorAirDistributionExteriorFields(TypedDict, total=False):
     zone_name: str | None
@@ -12299,6 +13003,7 @@ class RoomAirNodeAirflowNetwork(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirNodeAirflowNetworkFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.RoomAirNodeAirflowNetwork  # type: ignore[assignment]
 
 class _RoomAirNodeAirflowNetworkFields(TypedDict, total=False):
     zone_name: str | None
@@ -12311,6 +13016,12 @@ class RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup(_TypedExtensible
     """One surfaces group inside :class:`RoomAirNodeAirflowNetworkAdjacentSurfaceList`."""
 
     surface_name: str | None
+    def as_dict(self) -> RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesItem: ...  # type: ignore[override]
+
+class RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesItem(TypedDict, total=False):
+    """One group of :class:`RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
 
 class RoomAirNodeAirflowNetworkAdjacentSurfaceList(_TypedIDFObject):
     surfaces: ExtensibleList[RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup]
@@ -12321,9 +13032,13 @@ class RoomAirNodeAirflowNetworkAdjacentSurfaceList(_TypedIDFObject):
         /,
         **kwargs: Unpack[_RoomAirNodeAirflowNetworkAdjacentSurfaceListFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.RoomAirNodeAirflowNetworkAdjacentSurfaceList  # type: ignore[assignment]
 
 class _RoomAirNodeAirflowNetworkAdjacentSurfaceListFields(TypedDict, total=False):
-    surfaces: list[Any]
+    surfaces: Sequence[
+        RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesItem
+        | RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup
+    ]
 
 class _RoomAirNodeAirflowNetworkInternalGainsCommonFields(TypedDict, total=False): ...
 
@@ -12437,6 +13152,63 @@ class AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup(_TypedExtensibleGroup)
     ) -> None: ...
     internal_gain_object_name: str | None
     fraction_of_gains_to_node: float | None
+    def as_dict(self) -> AnyRoomAirNodeAirflowNetworkInternalGainsGainsItem: ...  # type: ignore[override]
+
+class AnyRoomAirNodeAirflowNetworkInternalGainsGainsItem(TypedDict, total=False):
+    """One group of :class:`AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    internal_gain_object_type: (
+        Literal[
+            "AirTerminal:SingleDuct:UserDefined",
+            "Coil:UserDefined",
+            "DaylightingDevice:Tubular",
+            "ElectricEquipment",
+            "ElectricLoadCenter:Inverter:FunctionOfPower",
+            "ElectricLoadCenter:Inverter:LookUpTable",
+            "ElectricLoadCenter:Inverter:Simple",
+            "ElectricLoadCenter:Storage:Battery",
+            "ElectricLoadCenter:Storage:Converter",
+            "ElectricLoadCenter:Storage:Simple",
+            "ElectricLoadCenter:Transformer",
+            "GasEquipment",
+            "Generator:FuelCell",
+            "Generator:MicroCHP",
+            "HeaderedPumps:ConstantSpeed",
+            "HeaderedPumps:VariableSpeed",
+            "HotWaterEquipment",
+            "Lights",
+            "OtherEquipment",
+            "People",
+            "Pipe:Indoor",
+            "PlantComponent:UserDefined",
+            "Pump:ConstantSpeed",
+            "Pump:VariableSpeed",
+            "Pump:VariableSpeed:Condensate",
+            "Refrigeration:Case",
+            "Refrigeration:CompressorRack",
+            "Refrigeration:SecondarySystem:Pipe",
+            "Refrigeration:SecondarySystem:Receiver",
+            "Refrigeration:System:Condenser:AirCooled",
+            "Refrigeration:System:SuctionPipe",
+            "Refrigeration:TranscriticalSystem:GasCooler:AirCooled",
+            "Refrigeration:TranscriticalSystem:SuctionPipeLT",
+            "Refrigeration:TranscriticalSystem:SuctionPipeMT",
+            "Refrigeration:WalkIn",
+            "SteamEquipment",
+            "ThermalStorage:ChilledWater:Mixed",
+            "ThermalStorage:ChilledWater:Stratified",
+            "WaterHeater:Mixed",
+            "WaterHeater:Stratified",
+            "WaterUse:Equipment",
+            "ZoneBaseboard:OutdoorTemperatureControlled",
+            "ZoneContaminantSourceAndSink:CarbonDioxide",
+            "ZoneContaminantSourceAndSink:GenericContaminant",
+            "ZoneHVAC:ForcedAir:UserDefined",
+        ]
+        | None
+    )
+    internal_gain_object_name: str | None
+    fraction_of_gains_to_node: float | None
 
 class AnyRoomAirNodeAirflowNetworkInternalGains(_TypedIDFObject):
     """``RoomAir:Node:AirflowNetwork:InternalGains`` as every supported EnergyPlus version declares it."""
@@ -12449,14 +13221,75 @@ class AnyRoomAirNodeAirflowNetworkInternalGains(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyRoomAirNodeAirflowNetworkInternalGainsFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.AnyRoomAirNodeAirflowNetworkInternalGains  # type: ignore[assignment]
 
 class _AnyRoomAirNodeAirflowNetworkInternalGainsFields(
     _RoomAirNodeAirflowNetworkInternalGainsCommonFields, total=False
 ):
-    gains: list[Any]
+    gains: Sequence[
+        AnyRoomAirNodeAirflowNetworkInternalGainsGainsItem | AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup
+    ]
 
 class RoomAirNodeAirflowNetworkInternalGainsGainsGroup(AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup):
     """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains`."""
+
+    internal_gain_object_type: (
+        Literal[
+            "AirTerminal:SingleDuct:UserDefined",
+            "Coil:UserDefined",
+            "DaylightingDevice:Tubular",
+            "ElectricEquipment",
+            "ElectricLoadCenter:Inverter:FunctionOfPower",
+            "ElectricLoadCenter:Inverter:LookUpTable",
+            "ElectricLoadCenter:Inverter:Simple",
+            "ElectricLoadCenter:Storage:Battery",
+            "ElectricLoadCenter:Storage:Converter",
+            "ElectricLoadCenter:Storage:LiIonNMCBattery",
+            "ElectricLoadCenter:Storage:Simple",
+            "ElectricLoadCenter:Transformer",
+            "GasEquipment",
+            "Generator:FuelCell",
+            "Generator:MicroCHP",
+            "HeaderedPumps:ConstantSpeed",
+            "HeaderedPumps:VariableSpeed",
+            "HotWaterEquipment",
+            "Lights",
+            "OtherEquipment",
+            "People",
+            "Pipe:Indoor",
+            "PlantComponent:UserDefined",
+            "Pump:ConstantSpeed",
+            "Pump:VariableSpeed",
+            "Pump:VariableSpeed:Condensate",
+            "Refrigeration:Case",
+            "Refrigeration:CompressorRack",
+            "Refrigeration:SecondarySystem:Pipe",
+            "Refrigeration:SecondarySystem:Receiver",
+            "Refrigeration:System:Condenser:AirCooled",
+            "Refrigeration:System:SuctionPipe",
+            "Refrigeration:TranscriticalSystem:GasCooler:AirCooled",
+            "Refrigeration:TranscriticalSystem:SuctionPipeLT",
+            "Refrigeration:TranscriticalSystem:SuctionPipeMT",
+            "Refrigeration:WalkIn",
+            "SteamEquipment",
+            "ThermalStorage:ChilledWater:Mixed",
+            "ThermalStorage:ChilledWater:Stratified",
+            "WaterHeater:Mixed",
+            "WaterHeater:Stratified",
+            "WaterUse:Equipment",
+            "ZoneBaseboard:OutdoorTemperatureControlled",
+            "ZoneContaminantSourceAndSink:CarbonDioxide",
+            "ZoneContaminantSourceAndSink:GenericContaminant",
+            "ZoneHVAC:ForcedAir:UserDefined",
+        ]
+        | None
+    )
+    internal_gain_object_name: str | None
+    fraction_of_gains_to_node: float | None
+    def as_dict(self) -> RoomAirNodeAirflowNetworkInternalGainsGainsItem: ...  # type: ignore[override]
+
+class RoomAirNodeAirflowNetworkInternalGainsGainsItem(TypedDict, total=False):
+    """One group of :class:`RoomAirNodeAirflowNetworkInternalGainsGainsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     internal_gain_object_type: (
         Literal[
@@ -12520,9 +13353,10 @@ class RoomAirNodeAirflowNetworkInternalGains(AnyRoomAirNodeAirflowNetworkInterna
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirNodeAirflowNetworkInternalGainsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.RoomAirNodeAirflowNetworkInternalGains  # type: ignore[assignment]
 
 class _RoomAirNodeAirflowNetworkInternalGainsFields(_RoomAirNodeAirflowNetworkInternalGainsCommonFields, total=False):
-    gains: list[Any]
+    gains: Sequence[RoomAirNodeAirflowNetworkInternalGainsGainsItem | RoomAirNodeAirflowNetworkInternalGainsGainsGroup]
 
 class _RoomAirNodeAirflowNetworkHVACEquipmentCommonFields(TypedDict, total=False): ...
 
@@ -12621,6 +13455,54 @@ class AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup(_TypedExt
     zonehvac_or_air_terminal_equipment_object_name: str | None
     fraction_of_output_or_supply_air_from_hvac_equipment: float | None
     fraction_of_input_or_return_air_to_hvac_equipment: float | None
+    def as_dict(self) -> AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem: ...  # type: ignore[override]
+
+class AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem(TypedDict, total=False):
+    """One group of :class:`AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zonehvac_or_air_terminal_equipment_object_type: (
+        Literal[
+            "AirLoopHVACReturnAir",
+            "AirTerminal:DualDuct:ConstantVolume",
+            "AirTerminal:DualDuct:VAV",
+            "AirTerminal:DualDuct:VAV:OutdoorAir",
+            "AirTerminal:SingleDuct:ConstantVolume:CooledBeam",
+            "AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction",
+            "AirTerminal:SingleDuct:ConstantVolume:Reheat",
+            "AirTerminal:SingleDuct:ParallelPIU:Reheat",
+            "AirTerminal:SingleDuct:SeriesPIU:Reheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat",
+            "AirTerminal:SingleDuct:VAV:NoReheat",
+            "AirTerminal:SingleDuct:VAV:Reheat",
+            "AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan",
+            "Fan:ZoneExhaust",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zonehvac_or_air_terminal_equipment_object_name: str | None
+    fraction_of_output_or_supply_air_from_hvac_equipment: float | None
+    fraction_of_input_or_return_air_to_hvac_equipment: float | None
 
 class AnyRoomAirNodeAirflowNetworkHVACEquipment(_TypedIDFObject):
     """``RoomAir:Node:AirflowNetwork:HVACEquipment`` as every supported EnergyPlus version declares it."""
@@ -12633,16 +13515,71 @@ class AnyRoomAirNodeAirflowNetworkHVACEquipment(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyRoomAirNodeAirflowNetworkHVACEquipmentFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.AnyRoomAirNodeAirflowNetworkHVACEquipment  # type: ignore[assignment]
 
 class _AnyRoomAirNodeAirflowNetworkHVACEquipmentFields(
     _RoomAirNodeAirflowNetworkHVACEquipmentCommonFields, total=False
 ):
-    equipment_fractions: list[Any]
+    equipment_fractions: Sequence[
+        AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem
+        | AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup
+    ]
 
 class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup(
     AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup
 ):
     """One equipment_fractions group inside :class:`RoomAirNodeAirflowNetworkHVACEquipment`."""
+
+    zonehvac_or_air_terminal_equipment_object_type: (
+        Literal[
+            "AirLoopHVACReturnAir",
+            "AirTerminal:DualDuct:ConstantVolume",
+            "AirTerminal:DualDuct:VAV",
+            "AirTerminal:DualDuct:VAV:OutdoorAir",
+            "AirTerminal:SingleDuct:ConstantVolume:CooledBeam",
+            "AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction",
+            "AirTerminal:SingleDuct:ConstantVolume:NoReheat",
+            "AirTerminal:SingleDuct:ConstantVolume:Reheat",
+            "AirTerminal:SingleDuct:ParallelPIU:Reheat",
+            "AirTerminal:SingleDuct:SeriesPIU:Reheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat",
+            "AirTerminal:SingleDuct:VAV:NoReheat",
+            "AirTerminal:SingleDuct:VAV:Reheat",
+            "AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan",
+            "Fan:ZoneExhaust",
+            "WaterHeater:HeatPump:PumpedCondenser",
+            "WaterHeater:HeatPump:WrappedCondenser",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zonehvac_or_air_terminal_equipment_object_name: str | None
+    fraction_of_output_or_supply_air_from_hvac_equipment: float | None
+    fraction_of_input_or_return_air_to_hvac_equipment: float | None
+    def as_dict(self) -> RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem: ...  # type: ignore[override]
+
+class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem(TypedDict, total=False):
+    """One group of :class:`RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     zonehvac_or_air_terminal_equipment_object_type: (
         Literal[
@@ -12699,12 +13636,22 @@ class RoomAirNodeAirflowNetworkHVACEquipment(AnyRoomAirNodeAirflowNetworkHVACEqu
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirNodeAirflowNetworkHVACEquipmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.RoomAirNodeAirflowNetworkHVACEquipment  # type: ignore[assignment]
 
 class _RoomAirNodeAirflowNetworkHVACEquipmentFields(_RoomAirNodeAirflowNetworkHVACEquipmentCommonFields, total=False):
-    equipment_fractions: list[Any]
+    equipment_fractions: Sequence[
+        RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem
+        | RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup
+    ]
 
 class RoomAirSettingsAirflowNetworkNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`RoomAirSettingsAirflowNetwork`."""
+
+    roomairflownetwork_node_name: str | None
+    def as_dict(self) -> RoomAirSettingsAirflowNetworkNodesItem: ...  # type: ignore[override]
+
+class RoomAirSettingsAirflowNetworkNodesItem(TypedDict, total=False):
+    """One group of :class:`RoomAirSettingsAirflowNetworkNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     roomairflownetwork_node_name: str | None
 
@@ -12719,11 +13666,12 @@ class RoomAirSettingsAirflowNetwork(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirSettingsAirflowNetworkFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.RoomAirSettingsAirflowNetwork  # type: ignore[assignment]
 
 class _RoomAirSettingsAirflowNetworkFields(TypedDict, total=False):
     zone_name: str | None
     control_point_roomairflownetwork_node_name: str | None
-    nodes: list[Any]
+    nodes: Sequence[RoomAirSettingsAirflowNetworkNodesItem | RoomAirSettingsAirflowNetworkNodesGroup]
 
 class _PeopleCommonFields(TypedDict, total=False):
     number_of_people_schedule_name: str | None
@@ -12840,6 +13788,7 @@ class AnyPeople(_TypedIDFObject):
         self, value: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
     ) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPeopleFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c40.AnyPeople  # type: ignore[assignment]
 
 class _AnyPeopleFields(_PeopleCommonFields, total=False):
     mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted"] | None
@@ -12903,6 +13852,7 @@ class People(AnyPeople):
     """this is the indoor safe temperature threshold for heat stress; [C]; Default: 30.0; Since: 22.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PeopleFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.People  # type: ignore[assignment]
 
 class _PeopleFields(_PeopleCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -12974,6 +13924,7 @@ class PeopleInstance(_TypedIDFObject):
     """this is the indoor safe temperature threshold for heat stress; [C]; Default: 30.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PeopleInstanceFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.PeopleInstance  # type: ignore[assignment]
 
 class _PeopleInstanceFields(TypedDict, total=False):
     people_definition_name: str | None
@@ -13051,6 +14002,7 @@ class PeopleDefinition(_TypedIDFObject):
     """optional (seventh thermal comfort model and report type)"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PeopleDefinitionFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c15.PeopleDefinition  # type: ignore[assignment]
 
 class _PeopleDefinitionFields(TypedDict, total=False):
     number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None
@@ -13099,11 +14051,19 @@ class AnyComfortViewFactorAngles(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyComfortViewFactorAnglesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.AnyComfortViewFactorAngles  # type: ignore[assignment]
 
 class _AnyComfortViewFactorAnglesFields(_ComfortViewFactorAnglesCommonFields, total=False): ...
 
 class ComfortViewFactorAnglesAnglesGroup(_TypedExtensibleGroup):
     """One angles group inside :class:`ComfortViewFactorAngles`."""
+
+    surface_name: str | None
+    angle_factor: float | None
+    def as_dict(self) -> ComfortViewFactorAnglesAnglesItem: ...  # type: ignore[override]
+
+class ComfortViewFactorAnglesAnglesItem(TypedDict, total=False):
+    """One group of :class:`ComfortViewFactorAnglesAnglesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     angle_factor: float | None
@@ -13116,9 +14076,10 @@ class ComfortViewFactorAngles(AnyComfortViewFactorAngles):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComfortViewFactorAnglesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.ComfortViewFactorAngles  # type: ignore[assignment]
 
 class _ComfortViewFactorAnglesFields(_ComfortViewFactorAnglesCommonFields, total=False):
-    angles: list[Any]
+    angles: Sequence[ComfortViewFactorAnglesAnglesItem | ComfortViewFactorAnglesAnglesGroup]
 
 class _LightsCommonFields(TypedDict, total=False):
     schedule_name: str | None
@@ -13166,6 +14127,7 @@ class AnyLights(_TypedIDFObject):
     """Name of the return air node for this heat gain. If left blank, defaults to the first return air node for the zone. Le..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyLightsFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c102.AnyLights  # type: ignore[assignment]
 
 class _AnyLightsFields(_LightsCommonFields, total=False): ...
 
@@ -13180,6 +14142,7 @@ class Lights(AnyLights):
     """Name of the exhaust air node for this heat gain. If the node name is entered, return heat gain will be shared by both...; Since: 9.6.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LightsFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c94.Lights  # type: ignore[assignment]
 
 class _LightsFields(_LightsCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -13205,6 +14168,7 @@ class LightsInstance(_TypedIDFObject):
     """Name of the exhaust air node for this heat gain. If the node name is entered, return heat gain will be shared by both..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LightsInstanceFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.LightsInstance  # type: ignore[assignment]
 
 class _LightsInstanceFields(TypedDict, total=False):
     lights_definition_name: str | None
@@ -13241,6 +14205,7 @@ class LightsDefinition(_TypedIDFObject):
     """Used only if Return Air Fraction Is Calculated from Plenum Temperature = Yes Equation is Return Air Fraction = Coeffi...; [1/K]; Default: 0.0; Range: >= 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LightsDefinitionFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.LightsDefinition  # type: ignore[assignment]
 
 class _LightsDefinitionFields(TypedDict, total=False):
     design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"] | None
@@ -13287,6 +14252,7 @@ class AnyElectricEquipment(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyElectricEquipmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.AnyElectricEquipment  # type: ignore[assignment]
 
 class _AnyElectricEquipmentFields(_ElectricEquipmentCommonFields, total=False): ...
 
@@ -13299,6 +14265,7 @@ class ElectricEquipment(AnyElectricEquipment):
     """[W/m2] (W/ft2); Range: >= 0.0; Since: 24.1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.ElectricEquipment  # type: ignore[assignment]
 
 class _ElectricEquipmentFields(_ElectricEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -13319,6 +14286,7 @@ class ElectricEquipmentInstance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c66.ElectricEquipmentInstance  # type: ignore[assignment]
 
 class _ElectricEquipmentInstanceFields(TypedDict, total=False):
     electric_equipment_definition_name: str | None
@@ -13348,6 +14316,7 @@ class ElectricEquipmentDefinition(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.ElectricEquipmentDefinition  # type: ignore[assignment]
 
 class _ElectricEquipmentDefinitionFields(TypedDict, total=False):
     design_level_calculation_method: Literal["", "EquipmentLevel", "Watts/Area", "Watts/Person"] | None
@@ -13396,6 +14365,7 @@ class AnyGasEquipment(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGasEquipmentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.AnyGasEquipment  # type: ignore[assignment]
 
 class _AnyGasEquipmentFields(_GasEquipmentCommonFields, total=False): ...
 
@@ -13408,6 +14378,7 @@ class GasEquipment(AnyGasEquipment):
     """[W/m2] (Btu/h-ft2); Range: >= 0.0; Since: 24.1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GasEquipmentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c125.GasEquipment  # type: ignore[assignment]
 
 class _GasEquipmentFields(_GasEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -13428,6 +14399,7 @@ class GasEquipmentInstance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GasEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.GasEquipmentInstance  # type: ignore[assignment]
 
 class _GasEquipmentInstanceFields(TypedDict, total=False):
     gas_equipment_definition_name: str | None
@@ -13461,6 +14433,7 @@ class GasEquipmentDefinition(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GasEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.GasEquipmentDefinition  # type: ignore[assignment]
 
 class _GasEquipmentDefinitionFields(TypedDict, total=False):
     design_level_calculation_method: (
@@ -13511,6 +14484,7 @@ class AnyHotWaterEquipment(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHotWaterEquipmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c22.AnyHotWaterEquipment  # type: ignore[assignment]
 
 class _AnyHotWaterEquipmentFields(_HotWaterEquipmentCommonFields, total=False): ...
 
@@ -13523,6 +14497,7 @@ class HotWaterEquipment(AnyHotWaterEquipment):
     """[W/m2] (Btu/h-ft2); Range: >= 0.0; Since: 24.1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HotWaterEquipmentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c121.HotWaterEquipment  # type: ignore[assignment]
 
 class _HotWaterEquipmentFields(_HotWaterEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -13543,6 +14518,7 @@ class HotWaterEquipmentInstance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HotWaterEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.HotWaterEquipmentInstance  # type: ignore[assignment]
 
 class _HotWaterEquipmentInstanceFields(TypedDict, total=False):
     hot_water_equipment_definition_name: str | None
@@ -13574,6 +14550,7 @@ class HotWaterEquipmentDefinition(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HotWaterEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c125.HotWaterEquipmentDefinition  # type: ignore[assignment]
 
 class _HotWaterEquipmentDefinitionFields(TypedDict, total=False):
     design_level_calculation_method: (
@@ -13621,6 +14598,7 @@ class AnySteamEquipment(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySteamEquipmentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.AnySteamEquipment  # type: ignore[assignment]
 
 class _AnySteamEquipmentFields(_SteamEquipmentCommonFields, total=False): ...
 
@@ -13633,6 +14611,7 @@ class SteamEquipment(AnySteamEquipment):
     """[W/m2] (Btu/h-ft2); Range: >= 0.0; Since: 24.1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SteamEquipmentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c61.SteamEquipment  # type: ignore[assignment]
 
 class _SteamEquipmentFields(_SteamEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -13653,6 +14632,7 @@ class SteamEquipmentInstance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SteamEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.SteamEquipmentInstance  # type: ignore[assignment]
 
 class _SteamEquipmentInstanceFields(TypedDict, total=False):
     steam_equipment_definition_name: str | None
@@ -13684,6 +14664,7 @@ class SteamEquipmentDefinition(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SteamEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.SteamEquipmentDefinition  # type: ignore[assignment]
 
 class _SteamEquipmentDefinitionFields(TypedDict, total=False):
     design_level_calculation_method: (
@@ -13779,6 +14760,7 @@ class AnyOtherEquipment(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOtherEquipmentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c87.AnyOtherEquipment  # type: ignore[assignment]
 
 class _AnyOtherEquipmentFields(_OtherEquipmentCommonFields, total=False):
     fuel_type: (
@@ -13827,6 +14809,7 @@ class OtherEquipment(AnyOtherEquipment):
     """[W/m2] (Btu/h-ft2); Since: 24.1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipmentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c117.OtherEquipment  # type: ignore[assignment]
 
 class _OtherEquipmentFields(_OtherEquipmentCommonFields, total=False):
     fuel_type: (
@@ -13888,6 +14871,7 @@ class OtherEquipmentInstance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c38.OtherEquipmentInstance  # type: ignore[assignment]
 
 class _OtherEquipmentInstanceFields(TypedDict, total=False):
     other_equipment_definition_name: str | None
@@ -13941,6 +14925,7 @@ class OtherEquipmentDefinition(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.OtherEquipmentDefinition  # type: ignore[assignment]
 
 class _OtherEquipmentDefinitionFields(TypedDict, total=False):
     design_level_calculation_method: (
@@ -13996,6 +14981,7 @@ class AnyIndoorLivingWall(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyIndoorLivingWallFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.AnyIndoorLivingWall  # type: ignore[assignment]
 
 class _AnyIndoorLivingWallFields(_IndoorLivingWallCommonFields, total=False): ...
 
@@ -14003,6 +14989,7 @@ class IndoorLivingWall(AnyIndoorLivingWall):
     """Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrate...; Since: 24.1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_IndoorLivingWallFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c38.IndoorLivingWall  # type: ignore[assignment]
 
 class _IndoorLivingWallFields(_IndoorLivingWallCommonFields, total=False): ...
 
@@ -14103,6 +15090,7 @@ class AnyElectricEquipmentITEAirCooled(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyElectricEquipmentITEAirCooledFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.AnyElectricEquipmentITEAirCooled  # type: ignore[assignment]
 
 class _AnyElectricEquipmentITEAirCooledFields(_ElectricEquipmentITEAirCooledCommonFields, total=False):
     environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None"] | None
@@ -14120,6 +15108,7 @@ class ElectricEquipmentITEAirCooled(AnyElectricEquipmentITEAirCooled):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentITEAirCooledFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.ElectricEquipmentITEAirCooled  # type: ignore[assignment]
 
 class _ElectricEquipmentITEAirCooledFields(_ElectricEquipmentITEAirCooledCommonFields, total=False):
     zone_or_space_name: str | None
@@ -14154,6 +15143,7 @@ class ElectricEquipmentITEAirCooledInstance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentITEAirCooledInstanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.ElectricEquipmentITEAirCooledInstance  # type: ignore[assignment]
 
 class _ElectricEquipmentITEAirCooledInstanceFields(TypedDict, total=False):
     electricequipment_ite_aircooled_definition_name: str | None
@@ -14220,6 +15210,7 @@ class ElectricEquipmentITEAirCooledDefinition(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ElectricEquipmentITEAirCooledDefinitionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.ElectricEquipmentITEAirCooledDefinition  # type: ignore[assignment]
 
 class _ElectricEquipmentITEAirCooledDefinitionFields(TypedDict, total=False):
     air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"] | None
@@ -14281,6 +15272,7 @@ class AnyZoneBaseboardOutdoorTemperatureControlled(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneBaseboardOutdoorTemperatureControlledFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.AnyZoneBaseboardOutdoorTemperatureControlled  # type: ignore[assignment]
 
 class _AnyZoneBaseboardOutdoorTemperatureControlledFields(
     _ZoneBaseboardOutdoorTemperatureControlledCommonFields, total=False
@@ -14312,6 +15304,7 @@ class ZoneBaseboardOutdoorTemperatureControlled(AnyZoneBaseboardOutdoorTemperatu
         /,
         **kwargs: Unpack[_ZoneBaseboardOutdoorTemperatureControlledFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c76.ZoneBaseboardOutdoorTemperatureControlled  # type: ignore[assignment]
 
 class _ZoneBaseboardOutdoorTemperatureControlledFields(
     _ZoneBaseboardOutdoorTemperatureControlledCommonFields, total=False
@@ -14323,8 +15316,27 @@ class _ZoneBaseboardOutdoorTemperatureControlledFields(
     high_temperature: float | Literal["", "Autosize"] | None
     design_zone_heating_setpoint: float | None
 
-class SwimmingPoolIndoor(_TypedIDFObject):
-    """Specifies an indoor swimming pools linked to a floor surface. The pool is assumed to cover the entire floor to which ..."""
+class _SwimmingPoolIndoorCommonFields(TypedDict, total=False):
+    surface_name: str | None
+    average_depth: float | None
+    activity_factor_schedule_name: str | None
+    make_up_water_supply_schedule_name: str | None
+    cover_schedule_name: str | None
+    cover_evaporation_factor: float | None
+    cover_convection_factor: float | None
+    cover_short_wavelength_radiation_factor: float | None
+    cover_long_wavelength_radiation_factor: float | None
+    pool_water_inlet_node: str | None
+    pool_water_outlet_node: str | None
+    pool_heating_system_maximum_water_flow_rate: float | None
+    pool_miscellaneous_equipment_power: float | None
+    setpoint_temperature_schedule: str | None
+    maximum_number_of_people: float | None
+    people_schedule: str | None
+    people_heat_gain_schedule: str | None
+
+class AnySwimmingPoolIndoor(_TypedIDFObject):
+    """``SwimmingPool:Indoor`` as every supported EnergyPlus version declares it."""
 
     surface_name: str | None
     """Name of the floor surface where the pool is located."""
@@ -14354,27 +15366,21 @@ class SwimmingPoolIndoor(_TypedIDFObject):
     people_heat_gain_schedule: str | None
 
     def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySwimmingPoolIndoorFields]
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.AnySwimmingPoolIndoor  # type: ignore[assignment]
+
+class _AnySwimmingPoolIndoorFields(_SwimmingPoolIndoorCommonFields, total=False): ...
+
+class SwimmingPoolIndoor(AnySwimmingPoolIndoor):
+    """Specifies an indoor swimming pools linked to a floor surface. The pool is assumed to cover the entire floor to which ..."""
+
+    def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SwimmingPoolIndoorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c50.SwimmingPoolIndoor  # type: ignore[assignment]
 
-class _SwimmingPoolIndoorFields(TypedDict, total=False):
-    surface_name: str | None
-    average_depth: float | None
-    activity_factor_schedule_name: str | None
-    make_up_water_supply_schedule_name: str | None
-    cover_schedule_name: str | None
-    cover_evaporation_factor: float | None
-    cover_convection_factor: float | None
-    cover_short_wavelength_radiation_factor: float | None
-    cover_long_wavelength_radiation_factor: float | None
-    pool_water_inlet_node: str | None
-    pool_water_outlet_node: str | None
-    pool_heating_system_maximum_water_flow_rate: float | None
-    pool_miscellaneous_equipment_power: float | None
-    setpoint_temperature_schedule: str | None
-    maximum_number_of_people: float | None
-    people_schedule: str | None
-    people_heat_gain_schedule: str | None
+class _SwimmingPoolIndoorFields(_SwimmingPoolIndoorCommonFields, total=False): ...
 
 class ZoneContaminantSourceAndSinkCarbonDioxide(_TypedIDFObject):
     """Represents internal CO2 gains and sinks in the zone."""
@@ -14391,6 +15397,7 @@ class ZoneContaminantSourceAndSinkCarbonDioxide(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkCarbonDioxideFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.ZoneContaminantSourceAndSinkCarbonDioxide  # type: ignore[assignment]
 
 class _ZoneContaminantSourceAndSinkCarbonDioxideFields(TypedDict, total=False):
     zone_name: str | None
@@ -14416,6 +15423,7 @@ class ZoneContaminantSourceAndSinkGenericConstant(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericConstantFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c125.ZoneContaminantSourceAndSinkGenericConstant  # type: ignore[assignment]
 
 class _ZoneContaminantSourceAndSinkGenericConstantFields(TypedDict, total=False):
     zone_name: str | None
@@ -14441,6 +15449,7 @@ class SurfaceContaminantSourceAndSinkGenericPressureDriven(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SurfaceContaminantSourceAndSinkGenericPressureDrivenFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.SurfaceContaminantSourceAndSinkGenericPressureDriven  # type: ignore[assignment]
 
 class _SurfaceContaminantSourceAndSinkGenericPressureDrivenFields(TypedDict, total=False):
     surface_name: str | None
@@ -14465,6 +15474,7 @@ class ZoneContaminantSourceAndSinkGenericCutoffModel(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericCutoffModelFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.ZoneContaminantSourceAndSinkGenericCutoffModel  # type: ignore[assignment]
 
 class _ZoneContaminantSourceAndSinkGenericCutoffModelFields(TypedDict, total=False):
     zone_name: str | None
@@ -14489,6 +15499,7 @@ class ZoneContaminantSourceAndSinkGenericDecaySource(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericDecaySourceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.ZoneContaminantSourceAndSinkGenericDecaySource  # type: ignore[assignment]
 
 class _ZoneContaminantSourceAndSinkGenericDecaySourceFields(TypedDict, total=False):
     zone_name: str | None
@@ -14513,6 +15524,7 @@ class SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion(_TypedIDFObje
         /,
         **kwargs: Unpack[_SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion  # type: ignore[assignment]
 
 class _SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusionFields(TypedDict, total=False):
     surface_name: str | None
@@ -14535,6 +15547,7 @@ class SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink(_TypedIDFObje
         /,
         **kwargs: Unpack[_SurfaceContaminantSourceAndSinkGenericDepositionVelocitySinkFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink  # type: ignore[assignment]
 
 class _SurfaceContaminantSourceAndSinkGenericDepositionVelocitySinkFields(TypedDict, total=False):
     surface_name: str | None
@@ -14556,6 +15569,7 @@ class ZoneContaminantSourceAndSinkGenericDepositionRateSink(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericDepositionRateSinkFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c108.ZoneContaminantSourceAndSinkGenericDepositionRateSink  # type: ignore[assignment]
 
 class _ZoneContaminantSourceAndSinkGenericDepositionRateSinkFields(TypedDict, total=False):
     zone_name: str | None
@@ -14576,6 +15590,13 @@ class _DaylightingControlsCommonFields(TypedDict, total=False):
 
 class AnyDaylightingControlsControlDataGroup(_TypedExtensibleGroup):
     """One control_data group inside :class:`AnyDaylightingControls`, as every supported version declares it."""
+
+    daylighting_reference_point_name: str | None
+    illuminance_setpoint_at_reference_point: float | None
+    def as_dict(self) -> AnyDaylightingControlsControlDataItem: ...  # type: ignore[override]
+
+class AnyDaylightingControlsControlDataItem(TypedDict, total=False):
+    """One group of :class:`AnyDaylightingControlsControlDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     daylighting_reference_point_name: str | None
     illuminance_setpoint_at_reference_point: float | None
@@ -14610,13 +15631,22 @@ class AnyDaylightingControls(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyDaylightingControlsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c102.AnyDaylightingControls  # type: ignore[assignment]
 
 class _AnyDaylightingControlsFields(_DaylightingControlsCommonFields, total=False):
     number_of_stepped_control_steps: int | None
-    control_data: list[Any]
+    control_data: Sequence[AnyDaylightingControlsControlDataItem | AnyDaylightingControlsControlDataGroup]
 
 class DaylightingControlsControlDataGroup(AnyDaylightingControlsControlDataGroup):
     """One control_data group inside :class:`DaylightingControls`."""
+
+    daylighting_reference_point_name: str | None
+    fraction_of_lights_controlled_by_reference_point: float | None
+    illuminance_setpoint_at_reference_point: float | None
+    def as_dict(self) -> DaylightingControlsControlDataItem: ...  # type: ignore[override]
+
+class DaylightingControlsControlDataItem(TypedDict, total=False):
+    """One group of :class:`DaylightingControlsControlDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     daylighting_reference_point_name: str | None
     fraction_of_lights_controlled_by_reference_point: float | None
@@ -14634,11 +15664,12 @@ class DaylightingControls(AnyDaylightingControls):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingControlsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c59.DaylightingControls  # type: ignore[assignment]
 
 class _DaylightingControlsFields(_DaylightingControlsCommonFields, total=False):
     zone_or_space_name: str | None
     number_of_stepped_control_steps: int | None
-    control_data: list[Any]
+    control_data: Sequence[DaylightingControlsControlDataItem | DaylightingControlsControlDataGroup]
 
 class _DaylightingReferencePointCommonFields(TypedDict, total=False):
     x_coordinate_of_reference_point: float | None
@@ -14658,6 +15689,7 @@ class AnyDaylightingReferencePoint(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyDaylightingReferencePointFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c69.AnyDaylightingReferencePoint  # type: ignore[assignment]
 
 class _AnyDaylightingReferencePointFields(_DaylightingReferencePointCommonFields, total=False): ...
 
@@ -14670,6 +15702,7 @@ class DaylightingReferencePoint(AnyDaylightingReferencePoint):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingReferencePointFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.DaylightingReferencePoint  # type: ignore[assignment]
 
 class _DaylightingReferencePointFields(_DaylightingReferencePointCommonFields, total=False):
     zone_or_space_name: str | None
@@ -14689,6 +15722,7 @@ class DaylightingDELightComplexFenestration(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingDELightComplexFenestrationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.DaylightingDELightComplexFenestration  # type: ignore[assignment]
 
 class _DaylightingDELightComplexFenestrationFields(TypedDict, total=False):
     complex_fenestration_type: str | None
@@ -14698,6 +15732,13 @@ class _DaylightingDELightComplexFenestrationFields(TypedDict, total=False):
 
 class DaylightingDeviceTubularTransitionLengthsGroup(_TypedExtensibleGroup):
     """One transition_lengths group inside :class:`DaylightingDeviceTubular`."""
+
+    transition_zone_name: str | None
+    transition_zone_length: float | None
+    def as_dict(self) -> DaylightingDeviceTubularTransitionLengthsItem: ...  # type: ignore[override]
+
+class DaylightingDeviceTubularTransitionLengthsItem(TypedDict, total=False):
+    """One group of :class:`DaylightingDeviceTubularTransitionLengthsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     transition_zone_name: str | None
     transition_zone_length: float | None
@@ -14721,6 +15762,7 @@ class DaylightingDeviceTubular(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingDeviceTubularFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c121.DaylightingDeviceTubular  # type: ignore[assignment]
 
 class _DaylightingDeviceTubularFields(TypedDict, total=False):
     dome_name: str | None
@@ -14729,7 +15771,9 @@ class _DaylightingDeviceTubularFields(TypedDict, total=False):
     diameter: float | None
     total_length: float | None
     effective_thermal_resistance: float | None
-    transition_lengths: list[Any]
+    transition_lengths: Sequence[
+        DaylightingDeviceTubularTransitionLengthsItem | DaylightingDeviceTubularTransitionLengthsGroup
+    ]
 
 class DaylightingDeviceShelf(_TypedIDFObject):
     """Defines a daylighting which can have an inside shelf, an outside shelf, or both. The inside shelf is defined as a bui..."""
@@ -14747,6 +15791,7 @@ class DaylightingDeviceShelf(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingDeviceShelfFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c5.DaylightingDeviceShelf  # type: ignore[assignment]
 
 class _DaylightingDeviceShelfFields(TypedDict, total=False):
     window_name: str | None
@@ -14771,6 +15816,7 @@ class DaylightingDeviceLightWell(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingDeviceLightWellFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.DaylightingDeviceLightWell  # type: ignore[assignment]
 
 class _DaylightingDeviceLightWellFields(TypedDict, total=False):
     exterior_window_name: str | None
@@ -14787,6 +15833,7 @@ class OutputDaylightFactors(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputDaylightFactorsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.OutputDaylightFactors  # type: ignore[assignment]
 
 class _OutputDaylightFactorsFields(TypedDict, total=False):
     reporting_days: Literal["AllShadowCalculationDays", "SizingDays"] | None
@@ -14822,6 +15869,7 @@ class AnyOutputIlluminanceMap(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputIlluminanceMapFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.AnyOutputIlluminanceMap  # type: ignore[assignment]
 
 class _AnyOutputIlluminanceMapFields(_OutputIlluminanceMapCommonFields, total=False):
     number_of_x_grid_points: int | None
@@ -14840,6 +15888,7 @@ class OutputIlluminanceMap(AnyOutputIlluminanceMap):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputIlluminanceMapFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.OutputIlluminanceMap  # type: ignore[assignment]
 
 class _OutputIlluminanceMapFields(_OutputIlluminanceMapCommonFields, total=False):
     zone_or_space_name: str | None
@@ -14855,6 +15904,7 @@ class OutputControlIlluminanceMapStyle(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlIlluminanceMapStyleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c100.OutputControlIlluminanceMapStyle  # type: ignore[assignment]
 
 class _OutputControlIlluminanceMapStyleFields(TypedDict, total=False):
     column_separator: Literal["", "Comma", "Fixed", "Tab"] | None
@@ -14896,6 +15946,7 @@ class AnyZoneInfiltrationDesignFlowRate(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneInfiltrationDesignFlowRateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.AnyZoneInfiltrationDesignFlowRate  # type: ignore[assignment]
 
 class _AnyZoneInfiltrationDesignFlowRateFields(_ZoneInfiltrationDesignFlowRateCommonFields, total=False): ...
 
@@ -14914,6 +15965,7 @@ class ZoneInfiltrationDesignFlowRate(AnyZoneInfiltrationDesignFlowRate):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneInfiltrationDesignFlowRateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.ZoneInfiltrationDesignFlowRate  # type: ignore[assignment]
 
 class _ZoneInfiltrationDesignFlowRateFields(_ZoneInfiltrationDesignFlowRateCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -14945,6 +15997,7 @@ class AnyZoneInfiltrationEffectiveLeakageArea(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneInfiltrationEffectiveLeakageAreaFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.AnyZoneInfiltrationEffectiveLeakageArea  # type: ignore[assignment]
 
 class _AnyZoneInfiltrationEffectiveLeakageAreaFields(
     _ZoneInfiltrationEffectiveLeakageAreaCommonFields, total=False
@@ -14959,6 +16012,7 @@ class ZoneInfiltrationEffectiveLeakageArea(AnyZoneInfiltrationEffectiveLeakageAr
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneInfiltrationEffectiveLeakageAreaFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c50.ZoneInfiltrationEffectiveLeakageArea  # type: ignore[assignment]
 
 class _ZoneInfiltrationEffectiveLeakageAreaFields(_ZoneInfiltrationEffectiveLeakageAreaCommonFields, total=False):
     zone_or_space_name: str | None
@@ -14990,6 +16044,7 @@ class AnyZoneInfiltrationFlowCoefficient(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneInfiltrationFlowCoefficientFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c63.AnyZoneInfiltrationFlowCoefficient  # type: ignore[assignment]
 
 class _AnyZoneInfiltrationFlowCoefficientFields(_ZoneInfiltrationFlowCoefficientCommonFields, total=False): ...
 
@@ -15002,6 +16057,7 @@ class ZoneInfiltrationFlowCoefficient(AnyZoneInfiltrationFlowCoefficient):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneInfiltrationFlowCoefficientFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.ZoneInfiltrationFlowCoefficient  # type: ignore[assignment]
 
 class _ZoneInfiltrationFlowCoefficientFields(_ZoneInfiltrationFlowCoefficientCommonFields, total=False):
     zone_or_space_name: str | None
@@ -15084,6 +16140,7 @@ class AnyZoneVentilationDesignFlowRate(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneVentilationDesignFlowRateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c33.AnyZoneVentilationDesignFlowRate  # type: ignore[assignment]
 
 class _AnyZoneVentilationDesignFlowRateFields(_ZoneVentilationDesignFlowRateCommonFields, total=False): ...
 
@@ -15100,6 +16157,7 @@ class ZoneVentilationDesignFlowRate(AnyZoneVentilationDesignFlowRate):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneVentilationDesignFlowRateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.ZoneVentilationDesignFlowRate  # type: ignore[assignment]
 
 class _ZoneVentilationDesignFlowRateFields(_ZoneVentilationDesignFlowRateCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -15166,6 +16224,7 @@ class AnyZoneVentilationWindandStackOpenArea(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneVentilationWindandStackOpenAreaFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.AnyZoneVentilationWindandStackOpenArea  # type: ignore[assignment]
 
 class _AnyZoneVentilationWindandStackOpenAreaFields(_ZoneVentilationWindandStackOpenAreaCommonFields, total=False): ...
 
@@ -15178,6 +16237,7 @@ class ZoneVentilationWindandStackOpenArea(AnyZoneVentilationWindandStackOpenArea
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneVentilationWindandStackOpenAreaFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.ZoneVentilationWindandStackOpenArea  # type: ignore[assignment]
 
 class _ZoneVentilationWindandStackOpenAreaFields(_ZoneVentilationWindandStackOpenAreaCommonFields, total=False):
     zone_or_space_name: str | None
@@ -15196,6 +16256,7 @@ class ZoneAirBalanceOutdoorAir(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneAirBalanceOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.ZoneAirBalanceOutdoorAir  # type: ignore[assignment]
 
 class _ZoneAirBalanceOutdoorAirFields(TypedDict, total=False):
     zone_name: str | None
@@ -15237,6 +16298,7 @@ class AnyZoneMixing(_TypedIDFObject):
     """This schedule contains the outdoor temperature versus time above which mixing is shutoff."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneMixingFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c115.AnyZoneMixing  # type: ignore[assignment]
 
 class _AnyZoneMixingFields(_ZoneMixingCommonFields, total=False): ...
 
@@ -15259,6 +16321,7 @@ class ZoneMixing(AnyZoneMixing):
     """This schedule contains the source zone or space temperature versus time above which mixing is shutoff.; Since: 22.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneMixingFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.ZoneMixing  # type: ignore[assignment]
 
 class _ZoneMixingFields(_ZoneMixingCommonFields, total=False):
     zone_or_space_name: str | None
@@ -15305,6 +16368,7 @@ class AnyZoneCrossMixing(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneCrossMixingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.AnyZoneCrossMixing  # type: ignore[assignment]
 
 class _AnyZoneCrossMixingFields(_ZoneCrossMixingCommonFields, total=False): ...
 
@@ -15327,6 +16391,7 @@ class ZoneCrossMixing(AnyZoneCrossMixing):
     """This schedule contains the source zone or space temperature versus time above which cross mixing is shutoff.; Since: 22.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneCrossMixingFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.ZoneCrossMixing  # type: ignore[assignment]
 
 class _ZoneCrossMixingFields(_ZoneCrossMixingCommonFields, total=False):
     zone_or_space_name: str | None
@@ -15358,6 +16423,7 @@ class AnyZoneRefrigerationDoorMixing(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneRefrigerationDoorMixingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c108.AnyZoneRefrigerationDoorMixing  # type: ignore[assignment]
 
 class _AnyZoneRefrigerationDoorMixingFields(_ZoneRefrigerationDoorMixingCommonFields, total=False): ...
 
@@ -15372,6 +16438,7 @@ class ZoneRefrigerationDoorMixing(AnyZoneRefrigerationDoorMixing):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneRefrigerationDoorMixingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.ZoneRefrigerationDoorMixing  # type: ignore[assignment]
 
 class _ZoneRefrigerationDoorMixingFields(_ZoneRefrigerationDoorMixingCommonFields, total=False):
     zone_or_space_name_1: str | None
@@ -15448,6 +16515,7 @@ class AnyZoneEarthtube(_TypedIDFObject):
     """'D' in Equation; Default: 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneEarthtubeFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c63.AnyZoneEarthtube  # type: ignore[assignment]
 
 class _AnyZoneEarthtubeFields(_ZoneEarthtubeCommonFields, total=False): ...
 
@@ -15460,6 +16528,7 @@ class ZoneEarthtube(AnyZoneEarthtube):
     """Since: 23.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneEarthtubeFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.ZoneEarthtube  # type: ignore[assignment]
 
 class _ZoneEarthtubeFields(_ZoneEarthtubeCommonFields, total=False):
     earth_tube_model_type: Literal["", "Basic", "Vertical"] | None
@@ -15483,6 +16552,7 @@ class ZoneEarthtubeParameters(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneEarthtubeParametersFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c57.ZoneEarthtubeParameters  # type: ignore[assignment]
 
 class _ZoneEarthtubeParametersFields(TypedDict, total=False):
     earth_tube_model_parameters_name: str | None
@@ -15536,6 +16606,7 @@ class AnyZoneCoolTowerShower(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneCoolTowerShowerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c81.AnyZoneCoolTowerShower  # type: ignore[assignment]
 
 class _AnyZoneCoolTowerShowerFields(_ZoneCoolTowerShowerCommonFields, total=False): ...
 
@@ -15548,6 +16619,7 @@ class ZoneCoolTowerShower(AnyZoneCoolTowerShower):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneCoolTowerShowerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c12.ZoneCoolTowerShower  # type: ignore[assignment]
 
 class _ZoneCoolTowerShowerFields(_ZoneCoolTowerShowerCommonFields, total=False):
     zone_or_space_name: str | None
@@ -15696,6 +16768,7 @@ class AnyZoneThermalChimney(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneThermalChimneyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.AnyZoneThermalChimney  # type: ignore[assignment]
 
 class _AnyZoneThermalChimneyFields(_ZoneThermalChimneyCommonFields, total=False): ...
 
@@ -15786,6 +16859,7 @@ class ZoneThermalChimney(AnyZoneThermalChimney):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneThermalChimneyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.ZoneThermalChimney  # type: ignore[assignment]
 
 class _ZoneThermalChimneyFields(_ZoneThermalChimneyCommonFields, total=False):
     zone_or_space_name_1: str | None
@@ -15896,6 +16970,7 @@ class AnyAirflowNetworkSimulationControl(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirflowNetworkSimulationControlFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.AnyAirflowNetworkSimulationControl  # type: ignore[assignment]
 
 class _AnyAirflowNetworkSimulationControlFields(_AirflowNetworkSimulationControlCommonFields, total=False):
     maximum_number_of_iterations: int | None
@@ -15913,6 +16988,7 @@ class AirflowNetworkSimulationControl(AnyAirflowNetworkSimulationControl):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkSimulationControlFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.AirflowNetworkSimulationControl  # type: ignore[assignment]
 
 class _AirflowNetworkSimulationControlFields(_AirflowNetworkSimulationControlCommonFields, total=False):
     maximum_number_of_iterations: int | None
@@ -15952,6 +17028,7 @@ class AirflowNetworkMultiZoneZone(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkMultiZoneZoneFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.AirflowNetworkMultiZoneZone  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneZoneFields(TypedDict, total=False):
     zone_name: str | None
@@ -16020,6 +17097,7 @@ class AirflowNetworkMultiZoneSurface(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.AirflowNetworkMultiZoneSurface  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneSurfaceFields(TypedDict, total=False):
     surface_name: str | None
@@ -16068,6 +17146,7 @@ class AirflowNetworkMultiZoneReferenceCrackConditions(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneReferenceCrackConditionsFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.AirflowNetworkMultiZoneReferenceCrackConditions  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneReferenceCrackConditionsFields(TypedDict, total=False):
     reference_temperature: float | None
@@ -16087,6 +17166,7 @@ class AirflowNetworkMultiZoneSurfaceCrack(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceCrackFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c89.AirflowNetworkMultiZoneSurfaceCrack  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneSurfaceCrackFields(TypedDict, total=False):
     air_mass_flow_coefficient_at_reference_conditions: float | None
@@ -16111,6 +17191,7 @@ class AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceEffectiveLeakageAreaFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneSurfaceEffectiveLeakageAreaFields(TypedDict, total=False):
     effective_leakage_area: float | None
@@ -16132,6 +17213,7 @@ class AirflowNetworkMultiZoneSpecifiedFlowRate(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneSpecifiedFlowRateFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.AirflowNetworkMultiZoneSpecifiedFlowRate  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneSpecifiedFlowRateFields(TypedDict, total=False):
     air_flow_value: float | None
@@ -16228,6 +17310,7 @@ class AnyAirflowNetworkMultiZoneComponentDetailedOpening(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirflowNetworkMultiZoneComponentDetailedOpeningFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.AnyAirflowNetworkMultiZoneComponentDetailedOpening  # type: ignore[assignment]
 
 class _AnyAirflowNetworkMultiZoneComponentDetailedOpeningFields(
     _AirflowNetworkMultiZoneComponentDetailedOpeningCommonFields, total=False
@@ -16246,6 +17329,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening(AnyAirflowNetworkMultiZone
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneComponentDetailedOpeningFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c26.AirflowNetworkMultiZoneComponentDetailedOpening  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneComponentDetailedOpeningFields(
     _AirflowNetworkMultiZoneComponentDetailedOpeningCommonFields, total=False
@@ -16270,6 +17354,7 @@ class AirflowNetworkMultiZoneComponentSimpleOpening(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneComponentSimpleOpeningFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.AirflowNetworkMultiZoneComponentSimpleOpening  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneComponentSimpleOpeningFields(TypedDict, total=False):
     air_mass_flow_coefficient_when_opening_is_closed: float | None
@@ -16295,6 +17380,7 @@ class AirflowNetworkMultiZoneComponentHorizontalOpening(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneComponentHorizontalOpeningFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c39.AirflowNetworkMultiZoneComponentHorizontalOpening  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneComponentHorizontalOpeningFields(TypedDict, total=False):
     air_mass_flow_coefficient_when_opening_is_closed: float | None
@@ -16318,6 +17404,7 @@ class AirflowNetworkMultiZoneComponentZoneExhaustFan(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneComponentZoneExhaustFanFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.AirflowNetworkMultiZoneComponentZoneExhaustFan  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneComponentZoneExhaustFanFields(TypedDict, total=False):
     air_mass_flow_coefficient_when_the_zone_exhaust_fan_is_off_at_reference_conditions: float | None
@@ -16339,6 +17426,7 @@ class AirflowNetworkMultiZoneExternalNode(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkMultiZoneExternalNodeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.AirflowNetworkMultiZoneExternalNode  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneExternalNodeFields(TypedDict, total=False):
     external_node_height: float | None
@@ -16428,6 +17516,7 @@ class AirflowNetworkMultiZoneWindPressureCoefficientArray(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneWindPressureCoefficientArrayFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c116.AirflowNetworkMultiZoneWindPressureCoefficientArray  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneWindPressureCoefficientArrayFields(TypedDict, total=False):
     wind_direction_1: float | None
@@ -16551,6 +17640,7 @@ class AirflowNetworkMultiZoneWindPressureCoefficientValues(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneWindPressureCoefficientValuesFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c15.AirflowNetworkMultiZoneWindPressureCoefficientValues  # type: ignore[assignment]
 
 class _AirflowNetworkMultiZoneWindPressureCoefficientValuesFields(TypedDict, total=False):
     airflownetwork_multizone_windpressurecoefficientarray_name: str | None
@@ -16614,6 +17704,7 @@ class AirflowNetworkZoneControlPressureController(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkZoneControlPressureControllerFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c2.AirflowNetworkZoneControlPressureController  # type: ignore[assignment]
 
 class _AirflowNetworkZoneControlPressureControllerFields(TypedDict, total=False):
     control_zone_name: str | None
@@ -16674,6 +17765,7 @@ class AnyAirflowNetworkDistributionNode(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirflowNetworkDistributionNodeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.AnyAirflowNetworkDistributionNode  # type: ignore[assignment]
 
 class _AnyAirflowNetworkDistributionNodeFields(_AirflowNetworkDistributionNodeCommonFields, total=False):
     component_object_type_or_node_type: (
@@ -16712,6 +17804,7 @@ class AirflowNetworkDistributionNode(AnyAirflowNetworkDistributionNode):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkDistributionNodeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.AirflowNetworkDistributionNode  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionNodeFields(_AirflowNetworkDistributionNodeCommonFields, total=False):
     component_object_type_or_node_type: (
@@ -16743,6 +17836,7 @@ class AirflowNetworkDistributionComponentLeak(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentLeakFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.AirflowNetworkDistributionComponentLeak  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentLeakFields(TypedDict, total=False):
     air_mass_flow_coefficient: float | None
@@ -16766,6 +17860,7 @@ class AirflowNetworkDistributionComponentLeakageRatio(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentLeakageRatioFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c116.AirflowNetworkDistributionComponentLeakageRatio  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentLeakageRatioFields(TypedDict, total=False):
     effective_leakage_ratio: float | None
@@ -16801,6 +17896,7 @@ class AirflowNetworkDistributionComponentDuct(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentDuctFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.AirflowNetworkDistributionComponentDuct  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentDuctFields(TypedDict, total=False):
     duct_length: float | None
@@ -16835,6 +17931,7 @@ class AnyAirflowNetworkDistributionComponentFan(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirflowNetworkDistributionComponentFanFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.AnyAirflowNetworkDistributionComponentFan  # type: ignore[assignment]
 
 class _AnyAirflowNetworkDistributionComponentFanFields(
     _AirflowNetworkDistributionComponentFanCommonFields, total=False
@@ -16852,6 +17949,7 @@ class AirflowNetworkDistributionComponentFan(AnyAirflowNetworkDistributionCompon
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkDistributionComponentFanFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c63.AirflowNetworkDistributionComponentFan  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentFanFields(_AirflowNetworkDistributionComponentFanCommonFields, total=False):
     supply_fan_object_type: (
@@ -16927,6 +18025,7 @@ class AnyAirflowNetworkDistributionComponentCoil(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirflowNetworkDistributionComponentCoilFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.AnyAirflowNetworkDistributionComponentCoil  # type: ignore[assignment]
 
 class _AnyAirflowNetworkDistributionComponentCoilFields(
     _AirflowNetworkDistributionComponentCoilCommonFields, total=False
@@ -16986,6 +18085,7 @@ class AirflowNetworkDistributionComponentCoil(AnyAirflowNetworkDistributionCompo
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentCoilFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c63.AirflowNetworkDistributionComponentCoil  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentCoilFields(_AirflowNetworkDistributionComponentCoilCommonFields, total=False):
     coil_object_type: (
@@ -17040,6 +18140,7 @@ class AirflowNetworkDistributionComponentHeatExchanger(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentHeatExchangerFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.AirflowNetworkDistributionComponentHeatExchanger  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentHeatExchangerFields(TypedDict, total=False):
     heatexchanger_name: str | None
@@ -17074,6 +18175,7 @@ class AirflowNetworkDistributionComponentTerminalUnit(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentTerminalUnitFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.AirflowNetworkDistributionComponentTerminalUnit  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentTerminalUnitFields(TypedDict, total=False):
     terminal_unit_name: str | None
@@ -17095,6 +18197,7 @@ class AirflowNetworkDistributionComponentConstantPressureDrop(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentConstantPressureDropFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.AirflowNetworkDistributionComponentConstantPressureDrop  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentConstantPressureDropFields(TypedDict, total=False):
     pressure_difference_across_the_component: float | None
@@ -17120,6 +18223,7 @@ class AnyAirflowNetworkDistributionComponentOutdoorAirFlow(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirflowNetworkDistributionComponentOutdoorAirFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.AnyAirflowNetworkDistributionComponentOutdoorAirFlow  # type: ignore[assignment]
 
 class _AnyAirflowNetworkDistributionComponentOutdoorAirFlowFields(
     _AirflowNetworkDistributionComponentOutdoorAirFlowCommonFields, total=False
@@ -17137,6 +18241,7 @@ class AirflowNetworkDistributionComponentOutdoorAirFlow(AnyAirflowNetworkDistrib
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentOutdoorAirFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c127.AirflowNetworkDistributionComponentOutdoorAirFlow  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentOutdoorAirFlowFields(
     _AirflowNetworkDistributionComponentOutdoorAirFlowCommonFields, total=False
@@ -17164,6 +18269,7 @@ class AnyAirflowNetworkDistributionComponentReliefAirFlow(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirflowNetworkDistributionComponentReliefAirFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c64.AnyAirflowNetworkDistributionComponentReliefAirFlow  # type: ignore[assignment]
 
 class _AnyAirflowNetworkDistributionComponentReliefAirFlowFields(
     _AirflowNetworkDistributionComponentReliefAirFlowCommonFields, total=False
@@ -17181,6 +18287,7 @@ class AirflowNetworkDistributionComponentReliefAirFlow(AnyAirflowNetworkDistribu
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentReliefAirFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c32.AirflowNetworkDistributionComponentReliefAirFlow  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionComponentReliefAirFlowFields(
     _AirflowNetworkDistributionComponentReliefAirFlowCommonFields, total=False
@@ -17202,6 +18309,7 @@ class AirflowNetworkDistributionLinkage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkDistributionLinkageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c21.AirflowNetworkDistributionLinkage  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionLinkageFields(TypedDict, total=False):
     node_1_name: str | None
@@ -17211,6 +18319,13 @@ class _AirflowNetworkDistributionLinkageFields(TypedDict, total=False):
 
 class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`AirflowNetworkDistributionDuctViewFactors`."""
+
+    surface_name: str | None
+    surface_view_factor: float | None
+    def as_dict(self) -> AirflowNetworkDistributionDuctViewFactorsSurfacesItem: ...  # type: ignore[override]
+
+class AirflowNetworkDistributionDuctViewFactorsSurfacesItem(TypedDict, total=False):
+    """One group of :class:`AirflowNetworkDistributionDuctViewFactorsSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     surface_view_factor: float | None
@@ -17231,12 +18346,15 @@ class AirflowNetworkDistributionDuctViewFactors(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionDuctViewFactorsFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c67.AirflowNetworkDistributionDuctViewFactors  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionDuctViewFactorsFields(TypedDict, total=False):
     linkage_name: str | None
     duct_surface_exposure_fraction: float | None
     duct_surface_emittance: float | None
-    surfaces: list[Any]
+    surfaces: Sequence[
+        AirflowNetworkDistributionDuctViewFactorsSurfacesItem | AirflowNetworkDistributionDuctViewFactorsSurfacesGroup
+    ]
 
 class AirflowNetworkDistributionDuctSizing(_TypedIDFObject):
     """This object defines required parameters for duct sizing in an Airflow Network simulation. To activate duct sizing, se...; Since: 22.2.0"""
@@ -17259,6 +18377,7 @@ class AirflowNetworkDistributionDuctSizing(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkDistributionDuctSizingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.AirflowNetworkDistributionDuctSizing  # type: ignore[assignment]
 
 class _AirflowNetworkDistributionDuctSizingFields(TypedDict, total=False):
     duct_sizing_method: Literal["", "MaximumVelocity", "PressureLoss", "PressureLossWithMaximumVelocity"] | None
@@ -17297,6 +18416,7 @@ class AirflowNetworkOccupantVentilationControl(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirflowNetworkOccupantVentilationControlFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.AirflowNetworkOccupantVentilationControl  # type: ignore[assignment]
 
 class _AirflowNetworkOccupantVentilationControlFields(TypedDict, total=False):
     minimum_opening_time: float | None
@@ -17322,6 +18442,7 @@ class AirflowNetworkIntraZoneNode(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkIntraZoneNodeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c66.AirflowNetworkIntraZoneNode  # type: ignore[assignment]
 
 class _AirflowNetworkIntraZoneNodeFields(TypedDict, total=False):
     roomair_node_airflownetwork_name: str | None
@@ -17343,6 +18464,7 @@ class AirflowNetworkIntraZoneLinkage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkIntraZoneLinkageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.AirflowNetworkIntraZoneLinkage  # type: ignore[assignment]
 
 class _AirflowNetworkIntraZoneLinkageFields(TypedDict, total=False):
     node_1_name: str | None
@@ -17364,6 +18486,7 @@ class DuctLossConduction(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DuctLossConductionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c58.DuctLossConduction  # type: ignore[assignment]
 
 class _DuctLossConductionFields(TypedDict, total=False):
     airloophvac_name: str | None
@@ -17380,6 +18503,7 @@ class DuctLossLeakage(_TypedIDFObject):
     airflownetwork_distribution_linkage_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DuctLossLeakageFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c71.DuctLossLeakage  # type: ignore[assignment]
 
 class _DuctLossLeakageFields(TypedDict, total=False):
     airloophvac_name: str | None
@@ -17392,6 +18516,7 @@ class DuctLossMakeupAir(_TypedIDFObject):
     airflownetwork_distribution_linkage_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DuctLossMakeupAirFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.DuctLossMakeupAir  # type: ignore[assignment]
 
 class _DuctLossMakeupAirFields(TypedDict, total=False):
     airloophvac_name: str | None
@@ -17410,6 +18535,7 @@ class ExteriorLights(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorLightsFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c113.ExteriorLights  # type: ignore[assignment]
 
 class _ExteriorLightsFields(TypedDict, total=False):
     schedule_name: str | None
@@ -17477,6 +18603,7 @@ class AnyExteriorFuelEquipment(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyExteriorFuelEquipmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c29.AnyExteriorFuelEquipment  # type: ignore[assignment]
 
 class _AnyExteriorFuelEquipmentFields(_ExteriorFuelEquipmentCommonFields, total=False):
     fuel_use_type: (
@@ -17520,6 +18647,7 @@ class ExteriorFuelEquipment(AnyExteriorFuelEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorFuelEquipmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c85.ExteriorFuelEquipment  # type: ignore[assignment]
 
 class _ExteriorFuelEquipmentFields(_ExteriorFuelEquipmentCommonFields, total=False):
     fuel_use_type: (
@@ -17557,6 +18685,7 @@ class ExteriorWaterEquipment(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorWaterEquipmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.ExteriorWaterEquipment  # type: ignore[assignment]
 
 class _ExteriorWaterEquipmentFields(TypedDict, total=False):
     fuel_use_type: Literal["", "Water"] | None
@@ -17579,6 +18708,7 @@ class HVACTemplateThermostat(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateThermostatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c123.HVACTemplateThermostat  # type: ignore[assignment]
 
 class _HVACTemplateThermostatFields(TypedDict, total=False):
     heating_setpoint_schedule_name: str | None
@@ -17657,6 +18787,7 @@ class HVACTemplateZoneIdealLoadsAirSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneIdealLoadsAirSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c121.HVACTemplateZoneIdealLoadsAirSystem  # type: ignore[assignment]
 
 class _HVACTemplateZoneIdealLoadsAirSystemFields(TypedDict, total=False):
     zone_name: str | None
@@ -17729,6 +18860,7 @@ class HVACTemplateZoneBaseboardHeat(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneBaseboardHeatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c14.HVACTemplateZoneBaseboardHeat  # type: ignore[assignment]
 
 class _HVACTemplateZoneBaseboardHeatFields(TypedDict, total=False):
     zone_name: str | None
@@ -17891,6 +19023,7 @@ class AnyHVACTemplateZoneFanCoil(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHVACTemplateZoneFanCoilFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c45.AnyHVACTemplateZoneFanCoil  # type: ignore[assignment]
 
 class _AnyHVACTemplateZoneFanCoilFields(_HVACTemplateZoneFanCoilCommonFields, total=False):
     cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None
@@ -17924,6 +19057,7 @@ class HVACTemplateZoneFanCoil(AnyHVACTemplateZoneFanCoil):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneFanCoilFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.HVACTemplateZoneFanCoil  # type: ignore[assignment]
 
 class _HVACTemplateZoneFanCoilFields(_HVACTemplateZoneFanCoilCommonFields, total=False):
     cooling_coil_type: (
@@ -18080,6 +19214,7 @@ class AnyHVACTemplateZonePTAC(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHVACTemplateZonePTACFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c93.AnyHVACTemplateZonePTAC  # type: ignore[assignment]
 
 class _AnyHVACTemplateZonePTACFields(_HVACTemplateZonePTACCommonFields, total=False): ...
 
@@ -18092,6 +19227,7 @@ class HVACTemplateZonePTAC(AnyHVACTemplateZonePTAC):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZonePTACFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c89.HVACTemplateZonePTAC  # type: ignore[assignment]
 
 class _HVACTemplateZonePTACFields(_HVACTemplateZonePTACCommonFields, total=False):
     capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None
@@ -18264,6 +19400,7 @@ class AnyHVACTemplateZonePTHP(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHVACTemplateZonePTHPFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.AnyHVACTemplateZonePTHP  # type: ignore[assignment]
 
 class _AnyHVACTemplateZonePTHPFields(_HVACTemplateZonePTHPCommonFields, total=False): ...
 
@@ -18276,6 +19413,7 @@ class HVACTemplateZonePTHP(AnyHVACTemplateZonePTHP):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZonePTHPFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.HVACTemplateZonePTHP  # type: ignore[assignment]
 
 class _HVACTemplateZonePTHPFields(_HVACTemplateZonePTHPCommonFields, total=False):
     capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None
@@ -18427,6 +19565,7 @@ class AnyHVACTemplateZoneWaterToAirHeatPump(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHVACTemplateZoneWaterToAirHeatPumpFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.AnyHVACTemplateZoneWaterToAirHeatPump  # type: ignore[assignment]
 
 class _AnyHVACTemplateZoneWaterToAirHeatPumpFields(_HVACTemplateZoneWaterToAirHeatPumpCommonFields, total=False): ...
 
@@ -18439,6 +19578,7 @@ class HVACTemplateZoneWaterToAirHeatPump(AnyHVACTemplateZoneWaterToAirHeatPump):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneWaterToAirHeatPumpFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.HVACTemplateZoneWaterToAirHeatPump  # type: ignore[assignment]
 
 class _HVACTemplateZoneWaterToAirHeatPumpFields(_HVACTemplateZoneWaterToAirHeatPumpCommonFields, total=False):
     latent_capacity_time_constant: float | None
@@ -18544,6 +19684,7 @@ class HVACTemplateZoneVRF(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneVRFFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c108.HVACTemplateZoneVRF  # type: ignore[assignment]
 
 class _HVACTemplateZoneVRFFields(TypedDict, total=False):
     zone_name: str | None
@@ -18656,6 +19797,7 @@ class HVACTemplateZoneUnitary(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneUnitaryFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c69.HVACTemplateZoneUnitary  # type: ignore[assignment]
 
 class _HVACTemplateZoneUnitaryFields(TypedDict, total=False):
     zone_name: str | None
@@ -18769,6 +19911,7 @@ class HVACTemplateZoneVAV(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneVAVFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c26.HVACTemplateZoneVAV  # type: ignore[assignment]
 
 class _HVACTemplateZoneVAVFields(TypedDict, total=False):
     zone_name: str | None
@@ -18889,6 +20032,7 @@ class HVACTemplateZoneVAVFanPowered(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneVAVFanPoweredFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c32.HVACTemplateZoneVAVFanPowered  # type: ignore[assignment]
 
 class _HVACTemplateZoneVAVFanPoweredFields(TypedDict, total=False):
     zone_name: str | None
@@ -18998,6 +20142,7 @@ class HVACTemplateZoneVAVHeatAndCool(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneVAVHeatAndCoolFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.HVACTemplateZoneVAVHeatAndCool  # type: ignore[assignment]
 
 class _HVACTemplateZoneVAVHeatAndCoolFields(TypedDict, total=False):
     zone_name: str | None
@@ -19099,6 +20244,7 @@ class HVACTemplateZoneConstantVolume(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneConstantVolumeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c99.HVACTemplateZoneConstantVolume  # type: ignore[assignment]
 
 class _HVACTemplateZoneConstantVolumeFields(TypedDict, total=False):
     zone_name: str | None
@@ -19199,6 +20345,7 @@ class HVACTemplateZoneDualDuct(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneDualDuctFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.HVACTemplateZoneDualDuct  # type: ignore[assignment]
 
 class _HVACTemplateZoneDualDuctFields(TypedDict, total=False):
     zone_name: str | None
@@ -19386,6 +20533,7 @@ class AnyHVACTemplateSystemVRF(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHVACTemplateSystemVRFFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c81.AnyHVACTemplateSystemVRF  # type: ignore[assignment]
 
 class _AnyHVACTemplateSystemVRFFields(_HVACTemplateSystemVRFCommonFields, total=False):
     number_of_compressors: int | None
@@ -19416,6 +20564,7 @@ class HVACTemplateSystemVRF(AnyHVACTemplateSystemVRF):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemVRFFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.HVACTemplateSystemVRF  # type: ignore[assignment]
 
 class _HVACTemplateSystemVRFFields(_HVACTemplateSystemVRFCommonFields, total=False):
     number_of_compressors: int | None
@@ -19553,6 +20702,7 @@ class HVACTemplateSystemUnitary(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemUnitaryFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c42.HVACTemplateSystemUnitary  # type: ignore[assignment]
 
 class _HVACTemplateSystemUnitaryFields(TypedDict, total=False):
     system_availability_schedule_name: str | None
@@ -19761,6 +20911,7 @@ class HVACTemplateSystemUnitaryHeatPumpAirToAir(_TypedIDFObject):
         /,
         **kwargs: Unpack[_HVACTemplateSystemUnitaryHeatPumpAirToAirFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.HVACTemplateSystemUnitaryHeatPumpAirToAir  # type: ignore[assignment]
 
 class _HVACTemplateSystemUnitaryHeatPumpAirToAirFields(TypedDict, total=False):
     system_availability_schedule_name: str | None
@@ -20148,6 +21299,7 @@ class AnyHVACTemplateSystemUnitarySystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHVACTemplateSystemUnitarySystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.AnyHVACTemplateSystemUnitarySystem  # type: ignore[assignment]
 
 class _AnyHVACTemplateSystemUnitarySystemFields(_HVACTemplateSystemUnitarySystemCommonFields, total=False):
     number_of_speeds_for_cooling: int | None
@@ -20164,6 +21316,7 @@ class HVACTemplateSystemUnitarySystem(AnyHVACTemplateSystemUnitarySystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemUnitarySystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.HVACTemplateSystemUnitarySystem  # type: ignore[assignment]
 
 class _HVACTemplateSystemUnitarySystemFields(_HVACTemplateSystemUnitarySystemCommonFields, total=False):
     number_of_speeds_for_cooling: int | None
@@ -20331,6 +21484,7 @@ class HVACTemplateSystemVAV(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemVAVFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c111.HVACTemplateSystemVAV  # type: ignore[assignment]
 
 class _HVACTemplateSystemVAVFields(TypedDict, total=False):
     system_availability_schedule_name: str | None
@@ -20587,6 +21741,7 @@ class HVACTemplateSystemPackagedVAV(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemPackagedVAVFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.HVACTemplateSystemPackagedVAV  # type: ignore[assignment]
 
 class _HVACTemplateSystemPackagedVAVFields(TypedDict, total=False):
     system_availability_schedule_name: str | None
@@ -20849,6 +22004,7 @@ class HVACTemplateSystemConstantVolume(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemConstantVolumeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c91.HVACTemplateSystemConstantVolume  # type: ignore[assignment]
 
 class _HVACTemplateSystemConstantVolumeFields(TypedDict, total=False):
     system_availability_schedule_name: str | None
@@ -21193,6 +22349,7 @@ class HVACTemplateSystemDualDuct(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemDualDuctFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.HVACTemplateSystemDualDuct  # type: ignore[assignment]
 
 class _HVACTemplateSystemDualDuctFields(TypedDict, total=False):
     system_availability_schedule_name: str | None
@@ -21464,6 +22621,7 @@ class HVACTemplateSystemDedicatedOutdoorAir(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemDedicatedOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.HVACTemplateSystemDedicatedOutdoorAir  # type: ignore[assignment]
 
 class _HVACTemplateSystemDedicatedOutdoorAirFields(TypedDict, total=False):
     system_availability_schedule_name: str | None
@@ -21646,6 +22804,7 @@ class HVACTemplatePlantChilledWaterLoop(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantChilledWaterLoopFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.HVACTemplatePlantChilledWaterLoop  # type: ignore[assignment]
 
 class _HVACTemplatePlantChilledWaterLoopFields(TypedDict, total=False):
     pump_schedule_name: str | None
@@ -21760,6 +22919,7 @@ class HVACTemplatePlantChiller(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantChillerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.HVACTemplatePlantChiller  # type: ignore[assignment]
 
 class _HVACTemplatePlantChillerFields(TypedDict, total=False):
     chiller_type: (
@@ -21795,6 +22955,7 @@ class HVACTemplatePlantChillerObjectReference(_TypedIDFObject):
         /,
         **kwargs: Unpack[_HVACTemplatePlantChillerObjectReferenceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c24.HVACTemplatePlantChillerObjectReference  # type: ignore[assignment]
 
 class _HVACTemplatePlantChillerObjectReferenceFields(TypedDict, total=False):
     chiller_object_type: Literal["", "Chiller:Electric:EIR", "Chiller:Electric:ReformulatedEIR"] | None
@@ -21825,6 +22986,7 @@ class HVACTemplatePlantTower(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantTowerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.HVACTemplatePlantTower  # type: ignore[assignment]
 
 class _HVACTemplatePlantTowerFields(TypedDict, total=False):
     tower_type: Literal["SingleSpeed", "TwoSpeed"] | None
@@ -21854,6 +23016,7 @@ class HVACTemplatePlantTowerObjectReference(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantTowerObjectReferenceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.HVACTemplatePlantTowerObjectReference  # type: ignore[assignment]
 
 class _HVACTemplatePlantTowerObjectReferenceFields(TypedDict, total=False):
     cooling_tower_object_type: (
@@ -21937,6 +23100,7 @@ class HVACTemplatePlantHotWaterLoop(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantHotWaterLoopFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c69.HVACTemplatePlantHotWaterLoop  # type: ignore[assignment]
 
 class _HVACTemplatePlantHotWaterLoopFields(TypedDict, total=False):
     pump_schedule_name: str | None
@@ -22051,6 +23215,7 @@ class AnyHVACTemplatePlantBoiler(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHVACTemplatePlantBoilerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c18.AnyHVACTemplatePlantBoiler  # type: ignore[assignment]
 
 class _AnyHVACTemplatePlantBoilerFields(_HVACTemplatePlantBoilerCommonFields, total=False):
     fuel_type: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
@@ -22078,6 +23243,7 @@ class HVACTemplatePlantBoiler(AnyHVACTemplatePlantBoiler):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantBoilerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c15.HVACTemplatePlantBoiler  # type: ignore[assignment]
 
 class _HVACTemplatePlantBoilerFields(_HVACTemplatePlantBoilerCommonFields, total=False):
     fuel_type: (
@@ -22111,6 +23277,7 @@ class HVACTemplatePlantBoilerObjectReference(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantBoilerObjectReferenceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.HVACTemplatePlantBoilerObjectReference  # type: ignore[assignment]
 
 class _HVACTemplatePlantBoilerObjectReferenceFields(TypedDict, total=False):
     boiler_object_type: Literal["", "Boiler:HotWater"] | None
@@ -22184,6 +23351,7 @@ class HVACTemplatePlantMixedWaterLoop(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantMixedWaterLoopFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c99.HVACTemplatePlantMixedWaterLoop  # type: ignore[assignment]
 
 class _HVACTemplatePlantMixedWaterLoopFields(TypedDict, total=False):
     pump_schedule_name: str | None
@@ -22291,6 +23459,7 @@ class AnyDesignSpecificationOutdoorAir(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyDesignSpecificationOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.AnyDesignSpecificationOutdoorAir  # type: ignore[assignment]
 
 class _AnyDesignSpecificationOutdoorAirFields(_DesignSpecificationOutdoorAirCommonFields, total=False):
     outdoor_air_method: (
@@ -22331,6 +23500,7 @@ class DesignSpecificationOutdoorAir(AnyDesignSpecificationOutdoorAir):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c90.DesignSpecificationOutdoorAir  # type: ignore[assignment]
 
 class _DesignSpecificationOutdoorAirFields(_DesignSpecificationOutdoorAirCommonFields, total=False):
     outdoor_air_method: (
@@ -22354,6 +23524,13 @@ class DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup(_TypedExtensibleGrou
 
     space_name: str | None
     space_design_specification_outdoor_air_object_name: str | None
+    def as_dict(self) -> DesignSpecificationOutdoorAirSpaceListSpaceSpecsItem: ...  # type: ignore[override]
+
+class DesignSpecificationOutdoorAirSpaceListSpaceSpecsItem(TypedDict, total=False):
+    """One group of :class:`DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    space_name: str | None
+    space_design_specification_outdoor_air_object_name: str | None
 
 class DesignSpecificationOutdoorAirSpaceList(_TypedIDFObject):
     """Defines a list of DesignSpecification:OutdoorAir names which can be referenced as a group. The DesignSpecification:Ou...; Since: 9.6.0"""
@@ -22363,9 +23540,12 @@ class DesignSpecificationOutdoorAirSpaceList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationOutdoorAirSpaceListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c102.DesignSpecificationOutdoorAirSpaceList  # type: ignore[assignment]
 
 class _DesignSpecificationOutdoorAirSpaceListFields(TypedDict, total=False):
-    space_specs: list[Any]
+    space_specs: Sequence[
+        DesignSpecificationOutdoorAirSpaceListSpaceSpecsItem | DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup
+    ]
 
 class DesignSpecificationZoneAirDistribution(_TypedIDFObject):
     """This object is used to describe zone air distribution in terms of air distribution effectiveness and secondary recirc..."""
@@ -22384,6 +23564,7 @@ class DesignSpecificationZoneAirDistribution(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationZoneAirDistributionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c57.DesignSpecificationZoneAirDistribution  # type: ignore[assignment]
 
 class _DesignSpecificationZoneAirDistributionFields(TypedDict, total=False):
     zone_air_distribution_effectiveness_in_cooling_mode: float | None
@@ -22410,6 +23591,7 @@ class AnySizingParameters(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySizingParametersFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c111.AnySizingParameters  # type: ignore[assignment]
 
 class _AnySizingParametersFields(_SizingParametersCommonFields, total=False):
     timesteps_in_averaging_window: int | None
@@ -22421,6 +23603,7 @@ class SizingParameters(AnySizingParameters):
     """blank => set the timesteps in averaging window to Number of Timesteps per Hour resulting in a 1 hour averaging window...; Range: >= 1"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingParametersFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c82.SizingParameters  # type: ignore[assignment]
 
 class _SizingParametersFields(_SizingParametersCommonFields, total=False):
     timesteps_in_averaging_window: int | None
@@ -22523,6 +23706,7 @@ class AnySizingZone(_TypedIDFObject):
     """[C]; Default: Autosize"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySizingZoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.AnySizingZone  # type: ignore[assignment]
 
 class _AnySizingZoneFields(_SizingZoneCommonFields, total=False): ...
 
@@ -22564,6 +23748,7 @@ class SizingZone(AnySizingZone):
     """[W/W]; Default: 1.0; Range: >= 1.0; Since: 25.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingZoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.SizingZone  # type: ignore[assignment]
 
 class _SizingZoneFields(_SizingZoneCommonFields, total=False):
     zone_load_sizing_method: (
@@ -22677,6 +23862,7 @@ class DesignSpecificationZoneHVACSizing(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationZoneHVACSizingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.DesignSpecificationZoneHVACSizing  # type: ignore[assignment]
 
 class _DesignSpecificationZoneHVACSizingFields(TypedDict, total=False):
     cooling_supply_air_flow_rate_method: (
@@ -22756,6 +23942,7 @@ class DesignSpecificationAirTerminalSizing(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationAirTerminalSizingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.DesignSpecificationAirTerminalSizing  # type: ignore[assignment]
 
 class _DesignSpecificationAirTerminalSizingFields(TypedDict, total=False):
     fraction_of_design_cooling_load: float | None
@@ -22946,6 +24133,7 @@ class AnySizingSystem(_TypedIDFObject):
     """Method used to control the coil's output; Default: OnOff"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySizingSystemFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.AnySizingSystem  # type: ignore[assignment]
 
 class _AnySizingSystemFields(_SizingSystemCommonFields, total=False):
     type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None
@@ -22970,6 +24158,7 @@ class SizingSystem(AnySizingSystem):
     """The limit of heating coil capacity to cooling coil capacity; [W/W]; Default: 1.0; Range: >= 1.0; Since: 25.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingSystemFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.SizingSystem  # type: ignore[assignment]
 
 class _SizingSystemFields(_SizingSystemCommonFields, total=False):
     type_of_load_to_size_on: Literal["", "Latent", "Sensible", "Total", "VentilationRequirement"] | None
@@ -23014,6 +24203,7 @@ class AnySizingPlant(_TypedIDFObject):
     """this is used to adjust the result for coincident sizing by applying a sizing factor"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnySizingPlantFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.AnySizingPlant  # type: ignore[assignment]
 
 class _AnySizingPlantFields(_SizingPlantCommonFields, total=False):
     zone_timesteps_in_averaging_window: int | None
@@ -23025,6 +24215,7 @@ class SizingPlant(AnySizingPlant):
     """this is used in the coincident sizing algorithm to apply a running average to peak flow rates that occur during HVAC ...; Default: 1; Range: >= 1"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPlantFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.SizingPlant  # type: ignore[assignment]
 
 class _SizingPlantFields(_SizingPlantCommonFields, total=False):
     zone_timesteps_in_averaging_window: int | None
@@ -23037,6 +24228,7 @@ class OutputControlSizingStyle(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlSizingStyleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c81.OutputControlSizingStyle  # type: ignore[assignment]
 
 class _OutputControlSizingStyleFields(TypedDict, total=False):
     column_separator: Literal["Comma", "Fixed", "Tab"] | None
@@ -23052,6 +24244,7 @@ class AnyZoneControlHumidistat(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneControlHumidistatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.AnyZoneControlHumidistat  # type: ignore[assignment]
 
 class _AnyZoneControlHumidistatFields(_ZoneControlHumidistatCommonFields, total=False): ...
 
@@ -23068,6 +24261,7 @@ class ZoneControlHumidistat(AnyZoneControlHumidistat):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneControlHumidistatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.ZoneControlHumidistat  # type: ignore[assignment]
 
 class _ZoneControlHumidistatFields(_ZoneControlHumidistatCommonFields, total=False):
     humidifying_setpoint_schedule_name: str | None
@@ -23130,6 +24324,7 @@ class ZoneControlThermostat(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneControlThermostatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.ZoneControlThermostat  # type: ignore[assignment]
 
 class _ZoneControlThermostatFields(TypedDict, total=False):
     zone_or_zonelist_name: str | None
@@ -23208,6 +24403,7 @@ class ZoneControlThermostatOperativeTemperature(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneControlThermostatOperativeTemperatureFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.ZoneControlThermostatOperativeTemperature  # type: ignore[assignment]
 
 class _ZoneControlThermostatOperativeTemperatureFields(TypedDict, total=False):
     thermostat_name: str | None
@@ -23291,6 +24487,7 @@ class ZoneControlThermostatThermalComfort(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneControlThermostatThermalComfortFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c89.ZoneControlThermostatThermalComfort  # type: ignore[assignment]
 
 class _ZoneControlThermostatThermalComfortFields(TypedDict, total=False):
     zone_or_zonelist_name: str | None
@@ -23364,6 +24561,7 @@ class ZoneControlThermostatTemperatureAndHumidity(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneControlThermostatTemperatureAndHumidityFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c12.ZoneControlThermostatTemperatureAndHumidity  # type: ignore[assignment]
 
 class _ZoneControlThermostatTemperatureAndHumidityFields(TypedDict, total=False):
     thermostat_name: str | None
@@ -23382,6 +24580,7 @@ class ThermostatSetpointSingleHeating(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermostatSetpointSingleHeatingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.ThermostatSetpointSingleHeating  # type: ignore[assignment]
 
 class _ThermostatSetpointSingleHeatingFields(TypedDict, total=False):
     setpoint_temperature_schedule_name: str | None
@@ -23394,6 +24593,7 @@ class ThermostatSetpointSingleCooling(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermostatSetpointSingleCoolingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c89.ThermostatSetpointSingleCooling  # type: ignore[assignment]
 
 class _ThermostatSetpointSingleCoolingFields(TypedDict, total=False):
     setpoint_temperature_schedule_name: str | None
@@ -23409,6 +24609,7 @@ class ThermostatSetpointSingleHeatingOrCooling(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ThermostatSetpointSingleHeatingOrCoolingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.ThermostatSetpointSingleHeatingOrCooling  # type: ignore[assignment]
 
 class _ThermostatSetpointSingleHeatingOrCoolingFields(TypedDict, total=False):
     setpoint_temperature_schedule_name: str | None
@@ -23422,6 +24623,7 @@ class ThermostatSetpointDualSetpoint(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermostatSetpointDualSetpointFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.ThermostatSetpointDualSetpoint  # type: ignore[assignment]
 
 class _ThermostatSetpointDualSetpointFields(TypedDict, total=False):
     heating_setpoint_temperature_schedule_name: str | None
@@ -23439,6 +24641,7 @@ class ThermostatSetpointThermalComfortFangerSingleHeating(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerSingleHeatingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c109.ThermostatSetpointThermalComfortFangerSingleHeating  # type: ignore[assignment]
 
 class _ThermostatSetpointThermalComfortFangerSingleHeatingFields(TypedDict, total=False):
     fanger_thermal_comfort_schedule_name: str | None
@@ -23455,6 +24658,7 @@ class ThermostatSetpointThermalComfortFangerSingleCooling(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerSingleCoolingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.ThermostatSetpointThermalComfortFangerSingleCooling  # type: ignore[assignment]
 
 class _ThermostatSetpointThermalComfortFangerSingleCoolingFields(TypedDict, total=False):
     fanger_thermal_comfort_schedule_name: str | None
@@ -23471,6 +24675,7 @@ class ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling(_TypedIDFObje
         /,
         **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerSingleHeatingOrCoolingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c85.ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling  # type: ignore[assignment]
 
 class _ThermostatSetpointThermalComfortFangerSingleHeatingOrCoolingFields(TypedDict, total=False):
     fanger_thermal_comfort_schedule_name: str | None
@@ -23489,6 +24694,7 @@ class ThermostatSetpointThermalComfortFangerDualSetpoint(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerDualSetpointFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.ThermostatSetpointThermalComfortFangerDualSetpoint  # type: ignore[assignment]
 
 class _ThermostatSetpointThermalComfortFangerDualSetpointFields(TypedDict, total=False):
     fanger_thermal_comfort_heating_schedule_name: str | None
@@ -23550,6 +24756,7 @@ class AnyZoneControlThermostatStagedDualSetpoint(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneControlThermostatStagedDualSetpointFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c46.AnyZoneControlThermostatStagedDualSetpoint  # type: ignore[assignment]
 
 class _AnyZoneControlThermostatStagedDualSetpointFields(
     _ZoneControlThermostatStagedDualSetpointCommonFields, total=False
@@ -23571,6 +24778,7 @@ class ZoneControlThermostatStagedDualSetpoint(AnyZoneControlThermostatStagedDual
         /,
         **kwargs: Unpack[_ZoneControlThermostatStagedDualSetpointFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c58.ZoneControlThermostatStagedDualSetpoint  # type: ignore[assignment]
 
 class _ZoneControlThermostatStagedDualSetpointFields(_ZoneControlThermostatStagedDualSetpointCommonFields, total=False):
     number_of_heating_stages: int | None
@@ -23596,6 +24804,7 @@ class ZoneControlContaminantController(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneControlContaminantControllerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.ZoneControlContaminantController  # type: ignore[assignment]
 
 class _ZoneControlContaminantControllerFields(TypedDict, total=False):
     zone_name: str | None
@@ -23700,6 +24909,7 @@ class AnyZoneHVACIdealLoadsAirSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneHVACIdealLoadsAirSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c127.AnyZoneHVACIdealLoadsAirSystem  # type: ignore[assignment]
 
 class _AnyZoneHVACIdealLoadsAirSystemFields(_ZoneHVACIdealLoadsAirSystemCommonFields, total=False): ...
 
@@ -23754,6 +24964,7 @@ class ZoneHVACIdealLoadsAirSystem(AnyZoneHVACIdealLoadsAirSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACIdealLoadsAirSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c90.ZoneHVACIdealLoadsAirSystem  # type: ignore[assignment]
 
 class _ZoneHVACIdealLoadsAirSystemFields(_ZoneHVACIdealLoadsAirSystemCommonFields, total=False):
     heating_fuel_efficiency_schedule_name: str | None
@@ -23871,6 +25082,7 @@ class ZoneHVACFourPipeFanCoil(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACFourPipeFanCoilFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.ZoneHVACFourPipeFanCoil  # type: ignore[assignment]
 
 class _ZoneHVACFourPipeFanCoilFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -23961,6 +25173,7 @@ class ZoneHVACWindowAirConditioner(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACWindowAirConditionerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c115.ZoneHVACWindowAirConditioner  # type: ignore[assignment]
 
 class _ZoneHVACWindowAirConditionerFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24094,6 +25307,7 @@ class AnyZoneHVACPackagedTerminalAirConditioner(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneHVACPackagedTerminalAirConditionerFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c92.AnyZoneHVACPackagedTerminalAirConditioner  # type: ignore[assignment]
 
 class _AnyZoneHVACPackagedTerminalAirConditionerFields(
     _ZoneHVACPackagedTerminalAirConditionerCommonFields, total=False
@@ -24126,6 +25340,7 @@ class ZoneHVACPackagedTerminalAirConditioner(AnyZoneHVACPackagedTerminalAirCondi
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACPackagedTerminalAirConditionerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c45.ZoneHVACPackagedTerminalAirConditioner  # type: ignore[assignment]
 
 class _ZoneHVACPackagedTerminalAirConditionerFields(_ZoneHVACPackagedTerminalAirConditionerCommonFields, total=False):
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
@@ -24261,6 +25476,7 @@ class AnyZoneHVACPackagedTerminalHeatPump(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneHVACPackagedTerminalHeatPumpFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.AnyZoneHVACPackagedTerminalHeatPump  # type: ignore[assignment]
 
 class _AnyZoneHVACPackagedTerminalHeatPumpFields(_ZoneHVACPackagedTerminalHeatPumpCommonFields, total=False):
     cooling_coil_object_type: (
@@ -24293,6 +25509,7 @@ class ZoneHVACPackagedTerminalHeatPump(AnyZoneHVACPackagedTerminalHeatPump):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACPackagedTerminalHeatPumpFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c112.ZoneHVACPackagedTerminalHeatPump  # type: ignore[assignment]
 
 class _ZoneHVACPackagedTerminalHeatPumpFields(_ZoneHVACPackagedTerminalHeatPumpCommonFields, total=False):
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
@@ -24418,6 +25635,7 @@ class AnyZoneHVACWaterToAirHeatPump(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneHVACWaterToAirHeatPumpFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c49.AnyZoneHVACWaterToAirHeatPump  # type: ignore[assignment]
 
 class _AnyZoneHVACWaterToAirHeatPumpFields(_ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
     maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
@@ -24439,6 +25657,7 @@ class ZoneHVACWaterToAirHeatPump(AnyZoneHVACWaterToAirHeatPump):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACWaterToAirHeatPumpFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c49.ZoneHVACWaterToAirHeatPump  # type: ignore[assignment]
 
 class _ZoneHVACWaterToAirHeatPumpFields(_ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
@@ -24480,6 +25699,7 @@ class ZoneHVACDehumidifierDX(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACDehumidifierDXFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.ZoneHVACDehumidifierDX  # type: ignore[assignment]
 
 class _ZoneHVACDehumidifierDXFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24523,6 +25743,7 @@ class ZoneHVACEnergyRecoveryVentilator(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEnergyRecoveryVentilatorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c113.ZoneHVACEnergyRecoveryVentilator  # type: ignore[assignment]
 
 class _ZoneHVACEnergyRecoveryVentilatorFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24570,6 +25791,7 @@ class ZoneHVACEnergyRecoveryVentilatorController(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneHVACEnergyRecoveryVentilatorControllerFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.ZoneHVACEnergyRecoveryVentilatorController  # type: ignore[assignment]
 
 class _ZoneHVACEnergyRecoveryVentilatorControllerFields(TypedDict, total=False):
     temperature_high_limit: float | None
@@ -24644,6 +25866,7 @@ class ZoneHVACUnitVentilator(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACUnitVentilatorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c112.ZoneHVACUnitVentilator  # type: ignore[assignment]
 
 class _ZoneHVACUnitVentilatorFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24718,6 +25941,7 @@ class ZoneHVACUnitHeater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACUnitHeaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c9.ZoneHVACUnitHeater  # type: ignore[assignment]
 
 class _ZoneHVACUnitHeaterFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24840,6 +26064,7 @@ class AnyZoneHVACEvaporativeCoolerUnit(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneHVACEvaporativeCoolerUnitFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.AnyZoneHVACEvaporativeCoolerUnit  # type: ignore[assignment]
 
 class _AnyZoneHVACEvaporativeCoolerUnitFields(_ZoneHVACEvaporativeCoolerUnitCommonFields, total=False): ...
 
@@ -24852,6 +26077,7 @@ class ZoneHVACEvaporativeCoolerUnit(AnyZoneHVACEvaporativeCoolerUnit):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEvaporativeCoolerUnitFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c71.ZoneHVACEvaporativeCoolerUnit  # type: ignore[assignment]
 
 class _ZoneHVACEvaporativeCoolerUnitFields(_ZoneHVACEvaporativeCoolerUnitCommonFields, total=False):
     shut_off_relative_humidity: float | None
@@ -24887,10 +26113,40 @@ class _ZoneHVACHybridUnitaryHVACCommonFields(TypedDict, total=False):
     mode_0_system_water_use_lookup_table_name: str | None
     mode_0_outdoor_air_fraction: float | None
     mode_0_supply_air_mass_flow_rate_ratio: float | None
-    modes: list[Any]
+    modes: Sequence[ZoneHVACHybridUnitaryHVACModesItem | ZoneHVACHybridUnitaryHVACModesGroup]
 
 class ZoneHVACHybridUnitaryHVACModesGroup(_TypedExtensibleGroup):
     """One modes group inside :class:`AnyZoneHVACHybridUnitaryHVAC`."""
+
+    mode_name: str | None
+    mode_supply_air_temperature_lookup_table_name: str | None
+    mode_supply_air_humidity_ratio_lookup_table_name: str | None
+    mode_system_electric_power_lookup_table_name: str | None
+    mode_supply_fan_electric_power_lookup_table_name: str | None
+    mode_external_static_pressure_lookup_table_name: str | None
+    mode_system_second_fuel_consumption_lookup_table_name: str | None
+    mode_system_third_fuel_consumption_lookup_table_name: str | None
+    mode_system_water_use_lookup_table_name: str | None
+    mode_minimum_outdoor_air_temperature: float | None
+    mode_maximum_outdoor_air_temperature: float | None
+    mode_minimum_outdoor_air_humidity_ratio: float | None
+    mode_maximum_outdoor_air_humidity_ratio: float | None
+    mode_minimum_outdoor_air_relative_humidity: float | None
+    mode_maximum_outdoor_air_relative_humidity: float | None
+    mode_minimum_return_air_temperature: float | None
+    mode_maximum_return_air_temperature: float | None
+    mode_minimum_return_air_humidity_ratio: float | None
+    mode_maximum_return_air_humidity_ratio: float | None
+    mode_minimum_return_air_relative_humidity: float | None
+    mode_maximum_return_air_relative_humidity: float | None
+    mode_minimum_outdoor_air_fraction: float | None
+    mode_maximum_outdoor_air_fraction: float | None
+    mode_minimum_supply_air_mass_flow_rate_ratio: float | None
+    mode_maximum_supply_air_mass_flow_rate_ratio: float | None
+    def as_dict(self) -> ZoneHVACHybridUnitaryHVACModesItem: ...  # type: ignore[override]
+
+class ZoneHVACHybridUnitaryHVACModesItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACHybridUnitaryHVACModesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     mode_name: str | None
     mode_supply_air_temperature_lookup_table_name: str | None
@@ -25119,6 +26375,7 @@ class AnyZoneHVACHybridUnitaryHVAC(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneHVACHybridUnitaryHVACFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c2.AnyZoneHVACHybridUnitaryHVAC  # type: ignore[assignment]
 
 class _AnyZoneHVACHybridUnitaryHVACFields(_ZoneHVACHybridUnitaryHVACCommonFields, total=False):
     first_fuel_type: (
@@ -25243,6 +26500,7 @@ class ZoneHVACHybridUnitaryHVAC(AnyZoneHVACHybridUnitaryHVAC):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACHybridUnitaryHVACFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.ZoneHVACHybridUnitaryHVAC  # type: ignore[assignment]
 
 class _ZoneHVACHybridUnitaryHVACFields(_ZoneHVACHybridUnitaryHVACCommonFields, total=False):
     fan_heat_included_in_lookup_tables: Literal["", "No", "Yes"] | None
@@ -25347,6 +26605,7 @@ class ZoneHVACOutdoorAirUnit(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACOutdoorAirUnitFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c90.ZoneHVACOutdoorAirUnit  # type: ignore[assignment]
 
 class _ZoneHVACOutdoorAirUnitFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -25712,6 +26971,7 @@ class AnyZoneHVACOutdoorAirUnitEquipmentList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneHVACOutdoorAirUnitEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c50.AnyZoneHVACOutdoorAirUnitEquipmentList  # type: ignore[assignment]
 
 class _AnyZoneHVACOutdoorAirUnitEquipmentListFields(_ZoneHVACOutdoorAirUnitEquipmentListCommonFields, total=False):
     component_1_object_type: (
@@ -26002,6 +27262,7 @@ class ZoneHVACOutdoorAirUnitEquipmentList(AnyZoneHVACOutdoorAirUnitEquipmentList
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACOutdoorAirUnitEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.ZoneHVACOutdoorAirUnitEquipmentList  # type: ignore[assignment]
 
 class _ZoneHVACOutdoorAirUnitEquipmentListFields(_ZoneHVACOutdoorAirUnitEquipmentListCommonFields, total=False):
     component_1_object_type: (
@@ -26260,6 +27521,7 @@ class AnyZoneHVACTerminalUnitVariableRefrigerantFlow(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneHVACTerminalUnitVariableRefrigerantFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.AnyZoneHVACTerminalUnitVariableRefrigerantFlow  # type: ignore[assignment]
 
 class _AnyZoneHVACTerminalUnitVariableRefrigerantFlowFields(
     _ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
@@ -26294,6 +27556,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow(AnyZoneHVACTerminalUnitVariabl
         /,
         **kwargs: Unpack[_ZoneHVACTerminalUnitVariableRefrigerantFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.ZoneHVACTerminalUnitVariableRefrigerantFlow  # type: ignore[assignment]
 
 class _ZoneHVACTerminalUnitVariableRefrigerantFlowFields(
     _ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
@@ -26333,6 +27596,7 @@ class ZoneHVACBaseboardRadiantConvectiveWaterDesign(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveWaterDesignFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.ZoneHVACBaseboardRadiantConvectiveWaterDesign  # type: ignore[assignment]
 
 class _ZoneHVACBaseboardRadiantConvectiveWaterDesignFields(TypedDict, total=False):
     heating_design_capacity_method: (
@@ -26352,10 +27616,20 @@ class _ZoneHVACBaseboardRadiantConvectiveWaterCommonFields(TypedDict, total=Fals
     rated_water_mass_flow_rate: float | None
     heating_design_capacity: float | Literal["", "Autosize"] | None
     maximum_water_flow_rate: float | Literal["Autosize"] | None
-    surface_fractions: list[Any]
+    surface_fractions: Sequence[
+        ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem
+        | ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup
+    ]
 
 class ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`AnyZoneHVACBaseboardRadiantConvectiveWater`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
@@ -26383,6 +27657,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveWater(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneHVACBaseboardRadiantConvectiveWaterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.AnyZoneHVACBaseboardRadiantConvectiveWater  # type: ignore[assignment]
 
 class _AnyZoneHVACBaseboardRadiantConvectiveWaterFields(
     _ZoneHVACBaseboardRadiantConvectiveWaterCommonFields, total=False
@@ -26400,6 +27675,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater(AnyZoneHVACBaseboardRadiantConvect
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveWaterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.ZoneHVACBaseboardRadiantConvectiveWater  # type: ignore[assignment]
 
 class _ZoneHVACBaseboardRadiantConvectiveWaterFields(_ZoneHVACBaseboardRadiantConvectiveWaterCommonFields, total=False):
     design_object: str | None
@@ -26428,6 +27704,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteamDesign(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveSteamDesignFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c15.ZoneHVACBaseboardRadiantConvectiveSteamDesign  # type: ignore[assignment]
 
 class _ZoneHVACBaseboardRadiantConvectiveSteamDesignFields(TypedDict, total=False):
     heating_design_capacity_method: (
@@ -26446,10 +27723,20 @@ class _ZoneHVACBaseboardRadiantConvectiveSteamCommonFields(TypedDict, total=Fals
     heating_design_capacity: float | Literal["", "Autosize"] | None
     degree_of_subcooling: float | None
     maximum_steam_flow_rate: float | Literal["Autosize"] | None
-    surface_fractions: list[Any]
+    surface_fractions: Sequence[
+        ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem
+        | ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup
+    ]
 
 class ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`AnyZoneHVACBaseboardRadiantConvectiveSteam`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
@@ -26475,6 +27762,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveSteam(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneHVACBaseboardRadiantConvectiveSteamFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c127.AnyZoneHVACBaseboardRadiantConvectiveSteam  # type: ignore[assignment]
 
 class _AnyZoneHVACBaseboardRadiantConvectiveSteamFields(
     _ZoneHVACBaseboardRadiantConvectiveSteamCommonFields, total=False
@@ -26492,12 +27780,20 @@ class ZoneHVACBaseboardRadiantConvectiveSteam(AnyZoneHVACBaseboardRadiantConvect
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveSteamFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.ZoneHVACBaseboardRadiantConvectiveSteam  # type: ignore[assignment]
 
 class _ZoneHVACBaseboardRadiantConvectiveSteamFields(_ZoneHVACBaseboardRadiantConvectiveSteamCommonFields, total=False):
     design_object: str | None
 
 class ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`ZoneHVACBaseboardRadiantConvectiveElectric`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
@@ -26531,6 +27827,7 @@ class ZoneHVACBaseboardRadiantConvectiveElectric(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveElectricFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c85.ZoneHVACBaseboardRadiantConvectiveElectric  # type: ignore[assignment]
 
 class _ZoneHVACBaseboardRadiantConvectiveElectricFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -26543,7 +27840,10 @@ class _ZoneHVACBaseboardRadiantConvectiveElectricFields(TypedDict, total=False):
     efficiency: float | None
     fraction_radiant: float | None
     fraction_of_radiant_energy_incident_on_people: float | None
-    surface_fractions: list[Any]
+    surface_fractions: Sequence[
+        ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsItem
+        | ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup
+    ]
 
 class _ZoneHVACCoolingPanelRadiantConvectiveWaterCommonFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -26566,10 +27866,20 @@ class _ZoneHVACCoolingPanelRadiantConvectiveWaterCommonFields(TypedDict, total=F
     condensation_control_dewpoint_offset: float | None
     fraction_radiant: float | None
     fraction_of_radiant_energy_incident_on_people: float | None
-    surface_fractions: list[Any]
+    surface_fractions: Sequence[
+        ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem
+        | ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup
+    ]
 
 class ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`AnyZoneHVACCoolingPanelRadiantConvectiveWater`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
@@ -26649,6 +27959,7 @@ class AnyZoneHVACCoolingPanelRadiantConvectiveWater(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneHVACCoolingPanelRadiantConvectiveWaterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.AnyZoneHVACCoolingPanelRadiantConvectiveWater  # type: ignore[assignment]
 
 class _AnyZoneHVACCoolingPanelRadiantConvectiveWaterFields(
     _ZoneHVACCoolingPanelRadiantConvectiveWaterCommonFields, total=False
@@ -26691,6 +28002,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater(AnyZoneHVACCoolingPanelRadiantC
         /,
         **kwargs: Unpack[_ZoneHVACCoolingPanelRadiantConvectiveWaterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c7.ZoneHVACCoolingPanelRadiantConvectiveWater  # type: ignore[assignment]
 
 class _ZoneHVACCoolingPanelRadiantConvectiveWaterFields(
     _ZoneHVACCoolingPanelRadiantConvectiveWaterCommonFields, total=False
@@ -26736,6 +28048,7 @@ class ZoneHVACBaseboardConvectiveWater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACBaseboardConvectiveWaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c106.ZoneHVACBaseboardConvectiveWater  # type: ignore[assignment]
 
 class _ZoneHVACBaseboardConvectiveWaterFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -26772,6 +28085,7 @@ class ZoneHVACBaseboardConvectiveElectric(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACBaseboardConvectiveElectricFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.ZoneHVACBaseboardConvectiveElectric  # type: ignore[assignment]
 
 class _ZoneHVACBaseboardConvectiveElectricFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -26833,6 +28147,7 @@ class AnyZoneHVACLowTemperatureRadiantVariableFlow(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneHVACLowTemperatureRadiantVariableFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c64.AnyZoneHVACLowTemperatureRadiantVariableFlow  # type: ignore[assignment]
 
 class _AnyZoneHVACLowTemperatureRadiantVariableFlowFields(
     _ZoneHVACLowTemperatureRadiantVariableFlowCommonFields, total=False
@@ -26850,6 +28165,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow(AnyZoneHVACLowTemperatureRadiant
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantVariableFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c63.ZoneHVACLowTemperatureRadiantVariableFlow  # type: ignore[assignment]
 
 class _ZoneHVACLowTemperatureRadiantVariableFlowFields(
     _ZoneHVACLowTemperatureRadiantVariableFlowCommonFields, total=False
@@ -26919,6 +28235,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlowDesign(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantVariableFlowDesignFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c82.ZoneHVACLowTemperatureRadiantVariableFlowDesign  # type: ignore[assignment]
 
 class _ZoneHVACLowTemperatureRadiantVariableFlowDesignFields(TypedDict, total=False):
     fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
@@ -27026,6 +28343,7 @@ class AnyZoneHVACLowTemperatureRadiantConstantFlow(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneHVACLowTemperatureRadiantConstantFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.AnyZoneHVACLowTemperatureRadiantConstantFlow  # type: ignore[assignment]
 
 class _AnyZoneHVACLowTemperatureRadiantConstantFlowFields(
     _ZoneHVACLowTemperatureRadiantConstantFlowCommonFields, total=False
@@ -27043,6 +28361,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow(AnyZoneHVACLowTemperatureRadiant
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantConstantFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.ZoneHVACLowTemperatureRadiantConstantFlow  # type: ignore[assignment]
 
 class _ZoneHVACLowTemperatureRadiantConstantFlowFields(
     _ZoneHVACLowTemperatureRadiantConstantFlowCommonFields, total=False
@@ -27094,6 +28413,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlowDesign(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantConstantFlowDesignFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c111.ZoneHVACLowTemperatureRadiantConstantFlowDesign  # type: ignore[assignment]
 
 class _ZoneHVACLowTemperatureRadiantConstantFlowDesignFields(TypedDict, total=False):
     fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
@@ -27192,6 +28512,7 @@ class AnyZoneHVACLowTemperatureRadiantElectric(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyZoneHVACLowTemperatureRadiantElectricFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.AnyZoneHVACLowTemperatureRadiantElectric  # type: ignore[assignment]
 
 class _AnyZoneHVACLowTemperatureRadiantElectricFields(_ZoneHVACLowTemperatureRadiantElectricCommonFields, total=False):
     temperature_control_type: (
@@ -27229,6 +28550,7 @@ class ZoneHVACLowTemperatureRadiantElectric(AnyZoneHVACLowTemperatureRadiantElec
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantElectricFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.ZoneHVACLowTemperatureRadiantElectric  # type: ignore[assignment]
 
 class _ZoneHVACLowTemperatureRadiantElectricFields(_ZoneHVACLowTemperatureRadiantElectricCommonFields, total=False):
     temperature_control_type: (
@@ -27251,6 +28573,13 @@ class ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup(_TypedExten
 
     surface_name: str | None
     flow_fraction_for_surface: float | None
+    def as_dict(self) -> ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    surface_name: str | None
+    flow_fraction_for_surface: float | None
 
 class ZoneHVACLowTemperatureRadiantSurfaceGroup(_TypedIDFObject):
     """This is used to allow the coordinate control of several radiant system surfaces. Note that the following flow fractio..."""
@@ -27263,12 +28592,23 @@ class ZoneHVACLowTemperatureRadiantSurfaceGroup(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantSurfaceGroupFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c120.ZoneHVACLowTemperatureRadiantSurfaceGroup  # type: ignore[assignment]
 
 class _ZoneHVACLowTemperatureRadiantSurfaceGroupFields(TypedDict, total=False):
-    surface_fractions: list[Any]
+    surface_fractions: Sequence[
+        ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsItem
+        | ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup
+    ]
 
 class ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`ZoneHVACHighTemperatureRadiant`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+    def as_dict(self) -> ZoneHVACHighTemperatureRadiantSurfaceFractionsItem: ...  # type: ignore[override]
+
+class ZoneHVACHighTemperatureRadiantSurfaceFractionsItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
@@ -27324,6 +28664,7 @@ class ZoneHVACHighTemperatureRadiant(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACHighTemperatureRadiantFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.ZoneHVACHighTemperatureRadiant  # type: ignore[assignment]
 
 class _ZoneHVACHighTemperatureRadiantFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -27354,7 +28695,9 @@ class _ZoneHVACHighTemperatureRadiantFields(TypedDict, total=False):
     heating_throttling_range: float | None
     heating_setpoint_temperature_schedule_name: str | None
     fraction_of_radiant_energy_incident_on_people: float | None
-    surface_fractions: list[Any]
+    surface_fractions: Sequence[
+        ZoneHVACHighTemperatureRadiantSurfaceFractionsItem | ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup
+    ]
 
 class ZoneHVACVentilatedSlab(_TypedIDFObject):
     """Ventilated slab system where outdoor air flows through hollow cores in a building surface (wall, ceiling, or floor)."""
@@ -27447,6 +28790,7 @@ class ZoneHVACVentilatedSlab(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACVentilatedSlabFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.ZoneHVACVentilatedSlab  # type: ignore[assignment]
 
 class _ZoneHVACVentilatedSlabFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -27520,6 +28864,18 @@ class ZoneHVACVentilatedSlabSlabGroupDataGroup(_TypedExtensibleGroup):
     core_numbers_for_surface: float | None
     slab_inlet_node_name_for_surface: str | None
     slab_outlet_node_name_for_surface: str | None
+    def as_dict(self) -> ZoneHVACVentilatedSlabSlabGroupDataItem: ...  # type: ignore[override]
+
+class ZoneHVACVentilatedSlabSlabGroupDataItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACVentilatedSlabSlabGroupDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zone_name: str | None
+    surface_name: str | None
+    core_diameter_for_surface: float | None
+    core_length_for_surface: float | None
+    core_numbers_for_surface: float | None
+    slab_inlet_node_name_for_surface: str | None
+    slab_outlet_node_name_for_surface: str | None
 
 class ZoneHVACVentilatedSlabSlabGroup(_TypedIDFObject):
     """This is used to allow the coordinate control of several ventilated slab system surfaces. Note that the flow fractions..."""
@@ -27529,9 +28885,10 @@ class ZoneHVACVentilatedSlabSlabGroup(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACVentilatedSlabSlabGroupFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c29.ZoneHVACVentilatedSlabSlabGroup  # type: ignore[assignment]
 
 class _ZoneHVACVentilatedSlabSlabGroupFields(TypedDict, total=False):
-    data: list[Any]
+    data: Sequence[ZoneHVACVentilatedSlabSlabGroupDataItem | ZoneHVACVentilatedSlabSlabGroupDataGroup]
 
 class AirTerminalSingleDuctConstantVolumeReheat(_TypedIDFObject):
     """Central air system terminal unit, single duct, constant volume, with reheat coil (hot water, electric, gas, or steam)."""
@@ -27561,6 +28918,7 @@ class AirTerminalSingleDuctConstantVolumeReheat(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeReheatFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.AirTerminalSingleDuctConstantVolumeReheat  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctConstantVolumeReheatFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -27598,6 +28956,7 @@ class AirTerminalSingleDuctConstantVolumeNoReheat(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeNoReheatFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.AirTerminalSingleDuctConstantVolumeNoReheat  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctConstantVolumeNoReheatFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -27641,6 +29000,7 @@ class AnyAirTerminalSingleDuctVAVNoReheat(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirTerminalSingleDuctVAVNoReheatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c24.AnyAirTerminalSingleDuctVAVNoReheat  # type: ignore[assignment]
 
 class _AnyAirTerminalSingleDuctVAVNoReheatFields(_AirTerminalSingleDuctVAVNoReheatCommonFields, total=False): ...
 
@@ -27653,6 +29013,7 @@ class AirTerminalSingleDuctVAVNoReheat(AnyAirTerminalSingleDuctVAVNoReheat):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctVAVNoReheatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c95.AirTerminalSingleDuctVAVNoReheat  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctVAVNoReheatFields(_AirTerminalSingleDuctVAVNoReheatCommonFields, total=False):
     minimum_air_flow_turndown_schedule_name: str | None
@@ -27725,6 +29086,7 @@ class AnyAirTerminalSingleDuctVAVReheat(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirTerminalSingleDuctVAVReheatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.AnyAirTerminalSingleDuctVAVReheat  # type: ignore[assignment]
 
 class _AnyAirTerminalSingleDuctVAVReheatFields(_AirTerminalSingleDuctVAVReheatCommonFields, total=False): ...
 
@@ -27737,6 +29099,7 @@ class AirTerminalSingleDuctVAVReheat(AnyAirTerminalSingleDuctVAVReheat):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctVAVReheatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.AirTerminalSingleDuctVAVReheat  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctVAVReheatFields(_AirTerminalSingleDuctVAVReheatCommonFields, total=False):
     minimum_air_flow_turndown_schedule_name: str | None
@@ -27792,6 +29155,7 @@ class AnyAirTerminalSingleDuctVAVReheatVariableSpeedFan(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirTerminalSingleDuctVAVReheatVariableSpeedFanFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.AnyAirTerminalSingleDuctVAVReheatVariableSpeedFan  # type: ignore[assignment]
 
 class _AnyAirTerminalSingleDuctVAVReheatVariableSpeedFanFields(
     _AirTerminalSingleDuctVAVReheatVariableSpeedFanCommonFields, total=False
@@ -27809,6 +29173,7 @@ class AirTerminalSingleDuctVAVReheatVariableSpeedFan(AnyAirTerminalSingleDuctVAV
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVReheatVariableSpeedFanFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.AirTerminalSingleDuctVAVReheatVariableSpeedFan  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctVAVReheatVariableSpeedFanFields(
     _AirTerminalSingleDuctVAVReheatVariableSpeedFanCommonFields, total=False
@@ -27841,6 +29206,7 @@ class AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheat(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheatFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheat  # type: ignore[assignment]
 
 class _AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheatFields(
     _AirTerminalSingleDuctVAVHeatAndCoolNoReheatCommonFields, total=False
@@ -27858,6 +29224,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolNoReheat(AnyAirTerminalSingleDuctVAVHea
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVHeatAndCoolNoReheatFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c29.AirTerminalSingleDuctVAVHeatAndCoolNoReheat  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctVAVHeatAndCoolNoReheatFields(
     _AirTerminalSingleDuctVAVHeatAndCoolNoReheatCommonFields, total=False
@@ -27914,6 +29281,7 @@ class AnyAirTerminalSingleDuctVAVHeatAndCoolReheat(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirTerminalSingleDuctVAVHeatAndCoolReheatFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c121.AnyAirTerminalSingleDuctVAVHeatAndCoolReheat  # type: ignore[assignment]
 
 class _AnyAirTerminalSingleDuctVAVHeatAndCoolReheatFields(
     _AirTerminalSingleDuctVAVHeatAndCoolReheatCommonFields, total=False
@@ -27931,6 +29299,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolReheat(AnyAirTerminalSingleDuctVAVHeatA
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVHeatAndCoolReheatFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.AirTerminalSingleDuctVAVHeatAndCoolReheat  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctVAVHeatAndCoolReheatFields(
     _AirTerminalSingleDuctVAVHeatAndCoolReheatCommonFields, total=False
@@ -27989,6 +29358,7 @@ class AnyAirTerminalSingleDuctSeriesPIUReheat(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirTerminalSingleDuctSeriesPIUReheatFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.AnyAirTerminalSingleDuctSeriesPIUReheat  # type: ignore[assignment]
 
 class _AnyAirTerminalSingleDuctSeriesPIUReheatFields(
     _AirTerminalSingleDuctSeriesPIUReheatCommonFields, total=False
@@ -28011,6 +29381,7 @@ class AirTerminalSingleDuctSeriesPIUReheat(AnyAirTerminalSingleDuctSeriesPIURehe
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctSeriesPIUReheatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c108.AirTerminalSingleDuctSeriesPIUReheat  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctSeriesPIUReheatFields(_AirTerminalSingleDuctSeriesPIUReheatCommonFields, total=False):
     fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None
@@ -28074,6 +29445,7 @@ class AnyAirTerminalSingleDuctParallelPIUReheat(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirTerminalSingleDuctParallelPIUReheatFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.AnyAirTerminalSingleDuctParallelPIUReheat  # type: ignore[assignment]
 
 class _AnyAirTerminalSingleDuctParallelPIUReheatFields(
     _AirTerminalSingleDuctParallelPIUReheatCommonFields, total=False
@@ -28100,6 +29472,7 @@ class AirTerminalSingleDuctParallelPIUReheat(AnyAirTerminalSingleDuctParallelPIU
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctParallelPIUReheatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.AirTerminalSingleDuctParallelPIUReheat  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctParallelPIUReheatFields(_AirTerminalSingleDuctParallelPIUReheatCommonFields, total=False):
     fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None
@@ -28148,6 +29521,7 @@ class AirTerminalSingleDuctConstantVolumeFourPipeInduction(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeFourPipeInductionFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.AirTerminalSingleDuctConstantVolumeFourPipeInduction  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctConstantVolumeFourPipeInductionFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -28230,6 +29604,7 @@ class AirTerminalSingleDuctConstantVolumeFourPipeBeam(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeFourPipeBeamFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c112.AirTerminalSingleDuctConstantVolumeFourPipeBeam  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctConstantVolumeFourPipeBeamFields(TypedDict, total=False):
     primary_air_availability_schedule_name: str | None
@@ -28333,6 +29708,7 @@ class AnyAirTerminalSingleDuctConstantVolumeCooledBeam(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirTerminalSingleDuctConstantVolumeCooledBeamFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c121.AnyAirTerminalSingleDuctConstantVolumeCooledBeam  # type: ignore[assignment]
 
 class _AnyAirTerminalSingleDuctConstantVolumeCooledBeamFields(
     _AirTerminalSingleDuctConstantVolumeCooledBeamCommonFields, total=False
@@ -28351,6 +29727,7 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam(AnyAirTerminalSingleDuctCons
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeCooledBeamFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.AirTerminalSingleDuctConstantVolumeCooledBeam  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctConstantVolumeCooledBeamFields(
     _AirTerminalSingleDuctConstantVolumeCooledBeamCommonFields, total=False
@@ -28391,6 +29768,7 @@ class AirTerminalSingleDuctMixer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctMixerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c69.AirTerminalSingleDuctMixer  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctMixerFields(TypedDict, total=False):
     zonehvac_unit_object_type: (
@@ -28428,6 +29806,7 @@ class AirTerminalDualDuctConstantVolume(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalDualDuctConstantVolumeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c50.AirTerminalDualDuctConstantVolume  # type: ignore[assignment]
 
 class _AirTerminalDualDuctConstantVolumeFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -28464,6 +29843,7 @@ class AnyAirTerminalDualDuctVAV(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirTerminalDualDuctVAVFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.AnyAirTerminalDualDuctVAV  # type: ignore[assignment]
 
 class _AnyAirTerminalDualDuctVAVFields(_AirTerminalDualDuctVAVCommonFields, total=False): ...
 
@@ -28476,6 +29856,7 @@ class AirTerminalDualDuctVAV(AnyAirTerminalDualDuctVAV):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalDualDuctVAVFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.AirTerminalDualDuctVAV  # type: ignore[assignment]
 
 class _AirTerminalDualDuctVAVFields(_AirTerminalDualDuctVAVCommonFields, total=False):
     minimum_air_flow_turndown_schedule_name: str | None
@@ -28499,6 +29880,7 @@ class AirTerminalDualDuctVAVOutdoorAir(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalDualDuctVAVOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.AirTerminalDualDuctVAVOutdoorAir  # type: ignore[assignment]
 
 class _AirTerminalDualDuctVAVOutdoorAirFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -28546,6 +29928,7 @@ class ZoneHVACAirDistributionUnit(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACAirDistributionUnitFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.ZoneHVACAirDistributionUnit  # type: ignore[assignment]
 
 class _ZoneHVACAirDistributionUnitFields(TypedDict, total=False):
     air_distribution_unit_outlet_node_name: str | None
@@ -28605,6 +29988,7 @@ class ZoneHVACExhaustControl(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACExhaustControlFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.ZoneHVACExhaustControl  # type: ignore[assignment]
 
 class _ZoneHVACExhaustControlFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -28715,6 +30099,52 @@ class AnyZoneHVACEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     def zone_equipment_heating_or_no_load_sequence(self) -> float | int | None: ...
     @zone_equipment_heating_or_no_load_sequence.setter
     def zone_equipment_heating_or_no_load_sequence(self, value: int | None) -> None: ...
+    def as_dict(self) -> AnyZoneHVACEquipmentListEquipmentItem: ...  # type: ignore[override]
+
+class AnyZoneHVACEquipmentListEquipmentItem(TypedDict, total=False):
+    """One group of :class:`AnyZoneHVACEquipmentListEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    zone_equipment_object_type: (
+        Literal[
+            "AirLoopHVAC:UnitarySystem",
+            "Fan:ZoneExhaust",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "WaterHeater:HeatPump:PumpedCondenser",
+            "WaterHeater:HeatPump:WrappedCondenser",
+            "ZoneHVAC:AirDistributionUnit",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:EvaporativeCoolerUnit",
+            "ZoneHVAC:ForcedAir:UserDefined",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:HybridUnitaryHVAC",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+            "ZoneHVAC:LowTemperatureRadiant:Electric",
+            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zone_equipment_name: str | None
+    zone_equipment_cooling_sequence: int | None
+    zone_equipment_heating_or_no_load_sequence: int | None
 
 class AnyZoneHVACEquipmentList(_TypedIDFObject):
     """``ZoneHVAC:EquipmentList`` as every supported EnergyPlus version declares it."""
@@ -28726,12 +30156,61 @@ class AnyZoneHVACEquipmentList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneHVACEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.AnyZoneHVACEquipmentList  # type: ignore[assignment]
 
 class _AnyZoneHVACEquipmentListFields(_ZoneHVACEquipmentListCommonFields, total=False):
-    equipment: list[Any]
+    equipment: Sequence[AnyZoneHVACEquipmentListEquipmentItem | AnyZoneHVACEquipmentListEquipmentGroup]
 
 class ZoneHVACEquipmentListEquipmentGroup(AnyZoneHVACEquipmentListEquipmentGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList`."""
+
+    zone_equipment_object_type: (
+        Literal[
+            "AirLoopHVAC:UnitarySystem",
+            "Fan:ZoneExhaust",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "WaterHeater:HeatPump:PumpedCondenser",
+            "WaterHeater:HeatPump:WrappedCondenser",
+            "ZoneHVAC:AirDistributionUnit",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:EvaporativeCoolerUnit",
+            "ZoneHVAC:ForcedAir:UserDefined",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:HybridUnitaryHVAC",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+            "ZoneHVAC:LowTemperatureRadiant:Electric",
+            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zone_equipment_name: str | None
+    zone_equipment_cooling_sequence: int | None
+    zone_equipment_heating_or_no_load_sequence: int | None
+    zone_equipment_sequential_cooling_fraction_schedule_name: str | None
+    zone_equipment_sequential_heating_fraction_schedule_name: str | None
+    def as_dict(self) -> ZoneHVACEquipmentListEquipmentItem: ...  # type: ignore[override]
+
+class ZoneHVACEquipmentListEquipmentItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACEquipmentListEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     zone_equipment_object_type: (
         Literal[
@@ -28785,9 +30264,10 @@ class ZoneHVACEquipmentList(AnyZoneHVACEquipmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.ZoneHVACEquipmentList  # type: ignore[assignment]
 
 class _ZoneHVACEquipmentListFields(_ZoneHVACEquipmentListCommonFields, total=False):
-    equipment: list[Any]
+    equipment: Sequence[ZoneHVACEquipmentListEquipmentItem | ZoneHVACEquipmentListEquipmentGroup]
 
 class ZoneHVACEquipmentConnections(_TypedIDFObject):
     """Specifies the HVAC equipment connections for a zone. Node names are specified for the zone air node, air inlet nodes,..."""
@@ -28807,6 +30287,7 @@ class ZoneHVACEquipmentConnections(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEquipmentConnectionsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c45.ZoneHVACEquipmentConnections  # type: ignore[assignment]
 
 class _ZoneHVACEquipmentConnectionsFields(TypedDict, total=False):
     zone_name: str | None
@@ -28834,6 +30315,7 @@ class SpaceHVACEquipmentConnections(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceHVACEquipmentConnectionsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c22.SpaceHVACEquipmentConnections  # type: ignore[assignment]
 
 class _SpaceHVACEquipmentConnectionsFields(TypedDict, total=False):
     space_name: str | None
@@ -28846,6 +30328,14 @@ class _SpaceHVACEquipmentConnectionsFields(TypedDict, total=False):
 
 class SpaceHVACZoneEquipmentSplitterSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceHVACZoneEquipmentSplitter`."""
+
+    space_name: str | None
+    space_fraction: float | Literal["", "Autosize"] | None
+    space_supply_node_name: str | None
+    def as_dict(self) -> SpaceHVACZoneEquipmentSplitterSpacesItem: ...  # type: ignore[override]
+
+class SpaceHVACZoneEquipmentSplitterSpacesItem(TypedDict, total=False):
+    """One group of :class:`SpaceHVACZoneEquipmentSplitterSpacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     space_name: str | None
     space_fraction: float | Literal["", "Autosize"] | None
@@ -28909,6 +30399,7 @@ class SpaceHVACZoneEquipmentSplitter(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceHVACZoneEquipmentSplitterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c125.SpaceHVACZoneEquipmentSplitter  # type: ignore[assignment]
 
 class _SpaceHVACZoneEquipmentSplitterFields(TypedDict, total=False):
     zone_name: str | None
@@ -28956,10 +30447,18 @@ class _SpaceHVACZoneEquipmentSplitterFields(TypedDict, total=False):
     space_fraction_method: (
         Literal["", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"] | None
     )
-    spaces: list[Any]
+    spaces: Sequence[SpaceHVACZoneEquipmentSplitterSpacesItem | SpaceHVACZoneEquipmentSplitterSpacesGroup]
 
 class SpaceHVACZoneEquipmentMixerSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceHVACZoneEquipmentMixer`."""
+
+    space_name: str | None
+    space_fraction: float | Literal["", "Autosize"] | None
+    space_node_name: str | None
+    def as_dict(self) -> SpaceHVACZoneEquipmentMixerSpacesItem: ...  # type: ignore[override]
+
+class SpaceHVACZoneEquipmentMixerSpacesItem(TypedDict, total=False):
+    """One group of :class:`SpaceHVACZoneEquipmentMixerSpacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     space_name: str | None
     space_fraction: float | Literal["", "Autosize"] | None
@@ -28981,6 +30480,7 @@ class SpaceHVACZoneEquipmentMixer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceHVACZoneEquipmentMixerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c40.SpaceHVACZoneEquipmentMixer  # type: ignore[assignment]
 
 class _SpaceHVACZoneEquipmentMixerFields(TypedDict, total=False):
     zone_name: str | None
@@ -28988,10 +30488,17 @@ class _SpaceHVACZoneEquipmentMixerFields(TypedDict, total=False):
     space_fraction_method: (
         Literal["", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"] | None
     )
-    spaces: list[Any]
+    spaces: Sequence[SpaceHVACZoneEquipmentMixerSpacesItem | SpaceHVACZoneEquipmentMixerSpacesGroup]
 
 class SpaceHVACZoneReturnMixerSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceHVACZoneReturnMixer`."""
+
+    space_name: str | None
+    space_return_air_node_name: str | None
+    def as_dict(self) -> SpaceHVACZoneReturnMixerSpacesItem: ...  # type: ignore[override]
+
+class SpaceHVACZoneReturnMixerSpacesItem(TypedDict, total=False):
+    """One group of :class:`SpaceHVACZoneReturnMixerSpacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     space_name: str | None
     space_return_air_node_name: str | None
@@ -29008,11 +30515,12 @@ class SpaceHVACZoneReturnMixer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceHVACZoneReturnMixerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.SpaceHVACZoneReturnMixer  # type: ignore[assignment]
 
 class _SpaceHVACZoneReturnMixerFields(TypedDict, total=False):
     zone_name: str | None
     zone_return_air_node_name: str | None
-    spaces: list[Any]
+    spaces: Sequence[SpaceHVACZoneReturnMixerSpacesItem | SpaceHVACZoneReturnMixerSpacesGroup]
 
 class _FanSystemModelCommonFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -29036,10 +30544,17 @@ class _FanSystemModelCommonFields(TypedDict, total=False):
     motor_loss_zone_name: str | None
     motor_loss_radiative_fraction: float | None
     end_use_subcategory: str | None
-    speed_fractions: list[Any]
+    speed_fractions: Sequence[FanSystemModelSpeedFractionsItem | FanSystemModelSpeedFractionsGroup]
 
 class FanSystemModelSpeedFractionsGroup(_TypedExtensibleGroup):
     """One speed_fractions group inside :class:`AnyFanSystemModel`."""
+
+    speed_flow_fraction: float | None
+    speed_electric_power_fraction: float | None
+    def as_dict(self) -> FanSystemModelSpeedFractionsItem: ...  # type: ignore[override]
+
+class FanSystemModelSpeedFractionsItem(TypedDict, total=False):
+    """One group of :class:`FanSystemModelSpeedFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     speed_flow_fraction: float | None
     speed_electric_power_fraction: float | None
@@ -29096,6 +30611,7 @@ class AnyFanSystemModel(_TypedIDFObject):
     speed_fractions: ExtensibleList[FanSystemModelSpeedFractionsGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyFanSystemModelFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c100.AnyFanSystemModel  # type: ignore[assignment]
 
 class _AnyFanSystemModelFields(_FanSystemModelCommonFields, total=False):
     design_electric_power_consumption: float | Literal["Autosize"] | None
@@ -29110,6 +30626,7 @@ class FanSystemModel(AnyFanSystemModel):
     """number of different speed levels available when Speed Control Method is set to Discrete Speed need to be arranged in ...; Default: 1"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModelFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.FanSystemModel  # type: ignore[assignment]
 
 class _FanSystemModelFields(_FanSystemModelCommonFields, total=False):
     design_electric_power_consumption: float | Literal["", "Autosize"] | None
@@ -29136,6 +30653,7 @@ class FanConstantVolume(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanConstantVolumeFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.FanConstantVolume  # type: ignore[assignment]
 
 class _FanConstantVolumeFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -29181,6 +30699,7 @@ class FanVariableVolume(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanVariableVolumeFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.FanVariableVolume  # type: ignore[assignment]
 
 class _FanVariableVolumeFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -29224,6 +30743,7 @@ class FanOnOff(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanOnOffFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.FanOnOff  # type: ignore[assignment]
 
 class _FanOnOffFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -29263,6 +30783,7 @@ class FanZoneExhaust(_TypedIDFObject):
     """Used to control fan's impact on flow at the return air node. Enter the portion of the exhaust that is balanced by sim..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanZoneExhaustFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.FanZoneExhaust  # type: ignore[assignment]
 
 class _FanZoneExhaustFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -29295,6 +30816,7 @@ class FanPerformanceNightVentilation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanPerformanceNightVentilationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.FanPerformanceNightVentilation  # type: ignore[assignment]
 
 class _FanPerformanceNightVentilationFields(TypedDict, total=False):
     fan_name: str | None
@@ -29379,6 +30901,7 @@ class FanComponentModel(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanComponentModelFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c46.FanComponentModel  # type: ignore[assignment]
 
 class _FanComponentModelFields(TypedDict, total=False):
     air_inlet_node_name: str | None
@@ -29450,6 +30973,7 @@ class CoilCoolingWater(_TypedIDFObject):
     """This input field is optional. If specified, it is used for sizing the Design Water Flow Rate. If blank or omitted, th...; [deltaC]; Range: > 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingWaterFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c85.CoilCoolingWater  # type: ignore[assignment]
 
 class _CoilCoolingWaterFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -29542,6 +31066,7 @@ class AnyCoilCoolingWaterDetailedGeometry(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilCoolingWaterDetailedGeometryFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c34.AnyCoilCoolingWaterDetailedGeometry  # type: ignore[assignment]
 
 class _AnyCoilCoolingWaterDetailedGeometryFields(_CoilCoolingWaterDetailedGeometryCommonFields, total=False): ...
 
@@ -29554,6 +31079,7 @@ class CoilCoolingWaterDetailedGeometry(AnyCoilCoolingWaterDetailedGeometry):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingWaterDetailedGeometryFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.CoilCoolingWaterDetailedGeometry  # type: ignore[assignment]
 
 class _CoilCoolingWaterDetailedGeometryFields(_CoilCoolingWaterDetailedGeometryCommonFields, total=False):
     design_inlet_water_temperature: float | Literal["", "Autosize"] | None
@@ -29592,6 +31118,7 @@ class CoilSystemCoolingWater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemCoolingWaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c28.CoilSystemCoolingWater  # type: ignore[assignment]
 
 class _CoilSystemCoolingWaterFields(TypedDict, total=False):
     air_inlet_node_name: str | None
@@ -29632,6 +31159,7 @@ class CoilCoolingDX(_TypedIDFObject):
     evaporative_condenser_supply_water_storage_tank_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.CoilCoolingDX  # type: ignore[assignment]
 
 class _CoilCoolingDXFields(TypedDict, total=False):
     evaporator_inlet_node_name: str | None
@@ -29717,6 +31245,7 @@ class AnyCoilCoolingDXCurveFitPerformance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilCoolingDXCurveFitPerformanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.AnyCoilCoolingDXCurveFitPerformance  # type: ignore[assignment]
 
 class _AnyCoilCoolingDXCurveFitPerformanceFields(_CoilCoolingDXCurveFitPerformanceCommonFields, total=False): ...
 
@@ -29729,6 +31258,7 @@ class CoilCoolingDXCurveFitPerformance(AnyCoilCoolingDXCurveFitPerformance):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXCurveFitPerformanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.CoilCoolingDXCurveFitPerformance  # type: ignore[assignment]
 
 class _CoilCoolingDXCurveFitPerformanceFields(_CoilCoolingDXCurveFitPerformanceCommonFields, total=False):
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
@@ -29796,6 +31326,7 @@ class AnyCoilCoolingDXCurveFitOperatingMode(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilCoolingDXCurveFitOperatingModeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c92.AnyCoilCoolingDXCurveFitOperatingMode  # type: ignore[assignment]
 
 class _AnyCoilCoolingDXCurveFitOperatingModeFields(_CoilCoolingDXCurveFitOperatingModeCommonFields, total=False):
     nominal_speed_number: int | None
@@ -29811,6 +31342,7 @@ class CoilCoolingDXCurveFitOperatingMode(AnyCoilCoolingDXCurveFitOperatingMode):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXCurveFitOperatingModeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c28.CoilCoolingDXCurveFitOperatingMode  # type: ignore[assignment]
 
 class _CoilCoolingDXCurveFitOperatingModeFields(_CoilCoolingDXCurveFitOperatingModeCommonFields, total=False):
     apply_part_load_fraction_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None
@@ -29876,6 +31408,7 @@ class AnyCoilCoolingDXCurveFitSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilCoolingDXCurveFitSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.AnyCoilCoolingDXCurveFitSpeed  # type: ignore[assignment]
 
 class _AnyCoilCoolingDXCurveFitSpeedFields(_CoilCoolingDXCurveFitSpeedCommonFields, total=False): ...
 
@@ -29885,6 +31418,7 @@ class CoilCoolingDXCurveFitSpeed(AnyCoilCoolingDXCurveFitSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXCurveFitSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.CoilCoolingDXCurveFitSpeed  # type: ignore[assignment]
 
 class _CoilCoolingDXCurveFitSpeedFields(_CoilCoolingDXCurveFitSpeedCommonFields, total=False): ...
 
@@ -29903,6 +31437,7 @@ class CoilDXASHRAE205Performance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilDXASHRAE205PerformanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.CoilDXASHRAE205Performance  # type: ignore[assignment]
 
 class _CoilDXASHRAE205PerformanceFields(TypedDict, total=False):
     representation_file_name: str | None
@@ -30014,6 +31549,7 @@ class AnyCoilCoolingDXSingleSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilCoolingDXSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.AnyCoilCoolingDXSingleSpeed  # type: ignore[assignment]
 
 class _AnyCoilCoolingDXSingleSpeedFields(_CoilCoolingDXSingleSpeedCommonFields, total=False): ...
 
@@ -30026,6 +31562,7 @@ class CoilCoolingDXSingleSpeed(AnyCoilCoolingDXSingleSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c1.CoilCoolingDXSingleSpeed  # type: ignore[assignment]
 
 class _CoilCoolingDXSingleSpeedFields(_CoilCoolingDXSingleSpeedCommonFields, total=False):
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
@@ -30149,6 +31686,7 @@ class AnyCoilCoolingDXTwoSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilCoolingDXTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.AnyCoilCoolingDXTwoSpeed  # type: ignore[assignment]
 
 class _AnyCoilCoolingDXTwoSpeedFields(_CoilCoolingDXTwoSpeedCommonFields, total=False): ...
 
@@ -30167,6 +31705,7 @@ class CoilCoolingDXTwoSpeed(AnyCoilCoolingDXTwoSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c127.CoilCoolingDXTwoSpeed  # type: ignore[assignment]
 
 class _CoilCoolingDXTwoSpeedFields(_CoilCoolingDXTwoSpeedCommonFields, total=False):
     high_speed_2017_rated_evaporator_fan_power_per_volume_flow_rate: float | None
@@ -30471,6 +32010,7 @@ class AnyCoilCoolingDXMultiSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilCoolingDXMultiSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.AnyCoilCoolingDXMultiSpeed  # type: ignore[assignment]
 
 class _AnyCoilCoolingDXMultiSpeedFields(_CoilCoolingDXMultiSpeedCommonFields, total=False):
     fuel_type: Literal["Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"] | None
@@ -30501,6 +32041,7 @@ class CoilCoolingDXMultiSpeed(AnyCoilCoolingDXMultiSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXMultiSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.CoilCoolingDXMultiSpeed  # type: ignore[assignment]
 
 class _CoilCoolingDXMultiSpeedFields(_CoilCoolingDXMultiSpeedCommonFields, total=False):
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
@@ -30872,6 +32413,7 @@ class AnyCoilCoolingDXVariableSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilCoolingDXVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c104.AnyCoilCoolingDXVariableSpeed  # type: ignore[assignment]
 
 class _AnyCoilCoolingDXVariableSpeedFields(_CoilCoolingDXVariableSpeedCommonFields, total=False):
     number_of_speeds: int | None
@@ -30908,6 +32450,7 @@ class CoilCoolingDXVariableSpeed(AnyCoilCoolingDXVariableSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c104.CoilCoolingDXVariableSpeed  # type: ignore[assignment]
 
 class _CoilCoolingDXVariableSpeedFields(_CoilCoolingDXVariableSpeedCommonFields, total=False):
     availability_schedule_name: str | None
@@ -30988,6 +32531,7 @@ class AnyCoilCoolingDXTwoStageWithHumidityControlMode(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilCoolingDXTwoStageWithHumidityControlModeFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.AnyCoilCoolingDXTwoStageWithHumidityControlMode  # type: ignore[assignment]
 
 class _AnyCoilCoolingDXTwoStageWithHumidityControlModeFields(
     _CoilCoolingDXTwoStageWithHumidityControlModeCommonFields, total=False
@@ -31011,6 +32555,7 @@ class CoilCoolingDXTwoStageWithHumidityControlMode(AnyCoilCoolingDXTwoStageWithH
         /,
         **kwargs: Unpack[_CoilCoolingDXTwoStageWithHumidityControlModeFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.CoilCoolingDXTwoStageWithHumidityControlMode  # type: ignore[assignment]
 
 class _CoilCoolingDXTwoStageWithHumidityControlModeFields(
     _CoilCoolingDXTwoStageWithHumidityControlModeCommonFields, total=False
@@ -31068,6 +32613,7 @@ class CoilPerformanceDXCooling(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilPerformanceDXCoolingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.CoilPerformanceDXCooling  # type: ignore[assignment]
 
 class _CoilPerformanceDXCoolingFields(TypedDict, total=False):
     gross_rated_total_cooling_capacity: float | Literal["Autosize"] | None
@@ -31113,6 +32659,7 @@ class CoilCoolingDXVariableRefrigerantFlow(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXVariableRefrigerantFlowFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.CoilCoolingDXVariableRefrigerantFlow  # type: ignore[assignment]
 
 class _CoilCoolingDXVariableRefrigerantFlowFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -31143,6 +32690,7 @@ class CoilHeatingDXVariableRefrigerantFlow(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXVariableRefrigerantFlowFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.CoilHeatingDXVariableRefrigerantFlow  # type: ignore[assignment]
 
 class _CoilHeatingDXVariableRefrigerantFlowFields(TypedDict, total=False):
     availability_schedule: str | None
@@ -31177,6 +32725,7 @@ class CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl(_TypedIDFObjec
         /,
         **kwargs: Unpack[_CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControlFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl  # type: ignore[assignment]
 
 class _CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControlFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -31209,6 +32758,7 @@ class CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(_TypedIDFObjec
         /,
         **kwargs: Unpack[_CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControlFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c11.CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl  # type: ignore[assignment]
 
 class _CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControlFields(TypedDict, total=False):
     availability_schedule: str | None
@@ -31249,6 +32799,7 @@ class CoilHeatingWater(_TypedIDFObject):
     """This input field is optional. If specified, it is used for sizing the Design Water Flow Rate. If blank or omitted, th...; [deltaC]; Range: > 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingWaterFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c5.CoilHeatingWater  # type: ignore[assignment]
 
 class _CoilHeatingWaterFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -31288,6 +32839,7 @@ class CoilHeatingSteam(_TypedIDFObject):
     """Required if Coil Control Type is TemperatureSetpointControl"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingSteamFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c94.CoilHeatingSteam  # type: ignore[assignment]
 
 class _CoilHeatingSteamFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -31318,6 +32870,7 @@ class CoilHeatingElectric(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingElectricFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c34.CoilHeatingElectric  # type: ignore[assignment]
 
 class _CoilHeatingElectricFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -31374,6 +32927,7 @@ class AnyCoilHeatingElectricMultiStage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilHeatingElectricMultiStageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.AnyCoilHeatingElectricMultiStage  # type: ignore[assignment]
 
 class _AnyCoilHeatingElectricMultiStageFields(_CoilHeatingElectricMultiStageCommonFields, total=False):
     number_of_stages: int | None
@@ -31387,6 +32941,7 @@ class CoilHeatingElectricMultiStage(AnyCoilHeatingElectricMultiStage):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingElectricMultiStageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.CoilHeatingElectricMultiStage  # type: ignore[assignment]
 
 class _CoilHeatingElectricMultiStageFields(_CoilHeatingElectricMultiStageCommonFields, total=False):
     number_of_stages: int | None
@@ -31444,6 +32999,7 @@ class AnyCoilHeatingFuel(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilHeatingFuelFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c110.AnyCoilHeatingFuel  # type: ignore[assignment]
 
 class _AnyCoilHeatingFuelFields(_CoilHeatingFuelCommonFields, total=False):
     fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"] | None
@@ -31473,6 +33029,7 @@ class CoilHeatingFuel(AnyCoilHeatingFuel):
     """parasitic fuel load when the coil is not operating (i.e., standing pilot); [W]; Since: 23.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingFuelFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c26.CoilHeatingFuel  # type: ignore[assignment]
 
 class _CoilHeatingFuelFields(_CoilHeatingFuelCommonFields, total=False):
     fuel_type: (
@@ -31543,6 +33100,7 @@ class AnyCoilHeatingGasMultiStage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilHeatingGasMultiStageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c92.AnyCoilHeatingGasMultiStage  # type: ignore[assignment]
 
 class _AnyCoilHeatingGasMultiStageFields(_CoilHeatingGasMultiStageCommonFields, total=False):
     number_of_stages: int | None
@@ -31566,6 +33124,7 @@ class CoilHeatingGasMultiStage(AnyCoilHeatingGasMultiStage):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingGasMultiStageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.CoilHeatingGasMultiStage  # type: ignore[assignment]
 
 class _CoilHeatingGasMultiStageFields(_CoilHeatingGasMultiStageCommonFields, total=False):
     off_cycle_parasitic_gas_load: float | None
@@ -31631,6 +33190,7 @@ class AnyCoilHeatingDesuperheater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilHeatingDesuperheaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c15.AnyCoilHeatingDesuperheater  # type: ignore[assignment]
 
 class _AnyCoilHeatingDesuperheaterFields(_CoilHeatingDesuperheaterCommonFields, total=False):
     heating_source_object_type: (
@@ -31670,6 +33230,7 @@ class CoilHeatingDesuperheater(AnyCoilHeatingDesuperheater):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDesuperheaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.CoilHeatingDesuperheater  # type: ignore[assignment]
 
 class _CoilHeatingDesuperheaterFields(_CoilHeatingDesuperheaterCommonFields, total=False):
     heating_source_object_type: (
@@ -31783,6 +33344,7 @@ class AnyCoilHeatingDXSingleSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilHeatingDXSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.AnyCoilHeatingDXSingleSpeed  # type: ignore[assignment]
 
 class _AnyCoilHeatingDXSingleSpeedFields(_CoilHeatingDXSingleSpeedCommonFields, total=False):
     region_number_for_calculating_hspf: int | None
@@ -31798,6 +33360,7 @@ class CoilHeatingDXSingleSpeed(AnyCoilHeatingDXSingleSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.CoilHeatingDXSingleSpeed  # type: ignore[assignment]
 
 class _CoilHeatingDXSingleSpeedFields(_CoilHeatingDXSingleSpeedCommonFields, total=False):
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
@@ -32067,6 +33630,7 @@ class AnyCoilHeatingDXMultiSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilHeatingDXMultiSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c24.AnyCoilHeatingDXMultiSpeed  # type: ignore[assignment]
 
 class _AnyCoilHeatingDXMultiSpeedFields(_CoilHeatingDXMultiSpeedCommonFields, total=False):
     fuel_type: Literal["Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"] | None
@@ -32100,6 +33664,7 @@ class CoilHeatingDXMultiSpeed(AnyCoilHeatingDXMultiSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXMultiSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c5.CoilHeatingDXMultiSpeed  # type: ignore[assignment]
 
 class _CoilHeatingDXMultiSpeedFields(_CoilHeatingDXMultiSpeedCommonFields, total=False):
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
@@ -32369,6 +33934,7 @@ class AnyCoilHeatingDXVariableSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilHeatingDXVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.AnyCoilHeatingDXVariableSpeed  # type: ignore[assignment]
 
 class _AnyCoilHeatingDXVariableSpeedFields(_CoilHeatingDXVariableSpeedCommonFields, total=False):
     number_of_speeds: int | None
@@ -32403,6 +33969,7 @@ class CoilHeatingDXVariableSpeed(AnyCoilHeatingDXVariableSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.CoilHeatingDXVariableSpeed  # type: ignore[assignment]
 
 class _CoilHeatingDXVariableSpeedFields(_CoilHeatingDXVariableSpeedCommonFields, total=False):
     availability_schedule_name: str | None
@@ -32503,6 +34070,7 @@ class AnyCoilCoolingWaterToAirHeatPumpParameterEstimation(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilCoolingWaterToAirHeatPumpParameterEstimationFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.AnyCoilCoolingWaterToAirHeatPumpParameterEstimation  # type: ignore[assignment]
 
 class _AnyCoilCoolingWaterToAirHeatPumpParameterEstimationFields(
     _CoilCoolingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
@@ -32528,6 +34096,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation(AnyCoilCoolingWaterToAirH
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpParameterEstimationFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c112.CoilCoolingWaterToAirHeatPumpParameterEstimation  # type: ignore[assignment]
 
 class _CoilCoolingWaterToAirHeatPumpParameterEstimationFields(
     _CoilCoolingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
@@ -32615,6 +34184,7 @@ class AnyCoilHeatingWaterToAirHeatPumpParameterEstimation(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilHeatingWaterToAirHeatPumpParameterEstimationFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.AnyCoilHeatingWaterToAirHeatPumpParameterEstimation  # type: ignore[assignment]
 
 class _AnyCoilHeatingWaterToAirHeatPumpParameterEstimationFields(
     _CoilHeatingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
@@ -32634,6 +34204,7 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation(AnyCoilHeatingWaterToAirH
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpParameterEstimationFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.CoilHeatingWaterToAirHeatPumpParameterEstimation  # type: ignore[assignment]
 
 class _CoilHeatingWaterToAirHeatPumpParameterEstimationFields(
     _CoilHeatingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
@@ -32682,6 +34253,7 @@ class AnyCoilCoolingWaterToAirHeatPumpEquationFit(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilCoolingWaterToAirHeatPumpEquationFitFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.AnyCoilCoolingWaterToAirHeatPumpEquationFit  # type: ignore[assignment]
 
 class _AnyCoilCoolingWaterToAirHeatPumpEquationFitFields(
     _CoilCoolingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -32719,6 +34291,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit(AnyCoilCoolingWaterToAirHeatPumpE
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpEquationFitFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.CoilCoolingWaterToAirHeatPumpEquationFit  # type: ignore[assignment]
 
 class _CoilCoolingWaterToAirHeatPumpEquationFitFields(
     _CoilCoolingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -33174,6 +34747,7 @@ class AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c50.AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit  # type: ignore[assignment]
 
 class _AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields(
     _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
@@ -33203,6 +34777,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(AnyCoilCoolingWaterT
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c42.CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit  # type: ignore[assignment]
 
 class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields(
     _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
@@ -33246,6 +34821,7 @@ class AnyCoilHeatingWaterToAirHeatPumpEquationFit(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilHeatingWaterToAirHeatPumpEquationFitFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.AnyCoilHeatingWaterToAirHeatPumpEquationFit  # type: ignore[assignment]
 
 class _AnyCoilHeatingWaterToAirHeatPumpEquationFitFields(
     _CoilHeatingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -33275,6 +34851,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit(AnyCoilHeatingWaterToAirHeatPumpE
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpEquationFitFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c93.CoilHeatingWaterToAirHeatPumpEquationFit  # type: ignore[assignment]
 
 class _CoilHeatingWaterToAirHeatPumpEquationFitFields(
     _CoilHeatingWaterToAirHeatPumpEquationFitCommonFields, total=False
@@ -33684,6 +35261,7 @@ class AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c90.AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit  # type: ignore[assignment]
 
 class _AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields(
     _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
@@ -33709,6 +35287,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(AnyCoilHeatingWaterT
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c66.CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit  # type: ignore[assignment]
 
 class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields(
     _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
@@ -33811,6 +35390,7 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpPumped(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilWaterHeatingAirToWaterHeatPumpPumpedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c90.AnyCoilWaterHeatingAirToWaterHeatPumpPumped  # type: ignore[assignment]
 
 class _AnyCoilWaterHeatingAirToWaterHeatPumpPumpedFields(
     _CoilWaterHeatingAirToWaterHeatPumpPumpedCommonFields, total=False
@@ -33830,6 +35410,7 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped(AnyCoilWaterHeatingAirToWaterHeat
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpPumpedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.CoilWaterHeatingAirToWaterHeatPumpPumped  # type: ignore[assignment]
 
 class _CoilWaterHeatingAirToWaterHeatPumpPumpedFields(
     _CoilWaterHeatingAirToWaterHeatPumpPumpedCommonFields, total=False
@@ -33903,6 +35484,7 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpWrapped(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilWaterHeatingAirToWaterHeatPumpWrappedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.AnyCoilWaterHeatingAirToWaterHeatPumpWrapped  # type: ignore[assignment]
 
 class _AnyCoilWaterHeatingAirToWaterHeatPumpWrappedFields(
     _CoilWaterHeatingAirToWaterHeatPumpWrappedCommonFields, total=False
@@ -33922,6 +35504,7 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped(AnyCoilWaterHeatingAirToWaterHea
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpWrappedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.CoilWaterHeatingAirToWaterHeatPumpWrapped  # type: ignore[assignment]
 
 class _CoilWaterHeatingAirToWaterHeatPumpWrappedFields(
     _CoilWaterHeatingAirToWaterHeatPumpWrappedCommonFields, total=False
@@ -34272,6 +35855,7 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c14.AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed  # type: ignore[assignment]
 
 class _AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields(
     _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedCommonFields, total=False
@@ -34357,6 +35941,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(AnyCoilWaterHeatingAirToWa
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c104.CoilWaterHeatingAirToWaterHeatPumpVariableSpeed  # type: ignore[assignment]
 
 class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields(
     _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedCommonFields, total=False
@@ -34495,6 +36080,7 @@ class AnyCoilWaterHeatingDesuperheater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilWaterHeatingDesuperheaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.AnyCoilWaterHeatingDesuperheater  # type: ignore[assignment]
 
 class _AnyCoilWaterHeatingDesuperheaterFields(_CoilWaterHeatingDesuperheaterCommonFields, total=False):
     tank_object_type: Literal["", "WaterHeater:Mixed"] | None
@@ -34539,6 +36125,7 @@ class CoilWaterHeatingDesuperheater(AnyCoilWaterHeatingDesuperheater):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilWaterHeatingDesuperheaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.CoilWaterHeatingDesuperheater  # type: ignore[assignment]
 
 class _CoilWaterHeatingDesuperheaterFields(_CoilWaterHeatingDesuperheaterCommonFields, total=False):
     tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None
@@ -34623,6 +36210,7 @@ class AnyCoilSystemCoolingDX(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilSystemCoolingDXFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c52.AnyCoilSystemCoolingDX  # type: ignore[assignment]
 
 class _AnyCoilSystemCoolingDXFields(_CoilSystemCoolingDXCommonFields, total=False):
     cooling_coil_object_type: (
@@ -34656,6 +36244,7 @@ class CoilSystemCoolingDX(AnyCoilSystemCoolingDX):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemCoolingDXFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.CoilSystemCoolingDX  # type: ignore[assignment]
 
 class _CoilSystemCoolingDXFields(_CoilSystemCoolingDXCommonFields, total=False):
     cooling_coil_object_type: (
@@ -34682,6 +36271,7 @@ class CoilSystemHeatingDX(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemHeatingDXFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c87.CoilSystemHeatingDX  # type: ignore[assignment]
 
 class _CoilSystemHeatingDXFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -34704,6 +36294,7 @@ class CoilSystemCoolingWaterHeatExchangerAssisted(_TypedIDFObject):
         /,
         **kwargs: Unpack[_CoilSystemCoolingWaterHeatExchangerAssistedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.CoilSystemCoolingWaterHeatExchangerAssisted  # type: ignore[assignment]
 
 class _CoilSystemCoolingWaterHeatExchangerAssistedFields(TypedDict, total=False):
     heat_exchanger_object_type: (
@@ -34753,6 +36344,7 @@ class AnyCoilSystemCoolingDXHeatExchangerAssisted(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilSystemCoolingDXHeatExchangerAssistedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.AnyCoilSystemCoolingDXHeatExchangerAssisted  # type: ignore[assignment]
 
 class _AnyCoilSystemCoolingDXHeatExchangerAssistedFields(
     _CoilSystemCoolingDXHeatExchangerAssistedCommonFields, total=False
@@ -34772,6 +36364,7 @@ class CoilSystemCoolingDXHeatExchangerAssisted(AnyCoilSystemCoolingDXHeatExchang
         /,
         **kwargs: Unpack[_CoilSystemCoolingDXHeatExchangerAssistedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.CoilSystemCoolingDXHeatExchangerAssisted  # type: ignore[assignment]
 
 class _CoilSystemCoolingDXHeatExchangerAssistedFields(
     _CoilSystemCoolingDXHeatExchangerAssistedCommonFields, total=False
@@ -34851,6 +36444,7 @@ class AnyCoilSystemIntegratedHeatPumpAirSource(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyCoilSystemIntegratedHeatPumpAirSourceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c121.AnyCoilSystemIntegratedHeatPumpAirSource  # type: ignore[assignment]
 
 class _AnyCoilSystemIntegratedHeatPumpAirSourceFields(_CoilSystemIntegratedHeatPumpAirSourceCommonFields, total=False):
     flag_to_indicate_load_control_in_scwh_mode: int | None
@@ -34873,6 +36467,7 @@ class CoilSystemIntegratedHeatPumpAirSource(AnyCoilSystemIntegratedHeatPumpAirSo
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemIntegratedHeatPumpAirSourceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.CoilSystemIntegratedHeatPumpAirSource  # type: ignore[assignment]
 
 class _CoilSystemIntegratedHeatPumpAirSourceFields(_CoilSystemIntegratedHeatPumpAirSourceCommonFields, total=False):
     flag_to_indicate_load_control_in_scwh_mode: int | None
@@ -35082,6 +36677,7 @@ class CoilCoolingDXSingleSpeedThermalStorage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXSingleSpeedThermalStorageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.CoilCoolingDXSingleSpeedThermalStorage  # type: ignore[assignment]
 
 class _CoilCoolingDXSingleSpeedThermalStorageFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35210,6 +36806,7 @@ class EvaporativeCoolerDirectCelDekPad(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeCoolerDirectCelDekPadFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c81.EvaporativeCoolerDirectCelDekPad  # type: ignore[assignment]
 
 class _EvaporativeCoolerDirectCelDekPadFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35251,6 +36848,7 @@ class EvaporativeCoolerIndirectCelDekPad(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeCoolerIndirectCelDekPadFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c15.EvaporativeCoolerIndirectCelDekPad  # type: ignore[assignment]
 
 class _EvaporativeCoolerIndirectCelDekPadFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35294,6 +36892,7 @@ class EvaporativeCoolerIndirectWetCoil(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeCoolerIndirectWetCoilFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.EvaporativeCoolerIndirectWetCoil  # type: ignore[assignment]
 
 class _EvaporativeCoolerIndirectWetCoilFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35366,6 +36965,7 @@ class EvaporativeCoolerIndirectResearchSpecial(_TypedIDFObject):
         /,
         **kwargs: Unpack[_EvaporativeCoolerIndirectResearchSpecialFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.EvaporativeCoolerIndirectResearchSpecial  # type: ignore[assignment]
 
 class _EvaporativeCoolerIndirectResearchSpecialFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35431,6 +37031,7 @@ class EvaporativeCoolerDirectResearchSpecial(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeCoolerDirectResearchSpecialFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c52.EvaporativeCoolerDirectResearchSpecial  # type: ignore[assignment]
 
 class _EvaporativeCoolerDirectResearchSpecialFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35470,6 +37071,7 @@ class HumidifierSteamElectric(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HumidifierSteamElectricFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c30.HumidifierSteamElectric  # type: ignore[assignment]
 
 class _HumidifierSteamElectricFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35507,6 +37109,7 @@ class HumidifierSteamGas(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HumidifierSteamGasFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.HumidifierSteamGas  # type: ignore[assignment]
 
 class _HumidifierSteamGasFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35578,6 +37181,7 @@ class DehumidifierDesiccantNoFans(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DehumidifierDesiccantNoFansFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c112.DehumidifierDesiccantNoFans  # type: ignore[assignment]
 
 class _DehumidifierDesiccantNoFansFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35649,6 +37253,7 @@ class DehumidifierDesiccantSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DehumidifierDesiccantSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.DehumidifierDesiccantSystem  # type: ignore[assignment]
 
 class _DehumidifierDesiccantSystemFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35708,6 +37313,7 @@ class HeatExchangerAirToAirFlatPlate(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatExchangerAirToAirFlatPlateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.HeatExchangerAirToAirFlatPlate  # type: ignore[assignment]
 
 class _HeatExchangerAirToAirFlatPlateFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35791,6 +37397,7 @@ class AnyHeatExchangerAirToAirSensibleAndLatent(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyHeatExchangerAirToAirSensibleAndLatentFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c95.AnyHeatExchangerAirToAirSensibleAndLatent  # type: ignore[assignment]
 
 class _AnyHeatExchangerAirToAirSensibleAndLatentFields(
     _HeatExchangerAirToAirSensibleAndLatentCommonFields, total=False
@@ -35811,6 +37418,7 @@ class HeatExchangerAirToAirSensibleAndLatent(AnyHeatExchangerAirToAirSensibleAnd
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatExchangerAirToAirSensibleAndLatentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c46.HeatExchangerAirToAirSensibleAndLatent  # type: ignore[assignment]
 
 class _HeatExchangerAirToAirSensibleAndLatentFields(_HeatExchangerAirToAirSensibleAndLatentCommonFields, total=False):
     sensible_effectiveness_of_heating_air_flow_curve_name: str | None
@@ -35838,6 +37446,7 @@ class HeatExchangerDesiccantBalancedFlow(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatExchangerDesiccantBalancedFlowFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.HeatExchangerDesiccantBalancedFlow  # type: ignore[assignment]
 
 class _HeatExchangerDesiccantBalancedFlowFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -35947,6 +37556,7 @@ class HeatExchangerDesiccantBalancedFlowPerformanceDataType1(_TypedIDFObject):
         /,
         **kwargs: Unpack[_HeatExchangerDesiccantBalancedFlowPerformanceDataType1Fields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c30.HeatExchangerDesiccantBalancedFlowPerformanceDataType1  # type: ignore[assignment]
 
 class _HeatExchangerDesiccantBalancedFlowPerformanceDataType1Fields(TypedDict, total=False):
     nominal_air_flow_rate: float | Literal["Autosize"] | None
@@ -36320,6 +37930,7 @@ class AnyAirLoopHVACUnitarySystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirLoopHVACUnitarySystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.AnyAirLoopHVACUnitarySystem  # type: ignore[assignment]
 
 class _AnyAirLoopHVACUnitarySystemFields(_AirLoopHVACUnitarySystemCommonFields, total=False):
     cooling_coil_object_type: (
@@ -36396,6 +38007,7 @@ class AirLoopHVACUnitarySystem(AnyAirLoopHVACUnitarySystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitarySystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c5.AirLoopHVACUnitarySystem  # type: ignore[assignment]
 
 class _AirLoopHVACUnitarySystemFields(_AirLoopHVACUnitarySystemCommonFields, total=False):
     cooling_coil_object_type: (
@@ -36435,10 +38047,19 @@ class _AirLoopHVACUnitarySystemFields(_AirLoopHVACUnitarySystemCommonFields, tot
 class _UnitarySystemPerformanceMultispeedCommonFields(TypedDict, total=False):
     single_mode_operation: Literal["", "No", "Yes"] | None
     no_load_supply_air_flow_rate_ratio: float | None
-    flow_ratios: list[Any]
+    flow_ratios: Sequence[
+        UnitarySystemPerformanceMultispeedFlowRatiosItem | UnitarySystemPerformanceMultispeedFlowRatiosGroup
+    ]
 
 class UnitarySystemPerformanceMultispeedFlowRatiosGroup(_TypedExtensibleGroup):
     """One flow_ratios group inside :class:`AnyUnitarySystemPerformanceMultispeed`."""
+
+    heating_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
+    cooling_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
+    def as_dict(self) -> UnitarySystemPerformanceMultispeedFlowRatiosItem: ...  # type: ignore[override]
+
+class UnitarySystemPerformanceMultispeedFlowRatiosItem(TypedDict, total=False):
+    """One group of :class:`UnitarySystemPerformanceMultispeedFlowRatiosGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     heating_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
     cooling_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
@@ -36462,6 +38083,7 @@ class AnyUnitarySystemPerformanceMultispeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyUnitarySystemPerformanceMultispeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.AnyUnitarySystemPerformanceMultispeed  # type: ignore[assignment]
 
 class _AnyUnitarySystemPerformanceMultispeedFields(_UnitarySystemPerformanceMultispeedCommonFields, total=False):
     number_of_speeds_for_heating: int | None
@@ -36478,6 +38100,7 @@ class UnitarySystemPerformanceMultispeed(AnyUnitarySystemPerformanceMultispeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UnitarySystemPerformanceMultispeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.UnitarySystemPerformanceMultispeed  # type: ignore[assignment]
 
 class _UnitarySystemPerformanceMultispeedFields(_UnitarySystemPerformanceMultispeedCommonFields, total=False):
     number_of_speeds_for_heating: int | None
@@ -36511,6 +38134,7 @@ class AirLoopHVACUnitaryFurnaceHeatOnly(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryFurnaceHeatOnlyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.AirLoopHVACUnitaryFurnaceHeatOnly  # type: ignore[assignment]
 
 class _AirLoopHVACUnitaryFurnaceHeatOnlyFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -36622,6 +38246,7 @@ class AnyAirLoopHVACUnitaryFurnaceHeatCool(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirLoopHVACUnitaryFurnaceHeatCoolFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c91.AnyAirLoopHVACUnitaryFurnaceHeatCool  # type: ignore[assignment]
 
 class _AnyAirLoopHVACUnitaryFurnaceHeatCoolFields(_AirLoopHVACUnitaryFurnaceHeatCoolCommonFields, total=False):
     cooling_coil_object_type: (
@@ -36644,6 +38269,7 @@ class AirLoopHVACUnitaryFurnaceHeatCool(AnyAirLoopHVACUnitaryFurnaceHeatCool):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryFurnaceHeatCoolFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c71.AirLoopHVACUnitaryFurnaceHeatCool  # type: ignore[assignment]
 
 class _AirLoopHVACUnitaryFurnaceHeatCoolFields(_AirLoopHVACUnitaryFurnaceHeatCoolCommonFields, total=False):
     cooling_coil_object_type: (
@@ -36683,6 +38309,7 @@ class AirLoopHVACUnitaryHeatOnly(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatOnlyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.AirLoopHVACUnitaryHeatOnly  # type: ignore[assignment]
 
 class _AirLoopHVACUnitaryHeatOnlyFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -36757,6 +38384,7 @@ class AirLoopHVACUnitaryHeatCool(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatCoolFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.AirLoopHVACUnitaryHeatCool  # type: ignore[assignment]
 
 class _AirLoopHVACUnitaryHeatCoolFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -36893,6 +38521,7 @@ class AnyAirLoopHVACUnitaryHeatPumpAirToAir(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirLoopHVACUnitaryHeatPumpAirToAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.AnyAirLoopHVACUnitaryHeatPumpAirToAir  # type: ignore[assignment]
 
 class _AnyAirLoopHVACUnitaryHeatPumpAirToAirFields(_AirLoopHVACUnitaryHeatPumpAirToAirCommonFields, total=False): ...
 
@@ -36905,6 +38534,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAir(AnyAirLoopHVACUnitaryHeatPumpAirToAir):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.AirLoopHVACUnitaryHeatPumpAirToAir  # type: ignore[assignment]
 
 class _AirLoopHVACUnitaryHeatPumpAirToAirFields(_AirLoopHVACUnitaryHeatPumpAirToAirCommonFields, total=False):
     dx_heating_coil_sizing_ratio: float | None
@@ -37013,6 +38643,7 @@ class AnyAirLoopHVACUnitaryHeatPumpWaterToAir(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirLoopHVACUnitaryHeatPumpWaterToAirFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c66.AnyAirLoopHVACUnitaryHeatPumpWaterToAir  # type: ignore[assignment]
 
 class _AnyAirLoopHVACUnitaryHeatPumpWaterToAirFields(
     _AirLoopHVACUnitaryHeatPumpWaterToAirCommonFields, total=False
@@ -37027,6 +38658,7 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir(AnyAirLoopHVACUnitaryHeatPumpWaterToA
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpWaterToAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.AirLoopHVACUnitaryHeatPumpWaterToAir  # type: ignore[assignment]
 
 class _AirLoopHVACUnitaryHeatPumpWaterToAirFields(_AirLoopHVACUnitaryHeatPumpWaterToAirCommonFields, total=False):
     dx_heating_coil_sizing_ratio: float | None
@@ -37162,6 +38794,7 @@ class AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass  # type: ignore[assignment]
 
 class _AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields(
     _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassCommonFields, total=False
@@ -37184,6 +38817,7 @@ class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(AnyAirLoopHVACUnitaryHeatCoo
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass  # type: ignore[assignment]
 
 class _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields(
     _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassCommonFields, total=False
@@ -37321,6 +38955,7 @@ class AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c89.AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed  # type: ignore[assignment]
 
 class _AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields(
     _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedCommonFields, total=False
@@ -37344,6 +38979,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(AnyAirLoopHVACUnitaryHeatPump
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c11.AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed  # type: ignore[assignment]
 
 class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields(
     _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedCommonFields, total=False
@@ -37626,6 +39262,7 @@ class AnyAirConditionerVariableRefrigerantFlow(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirConditionerVariableRefrigerantFlowFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.AnyAirConditionerVariableRefrigerantFlow  # type: ignore[assignment]
 
 class _AnyAirConditionerVariableRefrigerantFlowFields(_AirConditionerVariableRefrigerantFlowCommonFields, total=False):
     number_of_compressors: int | None
@@ -37682,6 +39319,7 @@ class AirConditionerVariableRefrigerantFlow(AnyAirConditionerVariableRefrigerant
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.AirConditionerVariableRefrigerantFlow  # type: ignore[assignment]
 
 class _AirConditionerVariableRefrigerantFlowFields(_AirConditionerVariableRefrigerantFlowCommonFields, total=False):
     minimum_condenser_inlet_node_temperature_in_cooling_mode: float | None
@@ -37747,10 +39385,21 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlCommonFields(
     resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None
     maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None
     compressor_maximum_delta_pressure: float | None
-    loading_indices: list[Any]
+    loading_indices: Sequence[
+        AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem
+        | AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup
+    ]
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup(_TypedExtensibleGroup):
     """One loading_indices group inside :class:`AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl`."""
+
+    compressor_speed_at_loading_index: float | None
+    loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
+    loading_index_compressor_power_multiplier_function_of_temperature_curve_name: str | None
+    def as_dict(self) -> AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem: ...  # type: ignore[override]
+
+class AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem(TypedDict, total=False):
+    """One group of :class:`AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     compressor_speed_at_loading_index: float | None
     loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
@@ -37851,6 +39500,7 @@ class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl(_TypedIDFO
         /,
         **kwargs: Unpack[_AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c52.AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl  # type: ignore[assignment]
 
 class _AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlFields(
     _AirConditionerVariableRefrigerantFlowFluidTemperatureControlCommonFields, total=False
@@ -37874,6 +39524,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl(
         /,
         **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFluidTemperatureControlFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.AirConditionerVariableRefrigerantFlowFluidTemperatureControl  # type: ignore[assignment]
 
 class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlFields(
     _AirConditionerVariableRefrigerantFlowFluidTemperatureControlCommonFields, total=False
@@ -37939,10 +39590,21 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRCommonField
     compressor_maximum_delta_pressure: float | None
     compressor_inverter_efficiency: float | None
     compressor_evaporative_capacity_correction_factor: float | None
-    loading_indices: list[Any]
+    loading_indices: Sequence[
+        AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem
+        | AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup
+    ]
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup(_TypedExtensibleGroup):
     """One loading_indices group inside :class:`AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlHR`."""
+
+    compressor_speed_at_loading_index: float | None
+    loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
+    loading_index_compressor_power_multiplier_function_of_temperature_curve_name: str | None
+    def as_dict(self) -> AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem: ...  # type: ignore[override]
+
+class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem(TypedDict, total=False):
+    """One group of :class:`AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     compressor_speed_at_loading_index: float | None
     loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
@@ -38077,6 +39739,7 @@ class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlHR(_TypedID
         /,
         **kwargs: Unpack[_AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlHR  # type: ignore[assignment]
 
 class _AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields(
     _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRCommonFields, total=False
@@ -38100,6 +39763,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR(
         /,
         **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c102.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR  # type: ignore[assignment]
 
 class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields(
     _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRCommonFields, total=False
@@ -38109,6 +39773,12 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields(
 
 class ZoneTerminalUnitListTerminalUnitsGroup(_TypedExtensibleGroup):
     """One terminal_units group inside :class:`ZoneTerminalUnitList`."""
+
+    zone_terminal_unit_name: str | None
+    def as_dict(self) -> ZoneTerminalUnitListTerminalUnitsItem: ...  # type: ignore[override]
+
+class ZoneTerminalUnitListTerminalUnitsItem(TypedDict, total=False):
+    """One group of :class:`ZoneTerminalUnitListTerminalUnitsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     zone_terminal_unit_name: str | None
 
@@ -38121,10 +39791,11 @@ class ZoneTerminalUnitList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneTerminalUnitListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c14.ZoneTerminalUnitList  # type: ignore[assignment]
 
 class _ZoneTerminalUnitListFields(TypedDict, total=False):
     zone_terminal_unit_list_name: str | None
-    terminal_units: list[Any]
+    terminal_units: Sequence[ZoneTerminalUnitListTerminalUnitsItem | ZoneTerminalUnitListTerminalUnitsGroup]
 
 class _ControllerWaterCoilCommonFields(TypedDict, total=False):
     control_variable: Literal["HumidityRatio", "Temperature", "TemperatureAndHumidityRatio"] | None
@@ -38157,6 +39828,7 @@ class AnyControllerWaterCoil(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyControllerWaterCoilFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.AnyControllerWaterCoil  # type: ignore[assignment]
 
 class _AnyControllerWaterCoilFields(_ControllerWaterCoilCommonFields, total=False):
     maximum_actuated_flow: float | Literal["Autosize"] | None
@@ -38170,6 +39842,7 @@ class ControllerWaterCoil(AnyControllerWaterCoil):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerWaterCoilFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.ControllerWaterCoil  # type: ignore[assignment]
 
 class _ControllerWaterCoilFields(_ControllerWaterCoilCommonFields, total=False):
     maximum_actuated_flow: float | Literal["", "Autosize"] | None
@@ -38285,6 +39958,7 @@ class AnyControllerOutdoorAir(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyControllerOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.AnyControllerOutdoorAir  # type: ignore[assignment]
 
 class _AnyControllerOutdoorAirFields(_ControllerOutdoorAirCommonFields, total=False): ...
 
@@ -38297,6 +39971,7 @@ class ControllerOutdoorAir(AnyControllerOutdoorAir):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c111.ControllerOutdoorAir  # type: ignore[assignment]
 
 class _ControllerOutdoorAirFields(_ControllerOutdoorAirCommonFields, total=False):
     economizer_operation_staging: Literal["", "EconomizerFirst", "InterlockedWithMechanicalCooling"] | None
@@ -38308,6 +39983,13 @@ class _ControllerMechanicalVentilationCommonFields(TypedDict, total=False):
 
 class AnyControllerMechanicalVentilationZoneSpecificationsGroup(_TypedExtensibleGroup):
     """One zone_specifications group inside :class:`AnyControllerMechanicalVentilation`, as every supported version declares it."""
+
+    design_specification_outdoor_air_object_name: str | None
+    design_specification_zone_air_distribution_object_name: str | None
+    def as_dict(self) -> AnyControllerMechanicalVentilationZoneSpecificationsItem: ...  # type: ignore[override]
+
+class AnyControllerMechanicalVentilationZoneSpecificationsItem(TypedDict, total=False):
+    """One group of :class:`AnyControllerMechanicalVentilationZoneSpecificationsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
@@ -38360,6 +40042,7 @@ class AnyControllerMechanicalVentilation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyControllerMechanicalVentilationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.AnyControllerMechanicalVentilation  # type: ignore[assignment]
 
 class _AnyControllerMechanicalVentilationFields(_ControllerMechanicalVentilationCommonFields, total=False):
     system_outdoor_air_method: (
@@ -38374,10 +40057,21 @@ class _AnyControllerMechanicalVentilationFields(_ControllerMechanicalVentilation
         ]
         | None
     )
-    zone_specifications: list[Any]
+    zone_specifications: Sequence[
+        AnyControllerMechanicalVentilationZoneSpecificationsItem
+        | AnyControllerMechanicalVentilationZoneSpecificationsGroup
+    ]
 
 class ControllerMechanicalVentilationZoneSpecificationsGroup(AnyControllerMechanicalVentilationZoneSpecificationsGroup):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation`."""
+
+    zone_or_zonelist_name: str | None
+    design_specification_outdoor_air_object_name: str | None
+    design_specification_zone_air_distribution_object_name: str | None
+    def as_dict(self) -> ControllerMechanicalVentilationZoneSpecificationsItem: ...  # type: ignore[override]
+
+class ControllerMechanicalVentilationZoneSpecificationsItem(TypedDict, total=False):
+    """One group of :class:`ControllerMechanicalVentilationZoneSpecificationsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     zone_or_zonelist_name: str | None
     design_specification_outdoor_air_object_name: str | None
@@ -38407,6 +40101,7 @@ class ControllerMechanicalVentilation(AnyControllerMechanicalVentilation):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerMechanicalVentilationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c9.ControllerMechanicalVentilation  # type: ignore[assignment]
 
 class _ControllerMechanicalVentilationFields(_ControllerMechanicalVentilationCommonFields, total=False):
     system_outdoor_air_method: (
@@ -38424,7 +40119,9 @@ class _ControllerMechanicalVentilationFields(_ControllerMechanicalVentilationCom
         ]
         | None
     )
-    zone_specifications: list[Any]
+    zone_specifications: Sequence[
+        ControllerMechanicalVentilationZoneSpecificationsItem | ControllerMechanicalVentilationZoneSpecificationsGroup
+    ]
 
 class AirLoopHVACControllerList(_TypedIDFObject):
     """List controllers in order of control sequence"""
@@ -38449,6 +40146,7 @@ class AirLoopHVACControllerList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACControllerListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.AirLoopHVACControllerList  # type: ignore[assignment]
 
 class _AirLoopHVACControllerListFields(TypedDict, total=False):
     controller_1_object_type: Literal["Controller:OutdoorAir", "Controller:WaterCoil"] | None
@@ -38493,6 +40191,7 @@ class AirLoopHVAC(_TypedIDFObject):
     """The design return air flow rate as a fraction of supply air flow rate with no exhaust. This can be used to model a pr...; Default: 1.0; Range: >= 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c122.AirLoopHVAC  # type: ignore[assignment]
 
 class _AirLoopHVACFields(TypedDict, total=False):
     controller_list_name: str | None
@@ -38534,6 +40233,7 @@ class AirLoopHVACOutdoorAirSystemEquipmentList(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AirLoopHVACOutdoorAirSystemEquipmentListFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.AirLoopHVACOutdoorAirSystemEquipmentList  # type: ignore[assignment]
 
 class _AirLoopHVACOutdoorAirSystemEquipmentListFields(TypedDict, total=False):
     component_1_object_type: str | None
@@ -38570,6 +40270,7 @@ class AnyAirLoopHVACOutdoorAirSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirLoopHVACOutdoorAirSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.AnyAirLoopHVACOutdoorAirSystem  # type: ignore[assignment]
 
 class _AnyAirLoopHVACOutdoorAirSystemFields(_AirLoopHVACOutdoorAirSystemCommonFields, total=False): ...
 
@@ -38579,6 +40280,7 @@ class AirLoopHVACOutdoorAirSystem(AnyAirLoopHVACOutdoorAirSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACOutdoorAirSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c66.AirLoopHVACOutdoorAirSystem  # type: ignore[assignment]
 
 class _AirLoopHVACOutdoorAirSystemFields(_AirLoopHVACOutdoorAirSystemCommonFields, total=False): ...
 
@@ -38595,6 +40297,7 @@ class OutdoorAirMixer(_TypedIDFObject):
     """Name of Return Air Stream Node"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutdoorAirMixerFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.OutdoorAirMixer  # type: ignore[assignment]
 
 class _OutdoorAirMixerFields(TypedDict, total=False):
     mixed_air_node_name: str | None
@@ -38604,6 +40307,12 @@ class _OutdoorAirMixerFields(TypedDict, total=False):
 
 class AirLoopHVACZoneSplitterNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACZoneSplitter`."""
+
+    outlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACZoneSplitterNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACZoneSplitterNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACZoneSplitterNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     outlet_node_name: str | None
 
@@ -38616,13 +40325,20 @@ class AirLoopHVACZoneSplitter(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACZoneSplitterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c18.AirLoopHVACZoneSplitter  # type: ignore[assignment]
 
 class _AirLoopHVACZoneSplitterFields(TypedDict, total=False):
     inlet_node_name: str | None
-    nodes: list[Any]
+    nodes: Sequence[AirLoopHVACZoneSplitterNodesItem | AirLoopHVACZoneSplitterNodesGroup]
 
 class AirLoopHVACSupplyPlenumNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACSupplyPlenum`."""
+
+    outlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACSupplyPlenumNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACSupplyPlenumNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACSupplyPlenumNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     outlet_node_name: str | None
 
@@ -38637,15 +40353,23 @@ class AirLoopHVACSupplyPlenum(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACSupplyPlenumFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c117.AirLoopHVACSupplyPlenum  # type: ignore[assignment]
 
 class _AirLoopHVACSupplyPlenumFields(TypedDict, total=False):
     zone_name: str | None
     zone_node_name: str | None
     inlet_node_name: str | None
-    nodes: list[Any]
+    nodes: Sequence[AirLoopHVACSupplyPlenumNodesItem | AirLoopHVACSupplyPlenumNodesGroup]
 
 class AirLoopHVACSupplyPathComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`AirLoopHVACSupplyPath`."""
+
+    component_object_type: Literal["AirLoopHVAC:SupplyPlenum", "AirLoopHVAC:ZoneSplitter"] | None
+    component_name: str | None
+    def as_dict(self) -> AirLoopHVACSupplyPathComponentsItem: ...  # type: ignore[override]
+
+class AirLoopHVACSupplyPathComponentsItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACSupplyPathComponentsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     component_object_type: Literal["AirLoopHVAC:SupplyPlenum", "AirLoopHVAC:ZoneSplitter"] | None
     component_name: str | None
@@ -38659,13 +40383,20 @@ class AirLoopHVACSupplyPath(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACSupplyPathFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c40.AirLoopHVACSupplyPath  # type: ignore[assignment]
 
 class _AirLoopHVACSupplyPathFields(TypedDict, total=False):
     supply_air_path_inlet_node_name: str | None
-    components: list[Any]
+    components: Sequence[AirLoopHVACSupplyPathComponentsItem | AirLoopHVACSupplyPathComponentsGroup]
 
 class AirLoopHVACZoneMixerNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACZoneMixer`."""
+
+    inlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACZoneMixerNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACZoneMixerNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACZoneMixerNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     inlet_node_name: str | None
 
@@ -38678,13 +40409,20 @@ class AirLoopHVACZoneMixer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACZoneMixerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.AirLoopHVACZoneMixer  # type: ignore[assignment]
 
 class _AirLoopHVACZoneMixerFields(TypedDict, total=False):
     outlet_node_name: str | None
-    nodes: list[Any]
+    nodes: Sequence[AirLoopHVACZoneMixerNodesItem | AirLoopHVACZoneMixerNodesGroup]
 
 class AirLoopHVACReturnPlenumNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACReturnPlenum`."""
+
+    inlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACReturnPlenumNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACReturnPlenumNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACReturnPlenumNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     inlet_node_name: str | None
 
@@ -38700,16 +40438,24 @@ class AirLoopHVACReturnPlenum(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACReturnPlenumFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c61.AirLoopHVACReturnPlenum  # type: ignore[assignment]
 
 class _AirLoopHVACReturnPlenumFields(TypedDict, total=False):
     zone_name: str | None
     zone_node_name: str | None
     outlet_node_name: str | None
     induced_air_outlet_node_or_nodelist_name: str | None
-    nodes: list[Any]
+    nodes: Sequence[AirLoopHVACReturnPlenumNodesItem | AirLoopHVACReturnPlenumNodesGroup]
 
 class AirLoopHVACReturnPathComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`AirLoopHVACReturnPath`."""
+
+    component_object_type: Literal["AirLoopHVAC:ReturnPlenum", "AirLoopHVAC:ZoneMixer"] | None
+    component_name: str | None
+    def as_dict(self) -> AirLoopHVACReturnPathComponentsItem: ...  # type: ignore[override]
+
+class AirLoopHVACReturnPathComponentsItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACReturnPathComponentsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     component_object_type: Literal["AirLoopHVAC:ReturnPlenum", "AirLoopHVAC:ZoneMixer"] | None
     component_name: str | None
@@ -38723,10 +40469,11 @@ class AirLoopHVACReturnPath(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACReturnPathFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c67.AirLoopHVACReturnPath  # type: ignore[assignment]
 
 class _AirLoopHVACReturnPathFields(TypedDict, total=False):
     return_air_path_outlet_node_name: str | None
-    components: list[Any]
+    components: Sequence[AirLoopHVACReturnPathComponentsItem | AirLoopHVACReturnPathComponentsGroup]
 
 class AirLoopHVACExhaustSystem(_TypedIDFObject):
     """Defines a general exhaust system with a central exhaust fan drawing from one or more ZoneHVAC:ExhaustControl outlet n...; Since: 22.1.0"""
@@ -38739,6 +40486,7 @@ class AirLoopHVACExhaustSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACExhaustSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c12.AirLoopHVACExhaustSystem  # type: ignore[assignment]
 
 class _AirLoopHVACExhaustSystemFields(TypedDict, total=False):
     zone_mixer_name: str | None
@@ -38754,10 +40502,18 @@ class _AirLoopHVACDedicatedOutdoorAirSystemCommonFields(TypedDict, total=False):
     preheat_design_humidity_ratio: float | None
     precool_design_temperature: float | None
     precool_design_humidity_ratio: float | None
-    airloophvacs: list[Any]
+    airloophvacs: Sequence[
+        AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem | AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup
+    ]
 
 class AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup(_TypedExtensibleGroup):
     """One airloophvacs group inside :class:`AnyAirLoopHVACDedicatedOutdoorAirSystem`."""
+
+    airloophvac_name: str | None
+    def as_dict(self) -> AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem: ...  # type: ignore[override]
+
+class AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     airloophvac_name: str | None
 
@@ -38792,6 +40548,7 @@ class AnyAirLoopHVACDedicatedOutdoorAirSystem(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyAirLoopHVACDedicatedOutdoorAirSystemFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c95.AnyAirLoopHVACDedicatedOutdoorAirSystem  # type: ignore[assignment]
 
 class _AnyAirLoopHVACDedicatedOutdoorAirSystemFields(_AirLoopHVACDedicatedOutdoorAirSystemCommonFields, total=False):
     number_of_airloophvac: int | None
@@ -38805,12 +40562,19 @@ class AirLoopHVACDedicatedOutdoorAirSystem(AnyAirLoopHVACDedicatedOutdoorAirSyst
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACDedicatedOutdoorAirSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.AirLoopHVACDedicatedOutdoorAirSystem  # type: ignore[assignment]
 
 class _AirLoopHVACDedicatedOutdoorAirSystemFields(_AirLoopHVACDedicatedOutdoorAirSystemCommonFields, total=False):
     number_of_airloophvac: int | None
 
 class AirLoopHVACMixerNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACMixer`."""
+
+    inlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACMixerNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACMixerNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACMixerNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     inlet_node_name: str | None
 
@@ -38821,13 +40585,20 @@ class AirLoopHVACMixer(_TypedIDFObject):
     nodes: ExtensibleList[AirLoopHVACMixerNodesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACMixerFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.AirLoopHVACMixer  # type: ignore[assignment]
 
 class _AirLoopHVACMixerFields(TypedDict, total=False):
     outlet_node_name: str | None
-    nodes: list[Any]
+    nodes: Sequence[AirLoopHVACMixerNodesItem | AirLoopHVACMixerNodesGroup]
 
 class AirLoopHVACSplitterNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACSplitter`."""
+
+    outlet_node_name: str | None
+    def as_dict(self) -> AirLoopHVACSplitterNodesItem: ...  # type: ignore[override]
+
+class AirLoopHVACSplitterNodesItem(TypedDict, total=False):
+    """One group of :class:`AirLoopHVACSplitterNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     outlet_node_name: str | None
 
@@ -38840,13 +40611,23 @@ class AirLoopHVACSplitter(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACSplitterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c18.AirLoopHVACSplitter  # type: ignore[assignment]
 
 class _AirLoopHVACSplitterFields(TypedDict, total=False):
     inlet_node_name: str | None
-    nodes: list[Any]
+    nodes: Sequence[AirLoopHVACSplitterNodesItem | AirLoopHVACSplitterNodesGroup]
 
 class BranchComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`Branch`."""
+
+    component_object_type: str | None
+    component_name: str | None
+    component_inlet_node_name: str | None
+    component_outlet_node_name: str | None
+    def as_dict(self) -> BranchComponentsItem: ...  # type: ignore[override]
+
+class BranchComponentsItem(TypedDict, total=False):
+    """One group of :class:`BranchComponentsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     component_object_type: str | None
     component_name: str | None
@@ -38861,13 +40642,20 @@ class Branch(_TypedIDFObject):
     components: ExtensibleList[BranchComponentsGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BranchFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.Branch  # type: ignore[assignment]
 
 class _BranchFields(TypedDict, total=False):
     pressure_drop_curve_name: str | None
-    components: list[Any]
+    components: Sequence[BranchComponentsItem | BranchComponentsGroup]
 
 class BranchListBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`BranchList`."""
+
+    branch_name: str | None
+    def as_dict(self) -> BranchListBranchesItem: ...  # type: ignore[override]
+
+class BranchListBranchesItem(TypedDict, total=False):
+    """One group of :class:`BranchListBranchesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     branch_name: str | None
 
@@ -38877,12 +40665,19 @@ class BranchList(_TypedIDFObject):
     branches: ExtensibleList[BranchListBranchesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BranchListFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.BranchList  # type: ignore[assignment]
 
 class _BranchListFields(TypedDict, total=False):
-    branches: list[Any]
+    branches: Sequence[BranchListBranchesItem | BranchListBranchesGroup]
 
 class ConnectorSplitterBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`ConnectorSplitter`."""
+
+    outlet_branch_name: str | None
+    def as_dict(self) -> ConnectorSplitterBranchesItem: ...  # type: ignore[override]
+
+class ConnectorSplitterBranchesItem(TypedDict, total=False):
+    """One group of :class:`ConnectorSplitterBranchesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     outlet_branch_name: str | None
 
@@ -38893,13 +40688,20 @@ class ConnectorSplitter(_TypedIDFObject):
     branches: ExtensibleList[ConnectorSplitterBranchesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConnectorSplitterFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.ConnectorSplitter  # type: ignore[assignment]
 
 class _ConnectorSplitterFields(TypedDict, total=False):
     inlet_branch_name: str | None
-    branches: list[Any]
+    branches: Sequence[ConnectorSplitterBranchesItem | ConnectorSplitterBranchesGroup]
 
 class ConnectorMixerBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`ConnectorMixer`."""
+
+    inlet_branch_name: str | None
+    def as_dict(self) -> ConnectorMixerBranchesItem: ...  # type: ignore[override]
+
+class ConnectorMixerBranchesItem(TypedDict, total=False):
+    """One group of :class:`ConnectorMixerBranchesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     inlet_branch_name: str | None
 
@@ -38910,10 +40712,11 @@ class ConnectorMixer(_TypedIDFObject):
     branches: ExtensibleList[ConnectorMixerBranchesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConnectorMixerFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.ConnectorMixer  # type: ignore[assignment]
 
 class _ConnectorMixerFields(TypedDict, total=False):
     outlet_branch_name: str | None
-    branches: list[Any]
+    branches: Sequence[ConnectorMixerBranchesItem | ConnectorMixerBranchesGroup]
 
 class ConnectorList(_TypedIDFObject):
     """only two connectors allowed per loop if two entered, one must be Connector:Splitter and one must be Connector:Mixer"""
@@ -38924,6 +40727,7 @@ class ConnectorList(_TypedIDFObject):
     connector_2_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConnectorListFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c114.ConnectorList  # type: ignore[assignment]
 
 class _ConnectorListFields(TypedDict, total=False):
     connector_1_object_type: Literal["Connector:Mixer", "Connector:Splitter"] | None
@@ -38935,6 +40739,12 @@ class NodeListNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`NodeList`."""
 
     node_name: str | None
+    def as_dict(self) -> NodeListNodesItem: ...  # type: ignore[override]
+
+class NodeListNodesItem(TypedDict, total=False):
+    """One group of :class:`NodeListNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    node_name: str | None
 
 class NodeList(_TypedIDFObject):
     """This object is used in places where lists of nodes may be needed, e.g. ZoneHVAC:EquipmentConnections field Zone Air I..."""
@@ -38942,9 +40752,10 @@ class NodeList(_TypedIDFObject):
     nodes: ExtensibleList[NodeListNodesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_NodeListFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c113.NodeList  # type: ignore[assignment]
 
 class _NodeListFields(TypedDict, total=False):
-    nodes: list[Any]
+    nodes: Sequence[NodeListNodesItem | NodeListNodesGroup]
 
 class OutdoorAirNode(_TypedIDFObject):
     """This object sets the temperature and humidity conditions for an outdoor air node. It allows the height above ground t..."""
@@ -38967,6 +40778,7 @@ class OutdoorAirNode(_TypedIDFObject):
     """Specify whether the angle used to compute the wind pressure coefficient is absolute or relative Specify Relative to c...; Default: Absolute"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutdoorAirNodeFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.OutdoorAirNode  # type: ignore[assignment]
 
 class _OutdoorAirNodeFields(TypedDict, total=False):
     height_above_ground: float | None
@@ -38982,6 +40794,12 @@ class OutdoorAirNodeListNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`OutdoorAirNodeList`."""
 
     node_or_nodelist_name: str | None
+    def as_dict(self) -> OutdoorAirNodeListNodesItem: ...  # type: ignore[override]
+
+class OutdoorAirNodeListNodesItem(TypedDict, total=False):
+    """One group of :class:`OutdoorAirNodeListNodesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    node_or_nodelist_name: str | None
 
 class OutdoorAirNodeList(_TypedIDFObject):
     """This object sets the temperature and humidity conditions for an outdoor air node using the weather data values. to va..."""
@@ -38991,9 +40809,10 @@ class OutdoorAirNodeList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutdoorAirNodeListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.OutdoorAirNodeList  # type: ignore[assignment]
 
 class _OutdoorAirNodeListFields(TypedDict, total=False):
-    nodes: list[Any]
+    nodes: Sequence[OutdoorAirNodeListNodesItem | OutdoorAirNodeListNodesGroup]
 
 class PipeAdiabatic(_TypedIDFObject):
     """Passes Inlet Node state variables to Outlet Node state variables"""
@@ -39002,6 +40821,7 @@ class PipeAdiabatic(_TypedIDFObject):
     outlet_node_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeAdiabaticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c42.PipeAdiabatic  # type: ignore[assignment]
 
 class _PipeAdiabaticFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -39016,6 +40836,7 @@ class PipeAdiabaticSteam(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeAdiabaticSteamFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.PipeAdiabaticSteam  # type: ignore[assignment]
 
 class _PipeAdiabaticSteamFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -39038,6 +40859,7 @@ class PipeIndoor(_TypedIDFObject):
     """[m]; Range: > 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeIndoorFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c42.PipeIndoor  # type: ignore[assignment]
 
 class _PipeIndoorFields(TypedDict, total=False):
     construction_name: str | None
@@ -39063,6 +40885,7 @@ class PipeOutdoor(_TypedIDFObject):
     """[m]; Range: > 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeOutdoorFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.PipeOutdoor  # type: ignore[assignment]
 
 class _PipeOutdoorFields(TypedDict, total=False):
     construction_name: str | None
@@ -39095,6 +40918,7 @@ class PipeUnderground(_TypedIDFObject):
     undisturbed_ground_temperature_model_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeUndergroundFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c59.PipeUnderground  # type: ignore[assignment]
 
 class _PipeUndergroundFields(TypedDict, total=False):
     construction_name: str | None
@@ -39146,10 +40970,18 @@ class _PipingSystemUndergroundDomainCommonFields(TypedDict, total=False):
     name_of_basement_floor_boundary_condition_model: str | None
     convergence_criterion_for_the_outer_cartesian_domain_iteration_loop: float | None
     evapotranspiration_ground_cover_parameter: float | None
-    pipe_circuits: list[Any]
+    pipe_circuits: Sequence[
+        PipingSystemUndergroundDomainPipeCircuitsItem | PipingSystemUndergroundDomainPipeCircuitsGroup
+    ]
 
 class PipingSystemUndergroundDomainPipeCircuitsGroup(_TypedExtensibleGroup):
     """One pipe_circuits group inside :class:`AnyPipingSystemUndergroundDomain`."""
+
+    pipe_circuit: str | None
+    def as_dict(self) -> PipingSystemUndergroundDomainPipeCircuitsItem: ...  # type: ignore[override]
+
+class PipingSystemUndergroundDomainPipeCircuitsItem(TypedDict, total=False):
+    """One group of :class:`PipingSystemUndergroundDomainPipeCircuitsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     pipe_circuit: str | None
 
@@ -39231,6 +41063,7 @@ class AnyPipingSystemUndergroundDomain(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPipingSystemUndergroundDomainFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.AnyPipingSystemUndergroundDomain  # type: ignore[assignment]
 
 class _AnyPipingSystemUndergroundDomainFields(_PipingSystemUndergroundDomainCommonFields, total=False):
     x_direction_mesh_density_parameter: int | None
@@ -39256,6 +41089,7 @@ class PipingSystemUndergroundDomain(AnyPipingSystemUndergroundDomain):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipingSystemUndergroundDomainFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.PipingSystemUndergroundDomain  # type: ignore[assignment]
 
 class _PipingSystemUndergroundDomainFields(_PipingSystemUndergroundDomainCommonFields, total=False):
     x_direction_mesh_density_parameter: int | None
@@ -39275,10 +41109,18 @@ class _PipingSystemUndergroundPipeCircuitCommonFields(TypedDict, total=False):
     circuit_outlet_node: str | None
     convergence_criterion_for_the_inner_radial_iteration_loop: float | None
     radial_thickness_of_inner_radial_near_pipe_mesh_region: float | None
-    pipe_segments: list[Any]
+    pipe_segments: Sequence[
+        PipingSystemUndergroundPipeCircuitPipeSegmentsItem | PipingSystemUndergroundPipeCircuitPipeSegmentsGroup
+    ]
 
 class PipingSystemUndergroundPipeCircuitPipeSegmentsGroup(_TypedExtensibleGroup):
     """One pipe_segments group inside :class:`AnyPipingSystemUndergroundPipeCircuit`."""
+
+    pipe_segment: str | None
+    def as_dict(self) -> PipingSystemUndergroundPipeCircuitPipeSegmentsItem: ...  # type: ignore[override]
+
+class PipingSystemUndergroundPipeCircuitPipeSegmentsItem(TypedDict, total=False):
+    """One group of :class:`PipingSystemUndergroundPipeCircuitPipeSegmentsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     pipe_segment: str | None
 
@@ -39320,6 +41162,7 @@ class AnyPipingSystemUndergroundPipeCircuit(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPipingSystemUndergroundPipeCircuitFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.AnyPipingSystemUndergroundPipeCircuit  # type: ignore[assignment]
 
 class _AnyPipingSystemUndergroundPipeCircuitFields(_PipingSystemUndergroundPipeCircuitCommonFields, total=False):
     maximum_iterations_in_the_inner_radial_iteration_loop: int | None
@@ -39339,6 +41182,7 @@ class PipingSystemUndergroundPipeCircuit(AnyPipingSystemUndergroundPipeCircuit):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipingSystemUndergroundPipeCircuitFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.PipingSystemUndergroundPipeCircuit  # type: ignore[assignment]
 
 class _PipingSystemUndergroundPipeCircuitFields(_PipingSystemUndergroundPipeCircuitCommonFields, total=False):
     maximum_iterations_in_the_inner_radial_iteration_loop: int | None
@@ -39358,6 +41202,7 @@ class PipingSystemUndergroundPipeSegment(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipingSystemUndergroundPipeSegmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c7.PipingSystemUndergroundPipeSegment  # type: ignore[assignment]
 
 class _PipingSystemUndergroundPipeSegmentFields(TypedDict, total=False):
     x_position: float | None
@@ -39371,6 +41216,7 @@ class Duct(_TypedIDFObject):
     outlet_node_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DuctFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c12.Duct  # type: ignore[assignment]
 
 class _DuctFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -39466,6 +41312,7 @@ class AnyPumpVariableSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPumpVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c11.AnyPumpVariableSpeed  # type: ignore[assignment]
 
 class _AnyPumpVariableSpeedFields(_PumpVariableSpeedCommonFields, total=False): ...
 
@@ -39476,6 +41323,7 @@ class PumpVariableSpeed(AnyPumpVariableSpeed):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpVariableSpeedFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c100.PumpVariableSpeed  # type: ignore[assignment]
 
 class _PumpVariableSpeedFields(_PumpVariableSpeedCommonFields, total=False):
     end_use_subcategory: str | None
@@ -39538,6 +41386,7 @@ class AnyPumpConstantSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPumpConstantSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c59.AnyPumpConstantSpeed  # type: ignore[assignment]
 
 class _AnyPumpConstantSpeedFields(_PumpConstantSpeedCommonFields, total=False): ...
 
@@ -39548,6 +41397,7 @@ class PumpConstantSpeed(AnyPumpConstantSpeed):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpConstantSpeedFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.PumpConstantSpeed  # type: ignore[assignment]
 
 class _PumpConstantSpeedFields(_PumpConstantSpeedCommonFields, total=False):
     end_use_subcategory: str | None
@@ -39610,6 +41460,7 @@ class AnyPumpVariableSpeedCondensate(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPumpVariableSpeedCondensateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c71.AnyPumpVariableSpeedCondensate  # type: ignore[assignment]
 
 class _AnyPumpVariableSpeedCondensateFields(_PumpVariableSpeedCondensateCommonFields, total=False): ...
 
@@ -39622,6 +41473,7 @@ class PumpVariableSpeedCondensate(AnyPumpVariableSpeedCondensate):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpVariableSpeedCondensateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.PumpVariableSpeedCondensate  # type: ignore[assignment]
 
 class _PumpVariableSpeedCondensateFields(_PumpVariableSpeedCondensateCommonFields, total=False):
     end_use_subcategory: str | None
@@ -39682,6 +41534,7 @@ class AnyHeaderedPumpsConstantSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHeaderedPumpsConstantSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c32.AnyHeaderedPumpsConstantSpeed  # type: ignore[assignment]
 
 class _AnyHeaderedPumpsConstantSpeedFields(_HeaderedPumpsConstantSpeedCommonFields, total=False):
     number_of_pumps_in_bank: int | None
@@ -39696,6 +41549,7 @@ class HeaderedPumpsConstantSpeed(AnyHeaderedPumpsConstantSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeaderedPumpsConstantSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c32.HeaderedPumpsConstantSpeed  # type: ignore[assignment]
 
 class _HeaderedPumpsConstantSpeedFields(_HeaderedPumpsConstantSpeedCommonFields, total=False):
     number_of_pumps_in_bank: int | None
@@ -39772,6 +41626,7 @@ class AnyHeaderedPumpsVariableSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHeaderedPumpsVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.AnyHeaderedPumpsVariableSpeed  # type: ignore[assignment]
 
 class _AnyHeaderedPumpsVariableSpeedFields(_HeaderedPumpsVariableSpeedCommonFields, total=False):
     number_of_pumps_in_bank: int | None
@@ -39786,6 +41641,7 @@ class HeaderedPumpsVariableSpeed(AnyHeaderedPumpsVariableSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeaderedPumpsVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.HeaderedPumpsVariableSpeed  # type: ignore[assignment]
 
 class _HeaderedPumpsVariableSpeedFields(_HeaderedPumpsVariableSpeedCommonFields, total=False):
     number_of_pumps_in_bank: int | None
@@ -39805,6 +41661,7 @@ class TemperingValve(_TypedIDFObject):
     pump_outlet_node_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TemperingValveFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c90.TemperingValve  # type: ignore[assignment]
 
 class _TemperingValveFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -39834,6 +41691,7 @@ class AnyLoadProfilePlant(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyLoadProfilePlantFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c93.AnyLoadProfilePlant  # type: ignore[assignment]
 
 class _AnyLoadProfilePlantFields(_LoadProfilePlantCommonFields, total=False): ...
 
@@ -39848,6 +41706,7 @@ class LoadProfilePlant(AnyLoadProfilePlant):
     """This field is used only when Plant Loop Fluid Type=Steam.; [C]; Default: 20.0; Range: >= 10.0; Since: 23.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LoadProfilePlantFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.LoadProfilePlant  # type: ignore[assignment]
 
 class _LoadProfilePlantFields(_LoadProfilePlantCommonFields, total=False):
     plant_loop_fluid_type: Literal["", "Steam", "Water"] | None
@@ -39878,6 +41737,7 @@ class SolarCollectorPerformanceFlatPlate(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SolarCollectorPerformanceFlatPlateFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.SolarCollectorPerformanceFlatPlate  # type: ignore[assignment]
 
 class _SolarCollectorPerformanceFlatPlateFields(TypedDict, total=False):
     gross_area: float | None
@@ -39903,6 +41763,7 @@ class SolarCollectorFlatPlateWater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SolarCollectorFlatPlateWaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.SolarCollectorFlatPlateWater  # type: ignore[assignment]
 
 class _SolarCollectorFlatPlateWaterFields(TypedDict, total=False):
     solarcollectorperformance_name: str | None
@@ -39932,6 +41793,7 @@ class SolarCollectorFlatPlatePhotovoltaicThermal(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SolarCollectorFlatPlatePhotovoltaicThermalFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.SolarCollectorFlatPlatePhotovoltaicThermal  # type: ignore[assignment]
 
 class _SolarCollectorFlatPlatePhotovoltaicThermalFields(TypedDict, total=False):
     surface_name: str | None
@@ -39962,6 +41824,7 @@ class SolarCollectorPerformancePhotovoltaicThermalSimple(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SolarCollectorPerformancePhotovoltaicThermalSimpleFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c26.SolarCollectorPerformancePhotovoltaicThermalSimple  # type: ignore[assignment]
 
 class _SolarCollectorPerformancePhotovoltaicThermalSimpleFields(TypedDict, total=False):
     fraction_of_surface_area_with_active_thermal_collector: float | None
@@ -40010,6 +41873,7 @@ class SolarCollectorPerformancePhotovoltaicThermalBIPVT(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SolarCollectorPerformancePhotovoltaicThermalBIPVTFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.SolarCollectorPerformancePhotovoltaicThermalBIPVT  # type: ignore[assignment]
 
 class _SolarCollectorPerformancePhotovoltaicThermalBIPVTFields(TypedDict, total=False):
     boundary_conditions_model_name: str | None
@@ -40045,6 +41909,7 @@ class SolarCollectorIntegralCollectorStorage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SolarCollectorIntegralCollectorStorageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.SolarCollectorIntegralCollectorStorage  # type: ignore[assignment]
 
 class _SolarCollectorIntegralCollectorStorageFields(TypedDict, total=False):
     integralcollectorstorageparameters_name: str | None
@@ -40122,6 +41987,7 @@ class AnySolarCollectorPerformanceIntegralCollectorStorage(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnySolarCollectorPerformanceIntegralCollectorStorageFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.AnySolarCollectorPerformanceIntegralCollectorStorage  # type: ignore[assignment]
 
 class _AnySolarCollectorPerformanceIntegralCollectorStorageFields(
     _SolarCollectorPerformanceIntegralCollectorStorageCommonFields, total=False
@@ -40140,6 +42006,7 @@ class SolarCollectorPerformanceIntegralCollectorStorage(AnySolarCollectorPerform
         /,
         **kwargs: Unpack[_SolarCollectorPerformanceIntegralCollectorStorageFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c87.SolarCollectorPerformanceIntegralCollectorStorage  # type: ignore[assignment]
 
 class _SolarCollectorPerformanceIntegralCollectorStorageFields(
     _SolarCollectorPerformanceIntegralCollectorStorageCommonFields, total=False
@@ -40148,6 +42015,12 @@ class _SolarCollectorPerformanceIntegralCollectorStorageFields(
 
 class SolarCollectorUnglazedTranspiredSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`SolarCollectorUnglazedTranspired`."""
+
+    surface_name: str | None
+    def as_dict(self) -> SolarCollectorUnglazedTranspiredSurfacesItem: ...  # type: ignore[override]
+
+class SolarCollectorUnglazedTranspiredSurfacesItem(TypedDict, total=False):
+    """One group of :class:`SolarCollectorUnglazedTranspiredSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     surface_name: str | None
 
@@ -40199,6 +42072,7 @@ class SolarCollectorUnglazedTranspired(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SolarCollectorUnglazedTranspiredFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.SolarCollectorUnglazedTranspired  # type: ignore[assignment]
 
 class _SolarCollectorUnglazedTranspiredFields(TypedDict, total=False):
     boundary_conditions_model_name: str | None
@@ -40222,10 +42096,19 @@ class _SolarCollectorUnglazedTranspiredFields(TypedDict, total=False):
     collector_thickness: float | None
     effectiveness_for_perforations_with_respect_to_wind: float | None
     discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None
-    surfaces: list[Any]
+    surfaces: Sequence[SolarCollectorUnglazedTranspiredSurfacesItem | SolarCollectorUnglazedTranspiredSurfacesGroup]
 
 class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup(_TypedExtensibleGroup):
     """One systems group inside :class:`SolarCollectorUnglazedTranspiredMultisystem`."""
+
+    outdoor_air_system_collector_inlet_node: str | None
+    outdoor_air_system_collector_outlet_node: str | None
+    outdoor_air_system_mixed_air_node: str | None
+    outdoor_air_system_zone_node: str | None
+    def as_dict(self) -> SolarCollectorUnglazedTranspiredMultisystemSystemsItem: ...  # type: ignore[override]
+
+class SolarCollectorUnglazedTranspiredMultisystemSystemsItem(TypedDict, total=False):
+    """One group of :class:`SolarCollectorUnglazedTranspiredMultisystemSystemsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     outdoor_air_system_collector_inlet_node: str | None
     outdoor_air_system_collector_outlet_node: str | None
@@ -40245,10 +42128,13 @@ class SolarCollectorUnglazedTranspiredMultisystem(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SolarCollectorUnglazedTranspiredMultisystemFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c29.SolarCollectorUnglazedTranspiredMultisystem  # type: ignore[assignment]
 
 class _SolarCollectorUnglazedTranspiredMultisystemFields(TypedDict, total=False):
     solar_collector_name: str | None
-    systems: list[Any]
+    systems: Sequence[
+        SolarCollectorUnglazedTranspiredMultisystemSystemsItem | SolarCollectorUnglazedTranspiredMultisystemSystemsGroup
+    ]
 
 class _BoilerHotWaterCommonFields(TypedDict, total=False):
     nominal_capacity: float | Literal["Autosize"] | None
@@ -40332,6 +42218,7 @@ class AnyBoilerHotWater(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyBoilerHotWaterFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.AnyBoilerHotWater  # type: ignore[assignment]
 
 class _AnyBoilerHotWaterFields(_BoilerHotWaterCommonFields, total=False):
     fuel_type: (
@@ -40377,6 +42264,7 @@ class BoilerHotWater(AnyBoilerHotWater):
     """parasitic fuel load when the boiler is not operating (i.e., standing pilot); [W]; Since: 23.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerHotWaterFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c49.BoilerHotWater  # type: ignore[assignment]
 
 class _BoilerHotWaterFields(_BoilerHotWaterCommonFields, total=False):
     fuel_type: (
@@ -40467,6 +42355,7 @@ class AnyBoilerSteam(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyBoilerSteamFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.AnyBoilerSteam  # type: ignore[assignment]
 
 class _AnyBoilerSteamFields(_BoilerSteamCommonFields, total=False):
     fuel_type: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
@@ -40491,6 +42380,7 @@ class BoilerSteam(AnyBoilerSteam):
     )
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerSteamFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.BoilerSteam  # type: ignore[assignment]
 
 class _BoilerSteamFields(_BoilerSteamCommonFields, total=False):
     fuel_type: (
@@ -40557,6 +42447,7 @@ class ChillerElectricASHRAE205(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricASHRAE205Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.ChillerElectricASHRAE205  # type: ignore[assignment]
 
 class _ChillerElectricASHRAE205Fields(TypedDict, total=False):
     representation_file_name: str | None
@@ -40688,6 +42579,7 @@ class AnyChillerElectricEIR(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyChillerElectricEIRFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.AnyChillerElectricEIR  # type: ignore[assignment]
 
 class _AnyChillerElectricEIRFields(_ChillerElectricEIRCommonFields, total=False): ...
 
@@ -40712,6 +42604,7 @@ class ChillerElectricEIR(AnyChillerElectricEIR):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricEIRFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c95.ChillerElectricEIR  # type: ignore[assignment]
 
 class _ChillerElectricEIRFields(_ChillerElectricEIRCommonFields, total=False):
     condenser_flow_control: (
@@ -40817,6 +42710,7 @@ class AnyChillerElectricReformulatedEIR(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyChillerElectricReformulatedEIRFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.AnyChillerElectricReformulatedEIR  # type: ignore[assignment]
 
 class _AnyChillerElectricReformulatedEIRFields(_ChillerElectricReformulatedEIRCommonFields, total=False): ...
 
@@ -40841,6 +42735,7 @@ class ChillerElectricReformulatedEIR(AnyChillerElectricReformulatedEIR):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricReformulatedEIRFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c34.ChillerElectricReformulatedEIR  # type: ignore[assignment]
 
 class _ChillerElectricReformulatedEIRFields(_ChillerElectricReformulatedEIRCommonFields, total=False):
     condenser_flow_control: (
@@ -40957,6 +42852,7 @@ class AnyChillerElectric(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyChillerElectricFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c58.AnyChillerElectric  # type: ignore[assignment]
 
 class _AnyChillerElectricFields(_ChillerElectricCommonFields, total=False): ...
 
@@ -40969,6 +42865,7 @@ class ChillerElectric(AnyChillerElectric):
     """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.ChillerElectric  # type: ignore[assignment]
 
 class _ChillerElectricFields(_ChillerElectricCommonFields, total=False):
     thermosiphon_capacity_fraction_curve_name: str | None
@@ -41035,6 +42932,7 @@ class ChillerAbsorptionIndirect(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerAbsorptionIndirectFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c116.ChillerAbsorptionIndirect  # type: ignore[assignment]
 
 class _ChillerAbsorptionIndirectFields(TypedDict, total=False):
     nominal_capacity: float | Literal["Autosize"] | None
@@ -41114,6 +43012,7 @@ class ChillerAbsorption(_TypedIDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerAbsorptionFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.ChillerAbsorption  # type: ignore[assignment]
 
 class _ChillerAbsorptionFields(TypedDict, total=False):
     nominal_capacity: float | Literal["Autosize"] | None
@@ -41190,6 +43089,7 @@ class AnyChillerConstantCOP(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyChillerConstantCOPFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.AnyChillerConstantCOP  # type: ignore[assignment]
 
 class _AnyChillerConstantCOPFields(_ChillerConstantCOPCommonFields, total=False): ...
 
@@ -41204,6 +43104,7 @@ class ChillerConstantCOP(AnyChillerConstantCOP):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerConstantCOPFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c114.ChillerConstantCOP  # type: ignore[assignment]
 
 class _ChillerConstantCOPFields(_ChillerConstantCOPCommonFields, total=False):
     thermosiphon_capacity_fraction_curve_name: str | None
@@ -41361,6 +43262,7 @@ class AnyChillerEngineDriven(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyChillerEngineDrivenFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.AnyChillerEngineDriven  # type: ignore[assignment]
 
 class _AnyChillerEngineDrivenFields(_ChillerEngineDrivenCommonFields, total=False):
     fuel_type: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
@@ -41376,6 +43278,7 @@ class ChillerEngineDriven(AnyChillerEngineDriven):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerEngineDrivenFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c66.ChillerEngineDriven  # type: ignore[assignment]
 
 class _ChillerEngineDrivenFields(_ChillerEngineDrivenCommonFields, total=False):
     fuel_type: (
@@ -41562,6 +43465,7 @@ class AnyChillerCombustionTurbine(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyChillerCombustionTurbineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c32.AnyChillerCombustionTurbine  # type: ignore[assignment]
 
 class _AnyChillerCombustionTurbineFields(_ChillerCombustionTurbineCommonFields, total=False):
     fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
@@ -41580,6 +43484,7 @@ class ChillerCombustionTurbine(AnyChillerCombustionTurbine):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerCombustionTurbineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.ChillerCombustionTurbine  # type: ignore[assignment]
 
 class _ChillerCombustionTurbineFields(_ChillerCombustionTurbineCommonFields, total=False):
     fuel_type: (
@@ -41713,6 +43618,7 @@ class AnyChillerHeaterAbsorptionDirectFired(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyChillerHeaterAbsorptionDirectFiredFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.AnyChillerHeaterAbsorptionDirectFired  # type: ignore[assignment]
 
 class _AnyChillerHeaterAbsorptionDirectFiredFields(_ChillerHeaterAbsorptionDirectFiredCommonFields, total=False):
     fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
@@ -41731,6 +43637,7 @@ class ChillerHeaterAbsorptionDirectFired(AnyChillerHeaterAbsorptionDirectFired):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerHeaterAbsorptionDirectFiredFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c108.ChillerHeaterAbsorptionDirectFired  # type: ignore[assignment]
 
 class _ChillerHeaterAbsorptionDirectFiredFields(_ChillerHeaterAbsorptionDirectFiredCommonFields, total=False):
     fuel_type: (
@@ -41806,6 +43713,7 @@ class ChillerHeaterAbsorptionDoubleEffect(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerHeaterAbsorptionDoubleEffectFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c100.ChillerHeaterAbsorptionDoubleEffect  # type: ignore[assignment]
 
 class _ChillerHeaterAbsorptionDoubleEffectFields(TypedDict, total=False):
     nominal_cooling_capacity: float | Literal["", "Autosize"] | None
@@ -41889,6 +43797,7 @@ class AnyHeatPumpPlantLoopEIRCooling(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHeatPumpPlantLoopEIRCoolingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.AnyHeatPumpPlantLoopEIRCooling  # type: ignore[assignment]
 
 class _AnyHeatPumpPlantLoopEIRCoolingFields(_HeatPumpPlantLoopEIRCoolingCommonFields, total=False): ...
 
@@ -41929,6 +43838,7 @@ class HeatPumpPlantLoopEIRCooling(AnyHeatPumpPlantLoopEIRCooling):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpPlantLoopEIRCoolingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.HeatPumpPlantLoopEIRCooling  # type: ignore[assignment]
 
 class _HeatPumpPlantLoopEIRCoolingFields(_HeatPumpPlantLoopEIRCoolingCommonFields, total=False):
     heat_recovery_inlet_node_name: str | None
@@ -41994,6 +43904,7 @@ class AnyHeatPumpPlantLoopEIRHeating(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHeatPumpPlantLoopEIRHeatingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c59.AnyHeatPumpPlantLoopEIRHeating  # type: ignore[assignment]
 
 class _AnyHeatPumpPlantLoopEIRHeatingFields(_HeatPumpPlantLoopEIRHeatingCommonFields, total=False): ...
 
@@ -42050,6 +43961,7 @@ class HeatPumpPlantLoopEIRHeating(AnyHeatPumpPlantLoopEIRHeating):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpPlantLoopEIRHeatingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c30.HeatPumpPlantLoopEIRHeating  # type: ignore[assignment]
 
 class _HeatPumpPlantLoopEIRHeatingFields(_HeatPumpPlantLoopEIRHeatingCommonFields, total=False):
     heat_recovery_inlet_node_name: str | None
@@ -42203,6 +44115,7 @@ class AnyHeatPumpAirToWaterFuelFiredHeating(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHeatPumpAirToWaterFuelFiredHeatingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c49.AnyHeatPumpAirToWaterFuelFiredHeating  # type: ignore[assignment]
 
 class _AnyHeatPumpAirToWaterFuelFiredHeatingFields(_HeatPumpAirToWaterFuelFiredHeatingCommonFields, total=False): ...
 
@@ -42215,6 +44128,7 @@ class HeatPumpAirToWaterFuelFiredHeating(AnyHeatPumpAirToWaterFuelFiredHeating):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredHeatingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c113.HeatPumpAirToWaterFuelFiredHeating  # type: ignore[assignment]
 
 class _HeatPumpAirToWaterFuelFiredHeatingFields(_HeatPumpAirToWaterFuelFiredHeatingCommonFields, total=False):
     minimum_unloading_ratio: float | None
@@ -42331,6 +44245,7 @@ class AnyHeatPumpAirToWaterFuelFiredCooling(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHeatPumpAirToWaterFuelFiredCoolingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.AnyHeatPumpAirToWaterFuelFiredCooling  # type: ignore[assignment]
 
 class _AnyHeatPumpAirToWaterFuelFiredCoolingFields(_HeatPumpAirToWaterFuelFiredCoolingCommonFields, total=False): ...
 
@@ -42343,6 +44258,7 @@ class HeatPumpAirToWaterFuelFiredCooling(AnyHeatPumpAirToWaterFuelFiredCooling):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredCoolingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c124.HeatPumpAirToWaterFuelFiredCooling  # type: ignore[assignment]
 
 class _HeatPumpAirToWaterFuelFiredCoolingFields(_HeatPumpAirToWaterFuelFiredCoolingCommonFields, total=False):
     minimum_unloading_ratio: float | None
@@ -42564,6 +44480,7 @@ class HeatPumpAirToWater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpAirToWaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c1.HeatPumpAirToWater  # type: ignore[assignment]
 
 class _HeatPumpAirToWaterFields(TypedDict, total=False):
     availability_schedule_name_heating: str | None
@@ -42713,6 +44630,7 @@ class AnyHeatPumpWaterToWaterEquationFitHeating(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyHeatPumpWaterToWaterEquationFitHeatingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.AnyHeatPumpWaterToWaterEquationFitHeating  # type: ignore[assignment]
 
 class _AnyHeatPumpWaterToWaterEquationFitHeatingFields(
     _HeatPumpWaterToWaterEquationFitHeatingCommonFields, total=False
@@ -42729,6 +44647,7 @@ class HeatPumpWaterToWaterEquationFitHeating(AnyHeatPumpWaterToWaterEquationFitH
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitHeatingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.HeatPumpWaterToWaterEquationFitHeating  # type: ignore[assignment]
 
 class _HeatPumpWaterToWaterEquationFitHeatingFields(_HeatPumpWaterToWaterEquationFitHeatingCommonFields, total=False):
     heating_capacity_curve_name: str | None
@@ -42775,6 +44694,7 @@ class AnyHeatPumpWaterToWaterEquationFitCooling(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyHeatPumpWaterToWaterEquationFitCoolingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.AnyHeatPumpWaterToWaterEquationFitCooling  # type: ignore[assignment]
 
 class _AnyHeatPumpWaterToWaterEquationFitCoolingFields(
     _HeatPumpWaterToWaterEquationFitCoolingCommonFields, total=False
@@ -42791,6 +44711,7 @@ class HeatPumpWaterToWaterEquationFitCooling(AnyHeatPumpWaterToWaterEquationFitC
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitCoolingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.HeatPumpWaterToWaterEquationFitCooling  # type: ignore[assignment]
 
 class _HeatPumpWaterToWaterEquationFitCoolingFields(_HeatPumpWaterToWaterEquationFitCoolingCommonFields, total=False):
     cooling_capacity_curve_name: str | None
@@ -42844,6 +44765,7 @@ class HeatPumpWaterToWaterParameterEstimationCooling(_TypedIDFObject):
         /,
         **kwargs: Unpack[_HeatPumpWaterToWaterParameterEstimationCoolingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c92.HeatPumpWaterToWaterParameterEstimationCooling  # type: ignore[assignment]
 
 class _HeatPumpWaterToWaterParameterEstimationCoolingFields(TypedDict, total=False):
     source_side_inlet_node_name: str | None
@@ -42916,6 +44838,7 @@ class HeatPumpWaterToWaterParameterEstimationHeating(_TypedIDFObject):
         /,
         **kwargs: Unpack[_HeatPumpWaterToWaterParameterEstimationHeatingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c81.HeatPumpWaterToWaterParameterEstimationHeating  # type: ignore[assignment]
 
 class _HeatPumpWaterToWaterParameterEstimationHeatingFields(TypedDict, total=False):
     source_side_inlet_node_name: str | None
@@ -42951,6 +44874,7 @@ class DistrictCooling(_TypedIDFObject):
     """Schedule values are multiplied by Nominal Capacity for current capacity"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DistrictCoolingFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c99.DistrictCooling  # type: ignore[assignment]
 
 class _DistrictCoolingFields(TypedDict, total=False):
     chilled_water_inlet_node_name: str | None
@@ -42971,6 +44895,7 @@ class DistrictHeatingWater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DistrictHeatingWaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.DistrictHeatingWater  # type: ignore[assignment]
 
 class _DistrictHeatingWaterFields(TypedDict, total=False):
     hot_water_inlet_node_name: str | None
@@ -42991,6 +44916,7 @@ class DistrictHeatingSteam(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DistrictHeatingSteamFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c18.DistrictHeatingSteam  # type: ignore[assignment]
 
 class _DistrictHeatingSteamFields(TypedDict, total=False):
     steam_inlet_node_name: str | None
@@ -43016,6 +44942,7 @@ class PlantComponentTemperatureSource(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantComponentTemperatureSourceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c122.PlantComponentTemperatureSource  # type: ignore[assignment]
 
 class _PlantComponentTemperatureSourceFields(TypedDict, total=False):
     inlet_node: str | None
@@ -43251,6 +45178,7 @@ class AnyCentralHeatPumpSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCentralHeatPumpSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.AnyCentralHeatPumpSystem  # type: ignore[assignment]
 
 class _AnyCentralHeatPumpSystemFields(_CentralHeatPumpSystemCommonFields, total=False):
     number_of_chiller_heater_modules_1: int | None
@@ -43321,6 +45249,7 @@ class CentralHeatPumpSystem(AnyCentralHeatPumpSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CentralHeatPumpSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.CentralHeatPumpSystem  # type: ignore[assignment]
 
 class _CentralHeatPumpSystemFields(_CentralHeatPumpSystemCommonFields, total=False):
     number_of_chiller_heater_modules_1: int | None
@@ -43442,6 +45371,7 @@ class AnyChillerHeaterPerformanceElectricEIR(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyChillerHeaterPerformanceElectricEIRFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.AnyChillerHeaterPerformanceElectricEIR  # type: ignore[assignment]
 
 class _AnyChillerHeaterPerformanceElectricEIRFields(_ChillerHeaterPerformanceElectricEIRCommonFields, total=False): ...
 
@@ -43451,6 +45381,7 @@ class ChillerHeaterPerformanceElectricEIR(AnyChillerHeaterPerformanceElectricEIR
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerHeaterPerformanceElectricEIRFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c103.ChillerHeaterPerformanceElectricEIR  # type: ignore[assignment]
 
 class _ChillerHeaterPerformanceElectricEIRFields(_ChillerHeaterPerformanceElectricEIRCommonFields, total=False): ...
 
@@ -43567,6 +45498,7 @@ class AnyCoolingTowerSingleSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoolingTowerSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c62.AnyCoolingTowerSingleSpeed  # type: ignore[assignment]
 
 class _AnyCoolingTowerSingleSpeedFields(_CoolingTowerSingleSpeedCommonFields, total=False):
     evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
@@ -43592,6 +45524,7 @@ class CoolingTowerSingleSpeed(AnyCoolingTowerSingleSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.CoolingTowerSingleSpeed  # type: ignore[assignment]
 
 class _CoolingTowerSingleSpeedFields(_CoolingTowerSingleSpeedCommonFields, total=False):
     free_convection_regime_air_flow_rate: float | Literal["", "Autocalculate"] | None
@@ -43744,6 +45677,7 @@ class AnyCoolingTowerTwoSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoolingTowerTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c22.AnyCoolingTowerTwoSpeed  # type: ignore[assignment]
 
 class _AnyCoolingTowerTwoSpeedFields(_CoolingTowerTwoSpeedCommonFields, total=False):
     evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
@@ -43763,6 +45697,7 @@ class CoolingTowerTwoSpeed(AnyCoolingTowerTwoSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c18.CoolingTowerTwoSpeed  # type: ignore[assignment]
 
 class _CoolingTowerTwoSpeedFields(_CoolingTowerTwoSpeedCommonFields, total=False):
     evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None
@@ -43912,6 +45847,7 @@ class AnyCoolingTowerVariableSpeedMerkel(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoolingTowerVariableSpeedMerkelFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.AnyCoolingTowerVariableSpeedMerkel  # type: ignore[assignment]
 
 class _AnyCoolingTowerVariableSpeedMerkelFields(_CoolingTowerVariableSpeedMerkelCommonFields, total=False):
     evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
@@ -43931,6 +45867,7 @@ class CoolingTowerVariableSpeedMerkel(AnyCoolingTowerVariableSpeedMerkel):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerVariableSpeedMerkelFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.CoolingTowerVariableSpeedMerkel  # type: ignore[assignment]
 
 class _CoolingTowerVariableSpeedMerkelFields(_CoolingTowerVariableSpeedMerkelCommonFields, total=False):
     evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None
@@ -44038,6 +45975,7 @@ class AnyCoolingTowerVariableSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoolingTowerVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c127.AnyCoolingTowerVariableSpeed  # type: ignore[assignment]
 
 class _AnyCoolingTowerVariableSpeedFields(_CoolingTowerVariableSpeedCommonFields, total=False):
     evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
@@ -44057,6 +45995,7 @@ class CoolingTowerVariableSpeed(AnyCoolingTowerVariableSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.CoolingTowerVariableSpeed  # type: ignore[assignment]
 
 class _CoolingTowerVariableSpeedFields(_CoolingTowerVariableSpeedCommonFields, total=False):
     evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None
@@ -44121,6 +46060,7 @@ class CoolingTowerPerformanceCoolTools(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerPerformanceCoolToolsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.CoolingTowerPerformanceCoolTools  # type: ignore[assignment]
 
 class _CoolingTowerPerformanceCoolToolsFields(TypedDict, total=False):
     minimum_inlet_air_wet_bulb_temperature: float | None
@@ -44219,6 +46159,7 @@ class CoolingTowerPerformanceYorkCalc(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerPerformanceYorkCalcFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.CoolingTowerPerformanceYorkCalc  # type: ignore[assignment]
 
 class _CoolingTowerPerformanceYorkCalcFields(TypedDict, total=False):
     minimum_inlet_air_wet_bulb_temperature: float | None
@@ -44345,6 +46286,7 @@ class AnyEvaporativeFluidCoolerSingleSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyEvaporativeFluidCoolerSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c85.AnyEvaporativeFluidCoolerSingleSpeed  # type: ignore[assignment]
 
 class _AnyEvaporativeFluidCoolerSingleSpeedFields(_EvaporativeFluidCoolerSingleSpeedCommonFields, total=False):
     design_entering_water_temperature: float | None
@@ -44358,6 +46300,7 @@ class EvaporativeFluidCoolerSingleSpeed(AnyEvaporativeFluidCoolerSingleSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeFluidCoolerSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.EvaporativeFluidCoolerSingleSpeed  # type: ignore[assignment]
 
 class _EvaporativeFluidCoolerSingleSpeedFields(_EvaporativeFluidCoolerSingleSpeedCommonFields, total=False):
     design_entering_water_temperature: float | Literal["", "Autosize"] | None
@@ -44476,6 +46419,7 @@ class AnyEvaporativeFluidCoolerTwoSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyEvaporativeFluidCoolerTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c111.AnyEvaporativeFluidCoolerTwoSpeed  # type: ignore[assignment]
 
 class _AnyEvaporativeFluidCoolerTwoSpeedFields(_EvaporativeFluidCoolerTwoSpeedCommonFields, total=False):
     design_entering_water_temperature: float | None
@@ -44489,6 +46433,7 @@ class EvaporativeFluidCoolerTwoSpeed(AnyEvaporativeFluidCoolerTwoSpeed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeFluidCoolerTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.EvaporativeFluidCoolerTwoSpeed  # type: ignore[assignment]
 
 class _EvaporativeFluidCoolerTwoSpeedFields(_EvaporativeFluidCoolerTwoSpeedCommonFields, total=False):
     design_entering_water_temperature: float | Literal["", "Autosize"] | None
@@ -44524,6 +46469,7 @@ class FluidCoolerSingleSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidCoolerSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c94.FluidCoolerSingleSpeed  # type: ignore[assignment]
 
 class _FluidCoolerSingleSpeedFields(TypedDict, total=False):
     water_inlet_node_name: str | None
@@ -44585,6 +46531,7 @@ class FluidCoolerTwoSpeed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidCoolerTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c113.FluidCoolerTwoSpeed  # type: ignore[assignment]
 
 class _FluidCoolerTwoSpeedFields(TypedDict, total=False):
     water_inlet_node_name: str | None
@@ -44625,10 +46572,18 @@ class _GroundHeatExchangerSystemCommonFields(TypedDict, total=False):
     ground_thermal_heat_capacity: float | None
     ghe_vertical_responsefactors_object_name: str | None
     ghe_vertical_array_object_name: str | None
-    vertical_well_locations: list[Any]
+    vertical_well_locations: Sequence[
+        GroundHeatExchangerSystemVerticalWellLocationsItem | GroundHeatExchangerSystemVerticalWellLocationsGroup
+    ]
 
 class GroundHeatExchangerSystemVerticalWellLocationsGroup(_TypedExtensibleGroup):
     """One vertical_well_locations group inside :class:`AnyGroundHeatExchangerSystem`."""
+
+    ghe_vertical_single_object_name: str | None
+    def as_dict(self) -> GroundHeatExchangerSystemVerticalWellLocationsItem: ...  # type: ignore[override]
+
+class GroundHeatExchangerSystemVerticalWellLocationsItem(TypedDict, total=False):
+    """One group of :class:`GroundHeatExchangerSystemVerticalWellLocationsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     ghe_vertical_single_object_name: str | None
 
@@ -44659,6 +46614,7 @@ class AnyGroundHeatExchangerSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGroundHeatExchangerSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c108.AnyGroundHeatExchangerSystem  # type: ignore[assignment]
 
 class _AnyGroundHeatExchangerSystemFields(_GroundHeatExchangerSystemCommonFields, total=False): ...
 
@@ -44675,6 +46631,7 @@ class GroundHeatExchangerSystem(AnyGroundHeatExchangerSystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c100.GroundHeatExchangerSystem  # type: ignore[assignment]
 
 class _GroundHeatExchangerSystemFields(_GroundHeatExchangerSystemCommonFields, total=False):
     g_function_calculation_method: Literal["", "FullDesign", "UBHWTcalc", "UHFcalc"] | None
@@ -44713,6 +46670,7 @@ class GroundHeatExchangerVerticalSizingRectangle(_TypedIDFObject):
         /,
         **kwargs: Unpack[_GroundHeatExchangerVerticalSizingRectangleFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.GroundHeatExchangerVerticalSizingRectangle  # type: ignore[assignment]
 
 class _GroundHeatExchangerVerticalSizingRectangleFields(TypedDict, total=False):
     sizingperiod_weatherfiledays_name: str | None
@@ -44754,6 +46712,7 @@ class GroundHeatExchangerVerticalProperties(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerVerticalPropertiesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.GroundHeatExchangerVerticalProperties  # type: ignore[assignment]
 
 class _GroundHeatExchangerVerticalPropertiesFields(TypedDict, total=False):
     depth_of_top_of_borehole: float | None
@@ -44789,6 +46748,7 @@ class AnyGroundHeatExchangerVerticalArray(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGroundHeatExchangerVerticalArrayFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c34.AnyGroundHeatExchangerVerticalArray  # type: ignore[assignment]
 
 class _AnyGroundHeatExchangerVerticalArrayFields(_GroundHeatExchangerVerticalArrayCommonFields, total=False):
     number_of_boreholes_in_x_direction: int | None
@@ -44803,6 +46763,7 @@ class GroundHeatExchangerVerticalArray(AnyGroundHeatExchangerVerticalArray):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerVerticalArrayFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.GroundHeatExchangerVerticalArray  # type: ignore[assignment]
 
 class _GroundHeatExchangerVerticalArrayFields(_GroundHeatExchangerVerticalArrayCommonFields, total=False):
     number_of_boreholes_in_x_direction: int | None
@@ -44818,6 +46779,7 @@ class GroundHeatExchangerVerticalSingle(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerVerticalSingleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c2.GroundHeatExchangerVerticalSingle  # type: ignore[assignment]
 
 class _GroundHeatExchangerVerticalSingleFields(TypedDict, total=False):
     ghe_vertical_properties_object_name: str | None
@@ -44827,10 +46789,19 @@ class _GroundHeatExchangerVerticalSingleFields(TypedDict, total=False):
 class _GroundHeatExchangerResponseFactorsCommonFields(TypedDict, total=False):
     ghe_vertical_properties_object_name: str | None
     g_function_reference_ratio: float | None
-    g_functions: list[Any]
+    g_functions: Sequence[
+        GroundHeatExchangerResponseFactorsGFunctionsItem | GroundHeatExchangerResponseFactorsGFunctionsGroup
+    ]
 
 class GroundHeatExchangerResponseFactorsGFunctionsGroup(_TypedExtensibleGroup):
     """One g_functions group inside :class:`AnyGroundHeatExchangerResponseFactors`."""
+
+    g_function_ln_t_ts_value: float | None
+    g_function_g_value: float | None
+    def as_dict(self) -> GroundHeatExchangerResponseFactorsGFunctionsItem: ...  # type: ignore[override]
+
+class GroundHeatExchangerResponseFactorsGFunctionsItem(TypedDict, total=False):
+    """One group of :class:`GroundHeatExchangerResponseFactorsGFunctionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     g_function_ln_t_ts_value: float | None
     g_function_g_value: float | None
@@ -44850,6 +46821,7 @@ class AnyGroundHeatExchangerResponseFactors(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGroundHeatExchangerResponseFactorsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c94.AnyGroundHeatExchangerResponseFactors  # type: ignore[assignment]
 
 class _AnyGroundHeatExchangerResponseFactorsFields(_GroundHeatExchangerResponseFactorsCommonFields, total=False):
     number_of_boreholes: int | None
@@ -44862,6 +46834,7 @@ class GroundHeatExchangerResponseFactors(AnyGroundHeatExchangerResponseFactors):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerResponseFactorsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c30.GroundHeatExchangerResponseFactors  # type: ignore[assignment]
 
 class _GroundHeatExchangerResponseFactorsFields(_GroundHeatExchangerResponseFactorsCommonFields, total=False):
     number_of_boreholes: int | None
@@ -44904,6 +46877,7 @@ class AnyGroundHeatExchangerPond(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGroundHeatExchangerPondFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.AnyGroundHeatExchangerPond  # type: ignore[assignment]
 
 class _AnyGroundHeatExchangerPondFields(_GroundHeatExchangerPondCommonFields, total=False):
     number_of_tubing_circuits: int | None
@@ -44917,6 +46891,7 @@ class GroundHeatExchangerPond(AnyGroundHeatExchangerPond):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerPondFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.GroundHeatExchangerPond  # type: ignore[assignment]
 
 class _GroundHeatExchangerPondFields(_GroundHeatExchangerPondCommonFields, total=False):
     number_of_tubing_circuits: int | None
@@ -44955,6 +46930,7 @@ class AnyGroundHeatExchangerSurface(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGroundHeatExchangerSurfaceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.AnyGroundHeatExchangerSurface  # type: ignore[assignment]
 
 class _AnyGroundHeatExchangerSurfaceFields(_GroundHeatExchangerSurfaceCommonFields, total=False):
     number_of_tubing_circuits: int | None
@@ -44968,6 +46944,7 @@ class GroundHeatExchangerSurface(AnyGroundHeatExchangerSurface):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerSurfaceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.GroundHeatExchangerSurface  # type: ignore[assignment]
 
 class _GroundHeatExchangerSurfaceFields(_GroundHeatExchangerSurfaceCommonFields, total=False):
     number_of_tubing_circuits: int | None
@@ -45052,6 +47029,7 @@ class AnyGroundHeatExchangerHorizontalTrench(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGroundHeatExchangerHorizontalTrenchFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c109.AnyGroundHeatExchangerHorizontalTrench  # type: ignore[assignment]
 
 class _AnyGroundHeatExchangerHorizontalTrenchFields(_GroundHeatExchangerHorizontalTrenchCommonFields, total=False):
     number_of_trenches: int | None
@@ -45065,6 +47043,7 @@ class GroundHeatExchangerHorizontalTrench(AnyGroundHeatExchangerHorizontalTrench
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerHorizontalTrenchFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.GroundHeatExchangerHorizontalTrench  # type: ignore[assignment]
 
 class _GroundHeatExchangerHorizontalTrenchFields(_GroundHeatExchangerHorizontalTrenchCommonFields, total=False):
     number_of_trenches: int | None
@@ -45152,6 +47131,7 @@ class AnyGroundHeatExchangerSlinky(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGroundHeatExchangerSlinkyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.AnyGroundHeatExchangerSlinky  # type: ignore[assignment]
 
 class _AnyGroundHeatExchangerSlinkyFields(_GroundHeatExchangerSlinkyCommonFields, total=False):
     number_of_trenches: int | None
@@ -45165,6 +47145,7 @@ class GroundHeatExchangerSlinky(AnyGroundHeatExchangerSlinky):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerSlinkyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.GroundHeatExchangerSlinky  # type: ignore[assignment]
 
 class _GroundHeatExchangerSlinkyFields(_GroundHeatExchangerSlinkyCommonFields, total=False):
     number_of_trenches: int | None
@@ -45313,6 +47294,7 @@ class AnyHeatExchangerFluidToFluid(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHeatExchangerFluidToFluidFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.AnyHeatExchangerFluidToFluid  # type: ignore[assignment]
 
 class _AnyHeatExchangerFluidToFluidFields(_HeatExchangerFluidToFluidCommonFields, total=False):
     heat_transfer_metering_end_use_type: (
@@ -45332,6 +47314,7 @@ class HeatExchangerFluidToFluid(AnyHeatExchangerFluidToFluid):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatExchangerFluidToFluidFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.HeatExchangerFluidToFluid  # type: ignore[assignment]
 
 class _HeatExchangerFluidToFluidFields(_HeatExchangerFluidToFluidCommonFields, total=False):
     heat_transfer_metering_end_use_type: (
@@ -45557,6 +47540,7 @@ class AnyWaterHeaterMixed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWaterHeaterMixedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.AnyWaterHeaterMixed  # type: ignore[assignment]
 
 class _AnyWaterHeaterMixedFields(_WaterHeaterMixedCommonFields, total=False):
     heater_fuel_type: (
@@ -45637,6 +47621,7 @@ class WaterHeaterMixed(AnyWaterHeaterMixed):
     )
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterMixedFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c22.WaterHeaterMixed  # type: ignore[assignment]
 
 class _WaterHeaterMixedFields(_WaterHeaterMixedCommonFields, total=False):
     heater_fuel_type: (
@@ -45975,6 +47960,7 @@ class AnyWaterHeaterStratified(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWaterHeaterStratifiedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c38.AnyWaterHeaterStratified  # type: ignore[assignment]
 
 class _AnyWaterHeaterStratifiedFields(_WaterHeaterStratifiedCommonFields, total=False):
     heater_fuel_type: (
@@ -46048,6 +48034,7 @@ class WaterHeaterStratified(AnyWaterHeaterStratified):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterStratifiedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c110.WaterHeaterStratified  # type: ignore[assignment]
 
 class _WaterHeaterStratifiedFields(_WaterHeaterStratifiedCommonFields, total=False):
     heater_fuel_type: (
@@ -46170,6 +48157,7 @@ class AnyWaterHeaterSizing(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyWaterHeaterSizingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c28.AnyWaterHeaterSizing  # type: ignore[assignment]
 
 class _AnyWaterHeaterSizingFields(_WaterHeaterSizingCommonFields, total=False):
     number_of_bedrooms: int | None
@@ -46184,6 +48172,7 @@ class WaterHeaterSizing(AnyWaterHeaterSizing):
     """Only used for Design Mode = ResidentialHUD-FHAMinimum; Range: >= 1"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterSizingFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c115.WaterHeaterSizing  # type: ignore[assignment]
 
 class _WaterHeaterSizingFields(_WaterHeaterSizingCommonFields, total=False):
     number_of_bedrooms: int | None
@@ -46280,6 +48269,7 @@ class WaterHeaterHeatPumpPumpedCondenser(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterHeatPumpPumpedCondenserFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c57.WaterHeaterHeatPumpPumpedCondenser  # type: ignore[assignment]
 
 class _WaterHeaterHeatPumpPumpedCondenserFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -46410,6 +48400,7 @@ class WaterHeaterHeatPumpWrappedCondenser(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterHeatPumpWrappedCondenserFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.WaterHeaterHeatPumpWrappedCondenser  # type: ignore[assignment]
 
 class _WaterHeaterHeatPumpWrappedCondenserFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -46470,6 +48461,7 @@ class AnyThermalStorageIceSimple(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyThermalStorageIceSimpleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.AnyThermalStorageIceSimple  # type: ignore[assignment]
 
 class _AnyThermalStorageIceSimpleFields(_ThermalStorageIceSimpleCommonFields, total=False):
     capacity: float | None
@@ -46485,6 +48477,7 @@ class ThermalStorageIceSimple(AnyThermalStorageIceSimple):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageIceSimpleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.ThermalStorageIceSimple  # type: ignore[assignment]
 
 class _ThermalStorageIceSimpleFields(_ThermalStorageIceSimpleCommonFields, total=False):
     capacity: float | Literal["Autosize"] | None
@@ -46532,6 +48525,7 @@ class AnyThermalStorageIceDetailed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyThermalStorageIceDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.AnyThermalStorageIceDetailed  # type: ignore[assignment]
 
 class _AnyThermalStorageIceDetailedFields(_ThermalStorageIceDetailedCommonFields, total=False):
     capacity: float | None
@@ -46555,6 +48549,7 @@ class ThermalStorageIceDetailed(AnyThermalStorageIceDetailed):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageIceDetailedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.ThermalStorageIceDetailed  # type: ignore[assignment]
 
 class _ThermalStorageIceDetailedFields(_ThermalStorageIceDetailedCommonFields, total=False):
     capacity: float | Literal["Autosize"] | None
@@ -46607,6 +48602,7 @@ class ThermalStorageChilledWaterMixed(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageChilledWaterMixedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c93.ThermalStorageChilledWaterMixed  # type: ignore[assignment]
 
 class _ThermalStorageChilledWaterMixedFields(TypedDict, total=False):
     tank_volume: float | None
@@ -46763,6 +48759,7 @@ class AnyThermalStorageChilledWaterStratified(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyThermalStorageChilledWaterStratifiedFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.AnyThermalStorageChilledWaterStratified  # type: ignore[assignment]
 
 class _AnyThermalStorageChilledWaterStratifiedFields(_ThermalStorageChilledWaterStratifiedCommonFields, total=False):
     nominal_cooling_capacity: float | None
@@ -46779,6 +48776,7 @@ class ThermalStorageChilledWaterStratified(AnyThermalStorageChilledWaterStratifi
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageChilledWaterStratifiedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c106.ThermalStorageChilledWaterStratified  # type: ignore[assignment]
 
 class _ThermalStorageChilledWaterStratifiedFields(_ThermalStorageChilledWaterStratifiedCommonFields, total=False):
     nominal_cooling_capacity: float | Literal["", "Autosize"] | None
@@ -46874,6 +48872,7 @@ class ThermalStorageHotWaterStratified(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageHotWaterStratifiedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c121.ThermalStorageHotWaterStratified  # type: ignore[assignment]
 
 class _ThermalStorageHotWaterStratifiedFields(TypedDict, total=False):
     tank_volume: float | None
@@ -46942,6 +48941,7 @@ class ThermalStoragePCM(_TypedIDFObject):
     """[m3/s]"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStoragePCMFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c68.ThermalStoragePCM  # type: ignore[assignment]
 
 class _ThermalStoragePCMFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -46968,6 +48968,7 @@ class ThermalStorageSizing(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageSizingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.ThermalStorageSizing  # type: ignore[assignment]
 
 class _ThermalStorageSizingFields(TypedDict, total=False):
     on_peak_period_start_time: float | None
@@ -47016,6 +49017,7 @@ class PlantLoop(_TypedIDFObject):
     """This field is only used to autocalculate the Plant Loop Volume. Loop Volume = Loop Circulation Time * Maximum Loop Fl...; [minutes]; Default: 2.0; Range: >= 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantLoopFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.PlantLoop  # type: ignore[assignment]
 
 class _PlantLoopFields(TypedDict, total=False):
     fluid_type: Literal["", "Steam", "UserDefinedFluidType", "Water"] | None
@@ -47081,6 +49083,7 @@ class CondenserLoop(_TypedIDFObject):
     """This field is only used to autocalculate the Condenser Loop Volume. Loop Volume = Loop Circulation Time * Maximum Loo...; [minutes]; Default: 2.0; Range: >= 0.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CondenserLoopFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c116.CondenserLoop  # type: ignore[assignment]
 
 class _CondenserLoopFields(TypedDict, total=False):
     fluid_type: Literal["", "UserDefinedFluidType", "Water"] | None
@@ -47114,11 +49117,19 @@ class AnyPlantEquipmentList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPlantEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.AnyPlantEquipmentList  # type: ignore[assignment]
 
 class _AnyPlantEquipmentListFields(_PlantEquipmentListCommonFields, total=False): ...
 
 class PlantEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`PlantEquipmentList`."""
+
+    equipment_object_type: str | None
+    equipment_name: str | None
+    def as_dict(self) -> PlantEquipmentListEquipmentItem: ...  # type: ignore[override]
+
+class PlantEquipmentListEquipmentItem(TypedDict, total=False):
+    """One group of :class:`PlantEquipmentListEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     equipment_object_type: str | None
     equipment_name: str | None
@@ -47131,9 +49142,10 @@ class PlantEquipmentList(AnyPlantEquipmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.PlantEquipmentList  # type: ignore[assignment]
 
 class _PlantEquipmentListFields(_PlantEquipmentListCommonFields, total=False):
-    equipment: list[Any]
+    equipment: Sequence[PlantEquipmentListEquipmentItem | PlantEquipmentListEquipmentGroup]
 
 class _CondenserEquipmentListCommonFields(TypedDict, total=False): ...
 
@@ -47143,11 +49155,19 @@ class AnyCondenserEquipmentList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCondenserEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.AnyCondenserEquipmentList  # type: ignore[assignment]
 
 class _AnyCondenserEquipmentListFields(_CondenserEquipmentListCommonFields, total=False): ...
 
 class CondenserEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`CondenserEquipmentList`."""
+
+    equipment_object_type: str | None
+    equipment_name: str | None
+    def as_dict(self) -> CondenserEquipmentListEquipmentItem: ...  # type: ignore[override]
+
+class CondenserEquipmentListEquipmentItem(TypedDict, total=False):
+    """One group of :class:`CondenserEquipmentListEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     equipment_object_type: str | None
     equipment_name: str | None
@@ -47160,9 +49180,10 @@ class CondenserEquipmentList(AnyCondenserEquipmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CondenserEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c74.CondenserEquipmentList  # type: ignore[assignment]
 
 class _CondenserEquipmentListFields(_CondenserEquipmentListCommonFields, total=False):
-    equipment: list[Any]
+    equipment: Sequence[CondenserEquipmentListEquipmentItem | CondenserEquipmentListEquipmentGroup]
 
 class PlantEquipmentOperationUncontrolled(_TypedIDFObject):
     """Plant equipment operation scheme for uncontrolled operation. Specifies a group of equipment that runs if the loop is ..."""
@@ -47172,6 +49193,7 @@ class PlantEquipmentOperationUncontrolled(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationUncontrolledFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.PlantEquipmentOperationUncontrolled  # type: ignore[assignment]
 
 class _PlantEquipmentOperationUncontrolledFields(TypedDict, total=False):
     equipment_list_name: str | None
@@ -47233,6 +49255,7 @@ class PlantEquipmentOperationCoolingLoad(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationCoolingLoadFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c45.PlantEquipmentOperationCoolingLoad  # type: ignore[assignment]
 
 class _PlantEquipmentOperationCoolingLoadFields(TypedDict, total=False):
     load_range_1_lower_limit: float | None
@@ -47323,6 +49346,7 @@ class PlantEquipmentOperationHeatingLoad(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationHeatingLoadFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.PlantEquipmentOperationHeatingLoad  # type: ignore[assignment]
 
 class _PlantEquipmentOperationHeatingLoadFields(TypedDict, total=False):
     load_range_1_lower_limit: float | None
@@ -47413,6 +49437,7 @@ class PlantEquipmentOperationOutdoorDryBulb(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationOutdoorDryBulbFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.PlantEquipmentOperationOutdoorDryBulb  # type: ignore[assignment]
 
 class _PlantEquipmentOperationOutdoorDryBulbFields(TypedDict, total=False):
     dry_bulb_temperature_range_1_lower_limit: float | None
@@ -47503,6 +49528,7 @@ class PlantEquipmentOperationOutdoorWetBulb(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationOutdoorWetBulbFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c85.PlantEquipmentOperationOutdoorWetBulb  # type: ignore[assignment]
 
 class _PlantEquipmentOperationOutdoorWetBulbFields(TypedDict, total=False):
     wet_bulb_temperature_range_1_lower_limit: float | None
@@ -47596,6 +49622,7 @@ class PlantEquipmentOperationOutdoorRelativeHumidity(_TypedIDFObject):
         /,
         **kwargs: Unpack[_PlantEquipmentOperationOutdoorRelativeHumidityFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.PlantEquipmentOperationOutdoorRelativeHumidity  # type: ignore[assignment]
 
 class _PlantEquipmentOperationOutdoorRelativeHumidityFields(TypedDict, total=False):
     relative_humidity_range_1_lower_limit: float | None
@@ -47686,6 +49713,7 @@ class PlantEquipmentOperationOutdoorDewpoint(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationOutdoorDewpointFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c2.PlantEquipmentOperationOutdoorDewpoint  # type: ignore[assignment]
 
 class _PlantEquipmentOperationOutdoorDewpointFields(TypedDict, total=False):
     dewpoint_temperature_range_1_lower_limit: float | None
@@ -47799,6 +49827,7 @@ class PlantEquipmentOperationComponentSetpoint(_TypedIDFObject):
         /,
         **kwargs: Unpack[_PlantEquipmentOperationComponentSetpointFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.PlantEquipmentOperationComponentSetpoint  # type: ignore[assignment]
 
 class _PlantEquipmentOperationComponentSetpointFields(TypedDict, total=False):
     equipment_1_object_type: str | None
@@ -48341,6 +50370,7 @@ class AnyPlantEquipmentOperationThermalEnergyStorage(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyPlantEquipmentOperationThermalEnergyStorageFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c82.AnyPlantEquipmentOperationThermalEnergyStorage  # type: ignore[assignment]
 
 class _AnyPlantEquipmentOperationThermalEnergyStorageFields(
     _PlantEquipmentOperationThermalEnergyStorageCommonFields, total=False
@@ -48573,6 +50603,7 @@ class PlantEquipmentOperationThermalEnergyStorage(AnyPlantEquipmentOperationTher
         /,
         **kwargs: Unpack[_PlantEquipmentOperationThermalEnergyStorageFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c120.PlantEquipmentOperationThermalEnergyStorage  # type: ignore[assignment]
 
 class _PlantEquipmentOperationThermalEnergyStorageFields(
     _PlantEquipmentOperationThermalEnergyStorageCommonFields, total=False
@@ -48751,6 +50782,7 @@ class PlantEquipmentOperationOutdoorDryBulbDifference(_TypedIDFObject):
         /,
         **kwargs: Unpack[_PlantEquipmentOperationOutdoorDryBulbDifferenceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c11.PlantEquipmentOperationOutdoorDryBulbDifference  # type: ignore[assignment]
 
 class _PlantEquipmentOperationOutdoorDryBulbDifferenceFields(TypedDict, total=False):
     reference_temperature_node_name: str | None
@@ -48846,6 +50878,7 @@ class PlantEquipmentOperationOutdoorWetBulbDifference(_TypedIDFObject):
         /,
         **kwargs: Unpack[_PlantEquipmentOperationOutdoorWetBulbDifferenceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c21.PlantEquipmentOperationOutdoorWetBulbDifference  # type: ignore[assignment]
 
 class _PlantEquipmentOperationOutdoorWetBulbDifferenceFields(TypedDict, total=False):
     reference_temperature_node_name: str | None
@@ -48941,6 +50974,7 @@ class PlantEquipmentOperationOutdoorDewpointDifference(_TypedIDFObject):
         /,
         **kwargs: Unpack[_PlantEquipmentOperationOutdoorDewpointDifferenceFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.PlantEquipmentOperationOutdoorDewpointDifference  # type: ignore[assignment]
 
 class _PlantEquipmentOperationOutdoorDewpointDifferenceFields(TypedDict, total=False):
     reference_temperature_node_name: str | None
@@ -49014,6 +51048,7 @@ class PlantEquipmentOperationChillerHeaterChangeover(_TypedIDFObject):
         /,
         **kwargs: Unpack[_PlantEquipmentOperationChillerHeaterChangeoverFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c18.PlantEquipmentOperationChillerHeaterChangeover  # type: ignore[assignment]
 
 class _PlantEquipmentOperationChillerHeaterChangeoverFields(TypedDict, total=False):
     primary_cooling_plant_setpoint_temperature: float | None
@@ -49354,6 +51389,7 @@ class AnyPlantEquipmentOperationSchemes(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPlantEquipmentOperationSchemesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.AnyPlantEquipmentOperationSchemes  # type: ignore[assignment]
 
 class _AnyPlantEquipmentOperationSchemesFields(_PlantEquipmentOperationSchemesCommonFields, total=False):
     control_scheme_1_object_type: (
@@ -49604,6 +51640,7 @@ class PlantEquipmentOperationSchemes(AnyPlantEquipmentOperationSchemes):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationSchemesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.PlantEquipmentOperationSchemes  # type: ignore[assignment]
 
 class _PlantEquipmentOperationSchemesFields(_PlantEquipmentOperationSchemesCommonFields, total=False):
     control_scheme_1_object_type: (
@@ -49910,6 +51947,7 @@ class CondenserEquipmentOperationSchemes(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CondenserEquipmentOperationSchemesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.CondenserEquipmentOperationSchemes  # type: ignore[assignment]
 
 class _CondenserEquipmentOperationSchemesFields(TypedDict, total=False):
     control_scheme_1_object_type: (
@@ -50066,6 +52104,7 @@ class EnergyManagementSystemSensor(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemSensorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.EnergyManagementSystemSensor  # type: ignore[assignment]
 
 class _EnergyManagementSystemSensorFields(TypedDict, total=False):
     output_variable_or_output_meter_index_key_name: str | None
@@ -50081,6 +52120,7 @@ class EnergyManagementSystemActuator(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemActuatorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.EnergyManagementSystemActuator  # type: ignore[assignment]
 
 class _EnergyManagementSystemActuatorFields(TypedDict, total=False):
     actuated_component_unique_name: str | None
@@ -50088,10 +52128,19 @@ class _EnergyManagementSystemActuatorFields(TypedDict, total=False):
     actuated_component_control_type: str | None
 
 class _EnergyManagementSystemProgramCallingManagerCommonFields(TypedDict, total=False):
-    programs: list[Any]
+    programs: Sequence[
+        EnergyManagementSystemProgramCallingManagerProgramsItem
+        | EnergyManagementSystemProgramCallingManagerProgramsGroup
+    ]
 
 class EnergyManagementSystemProgramCallingManagerProgramsGroup(_TypedExtensibleGroup):
     """One programs group inside :class:`AnyEnergyManagementSystemProgramCallingManager`."""
+
+    program_name: str | None
+    def as_dict(self) -> EnergyManagementSystemProgramCallingManagerProgramsItem: ...  # type: ignore[override]
+
+class EnergyManagementSystemProgramCallingManagerProgramsItem(TypedDict, total=False):
+    """One group of :class:`EnergyManagementSystemProgramCallingManagerProgramsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     program_name: str | None
 
@@ -50153,6 +52202,7 @@ class AnyEnergyManagementSystemProgramCallingManager(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyEnergyManagementSystemProgramCallingManagerFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c76.AnyEnergyManagementSystemProgramCallingManager  # type: ignore[assignment]
 
 class _AnyEnergyManagementSystemProgramCallingManagerFields(
     _EnergyManagementSystemProgramCallingManagerCommonFields, total=False
@@ -50211,6 +52261,7 @@ class EnergyManagementSystemProgramCallingManager(AnyEnergyManagementSystemProgr
         /,
         **kwargs: Unpack[_EnergyManagementSystemProgramCallingManagerFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c102.EnergyManagementSystemProgramCallingManager  # type: ignore[assignment]
 
 class _EnergyManagementSystemProgramCallingManagerFields(
     _EnergyManagementSystemProgramCallingManagerCommonFields, total=False
@@ -50243,6 +52294,12 @@ class EnergyManagementSystemProgramLinesGroup(_TypedExtensibleGroup):
     """One lines group inside :class:`EnergyManagementSystemProgram`."""
 
     program_line: str | None
+    def as_dict(self) -> EnergyManagementSystemProgramLinesItem: ...  # type: ignore[override]
+
+class EnergyManagementSystemProgramLinesItem(TypedDict, total=False):
+    """One group of :class:`EnergyManagementSystemProgramLinesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    program_line: str | None
 
 class EnergyManagementSystemProgram(_TypedIDFObject):
     """This input defines an Erl program Each field after the name is a line of EMS Runtime Language"""
@@ -50252,12 +52309,19 @@ class EnergyManagementSystemProgram(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemProgramFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.EnergyManagementSystemProgram  # type: ignore[assignment]
 
 class _EnergyManagementSystemProgramFields(TypedDict, total=False):
-    lines: list[Any]
+    lines: Sequence[EnergyManagementSystemProgramLinesItem | EnergyManagementSystemProgramLinesGroup]
 
 class EnergyManagementSystemSubroutineLinesGroup(_TypedExtensibleGroup):
     """One lines group inside :class:`EnergyManagementSystemSubroutine`."""
+
+    program_line: str | None
+    def as_dict(self) -> EnergyManagementSystemSubroutineLinesItem: ...  # type: ignore[override]
+
+class EnergyManagementSystemSubroutineLinesItem(TypedDict, total=False):
+    """One group of :class:`EnergyManagementSystemSubroutineLinesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     program_line: str | None
 
@@ -50269,12 +52333,19 @@ class EnergyManagementSystemSubroutine(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemSubroutineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c24.EnergyManagementSystemSubroutine  # type: ignore[assignment]
 
 class _EnergyManagementSystemSubroutineFields(TypedDict, total=False):
-    lines: list[Any]
+    lines: Sequence[EnergyManagementSystemSubroutineLinesItem | EnergyManagementSystemSubroutineLinesGroup]
 
 class EnergyManagementSystemGlobalVariableVariablesGroup(_TypedExtensibleGroup):
     """One variables group inside :class:`EnergyManagementSystemGlobalVariable`."""
+
+    erl_variable_name: str | None
+    def as_dict(self) -> EnergyManagementSystemGlobalVariableVariablesItem: ...  # type: ignore[override]
+
+class EnergyManagementSystemGlobalVariableVariablesItem(TypedDict, total=False):
+    """One group of :class:`EnergyManagementSystemGlobalVariableVariablesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     erl_variable_name: str | None
 
@@ -50286,9 +52357,12 @@ class EnergyManagementSystemGlobalVariable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemGlobalVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.EnergyManagementSystemGlobalVariable  # type: ignore[assignment]
 
 class _EnergyManagementSystemGlobalVariableFields(TypedDict, total=False):
-    variables: list[Any]
+    variables: Sequence[
+        EnergyManagementSystemGlobalVariableVariablesItem | EnergyManagementSystemGlobalVariableVariablesGroup
+    ]
 
 class EnergyManagementSystemOutputVariable(_TypedIDFObject):
     """This object sets up an EnergyPlus output variable from an Erl variable"""
@@ -50305,6 +52379,7 @@ class EnergyManagementSystemOutputVariable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemOutputVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.EnergyManagementSystemOutputVariable  # type: ignore[assignment]
 
 class _EnergyManagementSystemOutputVariableFields(TypedDict, total=False):
     ems_variable_name: str | None
@@ -50456,6 +52531,7 @@ class AnyEnergyManagementSystemMeteredOutputVariable(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyEnergyManagementSystemMeteredOutputVariableFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.AnyEnergyManagementSystemMeteredOutputVariable  # type: ignore[assignment]
 
 class _AnyEnergyManagementSystemMeteredOutputVariableFields(
     _EnergyManagementSystemMeteredOutputVariableCommonFields, total=False
@@ -50524,6 +52600,7 @@ class EnergyManagementSystemMeteredOutputVariable(AnyEnergyManagementSystemMeter
         /,
         **kwargs: Unpack[_EnergyManagementSystemMeteredOutputVariableFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c15.EnergyManagementSystemMeteredOutputVariable  # type: ignore[assignment]
 
 class _EnergyManagementSystemMeteredOutputVariableFields(
     _EnergyManagementSystemMeteredOutputVariableCommonFields, total=False
@@ -50572,6 +52649,7 @@ class AnyEnergyManagementSystemTrendVariable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyEnergyManagementSystemTrendVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c12.AnyEnergyManagementSystemTrendVariable  # type: ignore[assignment]
 
 class _AnyEnergyManagementSystemTrendVariableFields(_EnergyManagementSystemTrendVariableCommonFields, total=False):
     number_of_timesteps_to_be_logged: int | None
@@ -50585,6 +52663,7 @@ class EnergyManagementSystemTrendVariable(AnyEnergyManagementSystemTrendVariable
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemTrendVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.EnergyManagementSystemTrendVariable  # type: ignore[assignment]
 
 class _EnergyManagementSystemTrendVariableFields(_EnergyManagementSystemTrendVariableCommonFields, total=False):
     number_of_timesteps_to_be_logged: int | None
@@ -50598,6 +52677,7 @@ class EnergyManagementSystemInternalVariable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemInternalVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c58.EnergyManagementSystemInternalVariable  # type: ignore[assignment]
 
 class _EnergyManagementSystemInternalVariableFields(TypedDict, total=False):
     internal_data_index_key_name: str | None
@@ -50614,6 +52694,7 @@ class EnergyManagementSystemCurveOrTableIndexVariable(_TypedIDFObject):
         /,
         **kwargs: Unpack[_EnergyManagementSystemCurveOrTableIndexVariableFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c8.EnergyManagementSystemCurveOrTableIndexVariable  # type: ignore[assignment]
 
 class _EnergyManagementSystemCurveOrTableIndexVariableFields(TypedDict, total=False):
     curve_or_table_object_name: str | None
@@ -50629,6 +52710,7 @@ class EnergyManagementSystemConstructionIndexVariable(_TypedIDFObject):
         /,
         **kwargs: Unpack[_EnergyManagementSystemConstructionIndexVariableFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.EnergyManagementSystemConstructionIndexVariable  # type: ignore[assignment]
 
 class _EnergyManagementSystemConstructionIndexVariableFields(TypedDict, total=False):
     construction_object_name: str | None
@@ -50642,6 +52724,7 @@ class ExternalInterface(_TypedIDFObject):
     """Name of External Interface Currently, the only valid entries are PtolemyServer, FunctionalMockupUnitImport, and Funct..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExternalInterfaceFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.ExternalInterface  # type: ignore[assignment]
 
 class _ExternalInterfaceFields(TypedDict, total=False):
     name_of_external_interface: (
@@ -50658,6 +52741,7 @@ class ExternalInterfaceSchedule(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExternalInterfaceScheduleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c13.ExternalInterfaceSchedule  # type: ignore[assignment]
 
 class _ExternalInterfaceScheduleFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -50672,6 +52756,7 @@ class ExternalInterfaceVariable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExternalInterfaceVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c123.ExternalInterfaceVariable  # type: ignore[assignment]
 
 class _ExternalInterfaceVariableFields(TypedDict, total=False):
     initial_value: float | None
@@ -50688,6 +52773,7 @@ class ExternalInterfaceActuator(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExternalInterfaceActuatorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.ExternalInterfaceActuator  # type: ignore[assignment]
 
 class _ExternalInterfaceActuatorFields(TypedDict, total=False):
     actuated_component_unique_name: str | None
@@ -50715,6 +52801,7 @@ class AnyExternalInterfaceFunctionalMockupUnitImport(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyExternalInterfaceFunctionalMockupUnitImportFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.AnyExternalInterfaceFunctionalMockupUnitImport  # type: ignore[assignment]
 
 class _AnyExternalInterfaceFunctionalMockupUnitImportFields(
     _ExternalInterfaceFunctionalMockupUnitImportCommonFields, total=False
@@ -50733,6 +52820,7 @@ class ExternalInterfaceFunctionalMockupUnitImport(AnyExternalInterfaceFunctional
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.ExternalInterfaceFunctionalMockupUnitImport  # type: ignore[assignment]
 
 class _ExternalInterfaceFunctionalMockupUnitImportFields(
     _ExternalInterfaceFunctionalMockupUnitImportCommonFields, total=False
@@ -50754,6 +52842,7 @@ class ExternalInterfaceFunctionalMockupUnitImportFromVariable(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportFromVariableFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c106.ExternalInterfaceFunctionalMockupUnitImportFromVariable  # type: ignore[assignment]
 
 class _ExternalInterfaceFunctionalMockupUnitImportFromVariableFields(TypedDict, total=False):
     output_variable_index_key_name: str | None
@@ -50778,6 +52867,7 @@ class ExternalInterfaceFunctionalMockupUnitImportToSchedule(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportToScheduleFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c71.ExternalInterfaceFunctionalMockupUnitImportToSchedule  # type: ignore[assignment]
 
 class _ExternalInterfaceFunctionalMockupUnitImportToScheduleFields(TypedDict, total=False):
     schedule_type_limits_names: str | None
@@ -50804,6 +52894,7 @@ class ExternalInterfaceFunctionalMockupUnitImportToActuator(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportToActuatorFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c114.ExternalInterfaceFunctionalMockupUnitImportToActuator  # type: ignore[assignment]
 
 class _ExternalInterfaceFunctionalMockupUnitImportToActuatorFields(TypedDict, total=False):
     actuated_component_unique_name: str | None
@@ -50829,6 +52920,7 @@ class ExternalInterfaceFunctionalMockupUnitImportToVariable(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportToVariableFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c49.ExternalInterfaceFunctionalMockupUnitImportToVariable  # type: ignore[assignment]
 
 class _ExternalInterfaceFunctionalMockupUnitImportToVariableFields(TypedDict, total=False):
     fmu_file_name: str | None
@@ -50849,14 +52941,21 @@ class ExternalInterfaceFunctionalMockupUnitExportFromVariable(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportFromVariableFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.ExternalInterfaceFunctionalMockupUnitExportFromVariable  # type: ignore[assignment]
 
 class _ExternalInterfaceFunctionalMockupUnitExportFromVariableFields(TypedDict, total=False):
     output_variable_index_key_name: str | None
     output_variable_name: str | None
     fmu_variable_name: str | None
 
-class ExternalInterfaceFunctionalMockupUnitExportToSchedule(_TypedIDFObject):
-    """This objects contains only one value, which is used during the first call of EnergyPlus"""
+class _ExternalInterfaceFunctionalMockupUnitExportToScheduleCommonFields(TypedDict, total=False):
+    schedule_name: str | None
+    schedule_type_limits_names: str | None
+    fmu_variable_name: str | None
+    initial_value: float | None
+
+class AnyExternalInterfaceFunctionalMockupUnitExportToSchedule(_TypedIDFObject):
+    """``ExternalInterface:FunctionalMockupUnitExport:To:Schedule`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
     schedule_type_limits_names: str | None
@@ -50868,17 +52967,38 @@ class ExternalInterfaceFunctionalMockupUnitExportToSchedule(_TypedIDFObject):
         self,
         values: Mapping[str, Any] | None = ...,
         /,
+        **kwargs: Unpack[_AnyExternalInterfaceFunctionalMockupUnitExportToScheduleFields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.AnyExternalInterfaceFunctionalMockupUnitExportToSchedule  # type: ignore[assignment]
+
+class _AnyExternalInterfaceFunctionalMockupUnitExportToScheduleFields(
+    _ExternalInterfaceFunctionalMockupUnitExportToScheduleCommonFields, total=False
+): ...
+
+class ExternalInterfaceFunctionalMockupUnitExportToSchedule(AnyExternalInterfaceFunctionalMockupUnitExportToSchedule):
+    """This objects contains only one value, which is used during the first call of EnergyPlus"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToScheduleFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.ExternalInterfaceFunctionalMockupUnitExportToSchedule  # type: ignore[assignment]
 
-class _ExternalInterfaceFunctionalMockupUnitExportToScheduleFields(TypedDict, total=False):
-    schedule_name: str | None
-    schedule_type_limits_names: str | None
+class _ExternalInterfaceFunctionalMockupUnitExportToScheduleFields(
+    _ExternalInterfaceFunctionalMockupUnitExportToScheduleCommonFields, total=False
+): ...
+
+class _ExternalInterfaceFunctionalMockupUnitExportToActuatorCommonFields(TypedDict, total=False):
+    actuated_component_unique_name: str | None
+    actuated_component_type: str | None
+    actuated_component_control_type: str | None
     fmu_variable_name: str | None
     initial_value: float | None
 
-class ExternalInterfaceFunctionalMockupUnitExportToActuator(_TypedIDFObject):
-    """Hardware portion of EMS used to set up actuators in the model that are dynamically updated from the FMU."""
+class AnyExternalInterfaceFunctionalMockupUnitExportToActuator(_TypedIDFObject):
+    """``ExternalInterface:FunctionalMockupUnitExport:To:Actuator`` as every supported EnergyPlus version declares it."""
 
     actuated_component_unique_name: str | None
     actuated_component_type: str | None
@@ -50891,15 +53011,28 @@ class ExternalInterfaceFunctionalMockupUnitExportToActuator(_TypedIDFObject):
         self,
         values: Mapping[str, Any] | None = ...,
         /,
+        **kwargs: Unpack[_AnyExternalInterfaceFunctionalMockupUnitExportToActuatorFields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c102.AnyExternalInterfaceFunctionalMockupUnitExportToActuator  # type: ignore[assignment]
+
+class _AnyExternalInterfaceFunctionalMockupUnitExportToActuatorFields(
+    _ExternalInterfaceFunctionalMockupUnitExportToActuatorCommonFields, total=False
+): ...
+
+class ExternalInterfaceFunctionalMockupUnitExportToActuator(AnyExternalInterfaceFunctionalMockupUnitExportToActuator):
+    """Hardware portion of EMS used to set up actuators in the model that are dynamically updated from the FMU."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToActuatorFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.ExternalInterfaceFunctionalMockupUnitExportToActuator  # type: ignore[assignment]
 
-class _ExternalInterfaceFunctionalMockupUnitExportToActuatorFields(TypedDict, total=False):
-    actuated_component_unique_name: str | None
-    actuated_component_type: str | None
-    actuated_component_control_type: str | None
-    fmu_variable_name: str | None
-    initial_value: float | None
+class _ExternalInterfaceFunctionalMockupUnitExportToActuatorFields(
+    _ExternalInterfaceFunctionalMockupUnitExportToActuatorCommonFields, total=False
+): ...
 
 class ExternalInterfaceFunctionalMockupUnitExportToVariable(_TypedIDFObject):
     """Declares Erl variable as having global scope No spaces allowed in names used for Erl variables"""
@@ -50914,6 +53047,7 @@ class ExternalInterfaceFunctionalMockupUnitExportToVariable(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToVariableFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c61.ExternalInterfaceFunctionalMockupUnitExportToVariable  # type: ignore[assignment]
 
 class _ExternalInterfaceFunctionalMockupUnitExportToVariableFields(TypedDict, total=False):
     fmu_variable_name: str | None
@@ -50971,6 +53105,7 @@ class AnyZoneHVACForcedAirUserDefined(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneHVACForcedAirUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.AnyZoneHVACForcedAirUserDefined  # type: ignore[assignment]
 
 class _AnyZoneHVACForcedAirUserDefinedFields(_ZoneHVACForcedAirUserDefinedCommonFields, total=False):
     number_of_plant_loop_connections: int | None
@@ -50984,6 +53119,7 @@ class ZoneHVACForcedAirUserDefined(AnyZoneHVACForcedAirUserDefined):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACForcedAirUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.ZoneHVACForcedAirUserDefined  # type: ignore[assignment]
 
 class _ZoneHVACForcedAirUserDefinedFields(_ZoneHVACForcedAirUserDefinedCommonFields, total=False):
     number_of_plant_loop_connections: int | None
@@ -51036,6 +53172,7 @@ class AnyAirTerminalSingleDuctUserDefined(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAirTerminalSingleDuctUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.AnyAirTerminalSingleDuctUserDefined  # type: ignore[assignment]
 
 class _AnyAirTerminalSingleDuctUserDefinedFields(_AirTerminalSingleDuctUserDefinedCommonFields, total=False):
     number_of_plant_loop_connections: int | None
@@ -51049,6 +53186,7 @@ class AirTerminalSingleDuctUserDefined(AnyAirTerminalSingleDuctUserDefined):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c57.AirTerminalSingleDuctUserDefined  # type: ignore[assignment]
 
 class _AirTerminalSingleDuctUserDefinedFields(_AirTerminalSingleDuctUserDefinedCommonFields, total=False):
     number_of_plant_loop_connections: int | None
@@ -51098,6 +53236,7 @@ class AnyCoilUserDefined(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCoilUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c98.AnyCoilUserDefined  # type: ignore[assignment]
 
 class _AnyCoilUserDefinedFields(_CoilUserDefinedCommonFields, total=False):
     number_of_air_connections: int | None
@@ -51109,6 +53248,7 @@ class CoilUserDefined(AnyCoilUserDefined):
     """Range: >= 1, <= 2"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilUserDefinedFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c22.CoilUserDefined  # type: ignore[assignment]
 
 class _CoilUserDefinedFields(_CoilUserDefinedCommonFields, total=False):
     number_of_air_connections: int | None
@@ -51282,6 +53422,7 @@ class AnyPlantComponentUserDefined(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPlantComponentUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.AnyPlantComponentUserDefined  # type: ignore[assignment]
 
 class _AnyPlantComponentUserDefinedFields(_PlantComponentUserDefinedCommonFields, total=False):
     number_of_plant_loop_connections: int | None
@@ -51295,6 +53436,7 @@ class PlantComponentUserDefined(AnyPlantComponentUserDefined):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantComponentUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.PlantComponentUserDefined  # type: ignore[assignment]
 
 class _PlantComponentUserDefinedFields(_PlantComponentUserDefinedCommonFields, total=False):
     number_of_plant_loop_connections: int | None
@@ -51328,6 +53470,7 @@ class PlantEquipmentOperationUserDefined(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.PlantEquipmentOperationUserDefined  # type: ignore[assignment]
 
 class _PlantEquipmentOperationUserDefinedFields(TypedDict, total=False):
     main_model_program_calling_manager_name: str | None
@@ -51361,6 +53504,7 @@ class AvailabilityManagerScheduled(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerScheduledFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c38.AvailabilityManagerScheduled  # type: ignore[assignment]
 
 class _AvailabilityManagerScheduledFields(TypedDict, total=False):
     schedule_name: str | None
@@ -51373,6 +53517,7 @@ class AvailabilityManagerScheduledOn(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerScheduledOnFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c120.AvailabilityManagerScheduledOn  # type: ignore[assignment]
 
 class _AvailabilityManagerScheduledOnFields(TypedDict, total=False):
     schedule_name: str | None
@@ -51385,6 +53530,7 @@ class AvailabilityManagerScheduledOff(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerScheduledOffFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c5.AvailabilityManagerScheduledOff  # type: ignore[assignment]
 
 class _AvailabilityManagerScheduledOffFields(TypedDict, total=False):
     schedule_name: str | None
@@ -51439,6 +53585,7 @@ class AnyAvailabilityManagerOptimumStart(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAvailabilityManagerOptimumStartFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c93.AnyAvailabilityManagerOptimumStart  # type: ignore[assignment]
 
 class _AnyAvailabilityManagerOptimumStartFields(_AvailabilityManagerOptimumStartCommonFields, total=False):
     number_of_previous_days: int | None
@@ -51452,6 +53599,7 @@ class AvailabilityManagerOptimumStart(AnyAvailabilityManagerOptimumStart):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerOptimumStartFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.AvailabilityManagerOptimumStart  # type: ignore[assignment]
 
 class _AvailabilityManagerOptimumStartFields(_AvailabilityManagerOptimumStartCommonFields, total=False):
     number_of_previous_days: int | None
@@ -51491,6 +53639,7 @@ class AvailabilityManagerNightCycle(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerNightCycleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.AvailabilityManagerNightCycle  # type: ignore[assignment]
 
 class _AvailabilityManagerNightCycleFields(TypedDict, total=False):
     applicability_schedule_name: str | None
@@ -51533,6 +53682,7 @@ class AvailabilityManagerDifferentialThermostat(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AvailabilityManagerDifferentialThermostatFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c108.AvailabilityManagerDifferentialThermostat  # type: ignore[assignment]
 
 class _AvailabilityManagerDifferentialThermostatFields(TypedDict, total=False):
     hot_node_name: str | None
@@ -51553,6 +53703,7 @@ class AvailabilityManagerHighTemperatureTurnOff(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AvailabilityManagerHighTemperatureTurnOffFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c5.AvailabilityManagerHighTemperatureTurnOff  # type: ignore[assignment]
 
 class _AvailabilityManagerHighTemperatureTurnOffFields(TypedDict, total=False):
     sensor_node_name: str | None
@@ -51571,6 +53722,7 @@ class AvailabilityManagerHighTemperatureTurnOn(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AvailabilityManagerHighTemperatureTurnOnFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c71.AvailabilityManagerHighTemperatureTurnOn  # type: ignore[assignment]
 
 class _AvailabilityManagerHighTemperatureTurnOnFields(TypedDict, total=False):
     sensor_node_name: str | None
@@ -51591,6 +53743,7 @@ class AvailabilityManagerLowTemperatureTurnOff(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AvailabilityManagerLowTemperatureTurnOffFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.AvailabilityManagerLowTemperatureTurnOff  # type: ignore[assignment]
 
 class _AvailabilityManagerLowTemperatureTurnOffFields(TypedDict, total=False):
     sensor_node_name: str | None
@@ -51610,6 +53763,7 @@ class AvailabilityManagerLowTemperatureTurnOn(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AvailabilityManagerLowTemperatureTurnOnFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.AvailabilityManagerLowTemperatureTurnOn  # type: ignore[assignment]
 
 class _AvailabilityManagerLowTemperatureTurnOnFields(TypedDict, total=False):
     sensor_node_name: str | None
@@ -51634,6 +53788,7 @@ class AvailabilityManagerNightVentilation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerNightVentilationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c59.AvailabilityManagerNightVentilation  # type: ignore[assignment]
 
 class _AvailabilityManagerNightVentilationFields(TypedDict, total=False):
     applicability_schedule_name: str | None
@@ -51687,6 +53842,7 @@ class AvailabilityManagerHybridVentilation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerHybridVentilationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c4.AvailabilityManagerHybridVentilation  # type: ignore[assignment]
 
 class _AvailabilityManagerHybridVentilationFields(TypedDict, total=False):
     hvac_air_loop_name: str | None
@@ -51728,6 +53884,28 @@ class AvailabilityManagerAssignmentListManagersGroup(_TypedExtensibleGroup):
         | None
     )
     availability_manager_name: str | None
+    def as_dict(self) -> AvailabilityManagerAssignmentListManagersItem: ...  # type: ignore[override]
+
+class AvailabilityManagerAssignmentListManagersItem(TypedDict, total=False):
+    """One group of :class:`AvailabilityManagerAssignmentListManagersGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    availability_manager_object_type: (
+        Literal[
+            "AvailabilityManager:DifferentialThermostat",
+            "AvailabilityManager:HighTemperatureTurnOff",
+            "AvailabilityManager:HighTemperatureTurnOn",
+            "AvailabilityManager:LowTemperatureTurnOff",
+            "AvailabilityManager:LowTemperatureTurnOn",
+            "AvailabilityManager:NightCycle",
+            "AvailabilityManager:NightVentilation",
+            "AvailabilityManager:OptimumStart",
+            "AvailabilityManager:Scheduled",
+            "AvailabilityManager:ScheduledOff",
+            "AvailabilityManager:ScheduledOn",
+        ]
+        | None
+    )
+    availability_manager_name: str | None
 
 class AvailabilityManagerAssignmentList(_TypedIDFObject):
     """Defines the applicable managers used for an AirLoopHVAC or PlantLoop. The priority of availability managers is based ..."""
@@ -51737,9 +53915,10 @@ class AvailabilityManagerAssignmentList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerAssignmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c14.AvailabilityManagerAssignmentList  # type: ignore[assignment]
 
 class _AvailabilityManagerAssignmentListFields(TypedDict, total=False):
-    managers: list[Any]
+    managers: Sequence[AvailabilityManagerAssignmentListManagersItem | AvailabilityManagerAssignmentListManagersGroup]
 
 class SetpointManagerScheduled(_TypedIDFObject):
     """The simplest Setpoint Manager simply uses a schedule to determine one or more setpoints. Values of the nodes are not ..."""
@@ -51765,6 +53944,7 @@ class SetpointManagerScheduled(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerScheduledFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.SetpointManagerScheduled  # type: ignore[assignment]
 
 class _SetpointManagerScheduledFields(TypedDict, total=False):
     control_variable: (
@@ -51797,6 +53977,7 @@ class SetpointManagerScheduledDualSetpoint(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerScheduledDualSetpointFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.SetpointManagerScheduledDualSetpoint  # type: ignore[assignment]
 
 class _SetpointManagerScheduledDualSetpointFields(TypedDict, total=False):
     control_variable: Literal["", "Temperature"] | None
@@ -51833,6 +54014,7 @@ class SetpointManagerOutdoorAirReset(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerOutdoorAirResetFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c39.SetpointManagerOutdoorAirReset  # type: ignore[assignment]
 
 class _SetpointManagerOutdoorAirResetFields(TypedDict, total=False):
     control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -51865,6 +54047,7 @@ class SetpointManagerSingleZoneReheat(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerSingleZoneReheatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.SetpointManagerSingleZoneReheat  # type: ignore[assignment]
 
 class _SetpointManagerSingleZoneReheatFields(TypedDict, total=False):
     control_variable: Literal["", "Temperature"] | None
@@ -51893,6 +54076,7 @@ class SetpointManagerSingleZoneHeating(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerSingleZoneHeatingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.SetpointManagerSingleZoneHeating  # type: ignore[assignment]
 
 class _SetpointManagerSingleZoneHeatingFields(TypedDict, total=False):
     control_variable: Literal["", "Temperature"] | None
@@ -51921,6 +54105,7 @@ class SetpointManagerSingleZoneCooling(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerSingleZoneCoolingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c115.SetpointManagerSingleZoneCooling  # type: ignore[assignment]
 
 class _SetpointManagerSingleZoneCoolingFields(TypedDict, total=False):
     control_variable: Literal["", "Temperature"] | None
@@ -51945,6 +54130,7 @@ class SetpointManagerSingleZoneHumidityMinimum(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerSingleZoneHumidityMinimumFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.SetpointManagerSingleZoneHumidityMinimum  # type: ignore[assignment]
 
 class _SetpointManagerSingleZoneHumidityMinimumFields(TypedDict, total=False):
     setpoint_node_or_nodelist_name: str | None
@@ -51964,6 +54150,7 @@ class SetpointManagerSingleZoneHumidityMaximum(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerSingleZoneHumidityMaximumFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c92.SetpointManagerSingleZoneHumidityMaximum  # type: ignore[assignment]
 
 class _SetpointManagerSingleZoneHumidityMaximumFields(TypedDict, total=False):
     setpoint_node_or_nodelist_name: str | None
@@ -51989,6 +54176,7 @@ class SetpointManagerMixedAir(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerMixedAirFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c115.SetpointManagerMixedAir  # type: ignore[assignment]
 
 class _SetpointManagerMixedAirFields(TypedDict, total=False):
     control_variable: Literal["", "Temperature"] | None
@@ -52026,6 +54214,7 @@ class SetpointManagerOutdoorAirPretreat(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerOutdoorAirPretreatFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c100.SetpointManagerOutdoorAirPretreat  # type: ignore[assignment]
 
 class _SetpointManagerOutdoorAirPretreatFields(TypedDict, total=False):
     control_variable: Literal["HumidityRatio", "MaximumHumidityRatio", "MinimumHumidityRatio", "Temperature"] | None
@@ -52058,6 +54247,7 @@ class SetpointManagerWarmest(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerWarmestFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c9.SetpointManagerWarmest  # type: ignore[assignment]
 
 class _SetpointManagerWarmestFields(TypedDict, total=False):
     control_variable: Literal["", "Temperature"] | None
@@ -52086,6 +54276,7 @@ class SetpointManagerColdest(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerColdestFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.SetpointManagerColdest  # type: ignore[assignment]
 
 class _SetpointManagerColdestFields(TypedDict, total=False):
     control_variable: Literal["", "Temperature"] | None
@@ -52107,6 +54298,7 @@ class SetpointManagerReturnAirBypassFlow(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerReturnAirBypassFlowFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c100.SetpointManagerReturnAirBypassFlow  # type: ignore[assignment]
 
 class _SetpointManagerReturnAirBypassFlowFields(TypedDict, total=False):
     control_variable: Literal["", "Flow"] | None
@@ -52133,6 +54325,7 @@ class SetpointManagerWarmestTemperatureFlow(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerWarmestTemperatureFlowFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.SetpointManagerWarmestTemperatureFlow  # type: ignore[assignment]
 
 class _SetpointManagerWarmestTemperatureFlowFields(TypedDict, total=False):
     control_variable: Literal["Temperature"] | None
@@ -52158,6 +54351,7 @@ class SetpointManagerMultiZoneHeatingAverage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerMultiZoneHeatingAverageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.SetpointManagerMultiZoneHeatingAverage  # type: ignore[assignment]
 
 class _SetpointManagerMultiZoneHeatingAverageFields(TypedDict, total=False):
     hvac_air_loop_name: str | None
@@ -52180,6 +54374,7 @@ class SetpointManagerMultiZoneCoolingAverage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerMultiZoneCoolingAverageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.SetpointManagerMultiZoneCoolingAverage  # type: ignore[assignment]
 
 class _SetpointManagerMultiZoneCoolingAverageFields(TypedDict, total=False):
     hvac_air_loop_name: str | None
@@ -52205,6 +54400,7 @@ class SetpointManagerMultiZoneMinimumHumidityAverage(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerMultiZoneMinimumHumidityAverageFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c102.SetpointManagerMultiZoneMinimumHumidityAverage  # type: ignore[assignment]
 
 class _SetpointManagerMultiZoneMinimumHumidityAverageFields(TypedDict, total=False):
     hvac_air_loop_name: str | None
@@ -52230,6 +54426,7 @@ class SetpointManagerMultiZoneMaximumHumidityAverage(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerMultiZoneMaximumHumidityAverageFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.SetpointManagerMultiZoneMaximumHumidityAverage  # type: ignore[assignment]
 
 class _SetpointManagerMultiZoneMaximumHumidityAverageFields(TypedDict, total=False):
     hvac_air_loop_name: str | None
@@ -52255,6 +54452,7 @@ class SetpointManagerMultiZoneHumidityMinimum(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerMultiZoneHumidityMinimumFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.SetpointManagerMultiZoneHumidityMinimum  # type: ignore[assignment]
 
 class _SetpointManagerMultiZoneHumidityMinimumFields(TypedDict, total=False):
     hvac_air_loop_name: str | None
@@ -52280,6 +54478,7 @@ class SetpointManagerMultiZoneHumidityMaximum(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerMultiZoneHumidityMaximumFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.SetpointManagerMultiZoneHumidityMaximum  # type: ignore[assignment]
 
 class _SetpointManagerMultiZoneHumidityMaximumFields(TypedDict, total=False):
     hvac_air_loop_name: str | None
@@ -52309,6 +54508,7 @@ class SetpointManagerFollowOutdoorAirTemperature(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerFollowOutdoorAirTemperatureFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c61.SetpointManagerFollowOutdoorAirTemperature  # type: ignore[assignment]
 
 class _SetpointManagerFollowOutdoorAirTemperatureFields(TypedDict, total=False):
     control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -52341,6 +54541,7 @@ class SetpointManagerFollowSystemNodeTemperature(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerFollowSystemNodeTemperatureFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.SetpointManagerFollowSystemNodeTemperature  # type: ignore[assignment]
 
 class _SetpointManagerFollowSystemNodeTemperatureFields(TypedDict, total=False):
     control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -52377,6 +54578,7 @@ class SetpointManagerFollowGroundTemperature(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerFollowGroundTemperatureFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c33.SetpointManagerFollowGroundTemperature  # type: ignore[assignment]
 
 class _SetpointManagerFollowGroundTemperatureFields(TypedDict, total=False):
     control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -52416,6 +54618,7 @@ class SetpointManagerCondenserEnteringReset(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerCondenserEnteringResetFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c64.SetpointManagerCondenserEnteringReset  # type: ignore[assignment]
 
 class _SetpointManagerCondenserEnteringResetFields(TypedDict, total=False):
     control_variable: Literal["", "Temperature"] | None
@@ -52446,6 +54649,7 @@ class SetpointManagerCondenserEnteringResetIdeal(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerCondenserEnteringResetIdealFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c11.SetpointManagerCondenserEnteringResetIdeal  # type: ignore[assignment]
 
 class _SetpointManagerCondenserEnteringResetIdealFields(TypedDict, total=False):
     control_variable: Literal["", "Temperature"] | None
@@ -52470,6 +54674,7 @@ class SetpointManagerSingleZoneOneStageCooling(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerSingleZoneOneStageCoolingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c117.SetpointManagerSingleZoneOneStageCooling  # type: ignore[assignment]
 
 class _SetpointManagerSingleZoneOneStageCoolingFields(TypedDict, total=False):
     cooling_stage_on_supply_air_setpoint_temperature: float | None
@@ -52494,6 +54699,7 @@ class SetpointManagerSingleZoneOneStageHeating(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerSingleZoneOneStageHeatingFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c120.SetpointManagerSingleZoneOneStageHeating  # type: ignore[assignment]
 
 class _SetpointManagerSingleZoneOneStageHeatingFields(TypedDict, total=False):
     heating_stage_on_supply_air_setpoint_temperature: float | None
@@ -52525,6 +54731,7 @@ class SetpointManagerReturnTemperatureChilledWater(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerReturnTemperatureChilledWaterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c104.SetpointManagerReturnTemperatureChilledWater  # type: ignore[assignment]
 
 class _SetpointManagerReturnTemperatureChilledWaterFields(TypedDict, total=False):
     plant_loop_supply_outlet_node: str | None
@@ -52559,6 +54766,7 @@ class SetpointManagerReturnTemperatureHotWater(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerReturnTemperatureHotWaterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c66.SetpointManagerReturnTemperatureHotWater  # type: ignore[assignment]
 
 class _SetpointManagerReturnTemperatureHotWaterFields(TypedDict, total=False):
     plant_loop_supply_outlet_node: str | None
@@ -52592,6 +54800,7 @@ class SetpointManagerSystemNodeResetTemperature(_TypedIDFObject):
         /,
         **kwargs: Unpack[_SetpointManagerSystemNodeResetTemperatureFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c71.SetpointManagerSystemNodeResetTemperature  # type: ignore[assignment]
 
 class _SetpointManagerSystemNodeResetTemperatureFields(TypedDict, total=False):
     control_variable: Literal["MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -52622,6 +54831,7 @@ class SetpointManagerSystemNodeResetHumidity(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerSystemNodeResetHumidityFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c91.SetpointManagerSystemNodeResetHumidity  # type: ignore[assignment]
 
 class _SetpointManagerSystemNodeResetHumidityFields(TypedDict, total=False):
     control_variable: Literal["HumidityRatio", "MaximumHumidityRatio", "MinimumHumidityRatio"] | None
@@ -52724,6 +54934,7 @@ class RefrigerationCase(_TypedIDFObject):
     """Name of the return air node for this case. If left blank, defaults to the first return air node for this zone."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCaseFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.RefrigerationCase  # type: ignore[assignment]
 
 class _RefrigerationCaseFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -52835,6 +55046,7 @@ class RefrigerationCompressorRack(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCompressorRackFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c85.RefrigerationCompressorRack  # type: ignore[assignment]
 
 class _RefrigerationCompressorRackFields(TypedDict, total=False):
     heat_rejection_location: Literal["", "Outdoors", "Zone"] | None
@@ -52867,6 +55079,12 @@ class RefrigerationCaseAndWalkInListCasesAndWalkinsGroup(_TypedExtensibleGroup):
     """One cases_and_walkins group inside :class:`RefrigerationCaseAndWalkInList`."""
 
     case_or_walkin_name: str | None
+    def as_dict(self) -> RefrigerationCaseAndWalkInListCasesAndWalkinsItem: ...  # type: ignore[override]
+
+class RefrigerationCaseAndWalkInListCasesAndWalkinsItem(TypedDict, total=False):
+    """One group of :class:`RefrigerationCaseAndWalkInListCasesAndWalkinsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    case_or_walkin_name: str | None
 
 class RefrigerationCaseAndWalkInList(_TypedIDFObject):
     """Provides a list of all the refrigerated cases, walk in coolers, or air chillers cooled by a single refrigeration syst..."""
@@ -52876,9 +55094,12 @@ class RefrigerationCaseAndWalkInList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCaseAndWalkInListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.RefrigerationCaseAndWalkInList  # type: ignore[assignment]
 
 class _RefrigerationCaseAndWalkInListFields(TypedDict, total=False):
-    cases_and_walkins: list[Any]
+    cases_and_walkins: Sequence[
+        RefrigerationCaseAndWalkInListCasesAndWalkinsItem | RefrigerationCaseAndWalkInListCasesAndWalkinsGroup
+    ]
 
 class RefrigerationCondenserAirCooled(_TypedIDFObject):
     """Air cooled condenser for a refrigeration system (Refrigeration:System)."""
@@ -52907,6 +55128,7 @@ class RefrigerationCondenserAirCooled(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCondenserAirCooledFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.RefrigerationCondenserAirCooled  # type: ignore[assignment]
 
 class _RefrigerationCondenserAirCooledFields(TypedDict, total=False):
     rated_effective_total_heat_rejection_rate_curve_name: str | None
@@ -52974,6 +55196,7 @@ class RefrigerationCondenserEvaporativeCooled(_TypedIDFObject):
         /,
         **kwargs: Unpack[_RefrigerationCondenserEvaporativeCooledFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.RefrigerationCondenserEvaporativeCooled  # type: ignore[assignment]
 
 class _RefrigerationCondenserEvaporativeCooledFields(TypedDict, total=False):
     rated_effective_total_heat_rejection_rate: float | None
@@ -53036,6 +55259,7 @@ class RefrigerationCondenserWaterCooled(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCondenserWaterCooledFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.RefrigerationCondenserWaterCooled  # type: ignore[assignment]
 
 class _RefrigerationCondenserWaterCooledFields(TypedDict, total=False):
     rated_effective_total_heat_rejection_rate: float | None
@@ -53076,6 +55300,7 @@ class RefrigerationCondenserCascade(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCondenserCascadeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.RefrigerationCondenserCascade  # type: ignore[assignment]
 
 class _RefrigerationCondenserCascadeFields(TypedDict, total=False):
     rated_condensing_temperature: float | None
@@ -53119,6 +55344,7 @@ class RefrigerationGasCoolerAirCooled(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationGasCoolerAirCooledFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c87.RefrigerationGasCoolerAirCooled  # type: ignore[assignment]
 
 class _RefrigerationGasCoolerAirCooledFields(TypedDict, total=False):
     rated_total_heat_rejection_rate_curve_name: str | None
@@ -53139,6 +55365,12 @@ class RefrigerationTransferLoadListTransferLoadsGroup(_TypedExtensibleGroup):
     """One transfer_loads group inside :class:`RefrigerationTransferLoadList`."""
 
     cascade_condenser_name_or_secondary_system_name: str | None
+    def as_dict(self) -> RefrigerationTransferLoadListTransferLoadsItem: ...  # type: ignore[override]
+
+class RefrigerationTransferLoadListTransferLoadsItem(TypedDict, total=False):
+    """One group of :class:`RefrigerationTransferLoadListTransferLoadsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    cascade_condenser_name_or_secondary_system_name: str | None
 
 class RefrigerationTransferLoadList(_TypedIDFObject):
     """A refrigeration system may provide cooling to other, secondary, systems through either a secondary loop or a cascade ..."""
@@ -53148,9 +55380,12 @@ class RefrigerationTransferLoadList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationTransferLoadListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c64.RefrigerationTransferLoadList  # type: ignore[assignment]
 
 class _RefrigerationTransferLoadListFields(TypedDict, total=False):
-    transfer_loads: list[Any]
+    transfer_loads: Sequence[
+        RefrigerationTransferLoadListTransferLoadsItem | RefrigerationTransferLoadListTransferLoadsGroup
+    ]
 
 class RefrigerationSubcooler(_TypedIDFObject):
     """Two types of subcoolers are modeled by the detailed refrigeration system. The liquid suction heat exchanger uses cool..."""
@@ -53171,6 +55406,7 @@ class RefrigerationSubcooler(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationSubcoolerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.RefrigerationSubcooler  # type: ignore[assignment]
 
 class _RefrigerationSubcoolerFields(TypedDict, total=False):
     subcooler_type: Literal["", "LiquidSuction", "Mechanical"] | None
@@ -53205,6 +55441,7 @@ class RefrigerationCompressor(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCompressorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.RefrigerationCompressor  # type: ignore[assignment]
 
 class _RefrigerationCompressorFields(TypedDict, total=False):
     refrigeration_compressor_power_curve_name: str | None
@@ -53222,6 +55459,12 @@ class RefrigerationCompressorListCompressorsGroup(_TypedExtensibleGroup):
     """One compressors group inside :class:`RefrigerationCompressorList`."""
 
     refrigeration_compressor_name: str | None
+    def as_dict(self) -> RefrigerationCompressorListCompressorsItem: ...  # type: ignore[override]
+
+class RefrigerationCompressorListCompressorsItem(TypedDict, total=False):
+    """One group of :class:`RefrigerationCompressorListCompressorsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    refrigeration_compressor_name: str | None
 
 class RefrigerationCompressorList(_TypedIDFObject):
     """List of all the compressors included within a single refrigeration system (Refrigeration:System). Each list must cont..."""
@@ -53231,9 +55474,10 @@ class RefrigerationCompressorList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCompressorListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.RefrigerationCompressorList  # type: ignore[assignment]
 
 class _RefrigerationCompressorListFields(TypedDict, total=False):
-    compressors: list[Any]
+    compressors: Sequence[RefrigerationCompressorListCompressorsItem | RefrigerationCompressorListCompressorsGroup]
 
 class RefrigerationSystem(_TypedIDFObject):
     """Simulates the performance of a supermarket refrigeration system when used along with other objects to define the refr..."""
@@ -53271,6 +55515,7 @@ class RefrigerationSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.RefrigerationSystem  # type: ignore[assignment]
 
 class _RefrigerationSystemFields(TypedDict, total=False):
     refrigerated_case_or_walkin_or_caseandwalkinlist_name: str | None
@@ -53321,6 +55566,7 @@ class RefrigerationTranscriticalSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationTranscriticalSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.RefrigerationTranscriticalSystem  # type: ignore[assignment]
 
 class _RefrigerationTranscriticalSystemFields(TypedDict, total=False):
     system_type: Literal["SingleStage", "TwoStage"] | None
@@ -53414,6 +55660,7 @@ class AnyRefrigerationSecondarySystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyRefrigerationSecondarySystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.AnyRefrigerationSecondarySystem  # type: ignore[assignment]
 
 class _AnyRefrigerationSecondarySystemFields(_RefrigerationSecondarySystemCommonFields, total=False):
     number_of_pumps_in_loop: int | None
@@ -53427,12 +55674,30 @@ class RefrigerationSecondarySystem(AnyRefrigerationSecondarySystem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationSecondarySystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c26.RefrigerationSecondarySystem  # type: ignore[assignment]
 
 class _RefrigerationSecondarySystemFields(_RefrigerationSecondarySystemCommonFields, total=False):
     number_of_pumps_in_loop: int | None
 
 class RefrigerationWalkInZoneDataGroup(_TypedExtensibleGroup):
     """One zone_data group inside :class:`RefrigerationWalkIn`."""
+
+    zone_name: str | None
+    total_insulated_surface_area_facing_zone: float | None
+    insulated_surface_u_value_facing_zone: float | None
+    area_of_glass_reach_in_doors_facing_zone: float | None
+    height_of_glass_reach_in_doors_facing_zone: float | None
+    glass_reach_in_door_u_value_facing_zone: float | None
+    glass_reach_in_door_opening_schedule_name_facing_zone: str | None
+    area_of_stocking_doors_facing_zone: float | None
+    height_of_stocking_doors_facing_zone: float | None
+    stocking_door_u_value_facing_zone: float | None
+    stocking_door_opening_schedule_name_facing_zone: str | None
+    stocking_door_opening_protection_type_facing_zone: Literal["", "AirCurtain", "None", "StripCurtain"] | None
+    def as_dict(self) -> RefrigerationWalkInZoneDataItem: ...  # type: ignore[override]
+
+class RefrigerationWalkInZoneDataItem(TypedDict, total=False):
+    """One group of :class:`RefrigerationWalkInZoneDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     zone_name: str | None
     total_insulated_surface_area_facing_zone: float | None
@@ -53495,6 +55760,7 @@ class RefrigerationWalkIn(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationWalkInFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c37.RefrigerationWalkIn  # type: ignore[assignment]
 
 class _RefrigerationWalkInFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -53517,7 +55783,7 @@ class _RefrigerationWalkInFields(TypedDict, total=False):
     average_refrigerant_charge_inventory: float | None
     insulated_floor_surface_area: float | None
     insulated_floor_u_value: float | None
-    zone_data: list[Any]
+    zone_data: Sequence[RefrigerationWalkInZoneDataItem | RefrigerationWalkInZoneDataGroup]
 
 class RefrigerationAirChiller(_TypedIDFObject):
     """Works in conjunction with a refrigeration chiller set, compressor rack, a refrigeration system, or a refrigeration se..."""
@@ -53597,6 +55863,7 @@ class RefrigerationAirChiller(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationAirChillerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.RefrigerationAirChiller  # type: ignore[assignment]
 
 class _RefrigerationAirChillerFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -53648,6 +55915,12 @@ class ZoneHVACRefrigerationChillerSetChillersGroup(_TypedExtensibleGroup):
     """One chillers group inside :class:`ZoneHVACRefrigerationChillerSet`."""
 
     air_chiller_name: str | None
+    def as_dict(self) -> ZoneHVACRefrigerationChillerSetChillersItem: ...  # type: ignore[override]
+
+class ZoneHVACRefrigerationChillerSetChillersItem(TypedDict, total=False):
+    """One group of :class:`ZoneHVACRefrigerationChillerSetChillersGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    air_chiller_name: str | None
 
 class ZoneHVACRefrigerationChillerSet(_TypedIDFObject):
     """Works in conjunction with one or multiple air chillers, compressor racks, refrigeration systems, or refrigeration sec..."""
@@ -53665,13 +55938,14 @@ class ZoneHVACRefrigerationChillerSet(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACRefrigerationChillerSetFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.ZoneHVACRefrigerationChillerSet  # type: ignore[assignment]
 
 class _ZoneHVACRefrigerationChillerSetFields(TypedDict, total=False):
     availability_schedule_name: str | None
     zone_name: str | None
     air_inlet_node_name: str | None
     air_outlet_node_name: str | None
-    chillers: list[Any]
+    chillers: Sequence[ZoneHVACRefrigerationChillerSetChillersItem | ZoneHVACRefrigerationChillerSetChillersGroup]
 
 class _DemandManagerAssignmentListCommonFields(TypedDict, total=False):
     meter_name: str | None
@@ -53680,10 +55954,26 @@ class _DemandManagerAssignmentListCommonFields(TypedDict, total=False):
     billing_period_schedule_name: str | None
     peak_period_schedule_name: str | None
     demand_manager_priority: Literal["All", "Sequential"] | None
-    manager_data: list[Any]
+    manager_data: Sequence[DemandManagerAssignmentListManagerDataItem | DemandManagerAssignmentListManagerDataGroup]
 
 class DemandManagerAssignmentListManagerDataGroup(_TypedExtensibleGroup):
     """One manager_data group inside :class:`AnyDemandManagerAssignmentList`."""
+
+    demandmanager_object_type: (
+        Literal[
+            "DemandManager:ElectricEquipment",
+            "DemandManager:ExteriorLights",
+            "DemandManager:Lights",
+            "DemandManager:Thermostats",
+            "DemandManager:Ventilation",
+        ]
+        | None
+    )
+    demandmanager_name: str | None
+    def as_dict(self) -> DemandManagerAssignmentListManagerDataItem: ...  # type: ignore[override]
+
+class DemandManagerAssignmentListManagerDataItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerAssignmentListManagerDataGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     demandmanager_object_type: (
         Literal[
@@ -53718,6 +56008,7 @@ class AnyDemandManagerAssignmentList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyDemandManagerAssignmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c21.AnyDemandManagerAssignmentList  # type: ignore[assignment]
 
 class _AnyDemandManagerAssignmentListFields(_DemandManagerAssignmentListCommonFields, total=False):
     demand_window_length: int | None
@@ -53731,6 +56022,7 @@ class DemandManagerAssignmentList(AnyDemandManagerAssignmentList):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerAssignmentListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.DemandManagerAssignmentList  # type: ignore[assignment]
 
 class _DemandManagerAssignmentListFields(_DemandManagerAssignmentListCommonFields, total=False):
     demand_window_length: int | None
@@ -53741,10 +56033,16 @@ class _DemandManagerExteriorLightsCommonFields(TypedDict, total=False):
     maximum_limit_fraction: float | None
     limit_step_change: float | None
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    lights: list[Any]
+    lights: Sequence[DemandManagerExteriorLightsLightsItem | DemandManagerExteriorLightsLightsGroup]
 
 class DemandManagerExteriorLightsLightsGroup(_TypedExtensibleGroup):
     """One lights group inside :class:`AnyDemandManagerExteriorLights`."""
+
+    exterior_lights_name: str | None
+    def as_dict(self) -> DemandManagerExteriorLightsLightsItem: ...  # type: ignore[override]
+
+class DemandManagerExteriorLightsLightsItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerExteriorLightsLightsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     exterior_lights_name: str | None
 
@@ -53772,6 +56070,7 @@ class AnyDemandManagerExteriorLights(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyDemandManagerExteriorLightsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c95.AnyDemandManagerExteriorLights  # type: ignore[assignment]
 
 class _AnyDemandManagerExteriorLightsFields(_DemandManagerExteriorLightsCommonFields, total=False):
     minimum_limit_duration: int | None
@@ -53788,6 +56087,7 @@ class DemandManagerExteriorLights(AnyDemandManagerExteriorLights):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerExteriorLightsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c122.DemandManagerExteriorLights  # type: ignore[assignment]
 
 class _DemandManagerExteriorLightsFields(_DemandManagerExteriorLightsCommonFields, total=False):
     minimum_limit_duration: int | None
@@ -53799,10 +56099,16 @@ class _DemandManagerLightsCommonFields(TypedDict, total=False):
     maximum_limit_fraction: float | None
     limit_step_change: float | None
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    lights: list[Any]
+    lights: Sequence[DemandManagerLightsLightsItem | DemandManagerLightsLightsGroup]
 
 class DemandManagerLightsLightsGroup(_TypedExtensibleGroup):
     """One lights group inside :class:`AnyDemandManagerLights`."""
+
+    lights_name: str | None
+    def as_dict(self) -> DemandManagerLightsLightsItem: ...  # type: ignore[override]
+
+class DemandManagerLightsLightsItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerLightsLightsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     lights_name: str | None
 
@@ -53830,6 +56136,7 @@ class AnyDemandManagerLights(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyDemandManagerLightsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c110.AnyDemandManagerLights  # type: ignore[assignment]
 
 class _AnyDemandManagerLightsFields(_DemandManagerLightsCommonFields, total=False):
     minimum_limit_duration: int | None
@@ -53846,6 +56153,7 @@ class DemandManagerLights(AnyDemandManagerLights):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerLightsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.DemandManagerLights  # type: ignore[assignment]
 
 class _DemandManagerLightsFields(_DemandManagerLightsCommonFields, total=False):
     minimum_limit_duration: int | None
@@ -53857,10 +56165,16 @@ class _DemandManagerElectricEquipmentCommonFields(TypedDict, total=False):
     maximum_limit_fraction: float | None
     limit_step_change: float | None
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    equipment: list[Any]
+    equipment: Sequence[DemandManagerElectricEquipmentEquipmentItem | DemandManagerElectricEquipmentEquipmentGroup]
 
 class DemandManagerElectricEquipmentEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`AnyDemandManagerElectricEquipment`."""
+
+    electric_equipment_name: str | None
+    def as_dict(self) -> DemandManagerElectricEquipmentEquipmentItem: ...  # type: ignore[override]
+
+class DemandManagerElectricEquipmentEquipmentItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerElectricEquipmentEquipmentGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     electric_equipment_name: str | None
 
@@ -53888,6 +56202,7 @@ class AnyDemandManagerElectricEquipment(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyDemandManagerElectricEquipmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.AnyDemandManagerElectricEquipment  # type: ignore[assignment]
 
 class _AnyDemandManagerElectricEquipmentFields(_DemandManagerElectricEquipmentCommonFields, total=False):
     minimum_limit_duration: int | None
@@ -53904,6 +56219,7 @@ class DemandManagerElectricEquipment(AnyDemandManagerElectricEquipment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerElectricEquipmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.DemandManagerElectricEquipment  # type: ignore[assignment]
 
 class _DemandManagerElectricEquipmentFields(_DemandManagerElectricEquipmentCommonFields, total=False):
     minimum_limit_duration: int | None
@@ -53916,10 +56232,16 @@ class _DemandManagerThermostatsCommonFields(TypedDict, total=False):
     maximum_cooling_setpoint_reset: float | None
     reset_step_change: float | None
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    thermostats: list[Any]
+    thermostats: Sequence[DemandManagerThermostatsThermostatsItem | DemandManagerThermostatsThermostatsGroup]
 
 class DemandManagerThermostatsThermostatsGroup(_TypedExtensibleGroup):
     """One thermostats group inside :class:`AnyDemandManagerThermostats`."""
+
+    thermostat_name: str | None
+    def as_dict(self) -> DemandManagerThermostatsThermostatsItem: ...  # type: ignore[override]
+
+class DemandManagerThermostatsThermostatsItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerThermostatsThermostatsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     thermostat_name: str | None
 
@@ -53949,6 +56271,7 @@ class AnyDemandManagerThermostats(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyDemandManagerThermostatsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c79.AnyDemandManagerThermostats  # type: ignore[assignment]
 
 class _AnyDemandManagerThermostatsFields(_DemandManagerThermostatsCommonFields, total=False):
     minimum_reset_duration: int | None
@@ -53965,6 +56288,7 @@ class DemandManagerThermostats(AnyDemandManagerThermostats):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerThermostatsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.DemandManagerThermostats  # type: ignore[assignment]
 
 class _DemandManagerThermostatsFields(_DemandManagerThermostatsCommonFields, total=False):
     minimum_reset_duration: int | None
@@ -53977,10 +56301,16 @@ class _DemandManagerVentilationCommonFields(TypedDict, total=False):
     reduction_ratio: float | None
     limit_step_change: float | None
     selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None
-    controllers: list[Any]
+    controllers: Sequence[DemandManagerVentilationControllersItem | DemandManagerVentilationControllersGroup]
 
 class DemandManagerVentilationControllersGroup(_TypedExtensibleGroup):
     """One controllers group inside :class:`AnyDemandManagerVentilation`."""
+
+    controller_outdoor_air_name: str | None
+    def as_dict(self) -> DemandManagerVentilationControllersItem: ...  # type: ignore[override]
+
+class DemandManagerVentilationControllersItem(TypedDict, total=False):
+    """One group of :class:`DemandManagerVentilationControllersGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     controller_outdoor_air_name: str | None
 
@@ -54011,6 +56341,7 @@ class AnyDemandManagerVentilation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyDemandManagerVentilationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c64.AnyDemandManagerVentilation  # type: ignore[assignment]
 
 class _AnyDemandManagerVentilationFields(_DemandManagerVentilationCommonFields, total=False):
     minimum_limit_duration: int | None
@@ -54027,6 +56358,7 @@ class DemandManagerVentilation(AnyDemandManagerVentilation):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerVentilationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c106.DemandManagerVentilation  # type: ignore[assignment]
 
 class _DemandManagerVentilationFields(_DemandManagerVentilationCommonFields, total=False):
     minimum_limit_duration: int | None
@@ -54118,6 +56450,7 @@ class AnyGeneratorInternalCombustionEngine(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGeneratorInternalCombustionEngineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c13.AnyGeneratorInternalCombustionEngine  # type: ignore[assignment]
 
 class _AnyGeneratorInternalCombustionEngineFields(_GeneratorInternalCombustionEngineCommonFields, total=False):
     fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
@@ -54136,6 +56469,7 @@ class GeneratorInternalCombustionEngine(AnyGeneratorInternalCombustionEngine):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorInternalCombustionEngineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.GeneratorInternalCombustionEngine  # type: ignore[assignment]
 
 class _GeneratorInternalCombustionEngineFields(_GeneratorInternalCombustionEngineCommonFields, total=False):
     fuel_type: (
@@ -54241,6 +56575,7 @@ class AnyGeneratorCombustionTurbine(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGeneratorCombustionTurbineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c33.AnyGeneratorCombustionTurbine  # type: ignore[assignment]
 
 class _AnyGeneratorCombustionTurbineFields(_GeneratorCombustionTurbineCommonFields, total=False):
     fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
@@ -54268,6 +56603,7 @@ class GeneratorCombustionTurbine(AnyGeneratorCombustionTurbine):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorCombustionTurbineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c33.GeneratorCombustionTurbine  # type: ignore[assignment]
 
 class _GeneratorCombustionTurbineFields(_GeneratorCombustionTurbineCommonFields, total=False):
     fuel_type: (
@@ -54424,6 +56760,7 @@ class AnyGeneratorMicroTurbine(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyGeneratorMicroTurbineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.AnyGeneratorMicroTurbine  # type: ignore[assignment]
 
 class _AnyGeneratorMicroTurbineFields(_GeneratorMicroTurbineCommonFields, total=False):
     fuel_type: Literal["", "NaturalGas"] | None
@@ -54451,6 +56788,7 @@ class GeneratorMicroTurbine(AnyGeneratorMicroTurbine):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorMicroTurbineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c116.GeneratorMicroTurbine  # type: ignore[assignment]
 
 class _GeneratorMicroTurbineFields(_GeneratorMicroTurbineCommonFields, total=False):
     fuel_type: (
@@ -54504,6 +56842,7 @@ class GeneratorPhotovoltaic(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorPhotovoltaicFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.GeneratorPhotovoltaic  # type: ignore[assignment]
 
 class _GeneratorPhotovoltaicFields(TypedDict, total=False):
     surface_name: str | None
@@ -54544,6 +56883,7 @@ class PhotovoltaicPerformanceSimple(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PhotovoltaicPerformanceSimpleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c65.PhotovoltaicPerformanceSimple  # type: ignore[assignment]
 
 class _PhotovoltaicPerformanceSimpleFields(TypedDict, total=False):
     fraction_of_surface_area_with_active_solar_cells: float | None
@@ -54620,6 +56960,7 @@ class AnyPhotovoltaicPerformanceEquivalentOneDiode(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyPhotovoltaicPerformanceEquivalentOneDiodeFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.AnyPhotovoltaicPerformanceEquivalentOneDiode  # type: ignore[assignment]
 
 class _AnyPhotovoltaicPerformanceEquivalentOneDiodeFields(
     _PhotovoltaicPerformanceEquivalentOneDiodeCommonFields, total=False
@@ -54638,6 +56979,7 @@ class PhotovoltaicPerformanceEquivalentOneDiode(AnyPhotovoltaicPerformanceEquiva
         /,
         **kwargs: Unpack[_PhotovoltaicPerformanceEquivalentOneDiodeFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c31.PhotovoltaicPerformanceEquivalentOneDiode  # type: ignore[assignment]
 
 class _PhotovoltaicPerformanceEquivalentOneDiodeFields(
     _PhotovoltaicPerformanceEquivalentOneDiodeCommonFields, total=False
@@ -54775,6 +57117,7 @@ class AnyPhotovoltaicPerformanceSandia(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPhotovoltaicPerformanceSandiaFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.AnyPhotovoltaicPerformanceSandia  # type: ignore[assignment]
 
 class _AnyPhotovoltaicPerformanceSandiaFields(_PhotovoltaicPerformanceSandiaCommonFields, total=False):
     number_of_cells_in_series: int | None
@@ -54791,6 +57134,7 @@ class PhotovoltaicPerformanceSandia(AnyPhotovoltaicPerformanceSandia):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PhotovoltaicPerformanceSandiaFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c30.PhotovoltaicPerformanceSandia  # type: ignore[assignment]
 
 class _PhotovoltaicPerformanceSandiaFields(_PhotovoltaicPerformanceSandiaCommonFields, total=False):
     number_of_cells_in_series: int | None
@@ -54817,6 +57161,7 @@ class GeneratorPVWatts(_TypedIDFObject):
     """Applies only to arrays with one-axis tracking and is the ratio of module surface area to area of the ground or roof o...; Default: 0.4; Range: >= 0.0, <= 1.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorPVWattsFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c39.GeneratorPVWatts  # type: ignore[assignment]
 
 class _GeneratorPVWattsFields(TypedDict, total=False):
     pvwatts_version: Literal["5"] | None
@@ -54841,6 +57186,7 @@ class ElectricLoadCenterInverterPVWatts(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterInverterPVWattsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.ElectricLoadCenterInverterPVWatts  # type: ignore[assignment]
 
 class _ElectricLoadCenterInverterPVWattsFields(TypedDict, total=False):
     dc_to_ac_size_ratio: float | None
@@ -54869,6 +57215,7 @@ class GeneratorFuelCell(_TypedIDFObject):
     """Enter the name of a Generator:FuelCell:StackCooler object. optional, used for PEMFC"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.GeneratorFuelCell  # type: ignore[assignment]
 
 class _GeneratorFuelCellFields(TypedDict, total=False):
     power_module_name: str | None
@@ -54946,6 +57293,7 @@ class GeneratorFuelCellPowerModule(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellPowerModuleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c105.GeneratorFuelCellPowerModule  # type: ignore[assignment]
 
 class _GeneratorFuelCellPowerModuleFields(TypedDict, total=False):
     efficiency_curve_mode: Literal["Annex42", "Normalized"] | None
@@ -54988,6 +57336,13 @@ class GeneratorFuelCellAirSupplyConstituentFractionsGroup(_TypedExtensibleGroup)
 
     constituent_name: Literal["Argon", "CarbonDioxide", "Nitrogen", "Oxygen", "Water"] | None
     molar_fraction: float | None
+    def as_dict(self) -> GeneratorFuelCellAirSupplyConstituentFractionsItem: ...  # type: ignore[override]
+
+class GeneratorFuelCellAirSupplyConstituentFractionsItem(TypedDict, total=False):
+    """One group of :class:`GeneratorFuelCellAirSupplyConstituentFractionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    constituent_name: Literal["Argon", "CarbonDioxide", "Nitrogen", "Oxygen", "Water"] | None
+    molar_fraction: float | None
 
 class GeneratorFuelCellAirSupply(_TypedIDFObject):
     """Used to define details of the air supply subsystem for a fuel cell power generator."""
@@ -55023,6 +57378,7 @@ class GeneratorFuelCellAirSupply(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellAirSupplyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.GeneratorFuelCellAirSupply  # type: ignore[assignment]
 
 class _GeneratorFuelCellAirSupplyFields(TypedDict, total=False):
     air_inlet_node_name: str | None
@@ -55048,7 +57404,9 @@ class _GeneratorFuelCellAirSupplyFields(TypedDict, total=False):
     )
     air_supply_constituent_mode: Literal["AmbientAir", "UserDefinedConstituents"] | None
     number_of_userdefined_constituents: float | None
-    constituent_fractions: list[Any]
+    constituent_fractions: Sequence[
+        GeneratorFuelCellAirSupplyConstituentFractionsItem | GeneratorFuelCellAirSupplyConstituentFractionsGroup
+    ]
 
 class GeneratorFuelCellWaterSupply(_TypedIDFObject):
     """Used to provide details of the water supply subsystem for a fuel cell power generator. This water is used for steam r..."""
@@ -55068,6 +57426,7 @@ class GeneratorFuelCellWaterSupply(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellWaterSupplyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.GeneratorFuelCellWaterSupply  # type: ignore[assignment]
 
 class _GeneratorFuelCellWaterSupplyFields(TypedDict, total=False):
     reformer_water_flow_rate_function_of_fuel_rate_curve_name: str | None
@@ -55105,6 +57464,7 @@ class GeneratorFuelCellAuxiliaryHeater(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellAuxiliaryHeaterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c117.GeneratorFuelCellAuxiliaryHeater  # type: ignore[assignment]
 
 class _GeneratorFuelCellAuxiliaryHeaterFields(TypedDict, total=False):
     excess_air_ratio: float | None
@@ -55158,6 +57518,7 @@ class GeneratorFuelCellExhaustGasToWaterHeatExchanger(_TypedIDFObject):
         /,
         **kwargs: Unpack[_GeneratorFuelCellExhaustGasToWaterHeatExchangerFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.GeneratorFuelCellExhaustGasToWaterHeatExchanger  # type: ignore[assignment]
 
 class _GeneratorFuelCellExhaustGasToWaterHeatExchangerFields(TypedDict, total=False):
     heat_recovery_water_inlet_node_name: str | None
@@ -55206,6 +57567,7 @@ class GeneratorFuelCellElectricalStorage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellElectricalStorageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c58.GeneratorFuelCellElectricalStorage  # type: ignore[assignment]
 
 class _GeneratorFuelCellElectricalStorageFields(TypedDict, total=False):
     choice_of_model: Literal["SimpleEfficiencyWithConstraints"] | None
@@ -55227,6 +57589,7 @@ class GeneratorFuelCellInverter(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellInverterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c120.GeneratorFuelCellInverter  # type: ignore[assignment]
 
 class _GeneratorFuelCellInverterFields(TypedDict, total=False):
     inverter_efficiency_calculation_mode: Literal["Constant", "Quadratic"] | None
@@ -55269,6 +57632,7 @@ class GeneratorFuelCellStackCooler(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellStackCoolerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c22.GeneratorFuelCellStackCooler  # type: ignore[assignment]
 
 class _GeneratorFuelCellStackCoolerFields(TypedDict, total=False):
     heat_recovery_water_inlet_node_name: str | None
@@ -55308,6 +57672,7 @@ class GeneratorMicroCHP(_TypedIDFObject):
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorMicroCHPFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c82.GeneratorMicroCHP  # type: ignore[assignment]
 
 class _GeneratorMicroCHPFields(TypedDict, total=False):
     performance_parameters_name: str | None
@@ -55373,6 +57738,7 @@ class GeneratorMicroCHPNonNormalizedParameters(_TypedIDFObject):
         /,
         **kwargs: Unpack[_GeneratorMicroCHPNonNormalizedParametersFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c46.GeneratorMicroCHPNonNormalizedParameters  # type: ignore[assignment]
 
 class _GeneratorMicroCHPNonNormalizedParametersFields(TypedDict, total=False):
     maximum_electric_power: float | None
@@ -55661,6 +58027,7 @@ class GeneratorFuelSupply(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelSupplyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.GeneratorFuelSupply  # type: ignore[assignment]
 
 class _GeneratorFuelSupplyFields(TypedDict, total=False):
     fuel_temperature_modeling_mode: Literal["Scheduled", "TemperatureFromAirNode"] | None
@@ -55965,6 +58332,7 @@ class GeneratorWindTurbine(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorWindTurbineFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c48.GeneratorWindTurbine  # type: ignore[assignment]
 
 class _GeneratorWindTurbineFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56022,6 +58390,28 @@ class ElectricLoadCenterGeneratorsGeneratorOutputsGroup(_TypedExtensibleGroup):
     generator_rated_electric_power_output: float | None
     generator_availability_schedule_name: str | None
     generator_rated_thermal_to_electrical_power_ratio: float | None
+    def as_dict(self) -> ElectricLoadCenterGeneratorsGeneratorOutputsItem: ...  # type: ignore[override]
+
+class ElectricLoadCenterGeneratorsGeneratorOutputsItem(TypedDict, total=False):
+    """One group of :class:`ElectricLoadCenterGeneratorsGeneratorOutputsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    generator_name: str | None
+    generator_object_type: (
+        Literal[
+            "Generator:CombustionTurbine",
+            "Generator:FuelCell",
+            "Generator:InternalCombustionEngine",
+            "Generator:MicroCHP",
+            "Generator:MicroTurbine",
+            "Generator:PVWatts",
+            "Generator:Photovoltaic",
+            "Generator:WindTurbine",
+        ]
+        | None
+    )
+    generator_rated_electric_power_output: float | None
+    generator_availability_schedule_name: str | None
+    generator_rated_thermal_to_electrical_power_ratio: float | None
 
 class ElectricLoadCenterGenerators(_TypedIDFObject):
     """List of electric power generators to include in the simulation including the name and type of each generators along w..."""
@@ -56031,9 +58421,12 @@ class ElectricLoadCenterGenerators(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterGeneratorsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c87.ElectricLoadCenterGenerators  # type: ignore[assignment]
 
 class _ElectricLoadCenterGeneratorsFields(TypedDict, total=False):
-    generator_outputs: list[Any]
+    generator_outputs: Sequence[
+        ElectricLoadCenterGeneratorsGeneratorOutputsItem | ElectricLoadCenterGeneratorsGeneratorOutputsGroup
+    ]
 
 class ElectricLoadCenterInverterSimple(_TypedIDFObject):
     """Electric power inverter to convert from direct current (DC) to alternating current (AC) in an electric load center th..."""
@@ -56050,6 +58443,7 @@ class ElectricLoadCenterInverterSimple(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterInverterSimpleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c38.ElectricLoadCenterInverterSimple  # type: ignore[assignment]
 
 class _ElectricLoadCenterInverterSimpleFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56086,6 +58480,7 @@ class ElectricLoadCenterInverterFunctionOfPower(_TypedIDFObject):
         /,
         **kwargs: Unpack[_ElectricLoadCenterInverterFunctionOfPowerFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c95.ElectricLoadCenterInverterFunctionOfPower  # type: ignore[assignment]
 
 class _ElectricLoadCenterInverterFunctionOfPowerFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56130,6 +58525,7 @@ class ElectricLoadCenterInverterLookUpTable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterInverterLookUpTableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c111.ElectricLoadCenterInverterLookUpTable  # type: ignore[assignment]
 
 class _ElectricLoadCenterInverterLookUpTableFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56170,6 +58566,7 @@ class ElectricLoadCenterStorageSimple(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterStorageSimpleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c9.ElectricLoadCenterStorageSimple  # type: ignore[assignment]
 
 class _ElectricLoadCenterStorageSimpleFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56254,6 +58651,7 @@ class AnyElectricLoadCenterStorageBattery(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyElectricLoadCenterStorageBatteryFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.AnyElectricLoadCenterStorageBattery  # type: ignore[assignment]
 
 class _AnyElectricLoadCenterStorageBatteryFields(_ElectricLoadCenterStorageBatteryCommonFields, total=False):
     number_of_battery_modules_in_parallel: int | None
@@ -56273,6 +58671,7 @@ class ElectricLoadCenterStorageBattery(AnyElectricLoadCenterStorageBattery):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterStorageBatteryFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c14.ElectricLoadCenterStorageBattery  # type: ignore[assignment]
 
 class _ElectricLoadCenterStorageBatteryFields(_ElectricLoadCenterStorageBatteryCommonFields, total=False):
     number_of_battery_modules_in_parallel: int | None
@@ -56356,6 +58755,7 @@ class AnyElectricLoadCenterStorageLiIonNMCBattery(_TypedIDFObject):
         /,
         **kwargs: Unpack[_AnyElectricLoadCenterStorageLiIonNMCBatteryFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c80.AnyElectricLoadCenterStorageLiIonNMCBattery  # type: ignore[assignment]
 
 class _AnyElectricLoadCenterStorageLiIonNMCBatteryFields(
     _ElectricLoadCenterStorageLiIonNMCBatteryCommonFields, total=False
@@ -56377,6 +58777,7 @@ class ElectricLoadCenterStorageLiIonNMCBattery(AnyElectricLoadCenterStorageLiIon
         /,
         **kwargs: Unpack[_ElectricLoadCenterStorageLiIonNMCBatteryFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c33.ElectricLoadCenterStorageLiIonNMCBattery  # type: ignore[assignment]
 
 class _ElectricLoadCenterStorageLiIonNMCBatteryFields(
     _ElectricLoadCenterStorageLiIonNMCBatteryCommonFields, total=False
@@ -56386,6 +58787,12 @@ class _ElectricLoadCenterStorageLiIonNMCBatteryFields(
 
 class ElectricLoadCenterTransformerMetersGroup(_TypedExtensibleGroup):
     """One meters group inside :class:`ElectricLoadCenterTransformer`."""
+
+    meter_name: str | None
+    def as_dict(self) -> ElectricLoadCenterTransformerMetersItem: ...  # type: ignore[override]
+
+class ElectricLoadCenterTransformerMetersItem(TypedDict, total=False):
+    """One group of :class:`ElectricLoadCenterTransformerMetersGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     meter_name: str | None
 
@@ -56431,6 +58838,7 @@ class ElectricLoadCenterTransformer(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterTransformerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c81.ElectricLoadCenterTransformer  # type: ignore[assignment]
 
 class _ElectricLoadCenterTransformerFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56450,7 +58858,7 @@ class _ElectricLoadCenterTransformerFields(TypedDict, total=False):
     reference_temperature_for_nameplate_efficiency: float | None
     per_unit_load_for_maximum_efficiency: float | None
     consider_transformer_loss_for_utility_cost: Literal["", "No", "Yes"] | None
-    meters: list[Any]
+    meters: Sequence[ElectricLoadCenterTransformerMetersItem | ElectricLoadCenterTransformerMetersGroup]
 
 class ElectricLoadCenterDistribution(_TypedIDFObject):
     """ElectricLoadCenter:Distribution objects are used to include on-site electricity generators and or storage in a simula..."""
@@ -56529,6 +58937,7 @@ class ElectricLoadCenterDistribution(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterDistributionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.ElectricLoadCenterDistribution  # type: ignore[assignment]
 
 class _ElectricLoadCenterDistributionFields(TypedDict, total=False):
     generator_list_name: str | None
@@ -56605,6 +59014,7 @@ class ElectricLoadCenterStorageConverter(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterStorageConverterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c9.ElectricLoadCenterStorageConverter  # type: ignore[assignment]
 
 class _ElectricLoadCenterStorageConverterFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56638,6 +59048,7 @@ class WaterUseEquipment(_TypedIDFObject):
     """Defaults to 0.0 at all times"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseEquipmentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c121.WaterUseEquipment  # type: ignore[assignment]
 
 class _WaterUseEquipmentFields(TypedDict, total=False):
     end_use_subcategory: str | None
@@ -56652,6 +59063,12 @@ class _WaterUseEquipmentFields(TypedDict, total=False):
 
 class WaterUseConnectionsConnectionsGroup(_TypedExtensibleGroup):
     """One connections group inside :class:`WaterUseConnections`."""
+
+    water_use_equipment_name: str | None
+    def as_dict(self) -> WaterUseConnectionsConnectionsItem: ...  # type: ignore[override]
+
+class WaterUseConnectionsConnectionsItem(TypedDict, total=False):
+    """One group of :class:`WaterUseConnectionsConnectionsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     water_use_equipment_name: str | None
 
@@ -56678,6 +59095,7 @@ class WaterUseConnections(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseConnectionsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.WaterUseConnections  # type: ignore[assignment]
 
 class _WaterUseConnectionsFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -56689,7 +59107,7 @@ class _WaterUseConnectionsFields(TypedDict, total=False):
     drain_water_heat_exchanger_type: Literal["", "CounterFlow", "CrossFlow", "Ideal", "None"] | None
     drain_water_heat_exchanger_destination: Literal["", "Equipment", "Plant", "PlantAndEquipment"] | None
     drain_water_heat_exchanger_u_factor_times_area: float | None
-    connections: list[Any]
+    connections: Sequence[WaterUseConnectionsConnectionsItem | WaterUseConnectionsConnectionsGroup]
 
 class WaterUseStorage(_TypedIDFObject):
     """A water storage tank. If the building model is to include any on-site water collection, wells, or storing and reuse o..."""
@@ -56725,6 +59143,7 @@ class WaterUseStorage(_TypedIDFObject):
     tank_outside_surface_material_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseStorageFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c61.WaterUseStorage  # type: ignore[assignment]
 
 class _WaterUseStorageFields(TypedDict, total=False):
     water_quality_subcategory: str | None
@@ -56770,6 +59189,7 @@ class WaterUseWell(_TypedIDFObject):
     water_table_depth_schedule_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseWellFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c58.WaterUseWell  # type: ignore[assignment]
 
 class _WaterUseWellFields(TypedDict, total=False):
     storage_tank_name: str | None
@@ -56788,6 +59208,12 @@ class WaterUseRainCollectorSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`WaterUseRainCollector`."""
 
     collection_surface_name: str | None
+    def as_dict(self) -> WaterUseRainCollectorSurfacesItem: ...  # type: ignore[override]
+
+class WaterUseRainCollectorSurfacesItem(TypedDict, total=False):
+    """One group of :class:`WaterUseRainCollectorSurfacesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    collection_surface_name: str | None
 
 class WaterUseRainCollector(_TypedIDFObject):
     """Used for harvesting rainwater falling on building surfaces. The rainwater is sent to a WaterUse:Storage object. In ve..."""
@@ -56804,6 +59230,7 @@ class WaterUseRainCollector(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseRainCollectorFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c67.WaterUseRainCollector  # type: ignore[assignment]
 
 class _WaterUseRainCollectorFields(TypedDict, total=False):
     storage_tank_name: str | None
@@ -56811,7 +59238,7 @@ class _WaterUseRainCollectorFields(TypedDict, total=False):
     collection_loss_factor: float | None
     collection_loss_factor_schedule_name: str | None
     maximum_collection_rate: float | None
-    surfaces: list[Any]
+    surfaces: Sequence[WaterUseRainCollectorSurfacesItem | WaterUseRainCollectorSurfacesGroup]
 
 class FaultModelTemperatureSensorOffsetOutdoorAir(_TypedIDFObject):
     """This object describes outdoor air temperature sensor offset"""
@@ -56829,6 +59256,7 @@ class FaultModelTemperatureSensorOffsetOutdoorAir(_TypedIDFObject):
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetOutdoorAirFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.FaultModelTemperatureSensorOffsetOutdoorAir  # type: ignore[assignment]
 
 class _FaultModelTemperatureSensorOffsetOutdoorAirFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56853,6 +59281,7 @@ class FaultModelHumiditySensorOffsetOutdoorAir(_TypedIDFObject):
         /,
         **kwargs: Unpack[_FaultModelHumiditySensorOffsetOutdoorAirFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c83.FaultModelHumiditySensorOffsetOutdoorAir  # type: ignore[assignment]
 
 class _FaultModelHumiditySensorOffsetOutdoorAirFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56877,6 +59306,7 @@ class FaultModelEnthalpySensorOffsetOutdoorAir(_TypedIDFObject):
         /,
         **kwargs: Unpack[_FaultModelEnthalpySensorOffsetOutdoorAirFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.FaultModelEnthalpySensorOffsetOutdoorAir  # type: ignore[assignment]
 
 class _FaultModelEnthalpySensorOffsetOutdoorAirFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56901,6 +59331,7 @@ class FaultModelTemperatureSensorOffsetReturnAir(_TypedIDFObject):
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetReturnAirFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c49.FaultModelTemperatureSensorOffsetReturnAir  # type: ignore[assignment]
 
 class _FaultModelTemperatureSensorOffsetReturnAirFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56925,6 +59356,7 @@ class FaultModelEnthalpySensorOffsetReturnAir(_TypedIDFObject):
         /,
         **kwargs: Unpack[_FaultModelEnthalpySensorOffsetReturnAirFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.FaultModelEnthalpySensorOffsetReturnAir  # type: ignore[assignment]
 
 class _FaultModelEnthalpySensorOffsetReturnAirFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -56963,6 +59395,7 @@ class FaultModelTemperatureSensorOffsetChillerSupplyWater(_TypedIDFObject):
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetChillerSupplyWaterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c89.FaultModelTemperatureSensorOffsetChillerSupplyWater  # type: ignore[assignment]
 
 class _FaultModelTemperatureSensorOffsetChillerSupplyWaterFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -57017,6 +59450,7 @@ class FaultModelTemperatureSensorOffsetCoilSupplyAir(_TypedIDFObject):
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetCoilSupplyAirFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c45.FaultModelTemperatureSensorOffsetCoilSupplyAir  # type: ignore[assignment]
 
 class _FaultModelTemperatureSensorOffsetCoilSupplyAirFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -57066,6 +59500,7 @@ class FaultModelTemperatureSensorOffsetCondenserSupplyWater(_TypedIDFObject):
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetCondenserSupplyWaterFields],
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c61.FaultModelTemperatureSensorOffsetCondenserSupplyWater  # type: ignore[assignment]
 
 class _FaultModelTemperatureSensorOffsetCondenserSupplyWaterFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -57095,6 +59530,7 @@ class FaultModelThermostatOffset(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelThermostatOffsetFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c127.FaultModelThermostatOffset  # type: ignore[assignment]
 
 class _FaultModelThermostatOffsetFields(TypedDict, total=False):
     thermostat_name: str | None
@@ -57121,6 +59557,7 @@ class FaultModelHumidistatOffset(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelHumidistatOffsetFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.FaultModelHumidistatOffset  # type: ignore[assignment]
 
 class _FaultModelHumidistatOffsetFields(TypedDict, total=False):
     humidistat_name: str | None
@@ -57146,6 +59583,7 @@ class FaultModelFoulingAirFilter(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingAirFilterFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c108.FaultModelFoulingAirFilter  # type: ignore[assignment]
 
 class _FaultModelFoulingAirFilterFields(TypedDict, total=False):
     fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"] | None
@@ -57169,6 +59607,7 @@ class FaultModelFoulingBoiler(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingBoilerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c45.FaultModelFoulingBoiler  # type: ignore[assignment]
 
 class _FaultModelFoulingBoilerFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -57192,6 +59631,7 @@ class FaultModelFoulingEvaporativeCooler(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingEvaporativeCoolerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.FaultModelFoulingEvaporativeCooler  # type: ignore[assignment]
 
 class _FaultModelFoulingEvaporativeCoolerFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -57225,6 +59665,7 @@ class FaultModelFoulingChiller(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingChillerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c58.FaultModelFoulingChiller  # type: ignore[assignment]
 
 class _FaultModelFoulingChillerFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -57260,6 +59701,7 @@ class FaultModelFoulingCoolingTower(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingCoolingTowerFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.FaultModelFoulingCoolingTower  # type: ignore[assignment]
 
 class _FaultModelFoulingCoolingTowerFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -57292,6 +59734,7 @@ class FaultModelFoulingCoil(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingCoilFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c11.FaultModelFoulingCoil  # type: ignore[assignment]
 
 class _FaultModelFoulingCoilFields(TypedDict, total=False):
     coil_name: str | None
@@ -57305,10 +59748,16 @@ class _FaultModelFoulingCoilFields(TypedDict, total=False):
     inside_to_outside_coil_surface_area_ratio: float | None
 
 class _MatrixTwoDimensionCommonFields(TypedDict, total=False):
-    values: list[Any]
+    values: Sequence[MatrixTwoDimensionValuesItem | MatrixTwoDimensionValuesGroup]
 
 class MatrixTwoDimensionValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`AnyMatrixTwoDimension`."""
+
+    value: float | None
+    def as_dict(self) -> MatrixTwoDimensionValuesItem: ...  # type: ignore[override]
+
+class MatrixTwoDimensionValuesItem(TypedDict, total=False):
+    """One group of :class:`MatrixTwoDimensionValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     value: float | None
 
@@ -57327,6 +59776,7 @@ class AnyMatrixTwoDimension(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyMatrixTwoDimensionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c127.AnyMatrixTwoDimension  # type: ignore[assignment]
 
 class _AnyMatrixTwoDimensionFields(_MatrixTwoDimensionCommonFields, total=False):
     number_of_rows: int | None
@@ -57341,6 +59791,7 @@ class MatrixTwoDimension(AnyMatrixTwoDimension):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MatrixTwoDimensionFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c71.MatrixTwoDimension  # type: ignore[assignment]
 
 class _MatrixTwoDimensionFields(_MatrixTwoDimensionCommonFields, total=False):
     number_of_rows: int | None
@@ -57381,6 +59832,7 @@ class AnyHybridModelZone(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHybridModelZoneFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.AnyHybridModelZone  # type: ignore[assignment]
 
 class _AnyHybridModelZoneFields(_HybridModelZoneCommonFields, total=False):
     begin_month: int | None
@@ -57423,6 +59875,7 @@ class HybridModelZone(AnyHybridModelZone):
     """Range: >= 1, <= 31"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HybridModelZoneFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.HybridModelZone  # type: ignore[assignment]
 
 class _HybridModelZoneFields(_HybridModelZoneCommonFields, total=False):
     calculate_zone_people_count: Literal["", "No", "Yes"] | None
@@ -57461,6 +59914,7 @@ class CurveLinear(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveLinearFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c126.CurveLinear  # type: ignore[assignment]
 
 class _CurveLinearFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -57553,6 +60007,7 @@ class CurveQuadLinear(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuadLinearFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c115.CurveQuadLinear  # type: ignore[assignment]
 
 class _CurveQuadLinearFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -57718,6 +60173,7 @@ class CurveQuintLinear(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuintLinearFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c3.CurveQuintLinear  # type: ignore[assignment]
 
 class _CurveQuintLinearFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -57824,6 +60280,7 @@ class CurveQuadratic(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuadraticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.CurveQuadratic  # type: ignore[assignment]
 
 class _CurveQuadraticFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -57859,6 +60316,7 @@ class CurveCubic(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveCubicFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.CurveCubic  # type: ignore[assignment]
 
 class _CurveCubicFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -57896,6 +60354,7 @@ class CurveQuartic(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuarticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c96.CurveQuartic  # type: ignore[assignment]
 
 class _CurveQuarticFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -57934,6 +60393,7 @@ class CurveExponent(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveExponentFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c106.CurveExponent  # type: ignore[assignment]
 
 class _CurveExponentFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -57981,6 +60441,7 @@ class CurveBicubic(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveBicubicFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.CurveBicubic  # type: ignore[assignment]
 
 class _CurveBicubicFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -58036,6 +60497,7 @@ class CurveBiquadratic(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveBiquadraticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c113.CurveBiquadratic  # type: ignore[assignment]
 
 class _CurveBiquadraticFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -58089,6 +60551,7 @@ class CurveQuadraticLinear(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuadraticLinearFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.CurveQuadraticLinear  # type: ignore[assignment]
 
 class _CurveQuadraticLinearFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -58136,6 +60599,7 @@ class CurveCubicLinear(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveCubicLinearFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c13.CurveCubicLinear  # type: ignore[assignment]
 
 class _CurveCubicLinearFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -58210,6 +60674,7 @@ class CurveTriquadratic(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveTriquadraticFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c12.CurveTriquadratic  # type: ignore[assignment]
 
 class _CurveTriquadraticFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -58275,6 +60740,7 @@ class CurveFunctionalPressureDrop(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveFunctionalPressureDropFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c11.CurveFunctionalPressureDrop  # type: ignore[assignment]
 
 class _CurveFunctionalPressureDropFields(TypedDict, total=False):
     diameter: float | None
@@ -58306,6 +60772,7 @@ class CurveFanPressureRise(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveFanPressureRiseFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c52.CurveFanPressureRise  # type: ignore[assignment]
 
 class _CurveFanPressureRiseFields(TypedDict, total=False):
     coefficient1_c1: float | None
@@ -58340,6 +60807,7 @@ class CurveExponentialSkewNormal(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveExponentialSkewNormalFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.CurveExponentialSkewNormal  # type: ignore[assignment]
 
 class _CurveExponentialSkewNormalFields(TypedDict, total=False):
     coefficient1_c1: float | None
@@ -58373,6 +60841,7 @@ class CurveSigmoid(_TypedIDFObject):
     """Default: Dimensionless"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveSigmoidFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c114.CurveSigmoid  # type: ignore[assignment]
 
 class _CurveSigmoidFields(TypedDict, total=False):
     coefficient1_c1: float | None
@@ -58407,6 +60876,7 @@ class CurveRectangularHyperbola1(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveRectangularHyperbola1Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.CurveRectangularHyperbola1  # type: ignore[assignment]
 
 class _CurveRectangularHyperbola1Fields(TypedDict, total=False):
     coefficient1_c1: float | None
@@ -58439,6 +60909,7 @@ class CurveRectangularHyperbola2(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveRectangularHyperbola2Fields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c17.CurveRectangularHyperbola2  # type: ignore[assignment]
 
 class _CurveRectangularHyperbola2Fields(TypedDict, total=False):
     coefficient1_c1: float | None
@@ -58471,6 +60942,7 @@ class CurveExponentialDecay(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveExponentialDecayFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.CurveExponentialDecay  # type: ignore[assignment]
 
 class _CurveExponentialDecayFields(TypedDict, total=False):
     coefficient1_c1: float | None
@@ -58514,6 +60986,7 @@ class AnyCurveDoubleExponentialDecay(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyCurveDoubleExponentialDecayFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.AnyCurveDoubleExponentialDecay  # type: ignore[assignment]
 
 class _AnyCurveDoubleExponentialDecayFields(_CurveDoubleExponentialDecayCommonFields, total=False): ...
 
@@ -58528,6 +61001,7 @@ class CurveDoubleExponentialDecay(AnyCurveDoubleExponentialDecay):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveDoubleExponentialDecayFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c47.CurveDoubleExponentialDecay  # type: ignore[assignment]
 
 class _CurveDoubleExponentialDecayFields(_CurveDoubleExponentialDecayCommonFields, total=False):
     coefficient4_c4: float | None
@@ -58570,6 +61044,7 @@ class CurveChillerPartLoadWithLift(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveChillerPartLoadWithLiftFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c57.CurveChillerPartLoadWithLift  # type: ignore[assignment]
 
 class _CurveChillerPartLoadWithLiftFields(TypedDict, total=False):
     coefficient1_c1: float | None
@@ -58607,10 +61082,16 @@ class _TableIndependentVariableCommonFields(TypedDict, total=False):
         Literal["", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     external_file_name: str | None
-    values: list[Any]
+    values: Sequence[TableIndependentVariableValuesItem | TableIndependentVariableValuesGroup]
 
 class TableIndependentVariableValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`AnyTableIndependentVariable`."""
+
+    value: float | None
+    def as_dict(self) -> TableIndependentVariableValuesItem: ...  # type: ignore[override]
+
+class TableIndependentVariableValuesItem(TypedDict, total=False):
+    """One group of :class:`TableIndependentVariableValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     value: float | None
 
@@ -58642,6 +61123,7 @@ class AnyTableIndependentVariable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyTableIndependentVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c28.AnyTableIndependentVariable  # type: ignore[assignment]
 
 class _AnyTableIndependentVariableFields(_TableIndependentVariableCommonFields, total=False):
     external_file_column_number: int | None
@@ -58658,6 +61140,7 @@ class TableIndependentVariable(AnyTableIndependentVariable):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableIndependentVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c54.TableIndependentVariable  # type: ignore[assignment]
 
 class _TableIndependentVariableFields(_TableIndependentVariableCommonFields, total=False):
     external_file_column_number: int | None
@@ -58665,6 +61148,12 @@ class _TableIndependentVariableFields(_TableIndependentVariableCommonFields, tot
 
 class TableIndependentVariableListIndependentVariablesGroup(_TypedExtensibleGroup):
     """One independent_variables group inside :class:`TableIndependentVariableList`."""
+
+    independent_variable_name: str | None
+    def as_dict(self) -> TableIndependentVariableListIndependentVariablesItem: ...  # type: ignore[override]
+
+class TableIndependentVariableListIndependentVariablesItem(TypedDict, total=False):
+    """One group of :class:`TableIndependentVariableListIndependentVariablesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     independent_variable_name: str | None
 
@@ -58676,9 +61165,12 @@ class TableIndependentVariableList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableIndependentVariableListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c77.TableIndependentVariableList  # type: ignore[assignment]
 
 class _TableIndependentVariableListFields(TypedDict, total=False):
-    independent_variables: list[Any]
+    independent_variables: Sequence[
+        TableIndependentVariableListIndependentVariablesItem | TableIndependentVariableListIndependentVariablesGroup
+    ]
 
 class _TableLookupCommonFields(TypedDict, total=False):
     independent_variable_list_name: str | None
@@ -58688,10 +61180,16 @@ class _TableLookupCommonFields(TypedDict, total=False):
     maximum_output: float | None
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     external_file_name: str | None
-    values: list[Any]
+    values: Sequence[TableLookupValuesItem | TableLookupValuesGroup]
 
 class TableLookupValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`AnyTableLookup`."""
+
+    output_value: float | None
+    def as_dict(self) -> TableLookupValuesItem: ...  # type: ignore[override]
+
+class TableLookupValuesItem(TypedDict, total=False):
+    """One group of :class:`TableLookupValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     output_value: float | None
 
@@ -58719,6 +61217,7 @@ class AnyTableLookup(_TypedIDFObject):
     values: ExtensibleList[TableLookupValuesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyTableLookupFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c39.AnyTableLookup  # type: ignore[assignment]
 
 class _AnyTableLookupFields(_TableLookupCommonFields, total=False):
     external_file_column_number: int | None
@@ -58733,6 +61232,7 @@ class TableLookup(AnyTableLookup):
     """Range: >= 1"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableLookupFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c0.TableLookup  # type: ignore[assignment]
 
 class _TableLookupFields(_TableLookupCommonFields, total=False):
     external_file_column_number: int | None
@@ -58747,6 +61247,7 @@ class FluidPropertiesName(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesNameFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.FluidPropertiesName  # type: ignore[assignment]
 
 class _FluidPropertiesNameFields(TypedDict, total=False):
     fluid_name: str | None
@@ -58764,6 +61265,7 @@ class FluidPropertiesGlycolConcentration(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesGlycolConcentrationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c118.FluidPropertiesGlycolConcentration  # type: ignore[assignment]
 
 class _FluidPropertiesGlycolConcentrationFields(TypedDict, total=False):
     glycol_type: Literal["EthyleneGlycol", "PropyleneGlycol", "UserDefinedGlycolType"] | None
@@ -59277,6 +61779,7 @@ class FluidPropertiesTemperatures(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesTemperaturesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c44.FluidPropertiesTemperatures  # type: ignore[assignment]
 
 class _FluidPropertiesTemperaturesFields(TypedDict, total=False):
     temperature_1: float | None
@@ -59794,6 +62297,7 @@ class FluidPropertiesSaturated(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesSaturatedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c35.FluidPropertiesSaturated  # type: ignore[assignment]
 
 class _FluidPropertiesSaturatedFields(TypedDict, total=False):
     fluid_name: str | None
@@ -60315,6 +62819,7 @@ class FluidPropertiesSuperheated(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesSuperheatedFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c43.FluidPropertiesSuperheated  # type: ignore[assignment]
 
 class _FluidPropertiesSuperheatedFields(TypedDict, total=False):
     fluid_name: str | None
@@ -60837,6 +63342,7 @@ class FluidPropertiesConcentration(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesConcentrationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c15.FluidPropertiesConcentration  # type: ignore[assignment]
 
 class _FluidPropertiesConcentrationFields(TypedDict, total=False):
     fluid_name: str | None
@@ -61216,6 +63722,7 @@ class CurrencyType(_TypedIDFObject):
     """The commonly used three letter currency code for the units of money for the country or region. Based on ISO 4217 curr..."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurrencyTypeFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c14.CurrencyType  # type: ignore[assignment]
 
 class _CurrencyTypeFields(TypedDict, total=False):
     monetary_unit: (
@@ -61356,6 +63863,7 @@ class ComponentCostAdjustments(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComponentCostAdjustmentsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c56.ComponentCostAdjustments  # type: ignore[assignment]
 
 class _ComponentCostAdjustmentsFields(TypedDict, total=False):
     miscellaneous_cost_per_conditioned_area: float | None
@@ -61388,6 +63896,7 @@ class ComponentCostReference(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComponentCostReferenceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c13.ComponentCostReference  # type: ignore[assignment]
 
 class _ComponentCostReferenceFields(TypedDict, total=False):
     reference_building_line_item_costs: float | None
@@ -61476,6 +63985,7 @@ class AnyComponentCostLineItem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyComponentCostLineItemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c1.AnyComponentCostLineItem  # type: ignore[assignment]
 
 class _AnyComponentCostLineItemFields(_ComponentCostLineItemCommonFields, total=False):
     line_item_type: (
@@ -61518,6 +64028,7 @@ class ComponentCostLineItem(AnyComponentCostLineItem):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComponentCostLineItemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c73.ComponentCostLineItem  # type: ignore[assignment]
 
 class _ComponentCostLineItemFields(_ComponentCostLineItemCommonFields, total=False):
     line_item_type: (
@@ -61572,6 +64083,7 @@ class UtilityCostTariff(_TypedIDFObject):
     """Sets whether the tariff is used for buying selling or both to the utility. This should be allowed to default to buyFr...; Default: BuyFromUtility"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostTariffFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.UtilityCostTariff  # type: ignore[assignment]
 
 class _UtilityCostTariffFields(TypedDict, total=False):
     output_meter_name: str | None
@@ -61614,6 +64126,7 @@ class UtilityCostQualify(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostQualifyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c102.UtilityCostQualify  # type: ignore[assignment]
 
 class _UtilityCostQualifyFields(TypedDict, total=False):
     utility_cost_qualify_name: str | None
@@ -61658,6 +64171,7 @@ class UtilityCostChargeSimple(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostChargeSimpleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.UtilityCostChargeSimple  # type: ignore[assignment]
 
 class _UtilityCostChargeSimpleFields(TypedDict, total=False):
     utility_cost_charge_simple_name: str | None
@@ -61776,6 +64290,7 @@ class UtilityCostChargeBlock(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostChargeBlockFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c111.UtilityCostChargeBlock  # type: ignore[assignment]
 
 class _UtilityCostChargeBlockFields(TypedDict, total=False):
     utility_cost_charge_block_name: str | None
@@ -61851,6 +64366,7 @@ class UtilityCostRatchet(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostRatchetFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.UtilityCostRatchet  # type: ignore[assignment]
 
 class _UtilityCostRatchetFields(TypedDict, total=False):
     tariff_name: str | None
@@ -61901,6 +64417,7 @@ class AnyUtilityCostVariable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyUtilityCostVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.AnyUtilityCostVariable  # type: ignore[assignment]
 
 class _AnyUtilityCostVariableFields(_UtilityCostVariableCommonFields, total=False):
     variable_type: Literal["", "Currency", "Dimensionless", "Energy"] | None
@@ -61914,6 +64431,7 @@ class UtilityCostVariable(AnyUtilityCostVariable):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c21.UtilityCostVariable  # type: ignore[assignment]
 
 class _UtilityCostVariableFields(_UtilityCostVariableCommonFields, total=False):
     variable_type: Literal["", "Currency", "Demand", "Dimensionless", "Energy"] | None
@@ -61958,6 +64476,7 @@ class UtilityCostComputation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostComputationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.UtilityCostComputation  # type: ignore[assignment]
 
 class _UtilityCostComputationFields(TypedDict, total=False):
     tariff_name: str | None
@@ -62140,6 +64659,7 @@ class AnyLifeCycleCostParameters(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyLifeCycleCostParametersFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.AnyLifeCycleCostParameters  # type: ignore[assignment]
 
 class _AnyLifeCycleCostParametersFields(_LifeCycleCostParametersCommonFields, total=False):
     base_date_year: int | None
@@ -62159,6 +64679,7 @@ class LifeCycleCostParameters(AnyLifeCycleCostParameters):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostParametersFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c13.LifeCycleCostParameters  # type: ignore[assignment]
 
 class _LifeCycleCostParametersFields(_LifeCycleCostParametersCommonFields, total=False):
     base_date_year: int | None
@@ -62226,6 +64747,7 @@ class AnyLifeCycleCostRecurringCosts(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyLifeCycleCostRecurringCostsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c55.AnyLifeCycleCostRecurringCosts  # type: ignore[assignment]
 
 class _AnyLifeCycleCostRecurringCostsFields(_LifeCycleCostRecurringCostsCommonFields, total=False):
     years_from_start: int | None
@@ -62248,6 +64770,7 @@ class LifeCycleCostRecurringCosts(AnyLifeCycleCostRecurringCosts):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostRecurringCostsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c18.LifeCycleCostRecurringCosts  # type: ignore[assignment]
 
 class _LifeCycleCostRecurringCostsFields(_LifeCycleCostRecurringCostsCommonFields, total=False):
     years_from_start: int | None
@@ -62280,6 +64803,7 @@ class AnyLifeCycleCostNonrecurringCost(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyLifeCycleCostNonrecurringCostFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c75.AnyLifeCycleCostNonrecurringCost  # type: ignore[assignment]
 
 class _AnyLifeCycleCostNonrecurringCostFields(_LifeCycleCostNonrecurringCostCommonFields, total=False):
     years_from_start: int | None
@@ -62296,6 +64820,7 @@ class LifeCycleCostNonrecurringCost(AnyLifeCycleCostNonrecurringCost):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostNonrecurringCostFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c69.LifeCycleCostNonrecurringCost  # type: ignore[assignment]
 
 class _LifeCycleCostNonrecurringCostFields(_LifeCycleCostNonrecurringCostCommonFields, total=False):
     years_from_start: int | None
@@ -62321,10 +64846,18 @@ class _LifeCycleCostUsePriceEscalationCommonFields(TypedDict, total=False):
         ]
         | None
     )
-    escalations: list[Any]
+    escalations: Sequence[
+        LifeCycleCostUsePriceEscalationEscalationsItem | LifeCycleCostUsePriceEscalationEscalationsGroup
+    ]
 
 class LifeCycleCostUsePriceEscalationEscalationsGroup(_TypedExtensibleGroup):
     """One escalations group inside :class:`AnyLifeCycleCostUsePriceEscalation`."""
+
+    year_escalation: float | None
+    def as_dict(self) -> LifeCycleCostUsePriceEscalationEscalationsItem: ...  # type: ignore[override]
+
+class LifeCycleCostUsePriceEscalationEscalationsItem(TypedDict, total=False):
+    """One group of :class:`LifeCycleCostUsePriceEscalationEscalationsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     year_escalation: float | None
 
@@ -62411,6 +64944,7 @@ class AnyLifeCycleCostUsePriceEscalation(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyLifeCycleCostUsePriceEscalationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c72.AnyLifeCycleCostUsePriceEscalation  # type: ignore[assignment]
 
 class _AnyLifeCycleCostUsePriceEscalationFields(_LifeCycleCostUsePriceEscalationCommonFields, total=False):
     resource: (
@@ -62467,6 +65001,7 @@ class LifeCycleCostUsePriceEscalation(AnyLifeCycleCostUsePriceEscalation):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostUsePriceEscalationFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c21.LifeCycleCostUsePriceEscalation  # type: ignore[assignment]
 
 class _LifeCycleCostUsePriceEscalationFields(_LifeCycleCostUsePriceEscalationCommonFields, total=False):
     resource: (
@@ -62495,10 +65030,16 @@ class _LifeCycleCostUsePriceEscalationFields(_LifeCycleCostUsePriceEscalationCom
     escalation_start_year: int | None
 
 class _LifeCycleCostUseAdjustmentCommonFields(TypedDict, total=False):
-    multipliers: list[Any]
+    multipliers: Sequence[LifeCycleCostUseAdjustmentMultipliersItem | LifeCycleCostUseAdjustmentMultipliersGroup]
 
 class LifeCycleCostUseAdjustmentMultipliersGroup(_TypedExtensibleGroup):
     """One multipliers group inside :class:`AnyLifeCycleCostUseAdjustment`."""
+
+    year_multiplier: float | None
+    def as_dict(self) -> LifeCycleCostUseAdjustmentMultipliersItem: ...  # type: ignore[override]
+
+class LifeCycleCostUseAdjustmentMultipliersItem(TypedDict, total=False):
+    """One group of :class:`LifeCycleCostUseAdjustmentMultipliersGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     year_multiplier: float | None
 
@@ -62558,6 +65099,7 @@ class AnyLifeCycleCostUseAdjustment(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyLifeCycleCostUseAdjustmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c100.AnyLifeCycleCostUseAdjustment  # type: ignore[assignment]
 
 class _AnyLifeCycleCostUseAdjustmentFields(_LifeCycleCostUseAdjustmentCommonFields, total=False):
     resource: (
@@ -62609,6 +65151,7 @@ class LifeCycleCostUseAdjustment(AnyLifeCycleCostUseAdjustment):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostUseAdjustmentFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c100.LifeCycleCostUseAdjustment  # type: ignore[assignment]
 
 class _LifeCycleCostUseAdjustmentFields(_LifeCycleCostUseAdjustmentCommonFields, total=False):
     resource: (
@@ -62639,6 +65182,12 @@ class ParametricSetValueForRunValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`ParametricSetValueForRun`."""
 
     value_for_run: str | None
+    def as_dict(self) -> ParametricSetValueForRunValuesItem: ...  # type: ignore[override]
+
+class ParametricSetValueForRunValuesItem(TypedDict, total=False):
+    """One group of :class:`ParametricSetValueForRunValuesGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    value_for_run: str | None
 
 class ParametricSetValueForRun(_TypedIDFObject):
     """Parametric objects allow a set of multiple simulations to be defined in a single idf file. The parametric preprocesso..."""
@@ -62648,12 +65197,19 @@ class ParametricSetValueForRun(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ParametricSetValueForRunFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.ParametricSetValueForRun  # type: ignore[assignment]
 
 class _ParametricSetValueForRunFields(TypedDict, total=False):
-    values: list[Any]
+    values: Sequence[ParametricSetValueForRunValuesItem | ParametricSetValueForRunValuesGroup]
 
 class ParametricLogicLinesGroup(_TypedExtensibleGroup):
     """One lines group inside :class:`ParametricLogic`."""
+
+    parametric_logic_line: str | None
+    def as_dict(self) -> ParametricLogicLinesItem: ...  # type: ignore[override]
+
+class ParametricLogicLinesItem(TypedDict, total=False):
+    """One group of :class:`ParametricLogicLinesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     parametric_logic_line: str | None
 
@@ -62663,12 +65219,19 @@ class ParametricLogic(_TypedIDFObject):
     lines: ExtensibleList[ParametricLogicLinesGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ParametricLogicFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c107.ParametricLogic  # type: ignore[assignment]
 
 class _ParametricLogicFields(TypedDict, total=False):
-    lines: list[Any]
+    lines: Sequence[ParametricLogicLinesItem | ParametricLogicLinesGroup]
 
 class ParametricRunControlRunsGroup(_TypedExtensibleGroup):
     """One runs group inside :class:`ParametricRunControl`."""
+
+    perform_run: Literal["", "No", "Yes"] | None
+    def as_dict(self) -> ParametricRunControlRunsItem: ...  # type: ignore[override]
+
+class ParametricRunControlRunsItem(TypedDict, total=False):
+    """One group of :class:`ParametricRunControlRunsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     perform_run: Literal["", "No", "Yes"] | None
 
@@ -62680,12 +65243,19 @@ class ParametricRunControl(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ParametricRunControlFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c20.ParametricRunControl  # type: ignore[assignment]
 
 class _ParametricRunControlFields(TypedDict, total=False):
-    runs: list[Any]
+    runs: Sequence[ParametricRunControlRunsItem | ParametricRunControlRunsGroup]
 
 class ParametricFileNameSuffixSuffixesGroup(_TypedExtensibleGroup):
     """One suffixes group inside :class:`ParametricFileNameSuffix`."""
+
+    suffix_for_file_name_in_run: str | None
+    def as_dict(self) -> ParametricFileNameSuffixSuffixesItem: ...  # type: ignore[override]
+
+class ParametricFileNameSuffixSuffixesItem(TypedDict, total=False):
+    """One group of :class:`ParametricFileNameSuffixSuffixesGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     suffix_for_file_name_in_run: str | None
 
@@ -62697,9 +65267,10 @@ class ParametricFileNameSuffix(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ParametricFileNameSuffixFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.ParametricFileNameSuffix  # type: ignore[assignment]
 
 class _ParametricFileNameSuffixFields(TypedDict, total=False):
-    suffixes: list[Any]
+    suffixes: Sequence[ParametricFileNameSuffixSuffixesItem | ParametricFileNameSuffixSuffixesGroup]
 
 class OutputVariableDictionary(_TypedIDFObject):
     """Produces a list summarizing the output variables and meters that are available for reporting for the model being simu..."""
@@ -62711,6 +65282,7 @@ class OutputVariableDictionary(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputVariableDictionaryFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c115.OutputVariableDictionary  # type: ignore[assignment]
 
 class _OutputVariableDictionaryFields(TypedDict, total=False):
     key_field: Literal["", "IDF", "regular"] | None
@@ -62737,6 +65309,7 @@ class OutputSurfacesList(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSurfacesListFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c101.OutputSurfacesList  # type: ignore[assignment]
 
 class _OutputSurfacesListFields(TypedDict, total=False):
     report_type: (
@@ -62765,6 +65338,7 @@ class OutputSurfacesDrawing(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSurfacesDrawingFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c92.OutputSurfacesDrawing  # type: ignore[assignment]
 
 class _OutputSurfacesDrawingFields(TypedDict, total=False):
     report_type: Literal["DXF", "DXF:WireFrame", "VRML"] | None
@@ -62777,6 +65351,7 @@ class OutputSchedules(_TypedIDFObject):
     key_field: Literal["Hourly", "Timestep"] | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSchedulesFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c25.OutputSchedules  # type: ignore[assignment]
 
 class _OutputSchedulesFields(TypedDict, total=False):
     key_field: Literal["Hourly", "Timestep"] | None
@@ -62790,6 +65365,7 @@ class OutputConstructions(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputConstructionsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c59.OutputConstructions  # type: ignore[assignment]
 
 class _OutputConstructionsFields(TypedDict, total=False):
     details_type_1: Literal["Constructions", "Materials"] | None
@@ -62808,6 +65384,7 @@ class OutputEnergyManagementSystem(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputEnergyManagementSystemFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c28.OutputEnergyManagementSystem  # type: ignore[assignment]
 
 class _OutputEnergyManagementSystemFields(TypedDict, total=False):
     actuator_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"] | None
@@ -63482,6 +66059,7 @@ class AnyOutputControlSurfaceColorScheme(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputControlSurfaceColorSchemeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c38.AnyOutputControlSurfaceColorScheme  # type: ignore[assignment]
 
 class _AnyOutputControlSurfaceColorSchemeFields(_OutputControlSurfaceColorSchemeCommonFields, total=False):
     color_for_drawing_element_1: int | None
@@ -63537,6 +66115,7 @@ class OutputControlSurfaceColorScheme(AnyOutputControlSurfaceColorScheme):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlSurfaceColorSchemeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c123.OutputControlSurfaceColorScheme  # type: ignore[assignment]
 
 class _OutputControlSurfaceColorSchemeFields(_OutputControlSurfaceColorSchemeCommonFields, total=False):
     color_for_drawing_element_1: int | None
@@ -63775,6 +66354,114 @@ class AnyOutputTableSummaryReportsReportsGroup(_TypedExtensibleGroup):
         ]
         | None,
     ) -> None: ...
+    def as_dict(self) -> AnyOutputTableSummaryReportsReportsItem: ...  # type: ignore[override]
+
+class AnyOutputTableSummaryReportsReportsItem(TypedDict, total=False):
+    """One group of :class:`AnyOutputTableSummaryReportsReportsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    report_name: (
+        Literal[
+            "AdaptiveComfortSummary",
+            "AirLoopComponentLoadSummary",
+            "AirLoopSystemComponentEnergyUseMonthly",
+            "AirLoopSystemComponentLoadsMonthly",
+            "AirLoopSystemEnergyAndWaterUseMonthly",
+            "AllMonthly",
+            "AllSummary",
+            "AllSummaryAndMonthly",
+            "AllSummaryAndSizingPeriod",
+            "AllSummaryMonthlyAndSizingPeriod",
+            "AnnualBuildingUtilityPerformanceSummary",
+            "AverageOutdoorConditionsMonthly",
+            "BoilerReportMonthly",
+            "ChillerReportMonthly",
+            "ClimaticDataSummary",
+            "CoilReportMonthly",
+            "CoilSizingDetails",
+            "ComfortReportSimple55Monthly",
+            "ComponentCostEconomicsSummary",
+            "ComponentSizingSummary",
+            "CondLoopDemandReportMonthly",
+            "DXReportMonthly",
+            "DaylightingReportMonthly",
+            "DemandEndUseComponentsSummary",
+            "EconomicResultSummary",
+            "ElectricComponentsOfPeakDemandMonthly",
+            "EndUseEnergyConsumptionCoalMonthly",
+            "EndUseEnergyConsumptionDieselMonthly",
+            "EndUseEnergyConsumptionElectricityMonthly",
+            "EndUseEnergyConsumptionFuelOilMonthly",
+            "EndUseEnergyConsumptionGasolineMonthly",
+            "EndUseEnergyConsumptionNaturalGasMonthly",
+            "EndUseEnergyConsumptionOtherFuelsMonthly",
+            "EndUseEnergyConsumptionPropaneMonthly",
+            "EnergyConsumptionCoalGasolineMonthly",
+            "EnergyConsumptionDieselFuelOilMonthly",
+            "EnergyConsumptionDistrictHeatingCoolingMonthly",
+            "EnergyConsumptionElectricityGeneratedPropaneMonthly",
+            "EnergyConsumptionElectricityNaturalGasMonthly",
+            "EnergyConsumptionOtherFuelsMonthly",
+            "EnergyMeters",
+            "EnvelopeSummary",
+            "EquipmentSummary",
+            "FacilityComponentLoadSummary",
+            "FanReportMonthly",
+            "GeneratorReportMonthly",
+            "HVACSizingSummary",
+            "HeatEmissionsReportMonthly",
+            "HeatEmissionsSummary",
+            "InitializationSummary",
+            "InputVerificationandResultsSummary",
+            "LEEDSummary",
+            "LifeCycleCostReport",
+            "LightingSummary",
+            "MechanicalVentilationLoadsMonthly",
+            "ObjectCountSummary",
+            "OccupantComfortDataSummaryMonthly",
+            "OutdoorAirSummary",
+            "OutdoorConditionsMaximumDewPointMonthly",
+            "OutdoorConditionsMaximumDryBulbMonthly",
+            "OutdoorConditionsMaximumWetBulbMonthly",
+            "OutdoorConditionsMinimumDryBulbMonthly",
+            "OutdoorGroundConditionsMonthly",
+            "PeakEnergyEndUseCoalMonthly",
+            "PeakEnergyEndUseDieselMonthly",
+            "PeakEnergyEndUseElectricityPart1Monthly",
+            "PeakEnergyEndUseElectricityPart2Monthly",
+            "PeakEnergyEndUseFuelOilMonthly",
+            "PeakEnergyEndUseGasolineMonthly",
+            "PeakEnergyEndUseNaturalGasMonthly",
+            "PeakEnergyEndUseOtherFuelsMonthly",
+            "PeakEnergyEndUsePropaneMonthly",
+            "PeakSpaceGainsMonthly",
+            "PlantLoopDemandReportMonthly",
+            "PumpReportMonthly",
+            "SensibleHeatGainSummary",
+            "SetpointsNotMetWithTemperaturesMonthly",
+            "ShadingSummary",
+            "SourceEnergyEndUseComponentsSummary",
+            "SpaceGainComponentsAtCoolingPeakMonthly",
+            "SpaceGainsMonthly",
+            "Standard62.1Summary",
+            "SurfaceShadowingSummary",
+            "SystemSummary",
+            "TariffReport",
+            "TowerReportMonthly",
+            "UnglazedTranspiredSolarCollectorSummaryMonthly",
+            "WaterHeaterReportMonthly",
+            "WindowACReportMonthly",
+            "WindowEnergyReportMonthly",
+            "WindowEnergyZoneSummaryMonthly",
+            "WindowReportMonthly",
+            "WindowZoneSummaryMonthly",
+            "ZoneComponentLoadSummary",
+            "ZoneCoolingSummaryMonthly",
+            "ZoneElectricSummaryMonthly",
+            "ZoneHeatingSummaryMonthly",
+            "ZoneTemperatureOscillationReportMonthly",
+        ]
+        | None
+    )
 
 class AnyOutputTableSummaryReports(_TypedIDFObject):
     """``Output:Table:SummaryReports`` as every supported EnergyPlus version declares it."""
@@ -63784,12 +66471,125 @@ class AnyOutputTableSummaryReports(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputTableSummaryReportsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.AnyOutputTableSummaryReports  # type: ignore[assignment]
 
 class _AnyOutputTableSummaryReportsFields(_OutputTableSummaryReportsCommonFields, total=False):
-    reports: list[Any]
+    reports: Sequence[AnyOutputTableSummaryReportsReportsItem | AnyOutputTableSummaryReportsReportsGroup]
 
 class OutputTableSummaryReportsReportsGroup(AnyOutputTableSummaryReportsReportsGroup):
     """One reports group inside :class:`OutputTableSummaryReports`."""
+
+    report_name: (
+        Literal[
+            "AdaptiveComfortSummary",
+            "AirLoopComponentLoadSummary",
+            "AirLoopSystemComponentEnergyUseMonthly",
+            "AirLoopSystemComponentLoadsMonthly",
+            "AirLoopSystemEnergyAndWaterUseMonthly",
+            "AllMonthly",
+            "AllSummary",
+            "AllSummaryAndMonthly",
+            "AllSummaryAndSizingPeriod",
+            "AllSummaryMonthlyAndSizingPeriod",
+            "AnnualBuildingUtilityPerformanceSummary",
+            "AverageOutdoorConditionsMonthly",
+            "BoilerReportMonthly",
+            "CO2ResilienceSummary",
+            "ChillerReportMonthly",
+            "ClimaticDataSummary",
+            "CoilReportMonthly",
+            "CoilSizingDetails",
+            "ComfortReportSimple55Monthly",
+            "ComponentCostEconomicsSummary",
+            "ComponentSizingSummary",
+            "CondLoopDemandReportMonthly",
+            "DXReportMonthly",
+            "DaylightingReportMonthly",
+            "DemandEndUseComponentsSummary",
+            "EconomicResultSummary",
+            "ElectricComponentsOfPeakDemandMonthly",
+            "EndUseEnergyConsumptionCoalMonthly",
+            "EndUseEnergyConsumptionDieselMonthly",
+            "EndUseEnergyConsumptionElectricityMonthly",
+            "EndUseEnergyConsumptionFuelOilMonthly",
+            "EndUseEnergyConsumptionGasolineMonthly",
+            "EndUseEnergyConsumptionNaturalGasMonthly",
+            "EndUseEnergyConsumptionOtherFuelsMonthly",
+            "EndUseEnergyConsumptionPropaneMonthly",
+            "EnergyConsumptionCoalGasolineMonthly",
+            "EnergyConsumptionDieselFuelOilMonthly",
+            "EnergyConsumptionDistrictHeatingCoolingMonthly",
+            "EnergyConsumptionElectricityGeneratedPropaneMonthly",
+            "EnergyConsumptionElectricityNaturalGasMonthly",
+            "EnergyConsumptionOtherFuelsMonthly",
+            "EnergyMeters",
+            "EnvelopeSummary",
+            "EquipmentSummary",
+            "FacilityComponentLoadSummary",
+            "FanReportMonthly",
+            "GeneratorReportMonthly",
+            "HVACSizingSummary",
+            "HeatEmissionsReportMonthly",
+            "HeatEmissionsSummary",
+            "InitializationSummary",
+            "InputVerificationandResultsSummary",
+            "LEEDSummary",
+            "LifeCycleCostReport",
+            "LightingSummary",
+            "MechanicalVentilationLoadsMonthly",
+            "ObjectCountSummary",
+            "OccupantComfortDataSummaryMonthly",
+            "OutdoorAirDetails",
+            "OutdoorAirSummary",
+            "OutdoorConditionsMaximumDewPointMonthly",
+            "OutdoorConditionsMaximumDryBulbMonthly",
+            "OutdoorConditionsMaximumWetBulbMonthly",
+            "OutdoorConditionsMinimumDryBulbMonthly",
+            "OutdoorGroundConditionsMonthly",
+            "PeakEnergyEndUseCoalMonthly",
+            "PeakEnergyEndUseDieselMonthly",
+            "PeakEnergyEndUseElectricityPart1Monthly",
+            "PeakEnergyEndUseElectricityPart2Monthly",
+            "PeakEnergyEndUseFuelOilMonthly",
+            "PeakEnergyEndUseGasolineMonthly",
+            "PeakEnergyEndUseNaturalGasMonthly",
+            "PeakEnergyEndUseOtherFuelsMonthly",
+            "PeakEnergyEndUsePropaneMonthly",
+            "PeakSpaceGainsMonthly",
+            "PlantLoopDemandReportMonthly",
+            "PumpReportMonthly",
+            "SensibleHeatGainSummary",
+            "SetpointsNotMetWithTemperaturesMonthly",
+            "ShadingSummary",
+            "SourceEnergyEndUseComponentsSummary",
+            "SpaceGainComponentsAtCoolingPeakMonthly",
+            "SpaceGainsMonthly",
+            "Standard62.1Summary",
+            "SurfaceShadowingSummary",
+            "SystemSummary",
+            "TariffReport",
+            "ThermalResilienceSummary",
+            "TowerReportMonthly",
+            "UnglazedTranspiredSolarCollectorSummaryMonthly",
+            "VisualResilienceSummary",
+            "WaterHeaterReportMonthly",
+            "WindowACReportMonthly",
+            "WindowEnergyReportMonthly",
+            "WindowEnergyZoneSummaryMonthly",
+            "WindowReportMonthly",
+            "WindowZoneSummaryMonthly",
+            "ZoneComponentLoadSummary",
+            "ZoneCoolingSummaryMonthly",
+            "ZoneElectricSummaryMonthly",
+            "ZoneHeatingSummaryMonthly",
+            "ZoneTemperatureOscillationReportMonthly",
+        ]
+        | None
+    )
+    def as_dict(self) -> OutputTableSummaryReportsReportsItem: ...  # type: ignore[override]
+
+class OutputTableSummaryReportsReportsItem(TypedDict, total=False):
+    """One group of :class:`OutputTableSummaryReportsReportsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     report_name: (
         Literal[
@@ -63907,9 +66707,10 @@ class OutputTableSummaryReports(AnyOutputTableSummaryReports):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableSummaryReportsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c70.OutputTableSummaryReports  # type: ignore[assignment]
 
 class _OutputTableSummaryReportsFields(_OutputTableSummaryReportsCommonFields, total=False):
-    reports: list[Any]
+    reports: Sequence[OutputTableSummaryReportsReportsItem | OutputTableSummaryReportsReportsGroup]
 
 class _OutputTableTimeBinsCommonFields(TypedDict, total=False):
     key_value: str | None
@@ -63941,6 +66742,7 @@ class AnyOutputTableTimeBins(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputTableTimeBinsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c78.AnyOutputTableTimeBins  # type: ignore[assignment]
 
 class _AnyOutputTableTimeBinsFields(_OutputTableTimeBinsCommonFields, total=False):
     interval_count: int | None
@@ -63954,15 +66756,40 @@ class OutputTableTimeBins(AnyOutputTableTimeBins):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableTimeBinsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.OutputTableTimeBins  # type: ignore[assignment]
 
 class _OutputTableTimeBinsFields(_OutputTableTimeBinsCommonFields, total=False):
     interval_count: int | None
 
 class _OutputTableMonthlyCommonFields(TypedDict, total=False):
-    variable_details: list[Any]
+    variable_details: Sequence[OutputTableMonthlyVariableDetailsItem | OutputTableMonthlyVariableDetailsGroup]
 
 class OutputTableMonthlyVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`AnyOutputTableMonthly`."""
+
+    variable_or_meter_name: str | None
+    aggregation_type_for_variable_or_meter: (
+        Literal[
+            "HoursNegative",
+            "HoursNonNegative",
+            "HoursNonPositive",
+            "HoursNonZero",
+            "HoursPositive",
+            "HoursZero",
+            "Maximum",
+            "MaximumDuringHoursShown",
+            "Minimum",
+            "MinimumDuringHoursShown",
+            "SumOrAverage",
+            "SumOrAverageDuringHoursShown",
+            "ValueWhenMaximumOrMinimum",
+        ]
+        | None
+    )
+    def as_dict(self) -> OutputTableMonthlyVariableDetailsItem: ...  # type: ignore[override]
+
+class OutputTableMonthlyVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`OutputTableMonthlyVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     variable_or_meter_name: str | None
     aggregation_type_for_variable_or_meter: (
@@ -63995,6 +66822,7 @@ class AnyOutputTableMonthly(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputTableMonthlyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c89.AnyOutputTableMonthly  # type: ignore[assignment]
 
 class _AnyOutputTableMonthlyFields(_OutputTableMonthlyCommonFields, total=False):
     digits_after_decimal: int | None
@@ -64008,6 +66836,7 @@ class OutputTableMonthly(AnyOutputTableMonthly):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableMonthlyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.OutputTableMonthly  # type: ignore[assignment]
 
 class _OutputTableMonthlyFields(_OutputTableMonthlyCommonFields, total=False):
     digits_after_decimal: int | None
@@ -64045,6 +66874,34 @@ class AnyOutputTableAnnualVariableDetailsGroup(_TypedExtensibleGroup):
     def digits_after_decimal(self) -> float | int | None: ...
     @digits_after_decimal.setter
     def digits_after_decimal(self, value: int | None) -> None: ...
+    def as_dict(self) -> AnyOutputTableAnnualVariableDetailsItem: ...  # type: ignore[override]
+
+class AnyOutputTableAnnualVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`AnyOutputTableAnnualVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
+
+    variable_or_meter_or_ems_variable_or_field_name: str | None
+    aggregation_type_for_variable_or_meter: (
+        Literal[
+            "HourInTenBinsMinToMax",
+            "HourInTenBinsMinToZero",
+            "HourInTenBinsZeroToMax",
+            "HoursNegative",
+            "HoursNonNegative",
+            "HoursNonPositive",
+            "HoursNonZero",
+            "HoursPositive",
+            "HoursZero",
+            "Maximum",
+            "MaximumDuringHoursShown",
+            "Minimum",
+            "MinimumDuringHoursShown",
+            "SumOrAverage",
+            "SumOrAverageDuringHoursShown",
+            "ValueWhenMaximumOrMinimum",
+        ]
+        | None
+    )
+    digits_after_decimal: int | None
 
 class AnyOutputTableAnnual(_TypedIDFObject):
     """``Output:Table:Annual`` as every supported EnergyPlus version declares it."""
@@ -64058,12 +66915,41 @@ class AnyOutputTableAnnual(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputTableAnnualFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c109.AnyOutputTableAnnual  # type: ignore[assignment]
 
 class _AnyOutputTableAnnualFields(_OutputTableAnnualCommonFields, total=False):
-    variable_details: list[Any]
+    variable_details: Sequence[AnyOutputTableAnnualVariableDetailsItem | AnyOutputTableAnnualVariableDetailsGroup]
 
 class OutputTableAnnualVariableDetailsGroup(AnyOutputTableAnnualVariableDetailsGroup):
     """One variable_details group inside :class:`OutputTableAnnual`."""
+
+    variable_or_meter_or_ems_variable_or_field_name: str | None
+    aggregation_type_for_variable_or_meter: (
+        Literal[
+            "HourInTenBinsMinToMax",
+            "HourInTenBinsMinToZero",
+            "HourInTenBinsZeroToMax",
+            "HoursNegative",
+            "HoursNonNegative",
+            "HoursNonPositive",
+            "HoursNonZero",
+            "HoursPositive",
+            "HoursZero",
+            "Maximum",
+            "MaximumDuringHoursShown",
+            "Minimum",
+            "MinimumDuringHoursShown",
+            "SumOrAverage",
+            "SumOrAverageDuringHoursShown",
+            "ValueWhenMaximumOrMinimum",
+        ]
+        | None
+    )
+    digits_after_decimal: int | None
+    def as_dict(self) -> OutputTableAnnualVariableDetailsItem: ...  # type: ignore[override]
+
+class OutputTableAnnualVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`OutputTableAnnualVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     variable_or_meter_or_ems_variable_or_field_name: str | None
     aggregation_type_for_variable_or_meter: (
@@ -64095,9 +66981,10 @@ class OutputTableAnnual(AnyOutputTableAnnual):
     variable_details: ExtensibleList[OutputTableAnnualVariableDetailsGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableAnnualFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c2.OutputTableAnnual  # type: ignore[assignment]
 
 class _OutputTableAnnualFields(_OutputTableAnnualCommonFields, total=False):
-    variable_details: list[Any]
+    variable_details: Sequence[OutputTableAnnualVariableDetailsItem | OutputTableAnnualVariableDetailsGroup]
 
 class _OutputTableReportPeriodCommonFields(TypedDict, total=False):
     report_name: (
@@ -64141,6 +67028,7 @@ class AnyOutputTableReportPeriod(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputTableReportPeriodFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c1.AnyOutputTableReportPeriod  # type: ignore[assignment]
 
 class _AnyOutputTableReportPeriodFields(_OutputTableReportPeriodCommonFields, total=False): ...
 
@@ -64150,6 +67038,7 @@ class OutputTableReportPeriod(AnyOutputTableReportPeriod):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableReportPeriodFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c28.OutputTableReportPeriod  # type: ignore[assignment]
 
 class _OutputTableReportPeriodFields(_OutputTableReportPeriodCommonFields, total=False): ...
 
@@ -64180,6 +67069,7 @@ class AnyOutputControlTableStyle(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputControlTableStyleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c52.AnyOutputControlTableStyle  # type: ignore[assignment]
 
 class _AnyOutputControlTableStyleFields(_OutputControlTableStyleCommonFields, total=False):
     unit_conversion: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
@@ -64195,6 +67085,7 @@ class OutputControlTableStyle(AnyOutputControlTableStyle):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlTableStyleFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.OutputControlTableStyle  # type: ignore[assignment]
 
 class _OutputControlTableStyleFields(_OutputControlTableStyleCommonFields, total=False):
     unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
@@ -64211,6 +67102,7 @@ class OutputControlReportingTolerances(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlReportingTolerancesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.OutputControlReportingTolerances  # type: ignore[assignment]
 
 class _OutputControlReportingTolerancesFields(TypedDict, total=False):
     tolerance_for_time_heating_setpoint_not_met: float | None
@@ -64225,6 +67117,7 @@ class OutputControlResilienceSummaries(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlResilienceSummariesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c88.OutputControlResilienceSummaries  # type: ignore[assignment]
 
 class _OutputControlResilienceSummariesFields(TypedDict, total=False):
     heat_index_algorithm: Literal["", "Extended", "Simplified"] | None
@@ -64242,6 +67135,7 @@ class OutputVariable(_TypedIDFObject):
     schedule_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputVariableFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c24.OutputVariable  # type: ignore[assignment]
 
 class _OutputVariableFields(TypedDict, total=False):
     key_value: str | None
@@ -64272,6 +67166,7 @@ class AnyOutputMeter(_TypedIDFObject):
         | None,
     ) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputMeterFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c27.AnyOutputMeter  # type: ignore[assignment]
 
 class _AnyOutputMeterFields(_OutputMeterCommonFields, total=False):
     reporting_frequency: (
@@ -64287,6 +67182,7 @@ class OutputMeter(AnyOutputMeter):
     """Timestep refers to the zone Timestep/Number of Timesteps in hour value RunPeriod and Environment are the same; Default: Hourly"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeterFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c60.OutputMeter  # type: ignore[assignment]
 
 class _OutputMeterFields(_OutputMeterCommonFields, total=False):
     reporting_frequency: (
@@ -64306,6 +67202,7 @@ class OutputMeterMeterFileOnly(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeterMeterFileOnlyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c114.OutputMeterMeterFileOnly  # type: ignore[assignment]
 
 class _OutputMeterMeterFileOnlyFields(TypedDict, total=False):
     key_name: str | None
@@ -64326,6 +67223,7 @@ class OutputMeterCumulative(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeterCumulativeFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c67.OutputMeterCumulative  # type: ignore[assignment]
 
 class _OutputMeterCumulativeFields(TypedDict, total=False):
     key_name: str | None
@@ -64346,6 +67244,7 @@ class OutputMeterCumulativeMeterFileOnly(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeterCumulativeMeterFileOnlyFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c84.OutputMeterCumulativeMeterFileOnly  # type: ignore[assignment]
 
 class _OutputMeterCumulativeMeterFileOnlyFields(TypedDict, total=False):
     key_name: str | None
@@ -64354,10 +67253,17 @@ class _OutputMeterCumulativeMeterFileOnlyFields(TypedDict, total=False):
     )
 
 class _MeterCustomCommonFields(TypedDict, total=False):
-    variable_details: list[Any]
+    variable_details: Sequence[MeterCustomVariableDetailsItem | MeterCustomVariableDetailsGroup]
 
 class MeterCustomVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`AnyMeterCustom`."""
+
+    key_name: str | None
+    output_variable_or_meter_name: str | None
+    def as_dict(self) -> MeterCustomVariableDetailsItem: ...  # type: ignore[override]
+
+class MeterCustomVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`MeterCustomVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     key_name: str | None
     output_variable_or_meter_name: str | None
@@ -64368,6 +67274,7 @@ class AnyMeterCustom(_TypedIDFObject):
     variable_details: ExtensibleList[MeterCustomVariableDetailsGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyMeterCustomFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c29.AnyMeterCustom  # type: ignore[assignment]
 
 class _AnyMeterCustomFields(_MeterCustomCommonFields, total=False): ...
 
@@ -64397,6 +67304,7 @@ class MeterCustom(AnyMeterCustom):
     """Since: 9.4.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustomFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c58.MeterCustom  # type: ignore[assignment]
 
 class _MeterCustomFields(_MeterCustomCommonFields, total=False):
     resource_type: (
@@ -64422,10 +67330,17 @@ class _MeterCustomFields(_MeterCustomCommonFields, total=False):
 
 class _MeterCustomDecrementCommonFields(TypedDict, total=False):
     source_meter_name: str | None
-    variable_details: list[Any]
+    variable_details: Sequence[MeterCustomDecrementVariableDetailsItem | MeterCustomDecrementVariableDetailsGroup]
 
 class MeterCustomDecrementVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`AnyMeterCustomDecrement`."""
+
+    key_name: str | None
+    output_variable_or_meter_name: str | None
+    def as_dict(self) -> MeterCustomDecrementVariableDetailsItem: ...  # type: ignore[override]
+
+class MeterCustomDecrementVariableDetailsItem(TypedDict, total=False):
+    """One group of :class:`MeterCustomDecrementVariableDetailsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     key_name: str | None
     output_variable_or_meter_name: str | None
@@ -64440,6 +67355,7 @@ class AnyMeterCustomDecrement(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyMeterCustomDecrementFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c19.AnyMeterCustomDecrement  # type: ignore[assignment]
 
 class _AnyMeterCustomDecrementFields(_MeterCustomDecrementCommonFields, total=False): ...
 
@@ -64471,6 +67387,7 @@ class MeterCustomDecrement(AnyMeterCustomDecrement):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustomDecrementFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c23.MeterCustomDecrement  # type: ignore[assignment]
 
 class _MeterCustomDecrementFields(_MeterCustomDecrementCommonFields, total=False):
     resource_type: (
@@ -64596,6 +67513,7 @@ class AnyOutputControlFiles(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputControlFilesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c110.AnyOutputControlFiles  # type: ignore[assignment]
 
 class _AnyOutputControlFilesFields(_OutputControlFilesCommonFields, total=False): ...
 
@@ -64610,6 +67528,7 @@ class OutputControlFiles(AnyOutputControlFiles):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlFilesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.OutputControlFiles  # type: ignore[assignment]
 
 class _OutputControlFilesFields(_OutputControlFilesCommonFields, total=False):
     output_space_sizing: Literal["", "No", "Yes"] | None
@@ -64626,6 +67545,7 @@ class OutputControlTimestamp(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlTimestampFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.OutputControlTimestamp  # type: ignore[assignment]
 
 class _OutputControlTimestampFields(TypedDict, total=False):
     iso_8601_format: Literal["", "No", "Yes"] | None
@@ -64649,6 +67569,7 @@ class AnyOutputJSON(_TypedIDFObject):
     """Default: No"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputJSONFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c42.AnyOutputJSON  # type: ignore[assignment]
 
 class _AnyOutputJSONFields(_OutputJSONCommonFields, total=False): ...
 
@@ -64673,6 +67594,7 @@ class OutputJSON(AnyOutputJSON):
     """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes; Since: 25.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputJSONFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c16.OutputJSON  # type: ignore[assignment]
 
 class _OutputJSONFields(_OutputJSONCommonFields, total=False):
     unit_conversion_for_tabular_data: (
@@ -64699,6 +67621,7 @@ class AnyOutputSQLite(_TypedIDFObject):
     option_type: Literal["Simple", "SimpleAndTabular"] | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputSQLiteFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c81.AnyOutputSQLite  # type: ignore[assignment]
 
 class _AnyOutputSQLiteFields(_OutputSQLiteCommonFields, total=False): ...
 
@@ -64723,6 +67646,7 @@ class OutputSQLite(AnyOutputSQLite):
     """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes; Since: 25.2.0"""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSQLiteFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c9.OutputSQLite  # type: ignore[assignment]
 
 class _OutputSQLiteFields(_OutputSQLiteCommonFields, total=False):
     unit_conversion_for_tabular_data: (
@@ -64749,6 +67673,7 @@ class OutputEnvironmentalImpactFactors(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputEnvironmentalImpactFactorsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c91.OutputEnvironmentalImpactFactors  # type: ignore[assignment]
 
 class _OutputEnvironmentalImpactFactorsFields(TypedDict, total=False):
     reporting_frequency: Literal["Annual", "Daily", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
@@ -64774,6 +67699,7 @@ class AnyEnvironmentalImpactFactors(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyEnvironmentalImpactFactorsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c7.AnyEnvironmentalImpactFactors  # type: ignore[assignment]
 
 class _AnyEnvironmentalImpactFactorsFields(_EnvironmentalImpactFactorsCommonFields, total=False): ...
 
@@ -64788,6 +67714,7 @@ class EnvironmentalImpactFactors(AnyEnvironmentalImpactFactors):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnvironmentalImpactFactorsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c7.EnvironmentalImpactFactors  # type: ignore[assignment]
 
 class _EnvironmentalImpactFactorsFields(_EnvironmentalImpactFactorsCommonFields, total=False):
     district_heating_water_efficiency: float | None
@@ -64920,6 +67847,7 @@ class AnyFuelFactors(_TypedIDFObject):
     nuclear_low_level_emission_factor_schedule_name: str | None
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyFuelFactorsFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c33.AnyFuelFactors  # type: ignore[assignment]
 
 class _AnyFuelFactorsFields(_FuelFactorsCommonFields, total=False):
     existing_fuel_resource_name: (
@@ -64958,6 +67886,7 @@ class FuelFactors(AnyFuelFactors):
     )
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FuelFactorsFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c6.FuelFactors  # type: ignore[assignment]
 
 class _FuelFactorsFields(_FuelFactorsCommonFields, total=False):
     existing_fuel_resource_name: (
@@ -64984,11 +67913,34 @@ class AnyOutputDiagnostics(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputDiagnosticsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c86.AnyOutputDiagnostics  # type: ignore[assignment]
 
 class _AnyOutputDiagnosticsFields(_OutputDiagnosticsCommonFields, total=False): ...
 
 class OutputDiagnosticsDiagnosticsGroup(_TypedExtensibleGroup):
     """One diagnostics group inside :class:`OutputDiagnostics`."""
+
+    key: (
+        Literal[
+            "DisplayAdvancedReportVariables",
+            "DisplayAllWarnings",
+            "DisplayExtraWarnings",
+            "DisplayUnusedObjects",
+            "DisplayUnusedSchedules",
+            "DisplayWeatherMissingDataWarnings",
+            "DisplayZoneAirHeatBalanceOffBalance",
+            "DoNotMirrorAttachedShading",
+            "DoNotMirrorDetachedShading",
+            "ReportDetailedWarmupConvergence",
+            "ReportDuringHVACSizingSimulation",
+            "ReportDuringWarmup",
+        ]
+        | None
+    )
+    def as_dict(self) -> OutputDiagnosticsDiagnosticsItem: ...  # type: ignore[override]
+
+class OutputDiagnosticsDiagnosticsItem(TypedDict, total=False):
+    """One group of :class:`OutputDiagnosticsDiagnosticsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     key: (
         Literal[
@@ -65014,9 +67966,10 @@ class OutputDiagnostics(AnyOutputDiagnostics):
     diagnostics: ExtensibleList[OutputDiagnosticsDiagnosticsGroup]
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputDiagnosticsFields]) -> None: ...  # type: ignore[override]
+    _creation_signature: _c57.OutputDiagnostics  # type: ignore[assignment]
 
 class _OutputDiagnosticsFields(_OutputDiagnosticsCommonFields, total=False):
-    diagnostics: list[Any]
+    diagnostics: Sequence[OutputDiagnosticsDiagnosticsItem | OutputDiagnosticsDiagnosticsGroup]
 
 class _OutputDebuggingDataCommonFields(TypedDict, total=False): ...
 
@@ -65033,6 +67986,7 @@ class AnyOutputDebuggingData(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyOutputDebuggingDataFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c104.AnyOutputDebuggingData  # type: ignore[assignment]
 
 class _AnyOutputDebuggingDataFields(_OutputDebuggingDataCommonFields, total=False):
     report_debugging_data: None
@@ -65049,6 +68003,7 @@ class OutputDebuggingData(AnyOutputDebuggingData):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputDebuggingDataFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c53.OutputDebuggingData  # type: ignore[assignment]
 
 class _OutputDebuggingDataFields(_OutputDebuggingDataCommonFields, total=False):
     report_debugging_data: Literal["", "No", "Yes"] | None
@@ -65074,6 +68029,7 @@ class OutputPreprocessorMessage(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputPreprocessorMessageFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c36.OutputPreprocessorMessage  # type: ignore[assignment]
 
 class _OutputPreprocessorMessageFields(TypedDict, total=False):
     preprocessor_name: str | None
@@ -65104,11 +68060,18 @@ class AnyPythonPluginSearchPaths(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPythonPluginSearchPathsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c46.AnyPythonPluginSearchPaths  # type: ignore[assignment]
 
 class _AnyPythonPluginSearchPathsFields(_PythonPluginSearchPathsCommonFields, total=False): ...
 
 class PythonPluginSearchPathsPySearchPathsGroup(_TypedExtensibleGroup):
     """One py_search_paths group inside :class:`PythonPluginSearchPaths`."""
+
+    search_path: str | None
+    def as_dict(self) -> PythonPluginSearchPathsPySearchPathsItem: ...  # type: ignore[override]
+
+class PythonPluginSearchPathsPySearchPathsItem(TypedDict, total=False):
+    """One group of :class:`PythonPluginSearchPathsPySearchPathsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     search_path: str | None
 
@@ -65122,10 +68085,11 @@ class PythonPluginSearchPaths(AnyPythonPluginSearchPaths):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginSearchPathsFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c51.PythonPluginSearchPaths  # type: ignore[assignment]
 
 class _PythonPluginSearchPathsFields(_PythonPluginSearchPathsCommonFields, total=False):
     add_epin_environment_variable_to_search_path: Literal["", "No", "Yes"] | None
-    py_search_paths: list[Any]
+    py_search_paths: Sequence[PythonPluginSearchPathsPySearchPathsItem | PythonPluginSearchPathsPySearchPathsGroup]
 
 class PythonPluginInstance(_TypedIDFObject):
     """A single plugin to be executed during the simulation, which can contain multiple calling points for the same class in...; Since: 9.3.0"""
@@ -65140,6 +68104,7 @@ class PythonPluginInstance(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginInstanceFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c42.PythonPluginInstance  # type: ignore[assignment]
 
 class _PythonPluginInstanceFields(TypedDict, total=False):
     run_during_warmup_days: Literal["", "No", "Yes"] | None
@@ -65154,11 +68119,18 @@ class AnyPythonPluginVariables(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPythonPluginVariablesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c41.AnyPythonPluginVariables  # type: ignore[assignment]
 
 class _AnyPythonPluginVariablesFields(_PythonPluginVariablesCommonFields, total=False): ...
 
 class PythonPluginVariablesGlobalPyVarsGroup(_TypedExtensibleGroup):
     """One global_py_vars group inside :class:`PythonPluginVariables`."""
+
+    variable_name: str | None
+    def as_dict(self) -> PythonPluginVariablesGlobalPyVarsItem: ...  # type: ignore[override]
+
+class PythonPluginVariablesGlobalPyVarsItem(TypedDict, total=False):
+    """One group of :class:`PythonPluginVariablesGlobalPyVarsGroup` as a dict, as ``add()`` and ``update()`` take it."""
 
     variable_name: str | None
 
@@ -65170,9 +68142,10 @@ class PythonPluginVariables(AnyPythonPluginVariables):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginVariablesFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c97.PythonPluginVariables  # type: ignore[assignment]
 
 class _PythonPluginVariablesFields(_PythonPluginVariablesCommonFields, total=False):
-    global_py_vars: list[Any]
+    global_py_vars: Sequence[PythonPluginVariablesGlobalPyVarsItem | PythonPluginVariablesGlobalPyVarsGroup]
 
 class _PythonPluginTrendVariableCommonFields(TypedDict, total=False):
     name_of_a_python_plugin_variable: str | None
@@ -65188,6 +68161,7 @@ class AnyPythonPluginTrendVariable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPythonPluginTrendVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c10.AnyPythonPluginTrendVariable  # type: ignore[assignment]
 
 class _AnyPythonPluginTrendVariableFields(_PythonPluginTrendVariableCommonFields, total=False):
     number_of_timesteps_to_be_logged: int | None
@@ -65201,6 +68175,7 @@ class PythonPluginTrendVariable(AnyPythonPluginTrendVariable):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginTrendVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c2.PythonPluginTrendVariable  # type: ignore[assignment]
 
 class _PythonPluginTrendVariableFields(_PythonPluginTrendVariableCommonFields, total=False):
     number_of_timesteps_to_be_logged: int | None
@@ -65345,6 +68320,7 @@ class AnyPythonPluginOutputVariable(_TypedIDFObject):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPythonPluginOutputVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.AnyPythonPluginOutputVariable  # type: ignore[assignment]
 
 class _AnyPythonPluginOutputVariableFields(_PythonPluginOutputVariableCommonFields, total=False):
     resource_type: (
@@ -65408,6 +68384,7 @@ class PythonPluginOutputVariable(AnyPythonPluginOutputVariable):
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginOutputVariableFields]
     ) -> None: ...  # type: ignore[override]
+    _creation_signature: _c119.PythonPluginOutputVariable  # type: ignore[assignment]
 
 class _PythonPluginOutputVariableFields(_PythonPluginOutputVariableCommonFields, total=False):
     resource_type: (
@@ -65608,7 +68585,6 @@ AnyOtherEquipmentInstance: TypeAlias = OtherEquipmentInstance
 AnyOtherEquipmentDefinition: TypeAlias = OtherEquipmentDefinition
 AnyElectricEquipmentITEAirCooledInstance: TypeAlias = ElectricEquipmentITEAirCooledInstance
 AnyElectricEquipmentITEAirCooledDefinition: TypeAlias = ElectricEquipmentITEAirCooledDefinition
-AnySwimmingPoolIndoor: TypeAlias = SwimmingPoolIndoor
 AnyZoneContaminantSourceAndSinkCarbonDioxide: TypeAlias = ZoneContaminantSourceAndSinkCarbonDioxide
 AnyZoneContaminantSourceAndSinkGenericConstant: TypeAlias = ZoneContaminantSourceAndSinkGenericConstant
 AnySurfaceContaminantSourceAndSinkGenericPressureDriven: TypeAlias = (
@@ -65893,12 +68869,6 @@ AnyExternalInterfaceFunctionalMockupUnitImportToVariable: TypeAlias = (
 )
 AnyExternalInterfaceFunctionalMockupUnitExportFromVariable: TypeAlias = (
     ExternalInterfaceFunctionalMockupUnitExportFromVariable
-)
-AnyExternalInterfaceFunctionalMockupUnitExportToSchedule: TypeAlias = (
-    ExternalInterfaceFunctionalMockupUnitExportToSchedule
-)
-AnyExternalInterfaceFunctionalMockupUnitExportToActuator: TypeAlias = (
-    ExternalInterfaceFunctionalMockupUnitExportToActuator
 )
 AnyExternalInterfaceFunctionalMockupUnitExportToVariable: TypeAlias = (
     ExternalInterfaceFunctionalMockupUnitExportToVariable

@@ -1,0 +1,336 @@
+"""Creation signatures of generated classes (stub only).
+
+DO NOT EDIT — regenerate with:
+    python -m idfkit.codegen.generate_stubs
+"""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import Literal
+
+from .. import _generated_types as _g
+
+class AirflowNetworkDistributionComponentFan_v8_9_to_v9_1:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        fan_name: str,
+        supply_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"]
+        | None = "Fan:ConstantVolume",
+    ) -> None:
+        """Create a new ``AirflowNetwork:Distribution:Component:Fan`` and add it to the document.
+
+        This object defines the name of the supply Air Fan used in an Air loop.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-airflow-network/#airflownetworkdistributioncomponentfan
+        """
+
+class WallDetailed_v8_9_to_v9_5:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        construction_name: str,
+        zone_name: str,
+        outside_boundary_condition: Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Surface",
+            "Zone",
+        ],
+        outside_boundary_condition_object: str | None = ...,
+        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        vertices: Sequence[_g.WallDetailedVerticesItem | _g.WallDetailedVerticesGroup] = ...,
+    ) -> None:
+        """Create a new ``Wall:Detailed`` and add it to the document.
+
+        Allows for detailed entry of wall heat transfer surfaces.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#walldetailed
+        """
+
+class AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        maximum_primary_air_flow_rate: float | Literal["Autosize"],
+        maximum_secondary_air_flow_rate: float | Literal["Autosize"],
+        minimum_primary_air_flow_fraction: float | Literal["Autosize"],
+        fan_on_flow_fraction: float | Literal["Autosize"],
+        reheat_coil_object_type: Literal[
+            "Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"
+        ],
+        reheat_coil_name: str,
+        availability_schedule_name: str | None = ...,
+        supply_air_inlet_node_name: str | None = ...,
+        secondary_air_inlet_node_name: str | None = ...,
+        outlet_node_name: str | None = ...,
+        reheat_coil_air_inlet_node_name: str | None = ...,
+        zone_mixer_name: str | None = ...,
+        fan_name: str | None = ...,
+        maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
+        minimum_hot_water_or_steam_flow_rate: float | None = 0,
+        convergence_tolerance: float | None = 0.001,
+    ) -> None:
+        """Create a new ``AirTerminal:SingleDuct:ParallelPIU:Reheat`` and add it to the document.
+
+        Central air system terminal unit, single duct, variable volume, parallel powered induction unit (PIU), with reheat coil (hot water, electric, gas, or steam).
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-air-distribution-equipment/#airterminalsingleductparallelpiureheat
+        """
+
+class ComfortViewFactorAngles_v9_6_to_v23_2:
+    def __call__(
+        self,
+        name: str = "",
+        /,
+        *,
+        zone_name: str | None = ...,
+        surface_1_name: str | None = ...,
+        angle_factor_1: float | None = ...,
+        surface_2_name: str | None = ...,
+        angle_factor_2: float | None = ...,
+        surface_3_name: str | None = ...,
+        angle_factor_3: float | None = ...,
+        surface_4_name: str | None = ...,
+        angle_factor_4: float | None = ...,
+        surface_5_name: str | None = ...,
+        angle_factor_5: float | None = ...,
+        surface_6_name: str | None = ...,
+        angle_factor_6: float | None = ...,
+        surface_7_name: str | None = ...,
+        angle_factor_7: float | None = ...,
+        surface_8_name: str | None = ...,
+        angle_factor_8: float | None = ...,
+        surface_9_name: str | None = ...,
+        angle_factor_9: float | None = ...,
+        surface_10_name: str | None = ...,
+        angle_factor_10: float | None = ...,
+        surface_11_name: str | None = ...,
+        angle_factor_11: float | None = ...,
+        surface_12_name: str | None = ...,
+        angle_factor_12: float | None = ...,
+        surface_13_name: str | None = ...,
+        angle_factor_13: float | None = ...,
+        surface_14_name: str | None = ...,
+        angle_factor_14: float | None = ...,
+        surface_15_name: str | None = ...,
+        angle_factor_15: float | None = ...,
+        surface_16_name: str | None = ...,
+        angle_factor_16: float | None = ...,
+        surface_17_name: str | None = ...,
+        angle_factor_17: float | None = ...,
+        surface_18_name: str | None = ...,
+        angle_factor_18: float | None = ...,
+        surface_19_name: str | None = ...,
+        angle_factor_19: float | None = ...,
+        surface_20_name: str | None = ...,
+        angle_factor_20: float | None = ...,
+        surface_21_name: str | None = ...,
+        angle_factor_21: float | None = ...,
+        surface_22_name: str | None = ...,
+        angle_factor_22: float | None = ...,
+        surface_23_name: str | None = ...,
+        angle_factor_23: float | None = ...,
+        surface_24_name: str | None = ...,
+        angle_factor_24: float | None = ...,
+        surface_25_name: str | None = ...,
+        angle_factor_25: float | None = ...,
+        surface_26_name: str | None = ...,
+        angle_factor_26: float | None = ...,
+        surface_27_name: str | None = ...,
+        angle_factor_27: float | None = ...,
+        surface_28_name: str | None = ...,
+        angle_factor_28: float | None = ...,
+        surface_29_name: str | None = ...,
+        angle_factor_29: float | None = ...,
+        surface_30_name: str | None = ...,
+        angle_factor_30: float | None = ...,
+        surface_31_name: str | None = ...,
+        angle_factor_31: float | None = ...,
+        surface_32_name: str | None = ...,
+        angle_factor_32: float | None = ...,
+        surface_33_name: str | None = ...,
+        angle_factor_33: float | None = ...,
+        surface_34_name: str | None = ...,
+        angle_factor_34: float | None = ...,
+        surface_35_name: str | None = ...,
+        angle_factor_35: float | None = ...,
+        surface_36_name: str | None = ...,
+        angle_factor_36: float | None = ...,
+        surface_37_name: str | None = ...,
+        angle_factor_37: float | None = ...,
+        surface_38_name: str | None = ...,
+        angle_factor_38: float | None = ...,
+        surface_39_name: str | None = ...,
+        angle_factor_39: float | None = ...,
+        surface_40_name: str | None = ...,
+        angle_factor_40: float | None = ...,
+        surface_41_name: str | None = ...,
+        angle_factor_41: float | None = ...,
+        surface_42_name: str | None = ...,
+        angle_factor_42: float | None = ...,
+        surface_43_name: str | None = ...,
+        angle_factor_43: float | None = ...,
+        surface_44_name: str | None = ...,
+        angle_factor_44: float | None = ...,
+        surface_45_name: str | None = ...,
+        angle_factor_45: float | None = ...,
+        surface_46_name: str | None = ...,
+        angle_factor_46: float | None = ...,
+        surface_47_name: str | None = ...,
+        angle_factor_47: float | None = ...,
+        surface_48_name: str | None = ...,
+        angle_factor_48: float | None = ...,
+        surface_49_name: str | None = ...,
+        angle_factor_49: float | None = ...,
+        surface_50_name: str | None = ...,
+        angle_factor_50: float | None = ...,
+        surface_51_name: str | None = ...,
+        angle_factor_51: float | None = ...,
+        surface_52_name: str | None = ...,
+        angle_factor_52: float | None = ...,
+        surface_53_name: str | None = ...,
+        angle_factor_53: float | None = ...,
+        surface_54_name: str | None = ...,
+        angle_factor_54: float | None = ...,
+        surface_55_name: str | None = ...,
+        angle_factor_55: float | None = ...,
+        surface_56_name: str | None = ...,
+        angle_factor_56: float | None = ...,
+        surface_57_name: str | None = ...,
+        angle_factor_57: float | None = ...,
+        surface_58_name: str | None = ...,
+        angle_factor_58: float | None = ...,
+        surface_59_name: str | None = ...,
+        angle_factor_59: float | None = ...,
+        surface_60_name: str | None = ...,
+        angle_factor_60: float | None = ...,
+        surface_61_name: str | None = ...,
+        angle_factor_61: float | None = ...,
+        surface_62_name: str | None = ...,
+        angle_factor_62: float | None = ...,
+        surface_63_name: str | None = ...,
+        angle_factor_63: float | None = ...,
+        surface_64_name: str | None = ...,
+        angle_factor_64: float | None = ...,
+        surface_65_name: str | None = ...,
+        angle_factor_65: float | None = ...,
+        surface_66_name: str | None = ...,
+        angle_factor_66: float | None = ...,
+        surface_67_name: str | None = ...,
+        angle_factor_67: float | None = ...,
+        surface_68_name: str | None = ...,
+        angle_factor_68: float | None = ...,
+        surface_69_name: str | None = ...,
+        angle_factor_69: float | None = ...,
+        surface_70_name: str | None = ...,
+        angle_factor_70: float | None = ...,
+        surface_71_name: str | None = ...,
+        angle_factor_71: float | None = ...,
+        surface_72_name: str | None = ...,
+        angle_factor_72: float | None = ...,
+        surface_73_name: str | None = ...,
+        angle_factor_73: float | None = ...,
+        surface_74_name: str | None = ...,
+        angle_factor_74: float | None = ...,
+        surface_75_name: str | None = ...,
+        angle_factor_75: float | None = ...,
+        surface_76_name: str | None = ...,
+        angle_factor_76: float | None = ...,
+        surface_77_name: str | None = ...,
+        angle_factor_77: float | None = ...,
+        surface_78_name: str | None = ...,
+        angle_factor_78: float | None = ...,
+        surface_79_name: str | None = ...,
+        angle_factor_79: float | None = ...,
+        surface_80_name: str | None = ...,
+        angle_factor_80: float | None = ...,
+        surface_81_name: str | None = ...,
+        angle_factor_81: float | None = ...,
+        surface_82_name: str | None = ...,
+        angle_factor_82: float | None = ...,
+        surface_83_name: str | None = ...,
+        angle_factor_83: float | None = ...,
+        surface_84_name: str | None = ...,
+        angle_factor_84: float | None = ...,
+        surface_85_name: str | None = ...,
+        angle_factor_85: float | None = ...,
+        surface_86_name: str | None = ...,
+        angle_factor_86: float | None = ...,
+        surface_87_name: str | None = ...,
+        angle_factor_87: float | None = ...,
+        surface_88_name: str | None = ...,
+        angle_factor_88: float | None = ...,
+        surface_89_name: str | None = ...,
+        angle_factor_89: float | None = ...,
+        surface_90_name: str | None = ...,
+        angle_factor_90: float | None = ...,
+        surface_91_name: str | None = ...,
+        angle_factor_91: float | None = ...,
+        surface_92_name: str | None = ...,
+        angle_factor_92: float | None = ...,
+        surface_93_name: str | None = ...,
+        angle_factor_93: float | None = ...,
+        surface_94_name: str | None = ...,
+        angle_factor_94: float | None = ...,
+        surface_95_name: str | None = ...,
+        angle_factor_95: float | None = ...,
+        surface_96_name: str | None = ...,
+        angle_factor_96: float | None = ...,
+        surface_97_name: str | None = ...,
+        angle_factor_97: float | None = ...,
+        surface_98_name: str | None = ...,
+        angle_factor_98: float | None = ...,
+        surface_99_name: str | None = ...,
+        angle_factor_99: float | None = ...,
+        surface_100_name: str | None = ...,
+        angle_factor_100: float | None = ...,
+    ) -> None:
+        """Create a new ``ComfortViewFactorAngles`` and add it to the document.
+
+        Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions must sum up to 1.0 The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/overview/group-internal-gains-people-lights-other/#comfortviewfactorangles
+        """
+
+class ConstructionPropertyInternalHeatSource_v9_5_to_v22_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        thermal_source_present_after_layer_number: float,
+        temperature_calculation_requested_after_layer_number: float,
+        dimensions_for_the_ctf_calculation: float,
+        tube_spacing: float,
+        construction_name: str | None = ...,
+        two_dimensional_temperature_calculation_position: float | None = 0,
+    ) -> None:
+        """Create a new ``ConstructionProperty:InternalHeatSource`` and add it to the document.
+
+        Internal heat source to be attached to a construction layer
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-surface-construction-elements/#constructionpropertyinternalheatsource
+        """

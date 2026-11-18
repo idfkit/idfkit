@@ -46,8 +46,9 @@ material = doc.add(
 
 
 # --8<-- [start:typed-collection-add]
-# Through the collection: the keywords are the type's own fields, checked by the type checker,
-# and the result is the type's class (Zone, Material, ...), not a plain IDFObject.
+# Through the collection: the parameters are the type's own, checked by the type checker, and the
+# result is the type's class (Zone, Material, ...), not a plain IDFObject. Signature help shows the
+# required fields with no default and the others with the schema's default.
 office_zone = doc.zones.add("Office", x_origin=0.0, ceiling_height=3.0)
 office_zone.multiplier = 2  # typed: an int, checked on assignment
 
@@ -62,7 +63,10 @@ insulation = doc["Material"].add(
 doc["Output:SQLite"].add(option_type="SimpleAndTabular")  # a type without a Name field: no name
 
 # doc.zones.add("Lab", ceiling_hieght=3.0)                       # error: No parameter named "ceiling_hieght"
-# doc.zones.add("Lab", zone_inside_convection_algorithm="Tarp")  # error: not one of the field's choices
+# doc.zones.add("Lab", zone_inside_convection_algorithm="Bogus")  # error: not one of the field's choices
+# doc["Material"].add("XPS_50mm", thickness=0.05)                 # error: Arguments missing for parameters
+#                                                                 #   "roughness", "conductivity", "density", ...
+# doc["Output:SQLite"].add("Out", option_type="Simple")          # error: parameter "this_type_has_no_name_field"
 # --8<-- [end:typed-collection-add]
 
 
