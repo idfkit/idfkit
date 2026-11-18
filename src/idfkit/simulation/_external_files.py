@@ -180,4 +180,4 @@ def _external_interface_modes(model: AnyIDFDocument) -> list[str]:
     obj_type = "ExternalInterface"
     if obj_type not in model:
         return []
-    return [str(obj.get("name_of_external_interface") or "") for obj in model.get_collection(obj_type)]
+    return [str(obj.get("name_of_external_interface") or "") for obj in model[obj_type]]

@@ -13,6 +13,8 @@ from dataclasses import dataclass
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any, cast
 
+from ._surface_types import VERTEX_SURFACE_TYPES as _VERTEX_SURFACE_TYPES
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -21,13 +23,7 @@ if TYPE_CHECKING:
 
 # Surface types that carry vertex geometry.  Used by translate_building,
 # rotate_building, scale_building, and related functions.
-VERTEX_SURFACE_TYPES: list[str] = [
-    "BuildingSurface:Detailed",
-    "FenestrationSurface:Detailed",
-    "Shading:Site:Detailed",
-    "Shading:Building:Detailed",
-    "Shading:Zone:Detailed",
-]
+VERTEX_SURFACE_TYPES: list[str] = list(_VERTEX_SURFACE_TYPES)
 
 
 @dataclass(frozen=True, slots=True)
@@ -718,10 +714,10 @@ def translate_to_world(doc: AnyIDFDocument) -> None:
     # across them, and the scene reports both, so this is the pairing that finds the object the
     # scene resolved rather than one that happens to share its name.
     objects: dict[tuple[str, str], IDFObject] = {}
-    for object_type in VERTEX_SURFACE_TYPES:
+    for object_type in _VERTEX_SURFACE_TYPES:
         if object_type not in doc:
             continue
-        for obj in doc.get_collection(object_type):
+        for obj in doc[object_type]:
             objects[(object_type, obj.name.upper())] = obj
 
     for resolved in scene.surfaces:
@@ -1024,8 +1020,8 @@ def translate_building(doc: AnyIDFDocument, offset: Vector3D) -> None:
         >>> wall.vertices[0].vertex_x_coordinate
         100.0
     """
-    for stype in VERTEX_SURFACE_TYPES:
-        for surface in doc.get_collection(stype):
+    for stype in _VERTEX_SURFACE_TYPES:
+        for surface in doc[stype]:
             coords = get_surface_coords(surface)
             if coords is not None:
                 set_surface_coords(surface, coords.translate(offset))
@@ -1047,8 +1043,8 @@ def rotate_building(doc: AnyIDFDocument, angle_deg: float, anchor: Vector3D | No
     if anchor is None:
         anchor = Vector3D.origin()
 
-    for stype in VERTEX_SURFACE_TYPES:
-        for surface in doc.get_collection(stype):
+    for stype in _VERTEX_SURFACE_TYPES:
+        for surface in doc[stype]:
             coords = get_surface_coords(surface)
             if coords is not None:
                 set_surface_coords(surface, coords.rotate_z(angle_deg, anchor=anchor))
