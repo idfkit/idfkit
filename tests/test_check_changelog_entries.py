@@ -128,3 +128,26 @@ def test_a_changelog_without_unreleased_fails(tmp_path: Path) -> None:
 
 def test_default_path_is_the_repository_changelog() -> None:
     assert gate.CHANGELOG == _REPO_ROOT / "CHANGELOG.md"
+
+
+@pytest.mark.parametrize(
+    ("body", "counts"),
+    [
+        (" - one space before the marker\n  continued\n", [2]),
+        ("- first\n - a sibling, not nested\n", [1, 1]),
+        ("- first\n  - nested\n", [2]),
+        ("- first\n#305 is text, not a heading\n", [2]),
+    ],
+    ids=["indented-top-level", "indented-sibling", "nested", "hash-text"],
+)
+def test_items_are_split_as_markdown_splits_them(body: str, counts: list[int]) -> None:
+    entries = gate.unreleased_entries(f"## [Unreleased]\n\n### Added\n\n{body}")
+    assert entries is not None
+    assert [len(e.lines) for e in entries] == counts
+
+
+def test_missing_heading_does_not_print_the_length_rule(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    path = tmp_path / "CHANGELOG.md"
+    path.write_text("# Changelog\n", encoding="utf-8")
+    assert gate.main([str(path)]) == 1
+    assert "Rule (CLAUDE.md" not in capsys.readouterr().err

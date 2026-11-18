@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `IDFCollection.add(name, **fields)` became the typed way to create an object:
-  `doc.zones.add("Office", ceiling_height=3.0)` returned a `Zone`, with field names, value types
-  and required fields checked by pyright and mypy for the document's release
+  `doc.zones.add("Office", ceiling_height=3.0)` returned a `Zone`, its fields type-checked for the
+  document's release and the schema's defaults and docs shown in signature help and hover
   ([#296](https://github.com/idfkit/idfkit/pull/296), [#297](https://github.com/idfkit/idfkit/pull/297)).
 - Extensible groups got `TypedDict` item types (`BuildingSurfaceDetailedVerticesItem`), so `add()`
   and `update()` type-checked the keys and values of `vertices=[{...}]`
@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   name, typed as the collection's class ([#284](https://github.com/idfkit/idfkit/pull/284)).
 - `validate_document` started warning (`W004`) about an `Output:Diagnostics`,
   `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable`
-  with no entries, which IDF cannot write ([#279](https://github.com/idfkit/idfkit/pull/279)).
+  with no (or only blank) entries, which IDF cannot write ([#279](https://github.com/idfkit/idfkit/pull/279)).
 
 ### Changed
 
@@ -70,12 +70,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   that lack it in a new `missing_in` field (JSON, SARIF); `to_version` became the earliest of them
   ([#300](https://github.com/idfkit/idfkit/pull/300)).
 - **Breaking:** `idfkit check` (exit status 2) and `idfkit migrate --to` refused a release idfkit
-  does not support instead of using the closest one ([#287](https://github.com/idfkit/idfkit/pull/287),
+  does not support, where `check` used the closest release and `migrate` the latest ([#287](https://github.com/idfkit/idfkit/pull/287),
   [ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
 - `idfkit check` continued past a file it could not parse, and `check_compatibility` gained
   `select`, `ignore`, `suppressions` and `package`, honouring suppression comments by default
   ([#287](https://github.com/idfkit/idfkit/pull/287)).
-- Type-checker errors for a misspelled object type or field named the mistake
+- Type-checker errors named the mistake for a misspelled object type or field
   (`_NotAFieldOfThisObjectType`), and mypy reported a bad `doc[...]` in one line instead of ~880
   ([#296](https://github.com/idfkit/idfkit/pull/296), [#302](https://github.com/idfkit/idfkit/pull/302)).
 - The `as_version` docs gained a warning that a tuple of release types must name the latest release
@@ -85,7 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking:** `IDFCollection.add(obj)` was deprecated and became a type error; it still ran,
   with a `DeprecationWarning`, but raised `TypeError` for fields passed beside the object, which it
-  used to drop. Use `doc.addidfobject(obj)` ([#296](https://github.com/idfkit/idfkit/pull/296)).
+  used to drop. Use `doc.addidfobject(obj)` ([#296](https://github.com/idfkit/idfkit/pull/296),
+  [#297](https://github.com/idfkit/idfkit/pull/297)).
 
 ### Fixed
 

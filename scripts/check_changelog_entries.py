@@ -18,6 +18,7 @@ Usage::
 
 from __future__ import annotations
 
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,6 +29,8 @@ CHANGELOG = Path(__file__).resolve().parent.parent / "CHANGELOG.md"
 UNRELEASED = "## [Unreleased]"
 
 BULLETS = ("- ", "* ", "+ ")
+
+HEADING = re.compile(r"#{1,6}(\s|$)")
 
 MAX_LINES = 5
 """Wrapped source lines an entry may span, the bullet line included."""
@@ -58,28 +61,35 @@ class Entry:
         return " ".join(part.strip() for part in self.lines if part.strip())
 
 
-def has_unreleased(text: str) -> bool:
-    """Whether a changelog has a ``## [Unreleased]`` heading."""
-    return any(line.startswith(UNRELEASED) for line in text.splitlines())
+def _starts_entry(line: str, in_entry: bool) -> bool:
+    """Whether ``line`` is a top-level bullet, as Markdown reads list items.
+
+    A bullet indented by up to three spaces is still top-level, except inside an entry, where two
+    or more spaces (the width of ``- ``) make it a nested bullet of that entry.
+    """
+    stripped = line.lstrip(" ")
+    indent = len(line) - len(stripped)
+    return stripped.startswith(BULLETS) and indent < (2 if in_entry else 4)
 
 
-def unreleased_entries(text: str) -> list[Entry]:
-    """Return the top-level bullets of the ``## [Unreleased]`` section of a changelog."""
+def unreleased_entries(text: str) -> list[Entry] | None:
+    """Return the top-level bullets of the ``## [Unreleased]`` section, or ``None`` with no such heading."""
     entries: list[Entry] = []
-    in_unreleased = False
+    found = in_unreleased = False
     current: Entry | None = None
     previous_blank = False
     for number, line in enumerate(text.splitlines(), start=1):
         if line.startswith("## "):
             in_unreleased = line.startswith(UNRELEASED)
+            found = found or in_unreleased
             current = None
             continue
         if not in_unreleased:
             continue
         blank = not line.strip()
-        if line.startswith("#"):
+        if HEADING.match(line):
             current = None
-        elif line.startswith(BULLETS):
+        elif _starts_entry(line, current is not None):
             current = Entry(number, [line])
             entries.append(current)
         elif current is not None and (blank or line[0] in " \t" or not previous_blank):
@@ -92,19 +102,25 @@ def unreleased_entries(text: str) -> list[Entry]:
     for entry in entries:
         while entry.lines and not entry.lines[-1].strip():
             entry.lines.pop()
-    return entries
+    return entries if found else None
+
+
+def missing_heading(path: Path) -> str:
+    """The message for a changelog with no ``## [Unreleased]`` heading."""
+    return f"{path}: no '{UNRELEASED}' heading; keep one at the top, empty if need be"
 
 
 def check(path: Path) -> list[str]:
     """Return one message per entry of ``path``'s ``[Unreleased]`` section that is over budget."""
-    text = path.read_text(encoding="utf-8")
-    if not has_unreleased(text):
-        return [f"{path}: no '{UNRELEASED}' heading; keep one at the top, empty if need be"]
+    entries = unreleased_entries(path.read_text(encoding="utf-8"))
+    if entries is None:
+        return [missing_heading(path)]
     problems: list[str] = []
-    for entry in unreleased_entries(text):
-        n_lines, n_chars = len(entry.lines), len(entry.text)
+    for entry in entries:
+        text = entry.text
+        n_lines, n_chars = len(entry.lines), len(text)
         if n_lines > MAX_LINES or n_chars > MAX_CHARS:
-            preview = entry.text[:80] + ("..." if n_chars > 80 else "")
+            preview = text[:80] + ("..." if n_chars > 80 else "")
             problems.append(
                 f"{path}:{entry.line}: entry is {n_lines} lines / {n_chars} chars "
                 f"(max {MAX_LINES} / {MAX_CHARS}): {preview}"
@@ -118,7 +134,9 @@ def main(argv: list[str]) -> int:
     problems = [problem for path in paths for problem in check(path)]
     if problems:
         print("\n".join(problems), file=sys.stderr)
-        print(f"\n{RULE}", file=sys.stderr)
+        headings = {missing_heading(path) for path in paths}
+        if any(problem not in headings for problem in problems):  # the rule is about length only
+            print(f"\n{RULE}", file=sys.stderr)
         return 1
     return 0
 
