@@ -105,13 +105,17 @@ def _types_by_folded_name(versions: tuple[tuple[int, int, int], ...]) -> dict[st
 def _passes_group_filter(literal: ExtractedLiteral, allowed_types: frozenset[str], all_types: dict[str, str]) -> bool:
     """Whether *literal* survives an active ``--group``/``--exclude-group`` filter.
 
-    A ``get_collection`` name that no target has belongs to no group, so a group filter cannot
-    exclude it: dropping it would hide exactly the misspelling ``C003`` exists to report.
+    A ``get_collection`` or ``add()`` name that no target has belongs to no group, so a group
+    filter cannot exclude it: dropping it would hide exactly the misspelling ``C003`` and ``C006``
+    exist to report.
     """
     ot = _literal_obj_type(literal)
     if ot is None or _contains_object_type_case_insensitive(ot, allowed_types):
         return True
-    return literal.call == "get_collection" and ot.casefold() not in all_types
+    reported_anyway = literal.call == "get_collection" or (
+        literal.in_idfkit_add and literal.kind == LiteralKind.OBJECT_TYPE
+    )
+    return reported_anyway and ot.casefold() not in all_types
 
 
 def check_compatibility(
@@ -131,7 +135,8 @@ def check_compatibility(
     Parses *source* via the AST (no code execution) and compares extracted
     string literals against the bundled epJSON schemas for the given
     *targets*, emitting a :class:`Diagnostic` for every object type or
-    choice value that does not exist in all target versions.
+    choice value that does not exist in all target versions, and (``C006``) for one passed to
+    ``add()`` that exists in none of them.
 
     A literal is checked only against the targets its code can run on: a lookup on
     ``as_version(doc, ...)`` or inside ``if doc.version >= (9, 4, 0):`` is checked against the
@@ -309,6 +314,16 @@ def _check_object_type(
 
     if literal.call == "get_collection":
         _check_get_collection(literal, indices, present_in, filename, out, scope=scope)
+    elif literal.in_idfkit_add and not present_in:
+        _report_add_literal(
+            literal,
+            f"Object type '{literal.value}' is not in any target version",
+            "add() raises UnknownObjectTypeError for it",
+            _closest(literal.value, list(_types_by_folded_name(tuple(sorted(scope))).values())),
+            filename,
+            out,
+            scope=scope,
+        )
 
     if not absent_in or not present_in:
         # Exists everywhere in scope, or in no target at all -- nothing more to report.
@@ -432,6 +447,31 @@ def _choices_of(index: SchemaIndex, obj_type: str, field_name: str) -> frozenset
     return choices
 
 
+def _choice_presence(
+    value: str,
+    obj_type: str,
+    field_name: str,
+    indices: dict[tuple[int, int, int], SchemaIndex],
+    scope: frozenset[tuple[int, int, int]],
+) -> tuple[list[tuple[int, int, int]], list[tuple[int, int, int]]]:
+    """The targets whose choices for the field list *value*, and those in *scope* that do not.
+
+    A target where the field has no choices (free text, or no such field) is in neither list.
+    Choices match case-insensitively, as EnergyPlus and ``add()`` match them.
+    """
+    present_in: list[tuple[int, int, int]] = []
+    absent_in: list[tuple[int, int, int]] = []
+    for version, index in indices.items():
+        choices = _choices_of(index, obj_type, field_name)
+        if choices is None:
+            continue
+        if value in choices or value.lower() in {c.lower() for c in choices}:
+            present_in.append(version)
+        elif version in scope:
+            absent_in.append(version)
+    return present_in, absent_in
+
+
 def _check_choice_value(
     literal: ExtractedLiteral,
     indices: dict[tuple[int, int, int], SchemaIndex],
@@ -448,24 +488,20 @@ def _check_choice_value(
     if obj_type is None or field_name is None:
         return
 
-    # Collect which versions have this field as an enum and include/exclude the value.
-    present_in: list[tuple[int, int, int]] = []
-    absent_in: list[tuple[int, int, int]] = []
+    present_in, absent_in = _choice_presence(literal.value, obj_type, field_name, indices, scope)
 
-    for version, index in indices.items():
-        choices = _choices_of(index, obj_type, field_name)
-        if choices is None:
-            # Field has no enum in this version -- not applicable; skip.
-            continue
-        if literal.value in choices:
-            present_in.append(version)
-        else:
-            # Case-insensitive fallback
-            choices_lower = {c.lower() for c in choices}
-            if literal.value.lower() in choices_lower:
-                present_in.append(version)
-            elif version in scope:
-                absent_in.append(version)
+    if not present_in and literal.in_idfkit_add and len(absent_in) == len(scope):
+        # Every target the code can run on lists the field's choices, and none lists this value.
+        _report_add_literal(
+            literal,
+            f"Choice value '{literal.value}' for {obj_type}.{field_name} is not in any target version",
+            "add() raises ValidationFailedError for it, and EnergyPlus rejects it",
+            _closest(literal.value, sorted(_choices_of(indices[max(scope)], obj_type, field_name) or ())),
+            filename,
+            out,
+            scope=scope,
+        )
+        return
 
     if not absent_in or not present_in:
         return
@@ -491,3 +527,44 @@ def _check_choice_value(
                 to_version=version_string(missing_version),
             )
         )
+
+
+def _closest(value: str, candidates: list[str]) -> str | None:
+    """The candidate closest to *value*, compared case-insensitively, or ``None`` if none is close."""
+    by_folded = {c.casefold(): c for c in candidates}
+    close = difflib.get_close_matches(value.casefold(), list(by_folded), n=1, cutoff=0.6)
+    return by_folded[close[0]] if close else None
+
+
+def _report_add_literal(
+    literal: ExtractedLiteral,
+    what: str,
+    consequence: str,
+    suggestion: str | None,
+    filename: str,
+    out: list[Diagnostic],
+    *,
+    scope: frozenset[tuple[int, int, int]],
+) -> None:
+    """Emit ``C006`` for a literal in an ``add()`` call that no target in *scope* accepts.
+
+    Unlike ``C001`` and ``C002``, which report a literal some targets accept and others do not,
+    this is wrong on every release the code can run on: the call fails when it runs. pyright does
+    not see it, as ``add()`` takes its type name and fields as plain strings; the typed
+    ``doc["Zone"].create(...)`` is checked by the type checker instead.
+    """
+    hint = f"; did you mean '{suggestion}'?" if suggestion else ""
+    out.append(
+        Diagnostic(
+            code="C006",
+            message=(f"{what} ({', '.join(version_string(v) for v in sorted(scope))}); {consequence}{hint}"),
+            severity=RULE_SEVERITIES["C006"],
+            filename=filename,
+            line=literal.line,
+            col=literal.col,
+            end_col=literal.end_col,
+            from_version=version_string(min(scope)),
+            to_version=version_string(max(scope)),
+            suggested_fix=f'"{suggestion}"' if suggestion else None,
+        )
+    )

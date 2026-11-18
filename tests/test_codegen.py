@@ -536,11 +536,17 @@ class TestGenerateStubs:
         # Zone's declaration changed between releases, so it derives from its shared base.
         assert "class Zone(AnyZone):" in content
         assert "class AnyZone(_TypedIDFObject):" in content
-        # The stub-only bases switch off the catch-all attribute access with a Never name.
+        # The stub-only bases switch off the catch-all attribute access with a Never name, spelled
+        # through an alias named for the mistake, which pyright prints in its message.
+        assert "_NotAFieldOfThisObjectType: TypeAlias = Never" in content
+        assert "_NotAFieldOfThisExtensibleGroup: TypeAlias = Never" in content
         assert "class _TypedIDFObject(IDFObject):" in content
-        assert "def __getattr__(self, key: Never) -> object: ..." in content
+        assert "def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ..." in content
         assert "class _TypedExtensibleGroup(ExtensibleGroup):" in content
-        assert "def __setattr__(self, name: Never, value: Never) -> None: ..." in content
+        assert (
+            "def __setattr__(self, name: _NotAFieldOfThisExtensibleGroup, value: _NotAFieldOfThisExtensibleGroup)"
+            " -> None: ..." in content
+        )
         # ReadOnly typed the entries of the TypedDict maps, which are gone; nothing else uses it.
         assert "from typing_extensions import Never, Unpack" in content
         # A trailing-underscore field is declared under both spellings the runtime accepts.

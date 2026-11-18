@@ -335,6 +335,8 @@ class _LiteralVisitor(ast.NodeVisitor):
         obj_type_value: str = first_arg.value
         receiver_text = self._receiver_text(receiver)
         releases = self._releases(receiver)
+        # idfkit's add() is called with a name, fields or both; set.add and its kin take one argument.
+        in_idfkit_add = self._has_idfkit_import and len(node.args) + len(node.keywords) > 1
 
         self.literals.append(
             ExtractedLiteral(
@@ -346,6 +348,7 @@ class _LiteralVisitor(ast.NodeVisitor):
                 call="add",
                 receiver=receiver_text,
                 releases=releases,
+                in_idfkit_add=in_idfkit_add,
             )
         )
 
@@ -363,6 +366,7 @@ class _LiteralVisitor(ast.NodeVisitor):
                         field_name=kw.arg,
                         receiver=receiver_text,
                         releases=releases,
+                        in_idfkit_add=in_idfkit_add,
                     )
                 )
 
@@ -395,6 +399,7 @@ class _LiteralVisitor(ast.NodeVisitor):
                             field_name=key_node.value,
                             receiver=receiver_text,
                             releases=releases,
+                            in_idfkit_add=in_idfkit_add,
                         )
                     )
 

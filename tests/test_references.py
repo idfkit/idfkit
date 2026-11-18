@@ -433,9 +433,10 @@ class TestCollectionReferencing:
         import pickle
 
         doc = self._model()
-        # A pickled collection carries only its own slots, so its state is the same as in idfkit
-        # releases before this method existed; check that stays so.
+        # A pickled collection carries only its own slots: those of idfkit releases before this
+        # method existed, and the document it creates objects in (IDFCollection.create), whose
+        # absence from an older pickle is tested in test_collection_create.py.
         state = doc["BuildingSurface:Detailed"].__reduce_ex__(2)[2]
-        assert set(state[1]) == {"_by_name", "_items", "_type"}
+        assert set(state[1]) == {"_by_name", "_items", "_type", "_document"}
         clone = pickle.loads(pickle.dumps(doc))  # noqa: S301
         assert len(clone["BuildingSurface:Detailed"].referencing("Office")) == 2

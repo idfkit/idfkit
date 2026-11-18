@@ -37,6 +37,9 @@ class ExtractedLiteral:
             ``None`` for a subscript.
         receiver: Source text of the object the method was called on or subscripted
             (``"doc"`` for ``doc.get_collection("Zone")`` and ``doc["Zone"]``), or ``None``.
+        in_idfkit_add: Whether the literal is an argument of a call that can only be idfkit's
+            ``add()``: the file imports idfkit and the call passes more than the object type
+            (``set.add`` and the like take one argument). Only such literals are reported as ``C006``.
         releases: The supported releases the literal's code can run against, when the code
             around it narrows the document (``as_version(doc, IDFDocumentV9_4)[...]``, or a lookup
             inside ``if doc.version >= (9, 4, 0):``); ``None`` when nothing narrows it.
@@ -52,6 +55,7 @@ class ExtractedLiteral:
     call: str | None = None
     receiver: str | None = None
     releases: frozenset[tuple[int, int, int]] | None = None
+    in_idfkit_add: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,6 +113,7 @@ DIAGNOSTIC_CODES: dict[str, str] = {
     "C003": "Object type passed to get_collection exists in none of the target versions",
     "C004": "Literal object type passed to get_collection, whose result is untyped; index the document instead",
     "C005": "Suppression comment that silences nothing, or names an unknown rule",
+    "C006": "Object type or choice value passed to add() that none of the target versions accepts",
 }
 
 RULE_SEVERITIES: dict[str, CompatSeverity] = {
@@ -117,10 +122,11 @@ RULE_SEVERITIES: dict[str, CompatSeverity] = {
     "C003": CompatSeverity.ERROR,
     "C004": CompatSeverity.WARNING,
     "C005": CompatSeverity.WARNING,
+    "C006": CompatSeverity.ERROR,
 }
 """The severity each rule reports at, keyed like :data:`DIAGNOSTIC_CODES`."""
 
-DEFAULT_RULES: frozenset[str] = frozenset({"C001", "C002", "C003", "C005"})
+DEFAULT_RULES: frozenset[str] = frozenset({"C001", "C002", "C003", "C005", "C006"})
 """The rules checked unless a selection says otherwise.
 
 ``C004`` is opt-in (``--extend-select C004``): it reports correct code that has a better-typed

@@ -43,6 +43,7 @@ save_idf(doc, "out.idf")
 | `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys: it returns an untyped `IDFCollection[IDFObject]` whatever the name. It delegates to `doc[obj_type]`; there is no behavioural difference. Use it when the name is a variable (`for t in TYPES: doc.get_collection(t)`); for a literal name write `doc["Zone"]`, which is typed and checked. |
 | `doc.<attr>` | Typed attribute accessor for any schema type: the `snake_case` plural (`doc.air_loop_hvacs` is `IDFCollection[AirLoopHVAC]`). Hand-written shorthands also resolve and keep their meaning (`doc.building_surfaces` → `BuildingSurface:Detailed`, `doc.ideal_loads` → `ZoneHVAC:IdealLoadsAirSystem`). A typo raises `AttributeError` naming the closest matches. |
 | `doc.add(obj_type, name="", **fields)` | Create and insert an object. Returns the new `IDFObject`. Leave `name` empty for a type without a Name field. |
+| `doc[obj_type].create(name="", **fields)`, `doc.<attr>.create(...)` | The typed form of `add()`: the same validated object, but the keywords are the type's own fields (checked by pyright and mypy) and the result is the type's class (`doc.zones.create("Office")` is a `Zone`). Always validates; use `add(..., validate=False)` for unvalidated bulk loading. |
 | `doc.rename(obj_type, old, new)` | Rename + cascade updates through every reference. |
 | `doc.removeidfobject(obj)` | Delete an object. |
 | `doc.copy()` | Independent deep copy that shares the schema and keeps the preserved formatting of a `preserve_formatting=True` read. The fast way to make an in-process variant. |
@@ -71,6 +72,34 @@ material = doc.add(
 Some types have no Name field: `Output:Meter`, `Output:Variable`, `Output:SQLite`, `Timestep`, `SimulationControl`, `GlobalGeometryRules` and about 160 more. Their first field is a normal field, so pass it by its schema name, never as `name`: `doc.add("Output:Meter", key_name="Electricity:Facility")`, `doc.add("Output:SQLite", option_type="SimpleAndTabular")`. A non-empty name on one of these types raises `InvalidFieldError` naming the field to use, in `add()` (with or without `validate`), on `obj.name = ...` and in the eppy-style `newidfobject`/`copyidfobject`/`addidfobject`, because both writers would drop it. `doc.describe(obj_type).has_name` and `schema.has_name(obj_type)` tell you which kind a type is, and `describe(...).fields` lists the first field of a nameless type (`key_name` for `Output:Meter`). `Output:Table:ReportPeriod` is one of them up to 25.1 (its first field is `name_`) and has a Name field from 25.2.
 
 A keyword that is not a field of the type is refused, never stored, whatever its value: `add()` raises `ValidationFailedError` (code `W003`) by default, and `InvalidFieldError` naming every such key with `validate=False`, which skips value checks but not field names. That includes a spelling an extensible type does not have (`report_1=` on `Output:Table:SummaryReports`; the group is `reports=[{"report_name": ...}]`), a display spelling (`"X Origin"`; use `x_origin`), and `name` passed inside `fields` (pass it as the `name` argument). The groups are checked too, in both modes: a group key the group does not name, or a wrapper value that is not a list of dicts, raises `TypeError`, as `update()` does. Pass a copy of another object's groups (`vertices=wall.vertices.as_list()`), not the live view. `FenestrationSurface:Detailed` has fixed `vertex_N_x_coordinate` fields, not a `vertices` list.
+
+### Typed creation with `create()`
+
+`add()` takes the type name and fields as strings, so a type checker checks neither: `doc.add("Zone", "Lab", ceiling_hieght=3.0)` type-checks and fails only when it runs, and the result is a plain `IDFObject`. In type-checked code, create through the collection instead:
+
+```python
+# Through the collection: the keywords are the type's own fields, checked by the type checker,
+# and the result is the type's class (Zone, Material, ...), not a plain IDFObject.
+office_zone = doc.zones.create("Office", x_origin=0.0, ceiling_height=3.0)
+office_zone.multiplier = 2  # typed: an int, checked on assignment
+
+insulation = doc["Material"].create(
+    "XPS_25mm",
+    roughness="Rough",
+    thickness=0.025,
+    conductivity=0.034,
+    density=35.0,
+    specific_heat=1400.0,
+)
+doc["Output:SQLite"].create(option_type="SimpleAndTabular")  # a type without a Name field: no name
+
+# doc.zones.create("Lab", ceiling_hieght=3.0)                       # error: No parameter named "ceiling_hieght"
+# doc.zones.create("Lab", zone_inside_convection_algorithm="Tarp")  # error: not one of the field's choices
+```
+
+`create()` runs `add()` with validation on, so behaviour, validation errors and reference indexing are the same; the difference is the types. Its keywords are those of the class's `update()`, so they follow the document's type: through `IDFDocumentV9_4` the fields are 9.4's, and through `AnyIDFDocument` only fields and values every release accepts. The name is positional and optional (empty for a type without a Name field); fields are keywords only. A type with no objects yet is read as an empty collection that is not stored in the document, and creating through it stores it, so `zones = doc.zones; zones.create("A")` leaves the zone in `zones`.
+
+Prefer the attribute accessor (`doc.zones`, `doc.output_variables`) or a collection held in a variable when creating many objects in one function: a type checker resolves `doc["Output:Variable"]` through one overload per object type, which costs time for a type listed late in the schema, while an accessor and `create()` itself cost the same for every type.
 
 ## Looking up objects
 
@@ -312,18 +341,6 @@ At run time `"Space" in doc` is true when the model holds at least one `Space`. 
 - On a union from `as_version(doc, (A, B, C))`, neither branch of `"Space" in d` drops a member.
 
 ```python
-from idfkit.versioned import (
-    IDFDocumentV22_2,
-    IDFDocumentV23_1,
-    IDFDocumentV23_2,
-    IDFDocumentV24_1,
-    IDFDocumentV24_2,
-    IDFDocumentV25_1,
-    IDFDocumentV25_2,
-    IDFDocumentV26_1,
-)
-
-
 def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
     """Add Output:SQLite unless the model already holds one.
 
@@ -334,25 +351,15 @@ def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
         doc.add("Output:SQLite", option_type="SimpleAndTabular")
 
 
-# Space arrived in 9.6 and its ceiling_height field in 22.2.
-SINCE_22_2 = (
-    IDFDocumentV22_2,
-    IDFDocumentV23_1,
-    IDFDocumentV23_2,
-    IDFDocumentV24_1,
-    IDFDocumentV24_2,
-    IDFDocumentV25_1,
-    IDFDocumentV25_2,
-    IDFDocumentV26_1,
-    IDFDocument,
-)
-
-
 def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:
-    """Branch on the release, not on "Space" in doc, then narrow with as_version."""
+    """Branch on the release, not on "Space" in doc, then narrow with as_version.
+
+    Space arrived in 9.6 and its ceiling_height field in 22.2. since="22.2" is every release from
+    22.2 on, and grows when idfkit adopts a new one; a hand-written tuple of release types would not.
+    """
     if doc.version < (22, 2, 0):
         return
-    for space in as_version(doc, SINCE_22_2)["Space"]:
+    for space in as_version(doc, since="22.2")["Space"]:
         space.ceiling_height = height
 
 
@@ -364,8 +371,8 @@ Up to idfkit 1.3.0rc1, the document types were `TypedDict` subclasses to pyright
 
 They catch different mistakes, so code meant for several releases should run both:
 
-- **pyright** (or Pylance, mypy) checks *types*: release-typed lookups (`legacy["Space"]`), attribute reads and assignments (`heater.heater_fuel_type = "Steam"`), `update()` keywords. It cannot see into string-keyed calls: `doc.add("Space", ...)` and its keyword values are untyped.
-- **`idfkit check`** lints *string literals* in Python source against the releases you name, with no annotations needed: object type names (rule `C001`, e.g. `doc.add("Space", ...)`, `legacy["Space"]`, `doc.get_collection("Space")`) and choice values in calls (rule `C002`, e.g. `add(..., heater_fuel_type="DistrictHeating")`). It does not check attribute assignments.
+- **pyright** (or Pylance, mypy) checks *types*: release-typed lookups (`legacy["Space"]`), attribute reads and assignments (`heater.heater_fuel_type = "Steam"`), `update()` and `create()` keywords. It cannot see into string-keyed calls: `doc.add("Space", ...)` and its keyword values are untyped, which is why `doc.spaces.create(...)` is the form to use in type-checked code. A misspelled field is reported against `_NotAFieldOfThisObjectType` (`Argument of type "Literal['ceiling_hieght']" cannot be assigned to parameter "key" of type "_NotAFieldOfThisObjectType"`), or as `No parameter named "ceiling_hieght"` in a `create()` or `update()` call.
+- **`idfkit check`** lints *string literals* in Python source against the releases you name, with no annotations needed: object type names (rule `C001`, e.g. `doc.add("Space", ...)`, `legacy["Space"]`, `doc.get_collection("Space")`) and choice values in calls (rule `C002`, e.g. `add(..., heater_fuel_type="DistrictHeating")`). An object type or choice value passed to `add()` that no target release accepts, which `add()` raises on, is an error (rule `C006`, with the closest real name: `doc.add("Zoen", "Office")`, `doc.add("Zone", "A", zone_inside_convection_algorithm="Bogus")`); it is read only in a file that imports idfkit, in an `add()` call given more than the type name, so `set.add("x")` is not mistaken for one. It does not check attribute assignments or misspelled keyword names (use `create()`, which pyright checks).
 - **`get_collection` with a literal name is for `idfkit check`, not pyright.** pyright types it as `IDFCollection[IDFObject]` whatever the name, and checks nothing. `idfkit check`, in a file that imports idfkit, reports a name no target release has (rule `C003`, an error, with the closest real name: at run time a misspelled `get_collection("Zoen")` silently returns an empty collection). The opt-in rule `C004` (`--extend-select C004`) also reports every other literal name, suggesting `doc["Zone"]`, which is typed and which pyright checks. Variable names (`doc.get_collection(t)`) are not reported.
 - Neither checks item access on an object (`obj["field"]`).
 
@@ -407,7 +414,7 @@ zone.ceiling_height = 3.5  # plain field
 zone.direction_of_relative_north = 90.0
 ```
 
-Dict-style access also works and accepts either Python or IDD field names — `zone["x_origin"]`, `zone["X Origin"]`, and `zone.x_origin` are all equivalent. Attribute access is the idiomatic form (better IDE autocomplete and type checking). A typed object, such as one from `doc["Lights"]` or `doc.lights`, declares the EnergyPlus 26.2 snake_case names only, and pyright reports any other attribute name, read or assigned. That includes an eppy-style capitalised spelling (`lights.Watts_per_Zone_Floor_Area`) and a field that exists only in an earlier version (`Lights.watts_per_zone_floor_area`, up to 23.2). Both still work at run time; in type-checked code, reach a field missing from 26.2 with item access (`lights["watts_per_zone_floor_area"]`). Objects from `doc.add()`, `doc.get_collection()` and the eppy API are plain `IDFObject` and accept any name. A few epJSON keys end in `_` because their IDD name ends in punctuation or a space (`cond_flag_is_the_basement_conditioned_`, `nx_number_of_cells_in_the_x_direction_20_`). At runtime the spelling without the underscore works too, in `add()`, attribute access and `update()`, and is stored under the schema's key; `name` is never such a spelling. The typed `update()` stubs name only the schema's key, so use that key in type-checked code.
+Dict-style access also works and accepts either Python or IDD field names — `zone["x_origin"]`, `zone["X Origin"]`, and `zone.x_origin` are all equivalent. Attribute access is the idiomatic form (better IDE autocomplete and type checking). A typed object, such as one from `doc["Lights"]` or `doc.lights`, declares the EnergyPlus 26.2 snake_case names only, and pyright reports any other attribute name, read or assigned. That includes an eppy-style capitalised spelling (`lights.Watts_per_Zone_Floor_Area`) and a field that exists only in an earlier version (`Lights.watts_per_zone_floor_area`, up to 23.2). Both still work at run time; in type-checked code, reach a field missing from 26.2 with item access (`lights["watts_per_zone_floor_area"]`). Objects from `doc.add()`, `doc.get_collection()` and the eppy API are plain `IDFObject` and accept any name; `create()` returns the typed class. A few epJSON keys end in `_` because their IDD name ends in punctuation or a space (`cond_flag_is_the_basement_conditioned_`, `nx_number_of_cells_in_the_x_direction_20_`). At runtime the spelling without the underscore works too, in `add()`, attribute access and `update()`, and is stored under the schema's key; `name` is never such a spelling. The typed `update()` stubs name only the schema's key, so use that key in type-checked code.
 
 Renaming uses `doc.rename()` (or `obj.name = "new"`) so the reference graph cascades the change:
 
@@ -465,18 +472,6 @@ for obj in doc.all_objects:
 !!! success "branch on the release, then narrow"
 
     ```python
-    from idfkit.versioned import (
-        IDFDocumentV22_2,
-        IDFDocumentV23_1,
-        IDFDocumentV23_2,
-        IDFDocumentV24_1,
-        IDFDocumentV24_2,
-        IDFDocumentV25_1,
-        IDFDocumentV25_2,
-        IDFDocumentV26_1,
-    )
-
-
     def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
         """Add Output:SQLite unless the model already holds one.
 
@@ -487,25 +482,15 @@ for obj in doc.all_objects:
             doc.add("Output:SQLite", option_type="SimpleAndTabular")
 
 
-    # Space arrived in 9.6 and its ceiling_height field in 22.2.
-    SINCE_22_2 = (
-        IDFDocumentV22_2,
-        IDFDocumentV23_1,
-        IDFDocumentV23_2,
-        IDFDocumentV24_1,
-        IDFDocumentV24_2,
-        IDFDocumentV25_1,
-        IDFDocumentV25_2,
-        IDFDocumentV26_1,
-        IDFDocument,
-    )
-
-
     def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:
-        """Branch on the release, not on "Space" in doc, then narrow with as_version."""
+        """Branch on the release, not on "Space" in doc, then narrow with as_version.
+
+        Space arrived in 9.6 and its ceiling_height field in 22.2. since="22.2" is every release from
+        22.2 on, and grows when idfkit adopts a new one; a hand-written tuple of release types would not.
+        """
         if doc.version < (22, 2, 0):
             return
-        for space in as_version(doc, SINCE_22_2)["Space"]:
+        for space in as_version(doc, since="22.2")["Space"]:
             space.ceiling_height = height
 
 

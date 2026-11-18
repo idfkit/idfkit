@@ -28,8 +28,29 @@ __all__ = [
 ]
 
 if TYPE_CHECKING:
+    from typing import ParamSpec, Protocol
+
     from .document import AnyIDFDocument
     from .schema import ParsingCache
+
+    _P = ParamSpec("_P")
+
+    class _Creatable(Protocol[_P]):
+        """An object class whose ``update()`` keywords are typed, as every generated class's are.
+
+        ``IDFCollection.create`` takes its keywords from this signature, so a collection typed
+        ``IDFCollection[Zone]`` accepts exactly ``Zone.update``'s fields and value types. The
+        signature is read from the class the collection is already typed with: no overload is
+        resolved, so a call costs a type checker the same whatever the object type.
+        """
+
+        def update(self, values: Mapping[str, Any] | None = ..., /, *args: _P.args, **kwargs: _P.kwargs) -> None: ...
+
+    class _ObjectFactory(Protocol):
+        """The document a collection creates its objects through (``IDFDocument``)."""
+
+        def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject: ...
+
 
 # Field name conversion patterns
 _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
@@ -1307,16 +1328,34 @@ class IDFCollection(Generic[_T_co]):
         _items: Ordered list of objects
     """
 
-    __slots__ = ("_by_name", "_items", "_type")
+    __slots__ = ("_by_name", "_document", "_items", "_type")
 
     _type: str
     _by_name: dict[str, _T_co]
     _items: list[_T_co]
+    _document: _ObjectFactory | None
 
-    def __init__(self, obj_type: str) -> None:
+    def __init__(self, obj_type: str, document: _ObjectFactory | None = None) -> None:
         self._type = obj_type
         self._by_name: dict[str, _T_co] = {}
         self._items: list[_T_co] = []
+        self._document = document
+
+    def __setstate__(self, state: Any) -> None:
+        """Restore a pickled or deep-copied collection.
+
+        A collection pickled before ``_document`` existed has no such slot in its state. It takes
+        the document of the objects it holds, which pickle has restored by now, so ``create()``
+        works on it as on a collection of this release. An empty one has nothing to take it from
+        and is restored with none (``create()`` then says to use ``IDFDocument.add``).
+        """
+        slots = cast("dict[str, Any]", (state[1] if isinstance(state, tuple) else state) or {})
+        for key, value in slots.items():
+            object.__setattr__(self, key, value)
+        if "_document" not in slots:
+            items = cast("list[IDFObject]", slots.get("_items") or [])
+            document = items[0]._document if items else None  # pyright: ignore[reportPrivateUsage]
+            object.__setattr__(self, "_document", document)
 
     @property
     def obj_type(self) -> str:
@@ -1351,6 +1390,79 @@ class IDFCollection(Generic[_T_co]):
             self._by_name[key] = obj
         self._items.append(obj)
         return obj
+
+    # The self type names only what create() reads from the element class, its typed update()
+    # signature; Python has no intersection type to also say the element is an IDFObject, which every
+    # collection's element already is. The bound is checked where it matters, on IDFCollection[X].
+    def create(
+        self: IDFCollection[_Creatable[_P]],  # pyright: ignore[reportInvalidTypeArguments]
+        name: str = "",
+        /,
+        *args: _P.args,
+        **fields: _P.kwargs,
+    ) -> _T_co:
+        """Create an object of this collection's type and add it to the document.
+
+        The typed form of [IDFDocument.add][idfkit.document.IDFDocument.add]: the same object,
+        validated and indexed the same way, but the keywords are the object type's own fields,
+        checked by the type checker, and the result is the collection's object class.
+        ``doc["Zone"].create("Office", ceiling_height=3.0)`` returns a ``Zone``, and a misspelled
+        field (``ceiling_hieght=``) or a value the field does not accept
+        (``zone_inside_convection_algorithm="Tarp"``) is a type error, as it is on assignment.
+        Through a document narrowed to a release (``IDFDocumentV9_4``) the fields are that
+        release's, and through ``AnyIDFDocument`` only those every release accepts.
+
+        The object is always validated, as ``add()`` validates by default; for unvalidated bulk
+        loading use ``add(..., validate=False)``. Fields are passed by keyword only; extensible
+        groups go under their wrapper key (``vertices=[{...}, ...]``), as with ``add()``.
+
+        A type with no objects yet is read as an empty collection that is not stored in the
+        document (reading never adds to it). Creating through such a collection stores it, so it
+        holds the new object: ``zones = doc["Zone"]; zones.create("A")`` leaves ``"A"`` in
+        ``zones``. If the type was stored meanwhile through another path, the object goes to the
+        document's collection.
+
+        Args:
+            name: The object's name; leave it empty for a type without a Name field
+                (``doc["Output:SQLite"].create(option_type="SimpleAndTabular")``).
+            **fields: Field values, by their Python field names.
+
+        Returns:
+            The new object, typed as this collection's objects.
+
+        Raises:
+            TypeError: If the collection belongs to no document (one constructed directly), or a
+                field is passed positionally.
+            UnknownObjectTypeError: If the collection's type is in no schema
+                (``doc.get_collection("Zoen")``).
+            ValidationFailedError: If validation fails (unknown fields, missing required fields,
+                invalid values).
+            DuplicateObjectError: If an object of the type already has the name, or the type is
+                a singleton that already has one.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> office = model["Zone"].create("Office", ceiling_height=3.0)
+            >>> office.ceiling_height
+            3.0
+            >>> model.zones.create("Lab").name
+            'Lab'
+            >>> [zone.name for zone in model["Zone"]]
+            ['Office', 'Lab']
+        """
+        document = self._document
+        if document is None:
+            msg = (
+                f"IDFCollection({self._type}) belongs to no document (constructed directly, or an empty "
+                "collection unpickled from an idfkit release before create() existed); use IDFDocument.add"
+            )
+            raise TypeError(msg)
+        if args:
+            msg = f"create() takes 1 positional argument (the name) but {len(args) + 1} were given; pass fields by keyword"
+            raise TypeError(msg)
+        obj = document._create_in(self, name, fields)  # pyright: ignore[reportPrivateUsage]
+        return cast("_T_co", obj)
 
     def remove(self, obj: IDFObject) -> None:
         """Remove an object from the collection."""
