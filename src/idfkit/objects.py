@@ -806,9 +806,11 @@ class IDFObject(EppyObjectMixin):
                 )
 
         # A field every release requires reads as its value type: absent, it is an error rather
-        # than a None its type says cannot occur. Only the miss path pays for the lookup.
-        if python_key in READ_REQUIRED.get(self._type, ()):
-            raise MissingRequiredFieldError(self._type, self._name, python_key)
+        # than a None its type says cannot occur. Only the miss path pays for the lookup, and the
+        # type is tested first: most types require nothing, and that test is the cheaper one.
+        obj_type = self._type
+        if obj_type in READ_REQUIRED and python_key in READ_REQUIRED[obj_type]:
+            raise MissingRequiredFieldError(obj_type, self._name, python_key)
 
         # Default: return None (eppy behaviour)
         return None
