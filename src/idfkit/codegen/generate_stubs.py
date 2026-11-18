@@ -2261,6 +2261,16 @@ def _range_alias(kind: str, ver: Version) -> str:
     return f"IDFDocument{kind}{_version_tag(ver)}"
 
 
+def _release_class(ver: Version, latest: Version) -> str:
+    """The stub's name for *ver*'s document type: ``IDFDocument`` for the latest release."""
+    return "IDFDocument" if ver == latest else _document_class_name(ver)
+
+
+def _release_union(members: list[Version], latest: Version) -> str:
+    """The union of *members*' document types, as the stub writes it."""
+    return " | ".join(_release_class(ver, latest) for ver in members)
+
+
 def _range_typing(versions: list[Version]) -> tuple[list[str], list[str]]:
     """The stub's range aliases, and the ``as_version`` overloads for ``since=`` and ``before=``.
 
@@ -2273,11 +2283,8 @@ def _range_typing(versions: list[Version]) -> tuple[list[str], list[str]]:
     """
     latest = versions[-1]
 
-    def cls(ver: Version) -> str:
-        return "IDFDocument" if ver == latest else _document_class_name(ver)
-
     def union(members: list[Version]) -> str:
-        return " | ".join(cls(ver) for ver in members)
+        return _release_union(members, latest)
 
     aliases: list[str] = [
         "# Ranges of releases: a type to annotate with, and the as_version overloads that narrow to one.",
@@ -2311,14 +2318,11 @@ def _range_targets(versions: list[Version]) -> list[tuple[str, str]]:
     """
     latest = versions[-1]
 
-    def cls(ver: Version) -> str:
-        return "IDFDocument" if ver == latest else _document_class_name(ver)
-
     def union(members: list[Version]) -> str:
-        return " | ".join(cls(ver) for ver in members)
+        return _release_union(members, latest)
 
     def bound(ver: Version) -> str:
-        return f'type[{cls(ver)}] | Literal["{ver[0]}.{ver[1]}", "{version_string(ver)}"]'
+        return f'type[{_release_class(ver, latest)}] | Literal["{ver[0]}.{ver[1]}", "{version_string(ver)}"]'
 
     targets = [(f"since: {bound(ver)}", _range_alias("Since", ver)) for ver in versions]
     targets += [(f"before: {bound(ver)}", _range_alias("Before", ver)) for ver in versions[1:]]
@@ -2385,7 +2389,8 @@ def generate_loaders_pyi(docstrings: Mapping[str, str] | None = None) -> str:
     Each loader takes the targets ``as_version`` takes, so it carries the same range overloads,
     written out for the releases this idfkit supports. In order: no target (two overloads, for
     ``strict=True`` and ``strict=False``) returns ``AnyIDFDocument``; ``as_type=`` a document type
-    or a tuple of them returns that type; then every range, from :func:`_range_targets`. A loader
+    or a tuple of them returns that type; then every range, from :func:`_range_targets`. The
+    no-target overloads take ``None`` for each target, as the run time does. A loader
     called with no target matches the first overloads, so a plain ``load_idf(path)`` costs a type
     checker no more than before.
 
@@ -2405,6 +2410,8 @@ def generate_loaders_pyi(docstrings: Mapping[str, str] | None = None) -> str:
     lead = "path: Path | str, version: tuple[int, int, int] | None = ..., *"
     lines = [
         _LOADERS_DOC,
+        "",
+        "from __future__ import annotations",
         "",
         "from pathlib import Path",
         "from typing import Literal, TypeVar, overload",
@@ -2436,11 +2443,15 @@ def generate_loaders_pyi(docstrings: Mapping[str, str] | None = None) -> str:
         if doc is None:
             msg = f"_loaders.py has no docstring for {loader.name}"
             raise ValueError(msg)
+        # The targets default to None, and a caller may pass None (a wrapper forwarding an optional one).
+        untargeted = "as_type: None = ..., since: None = ..., before: None = ..., "
         lines += [
             "@overload",
-            *_format_def_with_doc(define(keywords("Literal[True] = ..."), "AnyIDFDocument[Literal[True]]"), doc),
+            *_format_def_with_doc(
+                define(untargeted + keywords("Literal[True] = ..."), "AnyIDFDocument[Literal[True]]"), doc
+            ),
             "@overload",
-            f"{define(keywords('Literal[False]'), 'AnyIDFDocument[Literal[False]]')}: ...",
+            f"{define(untargeted + keywords('Literal[False]'), 'AnyIDFDocument[Literal[False]]')}: ...",
             "@overload",
             f"{define('as_type: type[_D], ' + keywords('bool = ...'), '_D')}: ...",
             "@overload",

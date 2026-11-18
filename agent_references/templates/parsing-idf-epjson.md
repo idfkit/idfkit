@@ -81,7 +81,7 @@ A type checker cannot read the file, so a loaded document is typed as `AnyIDFDoc
 --8<-- "agent_references/snippets/parsing-idf-epjson.py:stated-release"
 ```
 
-`as_type=` takes what `as_version` takes: a release's type from `idfkit.versioned` or a tuple of them; `since=` and `before=` take a release number, its type or a version tuple. The positional `version=` is different: it overrides the release the file is read as, and does not type the document. For a document already loaded, `as_version(doc, IDFDocumentV9_4)` does the same check; see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md).
+`as_type=` takes what `as_version` takes: a release's type from `idfkit.versioned` or a tuple of them, whose type argument states the strictness as for `new_document` (`as_type=IDFDocumentV9_4[Literal[False]]` loads a non-strict document); `since=` and `before=` take a release number, its type or a version tuple. The positional `version=` is different: it overrides the release the file is read as, and does not type the document. For a document already loaded, `as_version(doc, IDFDocumentV9_4)` does the same check; see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md).
 
 ## Lossless round-trips
 

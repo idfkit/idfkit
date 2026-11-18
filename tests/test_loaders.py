@@ -102,10 +102,29 @@ class TestAsType:
         with pytest.raises(TypeError, match=r"not one of 9\.6\.0, 26\.1\.0"):
             load(_model(tmp_path, suffix), as_type=(versioned.IDFDocumentV9_6, versioned.IDFDocumentV26_1))
 
-    def test_the_type_argument_does_not_change_strictness(self, tmp_path: Path) -> None:
-        path = _model(tmp_path, "idf")
-        assert load_idf(path, as_type=versioned.IDFDocumentV9_4[Literal[False]], strict=False).strict is False
-        assert load_idf(path, as_type=versioned.IDFDocumentV9_4).strict is True
+    def test_the_type_argument_states_the_strictness(self, tmp_path: Path, loader: tuple[_Loader, str]) -> None:
+        # The type and the document's strict cannot disagree, as for new_document.
+        load, suffix = loader
+        path = _model(tmp_path, suffix)
+        assert load(path, as_type=versioned.IDFDocumentV9_4[Literal[False]]).strict is False
+        assert load(path, as_type=versioned.IDFDocumentV9_4[Literal[True]]).strict is True
+        assert load(path, as_type=versioned.IDFDocumentV9_4).strict is True
+        assert load(path, as_type=versioned.IDFDocumentV9_4, strict=False).strict is False
+        assert (
+            load(path, as_type=(versioned.IDFDocumentV9_4[Literal[False]], versioned.IDFDocumentV26_1)).strict is False
+        )
+
+    def test_refuses_a_strictness_that_contradicts_the_type(self, tmp_path: Path, loader: tuple[_Loader, str]) -> None:
+        load, _ = loader
+        with pytest.raises(TypeError, match="strict=False contradicts the document type"):
+            load(tmp_path / "missing", as_type=versioned.IDFDocumentV9_4[Literal[True]], strict=False)
+        mixed = (versioned.IDFDocumentV9_4[Literal[True]], versioned.IDFDocumentV26_1[Literal[False]])
+        with pytest.raises(TypeError, match="states both strict and non-strict"):
+            load(tmp_path / "missing", as_type=mixed)
+
+    def test_none_is_no_target(self, tmp_path: Path, loader: tuple[_Loader, str]) -> None:
+        load, suffix = loader
+        assert load(_model(tmp_path, suffix), as_type=None, since=None, before=None).version == _V94
 
     def test_is_checked_against_the_version_override(self, tmp_path: Path) -> None:
         # A file with no Version object is read as the release the override names.

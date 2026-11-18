@@ -12,7 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ._document_types import as_version, check_target
+from ._document_types import as_version, check_target, target_strictness
 from .epjson_parser import parse_epjson
 from .exceptions import UnsupportedVersionError
 from .idf_parser import ParseResult, parse_idf
@@ -71,11 +71,13 @@ def load_idf(
 
     Args:
         path: Path to the IDF file
-        version: Optional version override (major, minor, patch): the file is read as this
-            release, whatever its ``Version`` object says.
+        version: Optional version override (major, minor, patch): the release whose schema the
+            file is read with. A ``Version`` object in the file still sets ``doc.version``, and
+            that is what ``as_type=``, ``since=`` and ``before=`` are checked against.
         as_type: The document type of the release the file must be, such as ``IDFDocumentV9_4``
             from :mod:`idfkit.versioned`, or a tuple of them. The document is returned typed as
-            it, or as the union of the tuple's types.
+            it, or as the union of the tuple's types. A type argument states the strictness:
+            ``IDFDocumentV9_4[Literal[False]]`` loads a non-strict document, as ``strict=False`` does.
         since: The first release of a range the file must be in: its document type,
             ``"major.minor"`` or a version tuple. The document is typed as the union of the
             range's releases.
@@ -96,7 +98,8 @@ def load_idf(
     Raises:
         TypeError: If the file's release is not the one ``as_type=`` names or is outside the
             ``since=``/``before=`` range; or, before the file is read, if both ``as_type=`` and a
-            range are given, or ``as_type=`` is not a document type.
+            range are given, ``as_type=`` is not a document type, or its type argument states a
+            strict document while ``strict=False``.
         ValueError: Before the file is read, if ``since=`` or ``before=`` names no supported
             release, or the range holds none.
 
@@ -134,6 +137,7 @@ def load_idf(
             ```
     """
     check_target(as_type, since, before)
+    strict = target_strictness(as_type, strict)
     if version is not None:
         check_supported_version(version)
     doc = parse_idf(
@@ -216,6 +220,7 @@ def load_idf_with_diagnostics(
     from .idf_parser import parse_idf_with_diagnostics
 
     check_target(as_type, since, before)
+    strict = target_strictness(as_type, strict)
     if version is not None:
         check_supported_version(version)
     result = parse_idf_with_diagnostics(
@@ -291,6 +296,7 @@ def load_epjson(
             ```
     """
     check_target(as_type, since, before)
+    strict = target_strictness(as_type, strict)
     if version is not None:
         check_supported_version(version)
     doc = parse_epjson(Path(path), version=version, strict=strict, preserve_formatting=preserve_formatting)

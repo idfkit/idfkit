@@ -171,13 +171,33 @@ def release_for_new_document(document_type: object, strict: bool) -> tuple[tuple
     if "_energyplus_version" not in vars(origin):
         msg = f"{origin.__name__} is a subclass of a release type; pass a release's type from idfkit.versioned"
         raise TypeError(msg)
-    stated = _stated_strictness(document_type)
-    if stated is None:
-        return release, strict
-    if stated and not strict:
+    return release, target_strictness(document_type, strict)
+
+
+def target_strictness(document_type: object, strict: bool) -> bool:
+    """The strictness of a document typed as *document_type*: the one its type argument states, else *strict*.
+
+    ``IDFDocumentV9_4[Literal[False]]`` states ``False``. For a tuple or union, its members' stated
+    strictness, which must agree. What :func:`idfkit.new_document` and the loaders' ``as_type=`` create
+    the document with, so that the type and the document's ``strict`` cannot disagree.
+
+    Raises:
+        TypeError: If the stated strictness is ``True`` and *strict* is ``False``, or the members of a
+            tuple or union state different strictness.
+    """
+    if document_type is None:
+        return strict
+    stated = {value for candidate in _candidates(document_type) if (value := _stated_strictness(candidate)) is not None}
+    if not stated:
+        return strict
+    if len(stated) > 1:
+        msg = f"{document_type!r} states both strict and non-strict documents; state one strictness"
+        raise TypeError(msg)
+    value = stated.pop()
+    if value and not strict:
         msg = f"strict=False contradicts the document type {document_type!r}; pass the type alone"
         raise TypeError(msg)
-    return release, stated
+    return value
 
 
 def _stated_strictness(document_type: object) -> bool | None:

@@ -9,6 +9,8 @@ DO NOT EDIT — regenerate with:
     python -m idfkit.codegen.generate_stubs
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Literal, TypeVar, overload
 
@@ -79,6 +81,9 @@ def load_idf(
     path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
+    as_type: None = ...,
+    since: None = ...,
+    before: None = ...,
     strict_parsing: bool = ...,
     strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
@@ -93,11 +98,13 @@ def load_idf(
 
     Args:
         path: Path to the IDF file
-        version: Optional version override (major, minor, patch): the file is read as this
-            release, whatever its ``Version`` object says.
+        version: Optional version override (major, minor, patch): the release whose schema the
+            file is read with. A ``Version`` object in the file still sets ``doc.version``, and
+            that is what ``as_type=``, ``since=`` and ``before=`` are checked against.
         as_type: The document type of the release the file must be, such as ``IDFDocumentV9_4``
             from :mod:`idfkit.versioned`, or a tuple of them. The document is returned typed as
-            it, or as the union of the tuple's types.
+            it, or as the union of the tuple's types. A type argument states the strictness:
+            ``IDFDocumentV9_4[Literal[False]]`` loads a non-strict document, as ``strict=False`` does.
         since: The first release of a range the file must be in: its document type,
             ``"major.minor"`` or a version tuple. The document is typed as the union of the
             range's releases.
@@ -118,7 +125,8 @@ def load_idf(
     Raises:
         TypeError: If the file's release is not the one ``as_type=`` names or is outside the
             ``since=``/``before=`` range; or, before the file is read, if both ``as_type=`` and a
-            range are given, or ``as_type=`` is not a document type.
+            range are given, ``as_type=`` is not a document type, or its type argument states a
+            strict document while ``strict=False``.
         ValueError: Before the file is read, if ``since=`` or ``before=`` names no supported
             release, or the range holds none.
 
@@ -161,6 +169,9 @@ def load_idf(
     path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
+    as_type: None = ...,
+    since: None = ...,
+    before: None = ...,
     strict_parsing: bool = ...,
     strict: Literal[False],
     preserve_formatting: bool = ...,
@@ -3000,6 +3011,9 @@ def load_idf_with_diagnostics(
     path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
+    as_type: None = ...,
+    since: None = ...,
+    before: None = ...,
     strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
 ) -> ParseResult[AnyIDFDocument[Literal[True]]]:
@@ -3058,6 +3072,9 @@ def load_idf_with_diagnostics(
     path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
+    as_type: None = ...,
+    since: None = ...,
+    before: None = ...,
     strict: Literal[False],
     preserve_formatting: bool = ...,
 ) -> ParseResult[AnyIDFDocument[Literal[False]]]: ...
@@ -5720,6 +5737,9 @@ def load_epjson(
     path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
+    as_type: None = ...,
+    since: None = ...,
+    before: None = ...,
     strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
 ) -> AnyIDFDocument[Literal[True]]:
@@ -5780,6 +5800,9 @@ def load_epjson(
     path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
+    as_type: None = ...,
+    since: None = ...,
+    before: None = ...,
     strict: Literal[False],
     preserve_formatting: bool = ...,
 ) -> AnyIDFDocument[Literal[False]]: ...
