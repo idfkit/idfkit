@@ -1250,8 +1250,8 @@ class IDFObject(EppyObjectMixin):
 # a typed collection be passed to code that takes IDFCollection[IDFObject].
 #
 # Covariance is sound here because no public method takes an object of the element type: add()
-# takes a name and fields and creates the object itself, of the collection's own type. (It took an
-# object up to 1.3.0rc1, through which a Material could be filed in doc["Zone"]; that is _append now.)
+# takes a name and fields and creates the object itself, of the collection's own type. (Its former,
+# deprecated form took an object, through which a Material could be filed in doc["Zone"]; that is _append now.)
 _T_co = TypeVar("_T_co", bound=IDFObject, covariant=True)
 _ObjT = TypeVar("_ObjT", bound=IDFObject)
 _D = TypeVar("_D")
@@ -1443,7 +1443,7 @@ class IDFCollection(Generic[_T_co]):
         (``IDFDocument.add``, ``addidfobject``). It does not validate, link the object to a
         document, index its references, or check that the object is of this collection's type,
         and an object filed in the empty collection read for an absent type is not in the
-        document; hence private. It was public as ``add(obj)`` up to idfkit 1.3.0rc1.
+        document; hence private. It is what the deprecated ``add(obj)`` does.
 
         Raises:
             DuplicateObjectError: If an object with the same name exists
@@ -1518,8 +1518,8 @@ class IDFCollection(Generic[_T_co]):
             by keyword only; extensible groups go under their wrapper key (``vertices=[{...}, ...]``),
             as with ``IDFDocument.add``.
 
-            Up to idfkit 1.3.0rc1 this method took an existing object and filed it in the collection
-            without validating it or linking it to the document. That form still runs, with a
+            This method used to take an existing object and file it in the collection without
+            validating it or linking it to the document. That form still runs, with a
             ``DeprecationWarning`` (and a ``TypeError`` for fields passed beside the object, which it
             would drop), and will be removed; file an existing object with
             ``IDFDocument.addidfobject``, which puts it in the document. Type checkers accept only the
@@ -1593,7 +1593,7 @@ class IDFCollection(Generic[_T_co]):
             return cast("_T_co", obj)
 
     def _append_deprecated(self, obj: IDFObject) -> Any:
-        """``add(obj)`` as it behaved up to idfkit 1.3.0rc1, with a warning."""
+        """The deprecated ``add(obj)``: file an existing object as ``add`` used to, with a warning."""
         warnings.warn(
             "IDFCollection.add(obj) is deprecated: it files the object in the collection without validating "
             "it or adding it to the document. Use doc.addidfobject(obj) to add an existing object, or "

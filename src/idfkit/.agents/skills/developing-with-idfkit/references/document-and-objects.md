@@ -369,7 +369,7 @@ def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:
 
 ```
 
-Up to idfkit 1.3.0rc1, the document types were `TypedDict` subclasses to pyright, which narrows those on `in` by its own rules: `"Space" in doc` retyped an `AnyIDFDocument` as the latest release (so a 9.6 or 22.1 model then raised `InvalidFieldError` on `ceiling_height`), and the body of `"Zone" not in doc` was skipped as unreachable.
+The document types used to be `TypedDict` subclasses to pyright, which narrows those on `in` by its own rules: `"Space" in doc` retyped an `AnyIDFDocument` as the latest release (so a 9.6 or 22.1 model then raised `InvalidFieldError` on `ceiling_height`), and the body of `"Zone" not in doc` was skipped as unreachable.
 
 ### Checking: pyright versus `idfkit check`
 

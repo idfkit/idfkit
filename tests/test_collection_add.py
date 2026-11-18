@@ -150,7 +150,7 @@ class TestOlderPickles:
 
     @staticmethod
     def _as_older_pickle(doc: object, monkeypatch: pytest.MonkeyPatch) -> bytes:
-        """Pickle *doc* (a document, or an object of one) as idfkit 1.3.0rc1 would: no collection has ``_document``."""
+        """Pickle *doc* (a document, or an object of one) as a release before collections held their document would: no collection has ``_document``."""
 
         def without_document(self: IDFCollection[Any], protocol: SupportsIndex) -> Any:
             reduced = cast("tuple[Any, ...]", object.__reduce_ex__(self, protocol))
@@ -195,7 +195,7 @@ class TestOlderPickles:
 
 
 class TestDeprecatedObjectForm:
-    """``add(obj)`` filed an existing object up to idfkit 1.3.0rc1; it still does, with a warning."""
+    """``add(obj)`` used to file an existing object; it still does, with a warning."""
 
     def test_warns_and_files_the_object_as_before(self, doc: IDFDocument[Any]) -> None:
         doc["Zone"].add("Office")
