@@ -192,7 +192,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     reported without failing the run. The text output ended with a summary line.
   - In idfkit's own source, relative imports counted as idfkit imports, and `make check` started
     running `idfkit check` over `src/` against every release ([#287](https://github.com/idfkit/idfkit/pull/287)).
-- `idfkit.exceptions.MissingRequiredFieldError`, raised when a required field is read from an object that does not
+- `MissingRequiredFieldError`, exported from `idfkit` and registered in `governance-2026.33`, raised when a required field is read from an object that does not
   hold it (see Changed). It names the object, the field and `obj.get(field)` as the way to ask
   whether it is set, and it is an `AttributeError`, so `getattr(obj, field, None)` and `hasattr`
   kept working as the untyped check ([#303](https://github.com/idfkit/idfkit/pull/303)).
