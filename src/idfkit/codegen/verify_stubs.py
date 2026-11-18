@@ -331,14 +331,15 @@ def _value_members(field_schema: dict[str, Any] | None, field_type: str | None) 
     """
     members: set[str] = {"None"}
     if field_schema is not None and "enum" in field_schema:
-        return frozenset(members | {_literal(v) for v in field_schema["enum"]})
+        values = {_literal(v) for v in field_schema["enum"] if v != ""}  # a blank is stored as absent
+        return frozenset(members | (values or {"str"}))
     if field_schema is not None and "anyOf" in field_schema:
         for branch in field_schema["anyOf"]:
             kind = branch.get("type")
             if kind not in ("number", "integer", "string"):
                 continue
             if "enum" in branch:
-                members.update(_literal(v) for v in branch["enum"])
+                members.update(_literal(v) for v in branch["enum"] if v != "")
             else:
                 members.add(_SCALARS[kind])
         return frozenset(members if len(members) > 1 else {"None", "str", "float"})
@@ -357,8 +358,10 @@ def _schema_fields(schema: EpJSONSchema, obj_type: str) -> dict[str, frozenset[s
     inner = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
     names = schema.get_field_names(obj_type)
+    always = _REQUIRED_READS.get(obj_type, frozenset())
     fields = {
         name: _value_members(properties.get(name), schema.get_field_type(obj_type, name))
+        - ({"None"} if name in always else set())
         for name in names
         if name.isidentifier()
     }
@@ -645,6 +648,27 @@ def _check_update(
     problems.append(f"{where}: update is not typed")
 
 
+# Fields every release that has them requires with no default, by type: they read without None.
+_REQUIRED_READS: dict[str, frozenset[str]] = {}
+
+
+def _required_reads(versions: tuple[Version, ...]) -> dict[str, frozenset[str]]:
+    """Re-derived from the schemas: a field every release in *versions* that has it requires, no default."""
+    from idfkit.schema import get_schema
+
+    required: dict[str, set[str]] = {}
+    optional: dict[str, set[str]] = {}
+    for ver in versions:
+        schema = get_schema(ver)
+        for obj_type in schema.object_types:
+            inner = schema.get_inner_schema(obj_type) or {}
+            properties: dict[str, Any] = inner.get("properties", {})
+            listed = {f for f in inner.get("required", []) if "default" not in properties.get(f, {})}
+            for name in schema.get_field_names(obj_type):
+                (required if name in listed else optional).setdefault(obj_type, set()).add(name)
+    return {t: frozenset(f - optional.get(t, set())) for t, f in required.items()}
+
+
 def verify(
     types_source: str,
     document_source: str,
@@ -665,6 +689,8 @@ def verify(
         creation_sources: The modules of ``_creation`` by module name (``_b3``), which hold the
             creation signatures the classes name.
     """
+    _REQUIRED_READS.clear()
+    _REQUIRED_READS.update(_required_reads(versions))
     sources = list(versioned_sources)
     module = _read(document_source, _read(types_source))
     for source in sources:

@@ -170,8 +170,8 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
     mat_type = material.obj_type
 
     if mat_type == "Material":
-        thickness = material.thickness if material.thickness is not None else 0.0
-        conductivity = material.conductivity if material.conductivity is not None else 1.0
+        thickness = material.get("thickness", 0.0)
+        conductivity = material.get("conductivity", 1.0)
         r_value = thickness / conductivity if conductivity > 0 else 0.0
         return LayerThermalProperties(
             name=material.name,
@@ -182,7 +182,7 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
         )
 
     if mat_type == "Material:NoMass":
-        r_value = material.thermal_resistance if material.thermal_resistance is not None else 0.0
+        r_value = material.get("thermal_resistance", 0.0)
         return LayerThermalProperties(
             name=material.name,
             obj_type=mat_type,
@@ -190,7 +190,7 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
         )
 
     if mat_type == "Material:AirGap":
-        r_value = material.thermal_resistance if material.thermal_resistance is not None else 0.0
+        r_value = material.get("thermal_resistance", 0.0)
         return LayerThermalProperties(
             name=material.name,
             obj_type=mat_type,
@@ -200,24 +200,16 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
         )
 
     if mat_type == "WindowMaterial:Glazing":
-        thickness = material.thickness if material.thickness is not None else 0.006  # Default 6mm
-        conductivity = material.conductivity if material.conductivity is not None else GLASS_CONDUCTIVITY
+        thickness = material.get("thickness", 0.006)  # Default 6mm
+        conductivity = material.get("conductivity", GLASS_CONDUCTIVITY)
         r_value = thickness / conductivity if conductivity > 0 else 0.0
 
         # Get optical properties
         solar_trans = material.solar_transmittance_at_normal_incidence
         solar_refl_front = material.front_side_solar_reflectance_at_normal_incidence
         vis_trans = material.visible_transmittance_at_normal_incidence
-        emiss_front = (
-            material.front_side_infrared_hemispherical_emissivity
-            if material.front_side_infrared_hemispherical_emissivity is not None
-            else 0.84
-        )
-        emiss_back = (
-            material.back_side_infrared_hemispherical_emissivity
-            if material.back_side_infrared_hemispherical_emissivity is not None
-            else 0.84
-        )
+        emiss_front = material.get("front_side_infrared_hemispherical_emissivity", 0.84)
+        emiss_back = material.get("back_side_infrared_hemispherical_emissivity", 0.84)
 
         return LayerThermalProperties(
             name=material.name,
@@ -234,8 +226,8 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
         )
 
     if mat_type == "WindowMaterial:Gas":
-        thickness = material.thickness if material.thickness is not None else 0.012  # Default 12mm
-        gas_type = material.gas_type if material.gas_type is not None else "Air"
+        thickness = material.get("thickness", 0.012)  # Default 12mm
+        gas_type = material.get("gas_type", "Air")
 
         # Get R-value from typical values
         r_value = typical_gap_r_value(gas_type, thickness * 1000)
@@ -251,14 +243,14 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
 
     if mat_type == "WindowMaterial:SimpleGlazingSystem":
         # SimpleGlazingSystem provides U-factor directly (includes films)
-        u_factor = material.u_factor if material.u_factor is not None else 2.0
+        u_factor = material.get("u_factor", 2.0)
         r_value = 1.0 / u_factor if u_factor > 0 else 0.0
         return LayerThermalProperties(
             name=material.name,
             obj_type=mat_type,
             r_value=r_value,
             is_glazing=True,
-            shgc=material.solar_heat_gain_coefficient,
+            shgc=material.get("solar_heat_gain_coefficient"),
             visible_transmittance=material.visible_transmittance,
         )
 

@@ -28,10 +28,8 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2:
         cooling_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        supply_air_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        supply_air_fan_object_type: Literal[
-            "", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"
-        ]
+        supply_air_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        supply_air_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"]
         | None = "Fan:ConstantVolume",
         outside_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
         outside_air_mixer_object_name: str | None = ...,
@@ -55,7 +53,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2:
         ]
         | None = ...,
         supplemental_heating_coil_name: str | None = ...,
-        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None = "Autosize",
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
     ) -> None:
         """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
@@ -73,7 +71,7 @@ class OutputSQLite_v9_5_to_v23_2:
         *,
         option_type: Literal["Simple", "SimpleAndTabular"] | None = ...,
         unit_conversion_for_tabular_data: Literal[
-            "", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"
+            "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"
         ]
         | None = "UseOutputControlTableStyle",
     ) -> None:

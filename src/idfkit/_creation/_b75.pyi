@@ -42,10 +42,10 @@ class WallDetailed:
         ],
         space_name: str | None = ...,
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.WallDetailedVerticesItem | _g.WallDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``Wall:Detailed`` and add it to the document.
@@ -96,7 +96,6 @@ class RoomAirModelType:
         *,
         zone_name: str,
         room_air_modeling_type: Literal[
-            "",
             "AirflowNetwork",
             "CrossVentilation",
             "Mixing",
@@ -107,7 +106,7 @@ class RoomAirModelType:
             "UserDefined",
         ]
         | None = "Mixing",
-        air_temperature_coupling_strategy: Literal["", "Direct", "Indirect"] | None = "Direct",
+        air_temperature_coupling_strategy: Literal["Direct", "Indirect"] | None = "Direct",
     ) -> None:
         """Create a new ``RoomAirModelType`` and add it to the document.
 
@@ -198,18 +197,18 @@ class AnyCoilHeatingDXVariableSpeed:
         speed_1_energy_input_ratio_function_of_air_flow_fraction_curve_name: str,
         number_of_speeds: int | None = 2,
         nominal_speed_level: int | None = 2,
-        rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
+        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
         defrost_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -8,
         outdoor_dry_bulb_temperature_to_turn_on_compressor: float | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
         crankcase_heater_capacity: float | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "ReverseCycle",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "ReverseCycle",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         speed_2_reference_unit_gross_rated_heating_capacity: float | None = ...,
         speed_2_reference_unit_gross_rated_heating_cop: float | None = ...,
         speed_2_reference_unit_rated_air_flow_rate: float | None = ...,
@@ -293,8 +292,8 @@ class CoilHeatingDXVariableSpeed:
         availability_schedule_name: str | None = ...,
         number_of_speeds: int | None = 2,
         nominal_speed_level: int | None = 2,
-        rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
+        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
         defrost_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -8,
         outdoor_dry_bulb_temperature_to_turn_on_compressor: float | None = ...,
@@ -302,10 +301,10 @@ class CoilHeatingDXVariableSpeed:
         crankcase_heater_capacity: float | None = 0,
         crankcase_heater_capacity_function_of_temperature_curve_name: str | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "ReverseCycle",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "ReverseCycle",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         speed_2_reference_unit_gross_rated_heating_capacity: float | None = ...,
         speed_2_reference_unit_gross_rated_heating_cop: float | None = ...,
         speed_2_reference_unit_rated_air_flow_rate: float | None = ...,
@@ -389,9 +388,9 @@ class HeatExchangerDesiccantBalancedFlow:
         process_air_outlet_node_name: str,
         heat_exchanger_performance_name: str,
         availability_schedule_name: str | None = ...,
-        heat_exchanger_performance_object_type: Literal["", "HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"]
+        heat_exchanger_performance_object_type: Literal["HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"]
         | None = ...,
-        economizer_lockout: Literal["", "No", "Yes"] | None = ...,
+        economizer_lockout: Literal["No", "Yes"] | None = ...,
     ) -> None:
         """Create a new ``HeatExchanger:Desiccant:BalancedFlow`` and add it to the document.
 
@@ -555,7 +554,7 @@ class RefrigerationCase:
         rated_runtime_fraction: float | None = 0.85,
         case_length: float | None = 3,
         case_operating_temperature: float | None = 1.1,
-        latent_case_credit_curve_type: Literal["", "CaseTemperatureMethod", "DewpointMethod", "RelativeHumidityMethod"]
+        latent_case_credit_curve_type: Literal["CaseTemperatureMethod", "DewpointMethod", "RelativeHumidityMethod"]
         | None = "CaseTemperatureMethod",
         standard_case_fan_power_per_unit_length: float | None = 75,
         operating_case_fan_power_per_unit_length: float | None = 75,
@@ -565,14 +564,13 @@ class RefrigerationCase:
         fraction_of_lighting_energy_to_case: float | None = 1,
         case_anti_sweat_heater_power_per_unit_length: float | None = 0,
         minimum_anti_sweat_heater_power_per_unit_length: float | None = 0,
-        anti_sweat_heater_control_type: Literal["", "Constant", "DewpointMethod", "HeatBalanceMethod", "Linear", "None"]
+        anti_sweat_heater_control_type: Literal["Constant", "DewpointMethod", "HeatBalanceMethod", "Linear", "None"]
         | None = "None",
         humidity_at_zero_anti_sweat_heater_energy: float | None = -10,
         case_height: float | None = 1.5,
         fraction_of_anti_sweat_heater_energy_to_case: float | None = 1,
         case_defrost_power_per_unit_length: float | None = 0,
         case_defrost_type: Literal[
-            "",
             "Electric",
             "ElectricWithTemperatureTermination",
             "HotFluid",
@@ -586,7 +584,7 @@ class RefrigerationCase:
         case_defrost_schedule_name: str | None = ...,
         case_defrost_drip_down_schedule_name: str | None = ...,
         defrost_energy_correction_curve_type: Literal[
-            "", "CaseTemperatureMethod", "DewpointMethod", "None", "RelativeHumidityMethod"
+            "CaseTemperatureMethod", "DewpointMethod", "None", "RelativeHumidityMethod"
         ]
         | None = "None",
         defrost_energy_correction_curve_name: str | None = ...,
@@ -610,9 +608,9 @@ class AnyLifeCycleCostNonrecurringCost:
         name: str,
         /,
         *,
-        category: Literal["", "Construction", "OtherCapital", "Salvage"] | None = "Construction",
+        category: Literal["Construction", "OtherCapital", "Salvage"] | None = "Construction",
         cost: float | None = ...,
-        start_of_costs: Literal["", "BasePeriod", "ServicePeriod"] | None = "ServicePeriod",
+        start_of_costs: Literal["BasePeriod", "ServicePeriod"] | None = "ServicePeriod",
         years_from_start: int | None = ...,
         months_from_start: int | None = ...,
     ) -> None:

@@ -21,10 +21,10 @@ class WaterHeaterMixed_v8_9_to_v9_2:
         heater_fuel_type: str,
         heater_thermal_efficiency: float,
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
-        tank_volume: float | Literal["", "Autosize"] | None = 0,
+        tank_volume: float | Literal["Autosize"] | None = 0,
         deadband_temperature_difference: float | None = 0,
         maximum_temperature_limit: float | None = ...,
-        heater_control_type: Literal["", "Cycle", "Modulate"] | None = "Cycle",
+        heater_control_type: Literal["Cycle", "Modulate"] | None = "Cycle",
         heater_maximum_capacity: float | Literal["Autosize"] | None = ...,
         heater_minimum_capacity: float | None = ...,
         heater_ignition_minimum_flow_rate: float | None = 0,
@@ -80,11 +80,11 @@ class WaterHeaterMixed_v8_9_to_v9_2:
         source_side_inlet_node_name: str | None = ...,
         source_side_outlet_node_name: str | None = ...,
         source_side_effectiveness: float | None = 1,
-        use_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        use_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         indirect_water_heating_recovery_time: float | None = 1.5,
         source_side_flow_control_mode: Literal[
-            "", "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
+            "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,

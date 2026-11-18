@@ -22,18 +22,18 @@ class Zone_v9_5_to_v22_1:
         z_origin: float | None = 0,
         type: float | None = 1,
         multiplier: float | None = 1,
-        ceiling_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        volume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        ceiling_height: float | Literal["Autocalculate"] | None = "Autocalculate",
+        volume: float | Literal["Autocalculate"] | None = "Autocalculate",
+        floor_area: float | Literal["Autocalculate"] | None = "Autocalculate",
         zone_inside_convection_algorithm: Literal[
-            "", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"
+            "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"
         ]
         | None = ...,
         zone_outside_convection_algorithm: Literal[
-            "", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"
+            "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"
         ]
         | None = ...,
-        part_of_total_floor_area: Literal["", "No", "Yes"] | None = "Yes",
+        part_of_total_floor_area: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``Zone`` and add it to the document.
 
@@ -50,12 +50,10 @@ class HVACTemplateZoneFanCoil_v8_9:
         *,
         zone_name: str,
         template_thermostat_name: str | None = ...,
-        supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
@@ -65,20 +63,20 @@ class HVACTemplateZoneFanCoil_v8_9:
         supply_fan_delta_pressure: float | None = 75,
         supply_fan_motor_efficiency: float | None = 0.9,
         supply_fan_motor_in_air_stream_fraction: float | None = 1,
-        cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None = "ChilledWater",
+        cooling_coil_type: Literal["ChilledWater", "ChilledWaterDetailedFlatModel"] | None = "ChilledWater",
         cooling_coil_availability_schedule_name: str | None = ...,
         cooling_coil_design_setpoint: float | None = 14,
-        heating_coil_type: Literal["", "HotWater"] | None = "HotWater",
+        heating_coil_type: Literal["HotWater"] | None = "HotWater",
         heating_coil_availability_schedule_name: str | None = ...,
         heating_coil_design_setpoint: float | None = 50,
         dedicated_outdoor_air_system_name: str | None = ...,
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
@@ -91,9 +89,9 @@ class HVACTemplateZoneFanCoil_v8_9:
         low_speed_supply_air_flow_ratio: float | None = 0.33,
         medium_speed_supply_air_flow_ratio: float | None = 0.66,
         outdoor_air_schedule_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
 
@@ -125,7 +123,7 @@ class ElectricLoadCenterStorageBattery_v8_9_to_v22_1:
         maximum_module_discharging_current: float | None = ...,
         module_cut_off_voltage: float | None = ...,
         module_charge_rate_limit: float | None = 1,
-        battery_life_calculation: Literal["", "No", "Yes"] | None = "No",
+        battery_life_calculation: Literal["No", "Yes"] | None = "No",
         number_of_cycle_bins: float | None = 10,
         battery_life_curve_name: str | None = ...,
     ) -> None:
@@ -171,11 +169,11 @@ class HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1:
         capacity_modifier_function_of_temperature_curve_name: str,
         electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str,
         electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str,
-        condenser_type: Literal["", "AirSource", "WaterSource"] | None = "WaterSource",
+        condenser_type: Literal["AirSource", "WaterSource"] | None = "WaterSource",
         companion_heat_pump_name: str | None = ...,
-        load_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        reference_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        load_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
     ) -> None:

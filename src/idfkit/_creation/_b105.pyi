@@ -16,9 +16,9 @@ class ZoneAirContaminantBalance:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        carbon_dioxide_concentration: Literal["", "No", "Yes"] | None = "No",
+        carbon_dioxide_concentration: Literal["No", "Yes"] | None = "No",
         outdoor_carbon_dioxide_schedule_name: str | None = ...,
-        generic_contaminant_concentration: Literal["", "No", "Yes"] | None = "No",
+        generic_contaminant_concentration: Literal["No", "Yes"] | None = "No",
         outdoor_generic_contaminant_schedule_name: str | None = ...,
     ) -> None:
         """Create a new ``ZoneAirContaminantBalance`` and add it to the document.
@@ -36,7 +36,6 @@ class SurfacePropertyHeatTransferAlgorithmConstruction:
         *,
         construction_name: str,
         algorithm: Literal[
-            "",
             "CombinedHeatAndMoistureFiniteElement",
             "ConductionFiniteDifference",
             "ConductionTransferFunction",
@@ -64,7 +63,7 @@ class PeopleInstance:
         surface_name_angle_factor_list_name: str | None = ...,
         work_efficiency_schedule_name: str | None = ...,
         clothing_insulation_calculation_method: Literal[
-            "", "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
+            "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
         ]
         | None = "ClothingInsulationSchedule",
         clothing_insulation_calculation_method_schedule_name: str | None = ...,
@@ -91,10 +90,10 @@ class ZoneVentilationWindandStackOpenArea:
         zone_or_space_name: str,
         opening_area: float | None = 0,
         opening_area_fraction_schedule_name: str | None = ...,
-        opening_effectiveness: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        opening_effectiveness: float | Literal["Autocalculate"] | None = "Autocalculate",
         effective_angle: float | None = 0,
         height_difference: float | None = 0,
-        discharge_coefficient_for_opening: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        discharge_coefficient_for_opening: float | Literal["Autocalculate"] | None = "Autocalculate",
         minimum_indoor_temperature: float | None = -100,
         minimum_indoor_temperature_schedule_name: str | None = ...,
         maximum_indoor_temperature: float | None = 100,
@@ -122,7 +121,7 @@ class HVACTemplatePlantTowerObjectReference:
         *,
         cooling_tower_name: str,
         cooling_tower_object_type: Literal[
-            "", "CoolingTower:SingleSpeed", "CoolingTower:TwoSpeed", "CoolingTower:VariableSpeed"
+            "CoolingTower:SingleSpeed", "CoolingTower:TwoSpeed", "CoolingTower:VariableSpeed"
         ]
         | None = "CoolingTower:SingleSpeed",
         priority: float | None = ...,
@@ -155,10 +154,10 @@ class CoilSystemCoolingDX:
         ],
         cooling_coil_name: str,
         availability_schedule_name: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
-        run_on_sensible_load: Literal["", "No", "Yes"] | None = "Yes",
-        run_on_latent_load: Literal["", "No", "Yes"] | None = "No",
-        use_outdoor_air_dx_cooling_coil: Literal["", "No", "Yes"] | None = "No",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
+        run_on_sensible_load: Literal["No", "Yes"] | None = "Yes",
+        run_on_latent_load: Literal["No", "Yes"] | None = "No",
+        use_outdoor_air_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
         outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None = 2,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:DX`` and add it to the document.
@@ -178,18 +177,17 @@ class ChillerElectricASHRAE205:
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
         chilled_water_inlet_node_name: str,
         chilled_water_outlet_node_name: str,
-        performance_interpolation_method: Literal["", "Cubic", "Linear"] | None = "Linear",
-        rated_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        performance_interpolation_method: Literal["Cubic", "Linear"] | None = "Linear",
+        rated_capacity: float | Literal["Autosize"] | None = "Autosize",
         sizing_factor: float | None = 1,
         ambient_temperature_schedule_name: str | None = ...,
         ambient_temperature_zone_name: str | None = ...,
         ambient_temperature_outdoor_air_node_name: str | None = ...,
-        chilled_water_maximum_requested_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        chilled_water_maximum_requested_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
-        condenser_maximum_requested_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
+        condenser_maximum_requested_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         oil_cooler_inlet_node_name: str | None = ...,
         oil_cooler_outlet_node_name: str | None = ...,
         oil_cooler_design_flow_rate: float | None = ...,

@@ -51,7 +51,6 @@ class SurfacePropertyHeatTransferAlgorithm:
         *,
         surface_name: str,
         algorithm: Literal[
-            "",
             "CombinedHeatAndMoistureFiniteElement",
             "ConductionFiniteDifference",
             "ConductionTransferFunction",
@@ -79,7 +78,7 @@ class AnyElectricLoadCenterStorageLiIonNMCBattery:
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         radiative_fraction: float | None = 0,
-        lifetime_model: Literal["", "KandlerSmith", "None"] | None = "KandlerSmith",
+        lifetime_model: Literal["KandlerSmith", "None"] | None = "KandlerSmith",
         initial_fractional_state_of_charge: float | None = 0.5,
         dc_to_dc_charging_efficiency: float | None = 0.95,
         battery_specific_heat_capacity: float | None = 1500,

@@ -340,7 +340,7 @@ class TableTwoIndependentVariables_v8_9_to_v9_1:
         *,
         curve_type: Literal["BiQuadratic", "QuadraticLinear"],
         interpolation_method: Literal[
-            "", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
+            "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
         ]
         | None = "LagrangeInterpolationLinearExtrapolation",
         minimum_value_of_x: float | None = ...,
@@ -350,14 +350,14 @@ class TableTwoIndependentVariables_v8_9_to_v9_1:
         minimum_table_output: float | None = ...,
         maximum_table_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_y: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
         external_file_name: str | None = ...,

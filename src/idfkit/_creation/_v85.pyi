@@ -68,7 +68,7 @@ class ZoneCoolTowerShower_v8_9_to_v24_1:
         rated_power_consumption: float,
         availability_schedule_name: str | None = ...,
         water_supply_storage_tank_name: str | None = ...,
-        flow_control_type: Literal["", "WaterFlowSchedule", "WindDrivenFlow"] | None = "WindDrivenFlow",
+        flow_control_type: Literal["WaterFlowSchedule", "WindDrivenFlow"] | None = "WindDrivenFlow",
         fraction_of_water_loss: float | None = ...,
         fraction_of_flow_schedule: float | None = ...,
     ) -> None:

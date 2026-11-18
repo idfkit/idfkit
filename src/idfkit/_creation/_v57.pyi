@@ -51,10 +51,8 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1:
         heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        supply_air_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        supply_air_fan_object_type: Literal[
-            "", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"
-        ]
+        supply_air_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        supply_air_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"]
         | None = "Fan:ConstantVolume",
         supply_air_fan_object_name: str | None = ...,
         outside_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
@@ -79,7 +77,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1:
         ]
         | None = ...,
         supplemental_heating_coil_name: str | None = ...,
-        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None = "Autosize",
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         controlling_zone_or_thermostat_location: str | None = ...,
     ) -> None:

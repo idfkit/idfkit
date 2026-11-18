@@ -17,7 +17,7 @@ class SteamEquipment_v9_6_to_v23_2:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -48,18 +48,18 @@ class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1:
         capacity_modifier_function_of_temperature_curve_name: str,
         electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str,
         electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str,
-        condenser_type: Literal["", "AirSource", "WaterSource"] | None = "WaterSource",
+        condenser_type: Literal["AirSource", "WaterSource"] | None = "WaterSource",
         companion_heat_pump_name: str | None = ...,
-        load_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        reference_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        load_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_reference_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = 3,
         sizing_factor: float | None = 1,
         heating_to_cooling_capacity_sizing_ratio: float | None = 1,
-        heat_pump_sizing_method: Literal["", "CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity"]
+        heat_pump_sizing_method: Literal["CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity"]
         | None = "CoolingCapacity",
-        control_type: Literal["", "Load", "Setpoint"] | None = "Load",
-        flow_mode: Literal["", "ConstantFlow", "VariableSpeedPumping"] | None = "ConstantFlow",
+        control_type: Literal["Load", "Setpoint"] | None = "Load",
+        flow_mode: Literal["ConstantFlow", "VariableSpeedPumping"] | None = "ConstantFlow",
         minimum_part_load_ratio: float | None = 0,
         minimum_source_inlet_temperature: float | None = -100,
         maximum_source_inlet_temperature: float | None = 100,

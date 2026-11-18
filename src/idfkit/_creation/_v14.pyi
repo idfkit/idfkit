@@ -22,7 +22,6 @@ class HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1:
         air_source_node_name: str | None = ...,
         companion_heating_heat_pump_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -39,11 +38,11 @@ class HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1:
         nominal_cop: float | None = 1,
         design_flow_rate: float | Literal["Autosize"] | None = ...,
         design_supply_temperature: float | None = 7,
-        design_temperature_lift: float | Literal["", "Autosize"] | None = 11.1,
+        design_temperature_lift: float | Literal["Autosize"] | None = 11.1,
         sizing_factor: float | None = 1,
-        flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
-        outdoor_air_temperature_curve_input_variable: Literal["", "DryBulb", "WetBulb"] | None = "DryBulb",
-        water_temperature_curve_input_variable: Literal["", "EnteringEvaporator", "LeavingEvaporator"]
+        flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
+        outdoor_air_temperature_curve_input_variable: Literal["DryBulb", "WetBulb"] | None = "DryBulb",
+        water_temperature_curve_input_variable: Literal["EnteringEvaporator", "LeavingEvaporator"]
         | None = "EnteringEvaporator",
         minimum_part_load_ratio: float | None = 0.1,
         maximum_part_load_ratio: float | None = 1,

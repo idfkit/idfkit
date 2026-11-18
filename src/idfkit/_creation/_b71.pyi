@@ -92,10 +92,10 @@ class AirLoopHVACUnitaryFurnaceHeatCool:
         cooling_coil_name: str,
         availability_schedule_name: str | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        maximum_supply_air_temperature: float | Literal["", "Autosize"] | None = 80,
+        maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         reheat_coil_object_type: Literal[
             "Coil:Heating:Desuperheater",
             "Coil:Heating:Electric",
@@ -133,7 +133,7 @@ class AnyPumpVariableSpeedCondensate:
         pump_flow_rate_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,

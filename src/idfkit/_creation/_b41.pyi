@@ -18,7 +18,7 @@ class AnyHVACSystemRootFindingAlgorithm:
         /,
         *,
         algorithm: Literal[
-            "", "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"
+            "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"
         ]
         | None = "RegulaFalsi",
         number_of_iterations_before_algorithm_switch: int | None = 5,
@@ -60,7 +60,7 @@ class ElectricEquipment:
         *,
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
-        design_level_calculation_method: Literal["", "EquipmentLevel", "Watts/Area", "Watts/Person"]
+        design_level_calculation_method: Literal["EquipmentLevel", "Watts/Area", "Watts/Person"]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
         watts_per_floor_area: float | None = ...,
@@ -229,9 +229,9 @@ class CoilCoolingDXSingleSpeedThermalStorage:
         cold_weather_operation_minimum_outdoor_air_temperature: float | None = ...,
         cold_weather_operation_ancillary_power: float | None = ...,
         condenser_air_flow_sizing_factor: float | None = 1,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
         evaporative_condenser_effectiveness: float | None = 0.7,
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_availability_schedule_name: str | None = ...,
@@ -305,15 +305,15 @@ class RefrigerationAirChiller:
         capacity_correction_curve_name: str | None = ...,
         shr60_correction_factor: float | None = 1.48,
         heating_power_schedule_name: str | None = ...,
-        fan_speed_control_type: Literal["", "Fixed", "FixedLinear", "TwoSpeed", "VariableSpeed"] | None = "Fixed",
+        fan_speed_control_type: Literal["Fixed", "FixedLinear", "TwoSpeed", "VariableSpeed"] | None = "Fixed",
         rated_fan_power: float | None = 375,
         minimum_fan_air_flow_ratio: float | None = 0.2,
-        defrost_type: Literal["", "Electric", "HotFluid", "None", "OffCycle"] | None = "Electric",
-        defrost_control_type: Literal["", "TemperatureTermination", "TimeSchedule"] | None = "TimeSchedule",
+        defrost_type: Literal["Electric", "HotFluid", "None", "OffCycle"] | None = "Electric",
+        defrost_control_type: Literal["TemperatureTermination", "TimeSchedule"] | None = "TimeSchedule",
         defrost_drip_down_schedule_name: str | None = ...,
         defrost_power: float | None = ...,
         temperature_termination_defrost_fraction_to_ice: float | None = ...,
-        vertical_location: Literal["", "Ceiling", "Floor", "Middle"] | None = "Middle",
+        vertical_location: Literal["Ceiling", "Floor", "Middle"] | None = "Middle",
         average_refrigerant_charge_inventory: float | None = 0,
     ) -> None:
         """Create a new ``Refrigeration:AirChiller`` and add it to the document.
@@ -330,12 +330,12 @@ class OutputControlTableStyle:
         /,
         *,
         column_separator: Literal[
-            "", "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
+            "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
         ]
         | None = "Comma",
-        unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"]
+        unit_conversion: Literal["InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"]
         | None = "None",
-        format_numeric_values: Literal["", "No", "Yes"] | None = "Yes",
+        format_numeric_values: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``OutputControl:Table:Style`` and add it to the document.
 

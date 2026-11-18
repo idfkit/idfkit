@@ -19,20 +19,20 @@ class People_v8_9_to_v9_4:
         zone_or_zonelist_name: str,
         number_of_people_schedule_name: str,
         activity_level_schedule_name: str,
-        number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None = "People",
+        number_of_people_calculation_method: Literal["Area/Person", "People", "People/Area"] | None = "People",
         number_of_people: float | None = ...,
         people_per_zone_floor_area: float | None = ...,
         zone_floor_area_per_person: float | None = ...,
         fraction_radiant: float | None = 0.3,
-        sensible_heat_fraction: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sensible_heat_fraction: float | Literal["Autocalculate"] | None = "Autocalculate",
         carbon_dioxide_generation_rate: float | None = ...,
-        enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None = "No",
-        mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"]
+        enable_ashrae_55_comfort_warnings: Literal["No", "Yes"] | None = "No",
+        mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"]
         | None = "ZoneAveraged",
         surface_name_angle_factor_list_name: str | None = ...,
         work_efficiency_schedule_name: str | None = ...,
         clothing_insulation_calculation_method: Literal[
-            "", "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
+            "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
         ]
         | None = "ClothingInsulationSchedule",
         clothing_insulation_calculation_method_schedule_name: str | None = ...,
@@ -66,16 +66,16 @@ class HeaderedPumpsConstantSpeed_v8_9_to_v9_0:
         outlet_node_name: str,
         total_design_flow_rate: float | Literal["Autosize"] | None = ...,
         number_of_pumps_in_bank: float | None = ...,
-        flow_sequencing_control_scheme: Literal["", "Sequential"] | None = "Sequential",
+        flow_sequencing_control_scheme: Literal["Sequential"] | None = "Sequential",
         design_pump_head: float | None = 179352,
         design_power_consumption: float | Literal["Autosize"] | None = ...,
         motor_efficiency: float | None = 0.9,
         fraction_of_motor_inefficiencies_to_fluid_stream: float | None = 0,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -110,13 +110,12 @@ class ChillerElectricEIR_v8_9_to_v24_1:
         minimum_unloading_ratio: float | None = 0.2,
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "WaterCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "WaterCooled",
         condenser_fan_power_ratio: float | None = 0,
         fraction_of_compressor_electric_consumption_rejected_by_condenser: float | None = 1,
         leaving_chilled_water_lower_temperature_limit: float | None = 2,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
@@ -144,7 +143,7 @@ class ZoneMixing_v8_9_to_v22_1:
         zone_name: str,
         schedule_name: str,
         source_zone_name: str,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_zone_floor_area: float | None = ...,
@@ -181,7 +180,7 @@ class ZoneEarthtube_v8_9_to_v23_1:
         average_soil_surface_temperature: float,
         amplitude_of_soil_surface_temperature: float,
         phase_constant_of_soil_surface_temperature: float,
-        earthtube_type: Literal["", "Exhaust", "Intake", "Natural"] | None = "Natural",
+        earthtube_type: Literal["Exhaust", "Intake", "Natural"] | None = "Natural",
         fan_pressure_rise: float | None = 0,
         fan_total_efficiency: float | None = 1,
         pipe_radius: float | None = 1,
@@ -189,7 +188,7 @@ class ZoneEarthtube_v8_9_to_v23_1:
         pipe_length: float | None = 15,
         pipe_thermal_conductivity: float | None = 200,
         pipe_depth_under_ground_surface: float | None = 3,
-        soil_condition: Literal["", "HeavyAndDamp", "HeavyAndDry", "HeavyAndSaturated", "LightAndDry"]
+        soil_condition: Literal["HeavyAndDamp", "HeavyAndDry", "HeavyAndSaturated", "LightAndDry"]
         | None = "HeavyAndDamp",
         constant_term_flow_coefficient: float | None = 1,
         temperature_term_flow_coefficient: float | None = 0,

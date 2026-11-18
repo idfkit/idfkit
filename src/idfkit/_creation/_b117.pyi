@@ -18,13 +18,12 @@ class AnyShadowCalculation:
         /,
         *,
         maximum_figures_in_shadow_overlap_calculations: int | None = 15000,
-        polygon_clipping_algorithm: Literal["", "ConvexWeilerAtherton", "SutherlandHodgman"]
-        | None = "SutherlandHodgman",
-        sky_diffuse_modeling_algorithm: Literal["", "DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"]
+        polygon_clipping_algorithm: Literal["ConvexWeilerAtherton", "SutherlandHodgman"] | None = "SutherlandHodgman",
+        sky_diffuse_modeling_algorithm: Literal["DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"]
         | None = "SimpleSkyDiffuseModeling",
-        output_external_shading_calculation_results: Literal["", "No", "Yes"] | None = "No",
-        disable_self_shading_within_shading_zone_groups: Literal["", "No", "Yes"] | None = "No",
-        disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None = "No",
+        output_external_shading_calculation_results: Literal["No", "Yes"] | None = "No",
+        disable_self_shading_within_shading_zone_groups: Literal["No", "Yes"] | None = "No",
+        disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["No", "Yes"] | None = "No",
         shading_zone_groups: Sequence[
             _g.ShadowCalculationShadingZoneGroupsItem | _g.ShadowCalculationShadingZoneGroupsGroup
         ] = ...,
@@ -45,7 +44,6 @@ class OtherEquipment:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -63,7 +61,7 @@ class OtherEquipment:
         ]
         | None = "None",
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,

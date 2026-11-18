@@ -177,7 +177,7 @@ class SteamEquipment_v8_9_to_v9_5:
         zone_or_zonelist_name: str,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -204,7 +204,7 @@ class ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1:
         zone_or_zonelist_name: str,
         schedule_name: str,
         design_flow_rate_calculation_method: Literal[
-            "", "AirChanges/Hour", "Flow/Area", "Flow/ExteriorArea", "Flow/ExteriorWallArea", "Flow/Zone"
+            "AirChanges/Hour", "Flow/Area", "Flow/ExteriorArea", "Flow/ExteriorWallArea", "Flow/Zone"
         ]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
@@ -235,10 +235,10 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1:
         chilled_water_inlet_node_name: str,
         chilled_water_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        supply_air_volumetric_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_total_chilled_water_volumetric_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        number_of_beams: float | Literal["", "Autosize"] | None = "Autosize",
-        beam_length: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_volumetric_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        maximum_total_chilled_water_volumetric_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        number_of_beams: float | Literal["Autosize"] | None = "Autosize",
+        beam_length: float | Literal["Autosize"] | None = "Autosize",
         design_inlet_water_temperature: float | None = 15,
         design_outlet_water_temperature: float | None = 17,
         coil_surface_area_per_coil_length: float | None = 5.422,
@@ -249,7 +249,7 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1:
         model_parameter_a0: float | None = 0.171,
         model_parameter_k1: float | None = 0.0057,
         model_parameter_n: float | None = 0.4,
-        coefficient_of_induction_kin: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        coefficient_of_induction_kin: float | Literal["Autocalculate"] | None = "Autocalculate",
         leaving_pipe_inside_diameter: float | None = 0.0145,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:CooledBeam`` and add it to the document.
@@ -273,7 +273,7 @@ class WindowPropertyFrameAndDivider_v22_1_to_v26_1:
         frame_solar_absorptance: float | None = 0.7,
         frame_visible_absorptance: float | None = 0.7,
         frame_thermal_hemispherical_emissivity: float | None = 0.9,
-        divider_type: Literal["", "DividedLite", "Suspended"] | None = "DividedLite",
+        divider_type: Literal["DividedLite", "Suspended"] | None = "DividedLite",
         divider_width: float | None = 0,
         number_of_horizontal_dividers: float | None = 0,
         number_of_vertical_dividers: float | None = 0,
@@ -290,7 +290,6 @@ class WindowPropertyFrameAndDivider_v22_1_to_v26_1:
         inside_reveal_depth: float | None = 0,
         inside_reveal_solar_absorptance: float | None = 0,
         nfrc_product_type_for_assembly_calculations: Literal[
-            "",
             "CasementDouble",
             "CasementSingle",
             "CurtainWall",

@@ -43,13 +43,13 @@ class RunPeriod_v9_6_to_v22_1:
         end_year: float | None = ...,
         day_of_week_for_start_day: Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"]
         | None = ...,
-        use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
-        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        treat_weather_as_actual: Literal["", "No", "Yes"] | None = "No",
-        first_hour_interpolation_starting_values: Literal["", "Hour1", "Hour24"] | None = "Hour24",
+        use_weather_file_holidays_and_special_days: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        apply_weekend_holiday_rule: Literal["No", "Yes"] | None = "No",
+        use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        treat_weather_as_actual: Literal["No", "Yes"] | None = "No",
+        first_hour_interpolation_starting_values: Literal["Hour1", "Hour24"] | None = "Hour24",
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 
@@ -93,13 +93,13 @@ class ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1:
         heating_convergence_tolerance: float | None = 0.001,
         cooling_convergence_tolerance: float | None = 0.001,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-        capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None = "None",
-        minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None = "Autosize",
+        capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
+        minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
 

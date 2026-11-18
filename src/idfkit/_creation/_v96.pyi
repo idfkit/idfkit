@@ -18,10 +18,10 @@ class OutputControlTableStyle_v24_1_to_v25_1:
         /,
         *,
         column_separator: Literal[
-            "", "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
+            "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
         ]
         | None = "Comma",
-        unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"]
+        unit_conversion: Literal["InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"]
         | None = "None",
     ) -> None:
         """Create a new ``OutputControl:Table:Style`` and add it to the document.
@@ -67,10 +67,10 @@ class CoilSystemCoolingDX_v8_9_to_v22_1:
         ],
         cooling_coil_name: str,
         availability_schedule_name: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
-        run_on_sensible_load: Literal["", "No", "Yes"] | None = "Yes",
-        run_on_latent_load: Literal["", "No", "Yes"] | None = "No",
-        use_outdoor_air_dx_cooling_coil: Literal["", "No", "Yes"] | None = "No",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
+        run_on_sensible_load: Literal["No", "Yes"] | None = "Yes",
+        run_on_latent_load: Literal["No", "Yes"] | None = "No",
+        use_outdoor_air_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
         outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None = 2,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:DX`` and add it to the document.
@@ -92,7 +92,7 @@ class DemandManagerVentilation_v8_9_to_v22_1:
         fixed_rate: float | None = ...,
         reduction_ratio: float | None = ...,
         limit_step_change: float | None = ...,
-        selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None = "All",
+        selection_control: Literal["All", "RotateMany", "RotateOne"] | None = "All",
         rotation_duration: float | None = ...,
         controllers: Sequence[
             _g.DemandManagerVentilationControllersItem | _g.DemandManagerVentilationControllersGroup
@@ -133,7 +133,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1:
         availability_schedule_name: str | None = ...,
         rated_average_water_temperature: float | None = 87.78,
         rated_water_mass_flow_rate: float | None = 0.063,
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         surface_fractions: Sequence[
             _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup

@@ -184,13 +184,13 @@ class ZoneVentilationDesignFlowRate_v8_9_to_v22_1:
         *,
         zone_or_zonelist_name: str,
         schedule_name: str,
-        design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
+        design_flow_rate_calculation_method: Literal["AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
         flow_rate_per_zone_floor_area: float | None = ...,
         flow_rate_per_person: float | None = ...,
         air_changes_per_hour: float | None = ...,
-        ventilation_type: Literal["", "Balanced", "Exhaust", "Intake", "Natural"] | None = "Natural",
+        ventilation_type: Literal["Balanced", "Exhaust", "Intake", "Natural"] | None = "Natural",
         fan_pressure_rise: float | None = 0,
         fan_total_efficiency: float | None = 1,
         constant_term_coefficient: float | None = 1,
@@ -223,11 +223,11 @@ class TableLookup_v9_2_to_v22_1:
         /,
         *,
         independent_variable_list_name: str,
-        normalization_method: Literal["", "AutomaticWithDivisor", "DivisorOnly", "None"] | None = "None",
+        normalization_method: Literal["AutomaticWithDivisor", "DivisorOnly", "None"] | None = "None",
         normalization_divisor: float | None = 1,
         minimum_output: float | None = ...,
         maximum_output: float | None = ...,
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         external_file_name: str | None = ...,
         external_file_column_number: float | None = ...,

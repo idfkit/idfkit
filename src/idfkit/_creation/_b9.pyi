@@ -34,15 +34,15 @@ class AnySiteGroundDomainBasement:
         soil_moisture_content_volume_fraction: float | None = 30,
         soil_moisture_content_volume_fraction_at_saturation: float | None = 50,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
-        horizontal_insulation: Literal["", "No", "Yes"] | None = "No",
+        horizontal_insulation: Literal["No", "Yes"] | None = "No",
         horizontal_insulation_material_name: str | None = ...,
-        horizontal_insulation_extents: Literal["", "Full", "Perimeter"] | None = "Full",
+        horizontal_insulation_extents: Literal["Full", "Perimeter"] | None = "Full",
         perimeter_horizontal_insulation_width: float | None = ...,
         basement_wall_depth: float | None = ...,
-        vertical_insulation: Literal["", "No", "Yes"] | None = "No",
+        vertical_insulation: Literal["No", "Yes"] | None = "No",
         basement_wall_vertical_insulation_material_name: str | None = ...,
         vertical_insulation_depth: float | None = ...,
-        simulation_timestep: Literal["", "Hourly", "Timestep"] | None = "Hourly",
+        simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
         mesh_density_parameter: int | None = 4,
     ) -> None:
         """Create a new ``Site:GroundDomain:Basement`` and add it to the document.
@@ -108,9 +108,8 @@ class ControllerMechanicalVentilation:
         /,
         *,
         availability_schedule_name: str | None = ...,
-        demand_controlled_ventilation: Literal["", "No", "Yes"] | None = "No",
+        demand_controlled_ventilation: Literal["No", "Yes"] | None = "No",
         system_outdoor_air_method: Literal[
-            "",
             "IndoorAirQualityProcedure",
             "IndoorAirQualityProcedureCombined",
             "IndoorAirQualityProcedureGenericContaminant",
@@ -143,10 +142,10 @@ class SetpointManagerWarmest:
         *,
         hvac_air_loop_name: str,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "Temperature"] | None = "Temperature",
+        control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_setpoint_temperature: float | None = 12,
         maximum_setpoint_temperature: float | None = 18,
-        strategy: Literal["", "MaximumTemperature"] | None = "MaximumTemperature",
+        strategy: Literal["MaximumTemperature"] | None = "MaximumTemperature",
     ) -> None:
         """Create a new ``SetpointManager:Warmest`` and add it to the document.
 
@@ -185,7 +184,7 @@ class ElectricLoadCenterStorageConverter:
         /,
         *,
         availability_schedule_name: str | None = ...,
-        power_conversion_efficiency_method: Literal["", "FunctionOfPower", "SimpleFixed"] | None = "SimpleFixed",
+        power_conversion_efficiency_method: Literal["FunctionOfPower", "SimpleFixed"] | None = "SimpleFixed",
         simple_fixed_efficiency: float | None = 0.95,
         design_maximum_continuous_input_power: float | None = ...,
         efficiency_function_of_power_curve_name: str | None = ...,
@@ -208,17 +207,10 @@ class OutputSQLite:
         *,
         option_type: Literal["Simple", "SimpleAndTabular"] | None = ...,
         unit_conversion_for_tabular_data: Literal[
-            "",
-            "InchPound",
-            "InchPoundExceptElectricity",
-            "JtoGJ",
-            "JtoKWH",
-            "JtoMJ",
-            "None",
-            "UseOutputControlTableStyle",
+            "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"
         ]
         | None = "UseOutputControlTableStyle",
-        format_numeric_values_for_tabular_data: Literal["", "No", "Yes"] | None = "Yes",
+        format_numeric_values_for_tabular_data: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``Output:SQLite`` and add it to the document.
 

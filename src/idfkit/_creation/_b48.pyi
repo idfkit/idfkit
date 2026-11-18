@@ -64,9 +64,9 @@ class SurfacePropertiesVaporCoefficients:
         /,
         *,
         surface_name: str,
-        constant_external_vapor_transfer_coefficient: Literal["", "No", "Yes"] | None = "No",
+        constant_external_vapor_transfer_coefficient: Literal["No", "Yes"] | None = "No",
         external_vapor_coefficient_value: float | None = 0,
-        constant_internal_vapor_transfer_coefficient: Literal["", "No", "Yes"] | None = "No",
+        constant_internal_vapor_transfer_coefficient: Literal["No", "Yes"] | None = "No",
         internal_vapor_coefficient_value: float | None = 0,
     ) -> None:
         """Create a new ``SurfaceProperties:VaporCoefficients`` and add it to the document.
@@ -168,7 +168,6 @@ class AirflowNetworkMultiZoneSurface:
         external_node_name: str | None = ...,
         window_door_opening_factor_or_crack_factor: float | None = 1,
         ventilation_control_mode: Literal[
-            "",
             "ASHRAE55Adaptive",
             "AdjacentEnthalpy",
             "AdjacentTemperature",
@@ -188,7 +187,7 @@ class AirflowNetworkMultiZoneSurface:
         indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor: float | None = 300000,
         venting_availability_schedule_name: str | None = ...,
         occupant_ventilation_control_name: str | None = ...,
-        equivalent_rectangle_method: Literal["", "BaseSurfaceAspectRatio", "PolygonHeight", "UserDefinedAspectRatio"]
+        equivalent_rectangle_method: Literal["BaseSurfaceAspectRatio", "PolygonHeight", "UserDefinedAspectRatio"]
         | None = "PolygonHeight",
         equivalent_rectangle_aspect_ratio: float | None = 1,
     ) -> None:
@@ -207,12 +206,10 @@ class HVACTemplateZoneFanCoil:
         *,
         zone_name: str,
         template_thermostat_name: str | None = ...,
-        supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
@@ -222,23 +219,21 @@ class HVACTemplateZoneFanCoil:
         supply_fan_delta_pressure: float | None = 75,
         supply_fan_motor_efficiency: float | None = 0.9,
         supply_fan_motor_in_air_stream_fraction: float | None = 1,
-        cooling_coil_type: Literal[
-            "", "ChilledWater", "ChilledWaterDetailedFlatModel", "HeatExchangerAssistedChilledWater"
-        ]
+        cooling_coil_type: Literal["ChilledWater", "ChilledWaterDetailedFlatModel", "HeatExchangerAssistedChilledWater"]
         | None = "ChilledWater",
         cooling_coil_availability_schedule_name: str | None = ...,
         cooling_coil_design_setpoint: float | None = 14,
-        heating_coil_type: Literal["", "Electric", "HotWater"] | None = "HotWater",
+        heating_coil_type: Literal["Electric", "HotWater"] | None = "HotWater",
         heating_coil_availability_schedule_name: str | None = ...,
         heating_coil_design_setpoint: float | None = 50,
         dedicated_outdoor_air_system_name: str | None = ...,
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
@@ -256,9 +251,9 @@ class HVACTemplateZoneFanCoil:
         low_speed_supply_air_flow_ratio: float | None = 0.33,
         medium_speed_supply_air_flow_ratio: float | None = 0.66,
         outdoor_air_schedule_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
 
@@ -280,7 +275,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater:
         availability_schedule_name: str | None = ...,
         rated_average_water_temperature: float | None = 87.78,
         rated_water_mass_flow_rate: float | None = 0.063,
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         surface_fractions: Sequence[
             _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup
@@ -407,14 +402,10 @@ class GeneratorWindTurbine:
         cut_in_wind_speed: float,
         cut_out_wind_speed: float,
         availability_schedule_name: str | None = ...,
-        rotor_type: Literal["", "HorizontalAxisWindTurbine", "VerticalAxisWindTurbine"]
+        rotor_type: Literal["HorizontalAxisWindTurbine", "VerticalAxisWindTurbine"]
         | None = "HorizontalAxisWindTurbine",
         power_control: Literal[
-            "",
-            "FixedSpeedFixedPitch",
-            "FixedSpeedVariablePitch",
-            "VariableSpeedFixedPitch",
-            "VariableSpeedVariablePitch",
+            "FixedSpeedFixedPitch", "FixedSpeedVariablePitch", "VariableSpeedFixedPitch", "VariableSpeedVariablePitch"
         ]
         | None = "VariableSpeedVariablePitch",
         number_of_blades: float | None = 3,

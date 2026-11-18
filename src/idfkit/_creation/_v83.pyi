@@ -32,7 +32,7 @@ class AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2:
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
-        fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None = "ConstantSpeed",
+        fan_control_type: Literal["ConstantSpeed", "VariableSpeed"] | None = "ConstantSpeed",
         minimum_fan_turn_down_ratio: float | None = 0.3,
         heating_control_type: Literal["Modulated", "Staged"] | None = ...,
         design_heating_discharge_air_temperature: float | None = 32.1,
@@ -55,8 +55,8 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1:
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
-        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        hydronic_tubing_length: float | Literal["Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         maximum_hot_water_flow: float | Literal["Autosize"] | None = ...,
         heating_water_inlet_node_name: str | None = ...,
         heating_water_outlet_node_name: str | None = ...,
@@ -64,7 +64,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1:
         maximum_cold_water_flow: float | Literal["Autosize"] | None = ...,
         cooling_water_inlet_node_name: str | None = ...,
         cooling_water_outlet_node_name: str | None = ...,
-        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
+        number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` and add it to the document.

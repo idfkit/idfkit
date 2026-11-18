@@ -20,7 +20,7 @@ class GasEquipment_v8_9_to_v9_5:
         zone_or_zonelist_name: str,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -51,10 +51,10 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4:
         fraction_radiant: float,
         availability_schedule_name: str | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         degree_of_subcooling: float | None = 5,
@@ -82,16 +82,7 @@ class CoilHeatingFuel_v8_9_to_v9_2:
         air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
         fuel_type: Literal[
-            "",
-            "Diesel",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gas",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
+            "Diesel", "FuelOil#1", "FuelOil#2", "Gas", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
         ]
         | None = "Gas",
         burner_efficiency: float | None = 0.8,

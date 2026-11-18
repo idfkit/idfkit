@@ -18,7 +18,7 @@ class ShadingSiteDetailed:
         /,
         *,
         transmittance_schedule_name: str | None = ...,
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.ShadingSiteDetailedVerticesItem | _g.ShadingSiteDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``Shading:Site:Detailed`` and add it to the document.
@@ -34,15 +34,15 @@ class PeopleDefinition:
         name: str,
         /,
         *,
-        number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None = "People",
+        number_of_people_calculation_method: Literal["Area/Person", "People", "People/Area"] | None = "People",
         number_of_people: float | None = ...,
         people_per_floor_area: float | None = ...,
         floor_area_per_person: float | None = ...,
         fraction_radiant: float | None = 0.3,
-        sensible_heat_fraction: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sensible_heat_fraction: float | Literal["Autocalculate"] | None = "Autocalculate",
         carbon_dioxide_generation_rate: float | None = ...,
-        enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None = "No",
-        mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "EnclosureAveraged", "SurfaceWeighted"]
+        enable_ashrae_55_comfort_warnings: Literal["No", "Yes"] | None = "No",
+        mean_radiant_temperature_calculation_type: Literal["AngleFactor", "EnclosureAveraged", "SurfaceWeighted"]
         | None = "EnclosureAveraged",
         thermal_comfort_model_1_type: Literal[
             "AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"
@@ -138,7 +138,7 @@ class HVACTemplatePlantBoiler:
         /,
         *,
         boiler_type: Literal["CondensingHotWaterBoiler", "DistrictHotWater", "HotWaterBoiler"],
-        capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        capacity: float | Literal["Autosize"] | None = "Autosize",
         efficiency: float | None = 0.8,
         fuel_type: Literal[
             "Coal",
@@ -176,7 +176,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteamDesign:
         *,
         fraction_radiant: float,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
         heating_design_capacity_per_floor_area: float | None = ...,
@@ -232,8 +232,8 @@ class EvaporativeCoolerIndirectCelDekPad:
         primary_air_inlet_node_name: str,
         primary_air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        direct_pad_area: float | Literal["", "Autosize"] | None = "Autosize",
-        direct_pad_depth: float | Literal["", "Autosize"] | None = "Autosize",
+        direct_pad_area: float | Literal["Autosize"] | None = "Autosize",
+        direct_pad_depth: float | Literal["Autosize"] | None = "Autosize",
         secondary_air_fan_total_efficiency: float | None = ...,
         control_type: str | None = ...,
         water_supply_storage_tank_name: str | None = ...,

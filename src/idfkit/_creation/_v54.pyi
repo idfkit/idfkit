@@ -43,12 +43,12 @@ class RunPeriod_v9_0_to_v9_5:
         end_year: float | None = ...,
         day_of_week_for_start_day: Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"]
         | None = ...,
-        use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
-        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        treat_weather_as_actual: Literal["", "No", "Yes"] | None = "No",
+        use_weather_file_holidays_and_special_days: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        apply_weekend_holiday_rule: Literal["No", "Yes"] | None = "No",
+        use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        treat_weather_as_actual: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 
@@ -84,12 +84,11 @@ class SizingPeriodDesignDay_v9_0_to_v9_2:
         maximum_dry_bulb_temperature: float | None = ...,
         daily_dry_bulb_temperature_range: float | None = 0,
         dry_bulb_temperature_range_modifier_type: Literal[
-            "", "DefaultMultipliers", "DifferenceSchedule", "MultiplierSchedule", "TemperatureProfileSchedule"
+            "DefaultMultipliers", "DifferenceSchedule", "MultiplierSchedule", "TemperatureProfileSchedule"
         ]
         | None = "DefaultMultipliers",
         dry_bulb_temperature_range_modifier_day_schedule_name: str | None = ...,
         humidity_condition_type: Literal[
-            "",
             "DewPoint",
             "Enthalpy",
             "HumidityRatio",
@@ -106,10 +105,10 @@ class SizingPeriodDesignDay_v9_0_to_v9_2:
         enthalpy_at_maximum_dry_bulb: float | None = ...,
         daily_wet_bulb_temperature_range: float | None = ...,
         barometric_pressure: float | None = ...,
-        rain_indicator: Literal["", "No", "Yes"] | None = "No",
-        snow_indicator: Literal["", "No", "Yes"] | None = "No",
-        daylight_saving_time_indicator: Literal["", "No", "Yes"] | None = "No",
-        solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"]
+        rain_indicator: Literal["No", "Yes"] | None = "No",
+        snow_indicator: Literal["No", "Yes"] | None = "No",
+        daylight_saving_time_indicator: Literal["No", "Yes"] | None = "No",
+        solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"]
         | None = "ASHRAEClearSky",
         beam_solar_day_schedule_name: str | None = ...,
         diffuse_solar_day_schedule_name: str | None = ...,
@@ -286,10 +285,10 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v23_2_to_v25_1:
         number_of_speeds: int | None = 2,
         nominal_speed_level: int | None = 2,
         gross_rated_total_cooling_capacity_at_selected_nominal_speed_level: float
-        | Literal["", "Autosize"]
+        | Literal["Autosize"]
         | None = "Autosize",
-        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
+        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
         nominal_time_for_condensate_to_begin_leaving_the_coil: float | None = 0,
         initial_moisture_evaporation_rate_divided_by_steady_state_ac_latent_capacity: float | None = 0,
         maximum_cycling_rate: float | None = 0,

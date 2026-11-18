@@ -18,7 +18,7 @@ class SurfaceConvectionAlgorithmOutsideUserCurve:
         /,
         *,
         wind_speed_type_for_curve: Literal[
-            "", "HeightAdjust", "ParallelComponent", "ParallelComponentHeightAdjust", "WeatherFile"
+            "HeightAdjust", "ParallelComponent", "ParallelComponentHeightAdjust", "WeatherFile"
         ]
         | None = "HeightAdjust",
         hf_function_of_wind_speed_curve_name: str | None = ...,
@@ -93,21 +93,21 @@ class RoomAirSettingsUnderFloorAirDistributionInterior:
         /,
         *,
         zone_name: str,
-        number_of_diffusers: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        power_per_plume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        design_effective_area_of_diffuser: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        diffuser_slot_angle_from_vertical: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        number_of_diffusers: float | Literal["Autocalculate"] | None = "Autocalculate",
+        power_per_plume: float | Literal["Autocalculate"] | None = "Autocalculate",
+        design_effective_area_of_diffuser: float | Literal["Autocalculate"] | None = "Autocalculate",
+        diffuser_slot_angle_from_vertical: float | Literal["Autocalculate"] | None = "Autocalculate",
         thermostat_height: float | None = 1.2,
         comfort_height: float | None = 1.1,
         temperature_difference_threshold_for_reporting: float | None = 0.4,
-        floor_diffuser_type: Literal["", "Custom", "HorizontalSwirl", "LinearBarGrille", "Swirl", "VariableArea"]
+        floor_diffuser_type: Literal["Custom", "HorizontalSwirl", "LinearBarGrille", "Swirl", "VariableArea"]
         | None = "Swirl",
-        transition_height: float | Literal["", "Autocalculate"] | None = 1.7,
-        coefficient_a: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        coefficient_b: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        coefficient_c: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        coefficient_d: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        coefficient_e: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        transition_height: float | Literal["Autocalculate"] | None = 1.7,
+        coefficient_a: float | Literal["Autocalculate"] | None = "Autocalculate",
+        coefficient_b: float | Literal["Autocalculate"] | None = "Autocalculate",
+        coefficient_c: float | Literal["Autocalculate"] | None = "Autocalculate",
+        coefficient_d: float | Literal["Autocalculate"] | None = "Autocalculate",
+        coefficient_e: float | Literal["Autocalculate"] | None = "Autocalculate",
     ) -> None:
         """Create a new ``RoomAirSettings:UnderFloorAirDistributionInterior`` and add it to the document.
 
@@ -143,8 +143,8 @@ class AirflowNetworkMultiZoneExternalNode:
         *,
         wind_pressure_coefficient_curve_name: str,
         external_node_height: float | None = 0,
-        symmetric_wind_pressure_coefficient_curve: Literal["", "No", "Yes"] | None = "No",
-        wind_angle_type: Literal["", "Absolute", "Relative"] | None = "Absolute",
+        symmetric_wind_pressure_coefficient_curve: Literal["No", "Yes"] | None = "No",
+        wind_angle_type: Literal["Absolute", "Relative"] | None = "Absolute",
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:ExternalNode`` and add it to the document.
 
@@ -160,34 +160,32 @@ class HVACTemplateSystemPackagedVAV:
         /,
         *,
         system_availability_schedule_name: str | None = ...,
-        supply_fan_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        supply_fan_minimum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        supply_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        supply_fan_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        supply_fan_minimum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        supply_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_fan_total_efficiency: float | None = 0.7,
         supply_fan_delta_pressure: float | None = 1000,
         supply_fan_motor_efficiency: float | None = 0.9,
         supply_fan_motor_in_air_stream_fraction: float | None = 1,
-        cooling_coil_type: Literal["", "TwoSpeedDX", "TwoSpeedHumidControlDX"] | None = "TwoSpeedDX",
+        cooling_coil_type: Literal["TwoSpeedDX", "TwoSpeedHumidControlDX"] | None = "TwoSpeedDX",
         cooling_coil_availability_schedule_name: str | None = ...,
         cooling_coil_setpoint_schedule_name: str | None = ...,
         cooling_coil_design_setpoint: float | None = 12.8,
-        cooling_coil_gross_rated_total_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_coil_gross_rated_total_capacity: float | Literal["Autosize"] | None = "Autosize",
+        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["Autosize"] | None = "Autosize",
         cooling_coil_gross_rated_cop: float | None = 3,
-        heating_coil_type: Literal["", "Electric", "Gas", "HotWater", "None"] | None = "None",
+        heating_coil_type: Literal["Electric", "Gas", "HotWater", "None"] | None = "None",
         heating_coil_availability_schedule_name: str | None = ...,
         heating_coil_setpoint_schedule_name: str | None = ...,
         heating_coil_design_setpoint: float | None = 10,
-        heating_coil_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_coil_capacity: float | Literal["Autosize"] | None = "Autosize",
         gas_heating_coil_efficiency: float | None = 0.8,
         gas_heating_coil_parasitic_electric_load: float | None = 0,
-        maximum_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        minimum_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        minimum_outdoor_air_control_type: Literal["", "FixedMinimum", "ProportionalMinimum"]
-        | None = "ProportionalMinimum",
+        maximum_outdoor_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        minimum_outdoor_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        minimum_outdoor_air_control_type: Literal["FixedMinimum", "ProportionalMinimum"] | None = "ProportionalMinimum",
         minimum_outdoor_air_schedule_name: str | None = ...,
         economizer_type: Literal[
-            "",
             "DifferentialDryBulb",
             "DifferentialDryBulbAndEnthalpy",
             "DifferentialEnthalpy",
@@ -198,8 +196,7 @@ class HVACTemplateSystemPackagedVAV:
             "NoEconomizer",
         ]
         | None = "NoEconomizer",
-        economizer_lockout: Literal["", "LockoutWithCompressor", "LockoutWithHeating", "NoLockout"]
-        | None = "NoLockout",
+        economizer_lockout: Literal["LockoutWithCompressor", "LockoutWithHeating", "NoLockout"] | None = "NoLockout",
         economizer_maximum_limit_dry_bulb_temperature: float | None = ...,
         economizer_maximum_limit_enthalpy: float | None = ...,
         economizer_maximum_limit_dewpoint_temperature: float | None = ...,
@@ -207,7 +204,6 @@ class HVACTemplateSystemPackagedVAV:
         supply_plenum_name: str | None = ...,
         return_plenum_name: str | None = ...,
         supply_fan_part_load_power_coefficients: Literal[
-            "",
             "ASHRAE90.1-2004AppendixG",
             "InletVaneDampers",
             "OutletDampers",
@@ -215,34 +211,33 @@ class HVACTemplateSystemPackagedVAV:
             "VariableSpeedMotorPressureReset",
         ]
         | None = "InletVaneDampers",
-        night_cycle_control: Literal["", "CycleOnAny", "CycleOnAnyZoneFansOnly", "CycleOnControlZone", "StayOff"]
+        night_cycle_control: Literal["CycleOnAny", "CycleOnAnyZoneFansOnly", "CycleOnControlZone", "StayOff"]
         | None = "StayOff",
         night_cycle_control_zone_name: str | None = ...,
-        heat_recovery_type: Literal["", "Enthalpy", "None", "Sensible"] | None = "None",
+        heat_recovery_type: Literal["Enthalpy", "None", "Sensible"] | None = "None",
         sensible_heat_recovery_effectiveness: float | None = 0.7,
         latent_heat_recovery_effectiveness: float | None = 0.65,
         cooling_coil_setpoint_reset_type: Literal[
-            "", "None", "OutdoorAirTemperatureReset", "Warmest", "WarmestTemperatureFirst"
+            "None", "OutdoorAirTemperatureReset", "Warmest", "WarmestTemperatureFirst"
         ]
         | None = "None",
-        heating_coil_setpoint_reset_type: Literal["", "None", "OutdoorAirTemperatureReset"] | None = "None",
-        dehumidification_control_type: Literal["", "CoolReheat", "None"] | None = "None",
+        heating_coil_setpoint_reset_type: Literal["None", "OutdoorAirTemperatureReset"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "None"] | None = "None",
         dehumidification_control_zone_name: str | None = ...,
         dehumidification_setpoint: float | None = 60,
-        humidifier_type: Literal["", "ElectricSteam", "None"] | None = "None",
+        humidifier_type: Literal["ElectricSteam", "None"] | None = "None",
         humidifier_availability_schedule_name: str | None = ...,
         humidifier_rated_capacity: float | None = ...,
-        humidifier_rated_electric_power: float | Literal["", "Autosize"] | None = "Autosize",
+        humidifier_rated_electric_power: float | Literal["Autosize"] | None = "Autosize",
         humidifier_control_zone_name: str | None = ...,
         humidifier_setpoint: float | None = 30,
-        sizing_option: Literal["", "Coincident", "NonCoincident"] | None = "NonCoincident",
-        return_fan: Literal["", "No", "Yes"] | None = "No",
+        sizing_option: Literal["Coincident", "NonCoincident"] | None = "NonCoincident",
+        return_fan: Literal["No", "Yes"] | None = "No",
         return_fan_total_efficiency: float | None = 0.7,
         return_fan_delta_pressure: float | None = 500,
         return_fan_motor_efficiency: float | None = 0.9,
         return_fan_motor_in_air_stream_fraction: float | None = 1,
         return_fan_part_load_power_coefficients: Literal[
-            "",
             "ASHRAE90.1-2004AppendixG",
             "InletVaneDampers",
             "OutletDampers",
@@ -273,14 +268,13 @@ class AnyZoneHVACCoolingPanelRadiantConvectiveWater:
         rated_inlet_space_temperature: float | None = 24,
         rated_water_mass_flow_rate: float | None = 0.063,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "CoolingDesignCapacity",
         cooling_design_capacity: float | Literal["Autosize"] | None = ...,
         cooling_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_cooling_design_capacity: float | None = ...,
         control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -292,7 +286,7 @@ class AnyZoneHVACCoolingPanelRadiantConvectiveWater:
         | None = "MeanAirTemperature",
         cooling_control_throttling_range: float | None = 0.5,
         cooling_control_temperature_schedule_name: str | None = ...,
-        condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
+        condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
         surface_fractions: Sequence[
@@ -351,7 +345,7 @@ class RefrigerationSubcooler:
         name: str,
         /,
         *,
-        subcooler_type: Literal["", "LiquidSuction", "Mechanical"] | None = "LiquidSuction",
+        subcooler_type: Literal["LiquidSuction", "Mechanical"] | None = "LiquidSuction",
         liquid_suction_design_subcooling_temperature_difference: float | None = ...,
         design_liquid_inlet_temperature: float | None = ...,
         design_vapor_inlet_temperature: float | None = ...,
@@ -371,7 +365,7 @@ class OutputControlResilienceSummaries:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        heat_index_algorithm: Literal["", "Extended", "Simplified"] | None = "Simplified",
+        heat_index_algorithm: Literal["Extended", "Simplified"] | None = "Simplified",
     ) -> None:
         """Create a new ``OutputControl:ResilienceSummaries`` and add it to the document.
 

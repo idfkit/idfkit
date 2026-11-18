@@ -19,7 +19,6 @@ class AnySizingPeriodWeatherFileDays:
         end_month: int,
         end_day_of_month: int,
         day_of_week_for_start_day: Literal[
-            "",
             "CustomDay1",
             "CustomDay2",
             "Friday",
@@ -33,8 +32,8 @@ class AnySizingPeriodWeatherFileDays:
             "WinterDesignDay",
         ]
         | None = "Monday",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_rain_and_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_rain_and_snow_indicators: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``SizingPeriod:WeatherFileDays`` and add it to the document.
 
@@ -68,7 +67,7 @@ class ExteriorWaterEquipment:
         *,
         schedule_name: str,
         design_level: float,
-        fuel_use_type: Literal["", "Water"] | None = "Water",
+        fuel_use_type: Literal["Water"] | None = "Water",
         end_use_subcategory: str | None = "General",
     ) -> None:
         """Create a new ``Exterior:WaterEquipment`` and add it to the document.
@@ -109,12 +108,11 @@ class ZoneHVACVentilatedSlab:
         coil_option_type: Literal["Cooling", "Heating", "HeatingAndCooling", "None"],
         availability_schedule_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
-        system_configuration_type: Literal["", "SeriesSlabs", "SlabAndZone", "SlabOnly"] | None = "SlabOnly",
+        system_configuration_type: Literal["SeriesSlabs", "SlabAndZone", "SlabOnly"] | None = "SlabOnly",
         hollow_core_inside_diameter: float | None = 0.05,
         hollow_core_length: float | None = ...,
         number_of_cores: float | None = ...,
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -217,9 +215,9 @@ class AirLoopHVACUnitaryHeatPumpAirToAir:
         availability_schedule_name: str | None = ...,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         dx_heating_coil_sizing_ratio: float | None = 1,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir`` and add it to the document.
@@ -269,7 +267,7 @@ class CoolingTowerVariableSpeed:
         design_water_flow_rate: float | Literal["Autosize"],
         design_air_flow_rate: float | Literal["Autosize"],
         design_fan_power: float | Literal["Autosize"],
-        model_type: Literal["", "CoolToolsCrossFlow", "CoolToolsUserDefined", "YorkCalc", "YorkCalcUserDefined"]
+        model_type: Literal["CoolToolsCrossFlow", "CoolToolsUserDefined", "YorkCalc", "YorkCalcUserDefined"]
         | None = "YorkCalc",
         model_coefficient_name: str | None = ...,
         design_inlet_air_wet_bulb_temperature: float | None = 25.6,
@@ -281,16 +279,16 @@ class CoolingTowerVariableSpeed:
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
-        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
+        evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None = "SaturatedExit",
         evaporation_loss_factor: float | None = 0.2,
         drift_loss_percent: float | None = 0.008,
-        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
+        blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
         outdoor_air_inlet_node_name: str | None = ...,
         number_of_cells: int | None = 1,
-        cell_control: Literal["", "MaximalCell", "MinimalCell"] | None = "MaximalCell",
+        cell_control: Literal["MaximalCell", "MinimalCell"] | None = "MaximalCell",
         cell_minimum_water_flow_rate_fraction: float | None = 0.33,
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
@@ -312,7 +310,7 @@ class RefrigerationCondenserCascade:
         rated_condensing_temperature: float,
         rated_effective_total_heat_rejection_rate: float,
         rated_approach_temperature_difference: float | None = 3,
-        condensing_temperature_control_type: Literal["", "Fixed", "Float"] | None = "Fixed",
+        condensing_temperature_control_type: Literal["Fixed", "Float"] | None = "Fixed",
         condenser_refrigerant_operating_charge_inventory: float | None = ...,
         condensate_receiver_refrigerant_inventory: float | None = ...,
         condensate_piping_refrigerant_inventory: float | None = ...,
@@ -331,7 +329,7 @@ class FaultModelHumidistatOffset:
         /,
         *,
         humidistat_name: str,
-        humidistat_offset_type: Literal["", "ThermostatOffsetDependent", "ThermostatOffsetIndependent"]
+        humidistat_offset_type: Literal["ThermostatOffsetDependent", "ThermostatOffsetIndependent"]
         | None = "ThermostatOffsetIndependent",
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,

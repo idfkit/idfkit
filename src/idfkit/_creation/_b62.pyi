@@ -36,9 +36,9 @@ class Space:
         /,
         *,
         zone_name: str,
-        ceiling_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        volume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        ceiling_height: float | Literal["Autocalculate"] | None = "Autocalculate",
+        volume: float | Literal["Autocalculate"] | None = "Autocalculate",
+        floor_area: float | Literal["Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
         construction_assignment_set_name: str | None = ...,
         tags: Sequence[_g.SpaceTagsItem | _g.SpaceTagsGroup] = ...,
@@ -101,7 +101,7 @@ class AnySizingPlant:
         loop_type: Literal["Condenser", "Cooling", "Heating", "Steam"],
         design_loop_exit_temperature: float,
         loop_design_temperature_difference: float,
-        sizing_option: Literal["", "Coincident", "NonCoincident"] | None = "NonCoincident",
+        sizing_option: Literal["Coincident", "NonCoincident"] | None = "NonCoincident",
         zone_timesteps_in_averaging_window: int | None = 1,
         coincident_sizing_factor_mode: Literal[
             "GlobalCoolingSizingFactor", "GlobalHeatingSizingFactor", "LoopComponentSizingFactor", "None"
@@ -273,10 +273,10 @@ class ZoneHVACBaseboardConvectiveElectric:
         *,
         availability_schedule_name: str | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         efficiency: float | None = 1,
@@ -309,10 +309,10 @@ class CoilPerformanceDXCooling:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         condenser_air_inlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
         evaporative_condenser_effectiveness: float | None = 0.9,
         evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         sensible_heat_ratio_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
     ) -> None:
@@ -334,7 +334,7 @@ class SolarCollectorPerformanceFlatPlate:
         test_correlation_type: Literal["Average", "Inlet", "Outlet"],
         coefficient_1_of_efficiency_equation: float,
         coefficient_2_of_efficiency_equation: float,
-        test_fluid: Literal["", "Water"] | None = "Water",
+        test_fluid: Literal["Water"] | None = "Water",
         coefficient_3_of_efficiency_equation: float | None = ...,
         coefficient_2_of_incident_angle_modifier: float | None = ...,
         coefficient_3_of_incident_angle_modifier: float | None = ...,
@@ -359,7 +359,7 @@ class AnyCoolingTowerSingleSpeed:
         design_water_flow_rate: float | Literal["Autosize"] | None = ...,
         design_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
         free_convection_u_factor_times_area_value_sizing_factor: float | None = 0.1,
-        performance_input_method: Literal["", "NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
+        performance_input_method: Literal["NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"]
         | None = "UFactorTimesAreaAndDesignWaterFlowRate",
         heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
         nominal_capacity: float | None = ...,
@@ -367,8 +367,8 @@ class AnyCoolingTowerSingleSpeed:
         free_convection_nominal_capacity_sizing_factor: float | None = 0.1,
         design_inlet_air_dry_bulb_temperature: float | None = 35,
         design_inlet_air_wet_bulb_temperature: float | None = 25.6,
-        design_approach_temperature: float | Literal["", "Autosize"] | None = "Autosize",
-        design_range_temperature: float | Literal["", "Autosize"] | None = "Autosize",
+        design_approach_temperature: float | Literal["Autosize"] | None = "Autosize",
+        design_range_temperature: float | Literal["Autosize"] | None = "Autosize",
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
@@ -380,9 +380,9 @@ class AnyCoolingTowerSingleSpeed:
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
         outdoor_air_inlet_node_name: str | None = ...,
-        capacity_control: Literal["", "FanCycling", "FluidBypass"] | None = "FanCycling",
+        capacity_control: Literal["FanCycling", "FluidBypass"] | None = "FanCycling",
         number_of_cells: int | None = 1,
-        cell_control: Literal["", "MaximalCell", "MinimalCell"] | None = ...,
+        cell_control: Literal["MaximalCell", "MinimalCell"] | None = ...,
         cell_minimum_water_flow_rate_fraction: float | None = 0.33,
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,

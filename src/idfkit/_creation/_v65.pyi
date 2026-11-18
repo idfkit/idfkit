@@ -66,7 +66,7 @@ class OutputMeter_v8_9_to_v22_1:
         *,
         key_name: str,
         reporting_frequency: Literal[
-            "", "Annual", "Daily", "Detailed", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
+            "Annual", "Daily", "Detailed", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
     ) -> None:

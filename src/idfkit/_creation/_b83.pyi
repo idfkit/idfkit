@@ -16,7 +16,7 @@ class AnySurfaceConvectionAlgorithmInside:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None = "TARP",
+        algorithm: Literal["AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None = "TARP",
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Inside`` and add it to the document.
 
@@ -35,7 +35,7 @@ class SiteLocation:
         longitude: float | None = 0,
         time_zone: float | None = 0,
         elevation: float | None = 0,
-        keep_site_location_information: Literal["", "No", "Yes"] | None = "No",
+        keep_site_location_information: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``Site:Location`` and add it to the document.
 
@@ -161,7 +161,7 @@ class GroundHeatTransferBasementInterior:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        cond_flag_is_the_basement_conditioned_: Literal["", "FALSE", "TRUE"] | None = "TRUE",
+        cond_flag_is_the_basement_conditioned_: Literal["FALSE", "TRUE"] | None = "TRUE",
         hin_downward_convection_only_heat_transfer_coefficient: float | None = 0.92,
         hin_upward_convection_only_heat_transfer_coefficient: float | None = 4.04,
         hin_horizontal_convection_only_heat_transfer_coefficient: float | None = 3.08,
@@ -211,15 +211,15 @@ class EvaporativeCoolerIndirectResearchSpecial:
         wetbulb_effectiveness_flow_ratio_modifier_curve_name: str | None = ...,
         cooler_drybulb_design_effectiveness: float | None = ...,
         drybulb_effectiveness_flow_ratio_modifier_curve_name: str | None = ...,
-        recirculating_water_pump_design_power: float | Literal["", "Autosize"] | None = "Autosize",
+        recirculating_water_pump_design_power: float | Literal["Autosize"] | None = "Autosize",
         water_pump_power_sizing_factor: float | None = 90,
         water_pump_power_modifier_curve_name: str | None = ...,
-        secondary_air_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        secondary_air_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         secondary_air_flow_scaling_factor: float | None = 1,
-        secondary_air_fan_design_power: float | Literal["", "Autosize"] | None = "Autosize",
+        secondary_air_fan_design_power: float | Literal["Autosize"] | None = "Autosize",
         secondary_air_fan_sizing_specific_power: float | None = 250,
         secondary_air_fan_power_modifier_curve_name: str | None = ...,
-        primary_air_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        primary_air_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         dewpoint_effectiveness_factor: float | None = ...,
         relief_air_inlet_node_name: str | None = ...,
         water_supply_storage_tank_name: str | None = ...,

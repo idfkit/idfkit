@@ -70,8 +70,8 @@ class MaterialPropertyMoisturePenetrationDepthSettings:
         moisture_equation_coefficient_d: float,
         coating_layer_thickness: float,
         coating_layer_water_vapor_diffusion_resistance_factor: float,
-        surface_layer_penetration_depth: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        deep_layer_penetration_depth: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        surface_layer_penetration_depth: float | Literal["Autocalculate"] | None = "Autocalculate",
+        deep_layer_penetration_depth: float | Literal["Autocalculate"] | None = "Autocalculate",
     ) -> None:
         """Create a new ``MaterialProperty:MoisturePenetrationDepth:Settings`` and add it to the document.
 
@@ -125,7 +125,7 @@ class AnySteamEquipment:
         narrow_with_as_version_first: Never,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -218,7 +218,7 @@ class AnyPipingSystemUndergroundDomain:
         z_direction_geometric_coefficient: float | None = 1.3,
         soil_moisture_content_volume_fraction: float | None = 30,
         soil_moisture_content_volume_fraction_at_saturation: float | None = 50,
-        this_domain_includes_basement_surface_interaction: Literal["", "No", "Yes"] | None = "No",
+        this_domain_includes_basement_surface_interaction: Literal["No", "Yes"] | None = "No",
         width_of_basement_floor_in_ground_domain: float | None = ...,
         depth_of_basement_wall_in_ground_domain: float | None = ...,
         shift_pipe_x_coordinates_by_basement_width: Literal["No", "Yes"] | None = ...,
@@ -250,7 +250,7 @@ class AnyChillerEngineDriven:
         chilled_water_outlet_node_name: str,
         temperature_rise_coefficient: float,
         fuel_type: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"],
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
         minimum_part_load_ratio: float | None = ...,
@@ -280,11 +280,10 @@ class AnyChillerEngineDriven:
         maximum_exhaust_flow_per_unit_of_power_output: float | None = ...,
         design_minimum_exhaust_temperature: float | None = ...,
         fuel_higher_heating_value: float | None = ...,
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         maximum_temperature_for_heat_recovery_at_heat_recovery_outlet_node: float | None = 60,
         sizing_factor: float | None = 1,
         basin_heater_capacity: float | None = 0,

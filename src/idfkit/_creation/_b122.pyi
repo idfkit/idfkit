@@ -38,7 +38,7 @@ class AirLoopHVAC:
         supply_side_outlet_node_names: str,
         controller_list_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
-        design_supply_air_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        design_supply_air_flow_rate: float | Literal["Autosize"] | None = 0,
         connector_list_name: str | None = ...,
         demand_side_outlet_node_name: str | None = ...,
         design_return_air_flow_fraction_of_supply_air_flow: float | None = 1,

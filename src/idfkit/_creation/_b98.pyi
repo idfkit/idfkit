@@ -93,15 +93,14 @@ class HVACTemplateSystemDedicatedOutdoorAir:
         /,
         *,
         system_availability_schedule_name: str | None = ...,
-        air_outlet_type: Literal["", "DirectIntoZone"] | None = "DirectIntoZone",
-        supply_fan_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        air_outlet_type: Literal["DirectIntoZone"] | None = "DirectIntoZone",
+        supply_fan_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         supply_fan_total_efficiency: float | None = 0.7,
         supply_fan_delta_pressure: float | None = 1000,
         supply_fan_motor_efficiency: float | None = 0.9,
         supply_fan_motor_in_air_stream_fraction: float | None = 1,
-        supply_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        supply_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         cooling_coil_type: Literal[
-            "",
             "ChilledWater",
             "ChilledWaterDetailedFlatModel",
             "HeatExchangerAssistedChilledWater",
@@ -113,7 +112,7 @@ class HVACTemplateSystemDedicatedOutdoorAir:
         ]
         | None = "ChilledWater",
         cooling_coil_availability_schedule_name: str | None = ...,
-        cooling_coil_setpoint_control_type: Literal["", "FixedSetpoint", "OutdoorAirTemperatureReset", "Scheduled"]
+        cooling_coil_setpoint_control_type: Literal["FixedSetpoint", "OutdoorAirTemperatureReset", "Scheduled"]
         | None = "FixedSetpoint",
         cooling_coil_design_setpoint: float | None = 12.8,
         cooling_coil_setpoint_schedule_name: str | None = ...,
@@ -121,12 +120,12 @@ class HVACTemplateSystemDedicatedOutdoorAir:
         cooling_coil_reset_outdoor_dry_bulb_low: float | None = 15.6,
         cooling_coil_setpoint_at_outdoor_dry_bulb_high: float | None = 12.8,
         cooling_coil_reset_outdoor_dry_bulb_high: float | None = 23.3,
-        dx_cooling_coil_gross_rated_total_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        dx_cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["", "Autosize"] | None = "Autosize",
+        dx_cooling_coil_gross_rated_total_capacity: float | Literal["Autosize"] | None = "Autosize",
+        dx_cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["Autosize"] | None = "Autosize",
         dx_cooling_coil_gross_rated_cop: float | None = 3,
-        heating_coil_type: Literal["", "Electric", "Gas", "HotWater", "None"] | None = "HotWater",
+        heating_coil_type: Literal["Electric", "Gas", "HotWater", "None"] | None = "HotWater",
         heating_coil_availability_schedule_name: str | None = ...,
-        heating_coil_setpoint_control_type: Literal["", "FixedSetpoint", "OutdoorAirTemperatureReset", "Scheduled"]
+        heating_coil_setpoint_control_type: Literal["FixedSetpoint", "OutdoorAirTemperatureReset", "Scheduled"]
         | None = "FixedSetpoint",
         heating_coil_design_setpoint: float | None = 12.2,
         heating_coil_setpoint_schedule_name: str | None = ...,
@@ -136,23 +135,21 @@ class HVACTemplateSystemDedicatedOutdoorAir:
         heating_coil_reset_outdoor_dry_bulb_high: float | None = 12.2,
         gas_heating_coil_efficiency: float | None = 0.8,
         gas_heating_coil_parasitic_electric_load: float | None = 0,
-        heat_recovery_type: Literal["", "Enthalpy", "None", "Sensible"] | None = "None",
+        heat_recovery_type: Literal["Enthalpy", "None", "Sensible"] | None = "None",
         heat_recovery_sensible_effectiveness: float | None = 0.7,
         heat_recovery_latent_effectiveness: float | None = 0.65,
-        heat_recovery_heat_exchanger_type: Literal["", "Plate", "Rotary"] | None = "Plate",
+        heat_recovery_heat_exchanger_type: Literal["Plate", "Rotary"] | None = "Plate",
         heat_recovery_frost_control_type: Literal[
-            "", "ExhaustAirRecirculation", "ExhaustOnly", "MinimumExhaustTemperature", "None"
+            "ExhaustAirRecirculation", "ExhaustOnly", "MinimumExhaustTemperature", "None"
         ]
         | None = "None",
-        dehumidification_control_type: Literal[
-            "", "CoolReheatDesuperheater", "CoolReheatHeatingCoil", "Multimode", "None"
-        ]
+        dehumidification_control_type: Literal["CoolReheatDesuperheater", "CoolReheatHeatingCoil", "Multimode", "None"]
         | None = "None",
         dehumidification_setpoint: float | None = 0.00924,
-        humidifier_type: Literal["", "ElectricSteam", "None"] | None = "None",
+        humidifier_type: Literal["ElectricSteam", "None"] | None = "None",
         humidifier_availability_schedule_name: str | None = ...,
         humidifier_rated_capacity: float | None = ...,
-        humidifier_rated_electric_power: float | Literal["", "Autosize"] | None = "Autosize",
+        humidifier_rated_electric_power: float | Literal["Autosize"] | None = "Autosize",
         humidifier_constant_setpoint: float | None = 0.003,
         dehumidification_setpoint_schedule_name: str | None = ...,
         humidifier_setpoint_schedule_name: str | None = ...,
@@ -175,7 +172,6 @@ class ZoneControlThermostatOperativeTemperature:
         fixed_radiative_fraction: float | None = ...,
         radiative_fraction_schedule_name: str | None = ...,
         adaptive_comfort_model_type: Literal[
-            "",
             "AdaptiveASH5580PercentUpperLine",
             "AdaptiveASH5590PercentUpperLine",
             "AdaptiveASH55CentralLine",
@@ -205,15 +201,15 @@ class ZoneHVACEnergyRecoveryVentilatorController:
         enthalpy_high_limit: float | None = ...,
         dewpoint_temperature_limit: float | None = ...,
         electronic_enthalpy_limit_curve_name: str | None = ...,
-        exhaust_air_temperature_limit: Literal["", "ExhaustAirTemperatureLimit", "NoExhaustAirTemperatureLimit"]
+        exhaust_air_temperature_limit: Literal["ExhaustAirTemperatureLimit", "NoExhaustAirTemperatureLimit"]
         | None = "NoExhaustAirTemperatureLimit",
-        exhaust_air_enthalpy_limit: Literal["", "ExhaustAirEnthalpyLimit", "NoExhaustAirEnthalpyLimit"]
+        exhaust_air_enthalpy_limit: Literal["ExhaustAirEnthalpyLimit", "NoExhaustAirEnthalpyLimit"]
         | None = "NoExhaustAirEnthalpyLimit",
         time_of_day_economizer_flow_control_schedule_name: str | None = ...,
-        high_humidity_control_flag: Literal["", "No", "Yes"] | None = "No",
+        high_humidity_control_flag: Literal["No", "Yes"] | None = "No",
         humidistat_control_zone_name: str | None = ...,
         high_humidity_outdoor_air_flow_ratio: float | None = 1,
-        control_high_indoor_humidity_based_on_outdoor_humidity_ratio: Literal["", "No", "Yes"] | None = "Yes",
+        control_high_indoor_humidity_based_on_outdoor_humidity_ratio: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``ZoneHVAC:EnergyRecoveryVentilator:Controller`` and add it to the document.
 
@@ -280,7 +276,7 @@ class PumpVariableSpeedCondensate:
         pump_flow_rate_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,

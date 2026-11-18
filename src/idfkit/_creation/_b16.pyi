@@ -58,20 +58,20 @@ class People:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         number_of_people_schedule_name: str,
         activity_level_schedule_name: str,
-        number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None = "People",
+        number_of_people_calculation_method: Literal["Area/Person", "People", "People/Area"] | None = "People",
         number_of_people: float | None = ...,
         people_per_floor_area: float | None = ...,
         floor_area_per_person: float | None = ...,
         fraction_radiant: float | None = 0.3,
-        sensible_heat_fraction: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sensible_heat_fraction: float | Literal["Autocalculate"] | None = "Autocalculate",
         carbon_dioxide_generation_rate: float | None = ...,
-        enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None = "No",
-        mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "EnclosureAveraged", "SurfaceWeighted"]
+        enable_ashrae_55_comfort_warnings: Literal["No", "Yes"] | None = "No",
+        mean_radiant_temperature_calculation_type: Literal["AngleFactor", "EnclosureAveraged", "SurfaceWeighted"]
         | None = "EnclosureAveraged",
         surface_name_angle_factor_list_name: str | None = ...,
         work_efficiency_schedule_name: str | None = ...,
         clothing_insulation_calculation_method: Literal[
-            "", "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
+            "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
         ]
         | None = "ClothingInsulationSchedule",
         clothing_insulation_calculation_method_schedule_name: str | None = ...,
@@ -149,7 +149,7 @@ class ZoneEarthtube:
         average_soil_surface_temperature: float,
         amplitude_of_soil_surface_temperature: float,
         phase_constant_of_soil_surface_temperature: float,
-        earthtube_type: Literal["", "Exhaust", "Intake", "Natural"] | None = "Natural",
+        earthtube_type: Literal["Exhaust", "Intake", "Natural"] | None = "Natural",
         fan_pressure_rise: float | None = 0,
         fan_total_efficiency: float | None = 1,
         pipe_radius: float | None = 1,
@@ -157,13 +157,13 @@ class ZoneEarthtube:
         pipe_length: float | None = 15,
         pipe_thermal_conductivity: float | None = 200,
         pipe_depth_under_ground_surface: float | None = 3,
-        soil_condition: Literal["", "HeavyAndDamp", "HeavyAndDry", "HeavyAndSaturated", "LightAndDry"]
+        soil_condition: Literal["HeavyAndDamp", "HeavyAndDry", "HeavyAndSaturated", "LightAndDry"]
         | None = "HeavyAndDamp",
         constant_term_flow_coefficient: float | None = 1,
         temperature_term_flow_coefficient: float | None = 0,
         velocity_term_flow_coefficient: float | None = 0,
         velocity_squared_term_flow_coefficient: float | None = 0,
-        earth_tube_model_type: Literal["", "Basic", "Vertical"] | None = "Basic",
+        earth_tube_model_type: Literal["Basic", "Vertical"] | None = "Basic",
         earth_tube_model_parameters: str | None = ...,
     ) -> None:
         """Create a new ``ZoneEarthtube`` and add it to the document.
@@ -234,8 +234,8 @@ class AirLoopHVACUnitaryHeatOnly:
         heating_coil_name: str,
         availability_schedule_name: str | None = ...,
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        maximum_supply_air_temperature: float | Literal["", "Autosize"] | None = 80,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatOnly`` and add it to the document.
 
@@ -254,7 +254,7 @@ class AnyHeaderedPumpsVariableSpeed:
         outlet_node_name: str,
         total_design_flow_rate: float | Literal["Autosize"] | None = ...,
         number_of_pumps_in_bank: int | None = ...,
-        flow_sequencing_control_scheme: Literal["", "Sequential"] | None = "Sequential",
+        flow_sequencing_control_scheme: Literal["Sequential"] | None = "Sequential",
         design_pump_head: float | None = 179352,
         design_power_consumption: float | Literal["Autosize"] | None = ...,
         motor_efficiency: float | None = 0.9,
@@ -264,11 +264,11 @@ class AnyHeaderedPumpsVariableSpeed:
         coefficient_3_of_the_part_load_performance_curve: float | None = 0,
         coefficient_4_of_the_part_load_performance_curve: float | None = 0,
         minimum_flow_rate_fraction: float | None = 0,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -290,7 +290,7 @@ class HeaderedPumpsVariableSpeed:
         outlet_node_name: str,
         total_design_flow_rate: float | Literal["Autosize"] | None = ...,
         number_of_pumps_in_bank: int | None = ...,
-        flow_sequencing_control_scheme: Literal["", "Sequential"] | None = "Sequential",
+        flow_sequencing_control_scheme: Literal["Sequential"] | None = "Sequential",
         design_pump_head: float | None = 179352,
         design_power_consumption: float | Literal["Autosize"] | None = ...,
         motor_efficiency: float | None = 0.9,
@@ -300,11 +300,11 @@ class HeaderedPumpsVariableSpeed:
         coefficient_3_of_the_part_load_performance_curve: float | None = 0,
         coefficient_4_of_the_part_load_performance_curve: float | None = 0,
         minimum_flow_rate_fraction: float | None = 0,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -326,7 +326,6 @@ class AvailabilityManagerNightCycle:
         applicability_schedule_name: str,
         fan_schedule_name: str,
         control_type: Literal[
-            "",
             "CycleOnAny",
             "CycleOnAnyCoolingOrHeatingZone",
             "CycleOnAnyCoolingZone",
@@ -338,7 +337,7 @@ class AvailabilityManagerNightCycle:
         ]
         | None = "StayOff",
         thermostat_tolerance: float | None = 1,
-        cycling_run_time_control_type: Literal["", "FixedRunTime", "Thermostat", "ThermostatWithMinimumRunTime"]
+        cycling_run_time_control_type: Literal["FixedRunTime", "Thermostat", "ThermostatWithMinimumRunTime"]
         | None = "FixedRunTime",
         cycling_run_time: float | None = 3600,
         control_zone_or_zone_list_name: str | None = ...,
@@ -428,7 +427,7 @@ class UtilityCostTariff:
         real_time_pricing_charge_schedule_name: str | None = ...,
         customer_baseline_load_schedule_name: str | None = ...,
         group_name: str | None = ...,
-        buy_or_sell: Literal["", "BuyFromUtility", "NetMetering", "SellToUtility"] | None = "BuyFromUtility",
+        buy_or_sell: Literal["BuyFromUtility", "NetMetering", "SellToUtility"] | None = "BuyFromUtility",
     ) -> None:
         """Create a new ``UtilityCost:Tariff`` and add it to the document.
 
@@ -443,13 +442,12 @@ class AnyLifeCycleCostParameters:
         name: str,
         /,
         *,
-        discounting_convention: Literal["", "BeginningOfYear", "EndOfYear", "MidYear"] | None = "EndOfYear",
-        inflation_approach: Literal["", "ConstantDollar", "CurrentDollar"] | None = "ConstantDollar",
+        discounting_convention: Literal["BeginningOfYear", "EndOfYear", "MidYear"] | None = "EndOfYear",
+        inflation_approach: Literal["ConstantDollar", "CurrentDollar"] | None = "ConstantDollar",
         real_discount_rate: float | None = ...,
         nominal_discount_rate: float | None = ...,
         inflation: float | None = ...,
         base_date_month: Literal[
-            "",
             "April",
             "August",
             "December",
@@ -466,7 +464,6 @@ class AnyLifeCycleCostParameters:
         | None = "January",
         base_date_year: int | None = ...,
         service_date_month: Literal[
-            "",
             "April",
             "August",
             "December",
@@ -485,7 +482,6 @@ class AnyLifeCycleCostParameters:
         length_of_study_period_in_years: int | None = ...,
         tax_rate: float | None = ...,
         depreciation_method: Literal[
-            "",
             "ModifiedAcceleratedCostRecoverySystem-10year",
             "ModifiedAcceleratedCostRecoverySystem-15year",
             "ModifiedAcceleratedCostRecoverySystem-20year",
@@ -514,21 +510,14 @@ class OutputJSON:
         /,
         *,
         option_type: Literal["TimeSeries", "TimeSeriesAndTabular"],
-        output_json: Literal["", "No", "Yes"] | None = "Yes",
-        output_cbor: Literal["", "No", "Yes"] | None = "No",
-        output_messagepack: Literal["", "No", "Yes"] | None = "No",
+        output_json: Literal["No", "Yes"] | None = "Yes",
+        output_cbor: Literal["No", "Yes"] | None = "No",
+        output_messagepack: Literal["No", "Yes"] | None = "No",
         unit_conversion_for_tabular_data: Literal[
-            "",
-            "InchPound",
-            "InchPoundExceptElectricity",
-            "JtoGJ",
-            "JtoKWH",
-            "JtoMJ",
-            "None",
-            "UseOutputControlTableStyle",
+            "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"
         ]
         | None = "UseOutputControlTableStyle",
-        format_numeric_values_for_tabular_data: Literal["", "No", "Yes"] | None = "Yes",
+        format_numeric_values_for_tabular_data: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``Output:JSON`` and add it to the document.
 

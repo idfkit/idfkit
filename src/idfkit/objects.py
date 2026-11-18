@@ -15,7 +15,8 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
-from .exceptions import InvalidFieldError, RefusedEntry, format_refused
+from ._read_required import READ_REQUIRED
+from .exceptions import InvalidFieldError, MissingRequiredFieldError, RefusedEntry, format_refused
 from .schema import trailing_underscore_aliases
 
 __all__ = [
@@ -727,6 +728,12 @@ class IDFObject(EppyObjectMixin):
     def __getattr__(self, key: str) -> Any:  # noqa: C901
         """Get field value by attribute name.
 
+        An unset field reads ``None``, except a field that every supported release
+        requires with no default (``Material.thickness``): its type says it always has
+        a value, so reading it unset raises
+        :class:`~idfkit.exceptions.MissingRequiredFieldError`, an ``AttributeError``.
+        ``obj.get(field)`` and ``getattr(obj, field, None)`` give ``None`` for it instead.
+
         When the parent document has ``strict=True``, accessing a field
         name that is neither present in the data dict nor recognised by
         the schema raises ``AttributeError`` instead of returning
@@ -797,6 +804,13 @@ class IDFObject(EppyObjectMixin):
                     version=ver,
                     extensible_fields=extensibles,
                 )
+
+        # A field every release requires reads as its value type: absent, it is an error rather
+        # than a None its type says cannot occur. Only the miss path pays for the lookup, and the
+        # type is tested first: most types require nothing, and that test is the cheaper one.
+        obj_type = self._type
+        if obj_type in READ_REQUIRED and python_key in READ_REQUIRED[obj_type]:
+            raise MissingRequiredFieldError(obj_type, self._name, python_key)
 
         # Default: return None (eppy behaviour)
         return None
@@ -1040,6 +1054,9 @@ class IDFObject(EppyObjectMixin):
     def get(self, key: str, default: Any = None) -> Any:
         """Get field value with default.
 
+        *default* when the field is unset or holds ``None``. Unlike attribute access, this never
+        raises for an unset required field, so it is the way to ask whether one is set.
+
         Examples:
             >>> from idfkit import new_document
             >>> model = new_document()
@@ -1051,7 +1068,11 @@ class IDFObject(EppyObjectMixin):
             >>> mat.get("thermal_absorptance", 0.9)
             0.9
         """
-        value = getattr(self, key)
+        try:
+            value = getattr(self, key)
+        except MissingRequiredFieldError:
+            # The untyped read: an absent required field is a missing value here, not an error.
+            return default
         return value if value is not None else default
 
     def update(self, values: Mapping[str, Any] | None = None, /, **kwargs: Any) -> None:

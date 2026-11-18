@@ -18,8 +18,7 @@ class AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2:
         maximum_air_flow_rate: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
-        per_person_ventilation_rate_mode: Literal["", "CurrentOccupancy", "DesignOccupancy"]
-        | None = "CurrentOccupancy",
+        per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None = "CurrentOccupancy",
         design_specification_air_terminal_sizing_object_name: str | None = ...,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:Uncontrolled`` and add it to the document.
@@ -70,11 +69,11 @@ class CoilHeatingDXMultiSpeed_v22_2_to_v23_1:
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         defrost_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "ReverseCycle",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "ReverseCycle",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
-        apply_part_load_fraction_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
+        apply_part_load_fraction_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
         region_number_for_calculating_hspf: int | None = 4,
         speed_1_rated_waste_heat_fraction_of_power_input: float | None = 0.2,
         speed_1_waste_heat_function_of_temperature_curve_name: str | None = ...,
@@ -156,12 +155,11 @@ class SizingPeriodDesignDay_v9_3_to_v22_1:
         maximum_dry_bulb_temperature: float | None = ...,
         daily_dry_bulb_temperature_range: float | None = 0,
         dry_bulb_temperature_range_modifier_type: Literal[
-            "", "DefaultMultipliers", "DifferenceSchedule", "MultiplierSchedule", "TemperatureProfileSchedule"
+            "DefaultMultipliers", "DifferenceSchedule", "MultiplierSchedule", "TemperatureProfileSchedule"
         ]
         | None = "DefaultMultipliers",
         dry_bulb_temperature_range_modifier_day_schedule_name: str | None = ...,
         humidity_condition_type: Literal[
-            "",
             "DewPoint",
             "Enthalpy",
             "HumidityRatio",
@@ -178,10 +176,10 @@ class SizingPeriodDesignDay_v9_3_to_v22_1:
         enthalpy_at_maximum_dry_bulb: float | None = ...,
         daily_wet_bulb_temperature_range: float | None = ...,
         barometric_pressure: float | None = ...,
-        rain_indicator: Literal["", "No", "Yes"] | None = "No",
-        snow_indicator: Literal["", "No", "Yes"] | None = "No",
-        daylight_saving_time_indicator: Literal["", "No", "Yes"] | None = "No",
-        solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"]
+        rain_indicator: Literal["No", "Yes"] | None = "No",
+        snow_indicator: Literal["No", "Yes"] | None = "No",
+        daylight_saving_time_indicator: Literal["No", "Yes"] | None = "No",
+        solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"]
         | None = "ASHRAEClearSky",
         beam_solar_day_schedule_name: str | None = ...,
         diffuse_solar_day_schedule_name: str | None = ...,
@@ -189,7 +187,7 @@ class SizingPeriodDesignDay_v9_3_to_v22_1:
         ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud_: float | None = 0,
         sky_clearness: float | None = 0,
         maximum_number_warmup_days: float | None = ...,
-        begin_environment_reset_mode: Literal["", "FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"]
+        begin_environment_reset_mode: Literal["FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"]
         | None = "FullResetAtBeginEnvironment",
     ) -> None:
         """Create a new ``SizingPeriod:DesignDay`` and add it to the document.

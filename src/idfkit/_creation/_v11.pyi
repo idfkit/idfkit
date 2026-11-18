@@ -40,7 +40,7 @@ class CoilWaterHeatingDesuperheater_v22_2_to_v24_2:
         dead_band_temperature_difference: float | None = 5,
         rated_heat_reclaim_recovery_efficiency: float | None = ...,
         heat_reclaim_efficiency_function_of_temperature_curve_name: str | None = ...,
-        tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None = "WaterHeater:Mixed",
+        tank_object_type: Literal["WaterHeater:Mixed", "WaterHeater:Stratified"] | None = "WaterHeater:Mixed",
         water_pump_power: float | None = 0,
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
@@ -63,7 +63,6 @@ class CoilHeatingFuel_v9_4_to_v23_1:
         air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -104,8 +103,8 @@ class CurveDoubleExponentialDecay_v8_9_to_v9_3:
         maximum_value_of_x: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:DoubleExponentialDecay`` and add it to the document.

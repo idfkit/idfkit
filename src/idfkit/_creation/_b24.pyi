@@ -21,7 +21,7 @@ class RunPeriodControlSpecialDays:
         *,
         start_date: str,
         duration: float | None = 1,
-        special_day_type: Literal["", "CustomDay1", "CustomDay2", "Holiday", "SummerDesignDay", "WinterDesignDay"]
+        special_day_type: Literal["CustomDay1", "CustomDay2", "Holiday", "SummerDesignDay", "WinterDesignDay"]
         | None = "Holiday",
     ) -> None:
         """Create a new ``RunPeriodControl:SpecialDays`` and add it to the document.
@@ -55,9 +55,9 @@ class SurfacePropertySurroundingSurfaces:
         name: str,
         /,
         *,
-        sky_view_factor: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sky_view_factor: float | Literal["Autocalculate"] | None = "Autocalculate",
         sky_temperature_schedule_name: str | None = ...,
-        ground_view_factor: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        ground_view_factor: float | Literal["Autocalculate"] | None = "Autocalculate",
         ground_temperature_schedule_name: str | None = ...,
         surfaces: Sequence[
             _g.SurfacePropertySurroundingSurfacesSurfacesItem | _g.SurfacePropertySurroundingSurfacesSurfacesGroup
@@ -77,7 +77,7 @@ class HVACTemplatePlantChillerObjectReference:
         /,
         *,
         chiller_name: str,
-        chiller_object_type: Literal["", "Chiller:Electric:EIR", "Chiller:Electric:ReformulatedEIR"]
+        chiller_object_type: Literal["Chiller:Electric:EIR", "Chiller:Electric:ReformulatedEIR"]
         | None = "Chiller:Electric:EIR",
         priority: float | None = ...,
     ) -> None:
@@ -98,9 +98,9 @@ class AnyAirTerminalSingleDuctVAVNoReheat:
         air_inlet_node_name: str,
         maximum_air_flow_rate: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
-        zone_minimum_air_flow_input_method: Literal["", "Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
-        constant_minimum_air_flow_fraction: float | Literal["", "Autosize"] | None = "Autosize",
-        fixed_minimum_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        zone_minimum_air_flow_input_method: Literal["Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
+        constant_minimum_air_flow_fraction: float | Literal["Autosize"] | None = "Autosize",
+        fixed_minimum_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         minimum_air_flow_fraction_schedule_name: str | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
     ) -> None:
@@ -144,11 +144,11 @@ class AnyCoilHeatingDXMultiSpeed:
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         defrost_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "ReverseCycle",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "ReverseCycle",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
-        apply_part_load_fraction_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
+        apply_part_load_fraction_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
         region_number_for_calculating_hspf: int | None = 4,
         speed_1_rated_waste_heat_fraction_of_power_input: float | None = 0.2,
         speed_1_waste_heat_function_of_temperature_curve_name: str | None = ...,
@@ -229,7 +229,7 @@ class OutputVariable:
         variable_name: str,
         key_value: str | None = "*",
         reporting_frequency: Literal[
-            "", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
+            "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
         schedule_name: str | None = ...,

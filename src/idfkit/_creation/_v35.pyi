@@ -43,7 +43,7 @@ class ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str | None = ...,
         design_flow_rate_calculation_method: Literal[
-            "", "AirChanges/Hour", "Flow/Area", "Flow/ExteriorArea", "Flow/ExteriorWallArea", "Flow/Zone"
+            "AirChanges/Hour", "Flow/Area", "Flow/ExteriorArea", "Flow/ExteriorWallArea", "Flow/Zone"
         ]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
@@ -82,14 +82,14 @@ class CoilCoolingDXVariableSpeed_v22_2_to_v23_1:
         number_of_speeds: int | None = 2,
         nominal_speed_level: int | None = 2,
         gross_rated_total_cooling_capacity_at_selected_nominal_speed_level: float
-        | Literal["", "Autosize"]
+        | Literal["Autosize"]
         | None = "Autosize",
-        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
         nominal_time_for_condensate_to_begin_leaving_the_coil: float | None = 0,
         initial_moisture_evaporation_rate_divided_by_steady_state_ac_latent_capacity: float | None = 0,
         condenser_air_inlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         crankcase_heater_capacity: float | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -25,
@@ -221,19 +221,19 @@ class ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1:
         reference_heating_mode_leaving_condenser_water_temperature: float | None = 49,
         reference_heating_mode_entering_condenser_fluid_temperature: float | None = 29.44,
         heating_mode_entering_chilled_water_temperature_low_limit: float | None = 12.22,
-        chilled_water_flow_mode_type: Literal["", "ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
+        chilled_water_flow_mode_type: Literal["ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
         design_chilled_water_flow_rate: float | Literal["Autosize"] | None = ...,
         design_condenser_water_flow_rate: float | Literal["Autosize"] | None = ...,
         design_hot_water_flow_rate: float | None = 0,
         compressor_motor_efficiency: float | None = 1,
-        condenser_type: Literal["", "AirCooled", "WaterCooled"] | None = "WaterCooled",
+        condenser_type: Literal["AirCooled", "WaterCooled"] | None = "WaterCooled",
         cooling_mode_temperature_curve_condenser_water_independent_variable: Literal[
-            "", "EnteringCondenser", "LeavingCondenser"
+            "EnteringCondenser", "LeavingCondenser"
         ]
         | None = "EnteringCondenser",
         cooling_mode_cooling_capacity_optimum_part_load_ratio: float | None = 1,
         heating_mode_temperature_curve_condenser_water_independent_variable: Literal[
-            "", "EnteringCondenser", "LeavingCondenser"
+            "EnteringCondenser", "LeavingCondenser"
         ]
         | None = "LeavingCondenser",
         heating_mode_cooling_capacity_optimum_part_load_ratio: float | None = 1,
@@ -256,7 +256,6 @@ class LifeCycleCostUsePriceEscalation_v8_9_to_v9_2:
         resource: str,
         escalation_start_year: float | None = ...,
         escalation_start_month: Literal[
-            "",
             "April",
             "August",
             "December",
@@ -295,7 +294,7 @@ class ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1:
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         radiative_fraction: float | None = 0,
-        lifetime_model: Literal["", "KandlerSmith", "None"] | None = "KandlerSmith",
+        lifetime_model: Literal["KandlerSmith", "None"] | None = "KandlerSmith",
         initial_fractional_state_of_charge: float | None = 0.5,
         dc_to_dc_charging_efficiency: float | None = 0.95,
         battery_specific_heat_capacity: float | None = 1500,

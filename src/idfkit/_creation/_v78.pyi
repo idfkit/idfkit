@@ -31,7 +31,7 @@ class PumpVariableSpeedCondensate_v8_9_to_v9_0:
         pump_flow_rate_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -87,7 +87,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22
         outdoor_unit_condensing_temperature_function_of_subcooling_curve_name: str,
         availability_schedule_name: str | None = ...,
         refrigerant_type: str | None = "R410A",
-        rated_evaporative_capacity: float | Literal["", "Autosize"] | None = 40000,
+        rated_evaporative_capacity: float | Literal["Autosize"] | None = 40000,
         rated_compressor_power_per_unit_of_rated_evaporative_capacity: float | None = 0.35,
         minimum_outdoor_air_temperature_in_cooling_only_mode: float | None = -6,
         maximum_outdoor_air_temperature_in_cooling_only_mode: float | None = 43,
@@ -95,7 +95,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22
         maximum_outdoor_air_temperature_in_heating_only_mode: float | None = 16,
         minimum_outdoor_temperature_in_heat_recovery_mode: float | None = -20,
         maximum_outdoor_temperature_in_heat_recovery_mode: float | None = 43,
-        refrigerant_temperature_control_algorithm_for_indoor_unit: Literal["", "ConstantTemp", "VariableTemp"]
+        refrigerant_temperature_control_algorithm_for_indoor_unit: Literal["ConstantTemp", "VariableTemp"]
         | None = "VariableTemp",
         reference_evaporating_temperature_for_indoor_unit: float | None = 6,
         reference_condensing_temperature_for_indoor_unit: float | None = 44,
@@ -123,11 +123,11 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22
         number_of_compressors: float | None = 2,
         ratio_of_compressor_size_to_total_compressor_capacity: float | None = 0.5,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "Resistive",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "Resistive",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_energy_input_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
         initial_heat_recovery_cooling_capacity_fraction: float | None = 1,
         heat_recovery_cooling_capacity_time_constant: float | None = 0,

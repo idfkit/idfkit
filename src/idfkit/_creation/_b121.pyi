@@ -20,7 +20,7 @@ class HotWaterEquipment:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -74,36 +74,36 @@ class HVACTemplateZoneIdealLoadsAirSystem:
         minimum_cooling_supply_air_temperature: float | None = 13,
         maximum_heating_supply_air_humidity_ratio: float | None = 0.0156,
         minimum_cooling_supply_air_humidity_ratio: float | None = 0.0077,
-        heating_limit: Literal["", "LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
+        heating_limit: Literal["LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
         | None = "NoLimit",
         maximum_heating_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_sensible_heating_capacity: float | Literal["Autosize"] | None = ...,
-        cooling_limit: Literal["", "LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
+        cooling_limit: Literal["LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
         | None = "NoLimit",
         maximum_cooling_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_total_cooling_capacity: float | Literal["Autosize"] | None = ...,
         heating_availability_schedule_name: str | None = ...,
         cooling_availability_schedule_name: str | None = ...,
         dehumidification_control_type: Literal[
-            "", "ConstantSensibleHeatRatio", "ConstantSupplyHumidityRatio", "Humidistat", "None"
+            "ConstantSensibleHeatRatio", "ConstantSupplyHumidityRatio", "Humidistat", "None"
         ]
         | None = "ConstantSensibleHeatRatio",
         cooling_sensible_heat_ratio: float | None = 0.7,
         dehumidification_setpoint: float | None = 60,
-        humidification_control_type: Literal["", "ConstantSupplyHumidityRatio", "Humidistat", "None"] | None = "None",
+        humidification_control_type: Literal["ConstantSupplyHumidityRatio", "Humidistat", "None"] | None = "None",
         humidification_setpoint: float | None = 30,
         outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "None", "Sum"
+            "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "None", "Sum"
         ]
         | None = "None",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
         outdoor_air_flow_rate_per_zone: float | None = 0,
         design_specification_outdoor_air_object_name: str | None = ...,
-        demand_controlled_ventilation_type: Literal["", "CO2Setpoint", "None", "OccupancySchedule"] | None = "None",
-        outdoor_air_economizer_type: Literal["", "DifferentialDryBulb", "DifferentialEnthalpy", "NoEconomizer"]
+        demand_controlled_ventilation_type: Literal["CO2Setpoint", "None", "OccupancySchedule"] | None = "None",
+        outdoor_air_economizer_type: Literal["DifferentialDryBulb", "DifferentialEnthalpy", "NoEconomizer"]
         | None = "NoEconomizer",
-        heat_recovery_type: Literal["", "Enthalpy", "None", "Sensible"] | None = "None",
+        heat_recovery_type: Literal["Enthalpy", "None", "Sensible"] | None = "None",
         sensible_heat_recovery_effectiveness: float | None = 0.7,
         latent_heat_recovery_effectiveness: float | None = 0.65,
     ) -> None:
@@ -154,10 +154,10 @@ class AnyAirTerminalSingleDuctConstantVolumeCooledBeam:
         chilled_water_inlet_node_name: str,
         chilled_water_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        supply_air_volumetric_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_total_chilled_water_volumetric_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        number_of_beams: int | Literal["", "Autosize"] | None = "Autosize",
-        beam_length: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_volumetric_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        maximum_total_chilled_water_volumetric_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        number_of_beams: int | Literal["Autosize"] | None = "Autosize",
+        beam_length: float | Literal["Autosize"] | None = "Autosize",
         design_inlet_water_temperature: float | None = 15,
         design_outlet_water_temperature: float | None = 17,
         coil_surface_area_per_coil_length: float | None = 5.422,
@@ -168,7 +168,7 @@ class AnyAirTerminalSingleDuctConstantVolumeCooledBeam:
         model_parameter_a0: float | None = 0.171,
         model_parameter_k1: float | None = 0.0057,
         model_parameter_n: float | None = 0.4,
-        coefficient_of_induction_kin: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        coefficient_of_induction_kin: float | Literal["Autocalculate"] | None = "Autocalculate",
         leaving_pipe_inside_diameter: float | None = 0.0145,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:CooledBeam`` and add it to the document.
@@ -220,7 +220,7 @@ class ThermalStorageHotWaterStratified:
         tank_volume: float,
         tank_height: float,
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
-        tank_shape: Literal["", "HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
+        tank_shape: Literal["HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
         tank_perimeter: float | None = ...,
         top_setpoint_temperature_schedule_name: str | None = ...,
         bottom_setpoint_temperature_schedule_name: str | None = ...,
@@ -228,7 +228,7 @@ class ThermalStorageHotWaterStratified:
         top_temperature_sensor_height: float | None = ...,
         bottom_temperature_sensor_height: float | None = ...,
         maximum_temperature_limit: float | None = ...,
-        nominal_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        nominal_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         ambient_temperature_schedule_name: str | None = ...,
         ambient_temperature_zone_name: str | None = ...,
         ambient_temperature_outdoor_air_node_name: str | None = ...,
@@ -238,19 +238,19 @@ class ThermalStorageHotWaterStratified:
         use_side_flow_direction_schedule: str | None = ...,
         use_side_heat_transfer_effectiveness: float | None = 1,
         use_side_availability_schedule_name: str | None = ...,
-        use_side_inlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        use_side_inlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
         use_side_outlet_height: float | None = 0,
-        use_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        use_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         source_side_inlet_node_name: str | None = ...,
         source_side_outlet_node_name: str | None = ...,
         source_side_flow_direction_schedule: str | None = ...,
         source_side_heat_transfer_effectiveness: float | None = 1,
         source_side_availability_schedule_name: str | None = ...,
         source_side_inlet_height: float | None = 0,
-        source_side_outlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        source_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        source_side_outlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
+        source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         tank_recovery_time: float | None = 4,
-        inlet_mode: Literal["", "Fixed", "Seeking"] | None = "Fixed",
+        inlet_mode: Literal["Fixed", "Seeking"] | None = "Fixed",
         number_of_nodes: int | None = 1,
         additional_destratification_conductivity: float | None = 0,
         node_1_additional_loss_coefficient: float | None = 0,

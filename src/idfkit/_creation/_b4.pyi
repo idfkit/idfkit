@@ -83,7 +83,6 @@ class DesignSpecificationZoneHVACSizing:
         /,
         *,
         cooling_supply_air_flow_rate_method: Literal[
-            "",
             "FlowPerCoolingCapacity",
             "FlowPerFloorArea",
             "FractionOfAutosizedCoolingAirflow",
@@ -96,7 +95,6 @@ class DesignSpecificationZoneHVACSizing:
         cooling_fraction_of_autosized_cooling_supply_air_flow_rate: float | None = ...,
         cooling_supply_air_flow_rate_per_unit_cooling_capacity: float | None = ...,
         no_load_supply_air_flow_rate_method: Literal[
-            "",
             "FlowPerFloorArea",
             "FractionOfAutosizedCoolingAirflow",
             "FractionOfAutosizedHeatingAirflow",
@@ -109,7 +107,6 @@ class DesignSpecificationZoneHVACSizing:
         no_load_fraction_of_cooling_supply_air_flow_rate: float | None = ...,
         no_load_fraction_of_heating_supply_air_flow_rate: float | None = ...,
         heating_supply_air_flow_rate_method: Literal[
-            "",
             "FlowPerFloorArea",
             "FlowPerHeatingCapacity",
             "FractionOfAutosizedHeatingAirflow",
@@ -122,14 +119,14 @@ class DesignSpecificationZoneHVACSizing:
         heating_fraction_of_heating_supply_air_flow_rate: float | None = ...,
         heating_supply_air_flow_rate_per_unit_heating_capacity: float | None = ...,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "None",
         cooling_design_capacity: float | Literal["Autosize"] | None = ...,
         cooling_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_cooling_design_capacity: float | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity", "None"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity", "None"
         ]
         | None = "None",
         heating_design_capacity: float | Literal["Autosize"] | None = ...,
@@ -274,7 +271,7 @@ class AvailabilityManagerHybridVentilation:
         control_zone_name: str,
         ventilation_control_mode_schedule_name: str,
         hvac_air_loop_name: str | None = ...,
-        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
         maximum_wind_speed: float | None = 40,
         minimum_outdoor_temperature: float | None = -100,
         maximum_outdoor_temperature: float | None = 100,

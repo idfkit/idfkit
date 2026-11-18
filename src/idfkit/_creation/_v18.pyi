@@ -36,10 +36,10 @@ class CoilCoolingDXSingleSpeed_v8_9_to_v22_1:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         condenser_air_inlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
         evaporative_condenser_effectiveness: float | None = 0.9,
         evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         crankcase_heater_capacity: float | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         supply_water_storage_tank_name: str | None = ...,
@@ -49,7 +49,7 @@ class CoilCoolingDXSingleSpeed_v8_9_to_v22_1:
         basin_heater_operating_schedule_name: str | None = ...,
         sensible_heat_ratio_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
-        report_ashrae_standard_127_performance_ratings: Literal["", "No", "Yes"] | None = "No",
+        report_ashrae_standard_127_performance_ratings: Literal["No", "Yes"] | None = "No",
         zone_name_for_condenser_placement: str | None = ...,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:SingleSpeed`` and add it to the document.
@@ -108,8 +108,7 @@ class WindowMaterialComplexShade_v8_9:
         name: str,
         /,
         *,
-        layer_type: Literal["", "BSDF", "OtherShadingType", "Perforated", "Venetian", "Woven"]
-        | None = "OtherShadingType",
+        layer_type: Literal["BSDF", "OtherShadingType", "Perforated", "Venetian", "Woven"] | None = "OtherShadingType",
         thickness: float | None = 0.002,
         conductivity: float | None = 1,
         ir_transmittance: float | None = 0,
@@ -164,7 +163,7 @@ class PipingSystemUndergroundDomain_v8_9_to_v22_1:
         z_direction_geometric_coefficient: float | None = 1.3,
         soil_moisture_content_volume_fraction: float | None = 30,
         soil_moisture_content_volume_fraction_at_saturation: float | None = 50,
-        this_domain_includes_basement_surface_interaction: Literal["", "No", "Yes"] | None = "No",
+        this_domain_includes_basement_surface_interaction: Literal["No", "Yes"] | None = "No",
         width_of_basement_floor_in_ground_domain: float | None = ...,
         depth_of_basement_wall_in_ground_domain: float | None = ...,
         shift_pipe_x_coordinates_by_basement_width: Literal["No", "Yes"] | None = ...,
@@ -194,7 +193,7 @@ class SizingPlant_v8_9_to_v22_1:
         loop_type: Literal["Condenser", "Cooling", "Heating", "Steam"],
         design_loop_exit_temperature: float,
         loop_design_temperature_difference: float,
-        sizing_option: Literal["", "Coincident", "NonCoincident"] | None = "NonCoincident",
+        sizing_option: Literal["Coincident", "NonCoincident"] | None = "NonCoincident",
         zone_timesteps_in_averaging_window: float | None = 1,
         coincident_sizing_factor_mode: Literal[
             "GlobalCoolingSizingFactor", "GlobalHeatingSizingFactor", "LoopComponentSizingFactor", "None"

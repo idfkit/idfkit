@@ -53,13 +53,12 @@ class LifeCycleCostParameters_v8_9_to_v22_1:
         name: str,
         /,
         *,
-        discounting_convention: Literal["", "BeginningOfYear", "EndOfYear", "MidYear"] | None = "EndOfYear",
-        inflation_approach: Literal["", "ConstantDollar", "CurrentDollar"] | None = "ConstantDollar",
+        discounting_convention: Literal["BeginningOfYear", "EndOfYear", "MidYear"] | None = "EndOfYear",
+        inflation_approach: Literal["ConstantDollar", "CurrentDollar"] | None = "ConstantDollar",
         real_discount_rate: float | None = ...,
         nominal_discount_rate: float | None = ...,
         inflation: float | None = ...,
         base_date_month: Literal[
-            "",
             "April",
             "August",
             "December",
@@ -76,7 +75,6 @@ class LifeCycleCostParameters_v8_9_to_v22_1:
         | None = "January",
         base_date_year: float | None = ...,
         service_date_month: Literal[
-            "",
             "April",
             "August",
             "December",
@@ -95,7 +93,6 @@ class LifeCycleCostParameters_v8_9_to_v22_1:
         length_of_study_period_in_years: float | None = ...,
         tax_rate: float | None = ...,
         depreciation_method: Literal[
-            "",
             "ModifiedAcceleratedCostRecoverySystem-10year",
             "ModifiedAcceleratedCostRecoverySystem-15year",
             "ModifiedAcceleratedCostRecoverySystem-20year",

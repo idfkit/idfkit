@@ -29,10 +29,8 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1:
         cooling_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        supply_air_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        supply_air_fan_object_type: Literal[
-            "", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"
-        ]
+        supply_air_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        supply_air_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"]
         | None = "Fan:ConstantVolume",
         outside_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
         outside_air_mixer_object_name: str | None = ...,
@@ -86,10 +84,10 @@ class WaterHeaterStratified_v9_3_to_v22_1:
         heater_thermal_efficiency: float,
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
         end_use_subcategory: str | None = "General",
-        tank_shape: Literal["", "HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
+        tank_shape: Literal["HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
         tank_perimeter: float | None = ...,
         maximum_temperature_limit: float | None = ...,
-        heater_priority_control: Literal["", "MasterSlave", "Simultaneous"] | None = "MasterSlave",
+        heater_priority_control: Literal["MasterSlave", "Simultaneous"] | None = "MasterSlave",
         heater_1_deadband_temperature_difference: float | None = 0,
         heater_1_capacity: float | Literal["Autosize"] | None = ...,
         heater_1_height: float | None = ...,
@@ -146,15 +144,15 @@ class WaterHeaterStratified_v9_3_to_v22_1:
         use_side_outlet_node_name: str | None = ...,
         use_side_effectiveness: float | None = 1,
         use_side_inlet_height: float | None = 0,
-        use_side_outlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        use_side_outlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
         source_side_inlet_node_name: str | None = ...,
         source_side_outlet_node_name: str | None = ...,
         source_side_effectiveness: float | None = 1,
-        source_side_inlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        source_side_inlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
         source_side_outlet_height: float | None = 0,
-        inlet_mode: Literal["", "Fixed", "Seeking"] | None = "Fixed",
-        use_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        inlet_mode: Literal["Fixed", "Seeking"] | None = "Fixed",
+        use_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         indirect_water_heating_recovery_time: float | None = 1.5,
         number_of_nodes: float | None = 1,
         additional_destratification_conductivity: float | None = 0,
@@ -171,7 +169,7 @@ class WaterHeaterStratified_v9_3_to_v22_1:
         node_11_additional_loss_coefficient: float | None = 0,
         node_12_additional_loss_coefficient: float | None = 0,
         source_side_flow_control_mode: Literal[
-            "", "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
+            "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
@@ -195,8 +193,8 @@ class HybridModelZone_v8_9_to_v9_0:
         begin_day_of_month: float,
         end_month: float,
         end_day_of_month: float,
-        calculate_zone_internal_thermal_mass: Literal["", "No", "Yes"] | None = "No",
-        calculate_zone_air_infiltration_rate: Literal["", "No", "Yes"] | None = "No",
+        calculate_zone_internal_thermal_mass: Literal["No", "Yes"] | None = "No",
+        calculate_zone_air_infiltration_rate: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``HybridModel:Zone`` and add it to the document.
 
@@ -272,9 +270,8 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3:
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
         hydronic_tubing_inside_diameter: float | None = 0.013,
-        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
+        hydronic_tubing_length: float | Literal["Autosize"] | None = "Autosize",
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -300,9 +297,9 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3:
         cooling_low_water_temperature_schedule_name: str | None = ...,
         cooling_high_control_temperature_schedule_name: str | None = ...,
         cooling_low_control_temperature_schedule_name: str | None = ...,
-        condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
+        condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
-        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
+        number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
@@ -320,8 +317,7 @@ class IndoorLivingWall_v24_1:
         *,
         surface_name: str,
         schedule_name: str,
-        evapotranspiration_calculation_method: Literal["", "Penman-Monteith", "Stanghellini"]
-        | None = "Penman-Monteith",
+        evapotranspiration_calculation_method: Literal["Penman-Monteith", "Stanghellini"] | None = "Penman-Monteith",
         lighting_method: Literal["Daylight", "LED", "LED-Daylight"] | None = ...,
         led_intensity_schedule_name_: str | None = ...,
         daylighting_control_name: str | None = ...,
@@ -348,10 +344,10 @@ class ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1:
         fuel_type: Literal["Electricity", "NaturalGas"],
         availability_schedule_name: str | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         combustion_efficiency: float | None = 0.9,
@@ -359,7 +355,6 @@ class ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1:
         fraction_of_input_converted_to_latent_energy: float | None = 0,
         fraction_of_input_that_is_lost: float | None = 0,
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanAirTemperatureSetpoint",
             "MeanRadiantTemperature",

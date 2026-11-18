@@ -17,7 +17,6 @@ class OtherEquipment_v8_9_to_v9_2:
         zone_or_zonelist_name: str,
         schedule_name: str,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -36,7 +35,7 @@ class OtherEquipment_v8_9_to_v9_2:
         ]
         | None = "None",
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,

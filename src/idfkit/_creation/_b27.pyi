@@ -17,7 +17,7 @@ class SiteWaterMainsTemperature:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"]
+        calculation_method: Literal["Correlation", "CorrelationFromWeatherFile", "Schedule"]
         | None = "CorrelationFromWeatherFile",
         temperature_schedule_name: str | None = ...,
         annual_average_outdoor_air_temperature: float | None = ...,
@@ -39,7 +39,7 @@ class ScheduleDayInterval:
         /,
         *,
         schedule_type_limits_name: str | None = ...,
-        interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None = "No",
+        interpolate_to_timestep: Literal["Average", "Linear", "No"] | None = "No",
         data: Sequence[_g.ScheduleDayIntervalDataItem | _g.ScheduleDayIntervalDataGroup] = ...,
     ) -> None:
         """Create a new ``Schedule:Day:Interval`` and add it to the document.
@@ -112,8 +112,7 @@ class AnyIndoorLivingWall:
         *,
         surface_name: str,
         schedule_name: str,
-        evapotranspiration_calculation_method: Literal["", "Penman-Monteith", "Stanghellini"]
-        | None = "Penman-Monteith",
+        evapotranspiration_calculation_method: Literal["Penman-Monteith", "Stanghellini"] | None = "Penman-Monteith",
         lighting_method: Literal["Daylight", "LED", "LED-Daylight"] | None = ...,
         daylighting_control_name: str | None = ...,
         led_daylight_targeted_lighting_intensity_schedule_name: str | None = ...,
@@ -205,7 +204,7 @@ class AnyOutputMeter:
         *,
         key_name: str,
         reporting_frequency: Literal[
-            "", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
+            "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
     ) -> None:

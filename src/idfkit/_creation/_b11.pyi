@@ -120,8 +120,8 @@ class AnyPumpVariableSpeed:
         coefficient_2_of_the_part_load_performance_curve: float | None = 1,
         coefficient_3_of_the_part_load_performance_curve: float | None = 0,
         coefficient_4_of_the_part_load_performance_curve: float | None = 0,
-        design_minimum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        design_minimum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         pump_curve_name: str | None = ...,
         impeller_diameter: float | None = ...,
@@ -133,7 +133,7 @@ class AnyPumpVariableSpeed:
         maximum_rpm_schedule: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -198,7 +198,7 @@ class SetpointManagerCondenserEnteringResetIdeal:
         /,
         *,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "Temperature"] | None = "Temperature",
+        control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_lift: float | None = 11.1,
         maximum_condenser_entering_water_temperature: float | None = 32,
     ) -> None:
@@ -218,7 +218,7 @@ class FaultModelFoulingCoil:
         coil_name: str,
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
-        fouling_input_method: Literal["", "FouledUARated", "FoulingFactor"] | None = "FouledUARated",
+        fouling_input_method: Literal["FouledUARated", "FoulingFactor"] | None = "FouledUARated",
         uafouled: float | None = ...,
         water_side_fouling_factor: float | None = 0,
         air_side_fouling_factor: float | None = 0,

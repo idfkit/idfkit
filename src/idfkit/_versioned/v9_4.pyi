@@ -65,7 +65,6 @@ class IDFDocumentV9_4(
     _v._Accessors_v9_4,
     _v._Accessors_v9_4_to_v9_5,
     _v._Accessors_v9_4_to_v9_6,
-    _v._Accessors_v9_4_to_v22_1,
     _v._Accessors_v9_4_to_v23_1,
     _v._Accessors_v9_4_to_v24_1,
     _v._Accessors_v9_4_to_v26_2,
@@ -1470,7 +1469,7 @@ class IDFDocumentV9_4(
     @overload
     def __getitem__(
         self, obj_type: Literal["Fan:SystemModel"], /
-    ) -> IDFCollection[_v.FanSystemModel_v9_4_to_v22_1]: ...
+    ) -> IDFCollection[_v.FanSystemModel_v8_9_to_v22_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["Fan:ConstantVolume"], /) -> IDFCollection[_g.FanConstantVolume]: ...
     @overload

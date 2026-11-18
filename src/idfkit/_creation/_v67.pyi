@@ -138,7 +138,6 @@ class HeatExchangerFluidToFluid_v8_9_to_v25_2:
         heat_exchanger_u_factor_times_area_value: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
         heat_exchange_model_type: Literal[
-            "",
             "CounterFlow",
             "CrossFlowBothMixed",
             "CrossFlowBothUnMixed",
@@ -149,7 +148,6 @@ class HeatExchangerFluidToFluid_v8_9_to_v25_2:
         ]
         | None = "Ideal",
         control_type: Literal[
-            "",
             "CoolingDifferentialOnOff",
             "CoolingSetpointModulated",
             "CoolingSetpointOnOff",
@@ -166,7 +164,6 @@ class HeatExchangerFluidToFluid_v8_9_to_v25_2:
         heat_exchanger_setpoint_node_name: str | None = ...,
         minimum_temperature_difference_to_activate_heat_exchanger: float | None = 0.01,
         heat_transfer_metering_end_use_type: Literal[
-            "",
             "FreeCooling",
             "HeatRecovery",
             "HeatRecoveryForCooling",
@@ -177,9 +174,7 @@ class HeatExchangerFluidToFluid_v8_9_to_v25_2:
         | None = "LoopToLoop",
         component_override_loop_supply_side_inlet_node_name: str | None = ...,
         component_override_loop_demand_side_inlet_node_name: str | None = ...,
-        component_override_cooling_control_temperature_mode: Literal[
-            "", "DryBulbTemperature", "Loop", "WetBulbTemperature"
-        ]
+        component_override_cooling_control_temperature_mode: Literal["DryBulbTemperature", "Loop", "WetBulbTemperature"]
         | None = "Loop",
         sizing_factor: float | None = 1,
         operation_minimum_temperature_limit: float | None = ...,

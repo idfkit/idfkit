@@ -55,12 +55,10 @@ class HVACTemplateZoneFanCoil_v9_0:
         *,
         zone_name: str,
         template_thermostat_name: str | None = ...,
-        supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
@@ -70,20 +68,20 @@ class HVACTemplateZoneFanCoil_v9_0:
         supply_fan_delta_pressure: float | None = 75,
         supply_fan_motor_efficiency: float | None = 0.9,
         supply_fan_motor_in_air_stream_fraction: float | None = 1,
-        cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None = "ChilledWater",
+        cooling_coil_type: Literal["ChilledWater", "ChilledWaterDetailedFlatModel"] | None = "ChilledWater",
         cooling_coil_availability_schedule_name: str | None = ...,
         cooling_coil_design_setpoint: float | None = 14,
-        heating_coil_type: Literal["", "HotWater"] | None = "HotWater",
+        heating_coil_type: Literal["HotWater"] | None = "HotWater",
         heating_coil_availability_schedule_name: str | None = ...,
         heating_coil_design_setpoint: float | None = 50,
         dedicated_outdoor_air_system_name: str | None = ...,
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
@@ -100,9 +98,9 @@ class HVACTemplateZoneFanCoil_v9_0:
         low_speed_supply_air_flow_ratio: float | None = 0.33,
         medium_speed_supply_air_flow_ratio: float | None = 0.66,
         outdoor_air_schedule_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
 
@@ -142,13 +140,13 @@ class ZoneHVACWaterToAirHeatPump_v23_2:
         outdoor_air_mixer_name: str | None = ...,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None = "Autosize",
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
-        heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
+        heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_zonehvac_sizing_object_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
@@ -166,8 +164,8 @@ class PythonPluginSearchPaths_v9_4_to_v9_6:
         name: str,
         /,
         *,
-        add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
-        add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
+        add_current_working_directory_to_search_path: Literal["No", "Yes"] | None = "Yes",
+        add_input_file_directory_to_search_path: Literal["No", "Yes"] | None = "Yes",
         py_search_paths: Sequence[
             _vd.PythonPluginSearchPathsPySearchPathsItem_v9_4_to_v9_6
             | _vd.PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6

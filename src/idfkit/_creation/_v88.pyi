@@ -65,9 +65,9 @@ class ElectricEquipmentITEAirCooled_v22_2_to_v23_2:
         design_fan_air_flow_rate_per_power_input: float,
         air_flow_function_of_loading_and_air_temperature_curve_name: str,
         fan_power_input_function_of_flow_curve_name: str,
-        air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"]
+        air_flow_calculation_method: Literal["FlowControlWithApproachTemperatures", "FlowFromSystem"]
         | None = "FlowFromSystem",
-        design_power_input_calculation_method: Literal["", "Watts/Area", "Watts/Unit"] | None = "Watts/Unit",
+        design_power_input_calculation_method: Literal["Watts/Area", "Watts/Unit"] | None = "Watts/Unit",
         watts_per_unit: float | None = ...,
         number_of_units: float | None = 1,
         watts_per_zone_floor_area: float | None = ...,
@@ -75,9 +75,8 @@ class ElectricEquipmentITEAirCooled_v22_2_to_v23_2:
         cpu_loading_schedule_name: str | None = ...,
         design_fan_power_input_fraction: float | None = 0,
         design_entering_air_temperature: float | None = 15,
-        environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None = "None",
-        air_inlet_connection_type: Literal["", "AdjustedSupply", "RoomAirModel", "ZoneAirNode"]
-        | None = "AdjustedSupply",
+        environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None = "None",
+        air_inlet_connection_type: Literal["AdjustedSupply", "RoomAirModel", "ZoneAirNode"] | None = "AdjustedSupply",
         air_inlet_room_air_model_node_name: str | None = ...,
         air_outlet_room_air_model_node_name: str | None = ...,
         supply_air_node_name: str | None = ...,
@@ -114,14 +113,13 @@ class SizingSystem_v9_6_to_v22_1:
         precool_design_humidity_ratio: float,
         central_cooling_design_supply_air_temperature: float,
         central_heating_design_supply_air_temperature: float,
-        type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None = "Sensible",
-        design_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        central_heating_maximum_system_air_flow_ratio: float | Literal["", "Autosize"] | None = "Autosize",
-        type_of_zone_sum_to_use: Literal["", "Coincident", "NonCoincident"] | None = "NonCoincident",
+        type_of_load_to_size_on: Literal["Sensible", "Total", "VentilationRequirement"] | None = "Sensible",
+        design_outdoor_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        central_heating_maximum_system_air_flow_ratio: float | Literal["Autosize"] | None = "Autosize",
+        type_of_zone_sum_to_use: Literal["Coincident", "NonCoincident"] | None = "NonCoincident",
         central_cooling_design_supply_air_humidity_ratio: float | None = 0.008,
         central_heating_design_supply_air_humidity_ratio: float | None = 0.008,
         cooling_supply_air_flow_rate_method: Literal[
-            "",
             "DesignDay",
             "Flow/System",
             "FlowPerCoolingCapacity",
@@ -134,7 +132,6 @@ class SizingSystem_v9_6_to_v22_1:
         cooling_fraction_of_autosized_cooling_supply_air_flow_rate: float | None = ...,
         cooling_supply_air_flow_rate_per_unit_cooling_capacity: float | None = ...,
         heating_supply_air_flow_rate_method: Literal[
-            "",
             "DesignDay",
             "Flow/System",
             "FlowPerFloorArea",
@@ -149,26 +146,26 @@ class SizingSystem_v9_6_to_v22_1:
         heating_fraction_of_autosized_cooling_supply_air_flow_rate: float | None = ...,
         heating_supply_air_flow_rate_per_unit_heating_capacity: float | None = ...,
         system_outdoor_air_method: Literal[
-            "", "Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"
+            "Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"
         ]
         | None = "ZoneSum",
         zone_maximum_outdoor_air_fraction: float | None = 1,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "CoolingDesignCapacity",
-        cooling_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         cooling_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_cooling_design_capacity: float | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity", "None"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity", "None"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = ...,
-        central_cooling_capacity_control_method: Literal["", "Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
-        occupant_diversity: float | Literal["", "Autosize"] | None = "Autosize",
+        central_cooling_capacity_control_method: Literal["Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
+        occupant_diversity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``Sizing:System`` and add it to the document.
 

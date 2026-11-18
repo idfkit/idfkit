@@ -38,12 +38,11 @@ class AnySizingPeriodDesignDay:
         maximum_dry_bulb_temperature: float | None = ...,
         daily_dry_bulb_temperature_range: float | None = 0,
         dry_bulb_temperature_range_modifier_type: Literal[
-            "", "DefaultMultipliers", "DifferenceSchedule", "MultiplierSchedule", "TemperatureProfileSchedule"
+            "DefaultMultipliers", "DifferenceSchedule", "MultiplierSchedule", "TemperatureProfileSchedule"
         ]
         | None = "DefaultMultipliers",
         dry_bulb_temperature_range_modifier_day_schedule_name: str | None = ...,
         humidity_condition_type: Literal[
-            "",
             "DewPoint",
             "Enthalpy",
             "HumidityRatio",
@@ -60,10 +59,10 @@ class AnySizingPeriodDesignDay:
         enthalpy_at_maximum_dry_bulb: float | None = ...,
         daily_wet_bulb_temperature_range: float | None = ...,
         barometric_pressure: float | None = ...,
-        rain_indicator: Literal["", "No", "Yes"] | None = "No",
-        snow_indicator: Literal["", "No", "Yes"] | None = "No",
-        daylight_saving_time_indicator: Literal["", "No", "Yes"] | None = "No",
-        solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang"]
+        rain_indicator: Literal["No", "Yes"] | None = "No",
+        snow_indicator: Literal["No", "Yes"] | None = "No",
+        daylight_saving_time_indicator: Literal["No", "Yes"] | None = "No",
+        solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang"]
         | None = "ASHRAEClearSky",
         beam_solar_day_schedule_name: str | None = ...,
         diffuse_solar_day_schedule_name: str | None = ...,
@@ -123,7 +122,7 @@ class AnyWindowMaterialComplexShade:
         name: str,
         /,
         *,
-        layer_type: Literal["", "BSDF", "OtherShadingType", "Perforated", "Woven"] | None = "OtherShadingType",
+        layer_type: Literal["BSDF", "OtherShadingType", "Perforated", "Woven"] | None = "OtherShadingType",
         thickness: float | None = 0.002,
         conductivity: float | None = 1,
         ir_transmittance: float | None = 0,
@@ -154,9 +153,7 @@ class WindowMaterialComplexShade:
         name: str,
         /,
         *,
-        layer_type: Literal[
-            "", "BSDF", "OtherShadingType", "Perforated", "VenetianHorizontal", "VenetianVertical", "Woven"
-        ]
+        layer_type: Literal["BSDF", "OtherShadingType", "Perforated", "VenetianHorizontal", "VenetianVertical", "Woven"]
         | None = "OtherShadingType",
         thickness: float | None = 0.002,
         conductivity: float | None = 1,
@@ -194,10 +191,10 @@ class ZoneHVACBaseboardConvectiveWater:
         maximum_water_flow_rate: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         convergence_tolerance: float | None = 0.001,
@@ -218,13 +215,13 @@ class ThermalStorageChilledWaterStratified:
         tank_volume: float,
         tank_height: float,
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
-        tank_shape: Literal["", "HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
+        tank_shape: Literal["HorizontalCylinder", "Other", "VerticalCylinder"] | None = "VerticalCylinder",
         tank_perimeter: float | None = ...,
         setpoint_temperature_schedule_name: str | None = ...,
         deadband_temperature_difference: float | None = 0.0001,
         temperature_sensor_height: float | None = ...,
         minimum_temperature_limit: float | None = ...,
-        nominal_cooling_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        nominal_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
         ambient_temperature_schedule_name: str | None = ...,
         ambient_temperature_zone_name: str | None = ...,
         ambient_temperature_outdoor_air_node_name: str | None = ...,
@@ -233,18 +230,18 @@ class ThermalStorageChilledWaterStratified:
         use_side_outlet_node_name: str | None = ...,
         use_side_heat_transfer_effectiveness: float | None = 1,
         use_side_availability_schedule_name: str | None = ...,
-        use_side_inlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        use_side_inlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
         use_side_outlet_height: float | None = 0,
-        use_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        use_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         source_side_inlet_node_name: str | None = ...,
         source_side_outlet_node_name: str | None = ...,
         source_side_heat_transfer_effectiveness: float | None = 1,
         source_side_availability_schedule_name: str | None = ...,
         source_side_inlet_height: float | None = 0,
-        source_side_outlet_height: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        source_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        source_side_outlet_height: float | Literal["Autocalculate"] | None = "Autocalculate",
+        source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         tank_recovery_time: float | None = 4,
-        inlet_mode: Literal["", "Fixed", "Seeking"] | None = "Fixed",
+        inlet_mode: Literal["Fixed", "Seeking"] | None = "Fixed",
         number_of_nodes: int | None = 1,
         additional_destratification_conductivity: float | None = 0,
         node_1_additional_loss_coefficient: float | None = 0,
@@ -296,7 +293,7 @@ class DemandManagerVentilation:
         fixed_rate: float | None = ...,
         reduction_ratio: float | None = ...,
         limit_step_change: float | None = ...,
-        selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None = "All",
+        selection_control: Literal["All", "RotateMany", "RotateOne"] | None = "All",
         rotation_duration: int | None = ...,
         controllers: Sequence[
             _g.DemandManagerVentilationControllersItem | _g.DemandManagerVentilationControllersGroup
@@ -323,10 +320,10 @@ class CurveExponent:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:Exponent`` and add it to the document.

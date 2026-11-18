@@ -35,10 +35,10 @@ class CoilCoolingDXSingleSpeed_v22_2_to_v23_1:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         condenser_air_inlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
         evaporative_condenser_effectiveness: float | None = 0.9,
         evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         crankcase_heater_capacity: float | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         supply_water_storage_tank_name: str | None = ...,
@@ -48,7 +48,7 @@ class CoilCoolingDXSingleSpeed_v22_2_to_v23_1:
         basin_heater_operating_schedule_name: str | None = ...,
         sensible_heat_ratio_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
-        report_ashrae_standard_127_performance_ratings: Literal["", "No", "Yes"] | None = "No",
+        report_ashrae_standard_127_performance_ratings: Literal["No", "Yes"] | None = "No",
         zone_name_for_condenser_placement: str | None = ...,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:SingleSpeed`` and add it to the document.
@@ -68,13 +68,13 @@ class SizingZone_v24_2_to_v25_1:
         zone_cooling_design_supply_air_humidity_ratio: float,
         zone_heating_design_supply_air_humidity_ratio: float,
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = ...,
         zone_cooling_design_supply_air_temperature_difference: float | None = ...,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = ...,
@@ -82,45 +82,43 @@ class SizingZone_v24_2_to_v25_1:
         design_specification_outdoor_air_object_name: str | None = ...,
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        cooling_design_air_flow_method: Literal["", "DesignDay", "DesignDayWithLimit", "Flow/Zone"]
-        | None = "DesignDay",
+        cooling_design_air_flow_method: Literal["DesignDay", "DesignDayWithLimit", "Flow/Zone"] | None = "DesignDay",
         cooling_design_air_flow_rate: float | None = 0,
         cooling_minimum_air_flow_per_zone_floor_area: float | None = 0.000762,
         cooling_minimum_air_flow: float | None = 0,
         cooling_minimum_air_flow_fraction: float | None = 0.2,
-        heating_design_air_flow_method: Literal["", "DesignDay", "DesignDayWithLimit", "Flow/Zone"]
-        | None = "DesignDay",
+        heating_design_air_flow_method: Literal["DesignDay", "DesignDayWithLimit", "Flow/Zone"] | None = "DesignDay",
         heating_design_air_flow_rate: float | None = 0,
         heating_maximum_air_flow_per_zone_floor_area: float | None = 0.002032,
         heating_maximum_air_flow: float | None = 0.1415762,
         heating_maximum_air_flow_fraction: float | None = 0.3,
         design_specification_zone_air_distribution_object_name: str | None = ...,
-        account_for_dedicated_outdoor_air_system: Literal["", "No", "Yes"] | None = "No",
+        account_for_dedicated_outdoor_air_system: Literal["No", "Yes"] | None = "No",
         dedicated_outdoor_air_system_control_strategy: Literal[
-            "", "ColdSupplyAir", "NeutralDehumidifiedSupplyAir", "NeutralSupplyAir"
+            "ColdSupplyAir", "NeutralDehumidifiedSupplyAir", "NeutralSupplyAir"
         ]
         | None = "NeutralSupplyAir",
-        dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["", "Autosize"] | None = "Autosize",
-        dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["", "Autosize"] | None = "Autosize",
+        dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
+        dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
         zone_load_sizing_method: Literal[
-            "", "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"
+            "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"
         ]
         | None = "Sensible Load Only No Latent Load",
         zone_latent_cooling_design_supply_air_humidity_ratio_input_method: Literal[
-            "", "HumidityRatioDifference", "SupplyAirHumidityRatio"
+            "HumidityRatioDifference", "SupplyAirHumidityRatio"
         ]
         | None = "HumidityRatioDifference",
         zone_dehumidification_design_supply_air_humidity_ratio: float | None = ...,
         zone_cooling_design_supply_air_humidity_ratio_difference: float | None = 0.005,
         zone_latent_heating_design_supply_air_humidity_ratio_input_method: Literal[
-            "", "HumidityRatioDifference", "SupplyAirHumidityRatio"
+            "HumidityRatioDifference", "SupplyAirHumidityRatio"
         ]
         | None = "HumidityRatioDifference",
         zone_humidification_design_supply_air_humidity_ratio: float | None = ...,
         zone_humidification_design_supply_air_humidity_ratio_difference: float | None = 0.005,
         zone_humidistat_dehumidification_set_point_schedule_name: str | None = ...,
         zone_humidistat_humidification_set_point_schedule_name: str | None = ...,
-        type_of_space_sum_to_use: Literal["", "Coincident", "NonCoincident"] | None = "Coincident",
+        type_of_space_sum_to_use: Literal["Coincident", "NonCoincident"] | None = "Coincident",
     ) -> None:
         """Create a new ``Sizing:Zone`` and add it to the document.
 
@@ -147,7 +145,7 @@ class GroundHeatExchangerSystem_v9_6_to_v25_1:
         ground_thermal_conductivity: float,
         ground_thermal_heat_capacity: float,
         ghe_vertical_responsefactors_object_name: str | None = ...,
-        g_function_calculation_method: Literal["", "UBHWTcalc", "UHFcalc"] | None = "UHFcalc",
+        g_function_calculation_method: Literal["UBHWTcalc", "UHFcalc"] | None = "UHFcalc",
         ghe_vertical_array_object_name: str | None = ...,
         vertical_well_locations: Sequence[
             _g.GroundHeatExchangerSystemVerticalWellLocationsItem
@@ -185,7 +183,7 @@ class SiteWaterMainsTemperature_v9_0_to_v25_1:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"]
+        calculation_method: Literal["Correlation", "CorrelationFromWeatherFile", "Schedule"]
         | None = "CorrelationFromWeatherFile",
         temperature_schedule_name: str | None = ...,
         annual_average_outdoor_air_temperature: float | None = ...,
@@ -207,8 +205,8 @@ class GlobalGeometryRules_v8_9_to_v9_2:
         starting_vertex_position: str,
         vertex_entry_direction: str,
         coordinate_system: str,
-        daylighting_reference_point_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None = "Relative",
-        rectangular_surface_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None = "Relative",
+        daylighting_reference_point_coordinate_system: Literal["Absolute", "Relative", "World"] | None = "Relative",
+        rectangular_surface_coordinate_system: Literal["Absolute", "Relative", "World"] | None = "Relative",
     ) -> None:
         """Create a new ``GlobalGeometryRules`` and add it to the document.
 

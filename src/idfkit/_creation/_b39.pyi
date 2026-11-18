@@ -17,7 +17,7 @@ class WindowsCalculationEngine:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        windows_engine: Literal["", "BuiltInWindowsModel", "ExternalWindowsModel"] | None = "BuiltInWindowsModel",
+        windows_engine: Literal["BuiltInWindowsModel", "ExternalWindowsModel"] | None = "BuiltInWindowsModel",
     ) -> None:
         """Create a new ``WindowsCalculationEngine`` and add it to the document.
 
@@ -79,7 +79,7 @@ class SetpointManagerOutdoorAirReset:
         setpoint_at_outdoor_high_temperature: float,
         outdoor_high_temperature: float,
         setpoint_node_or_nodelist_name: str,
-        control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None = "Temperature",
+        control_variable: Literal["MaximumTemperature", "MinimumTemperature", "Temperature"] | None = "Temperature",
         schedule_name: str | None = ...,
         setpoint_at_outdoor_low_temperature_2: float | None = ...,
         outdoor_low_temperature_2: float | None = ...,
@@ -104,7 +104,7 @@ class GeneratorPVWatts:
         array_type: Literal["FixedOpenRack", "FixedRoofMounted", "OneAxis", "OneAxisBacktracking", "TwoAxis"],
         pvwatts_version: Literal["5"] | None = ...,
         system_losses: float | None = 0.14,
-        array_geometry_type: Literal["", "Surface", "TiltAzimuth"] | None = "TiltAzimuth",
+        array_geometry_type: Literal["Surface", "TiltAzimuth"] | None = "TiltAzimuth",
         tilt_angle: float | None = 20,
         azimuth_angle: float | None = 180,
         surface_name: str | None = ...,
@@ -124,11 +124,11 @@ class AnyTableLookup:
         /,
         *,
         independent_variable_list_name: str,
-        normalization_method: Literal["", "AutomaticWithDivisor", "DivisorOnly", "None"] | None = "None",
+        normalization_method: Literal["AutomaticWithDivisor", "DivisorOnly", "None"] | None = "None",
         normalization_divisor: float | None = 1,
         minimum_output: float | None = ...,
         maximum_output: float | None = ...,
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         external_file_name: str | None = ...,
         external_file_column_number: int | None = ...,

@@ -29,7 +29,7 @@ class HVACSystemRootFindingAlgorithm:
         /,
         *,
         algorithm: Literal[
-            "", "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"
+            "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"
         ]
         | None = "RegulaFalsi",
         number_of_iterations_before_algorithm_switch: int | None = 5,
@@ -71,9 +71,9 @@ class AirTerminalSingleDuctVAVNoReheat:
         air_inlet_node_name: str,
         maximum_air_flow_rate: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
-        zone_minimum_air_flow_input_method: Literal["", "Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
-        constant_minimum_air_flow_fraction: float | Literal["", "Autosize"] | None = "Autosize",
-        fixed_minimum_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        zone_minimum_air_flow_input_method: Literal["Constant", "FixedFlowRate", "Scheduled"] | None = "Constant",
+        constant_minimum_air_flow_fraction: float | Literal["Autosize"] | None = "Autosize",
+        fixed_minimum_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         minimum_air_flow_fraction_schedule_name: str | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
@@ -102,14 +102,14 @@ class AnyHeatExchangerAirToAirSensibleAndLatent:
         sensible_effectiveness_at_100_cooling_air_flow: float | None = 0,
         latent_effectiveness_at_100_cooling_air_flow: float | None = 0,
         nominal_electric_power: float | None = 0,
-        supply_air_outlet_temperature_control: Literal["", "No", "Yes"] | None = "No",
-        heat_exchanger_type: Literal["", "Plate", "Rotary"] | None = "Plate",
-        frost_control_type: Literal["", "ExhaustAirRecirculation", "ExhaustOnly", "MinimumExhaustTemperature", "None"]
+        supply_air_outlet_temperature_control: Literal["No", "Yes"] | None = "No",
+        heat_exchanger_type: Literal["Plate", "Rotary"] | None = "Plate",
+        frost_control_type: Literal["ExhaustAirRecirculation", "ExhaustOnly", "MinimumExhaustTemperature", "None"]
         | None = "None",
         threshold_temperature: float | None = 1.7,
         initial_defrost_time_fraction: float | None = 0.083,
         rate_of_defrost_time_fraction_increase: float | None = 0.012,
-        economizer_lockout: Literal["", "No", "Yes"] | None = "Yes",
+        economizer_lockout: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``HeatExchanger:AirToAir:SensibleAndLatent`` and add it to the document.
 
@@ -168,13 +168,12 @@ class ChillerElectricEIR:
         minimum_unloading_ratio: float | None = 0.2,
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "WaterCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "WaterCooled",
         condenser_fan_power_ratio: float | None = 0,
         fraction_of_compressor_electric_consumption_rejected_by_condenser: float | None = 1,
         leaving_chilled_water_lower_temperature_limit: float | None = 2,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
@@ -186,7 +185,7 @@ class ChillerElectricEIR:
         heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
         condenser_flow_control: Literal[
-            "", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"
+            "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"
         ]
         | None = "ConstantFlow",
         condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None = ...,

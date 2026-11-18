@@ -80,15 +80,15 @@ class AnyWindowShadingControl:
         shading_control_sequence_number: int | None = 1,
         schedule_name: str | None = ...,
         setpoint: float | None = ...,
-        shading_control_is_scheduled: Literal["", "No", "Yes"] | None = "No",
-        glare_control_is_active: Literal["", "No", "Yes"] | None = "No",
+        shading_control_is_scheduled: Literal["No", "Yes"] | None = "No",
+        glare_control_is_active: Literal["No", "Yes"] | None = "No",
         shading_device_material_name: str | None = ...,
-        type_of_slat_angle_control_for_blinds: Literal["", "BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"]
+        type_of_slat_angle_control_for_blinds: Literal["BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"]
         | None = "FixedSlatAngle",
         slat_angle_schedule_name: str | None = ...,
         setpoint_2: float | None = ...,
         daylighting_control_object_name: str | None = ...,
-        multiple_surface_control_type: Literal["", "Group", "Sequential"] | None = "Sequential",
+        multiple_surface_control_type: Literal["Group", "Sequential"] | None = "Sequential",
         fenestration_surfaces: Sequence[
             _g.WindowShadingControlFenestrationSurfacesItem | _g.WindowShadingControlFenestrationSurfacesGroup
         ] = ...,
@@ -209,10 +209,9 @@ class ChillerAbsorptionIndirect:
         design_condenser_inlet_temperature: float | None = 30,
         condenser_inlet_temperature_lower_limit: float | None = 15,
         chilled_water_outlet_temperature_lower_limit: float | None = 5,
-        design_chilled_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        design_condenser_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
+        design_chilled_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        design_condenser_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         pump_electric_input_function_of_part_load_ratio_curve_name: str | None = ...,
         generator_inlet_node_name: str | None = ...,
         generator_outlet_node_name: str | None = ...,
@@ -221,7 +220,7 @@ class ChillerAbsorptionIndirect:
         capacity_correction_function_of_generator_temperature_curve_name: str | None = ...,
         generator_heat_input_correction_function_of_condenser_temperature_curve_name: str | None = ...,
         generator_heat_input_correction_function_of_chilled_water_temperature_curve_name: str | None = ...,
-        generator_heat_source_type: Literal["", "HotWater", "Steam"] | None = "Steam",
+        generator_heat_source_type: Literal["HotWater", "Steam"] | None = "Steam",
         design_generator_fluid_flow_rate: float | Literal["Autosize"] | None = ...,
         temperature_lower_limit_generator_inlet: float | None = 0,
         degree_of_subcooling_in_steam_generator: float | None = 1,
@@ -254,15 +253,15 @@ class CondenserLoop:
         demand_side_outlet_node_name: str,
         condenser_demand_side_branch_list_name: str,
         condenser_demand_side_connector_list_name: str,
-        fluid_type: Literal["", "UserDefinedFluidType", "Water"] | None = "Water",
+        fluid_type: Literal["UserDefinedFluidType", "Water"] | None = "Water",
         user_defined_fluid_type: str | None = ...,
         minimum_loop_flow_rate: float | None = 0,
-        condenser_loop_volume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        condenser_loop_volume: float | Literal["Autocalculate"] | None = "Autocalculate",
         load_distribution_scheme: Literal[
-            "", "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
+            "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
         ]
         | None = "SequentialLoad",
-        pressure_simulation_type: Literal["", "LoopFlowCorrection", "None", "PumpPowerCorrection"] | None = "None",
+        pressure_simulation_type: Literal["LoopFlowCorrection", "None", "PumpPowerCorrection"] | None = "None",
         loop_circulation_time: float | None = 2,
     ) -> None:
         """Create a new ``CondenserLoop`` and add it to the document.
@@ -289,7 +288,6 @@ class GeneratorMicroTurbine:
         reference_combustion_air_inlet_humidity_ratio: float | None = 0.00638,
         reference_elevation: float | None = 0,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -310,7 +308,7 @@ class GeneratorMicroTurbine:
         heat_recovery_water_outlet_node_name: str | None = ...,
         reference_thermal_efficiency_using_lower_heat_value: float | None = 0,
         reference_inlet_water_temperature: float | None = ...,
-        heat_recovery_water_flow_operating_mode: Literal["", "InternalControl", "PlantControl"] | None = "PlantControl",
+        heat_recovery_water_flow_operating_mode: Literal["InternalControl", "PlantControl"] | None = "PlantControl",
         reference_heat_recovery_water_flow_rate: float | None = ...,
         heat_recovery_water_flow_rate_function_of_temperature_and_power_curve_name: str | None = ...,
         thermal_efficiency_function_of_temperature_and_elevation_curve_name: str | None = ...,

@@ -17,7 +17,7 @@ class SurfaceConvectionAlgorithmInside:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        algorithm: Literal["", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"]
+        algorithm: Literal["ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"]
         | None = "TARP",
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Inside`` and add it to the document.
@@ -37,7 +37,7 @@ class WindowMaterialScreen:
         diffuse_visible_reflectance: float,
         screen_material_spacing: float,
         screen_material_diameter: float,
-        reflected_beam_transmittance_accounting_method: Literal["", "DoNotModel", "ModelAsDiffuse", "ModelAsDirectBeam"]
+        reflected_beam_transmittance_accounting_method: Literal["DoNotModel", "ModelAsDiffuse", "ModelAsDirectBeam"]
         | None = "ModelAsDiffuse",
         thermal_hemispherical_emissivity: float | None = 0.9,
         conductivity: float | None = 221,
@@ -46,7 +46,7 @@ class WindowMaterialScreen:
         bottom_opening_multiplier: float | None = 0,
         left_side_opening_multiplier: float | None = 0,
         right_side_opening_multiplier: float | None = 0,
-        angle_of_resolution_for_screen_transmittance_output_map: Literal[0, 1, 2, 3, 5, ""] | None = 0,
+        angle_of_resolution_for_screen_transmittance_output_map: Literal[0, 1, 2, 3, 5] | None = 0,
     ) -> None:
         """Create a new ``WindowMaterial:Screen`` and add it to the document.
 
@@ -68,11 +68,11 @@ class FoundationKivaSettings:
         ground_thermal_absorptivity: float | None = 0.9,
         ground_surface_roughness: float | None = 0.03,
         far_field_width: float | None = 40,
-        deep_ground_boundary_condition: Literal["", "Autoselect", "GroundWater", "ZeroFlux"] | None = "Autoselect",
-        deep_ground_depth: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        deep_ground_boundary_condition: Literal["Autoselect", "GroundWater", "ZeroFlux"] | None = "Autoselect",
+        deep_ground_depth: float | Literal["Autocalculate"] | None = "Autocalculate",
         minimum_cell_dimension: float | None = 0.02,
         maximum_cell_growth_coefficient: float | None = 1.5,
-        simulation_timestep: Literal["", "Hourly", "Timestep"] | None = "Hourly",
+        simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
     ) -> None:
         """Create a new ``Foundation:Kiva:Settings`` and add it to the document.
 
@@ -126,8 +126,8 @@ class OutdoorAirNode:
         wind_speed_schedule_name: str | None = ...,
         wind_direction_schedule_name: str | None = ...,
         wind_pressure_coefficient_curve_name: str | None = ...,
-        symmetric_wind_pressure_coefficient_curve: Literal["", "No", "Yes"] | None = "No",
-        wind_angle_type: Literal["", "Absolute", "Relative"] | None = "Absolute",
+        symmetric_wind_pressure_coefficient_curve: Literal["No", "Yes"] | None = "No",
+        wind_angle_type: Literal["Absolute", "Relative"] | None = "Absolute",
     ) -> None:
         """Create a new ``OutdoorAir:Node`` and add it to the document.
 
@@ -153,21 +153,21 @@ class PlantLoop:
         demand_side_inlet_node_name: str,
         demand_side_outlet_node_name: str,
         demand_side_branch_list_name: str,
-        fluid_type: Literal["", "Steam", "UserDefinedFluidType", "Water"] | None = "Water",
+        fluid_type: Literal["Steam", "UserDefinedFluidType", "Water"] | None = "Water",
         user_defined_fluid_type: str | None = ...,
         minimum_loop_flow_rate: float | None = 0,
-        plant_loop_volume: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        plant_loop_volume: float | Literal["Autocalculate"] | None = "Autocalculate",
         plant_side_connector_list_name: str | None = ...,
         demand_side_connector_list_name: str | None = ...,
         load_distribution_scheme: Literal[
-            "", "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
+            "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
         ]
         | None = "SequentialLoad",
         availability_manager_list_name: str | None = ...,
-        plant_loop_demand_calculation_scheme: Literal["", "DualSetpointDeadband", "SingleSetpoint"]
+        plant_loop_demand_calculation_scheme: Literal["DualSetpointDeadband", "SingleSetpoint"]
         | None = "SingleSetpoint",
-        common_pipe_simulation: Literal["", "CommonPipe", "None", "TwoWayCommonPipe"] | None = "None",
-        pressure_simulation_type: Literal["", "LoopFlowCorrection", "None", "PumpPowerCorrection"] | None = "None",
+        common_pipe_simulation: Literal["CommonPipe", "None", "TwoWayCommonPipe"] | None = "None",
+        pressure_simulation_type: Literal["LoopFlowCorrection", "None", "PumpPowerCorrection"] | None = "None",
         loop_circulation_time: float | None = 2,
     ) -> None:
         """Create a new ``PlantLoop`` and add it to the document.
@@ -260,7 +260,6 @@ class ElectricLoadCenterDistribution:
         generator_track_schedule_name_scheme_schedule_name: str | None = ...,
         generator_track_meter_scheme_meter_name: str | None = ...,
         electrical_buss_type: Literal[
-            "",
             "AlternatingCurrent",
             "AlternatingCurrentWithStorage",
             "DirectCurrentWithInverter",
@@ -272,7 +271,6 @@ class ElectricLoadCenterDistribution:
         electrical_storage_object_name: str | None = ...,
         transformer_object_name: str | None = ...,
         storage_operation_scheme: Literal[
-            "",
             "FacilityDemandLeveling",
             "TrackChargeDischargeSchedules",
             "TrackFacilityElectricDemandStoreExcessOnSite",
@@ -309,8 +307,8 @@ class AnyHybridModelZone:
         begin_day_of_month: int,
         end_month: int,
         end_day_of_month: int,
-        calculate_zone_internal_thermal_mass: Literal["", "No", "Yes"] | None = "No",
-        calculate_zone_air_infiltration_rate: Literal["", "No", "Yes"] | None = "No",
+        calculate_zone_internal_thermal_mass: Literal["No", "Yes"] | None = "No",
+        calculate_zone_air_infiltration_rate: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``HybridModel:Zone`` and add it to the document.
 

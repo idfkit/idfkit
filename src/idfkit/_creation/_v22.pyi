@@ -65,13 +65,13 @@ class ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2:
         heating_convergence_tolerance: float | None = 0.001,
         cooling_convergence_tolerance: float | None = 0.001,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
-        capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None = "None",
-        minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None = "Autosize",
+        capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
+        minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
+        maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
 
@@ -91,7 +91,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1:
         maximum_steam_flow_rate: float | Literal["Autosize"],
         design_object: str | None = ...,
         availability_schedule_name: str | None = ...,
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         degree_of_subcooling: float | None = 5,
         surface_fractions: Sequence[
             _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem

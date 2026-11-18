@@ -37,10 +37,10 @@ class RoofCeilingDetailed_v9_6_to_v24_2:
         ],
         space_name: str | None = ...,
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.RoofCeilingDetailedVerticesItem | _g.RoofCeilingDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``RoofCeiling:Detailed`` and add it to the document.
@@ -56,9 +56,9 @@ class PerformancePrecisionTradeoffs_v9_3:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        use_coil_direct_solutions: Literal["", "No", "Yes"] | None = "No",
-        zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None = "ScriptF",
-        override_mode: Literal["", "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Normal"]
+        use_coil_direct_solutions: Literal["No", "Yes"] | None = "No",
+        zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None = "ScriptF",
+        override_mode: Literal["Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Normal"]
         | None = "Normal",
         maxzonetempdiff: float | None = 0.3,
     ) -> None:
@@ -99,10 +99,10 @@ class BuildingSurfaceDetailed_v25_1_to_v26_1:
         ],
         space_name: str | None = ...,
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.BuildingSurfaceDetailedVerticesItem | _g.BuildingSurfaceDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``BuildingSurface:Detailed`` and add it to the document.

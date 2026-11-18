@@ -104,10 +104,10 @@ class AnyCoilCoolingDXSingleSpeed:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         condenser_air_inlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
         evaporative_condenser_effectiveness: float | None = 0.9,
         evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
+        evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         crankcase_heater_capacity: float | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         supply_water_storage_tank_name: str | None = ...,
@@ -117,7 +117,7 @@ class AnyCoilCoolingDXSingleSpeed:
         basin_heater_operating_schedule_name: str | None = ...,
         sensible_heat_ratio_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
-        report_ashrae_standard_127_performance_ratings: Literal["", "No", "Yes"] | None = "No",
+        report_ashrae_standard_127_performance_ratings: Literal["No", "Yes"] | None = "No",
         zone_name_for_condenser_placement: str | None = ...,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:SingleSpeed`` and add it to the document.
@@ -146,15 +146,15 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped:
         rated_condenser_inlet_water_temperature: float | None = 57.5,
         rated_evaporator_air_flow_rate: float | Literal["Autocalculate"] | None = ...,
         rated_condenser_water_flow_rate: float | Literal["Autocalculate"] | None = ...,
-        evaporator_fan_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "Yes",
-        condenser_pump_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "No",
-        condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop: Literal["", "No", "Yes"] | None = "No",
+        evaporator_fan_power_included_in_rated_cop: Literal["No", "Yes"] | None = "Yes",
+        condenser_pump_power_included_in_rated_cop: Literal["No", "Yes"] | None = "No",
+        condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop: Literal["No", "Yes"] | None = "No",
         condenser_water_pump_power: float | None = 0,
         fraction_of_condenser_pump_heat_to_water: float | None = 0.2,
         crankcase_heater_capacity: float | None = 0,
         crankcase_heater_capacity_function_of_temperature_curve_name: str | None = ...,
         maximum_ambient_temperature_for_crankcase_heater_operation: float | None = 10,
-        evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        evaporator_air_temperature_type_for_curve_objects: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         heating_capacity_function_of_temperature_curve_name: str | None = ...,
         heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
@@ -169,28 +169,6 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped:
         Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating coil, evaporator air coil, evaporator fan, electric compressor, and water pump. Part of a WaterHeater:HeatPump:PumpedCondenser system.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-heating-and-cooling-coils/#coilwaterheatingairtowaterheatpumppumped
-        """
-
-class AnyControllerWaterCoil:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        control_variable: Literal["HumidityRatio", "Temperature", "TemperatureAndHumidityRatio"],
-        actuator_variable: Literal["Flow"],
-        sensor_node_name: str,
-        actuator_node_name: str,
-        action: Literal["Normal", "Reverse"] | None = ...,
-        controller_convergence_tolerance: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_actuated_flow: float | Literal["Autosize"] | None = ...,
-        minimum_actuated_flow: float | None = ...,
-    ) -> None:
-        """Create a new ``Controller:WaterCoil`` and add it to the document.
-
-        Controller for a water coil which is located directly in an air loop branch or outdoor air equipment list. Controls the coil water flow to meet the specified leaving air setpoint(s). Used with Coil:Heating:Water, Coil:Cooling:Water, Coil:Cooling:Water:DetailedGeometry, and CoilSystem:Cooling:Water:HeatexchangerAssisted.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-controllers/#controllerwatercoil
         """
 
 class HeatExchangerFluidToFluid:
@@ -208,7 +186,6 @@ class HeatExchangerFluidToFluid:
         heat_exchanger_u_factor_times_area_value: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
         heat_exchange_model_type: Literal[
-            "",
             "CounterFlow",
             "CrossFlowBothMixed",
             "CrossFlowBothUnMixed",
@@ -219,7 +196,6 @@ class HeatExchangerFluidToFluid:
         ]
         | None = "Ideal",
         control_type: Literal[
-            "",
             "CoolingDifferentialOnOff",
             "CoolingSetpointModulated",
             "CoolingSetpointOnOff",
@@ -236,14 +212,12 @@ class HeatExchangerFluidToFluid:
         heat_exchanger_setpoint_node_name: str | None = ...,
         minimum_temperature_difference_to_activate_heat_exchanger: float | None = 0.01,
         heat_transfer_metering_end_use_type: Literal[
-            "", "FreeCooling", "HeatRecoveryForCooling", "HeatRecoveryForHeating", "HeatRejection", "LoopToLoop"
+            "FreeCooling", "HeatRecoveryForCooling", "HeatRecoveryForHeating", "HeatRejection", "LoopToLoop"
         ]
         | None = "LoopToLoop",
         component_override_loop_supply_side_inlet_node_name: str | None = ...,
         component_override_loop_demand_side_inlet_node_name: str | None = ...,
-        component_override_cooling_control_temperature_mode: Literal[
-            "", "DryBulbTemperature", "Loop", "WetBulbTemperature"
-        ]
+        component_override_cooling_control_temperature_mode: Literal["DryBulbTemperature", "Loop", "WetBulbTemperature"]
         | None = "Loop",
         sizing_factor: float | None = 1,
         operation_minimum_temperature_limit: float | None = ...,
@@ -277,10 +251,10 @@ class AnyWaterHeaterMixed:
         ],
         heater_thermal_efficiency: float,
         ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"],
-        tank_volume: float | Literal["", "Autosize"] | None = 0,
+        tank_volume: float | Literal["Autosize"] | None = 0,
         deadband_temperature_difference: float | None = 0,
         maximum_temperature_limit: float | None = ...,
-        heater_control_type: Literal["", "Cycle", "Modulate"] | None = "Cycle",
+        heater_control_type: Literal["Cycle", "Modulate"] | None = "Cycle",
         heater_maximum_capacity: float | Literal["Autosize"] | None = ...,
         heater_minimum_capacity: float | None = ...,
         heater_ignition_minimum_flow_rate: float | None = 0,
@@ -314,11 +288,11 @@ class AnyWaterHeaterMixed:
         source_side_inlet_node_name: str | None = ...,
         source_side_outlet_node_name: str | None = ...,
         source_side_effectiveness: float | None = 1,
-        use_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        use_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         indirect_water_heating_recovery_time: float | None = 1.5,
         source_side_flow_control_mode: Literal[
-            "", "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
+            "IndirectHeatAlternateSetpoint", "IndirectHeatPrimarySetpoint", "StorageTank"
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
@@ -383,8 +357,8 @@ class WaterUseConnections:
         reclamation_water_storage_tank_name: str | None = ...,
         hot_water_supply_temperature_schedule_name: str | None = ...,
         cold_water_supply_temperature_schedule_name: str | None = ...,
-        drain_water_heat_exchanger_type: Literal["", "CounterFlow", "CrossFlow", "Ideal", "None"] | None = "None",
-        drain_water_heat_exchanger_destination: Literal["", "Equipment", "Plant", "PlantAndEquipment"] | None = "Plant",
+        drain_water_heat_exchanger_type: Literal["CounterFlow", "CrossFlow", "Ideal", "None"] | None = "None",
+        drain_water_heat_exchanger_destination: Literal["Equipment", "Plant", "PlantAndEquipment"] | None = "Plant",
         drain_water_heat_exchanger_u_factor_times_area: float | None = ...,
         connections: Sequence[_g.WaterUseConnectionsConnectionsItem | _g.WaterUseConnectionsConnectionsGroup] = ...,
     ) -> None:
@@ -408,8 +382,8 @@ class CurveRectangularHyperbola1:
         maximum_value_of_x: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
-        input_unit_type_for_x: Literal["", "Dimensionless"] | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:RectangularHyperbola1`` and add it to the document.

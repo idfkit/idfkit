@@ -207,11 +207,11 @@ class _HVACTemplatePlantBoiler_v8_9_to_v9_2Fields(_g._HVACTemplatePlantBoilerCom
 class ScheduleFile_v8_9_to_v9_1(_g.AnyScheduleFile):
     """``Schedule:File`` as declared in EnergyPlus 8.9.0 to 9.1.0. A Schedule:File points to a text computer file that has 8760-8784 hours of data."""
 
-    column_number: float | None
+    column_number: float
     """Range: >= 1.0"""
-    rows_to_skip_at_top: float | None
+    rows_to_skip_at_top: float
     """Range: >= 0.0"""
-    column_separator: Literal["", "Comma", "Fixed", "Semicolon", "Tab"] | None
+    column_separator: Literal["Comma", "Fixed", "Semicolon", "Tab"] | None
     """Default: Comma"""
     minutes_per_item: float | None
     """Must be evenly divisible into 60; Range: >= 1.0, <= 60.0"""
@@ -222,19 +222,19 @@ class ScheduleFile_v8_9_to_v9_1(_g.AnyScheduleFile):
     _creation_signature: _cv37.ScheduleFile_v8_9_to_v9_1  # type: ignore[assignment]
 
 class _ScheduleFile_v8_9_to_v9_1Fields(_g._ScheduleFileCommonFields, total=False):
-    column_number: float | None
-    rows_to_skip_at_top: float | None
-    column_separator: Literal["", "Comma", "Fixed", "Semicolon", "Tab"] | None
+    column_number: float
+    rows_to_skip_at_top: float
+    column_separator: Literal["Comma", "Fixed", "Semicolon", "Tab"] | None
     minutes_per_item: float | None
 
 class ScheduleFile_v9_2_to_v9_6(_g.AnyScheduleFile):
     """``Schedule:File`` as declared in EnergyPlus 9.2.0 to 9.6.0. A Schedule:File points to a text computer file that has 8760-8784 hours of data."""
 
-    column_number: float | None
+    column_number: float
     """Range: >= 1.0"""
-    rows_to_skip_at_top: float | None
+    rows_to_skip_at_top: float
     """Range: >= 0.0"""
-    column_separator: Literal["", "Comma", "Semicolon", "Space", "Tab"] | None
+    column_separator: Literal["Comma", "Semicolon", "Space", "Tab"] | None
     """Default: Comma"""
     minutes_per_item: float | None
     """Must be evenly divisible into 60; Range: >= 1.0, <= 60.0"""
@@ -245,23 +245,23 @@ class ScheduleFile_v9_2_to_v9_6(_g.AnyScheduleFile):
     _creation_signature: _cv27.ScheduleFile_v9_2_to_v9_6  # type: ignore[assignment]
 
 class _ScheduleFile_v9_2_to_v9_6Fields(_g._ScheduleFileCommonFields, total=False):
-    column_number: float | None
-    rows_to_skip_at_top: float | None
-    column_separator: Literal["", "Comma", "Semicolon", "Space", "Tab"] | None
+    column_number: float
+    rows_to_skip_at_top: float
+    column_separator: Literal["Comma", "Semicolon", "Space", "Tab"] | None
     minutes_per_item: float | None
 
 class ScheduleFile_v22_1(_g.AnyScheduleFile):
     """``Schedule:File`` as declared in EnergyPlus 22.1.0. A Schedule:File points to a text computer file that has 8760-8784 hours of data."""
 
-    column_number: float | None
+    column_number: float
     """Range: >= 1.0"""
-    rows_to_skip_at_top: float | None
+    rows_to_skip_at_top: float
     """Range: >= 0.0"""
-    column_separator: Literal["", "Comma", "Semicolon", "Space", "Tab"] | None
+    column_separator: Literal["Comma", "Semicolon", "Space", "Tab"] | None
     """Default: Comma"""
     minutes_per_item: float | None
     """Must be evenly divisible into 60; Default: 60.0; Range: >= 1.0, <= 60.0"""
-    adjust_schedule_for_daylight_savings: Literal["", "No", "Yes"] | None
+    adjust_schedule_for_daylight_savings: Literal["No", "Yes"] | None
     """'No' means do not include Daylight Savings Time in the schedule, instead, use the schedule directly from the Schedule...; Default: Yes"""
 
     def update(
@@ -270,18 +270,18 @@ class ScheduleFile_v22_1(_g.AnyScheduleFile):
     _creation_signature: _cv61.ScheduleFile_v22_1  # type: ignore[assignment]
 
 class _ScheduleFile_v22_1Fields(_g._ScheduleFileCommonFields, total=False):
-    column_number: float | None
-    rows_to_skip_at_top: float | None
-    column_separator: Literal["", "Comma", "Semicolon", "Space", "Tab"] | None
+    column_number: float
+    rows_to_skip_at_top: float
+    column_separator: Literal["Comma", "Semicolon", "Space", "Tab"] | None
     minutes_per_item: float | None
-    adjust_schedule_for_daylight_savings: Literal["", "No", "Yes"] | None
+    adjust_schedule_for_daylight_savings: Literal["No", "Yes"] | None
 
 class GroundHeatExchangerVerticalArray_v8_9_to_v22_1(_g.AnyGroundHeatExchangerVerticalArray):
     """``GroundHeatExchanger:Vertical:Array`` as declared in EnergyPlus 8.9.0 to 22.1.0."""
 
-    number_of_boreholes_in_x_direction: float | None
+    number_of_boreholes_in_x_direction: float
     """Range: >= 1.0"""
-    number_of_boreholes_in_y_direction: float | None
+    number_of_boreholes_in_y_direction: float
     """Range: >= 1.0"""
 
     def update(
@@ -295,8 +295,8 @@ class GroundHeatExchangerVerticalArray_v8_9_to_v22_1(_g.AnyGroundHeatExchangerVe
 class _GroundHeatExchangerVerticalArray_v8_9_to_v22_1Fields(
     _g._GroundHeatExchangerVerticalArrayCommonFields, total=False
 ):
-    number_of_boreholes_in_x_direction: float | None
-    number_of_boreholes_in_y_direction: float | None
+    number_of_boreholes_in_x_direction: float
+    number_of_boreholes_in_y_direction: float
 
 class AvailabilityManagerOptimumStart_v8_9_to_v22_1(_g.AnyAvailabilityManagerOptimumStart):
     """``AvailabilityManager:OptimumStart`` as declared in EnergyPlus 8.9.0 to 22.1.0. Determines the optimal start of HVAC systems before occupancy."""
@@ -320,7 +320,7 @@ class _AvailabilityManagerOptimumStart_v8_9_to_v22_1Fields(
 class GasEquipment_v8_9_to_v9_5(_g.AnyGasEquipment):
     """``GasEquipment`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains and contaminant rates for gas equipment in the zone. If you use a ZoneList in the Zone name field..."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
 
@@ -330,13 +330,13 @@ class GasEquipment_v8_9_to_v9_5(_g.AnyGasEquipment):
     _creation_signature: _cv29.GasEquipment_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _GasEquipment_v8_9_to_v9_5Fields(_g._GasEquipmentCommonFields, total=False):
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
 
 class GasEquipment_v9_6_to_v23_2(_g.AnyGasEquipment):
     """``GasEquipment`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains and contaminant rates for gas equipment in the zone. If a ZoneList, SpaceList, or a Zone comprise..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
 
@@ -346,31 +346,28 @@ class GasEquipment_v9_6_to_v23_2(_g.AnyGasEquipment):
     _creation_signature: _cv31.GasEquipment_v9_6_to_v23_2  # type: ignore[assignment]
 
 class _GasEquipment_v9_6_to_v23_2Fields(_g._GasEquipmentCommonFields, total=False):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
 
 class ExteriorFuelEquipment_v8_9_to_v9_2(_g.AnyExteriorFuelEquipment):
     """``Exterior:FuelEquipment`` as declared in EnergyPlus 8.9.0 to 9.2.0. only used for Meter type reporting, does not affect building loads"""
 
-    fuel_use_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictCooling",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "PropaneGas",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    fuel_use_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictCooling",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "PropaneGas",
+        "Steam",
+        "Water",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorFuelEquipment_v8_9_to_v9_2Fields]
@@ -378,48 +375,42 @@ class ExteriorFuelEquipment_v8_9_to_v9_2(_g.AnyExteriorFuelEquipment):
     _creation_signature: _cv110.ExteriorFuelEquipment_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _ExteriorFuelEquipment_v8_9_to_v9_2Fields(_g._ExteriorFuelEquipmentCommonFields, total=False):
-    fuel_use_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictCooling",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "PropaneGas",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    fuel_use_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictCooling",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "PropaneGas",
+        "Steam",
+        "Water",
+    ]
 
 class ExteriorFuelEquipment_v9_3_to_v23_1(_g.AnyExteriorFuelEquipment):
     """``Exterior:FuelEquipment`` as declared in EnergyPlus 9.3.0 to 23.1.0. only used for Meter type reporting, does not affect building loads"""
 
-    fuel_use_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictCooling",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    fuel_use_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictCooling",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorFuelEquipment_v9_3_to_v23_1Fields]
@@ -427,39 +418,36 @@ class ExteriorFuelEquipment_v9_3_to_v23_1(_g.AnyExteriorFuelEquipment):
     _creation_signature: _cv59.ExteriorFuelEquipment_v9_3_to_v23_1  # type: ignore[assignment]
 
 class _ExteriorFuelEquipment_v9_3_to_v23_1Fields(_g._ExteriorFuelEquipmentCommonFields, total=False):
-    fuel_use_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictCooling",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    fuel_use_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictCooling",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
 
 class HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4(_g.AnyHeatPumpWaterToWaterEquationFitHeating):
     """``HeatPump:WaterToWater:EquationFit:Heating`` as declared in EnergyPlus 8.9.0 to 9.4.0. simple water-water hp curve-fit model"""
 
-    heating_capacity_coefficient_1: float | None
-    heating_capacity_coefficient_2: float | None
-    heating_capacity_coefficient_3: float | None
-    heating_capacity_coefficient_4: float | None
-    heating_capacity_coefficient_5: float | None
-    heating_compressor_power_coefficient_1: float | None
-    heating_compressor_power_coefficient_2: float | None
-    heating_compressor_power_coefficient_3: float | None
-    heating_compressor_power_coefficient_4: float | None
-    heating_compressor_power_coefficient_5: float | None
+    heating_capacity_coefficient_1: float
+    heating_capacity_coefficient_2: float
+    heating_capacity_coefficient_3: float
+    heating_capacity_coefficient_4: float
+    heating_capacity_coefficient_5: float
+    heating_compressor_power_coefficient_1: float
+    heating_compressor_power_coefficient_2: float
+    heating_compressor_power_coefficient_3: float
+    heating_compressor_power_coefficient_4: float
+    heating_compressor_power_coefficient_5: float
 
     def update(
         self,
@@ -472,16 +460,16 @@ class HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4(_g.AnyHeatPumpWaterToW
 class _HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4Fields(
     _g._HeatPumpWaterToWaterEquationFitHeatingCommonFields, total=False
 ):
-    heating_capacity_coefficient_1: float | None
-    heating_capacity_coefficient_2: float | None
-    heating_capacity_coefficient_3: float | None
-    heating_capacity_coefficient_4: float | None
-    heating_capacity_coefficient_5: float | None
-    heating_compressor_power_coefficient_1: float | None
-    heating_compressor_power_coefficient_2: float | None
-    heating_compressor_power_coefficient_3: float | None
-    heating_compressor_power_coefficient_4: float | None
-    heating_compressor_power_coefficient_5: float | None
+    heating_capacity_coefficient_1: float
+    heating_capacity_coefficient_2: float
+    heating_capacity_coefficient_3: float
+    heating_capacity_coefficient_4: float
+    heating_capacity_coefficient_5: float
+    heating_compressor_power_coefficient_1: float
+    heating_compressor_power_coefficient_2: float
+    heating_compressor_power_coefficient_3: float
+    heating_compressor_power_coefficient_4: float
+    heating_compressor_power_coefficient_5: float
 
 class CeilingAdiabatic_v8_9_to_v9_5(_g.AnyCeilingAdiabatic):
     """``Ceiling:Adiabatic`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of interior ceilings."""
@@ -537,10 +525,9 @@ class _SimulationControl_v8_9_to_v22_1Fields(_g._SimulationControlCommonFields, 
 class ChillerEngineDriven_v8_9_to_v9_2(_g.AnyChillerEngineDriven):
     """``Chiller:EngineDriven`` as declared in EnergyPlus 8.9.0 to 9.2.0. This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller ..."""
 
-    fuel_type: (
-        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
-        | None
-    )
+    fuel_type: Literal[
+        "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerEngineDriven_v8_9_to_v9_2Fields]
@@ -548,43 +535,22 @@ class ChillerEngineDriven_v8_9_to_v9_2(_g.AnyChillerEngineDriven):
     _creation_signature: _cv40.ChillerEngineDriven_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _ChillerEngineDriven_v8_9_to_v9_2Fields(_g._ChillerEngineDrivenCommonFields, total=False):
-    fuel_type: (
-        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
-        | None
-    )
+    fuel_type: Literal[
+        "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
+    ]
 
-class FanSystemModel_v8_9_to_v9_3(_g.AnyFanSystemModel):
-    """``Fan:SystemModel`` as declared in EnergyPlus 8.9.0 to 9.3.0. Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-spe..."""
+class FanSystemModel_v8_9_to_v22_1(_g.AnyFanSystemModel):
+    """``Fan:SystemModel`` as declared in EnergyPlus 8.9.0 to 22.1.0. Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-spe..."""
 
-    design_electric_power_consumption: float | Literal["Autosize"] | None
-    """Fan power consumption at maximum air flow rate. If autosized the method used to scale power is chosen in the followin...; [W]"""
     number_of_speeds: float | None
     """number of different speed levels available when Speed Control Method is set to Discrete Speed need to be arranged in ...; Default: 1.0"""
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModel_v8_9_to_v9_3Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModel_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
-    _creation_signature: _cv112.FanSystemModel_v8_9_to_v9_3  # type: ignore[assignment]
+    _creation_signature: _cv80.FanSystemModel_v8_9_to_v22_1  # type: ignore[assignment]
 
-class _FanSystemModel_v8_9_to_v9_3Fields(_g._FanSystemModelCommonFields, total=False):
-    design_electric_power_consumption: float | Literal["Autosize"] | None
-    number_of_speeds: float | None
-
-class FanSystemModel_v9_4_to_v22_1(_g.AnyFanSystemModel):
-    """``Fan:SystemModel`` as declared in EnergyPlus 9.4.0 to 22.1.0. Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-spe..."""
-
-    design_electric_power_consumption: float | Literal["", "Autosize"] | None
-    """Fan power consumption at maximum air flow rate. If autosized the method used to scale power is chosen in the followin...; [W]; Default: Autosize"""
-    number_of_speeds: float | None
-    """number of different speed levels available when Speed Control Method is set to Discrete Speed need to be arranged in ...; Default: 1.0"""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModel_v9_4_to_v22_1Fields]
-    ) -> None: ...  # type: ignore[override]
-    _creation_signature: _cv15.FanSystemModel_v9_4_to_v22_1  # type: ignore[assignment]
-
-class _FanSystemModel_v9_4_to_v22_1Fields(_g._FanSystemModelCommonFields, total=False):
-    design_electric_power_consumption: float | Literal["", "Autosize"] | None
+class _FanSystemModel_v8_9_to_v22_1Fields(_g._FanSystemModelCommonFields, total=False):
     number_of_speeds: float | None
 
 class SiteLocation_v8_9_to_v24_1(_g.AnySiteLocation):
@@ -601,9 +567,7 @@ class GeneratorInternalCombustionEngine_v8_9_to_v9_2(_g.AnyGeneratorInternalComb
     """``Generator:InternalCombustionEngine`` as declared in EnergyPlus 8.9.0 to 9.2.0. This generator model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Engine..."""
 
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
-        ]
+        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
         | None
     )
     """Default: Diesel"""
@@ -620,9 +584,7 @@ class _GeneratorInternalCombustionEngine_v8_9_to_v9_2Fields(
     _g._GeneratorInternalCombustionEngineCommonFields, total=False
 ):
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
-        ]
+        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
         | None
     )
 
@@ -649,7 +611,7 @@ class _MaterialNoMass_v8_9_to_v26_1Fields(_g._MaterialNoMassCommonFields, total=
 class AirflowNetworkDistributionComponentFan_v8_9_to_v9_1(_g.AnyAirflowNetworkDistributionComponentFan):
     """``AirflowNetwork:Distribution:Component:Fan`` as declared in EnergyPlus 8.9.0 to 9.1.0. This object defines the name of the supply Air Fan used in an Air loop."""
 
-    supply_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"] | None
+    supply_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"] | None
     """Default: Fan:ConstantVolume"""
 
     def update(
@@ -663,12 +625,12 @@ class AirflowNetworkDistributionComponentFan_v8_9_to_v9_1(_g.AnyAirflowNetworkDi
 class _AirflowNetworkDistributionComponentFan_v8_9_to_v9_1Fields(
     _g._AirflowNetworkDistributionComponentFanCommonFields, total=False
 ):
-    supply_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"] | None
+    supply_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"] | None
 
 class ZoneThermalChimney_v8_9_to_v24_1(_g.AnyZoneThermalChimney):
     """``ZoneThermalChimney`` as declared in EnergyPlus 8.9.0 to 24.1.0. A thermal chimney is a vertical shaft utilizing solar radiation to enhance natural ventilation. It consists of an abs..."""
 
-    zone_1_name: str | None
+    zone_1_name: str
     relative_ratios_of_air_flow_rates_passing_through_zone_1: float | None
     """Default: 1.0; Range: >= 0.0, <= 1.0"""
     zone_2_name: str | None
@@ -735,7 +697,7 @@ class ZoneThermalChimney_v8_9_to_v24_1(_g.AnyZoneThermalChimney):
     _creation_signature: _cv123.ZoneThermalChimney_v8_9_to_v24_1  # type: ignore[assignment]
 
 class _ZoneThermalChimney_v8_9_to_v24_1Fields(_g._ZoneThermalChimneyCommonFields, total=False):
-    zone_1_name: str | None
+    zone_1_name: str
     relative_ratios_of_air_flow_rates_passing_through_zone_1: float | None
     zone_2_name: str | None
     relative_ratios_of_air_flow_rates_passing_through_zone_2: float | None
@@ -779,7 +741,7 @@ class _ZoneThermalChimney_v8_9_to_v24_1Fields(_g._ZoneThermalChimneyCommonFields
 class AirTerminalSingleDuctUserDefined_v8_9_to_v22_1(_g.AnyAirTerminalSingleDuctUserDefined):
     """``AirTerminal:SingleDuct:UserDefined`` as declared in EnergyPlus 8.9.0 to 22.1.0. Defines a generic single duct air terminal unit for custom modeling using Energy Management System or External Interface"""
 
-    number_of_plant_loop_connections: float | None
+    number_of_plant_loop_connections: float
     """Range: >= 0.0, <= 2.0"""
 
     def update(
@@ -793,14 +755,13 @@ class AirTerminalSingleDuctUserDefined_v8_9_to_v22_1(_g.AnyAirTerminalSingleDuct
 class _AirTerminalSingleDuctUserDefined_v8_9_to_v22_1Fields(
     _g._AirTerminalSingleDuctUserDefinedCommonFields, total=False
 ):
-    number_of_plant_loop_connections: float | None
+    number_of_plant_loop_connections: float
 
 class AirflowNetworkDistributionNode_v8_9_to_v25_1(_g.AnyAirflowNetworkDistributionNode):
     """``AirflowNetwork:Distribution:Node`` as declared in EnergyPlus 8.9.0 to 25.1.0. This object represents an air distribution node in the AirflowNetwork model."""
 
     component_object_type_or_node_type: (
         Literal[
-            "",
             "AirLoopHVAC:OutdoorAirSystem",
             "AirLoopHVAC:ZoneMixer",
             "AirLoopHVAC:ZoneSplitter",
@@ -824,7 +785,6 @@ class AirflowNetworkDistributionNode_v8_9_to_v25_1(_g.AnyAirflowNetworkDistribut
 class _AirflowNetworkDistributionNode_v8_9_to_v25_1Fields(_g._AirflowNetworkDistributionNodeCommonFields, total=False):
     component_object_type_or_node_type: (
         Literal[
-            "",
             "AirLoopHVAC:OutdoorAirSystem",
             "AirLoopHVAC:ZoneMixer",
             "AirLoopHVAC:ZoneSplitter",
@@ -891,7 +851,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1(
 ):
     """``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
-    part_load_fraction_correlation_curve_name: str | None
+    part_load_fraction_correlation_curve_name: str
     """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (cooling l..."""
     maximum_cycling_rate: float | None
     """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 0.0; Range: >= 0.0, <= 5.0"""
@@ -911,7 +871,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1(
 class _CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
 ):
-    part_load_fraction_correlation_curve_name: str | None
+    part_load_fraction_correlation_curve_name: str
     maximum_cycling_rate: float | None
     latent_capacity_time_constant: float | None
     fan_delay_time: float | None
@@ -929,10 +889,10 @@ class _CeilingInterzone_v8_9_to_v9_5Fields(_g._CeilingInterzoneCommonFields, tot
 class ElectricEquipmentITEAirCooled_v8_9_to_v9_5(_g.AnyElectricEquipmentITEAirCooled):
     """``ElectricEquipment:ITE:AirCooled`` as declared in EnergyPlus 8.9.0 to 9.5.0. This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption..."""
 
-    zone_name: str | None
+    zone_name: str
     watts_per_zone_floor_area: float | None
     """[W/m2] (W/ft2); Range: >= 0.0"""
-    environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None"] | None
+    environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "None"] | None
     """Specifies the allowable operating conditions for the air inlet conditions. Used for reporting time outside allowable ...; Default: None"""
 
     def update(
@@ -944,18 +904,18 @@ class ElectricEquipmentITEAirCooled_v8_9_to_v9_5(_g.AnyElectricEquipmentITEAirCo
     _creation_signature: _cv106.ElectricEquipmentITEAirCooled_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _ElectricEquipmentITEAirCooled_v8_9_to_v9_5Fields(_g._ElectricEquipmentITEAirCooledCommonFields, total=False):
-    zone_name: str | None
+    zone_name: str
     watts_per_zone_floor_area: float | None
-    environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None"] | None
+    environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "None"] | None
 
 class ElectricEquipmentITEAirCooled_v9_6_to_v22_1(_g.AnyElectricEquipmentITEAirCooled):
     """``ElectricEquipment:ITE:AirCooled`` as declared in EnergyPlus 9.6.0 to 22.1.0. This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption..."""
 
-    zone_or_space_name: str | None
+    zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed."""
     watts_per_zone_floor_area: float | None
     """[W/m2] (W/ft2); Range: >= 0.0"""
-    environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None"] | None
+    environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "None"] | None
     """Specifies the allowable operating conditions for the air inlet conditions. Used for reporting time outside allowable ...; Default: None"""
 
     def update(
@@ -967,18 +927,18 @@ class ElectricEquipmentITEAirCooled_v9_6_to_v22_1(_g.AnyElectricEquipmentITEAirC
     _creation_signature: _cv58.ElectricEquipmentITEAirCooled_v9_6_to_v22_1  # type: ignore[assignment]
 
 class _ElectricEquipmentITEAirCooled_v9_6_to_v22_1Fields(_g._ElectricEquipmentITEAirCooledCommonFields, total=False):
-    zone_or_space_name: str | None
+    zone_or_space_name: str
     watts_per_zone_floor_area: float | None
-    environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None"] | None
+    environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "None"] | None
 
 class ElectricEquipmentITEAirCooled_v22_2_to_v23_2(_g.AnyElectricEquipmentITEAirCooled):
     """``ElectricEquipment:ITE:AirCooled`` as declared in EnergyPlus 22.2.0 to 23.2.0. This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption..."""
 
-    zone_or_space_name: str | None
+    zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed."""
     watts_per_zone_floor_area: float | None
     """[W/m2] (W/ft2); Range: >= 0.0"""
-    environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None
+    environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None
     """Specifies the allowable operating conditions for the air inlet conditions. Used for reporting time outside allowable ...; Default: None"""
 
     def update(
@@ -990,15 +950,15 @@ class ElectricEquipmentITEAirCooled_v22_2_to_v23_2(_g.AnyElectricEquipmentITEAir
     _creation_signature: _cv88.ElectricEquipmentITEAirCooled_v22_2_to_v23_2  # type: ignore[assignment]
 
 class _ElectricEquipmentITEAirCooled_v22_2_to_v23_2Fields(_g._ElectricEquipmentITEAirCooledCommonFields, total=False):
-    zone_or_space_name: str | None
+    zone_or_space_name: str
     watts_per_zone_floor_area: float | None
-    environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None
+    environmental_class: Literal["A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None
 
 class DistrictHeating_v8_9_to_v23_1(_g._TypedIDFObject):
     """``DistrictHeating`` as declared in EnergyPlus 8.9.0 to 23.1.0. Centralized source of hot water, such as a district heating system."""
 
-    hot_water_inlet_node_name: str | None
-    hot_water_outlet_node_name: str | None
+    hot_water_inlet_node_name: str
+    hot_water_outlet_node_name: str
     nominal_capacity: float | Literal["Autosize"] | None
     """[W]"""
     capacity_fraction_schedule_name: str | None
@@ -1010,16 +970,14 @@ class DistrictHeating_v8_9_to_v23_1(_g._TypedIDFObject):
     _creation_signature: _cv7.DistrictHeating_v8_9_to_v23_1  # type: ignore[assignment]
 
 class _DistrictHeating_v8_9_to_v23_1Fields(TypedDict, total=False):
-    hot_water_inlet_node_name: str | None
-    hot_water_outlet_node_name: str | None
+    hot_water_inlet_node_name: str
+    hot_water_outlet_node_name: str
     nominal_capacity: float | Literal["Autosize"] | None
     capacity_fraction_schedule_name: str | None
 
 class CoolingTowerTwoSpeed_v8_9_to_v22_1(_g.AnyCoolingTowerTwoSpeed):
     """``CoolingTower:TwoSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
 
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
     number_of_cells: float | None
     """Default: 1.0; Range: >= 1.0"""
 
@@ -1029,8 +987,6 @@ class CoolingTowerTwoSpeed_v8_9_to_v22_1(_g.AnyCoolingTowerTwoSpeed):
     _creation_signature: _cv25.CoolingTowerTwoSpeed_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _CoolingTowerTwoSpeed_v8_9_to_v22_1Fields(_g._CoolingTowerTwoSpeedCommonFields, total=False):
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
     number_of_cells: float | None
 
 class WeatherPropertySkyTemperature_v8_9_to_v9_2(_g.AnyWeatherPropertySkyTemperature):
@@ -1052,20 +1008,6 @@ class _WeatherPropertySkyTemperature_v8_9_to_v9_2Fields(_g._WeatherPropertySkyTe
     calculation_type: (
         Literal["DifferenceScheduleDewPointValue", "DifferenceScheduleDryBulbValue", "ScheduleValue"] | None
     )
-
-class ControllerWaterCoil_v8_9_to_v9_3(_g.AnyControllerWaterCoil):
-    """``Controller:WaterCoil`` as declared in EnergyPlus 8.9.0 to 9.3.0. Controller for a water coil which is located directly in an air loop branch or outdoor air equipment list. Controls t..."""
-
-    maximum_actuated_flow: float | Literal["Autosize"] | None
-    """[m3/s] (gal/min)"""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerWaterCoil_v8_9_to_v9_3Fields]
-    ) -> None: ...  # type: ignore[override]
-    _creation_signature: _cv76.ControllerWaterCoil_v8_9_to_v9_3  # type: ignore[assignment]
-
-class _ControllerWaterCoil_v8_9_to_v9_3Fields(_g._ControllerWaterCoilCommonFields, total=False):
-    maximum_actuated_flow: float | Literal["Autosize"] | None
 
 class WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1(_g.AnyWindowMaterialGlazingEquivalentLayer):
     """``WindowMaterial:Glazing:EquivalentLayer`` as declared in EnergyPlus 8.9.0 to 9.1.0. Glass material properties for Windows or Glass Doors Transmittance/Reflectance input method."""
@@ -1111,7 +1053,6 @@ class DesignSpecificationOutdoorAir_v8_9_to_v9_4(_g.AnyDesignSpecificationOutdoo
 
     outdoor_air_method: (
         Literal[
-            "",
             "AirChanges/Hour",
             "Flow/Area",
             "Flow/Person",
@@ -1137,7 +1078,6 @@ class DesignSpecificationOutdoorAir_v8_9_to_v9_4(_g.AnyDesignSpecificationOutdoo
 class _DesignSpecificationOutdoorAir_v8_9_to_v9_4Fields(_g._DesignSpecificationOutdoorAirCommonFields, total=False):
     outdoor_air_method: (
         Literal[
-            "",
             "AirChanges/Hour",
             "Flow/Area",
             "Flow/Person",
@@ -1154,27 +1094,24 @@ class _DesignSpecificationOutdoorAir_v8_9_to_v9_4Fields(_g._DesignSpecificationO
 class BuildingSurfaceDetailed_v8_9_to_v9_5(_g.AnyBuildingSurfaceDetailed):
     """``BuildingSurface:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
 
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailed_v8_9_to_v9_5Fields]
@@ -1182,54 +1119,48 @@ class BuildingSurfaceDetailed_v8_9_to_v9_5(_g.AnyBuildingSurfaceDetailed):
     _creation_signature: _cv114.BuildingSurfaceDetailed_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _BuildingSurfaceDetailed_v8_9_to_v9_5Fields(_g._BuildingSurfaceDetailedCommonFields, total=False):
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
 class BuildingSurfaceDetailed_v9_6_to_v24_2(_g.AnyBuildingSurfaceDetailed):
     """``BuildingSurface:Detailed`` as declared in EnergyPlus 9.6.0 to 24.2.0. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailed_v9_6_to_v24_2Fields]
@@ -1238,32 +1169,29 @@ class BuildingSurfaceDetailed_v9_6_to_v24_2(_g.AnyBuildingSurfaceDetailed):
 
 class _BuildingSurfaceDetailed_v9_6_to_v24_2Fields(_g._BuildingSurfaceDetailedCommonFields, total=False):
     space_name: str | None
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
 class SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1(_g.AnySiteGroundTemperatureUndisturbedXing):
     """``Site:GroundTemperature:Undisturbed:Xing`` as declared in EnergyPlus 8.9.0 to 23.1.0. Undisturbed ground temperature object using the Xing 2014 2 harmonic parameter model."""
 
-    average_soil_surface_tempeature: float | None
+    average_soil_surface_tempeature: float
     """[C]"""
 
     def update(
@@ -1277,14 +1205,12 @@ class SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1(_g.AnySiteGroundTempera
 class _SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1Fields(
     _g._SiteGroundTemperatureUndisturbedXingCommonFields, total=False
 ):
-    average_soil_surface_tempeature: float | None
+    average_soil_surface_tempeature: float
 
 class AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2(_g.AnyAirLoopHVACUnitaryFurnaceHeatCool):
     """``AirLoopHVAC:Unitary:Furnace:HeatCool`` as declared in EnergyPlus 8.9.0 to 9.2.0. Unitary system, heating and cooling with constant volume supply fan (continuous or cycling), direct expansion (DX) co..."""
 
-    cooling_coil_object_type: (
-        Literal["Coil:Cooling:DX:SingleSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"] | None
-    )
+    cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"]
     """Only works with DX cooling coil types"""
 
     def update(
@@ -1298,15 +1224,13 @@ class AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2(_g.AnyAirLoopHVACUnitaryFur
 class _AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2Fields(
     _g._AirLoopHVACUnitaryFurnaceHeatCoolCommonFields, total=False
 ):
-    cooling_coil_object_type: (
-        Literal["Coil:Cooling:DX:SingleSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"] | None
-    )
+    cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"]
 
 class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4(_g.AnyZoneHVACBaseboardRadiantConvectiveSteam):
     """``ZoneHVAC:Baseboard:RadiantConvective:Steam`` as declared in EnergyPlus 8.9.0 to 9.4.0. The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
 
     heating_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
+        Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
     """Enter the method used to determine the heating design capacity. HeatingDesignCapacity = > selected when the design he...; Default: HeatingDesignCapacity"""
     heating_design_capacity_per_floor_area: float | None
@@ -1315,7 +1239,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4(_g.AnyZoneHVACBaseboa
     """Enter the fraction of auto - sized heating design capacity.Required field when capacity the heating design capacity m...; Default: 1.0; Range: >= 0.0"""
     convergence_tolerance: float | None
     """Default: 0.001; Range: >= 0.0, > True"""
-    fraction_radiant: float | None
+    fraction_radiant: float
     """Range: >= 0.0, <= 1.0"""
     fraction_of_radiant_energy_incident_on_people: float | None
     """Range: >= 0.0, <= 1.0"""
@@ -1332,12 +1256,12 @@ class _ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4Fields(
     _g._ZoneHVACBaseboardRadiantConvectiveSteamCommonFields, total=False
 ):
     heating_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
+        Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
     heating_design_capacity_per_floor_area: float | None
     fraction_of_autosized_heating_design_capacity: float | None
     convergence_tolerance: float | None
-    fraction_radiant: float | None
+    fraction_radiant: float
     fraction_of_radiant_energy_incident_on_people: float | None
 
 class SizingZone_v8_9_to_v22_1(_g.AnySizingZone):
@@ -1354,12 +1278,11 @@ class SizingZone_v22_2_to_v24_1(_g.AnySizingZone):
     """``Sizing:Zone`` as declared in EnergyPlus 22.2.0 to 24.1.0. Specifies the data needed to perform a zone design air flow calculation. The calculation is done for every sizing per..."""
 
     zone_load_sizing_method: (
-        Literal["", "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"]
-        | None
+        Literal["Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"] | None
     )
     """Specifies the basis for sizing the zone supply air flow rate. Zone latent loads will not be used during sizing only w...; Default: Sensible Load Only No Latent Load"""
     zone_latent_cooling_design_supply_air_humidity_ratio_input_method: (
-        Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
+        Literal["HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
     """Use SupplyAirHumidityRatio to enter the humidity ratio when zone dehumidification is required. The supply air humidit...; Default: HumidityRatioDifference"""
     zone_dehumidification_design_supply_air_humidity_ratio: float | None
@@ -1367,7 +1290,7 @@ class SizingZone_v22_2_to_v24_1(_g.AnySizingZone):
     zone_cooling_design_supply_air_humidity_ratio_difference: float | None
     """Zone Dehumidification Design Supply Air Humidity Ratio Difference is only used when Zone Latent Cooling Design Supply...; [kgWater/kgDryAir]; Default: 0.005; Range: > 0.0"""
     zone_latent_heating_design_supply_air_humidity_ratio_input_method: (
-        Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
+        Literal["HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
     """Use SupplyAirHumidityRatio to enter the humidity ratio when zone humidification is required. The supply air humidity ...; Default: HumidityRatioDifference"""
     zone_humidification_design_supply_air_humidity_ratio: float | None
@@ -1386,16 +1309,15 @@ class SizingZone_v22_2_to_v24_1(_g.AnySizingZone):
 
 class _SizingZone_v22_2_to_v24_1Fields(_g._SizingZoneCommonFields, total=False):
     zone_load_sizing_method: (
-        Literal["", "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"]
-        | None
+        Literal["Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"] | None
     )
     zone_latent_cooling_design_supply_air_humidity_ratio_input_method: (
-        Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
+        Literal["HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
     zone_dehumidification_design_supply_air_humidity_ratio: float | None
     zone_cooling_design_supply_air_humidity_ratio_difference: float | None
     zone_latent_heating_design_supply_air_humidity_ratio_input_method: (
-        Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
+        Literal["HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
     zone_humidification_design_supply_air_humidity_ratio: float | None
     zone_humidification_design_supply_air_humidity_ratio_difference: float | None
@@ -1406,12 +1328,11 @@ class SizingZone_v24_2_to_v25_1(_g.AnySizingZone):
     """``Sizing:Zone`` as declared in EnergyPlus 24.2.0 to 25.1.0. Specifies the data needed to perform a zone design air flow calculation. The calculation is done for every sizing per..."""
 
     zone_load_sizing_method: (
-        Literal["", "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"]
-        | None
+        Literal["Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"] | None
     )
     """Specifies the basis for sizing the zone supply air flow rate. Zone latent loads will not be used during sizing only w...; Default: Sensible Load Only No Latent Load"""
     zone_latent_cooling_design_supply_air_humidity_ratio_input_method: (
-        Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
+        Literal["HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
     """Use SupplyAirHumidityRatio to enter the humidity ratio when zone dehumidification is required. The supply air humidit...; Default: HumidityRatioDifference"""
     zone_dehumidification_design_supply_air_humidity_ratio: float | None
@@ -1419,7 +1340,7 @@ class SizingZone_v24_2_to_v25_1(_g.AnySizingZone):
     zone_cooling_design_supply_air_humidity_ratio_difference: float | None
     """Zone Dehumidification Design Supply Air Humidity Ratio Difference is only used when Zone Latent Cooling Design Supply...; [kgWater/kgDryAir]; Default: 0.005; Range: > 0.0"""
     zone_latent_heating_design_supply_air_humidity_ratio_input_method: (
-        Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
+        Literal["HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
     """Use SupplyAirHumidityRatio to enter the humidity ratio when zone humidification is required. The supply air humidity ...; Default: HumidityRatioDifference"""
     zone_humidification_design_supply_air_humidity_ratio: float | None
@@ -1430,7 +1351,7 @@ class SizingZone_v24_2_to_v25_1(_g.AnySizingZone):
     """Enter the zone relative humidity schedule used for zone latent cooling calculations. A zone humidistat will take prio...; [percent]"""
     zone_humidistat_humidification_set_point_schedule_name: str | None
     """Enter the zone relative humidity schedule used for zone latent heating calculations. A zone humidistat will take prio...; [percent]"""
-    type_of_space_sum_to_use: Literal["", "Coincident", "NonCoincident"] | None
+    type_of_space_sum_to_use: Literal["Coincident", "NonCoincident"] | None
     """NonCoincident is available only if Do Space Heat Balance for Sizing=Yes in ZoneAirHeatBalanceAlgorithm.; Default: Coincident"""
 
     def update(
@@ -1440,29 +1361,27 @@ class SizingZone_v24_2_to_v25_1(_g.AnySizingZone):
 
 class _SizingZone_v24_2_to_v25_1Fields(_g._SizingZoneCommonFields, total=False):
     zone_load_sizing_method: (
-        Literal["", "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"]
-        | None
+        Literal["Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"] | None
     )
     zone_latent_cooling_design_supply_air_humidity_ratio_input_method: (
-        Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
+        Literal["HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
     zone_dehumidification_design_supply_air_humidity_ratio: float | None
     zone_cooling_design_supply_air_humidity_ratio_difference: float | None
     zone_latent_heating_design_supply_air_humidity_ratio_input_method: (
-        Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
+        Literal["HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
     zone_humidification_design_supply_air_humidity_ratio: float | None
     zone_humidification_design_supply_air_humidity_ratio_difference: float | None
     zone_humidistat_dehumidification_set_point_schedule_name: str | None
     zone_humidistat_humidification_set_point_schedule_name: str | None
-    type_of_space_sum_to_use: Literal["", "Coincident", "NonCoincident"] | None
+    type_of_space_sum_to_use: Literal["Coincident", "NonCoincident"] | None
 
 class OtherEquipment_v8_9_to_v9_2(_g.AnyOtherEquipment):
     """``OtherEquipment`` as declared in EnergyPlus 8.9.0 to 9.2.0. Sets internal gains or losses for 'other' equipment in the zone."""
 
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -1482,7 +1401,7 @@ class OtherEquipment_v8_9_to_v9_2(_g.AnyOtherEquipment):
         | None
     )
     """Default: None"""
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2)"""
 
@@ -1494,7 +1413,6 @@ class OtherEquipment_v8_9_to_v9_2(_g.AnyOtherEquipment):
 class _OtherEquipment_v8_9_to_v9_2Fields(_g._OtherEquipmentCommonFields, total=False):
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -1513,7 +1431,7 @@ class _OtherEquipment_v8_9_to_v9_2Fields(_g._OtherEquipmentCommonFields, total=F
         ]
         | None
     )
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
 
 class OtherEquipment_v9_3_to_v9_5(_g.AnyOtherEquipment):
@@ -1521,7 +1439,6 @@ class OtherEquipment_v9_3_to_v9_5(_g.AnyOtherEquipment):
 
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -1540,7 +1457,7 @@ class OtherEquipment_v9_3_to_v9_5(_g.AnyOtherEquipment):
         | None
     )
     """Default: None"""
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2)"""
 
@@ -1552,7 +1469,6 @@ class OtherEquipment_v9_3_to_v9_5(_g.AnyOtherEquipment):
 class _OtherEquipment_v9_3_to_v9_5Fields(_g._OtherEquipmentCommonFields, total=False):
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -1570,7 +1486,7 @@ class _OtherEquipment_v9_3_to_v9_5Fields(_g._OtherEquipmentCommonFields, total=F
         ]
         | None
     )
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
 
 class OtherEquipment_v9_6_to_v23_1(_g.AnyOtherEquipment):
@@ -1578,7 +1494,6 @@ class OtherEquipment_v9_6_to_v23_1(_g.AnyOtherEquipment):
 
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -1597,7 +1512,7 @@ class OtherEquipment_v9_6_to_v23_1(_g.AnyOtherEquipment):
         | None
     )
     """Default: None"""
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2)"""
 
@@ -1609,7 +1524,6 @@ class OtherEquipment_v9_6_to_v23_1(_g.AnyOtherEquipment):
 class _OtherEquipment_v9_6_to_v23_1Fields(_g._OtherEquipmentCommonFields, total=False):
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -1627,7 +1541,7 @@ class _OtherEquipment_v9_6_to_v23_1Fields(_g._OtherEquipmentCommonFields, total=
         ]
         | None
     )
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
 
 class OtherEquipment_v23_2(_g.AnyOtherEquipment):
@@ -1635,7 +1549,6 @@ class OtherEquipment_v23_2(_g.AnyOtherEquipment):
 
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -1654,7 +1567,7 @@ class OtherEquipment_v23_2(_g.AnyOtherEquipment):
         | None
     )
     """Default: None"""
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2)"""
 
@@ -1666,7 +1579,6 @@ class OtherEquipment_v23_2(_g.AnyOtherEquipment):
 class _OtherEquipment_v23_2Fields(_g._OtherEquipmentCommonFields, total=False):
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -1684,7 +1596,7 @@ class _OtherEquipment_v23_2Fields(_g._OtherEquipmentCommonFields, total=False):
         ]
         | None
     )
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
 
 class AirTerminalDualDuctVAV_v8_9_to_v9_2(_g.AnyAirTerminalDualDuctVAV):
@@ -1700,54 +1612,51 @@ class _AirTerminalDualDuctVAV_v8_9_to_v9_2Fields(_g._AirTerminalDualDuctVAVCommo
 class SurfacePropertyConvectionCoefficients_v8_9_to_v9_4(_g.AnySurfacePropertyConvectionCoefficients):
     """``SurfaceProperty:ConvectionCoefficients`` as declared in EnergyPlus 8.9.0 to 9.4.0. Allow user settable interior and/or exterior convection coefficients. Note that some other factors may limit the lowe..."""
 
-    convection_coefficient_1_type: (
-        Literal[
-            "ASHRAEVerticalWall",
-            "AdaptiveConvectionAlgorithm",
-            "AlamdariHammondStableHorizontal",
-            "AlamdariHammondUnstableHorizontal",
-            "AlamdariHammondVerticalWall",
-            "AwbiHattonHeatedFloor",
-            "AwbiHattonHeatedWall",
-            "BeausoleilMorrisonMixedAssistedWall",
-            "BeausoleilMorrisonMixedOpposingWall",
-            "BeausoleilMorrisonMixedStableCeiling",
-            "BeausoleilMorrisonMixedStableFloor",
-            "BeausoleilMorrisonMixedUnstableCeiling",
-            "BeausoleilMorrisonMixedUnstableFloor",
-            "ClearRoof",
-            "DOE-2",
-            "EmmelRoof",
-            "EmmelVertical",
-            "FisherPedersenCeilingDiffuserCeiling",
-            "FisherPedersenCeilingDiffuserFloor",
-            "FisherPedersenCeilingDiffuserWalls",
-            "FohannoPolidoriVerticalWall",
-            "GoldsteinNovoselacCeilingDiffuserFloor",
-            "GoldsteinNovoselacCeilingDiffuserWalls",
-            "GoldsteinNovoselacCeilingDiffuserWindow",
-            "ISO15099Windows",
-            "KaradagChilledCeiling",
-            "KhalifaEq3WallAwayFromHeat",
-            "KhalifaEq4CeilingAwayFromHeat",
-            "KhalifaEq5WallNearHeat",
-            "KhalifaEq6NonHeatedWalls",
-            "KhalifaEq7Ceiling",
-            "McAdams",
-            "Mitchell",
-            "MoWitt",
-            "NusseltJurges",
-            "Schedule",
-            "Simple",
-            "SimpleCombined",
-            "TARP",
-            "UserCurve",
-            "Value",
-            "WaltonStableHorizontalOrTilt",
-            "WaltonUnstableHorizontalOrTilt",
-        ]
-        | None
-    )
+    convection_coefficient_1_type: Literal[
+        "ASHRAEVerticalWall",
+        "AdaptiveConvectionAlgorithm",
+        "AlamdariHammondStableHorizontal",
+        "AlamdariHammondUnstableHorizontal",
+        "AlamdariHammondVerticalWall",
+        "AwbiHattonHeatedFloor",
+        "AwbiHattonHeatedWall",
+        "BeausoleilMorrisonMixedAssistedWall",
+        "BeausoleilMorrisonMixedOpposingWall",
+        "BeausoleilMorrisonMixedStableCeiling",
+        "BeausoleilMorrisonMixedStableFloor",
+        "BeausoleilMorrisonMixedUnstableCeiling",
+        "BeausoleilMorrisonMixedUnstableFloor",
+        "ClearRoof",
+        "DOE-2",
+        "EmmelRoof",
+        "EmmelVertical",
+        "FisherPedersenCeilingDiffuserCeiling",
+        "FisherPedersenCeilingDiffuserFloor",
+        "FisherPedersenCeilingDiffuserWalls",
+        "FohannoPolidoriVerticalWall",
+        "GoldsteinNovoselacCeilingDiffuserFloor",
+        "GoldsteinNovoselacCeilingDiffuserWalls",
+        "GoldsteinNovoselacCeilingDiffuserWindow",
+        "ISO15099Windows",
+        "KaradagChilledCeiling",
+        "KhalifaEq3WallAwayFromHeat",
+        "KhalifaEq4CeilingAwayFromHeat",
+        "KhalifaEq5WallNearHeat",
+        "KhalifaEq6NonHeatedWalls",
+        "KhalifaEq7Ceiling",
+        "McAdams",
+        "Mitchell",
+        "MoWitt",
+        "NusseltJurges",
+        "Schedule",
+        "Simple",
+        "SimpleCombined",
+        "TARP",
+        "UserCurve",
+        "Value",
+        "WaltonStableHorizontalOrTilt",
+        "WaltonUnstableHorizontalOrTilt",
+    ]
     convection_coefficient_2_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -1808,54 +1717,51 @@ class SurfacePropertyConvectionCoefficients_v8_9_to_v9_4(_g.AnySurfacePropertyCo
 class _SurfacePropertyConvectionCoefficients_v8_9_to_v9_4Fields(
     _g._SurfacePropertyConvectionCoefficientsCommonFields, total=False
 ):
-    convection_coefficient_1_type: (
-        Literal[
-            "ASHRAEVerticalWall",
-            "AdaptiveConvectionAlgorithm",
-            "AlamdariHammondStableHorizontal",
-            "AlamdariHammondUnstableHorizontal",
-            "AlamdariHammondVerticalWall",
-            "AwbiHattonHeatedFloor",
-            "AwbiHattonHeatedWall",
-            "BeausoleilMorrisonMixedAssistedWall",
-            "BeausoleilMorrisonMixedOpposingWall",
-            "BeausoleilMorrisonMixedStableCeiling",
-            "BeausoleilMorrisonMixedStableFloor",
-            "BeausoleilMorrisonMixedUnstableCeiling",
-            "BeausoleilMorrisonMixedUnstableFloor",
-            "ClearRoof",
-            "DOE-2",
-            "EmmelRoof",
-            "EmmelVertical",
-            "FisherPedersenCeilingDiffuserCeiling",
-            "FisherPedersenCeilingDiffuserFloor",
-            "FisherPedersenCeilingDiffuserWalls",
-            "FohannoPolidoriVerticalWall",
-            "GoldsteinNovoselacCeilingDiffuserFloor",
-            "GoldsteinNovoselacCeilingDiffuserWalls",
-            "GoldsteinNovoselacCeilingDiffuserWindow",
-            "ISO15099Windows",
-            "KaradagChilledCeiling",
-            "KhalifaEq3WallAwayFromHeat",
-            "KhalifaEq4CeilingAwayFromHeat",
-            "KhalifaEq5WallNearHeat",
-            "KhalifaEq6NonHeatedWalls",
-            "KhalifaEq7Ceiling",
-            "McAdams",
-            "Mitchell",
-            "MoWitt",
-            "NusseltJurges",
-            "Schedule",
-            "Simple",
-            "SimpleCombined",
-            "TARP",
-            "UserCurve",
-            "Value",
-            "WaltonStableHorizontalOrTilt",
-            "WaltonUnstableHorizontalOrTilt",
-        ]
-        | None
-    )
+    convection_coefficient_1_type: Literal[
+        "ASHRAEVerticalWall",
+        "AdaptiveConvectionAlgorithm",
+        "AlamdariHammondStableHorizontal",
+        "AlamdariHammondUnstableHorizontal",
+        "AlamdariHammondVerticalWall",
+        "AwbiHattonHeatedFloor",
+        "AwbiHattonHeatedWall",
+        "BeausoleilMorrisonMixedAssistedWall",
+        "BeausoleilMorrisonMixedOpposingWall",
+        "BeausoleilMorrisonMixedStableCeiling",
+        "BeausoleilMorrisonMixedStableFloor",
+        "BeausoleilMorrisonMixedUnstableCeiling",
+        "BeausoleilMorrisonMixedUnstableFloor",
+        "ClearRoof",
+        "DOE-2",
+        "EmmelRoof",
+        "EmmelVertical",
+        "FisherPedersenCeilingDiffuserCeiling",
+        "FisherPedersenCeilingDiffuserFloor",
+        "FisherPedersenCeilingDiffuserWalls",
+        "FohannoPolidoriVerticalWall",
+        "GoldsteinNovoselacCeilingDiffuserFloor",
+        "GoldsteinNovoselacCeilingDiffuserWalls",
+        "GoldsteinNovoselacCeilingDiffuserWindow",
+        "ISO15099Windows",
+        "KaradagChilledCeiling",
+        "KhalifaEq3WallAwayFromHeat",
+        "KhalifaEq4CeilingAwayFromHeat",
+        "KhalifaEq5WallNearHeat",
+        "KhalifaEq6NonHeatedWalls",
+        "KhalifaEq7Ceiling",
+        "McAdams",
+        "Mitchell",
+        "MoWitt",
+        "NusseltJurges",
+        "Schedule",
+        "Simple",
+        "SimpleCombined",
+        "TARP",
+        "UserCurve",
+        "Value",
+        "WaltonStableHorizontalOrTilt",
+        "WaltonUnstableHorizontalOrTilt",
+    ]
     convection_coefficient_2_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -1908,55 +1814,52 @@ class _SurfacePropertyConvectionCoefficients_v8_9_to_v9_4Fields(
 class SurfacePropertyConvectionCoefficients_v9_5_to_v9_6(_g.AnySurfacePropertyConvectionCoefficients):
     """``SurfaceProperty:ConvectionCoefficients`` as declared in EnergyPlus 9.5.0 to 9.6.0. Allow user settable interior and/or exterior convection coefficients. Note that some other factors may limit the lowe..."""
 
-    convection_coefficient_1_type: (
-        Literal[
-            "ASHRAEVerticalWall",
-            "ASTMC1340",
-            "AdaptiveConvectionAlgorithm",
-            "AlamdariHammondStableHorizontal",
-            "AlamdariHammondUnstableHorizontal",
-            "AlamdariHammondVerticalWall",
-            "AwbiHattonHeatedFloor",
-            "AwbiHattonHeatedWall",
-            "BeausoleilMorrisonMixedAssistedWall",
-            "BeausoleilMorrisonMixedOpposingWall",
-            "BeausoleilMorrisonMixedStableCeiling",
-            "BeausoleilMorrisonMixedStableFloor",
-            "BeausoleilMorrisonMixedUnstableCeiling",
-            "BeausoleilMorrisonMixedUnstableFloor",
-            "ClearRoof",
-            "DOE-2",
-            "EmmelRoof",
-            "EmmelVertical",
-            "FisherPedersenCeilingDiffuserCeiling",
-            "FisherPedersenCeilingDiffuserFloor",
-            "FisherPedersenCeilingDiffuserWalls",
-            "FohannoPolidoriVerticalWall",
-            "GoldsteinNovoselacCeilingDiffuserFloor",
-            "GoldsteinNovoselacCeilingDiffuserWalls",
-            "GoldsteinNovoselacCeilingDiffuserWindow",
-            "ISO15099Windows",
-            "KaradagChilledCeiling",
-            "KhalifaEq3WallAwayFromHeat",
-            "KhalifaEq4CeilingAwayFromHeat",
-            "KhalifaEq5WallNearHeat",
-            "KhalifaEq6NonHeatedWalls",
-            "KhalifaEq7Ceiling",
-            "McAdams",
-            "Mitchell",
-            "MoWitt",
-            "NusseltJurges",
-            "Schedule",
-            "Simple",
-            "SimpleCombined",
-            "TARP",
-            "UserCurve",
-            "Value",
-            "WaltonStableHorizontalOrTilt",
-            "WaltonUnstableHorizontalOrTilt",
-        ]
-        | None
-    )
+    convection_coefficient_1_type: Literal[
+        "ASHRAEVerticalWall",
+        "ASTMC1340",
+        "AdaptiveConvectionAlgorithm",
+        "AlamdariHammondStableHorizontal",
+        "AlamdariHammondUnstableHorizontal",
+        "AlamdariHammondVerticalWall",
+        "AwbiHattonHeatedFloor",
+        "AwbiHattonHeatedWall",
+        "BeausoleilMorrisonMixedAssistedWall",
+        "BeausoleilMorrisonMixedOpposingWall",
+        "BeausoleilMorrisonMixedStableCeiling",
+        "BeausoleilMorrisonMixedStableFloor",
+        "BeausoleilMorrisonMixedUnstableCeiling",
+        "BeausoleilMorrisonMixedUnstableFloor",
+        "ClearRoof",
+        "DOE-2",
+        "EmmelRoof",
+        "EmmelVertical",
+        "FisherPedersenCeilingDiffuserCeiling",
+        "FisherPedersenCeilingDiffuserFloor",
+        "FisherPedersenCeilingDiffuserWalls",
+        "FohannoPolidoriVerticalWall",
+        "GoldsteinNovoselacCeilingDiffuserFloor",
+        "GoldsteinNovoselacCeilingDiffuserWalls",
+        "GoldsteinNovoselacCeilingDiffuserWindow",
+        "ISO15099Windows",
+        "KaradagChilledCeiling",
+        "KhalifaEq3WallAwayFromHeat",
+        "KhalifaEq4CeilingAwayFromHeat",
+        "KhalifaEq5WallNearHeat",
+        "KhalifaEq6NonHeatedWalls",
+        "KhalifaEq7Ceiling",
+        "McAdams",
+        "Mitchell",
+        "MoWitt",
+        "NusseltJurges",
+        "Schedule",
+        "Simple",
+        "SimpleCombined",
+        "TARP",
+        "UserCurve",
+        "Value",
+        "WaltonStableHorizontalOrTilt",
+        "WaltonUnstableHorizontalOrTilt",
+    ]
     convection_coefficient_2_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -2018,55 +1921,52 @@ class SurfacePropertyConvectionCoefficients_v9_5_to_v9_6(_g.AnySurfacePropertyCo
 class _SurfacePropertyConvectionCoefficients_v9_5_to_v9_6Fields(
     _g._SurfacePropertyConvectionCoefficientsCommonFields, total=False
 ):
-    convection_coefficient_1_type: (
-        Literal[
-            "ASHRAEVerticalWall",
-            "ASTMC1340",
-            "AdaptiveConvectionAlgorithm",
-            "AlamdariHammondStableHorizontal",
-            "AlamdariHammondUnstableHorizontal",
-            "AlamdariHammondVerticalWall",
-            "AwbiHattonHeatedFloor",
-            "AwbiHattonHeatedWall",
-            "BeausoleilMorrisonMixedAssistedWall",
-            "BeausoleilMorrisonMixedOpposingWall",
-            "BeausoleilMorrisonMixedStableCeiling",
-            "BeausoleilMorrisonMixedStableFloor",
-            "BeausoleilMorrisonMixedUnstableCeiling",
-            "BeausoleilMorrisonMixedUnstableFloor",
-            "ClearRoof",
-            "DOE-2",
-            "EmmelRoof",
-            "EmmelVertical",
-            "FisherPedersenCeilingDiffuserCeiling",
-            "FisherPedersenCeilingDiffuserFloor",
-            "FisherPedersenCeilingDiffuserWalls",
-            "FohannoPolidoriVerticalWall",
-            "GoldsteinNovoselacCeilingDiffuserFloor",
-            "GoldsteinNovoselacCeilingDiffuserWalls",
-            "GoldsteinNovoselacCeilingDiffuserWindow",
-            "ISO15099Windows",
-            "KaradagChilledCeiling",
-            "KhalifaEq3WallAwayFromHeat",
-            "KhalifaEq4CeilingAwayFromHeat",
-            "KhalifaEq5WallNearHeat",
-            "KhalifaEq6NonHeatedWalls",
-            "KhalifaEq7Ceiling",
-            "McAdams",
-            "Mitchell",
-            "MoWitt",
-            "NusseltJurges",
-            "Schedule",
-            "Simple",
-            "SimpleCombined",
-            "TARP",
-            "UserCurve",
-            "Value",
-            "WaltonStableHorizontalOrTilt",
-            "WaltonUnstableHorizontalOrTilt",
-        ]
-        | None
-    )
+    convection_coefficient_1_type: Literal[
+        "ASHRAEVerticalWall",
+        "ASTMC1340",
+        "AdaptiveConvectionAlgorithm",
+        "AlamdariHammondStableHorizontal",
+        "AlamdariHammondUnstableHorizontal",
+        "AlamdariHammondVerticalWall",
+        "AwbiHattonHeatedFloor",
+        "AwbiHattonHeatedWall",
+        "BeausoleilMorrisonMixedAssistedWall",
+        "BeausoleilMorrisonMixedOpposingWall",
+        "BeausoleilMorrisonMixedStableCeiling",
+        "BeausoleilMorrisonMixedStableFloor",
+        "BeausoleilMorrisonMixedUnstableCeiling",
+        "BeausoleilMorrisonMixedUnstableFloor",
+        "ClearRoof",
+        "DOE-2",
+        "EmmelRoof",
+        "EmmelVertical",
+        "FisherPedersenCeilingDiffuserCeiling",
+        "FisherPedersenCeilingDiffuserFloor",
+        "FisherPedersenCeilingDiffuserWalls",
+        "FohannoPolidoriVerticalWall",
+        "GoldsteinNovoselacCeilingDiffuserFloor",
+        "GoldsteinNovoselacCeilingDiffuserWalls",
+        "GoldsteinNovoselacCeilingDiffuserWindow",
+        "ISO15099Windows",
+        "KaradagChilledCeiling",
+        "KhalifaEq3WallAwayFromHeat",
+        "KhalifaEq4CeilingAwayFromHeat",
+        "KhalifaEq5WallNearHeat",
+        "KhalifaEq6NonHeatedWalls",
+        "KhalifaEq7Ceiling",
+        "McAdams",
+        "Mitchell",
+        "MoWitt",
+        "NusseltJurges",
+        "Schedule",
+        "Simple",
+        "SimpleCombined",
+        "TARP",
+        "UserCurve",
+        "Value",
+        "WaltonStableHorizontalOrTilt",
+        "WaltonUnstableHorizontalOrTilt",
+    ]
     convection_coefficient_2_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -2122,7 +2022,7 @@ class MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1(
 ):
     """``MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity`` as declared in EnergyPlus 8.9.0 to 22.1.0. HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between thermal con..."""
 
-    number_of_thermal_coordinates: float | None
+    number_of_thermal_coordinates: float
     """number of data coordinates; Range: >= 1.0, <= 25.0"""
 
     def update(
@@ -2136,7 +2036,7 @@ class MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1(
 class _MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferThermalConductivityCommonFields, total=False
 ):
-    number_of_thermal_coordinates: float | None
+    number_of_thermal_coordinates: float
 
 class EnergyManagementSystemProgramCallingManager_v8_9_to_v9_0(_g.AnyEnergyManagementSystemProgramCallingManager):
     """``EnergyManagementSystem:ProgramCallingManager`` as declared in EnergyPlus 8.9.0 to 9.0.1. Input EMS program. a program needs a name a description of when it should be called and then lines of program code fo..."""
@@ -2257,11 +2157,9 @@ class _EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3Fields(
 class BoilerHotWater_v8_9(_g.AnyBoilerHotWater):
     """``Boiler:HotWater`` as declared in EnergyPlus 8.9.0. This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
 
-    fuel_type: str | None
+    fuel_type: str
     design_water_outlet_temperature: float | None
     """[C]"""
-    design_water_flow_rate: float | Literal["Autosize"] | None
-    """[m3/s] (gal/min)"""
     parasitic_electric_load: float | None
     """[W]; Range: >= 0.0"""
 
@@ -2271,69 +2169,41 @@ class BoilerHotWater_v8_9(_g.AnyBoilerHotWater):
     _creation_signature: _cv9.BoilerHotWater_v8_9  # type: ignore[assignment]
 
 class _BoilerHotWater_v8_9Fields(_g._BoilerHotWaterCommonFields, total=False):
-    fuel_type: str | None
+    fuel_type: str
     design_water_outlet_temperature: float | None
-    design_water_flow_rate: float | Literal["Autosize"] | None
     parasitic_electric_load: float | None
 
-class BoilerHotWater_v9_0(_g.AnyBoilerHotWater):
-    """``Boiler:HotWater`` as declared in EnergyPlus 9.0.1. This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
+class BoilerHotWater_v9_0_to_v9_2(_g.AnyBoilerHotWater):
+    """``Boiler:HotWater`` as declared in EnergyPlus 9.0.1 to 9.2.0. This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
 
-    fuel_type: str | None
-    design_water_flow_rate: float | Literal["Autosize"] | None
-    """[m3/s] (gal/min)"""
-    parasitic_electric_load: float | None
-    """[W]; Range: >= 0.0"""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerHotWater_v9_0Fields]
-    ) -> None: ...  # type: ignore[override]
-    _creation_signature: _cv26.BoilerHotWater_v9_0  # type: ignore[assignment]
-
-class _BoilerHotWater_v9_0Fields(_g._BoilerHotWaterCommonFields, total=False):
-    fuel_type: str | None
-    design_water_flow_rate: float | Literal["Autosize"] | None
-    parasitic_electric_load: float | None
-
-class BoilerHotWater_v9_1_to_v9_2(_g.AnyBoilerHotWater):
-    """``Boiler:HotWater`` as declared in EnergyPlus 9.1.0 to 9.2.0. This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
-
-    fuel_type: str | None
-    design_water_flow_rate: float | Literal["", "Autosize"] | None
-    """[m3/s] (gal/min); Default: Autosize"""
+    fuel_type: str
     parasitic_electric_load: float | None
     """[W]; Default: 0.0; Range: >= 0.0"""
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerHotWater_v9_1_to_v9_2Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerHotWater_v9_0_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
-    _creation_signature: _cv10.BoilerHotWater_v9_1_to_v9_2  # type: ignore[assignment]
+    _creation_signature: _cv73.BoilerHotWater_v9_0_to_v9_2  # type: ignore[assignment]
 
-class _BoilerHotWater_v9_1_to_v9_2Fields(_g._BoilerHotWaterCommonFields, total=False):
-    fuel_type: str | None
-    design_water_flow_rate: float | Literal["", "Autosize"] | None
+class _BoilerHotWater_v9_0_to_v9_2Fields(_g._BoilerHotWaterCommonFields, total=False):
+    fuel_type: str
     parasitic_electric_load: float | None
 
 class BoilerHotWater_v9_3_to_v23_1(_g.AnyBoilerHotWater):
     """``Boiler:HotWater`` as declared in EnergyPlus 9.3.0 to 23.1.0. This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
 
-    fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
-    design_water_flow_rate: float | Literal["", "Autosize"] | None
-    """[m3/s] (gal/min); Default: Autosize"""
+    fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
     parasitic_electric_load: float | None
     """[W]; Default: 0.0; Range: >= 0.0"""
 
@@ -2343,22 +2213,18 @@ class BoilerHotWater_v9_3_to_v23_1(_g.AnyBoilerHotWater):
     _creation_signature: _cv19.BoilerHotWater_v9_3_to_v23_1  # type: ignore[assignment]
 
 class _BoilerHotWater_v9_3_to_v23_1Fields(_g._BoilerHotWaterCommonFields, total=False):
-    fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
-    design_water_flow_rate: float | Literal["", "Autosize"] | None
+    fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
     parasitic_electric_load: float | None
 
 class PumpVariableSpeedCondensate_v8_9_to_v9_0(_g.AnyPumpVariableSpeedCondensate):
@@ -2377,7 +2243,7 @@ class _PumpVariableSpeedCondensate_v8_9_to_v9_0Fields(_g._PumpVariableSpeedConde
 class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1(_g.AnyRoomAirTemperaturePatternConstantGradient):
     """``RoomAir:TemperaturePattern:ConstantGradient`` as declared in EnergyPlus 8.9.0 to 22.1.0. Used to model room air with a fixed temperature gradient in the vertical direction. Used in combination with RoomAir:..."""
 
-    control_integer_for_pattern_control_schedule_name: float | None
+    control_integer_for_pattern_control_schedule_name: float
     """reference this entry in Schedule Name"""
 
     def update(
@@ -2391,7 +2257,7 @@ class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1(_g.AnyRoomAirTempe
 class _RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1Fields(
     _g._RoomAirTemperaturePatternConstantGradientCommonFields, total=False
 ):
-    control_integer_for_pattern_control_schedule_name: float | None
+    control_integer_for_pattern_control_schedule_name: float
 
 class ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1(_g.AnyZoneHVACIdealLoadsAirSystem):
     """``ZoneHVAC:IdealLoadsAirSystem`` as declared in EnergyPlus 8.9.0 to 25.1.0. Ideal system used to calculate loads without modeling a full HVAC system. All that is required for the ideal system a..."""
@@ -2424,9 +2290,7 @@ class ChillerCombustionTurbine_v8_9_to_v9_2(_g.AnyChillerCombustionTurbine):
     """``Chiller:CombustionTurbine`` as declared in EnergyPlus 8.9.0 to 9.2.0. This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller ..."""
 
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
-        ]
+        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
         | None
     )
     """Default: NaturalGas"""
@@ -2438,9 +2302,7 @@ class ChillerCombustionTurbine_v8_9_to_v9_2(_g.AnyChillerCombustionTurbine):
 
 class _ChillerCombustionTurbine_v8_9_to_v9_2Fields(_g._ChillerCombustionTurbineCommonFields, total=False):
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
-        ]
+        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
         | None
     )
 
@@ -2463,7 +2325,7 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1(
 ):
     """``MaterialProperty:HeatAndMoistureTransfer:SorptionIsotherm`` as declared in EnergyPlus 8.9.0 to 22.1.0. HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between moisture co..."""
 
-    number_of_isotherm_coordinates: float | None
+    number_of_isotherm_coordinates: float
     """Number of data Coordinates; Range: >= 1.0, <= 25.0"""
 
     def update(
@@ -2477,26 +2339,23 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1(
 class _MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferSorptionIsothermCommonFields, total=False
 ):
-    number_of_isotherm_coordinates: float | None
+    number_of_isotherm_coordinates: float
 
 class BoilerSteam_v8_9_to_v9_2(_g.AnyBoilerSteam):
     """``Boiler:Steam`` as declared in EnergyPlus 8.9.0 to 9.2.0. This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
 
-    fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "PropaneGas",
-        ]
-        | None
-    )
+    fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "PropaneGas",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerSteam_v8_9_to_v9_2Fields]
@@ -2504,28 +2363,24 @@ class BoilerSteam_v8_9_to_v9_2(_g.AnyBoilerSteam):
     _creation_signature: _cv87.BoilerSteam_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _BoilerSteam_v8_9_to_v9_2Fields(_g._BoilerSteamCommonFields, total=False):
-    fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "PropaneGas",
-        ]
-        | None
-    )
+    fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "PropaneGas",
+    ]
 
 class ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2(_g.AnyZoneHVACCoolingPanelRadiantConvectiveWater):
     """``ZoneHVAC:CoolingPanel:RadiantConvective:Water`` as declared in EnergyPlus 8.9.0 to 9.2.0. The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
 
     control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -2551,7 +2406,6 @@ class _ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2Fields(
 ):
     control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -2576,7 +2430,7 @@ class _LoadProfilePlant_v8_9_to_v23_1Fields(_g._LoadProfilePlantCommonFields, to
 class CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1(_g.AnyCoilSystemCoolingDXHeatExchangerAssisted):
     """``CoilSystem:Cooling:DX:HeatExchangerAssisted`` as declared in EnergyPlus 8.9.0 to 22.1.0. Virtual component consisting of a direct expansion (DX) cooling coil and an air-to-air heat exchanger. The air-to-air..."""
 
-    cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"] | None
+    cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"]
 
     def update(
         self,
@@ -2589,7 +2443,7 @@ class CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1(_g.AnyCoilSystemCoo
 class _CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1Fields(
     _g._CoilSystemCoolingDXHeatExchangerAssistedCommonFields, total=False
 ):
-    cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"] | None
+    cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"]
 
 class LifeCycleCostParameters_v8_9_to_v22_1(_g.AnyLifeCycleCostParameters):
     """``LifeCycleCost:Parameters`` as declared in EnergyPlus 8.9.0 to 22.1.0. Provides inputs related to the overall life-cycle analysis. It establishes many of the assumptions used in computing ..."""
@@ -2917,17 +2771,17 @@ class _ZoneHVACOutdoorAirUnitEquipmentList_v8_9Fields(_g._ZoneHVACOutdoorAirUnit
 class MaterialPropertyPhaseChange_v8_9_to_v24_1(_g.AnyMaterialPropertyPhaseChange):
     """``MaterialProperty:PhaseChange`` as declared in EnergyPlus 8.9.0 to 24.1.0. Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) He..."""
 
-    temperature_1: float | None
+    temperature_1: float
     """for Temperature-enthalpy function; [C]"""
-    enthalpy_1: float | None
+    enthalpy_1: float
     """for Temperature-enthalpy function corresponding to temperature 1; [J/kg]"""
-    temperature_2: float | None
+    temperature_2: float
     """for Temperature-enthalpy function; [C]"""
-    enthalpy_2: float | None
+    enthalpy_2: float
     """for Temperature-enthalpy function corresponding to temperature 2; [J/kg]"""
-    temperature_3: float | None
+    temperature_3: float
     """for Temperature-enthalpy function; [C]"""
-    enthalpy_3: float | None
+    enthalpy_3: float
     """for Temperature-enthalpy function corresponding to temperature 3; [J/kg]"""
     temperature_4: float | None
     """for Temperature-enthalpy function; [C]"""
@@ -2991,12 +2845,12 @@ class MaterialPropertyPhaseChange_v8_9_to_v24_1(_g.AnyMaterialPropertyPhaseChang
     _creation_signature: _cv117.MaterialPropertyPhaseChange_v8_9_to_v24_1  # type: ignore[assignment]
 
 class _MaterialPropertyPhaseChange_v8_9_to_v24_1Fields(_g._MaterialPropertyPhaseChangeCommonFields, total=False):
-    temperature_1: float | None
-    enthalpy_1: float | None
-    temperature_2: float | None
-    enthalpy_2: float | None
-    temperature_3: float | None
-    enthalpy_3: float | None
+    temperature_1: float
+    enthalpy_1: float
+    temperature_2: float
+    enthalpy_2: float
+    temperature_3: float
+    enthalpy_3: float
     temperature_4: float | None
     enthalpy_4: float | None
     temperature_5: float | None
@@ -3029,55 +2883,52 @@ class SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4(
 ):
     """``SurfaceProperty:ConvectionCoefficients:MultipleSurface`` as declared in EnergyPlus 8.9.0 to 9.4.0. Allow user settable interior and/or exterior convection coefficients. Note that some other factors may limit the lowe..."""
 
-    convection_coefficient_1_type: (
-        Literal[
-            "ASHRAEVerticalWall",
-            "AdaptiveConvectionAlgorithm",
-            "AlamdariHammondStableHorizontal",
-            "AlamdariHammondUnstableHorizontal",
-            "AlamdariHammondVerticalWall",
-            "AwbiHattonHeatedFloor",
-            "AwbiHattonHeatedWall",
-            "BeausoleilMorrisonMixedAssistedWall",
-            "BeausoleilMorrisonMixedOpposingWall",
-            "BeausoleilMorrisonMixedStableCeiling",
-            "BeausoleilMorrisonMixedStableFloor",
-            "BeausoleilMorrisonMixedUnstableCeiling",
-            "BeausoleilMorrisonMixedUnstableFloor",
-            "BlockenWindard",
-            "ClearRoof",
-            "DOE-2",
-            "EmmelRoof",
-            "EmmelVertical",
-            "FisherPedersenCeilingDiffuserCeiling",
-            "FisherPedersenCeilingDiffuserFloor",
-            "FisherPedersenCeilingDiffuserWalls",
-            "FohannoPolidoriVerticalWall",
-            "GoldsteinNovoselacCeilingDiffuserFloor",
-            "GoldsteinNovoselacCeilingDiffuserWalls",
-            "GoldsteinNovoselacCeilingDiffuserWindow",
-            "ISO15099Windows",
-            "KaradagChilledCeiling",
-            "KhalifaEq3WallAwayFromHeat",
-            "KhalifaEq4CeilingAwayFromHeat",
-            "KhalifaEq5WallNearHeat",
-            "KhalifaEq6NonHeatedWalls",
-            "KhalifaEq7Ceiling",
-            "McAdams",
-            "Mitchell",
-            "MoWitt",
-            "NusseltJurges",
-            "Schedule",
-            "Simple",
-            "SimpleCombined",
-            "TARP",
-            "UserCurve",
-            "Value",
-            "WaltonStableHorizontalOrTilt",
-            "WaltonUnstableHorizontalOrTilt",
-        ]
-        | None
-    )
+    convection_coefficient_1_type: Literal[
+        "ASHRAEVerticalWall",
+        "AdaptiveConvectionAlgorithm",
+        "AlamdariHammondStableHorizontal",
+        "AlamdariHammondUnstableHorizontal",
+        "AlamdariHammondVerticalWall",
+        "AwbiHattonHeatedFloor",
+        "AwbiHattonHeatedWall",
+        "BeausoleilMorrisonMixedAssistedWall",
+        "BeausoleilMorrisonMixedOpposingWall",
+        "BeausoleilMorrisonMixedStableCeiling",
+        "BeausoleilMorrisonMixedStableFloor",
+        "BeausoleilMorrisonMixedUnstableCeiling",
+        "BeausoleilMorrisonMixedUnstableFloor",
+        "BlockenWindard",
+        "ClearRoof",
+        "DOE-2",
+        "EmmelRoof",
+        "EmmelVertical",
+        "FisherPedersenCeilingDiffuserCeiling",
+        "FisherPedersenCeilingDiffuserFloor",
+        "FisherPedersenCeilingDiffuserWalls",
+        "FohannoPolidoriVerticalWall",
+        "GoldsteinNovoselacCeilingDiffuserFloor",
+        "GoldsteinNovoselacCeilingDiffuserWalls",
+        "GoldsteinNovoselacCeilingDiffuserWindow",
+        "ISO15099Windows",
+        "KaradagChilledCeiling",
+        "KhalifaEq3WallAwayFromHeat",
+        "KhalifaEq4CeilingAwayFromHeat",
+        "KhalifaEq5WallNearHeat",
+        "KhalifaEq6NonHeatedWalls",
+        "KhalifaEq7Ceiling",
+        "McAdams",
+        "Mitchell",
+        "MoWitt",
+        "NusseltJurges",
+        "Schedule",
+        "Simple",
+        "SimpleCombined",
+        "TARP",
+        "UserCurve",
+        "Value",
+        "WaltonStableHorizontalOrTilt",
+        "WaltonUnstableHorizontalOrTilt",
+    ]
     convection_coefficient_2_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -3139,55 +2990,52 @@ class SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4(
 class _SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4Fields(
     _g._SurfacePropertyConvectionCoefficientsMultipleSurfaceCommonFields, total=False
 ):
-    convection_coefficient_1_type: (
-        Literal[
-            "ASHRAEVerticalWall",
-            "AdaptiveConvectionAlgorithm",
-            "AlamdariHammondStableHorizontal",
-            "AlamdariHammondUnstableHorizontal",
-            "AlamdariHammondVerticalWall",
-            "AwbiHattonHeatedFloor",
-            "AwbiHattonHeatedWall",
-            "BeausoleilMorrisonMixedAssistedWall",
-            "BeausoleilMorrisonMixedOpposingWall",
-            "BeausoleilMorrisonMixedStableCeiling",
-            "BeausoleilMorrisonMixedStableFloor",
-            "BeausoleilMorrisonMixedUnstableCeiling",
-            "BeausoleilMorrisonMixedUnstableFloor",
-            "BlockenWindard",
-            "ClearRoof",
-            "DOE-2",
-            "EmmelRoof",
-            "EmmelVertical",
-            "FisherPedersenCeilingDiffuserCeiling",
-            "FisherPedersenCeilingDiffuserFloor",
-            "FisherPedersenCeilingDiffuserWalls",
-            "FohannoPolidoriVerticalWall",
-            "GoldsteinNovoselacCeilingDiffuserFloor",
-            "GoldsteinNovoselacCeilingDiffuserWalls",
-            "GoldsteinNovoselacCeilingDiffuserWindow",
-            "ISO15099Windows",
-            "KaradagChilledCeiling",
-            "KhalifaEq3WallAwayFromHeat",
-            "KhalifaEq4CeilingAwayFromHeat",
-            "KhalifaEq5WallNearHeat",
-            "KhalifaEq6NonHeatedWalls",
-            "KhalifaEq7Ceiling",
-            "McAdams",
-            "Mitchell",
-            "MoWitt",
-            "NusseltJurges",
-            "Schedule",
-            "Simple",
-            "SimpleCombined",
-            "TARP",
-            "UserCurve",
-            "Value",
-            "WaltonStableHorizontalOrTilt",
-            "WaltonUnstableHorizontalOrTilt",
-        ]
-        | None
-    )
+    convection_coefficient_1_type: Literal[
+        "ASHRAEVerticalWall",
+        "AdaptiveConvectionAlgorithm",
+        "AlamdariHammondStableHorizontal",
+        "AlamdariHammondUnstableHorizontal",
+        "AlamdariHammondVerticalWall",
+        "AwbiHattonHeatedFloor",
+        "AwbiHattonHeatedWall",
+        "BeausoleilMorrisonMixedAssistedWall",
+        "BeausoleilMorrisonMixedOpposingWall",
+        "BeausoleilMorrisonMixedStableCeiling",
+        "BeausoleilMorrisonMixedStableFloor",
+        "BeausoleilMorrisonMixedUnstableCeiling",
+        "BeausoleilMorrisonMixedUnstableFloor",
+        "BlockenWindard",
+        "ClearRoof",
+        "DOE-2",
+        "EmmelRoof",
+        "EmmelVertical",
+        "FisherPedersenCeilingDiffuserCeiling",
+        "FisherPedersenCeilingDiffuserFloor",
+        "FisherPedersenCeilingDiffuserWalls",
+        "FohannoPolidoriVerticalWall",
+        "GoldsteinNovoselacCeilingDiffuserFloor",
+        "GoldsteinNovoselacCeilingDiffuserWalls",
+        "GoldsteinNovoselacCeilingDiffuserWindow",
+        "ISO15099Windows",
+        "KaradagChilledCeiling",
+        "KhalifaEq3WallAwayFromHeat",
+        "KhalifaEq4CeilingAwayFromHeat",
+        "KhalifaEq5WallNearHeat",
+        "KhalifaEq6NonHeatedWalls",
+        "KhalifaEq7Ceiling",
+        "McAdams",
+        "Mitchell",
+        "MoWitt",
+        "NusseltJurges",
+        "Schedule",
+        "Simple",
+        "SimpleCombined",
+        "TARP",
+        "UserCurve",
+        "Value",
+        "WaltonStableHorizontalOrTilt",
+        "WaltonUnstableHorizontalOrTilt",
+    ]
     convection_coefficient_2_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -3258,8 +3106,8 @@ class _EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1Fields(_g._EvaporativeFluidCo
 class ZoneRefrigerationDoorMixing_v8_9_to_v24_1(_g.AnyZoneRefrigerationDoorMixing):
     """``ZoneRefrigerationDoorMixing`` as declared in EnergyPlus 8.9.0 to 24.1.0. Refrigeration Door Mixing is used for an opening between two zones that are at the same elevation but have different ..."""
 
-    zone_1_name: str | None
-    zone_2_name: str | None
+    zone_1_name: str
+    zone_2_name: str
 
     def update(
         self,
@@ -3270,8 +3118,8 @@ class ZoneRefrigerationDoorMixing_v8_9_to_v24_1(_g.AnyZoneRefrigerationDoorMixin
     _creation_signature: _cv75.ZoneRefrigerationDoorMixing_v8_9_to_v24_1  # type: ignore[assignment]
 
 class _ZoneRefrigerationDoorMixing_v8_9_to_v24_1Fields(_g._ZoneRefrigerationDoorMixingCommonFields, total=False):
-    zone_1_name: str | None
-    zone_2_name: str | None
+    zone_1_name: str
+    zone_2_name: str
 
 class ChillerConstantCOP_v8_9_to_v24_1(_g.AnyChillerConstantCOP):
     """``Chiller:ConstantCOP`` as declared in EnergyPlus 8.9.0 to 24.1.0. This constant COP chiller model provides a means of quickly specifying a Chiller where performance data is not availa..."""
@@ -3368,7 +3216,6 @@ class AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5(_g.AnyAirConditionerVar
     """Enter the total number of compressor. This input is used only for crankcase heater calculations.; [dimensionless]; Default: 2.0"""
     fuel_type: (
         Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -3405,7 +3252,6 @@ class _AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5Fields(
     number_of_compressors: float | None
     fuel_type: (
         Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -3436,7 +3282,6 @@ class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1(_g.AnyAirConditionerVa
     """Enter the total number of compressor. This input is used only for crankcase heater calculations.; [dimensionless]; Default: 2.0"""
     fuel_type: (
         Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -3473,7 +3318,6 @@ class _AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1Fields(
     number_of_compressors: float | None
     fuel_type: (
         Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -3492,14 +3336,14 @@ class _AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1Fields(
 class ScheduleYear_v8_9(_g.AnyScheduleYear):
     """``Schedule:Year`` as declared in EnergyPlus 8.9.0. A Schedule:Year contains from 1 to 52 week schedules"""
 
-    schedule_week_name_1: str | None
-    start_month_1: float | None
+    schedule_week_name_1: str
+    start_month_1: float
     """Range: >= 1.0, <= 12.0"""
-    start_day_1: float | None
+    start_day_1: float
     """Range: >= 1.0, <= 31.0"""
-    end_month_1: float | None
+    end_month_1: float
     """Range: >= 1.0, <= 12.0"""
-    end_day_1: float | None
+    end_day_1: float
     """Range: >= 1.0, <= 31.0"""
     schedule_week_name_2: str | None
     start_month_2: float | None
@@ -3731,11 +3575,11 @@ class ScheduleYear_v8_9(_g.AnyScheduleYear):
     _creation_signature: _cv10.ScheduleYear_v8_9  # type: ignore[assignment]
 
 class _ScheduleYear_v8_9Fields(_g._ScheduleYearCommonFields, total=False):
-    schedule_week_name_1: str | None
-    start_month_1: float | None
-    start_day_1: float | None
-    end_month_1: float | None
-    end_day_1: float | None
+    schedule_week_name_1: str
+    start_month_1: float
+    start_day_1: float
+    end_month_1: float
+    end_day_1: float
     schedule_week_name_2: str | None
     start_month_2: float | None
     start_day_2: float | None
@@ -3897,7 +3741,7 @@ class _ScheduleYear_v9_0_to_v22_1Fields(_g._ScheduleYearCommonFields, total=Fals
 class ZoneControlHumidistat_v8_9_to_v26_1(_g.AnyZoneControlHumidistat):
     """``ZoneControl:Humidistat`` as declared in EnergyPlus 8.9.0 to 26.1.0. Specifies zone relative humidity setpoint schedules for humidifying and dehumidifying."""
 
-    humidifying_relative_humidity_setpoint_schedule_name: str | None
+    humidifying_relative_humidity_setpoint_schedule_name: str
     """hourly schedule values should be in Relative Humidity (percent)"""
     dehumidifying_relative_humidity_setpoint_schedule_name: str | None
     """hourly schedule values should be in Relative Humidity (percent)"""
@@ -3908,13 +3752,13 @@ class ZoneControlHumidistat_v8_9_to_v26_1(_g.AnyZoneControlHumidistat):
     _creation_signature: _cv3.ZoneControlHumidistat_v8_9_to_v26_1  # type: ignore[assignment]
 
 class _ZoneControlHumidistat_v8_9_to_v26_1Fields(_g._ZoneControlHumidistatCommonFields, total=False):
-    humidifying_relative_humidity_setpoint_schedule_name: str | None
+    humidifying_relative_humidity_setpoint_schedule_name: str
     dehumidifying_relative_humidity_setpoint_schedule_name: str | None
 
 class WaterHeaterMixed_v8_9_to_v9_2(_g.AnyWaterHeaterMixed):
     """``WaterHeater:Mixed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Water heater with well-mixed, single-node water tank. May be used to model a tankless water heater (small tank volume..."""
 
-    heater_fuel_type: str | None
+    heater_fuel_type: str
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -3956,7 +3800,7 @@ class WaterHeaterMixed_v8_9_to_v9_2(_g.AnyWaterHeaterMixed):
     _creation_signature: _cv95.WaterHeaterMixed_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _WaterHeaterMixed_v8_9_to_v9_2Fields(_g._WaterHeaterMixedCommonFields, total=False):
-    heater_fuel_type: str | None
+    heater_fuel_type: str
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -3995,23 +3839,20 @@ class _WaterHeaterMixed_v8_9_to_v9_2Fields(_g._WaterHeaterMixedCommonFields, tot
 class WaterHeaterMixed_v9_3_to_v23_1(_g.AnyWaterHeaterMixed):
     """``WaterHeater:Mixed`` as declared in EnergyPlus 9.3.0 to 23.1.0. Water heater with well-mixed, single-node water tank. May be used to model a tankless water heater (small tank volume..."""
 
-    heater_fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-        ]
-        | None
-    )
+    heater_fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+    ]
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -4053,23 +3894,20 @@ class WaterHeaterMixed_v9_3_to_v23_1(_g.AnyWaterHeaterMixed):
     _creation_signature: _cv26.WaterHeaterMixed_v9_3_to_v23_1  # type: ignore[assignment]
 
 class _WaterHeaterMixed_v9_3_to_v23_1Fields(_g._WaterHeaterMixedCommonFields, total=False):
-    heater_fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-        ]
-        | None
-    )
+    heater_fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+    ]
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -4112,7 +3950,6 @@ class ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2(_g.AnyZoneHVACHybridUnitaryHVAC):
     """The value in this field defines the number of discrete operating modes for the unitary hybrid equipment. Supply air m...; Default: 1.0; Range: >= 1.0, <= 26.0"""
     first_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4133,7 +3970,6 @@ class ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2(_g.AnyZoneHVACHybridUnitaryHVAC):
     """Select the fuel type associated with field: 'System Electric Power Lookup Table' in each mode. If this field is blank...; Default: Electricity"""
     second_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4154,7 +3990,6 @@ class ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2(_g.AnyZoneHVACHybridUnitaryHVAC):
     """Select the fuel type associated with field: 'System Second Fuel Consumption Lookup Table' in each mode. If this field...; Default: None"""
     third_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4183,7 +4018,6 @@ class _ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2Fields(_g._ZoneHVACHybridUnitaryHVA
     number_of_operating_modes: float | None
     first_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4203,7 +4037,6 @@ class _ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2Fields(_g._ZoneHVACHybridUnitaryHVA
     )
     second_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4223,7 +4056,6 @@ class _ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2Fields(_g._ZoneHVACHybridUnitaryHVA
     )
     third_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4249,7 +4081,6 @@ class ZoneHVACHybridUnitaryHVAC_v9_3(_g.AnyZoneHVACHybridUnitaryHVAC):
     """The value in this field defines the number of discrete operating modes for the unitary hybrid equipment. Supply air m...; Default: 1.0; Range: >= 1.0, <= 26.0"""
     first_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4270,7 +4101,6 @@ class ZoneHVACHybridUnitaryHVAC_v9_3(_g.AnyZoneHVACHybridUnitaryHVAC):
     """Select the fuel type associated with field: 'System Electric Power Lookup Table' in each mode. If this field is blank...; Default: Electricity"""
     second_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4291,7 +4121,6 @@ class ZoneHVACHybridUnitaryHVAC_v9_3(_g.AnyZoneHVACHybridUnitaryHVAC):
     """Select the fuel type associated with field: 'System Second Fuel Consumption Lookup Table' in each mode. If this field...; Default: None"""
     third_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4320,7 +4149,6 @@ class _ZoneHVACHybridUnitaryHVAC_v9_3Fields(_g._ZoneHVACHybridUnitaryHVACCommonF
     number_of_operating_modes: float | None
     first_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4340,7 +4168,6 @@ class _ZoneHVACHybridUnitaryHVAC_v9_3Fields(_g._ZoneHVACHybridUnitaryHVACCommonF
     )
     second_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4360,7 +4187,6 @@ class _ZoneHVACHybridUnitaryHVAC_v9_3Fields(_g._ZoneHVACHybridUnitaryHVACCommonF
     )
     third_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4382,15 +4208,14 @@ class _ZoneHVACHybridUnitaryHVAC_v9_3Fields(_g._ZoneHVACHybridUnitaryHVACCommonF
 class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1(_g.AnyZoneHVACHybridUnitaryHVAC):
     """``ZoneHVAC:HybridUnitaryHVAC`` as declared in EnergyPlus 9.4.0 to 23.1.0. Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include ou..."""
 
-    fan_heat_included_in_lookup_tables: Literal["", "No", "Yes"] | None
+    fan_heat_included_in_lookup_tables: Literal["No", "Yes"] | None
     """This field specifies if the fan heat is accounted for in the lookup tables.; Default: No"""
-    fan_heat_gain_location: Literal["", "MixedAirStream", "SupplyAirStream"] | None
+    fan_heat_gain_location: Literal["MixedAirStream", "SupplyAirStream"] | None
     """This field specifies where to add the fan heat in the air stream.; Default: SupplyAirStream"""
     fan_heat_in_air_stream_fraction: float | None
     """0.0 means no fan heat is added to the air stream, 1.0 means all fan heat is added to the air stream.; Default: 1.0; Range: >= 0.0, <= 1.0"""
     first_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4411,7 +4236,6 @@ class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1(_g.AnyZoneHVACHybridUnitaryHVAC):
     """Select the fuel type associated with field: 'System Electric Power Lookup Table' in each mode. If this field is blank...; Default: Electricity"""
     second_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4432,7 +4256,6 @@ class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1(_g.AnyZoneHVACHybridUnitaryHVAC):
     """Select the fuel type associated with field: 'System Second Fuel Consumption Lookup Table' in each mode. If this field...; Default: None"""
     third_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4461,12 +4284,11 @@ class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1(_g.AnyZoneHVACHybridUnitaryHVAC):
     _creation_signature: _cv93.ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1  # type: ignore[assignment]
 
 class _ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields(_g._ZoneHVACHybridUnitaryHVACCommonFields, total=False):
-    fan_heat_included_in_lookup_tables: Literal["", "No", "Yes"] | None
-    fan_heat_gain_location: Literal["", "MixedAirStream", "SupplyAirStream"] | None
+    fan_heat_included_in_lookup_tables: Literal["No", "Yes"] | None
+    fan_heat_gain_location: Literal["MixedAirStream", "SupplyAirStream"] | None
     fan_heat_in_air_stream_fraction: float | None
     first_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4486,7 +4308,6 @@ class _ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields(_g._ZoneHVACHybridUnitaryHV
     )
     second_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4506,7 +4327,6 @@ class _ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields(_g._ZoneHVACHybridUnitaryHV
     )
     third_fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "DistrictCooling",
@@ -4543,7 +4363,7 @@ class DaylightingControlsControlDataItem_v8_9_to_v9_5(TypedDict, total=False):
 class DaylightingControls_v8_9_to_v9_5(_g.AnyDaylightingControls):
     """``Daylighting:Controls`` as declared in EnergyPlus 8.9.0 to 9.5.0. Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
 
-    zone_name: str | None
+    zone_name: str
     number_of_stepped_control_steps: float | None
     """The number of steps, excluding off, in a stepped lighting control system. If Lighting Control Type is Stepped, this f...; Default: 1.0; Range: >= 1.0"""
     control_data: ExtensibleList[DaylightingControlsControlDataGroup_v8_9_to_v9_5]
@@ -4554,7 +4374,7 @@ class DaylightingControls_v8_9_to_v9_5(_g.AnyDaylightingControls):
     _creation_signature: _cv19.DaylightingControls_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _DaylightingControls_v8_9_to_v9_5Fields(_g._DaylightingControlsCommonFields, total=False):
-    zone_name: str | None
+    zone_name: str
     number_of_stepped_control_steps: float | None
     control_data: Sequence[
         DaylightingControlsControlDataItem_v8_9_to_v9_5 | DaylightingControlsControlDataGroup_v8_9_to_v9_5
@@ -4578,7 +4398,7 @@ class DaylightingControlsControlDataItem_v9_6_to_v22_1(TypedDict, total=False):
 class DaylightingControls_v9_6_to_v22_1(_g.AnyDaylightingControls):
     """``Daylighting:Controls`` as declared in EnergyPlus 9.6.0 to 22.1.0. Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
 
-    zone_or_space_name: str | None
+    zone_or_space_name: str
     number_of_stepped_control_steps: float | None
     """The number of steps, excluding off, in a stepped lighting control system. If Lighting Control Type is Stepped, this f...; Default: 1.0; Range: >= 1.0"""
     control_data: ExtensibleList[DaylightingControlsControlDataGroup_v9_6_to_v22_1]
@@ -4589,7 +4409,7 @@ class DaylightingControls_v9_6_to_v22_1(_g.AnyDaylightingControls):
     _creation_signature: _cv37.DaylightingControls_v9_6_to_v22_1  # type: ignore[assignment]
 
 class _DaylightingControls_v9_6_to_v22_1Fields(_g._DaylightingControlsCommonFields, total=False):
-    zone_or_space_name: str | None
+    zone_or_space_name: str
     number_of_stepped_control_steps: float | None
     control_data: Sequence[
         DaylightingControlsControlDataItem_v9_6_to_v22_1 | DaylightingControlsControlDataGroup_v9_6_to_v22_1
@@ -4598,7 +4418,7 @@ class _DaylightingControls_v9_6_to_v22_1Fields(_g._DaylightingControlsCommonFiel
 class ThermalStorageIceDetailed_v8_9_to_v9_1(_g.AnyThermalStorageIceDetailed):
     """``ThermalStorage:Ice:Detailed`` as declared in EnergyPlus 8.9.0 to 9.1.0. This input syntax is intended to describe a thermal storage system that includes smaller containers filled with water..."""
 
-    capacity: float | None
+    capacity: float
     """This includes only the latent storage capacity; [GJ]"""
     discharging_curve_object_type: Literal["CubicLinear", "QuadraticLinear"] | None
     charging_curve_object_type: Literal["CubicLinear", "QuadraticLinear"] | None
@@ -4609,21 +4429,21 @@ class ThermalStorageIceDetailed_v8_9_to_v9_1(_g.AnyThermalStorageIceDetailed):
     _creation_signature: _cv77.ThermalStorageIceDetailed_v8_9_to_v9_1  # type: ignore[assignment]
 
 class _ThermalStorageIceDetailed_v8_9_to_v9_1Fields(_g._ThermalStorageIceDetailedCommonFields, total=False):
-    capacity: float | None
+    capacity: float
     discharging_curve_object_type: Literal["CubicLinear", "QuadraticLinear"] | None
     charging_curve_object_type: Literal["CubicLinear", "QuadraticLinear"] | None
 
 class ThermalStorageIceDetailed_v9_2_to_v25_1(_g.AnyThermalStorageIceDetailed):
     """``ThermalStorage:Ice:Detailed`` as declared in EnergyPlus 9.2.0 to 25.1.0. This input syntax is intended to describe a thermal storage system that includes smaller containers filled with water..."""
 
-    capacity: float | None
+    capacity: float
     """This includes only the latent storage capacity; [GJ]"""
-    discharging_curve_variable_specifications: (
-        Literal["FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"] | None
-    )
-    charging_curve_variable_specifications: (
-        Literal["FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"] | None
-    )
+    discharging_curve_variable_specifications: Literal[
+        "FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"
+    ]
+    charging_curve_variable_specifications: Literal[
+        "FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"
+    ]
 
     def update(
         self,
@@ -4634,13 +4454,13 @@ class ThermalStorageIceDetailed_v9_2_to_v25_1(_g.AnyThermalStorageIceDetailed):
     _creation_signature: _cv70.ThermalStorageIceDetailed_v9_2_to_v25_1  # type: ignore[assignment]
 
 class _ThermalStorageIceDetailed_v9_2_to_v25_1Fields(_g._ThermalStorageIceDetailedCommonFields, total=False):
-    capacity: float | None
-    discharging_curve_variable_specifications: (
-        Literal["FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"] | None
-    )
-    charging_curve_variable_specifications: (
-        Literal["FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"] | None
-    )
+    capacity: float
+    discharging_curve_variable_specifications: Literal[
+        "FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"
+    ]
+    charging_curve_variable_specifications: Literal[
+        "FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"
+    ]
 
 class DemandManagerExteriorLights_v8_9_to_v22_1(_g.AnyDemandManagerExteriorLights):
     """``DemandManager:ExteriorLights`` as declared in EnergyPlus 8.9.0 to 22.1.0. used for demand limiting Exterior:Lights objects."""
@@ -4666,7 +4486,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1(_g.AnyZoneHVACTer
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as declared in EnergyPlus 8.9.0 to 9.1.0. Zone terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ..."""
 
     supply_air_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
+        Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
     """Supply Air Fan Object Type must be Fan:SystemModel, Fan:OnOff, or Fan:ConstantVolume if AirConditioner:VariableRefrig...; Default: Fan:ConstantVolume"""
 
@@ -4682,14 +4502,14 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1Fields(
     _g._ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
 ):
     supply_air_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
+        Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2(_g.AnyZoneHVACTerminalUnitVariableRefrigerantFlow):
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as declared in EnergyPlus 9.2.0. Zone terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ..."""
 
     supply_air_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
+        Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
     """Supply Air Fan Object Type must be Fan:SystemModel, Fan:OnOff, or Fan:ConstantVolume if AirConditioner:VariableRefrig...; Default: Fan:ConstantVolume"""
     supplemental_heating_coil_object_type: (
@@ -4698,7 +4518,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2(_g.AnyZoneHVACTerminalUni
     """works with gas, electric, hot water and steam heating coil."""
     supplemental_heating_coil_name: str | None
     """Needs to match in the supplemental heating coil object."""
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
+    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
     """Supply air temperature from the supplemental heater will not exceed this value.; [C]; Default: Autosize"""
     maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None
     """Supplemental heater will not operate when outdoor temperature exceeds this value.; [C]; Default: 21.0; Range: <= 21.0"""
@@ -4715,20 +4535,20 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2Fields(
     _g._ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
 ):
     supply_air_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
+        Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
     supplemental_heating_coil_object_type: (
         Literal["Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"] | None
     )
     supplemental_heating_coil_name: str | None
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
+    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
     maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1(_g.AnyZoneHVACTerminalUnitVariableRefrigerantFlow):
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as declared in EnergyPlus 9.3.0 to 23.1.0. A terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ter..."""
 
     supply_air_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
+        Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
     """Supply Air Fan Object Type must be Fan:SystemModel, Fan:OnOff, or Fan:ConstantVolume if AirConditioner:VariableRefrig...; Default: Fan:ConstantVolume"""
     supplemental_heating_coil_object_type: (
@@ -4737,7 +4557,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1(_g.AnyZoneHVACTe
     """works with gas, electric, hot water and steam heating coil."""
     supplemental_heating_coil_name: str | None
     """Needs to match in the supplemental heating coil object."""
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
+    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
     """Supply air temperature from the supplemental heater will not exceed this value.; [C]; Default: Autosize"""
     maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None
     """Supplemental heater will not operate when outdoor temperature exceeds this value.; [C]; Default: 21.0; Range: <= 21.0"""
@@ -4756,13 +4576,13 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1Fields(
     _g._ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
 ):
     supply_air_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
+        Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
     supplemental_heating_coil_object_type: (
         Literal["Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"] | None
     )
     supplemental_heating_coil_name: str | None
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
+    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
     maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None
     controlling_zone_or_thermostat_location: str | None
 
@@ -4770,7 +4590,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1(_g.AnyZoneHVACT
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as declared in EnergyPlus 23.2.0 to 24.1.0. A terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ter..."""
 
     supply_air_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
+        Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
     """Supply Air Fan Object Type must be Fan:SystemModel, Fan:OnOff, or Fan:ConstantVolume if AirConditioner:VariableRefrig...; Default: Fan:ConstantVolume"""
     supplemental_heating_coil_object_type: (
@@ -4779,7 +4599,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1(_g.AnyZoneHVACT
     """works with gas, electric, hot water and steam heating coil."""
     supplemental_heating_coil_name: str | None
     """Needs to match in the supplemental heating coil object."""
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
+    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
     """Supply air temperature from the supplemental heater will not exceed this value.; [C]; Default: Autosize"""
     maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None
     """Supplemental heater will not operate when outdoor temperature exceeds this value.; [C]; Default: 21.0; Range: <= 21.0"""
@@ -4802,13 +4622,13 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1Fields(
     _g._ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
 ):
     supply_air_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
+        Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
     supplemental_heating_coil_object_type: (
         Literal["Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"] | None
     )
     supplemental_heating_coil_name: str | None
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
+    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
     maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None
     controlling_zone_or_thermostat_location: str | None
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
@@ -4887,7 +4707,7 @@ class _OutputTableAnnual_v8_9_to_v22_1Fields(_g._OutputTableAnnualCommonFields, 
 class WindowMaterialGasMixture_v8_9_to_v22_1(_g.AnyWindowMaterialGasMixture):
     """``WindowMaterial:GasMixture`` as declared in EnergyPlus 8.9.0 to 22.1.0. Gas mixtures that are used in Windows or Glass Doors"""
 
-    number_of_gases_in_mixture: float | None
+    number_of_gases_in_mixture: float
     """Range: >= 1.0, <= 4.0"""
 
     def update(
@@ -4896,12 +4716,12 @@ class WindowMaterialGasMixture_v8_9_to_v22_1(_g.AnyWindowMaterialGasMixture):
     _creation_signature: _cv65.WindowMaterialGasMixture_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _WindowMaterialGasMixture_v8_9_to_v22_1Fields(_g._WindowMaterialGasMixtureCommonFields, total=False):
-    number_of_gases_in_mixture: float | None
+    number_of_gases_in_mixture: float
 
 class ZoneAirMassFlowConservation_v8_9_to_v9_4(_g.AnyZoneAirMassFlowConservation):
     """``ZoneAirMassFlowConservation`` as declared in EnergyPlus 8.9.0 to 9.4.0. Enforces the zone air mass flow balance by adjusting zone mixing object and/or infiltration object mass flow rates. I..."""
 
-    adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["", "No", "Yes"] | None
+    adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["No", "Yes"] | None
     """If Yes, Zone mixing object flow rates are adjusted to balance the zone air mass flow and additional infiltration air ...; Default: No"""
 
     def update(
@@ -4913,7 +4733,7 @@ class ZoneAirMassFlowConservation_v8_9_to_v9_4(_g.AnyZoneAirMassFlowConservation
     _creation_signature: _cv113.ZoneAirMassFlowConservation_v8_9_to_v9_4  # type: ignore[assignment]
 
 class _ZoneAirMassFlowConservation_v8_9_to_v9_4Fields(_g._ZoneAirMassFlowConservationCommonFields, total=False):
-    adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["", "No", "Yes"] | None
+    adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["No", "Yes"] | None
 
 class EnvironmentalImpactFactors_v8_9_to_v23_1(_g.AnyEnvironmentalImpactFactors):
     """``EnvironmentalImpactFactors`` as declared in EnergyPlus 8.9.0 to 23.1.0. Used to help convert district and ideal energy use to a fuel type and provide total carbon equivalent with coefficien..."""
@@ -5183,7 +5003,7 @@ class _GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1Fields(
 class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1(_g.AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass):
     """``AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`` as declared in EnergyPlus 8.9.0 to 9.1.0. Unitary system, heating and cooling with constant volume supply fan (continuous or cycling), direct expansion (DX) co..."""
 
-    priority_control_mode: Literal["", "CoolingPriority", "HeatingPriority", "ZonePriority"] | None
+    priority_control_mode: Literal["CoolingPriority", "HeatingPriority", "ZonePriority"] | None
     """CoolingPriority = system provides cooling if any zone requires cooling. HeatingPriority = system provides heating if ...; Default: ZonePriority"""
 
     def update(
@@ -5197,7 +5017,7 @@ class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1(_g.AnyAirLoopHV
 class _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1Fields(
     _g._AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassCommonFields, total=False
 ):
-    priority_control_mode: Literal["", "CoolingPriority", "HeatingPriority", "ZonePriority"] | None
+    priority_control_mode: Literal["CoolingPriority", "HeatingPriority", "ZonePriority"] | None
 
 class AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1(_g.AnyAirLoopHVACUnitaryHeatPumpWaterToAir):
     """``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` as declared in EnergyPlus 8.9.0 to 23.1.0. Unitary heat pump system, heating and cooling, single-speed with constant volume supply fan (continuous or cycling), ..."""
@@ -5245,7 +5065,7 @@ class _AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1Fields(
 class ZoneCoolTowerShower_v8_9_to_v24_1(_g.AnyZoneCoolTowerShower):
     """``ZoneCoolTower:Shower`` as declared in EnergyPlus 8.9.0 to 24.1.0. A cooltower (sometimes referred to as a wind tower or a shower cooling tower) models passive downdraught evaporative ..."""
 
-    zone_name: str | None
+    zone_name: str
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneCoolTowerShower_v8_9_to_v24_1Fields]
@@ -5253,14 +5073,14 @@ class ZoneCoolTowerShower_v8_9_to_v24_1(_g.AnyZoneCoolTowerShower):
     _creation_signature: _cv85.ZoneCoolTowerShower_v8_9_to_v24_1  # type: ignore[assignment]
 
 class _ZoneCoolTowerShower_v8_9_to_v24_1Fields(_g._ZoneCoolTowerShowerCommonFields, total=False):
-    zone_name: str | None
+    zone_name: str
 
 class SizingSystem_v8_9_to_v9_5(_g.AnySizingSystem):
     """``Sizing:System`` as declared in EnergyPlus 8.9.0 to 9.5.0. Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, he..."""
 
-    type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None
+    type_of_load_to_size_on: Literal["Sensible", "Total", "VentilationRequirement"] | None
     """Specifies the basis for sizing the system supply air flow rate Sensible and Total use the zone design air flow rates ...; Default: Sensible"""
-    system_outdoor_air_method: Literal["", "VentilationRateProcedure", "ZoneSum"] | None
+    system_outdoor_air_method: Literal["VentilationRateProcedure", "ZoneSum"] | None
     """Default: ZoneSum"""
 
     def update(
@@ -5269,19 +5089,19 @@ class SizingSystem_v8_9_to_v9_5(_g.AnySizingSystem):
     _creation_signature: _cv93.SizingSystem_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _SizingSystem_v8_9_to_v9_5Fields(_g._SizingSystemCommonFields, total=False):
-    type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None
-    system_outdoor_air_method: Literal["", "VentilationRateProcedure", "ZoneSum"] | None
+    type_of_load_to_size_on: Literal["Sensible", "Total", "VentilationRequirement"] | None
+    system_outdoor_air_method: Literal["VentilationRateProcedure", "ZoneSum"] | None
 
 class SizingSystem_v9_6_to_v22_1(_g.AnySizingSystem):
     """``Sizing:System`` as declared in EnergyPlus 9.6.0 to 22.1.0. Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, he..."""
 
-    type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None
+    type_of_load_to_size_on: Literal["Sensible", "Total", "VentilationRequirement"] | None
     """Specifies the basis for sizing the system supply air flow rate Sensible and Total use the zone design air flow rates ...; Default: Sensible"""
     system_outdoor_air_method: (
-        Literal["", "Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"] | None
+        Literal["Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"] | None
     )
     """Default: ZoneSum"""
-    occupant_diversity: float | Literal["", "Autosize"] | None
+    occupant_diversity: float | Literal["Autosize"] | None
     """The Occupant Diversity is used to determine a multi-zone system's outdoor air intake when the System Outdoor Air Meth...; Default: Autosize"""
 
     def update(
@@ -5290,22 +5110,22 @@ class SizingSystem_v9_6_to_v22_1(_g.AnySizingSystem):
     _creation_signature: _cv88.SizingSystem_v9_6_to_v22_1  # type: ignore[assignment]
 
 class _SizingSystem_v9_6_to_v22_1Fields(_g._SizingSystemCommonFields, total=False):
-    type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None
+    type_of_load_to_size_on: Literal["Sensible", "Total", "VentilationRequirement"] | None
     system_outdoor_air_method: (
-        Literal["", "Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"] | None
+        Literal["Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"] | None
     )
-    occupant_diversity: float | Literal["", "Autosize"] | None
+    occupant_diversity: float | Literal["Autosize"] | None
 
 class SizingSystem_v22_2_to_v25_1(_g.AnySizingSystem):
     """``Sizing:System`` as declared in EnergyPlus 22.2.0 to 25.1.0. Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, he..."""
 
-    type_of_load_to_size_on: Literal["", "Latent", "Sensible", "Total", "VentilationRequirement"] | None
+    type_of_load_to_size_on: Literal["Latent", "Sensible", "Total", "VentilationRequirement"] | None
     """Specifies the basis for sizing the system supply air flow rate Sensible and Total use the zone design air flow rates ...; Default: Sensible"""
     system_outdoor_air_method: (
-        Literal["", "Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"] | None
+        Literal["Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"] | None
     )
     """Default: ZoneSum"""
-    occupant_diversity: float | Literal["", "Autosize"] | None
+    occupant_diversity: float | Literal["Autosize"] | None
     """The Occupant Diversity is used to determine a multi-zone system's outdoor air intake when the System Outdoor Air Meth...; Default: Autosize"""
 
     def update(
@@ -5314,11 +5134,11 @@ class SizingSystem_v22_2_to_v25_1(_g.AnySizingSystem):
     _creation_signature: _cv73.SizingSystem_v22_2_to_v25_1  # type: ignore[assignment]
 
 class _SizingSystem_v22_2_to_v25_1Fields(_g._SizingSystemCommonFields, total=False):
-    type_of_load_to_size_on: Literal["", "Latent", "Sensible", "Total", "VentilationRequirement"] | None
+    type_of_load_to_size_on: Literal["Latent", "Sensible", "Total", "VentilationRequirement"] | None
     system_outdoor_air_method: (
-        Literal["", "Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"] | None
+        Literal["Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"] | None
     )
-    occupant_diversity: float | Literal["", "Autosize"] | None
+    occupant_diversity: float | Literal["Autosize"] | None
 
 class Zone_v8_9_to_v9_4(_g.AnyZone):
     """``Zone`` as declared in EnergyPlus 8.9.0 to 9.4.0. Defines a thermal zone of the building."""
@@ -5328,7 +5148,7 @@ class Zone_v8_9_to_v9_4(_g.AnyZone):
     multiplier: float | None
     """Default: 1.0; Range: >= 1.0"""
     zone_inside_convection_algorithm: (
-        Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"] | None
+        Literal["AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"] | None
     )
     """Will default to same value as SurfaceConvectionAlgorithm:Inside object setting this field overrides the default Surfa..."""
 
@@ -5339,7 +5159,7 @@ class _Zone_v8_9_to_v9_4Fields(_g._ZoneCommonFields, total=False):
     type: float | None
     multiplier: float | None
     zone_inside_convection_algorithm: (
-        Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"] | None
+        Literal["AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"] | None
     )
 
 class Zone_v9_5_to_v22_1(_g.AnyZone):
@@ -5350,8 +5170,7 @@ class Zone_v9_5_to_v22_1(_g.AnyZone):
     multiplier: float | None
     """Default: 1.0; Range: >= 1.0"""
     zone_inside_convection_algorithm: (
-        Literal["", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"]
-        | None
+        Literal["ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"] | None
     )
     """Will default to same value as SurfaceConvectionAlgorithm:Inside object setting this field overrides the default Surfa..."""
 
@@ -5364,29 +5183,27 @@ class _Zone_v9_5_to_v22_1Fields(_g._ZoneCommonFields, total=False):
     type: float | None
     multiplier: float | None
     zone_inside_convection_algorithm: (
-        Literal["", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"]
-        | None
+        Literal["ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"] | None
     )
 
 class RunPeriod_v8_9(_g.AnyRunPeriod):
     """``RunPeriod`` as declared in EnergyPlus 8.9.0. Specified a range of dates and other parameters for a weather file simulation. Multiple run periods may be input, but..."""
 
-    begin_month: float | None
+    begin_month: float
     """Range: >= 1.0, <= 12.0"""
-    begin_day_of_month: float | None
+    begin_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
-    end_month: float | None
+    end_month: float
     """Range: >= 1.0, <= 12.0"""
-    end_day_of_month: float | None
+    end_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
     day_of_week_for_start_day: (
-        Literal["", "Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"]
-        | None
+        Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"] | None
     )
     """=<blank - use WeatherFile>|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday];; Default: UseWeatherFile"""
     number_of_times_runperiod_to_be_repeated: float | None
     """Default: 1.0; Range: >= 1.0"""
-    increment_day_of_week_on_repeat: Literal["", "No", "Yes"] | None
+    increment_day_of_week_on_repeat: Literal["No", "Yes"] | None
     """Default: Yes"""
     start_year: float | None
     """this is the start year for the start date. If the leap year is 'Yes' in the weather file header (that is HOLIDAYS/SPE..."""
@@ -5395,30 +5212,29 @@ class RunPeriod_v8_9(_g.AnyRunPeriod):
     _creation_signature: _cv4.RunPeriod_v8_9  # type: ignore[assignment]
 
 class _RunPeriod_v8_9Fields(_g._RunPeriodCommonFields, total=False):
-    begin_month: float | None
-    begin_day_of_month: float | None
-    end_month: float | None
-    end_day_of_month: float | None
+    begin_month: float
+    begin_day_of_month: float
+    end_month: float
+    end_day_of_month: float
     day_of_week_for_start_day: (
-        Literal["", "Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"]
-        | None
+        Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"] | None
     )
     number_of_times_runperiod_to_be_repeated: float | None
-    increment_day_of_week_on_repeat: Literal["", "No", "Yes"] | None
+    increment_day_of_week_on_repeat: Literal["No", "Yes"] | None
     start_year: float | None
 
 class RunPeriod_v9_0_to_v9_5(_g.AnyRunPeriod):
     """``RunPeriod`` as declared in EnergyPlus 9.0.1 to 9.5.0. Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not o..."""
 
-    begin_month: float | None
+    begin_month: float
     """Range: >= 1.0, <= 12.0"""
-    begin_day_of_month: float | None
+    begin_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
     begin_year: float | None
     """Start year of the simulation, if this field is specified it must agree with the Day of Week for Start Day If this fie..."""
-    end_month: float | None
+    end_month: float
     """Range: >= 1.0, <= 12.0"""
-    end_day_of_month: float | None
+    end_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
     end_year: float | None
     """end year of simulation, if specified"""
@@ -5426,7 +5242,7 @@ class RunPeriod_v9_0_to_v9_5(_g.AnyRunPeriod):
         Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"] | None
     )
     """=[Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday]; If no year is input, this field will default to Sunday I..."""
-    treat_weather_as_actual: Literal["", "No", "Yes"] | None
+    treat_weather_as_actual: Literal["No", "Yes"] | None
     """Default: No"""
 
     def update(
@@ -5435,29 +5251,29 @@ class RunPeriod_v9_0_to_v9_5(_g.AnyRunPeriod):
     _creation_signature: _cv54.RunPeriod_v9_0_to_v9_5  # type: ignore[assignment]
 
 class _RunPeriod_v9_0_to_v9_5Fields(_g._RunPeriodCommonFields, total=False):
-    begin_month: float | None
-    begin_day_of_month: float | None
+    begin_month: float
+    begin_day_of_month: float
     begin_year: float | None
-    end_month: float | None
-    end_day_of_month: float | None
+    end_month: float
+    end_day_of_month: float
     end_year: float | None
     day_of_week_for_start_day: (
         Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"] | None
     )
-    treat_weather_as_actual: Literal["", "No", "Yes"] | None
+    treat_weather_as_actual: Literal["No", "Yes"] | None
 
 class RunPeriod_v9_6_to_v22_1(_g.AnyRunPeriod):
     """``RunPeriod`` as declared in EnergyPlus 9.6.0 to 22.1.0. Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not o..."""
 
-    begin_month: float | None
+    begin_month: float
     """Range: >= 1.0, <= 12.0"""
-    begin_day_of_month: float | None
+    begin_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
     begin_year: float | None
     """Start year of the simulation, if this field is specified it must agree with the Day of Week for Start Day If this fie..."""
-    end_month: float | None
+    end_month: float
     """Range: >= 1.0, <= 12.0"""
-    end_day_of_month: float | None
+    end_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
     end_year: float | None
     """end year of simulation, if specified"""
@@ -5465,9 +5281,9 @@ class RunPeriod_v9_6_to_v22_1(_g.AnyRunPeriod):
         Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"] | None
     )
     """=[Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday]; If no year is input, this field will default to Sunday I..."""
-    treat_weather_as_actual: Literal["", "No", "Yes"] | None
+    treat_weather_as_actual: Literal["No", "Yes"] | None
     """Default: No"""
-    first_hour_interpolation_starting_values: Literal["", "Hour1", "Hour24"] | None
+    first_hour_interpolation_starting_values: Literal["Hour1", "Hour24"] | None
     """When the weather data timestep is longer than the simulation timestep, weather data is interpolated. For the first ho...; Default: Hour24"""
 
     def update(
@@ -5476,17 +5292,17 @@ class RunPeriod_v9_6_to_v22_1(_g.AnyRunPeriod):
     _creation_signature: _cv30.RunPeriod_v9_6_to_v22_1  # type: ignore[assignment]
 
 class _RunPeriod_v9_6_to_v22_1Fields(_g._RunPeriodCommonFields, total=False):
-    begin_month: float | None
-    begin_day_of_month: float | None
+    begin_month: float
+    begin_day_of_month: float
     begin_year: float | None
-    end_month: float | None
-    end_day_of_month: float | None
+    end_month: float
+    end_day_of_month: float
     end_year: float | None
     day_of_week_for_start_day: (
         Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"] | None
     )
-    treat_weather_as_actual: Literal["", "No", "Yes"] | None
-    first_hour_interpolation_starting_values: Literal["", "Hour1", "Hour24"] | None
+    treat_weather_as_actual: Literal["No", "Yes"] | None
+    first_hour_interpolation_starting_values: Literal["Hour1", "Hour24"] | None
 
 class HVACTemplateZonePTHP_v8_9(_g.AnyHVACTemplateZonePTHP):
     """``HVACTemplate:Zone:PTHP`` as declared in EnergyPlus 8.9.0. Packaged Terminal Heat Pump"""
@@ -5533,7 +5349,7 @@ class _AirflowNetworkDistributionComponentReliefAirFlow_v8_9Fields(
 class OutputControlTableStyle_v8_9_to_v23_2(_g.AnyOutputControlTableStyle):
     """``OutputControl:Table:Style`` as declared in EnergyPlus 8.9.0 to 23.2.0. default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs s..."""
 
-    unit_conversion: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
+    unit_conversion: Literal["InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
     """Default: None"""
 
     def update(
@@ -5542,12 +5358,12 @@ class OutputControlTableStyle_v8_9_to_v23_2(_g.AnyOutputControlTableStyle):
     _creation_signature: _cv15.OutputControlTableStyle_v8_9_to_v23_2  # type: ignore[assignment]
 
 class _OutputControlTableStyle_v8_9_to_v23_2Fields(_g._OutputControlTableStyleCommonFields, total=False):
-    unit_conversion: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
+    unit_conversion: Literal["InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
 
 class OutputControlTableStyle_v24_1_to_v25_1(_g.AnyOutputControlTableStyle):
     """``OutputControl:Table:Style`` as declared in EnergyPlus 24.1.0 to 25.1.0. default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs s..."""
 
-    unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
+    unit_conversion: Literal["InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
     """Default: None"""
 
     def update(
@@ -5556,7 +5372,7 @@ class OutputControlTableStyle_v24_1_to_v25_1(_g.AnyOutputControlTableStyle):
     _creation_signature: _cv96.OutputControlTableStyle_v24_1_to_v25_1  # type: ignore[assignment]
 
 class _OutputControlTableStyle_v24_1_to_v25_1Fields(_g._OutputControlTableStyleCommonFields, total=False):
-    unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
+    unit_conversion: Literal["InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
 
 class Material_v8_9_to_v26_1(_g.AnyMaterial):
     """``Material`` as declared in EnergyPlus 8.9.0 to 26.1.0. Regular materials described with full set of thermal properties"""
@@ -5571,21 +5387,18 @@ class _Material_v8_9_to_v26_1Fields(_g._MaterialCommonFields, total=False): ...
 class ComponentCostLineItem_v8_9_to_v9_5(_g.AnyComponentCostLineItem):
     """``ComponentCost:LineItem`` as declared in EnergyPlus 8.9.0 to 9.5.0. Each instance of this object creates a cost line item and will contribute to the total for a cost estimate."""
 
-    line_item_type: (
-        Literal[
-            "Chiller:Electric",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:DX",
-            "Coil:Heating:Fuel",
-            "Construction",
-            "Daylighting:Controls",
-            "General",
-            "Generator:Photovoltaic",
-            "Lights",
-            "Shading:Zone:Detailed",
-        ]
-        | None
-    )
+    line_item_type: Literal[
+        "Chiller:Electric",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:DX",
+        "Coil:Heating:Fuel",
+        "Construction",
+        "Daylighting:Controls",
+        "General",
+        "Generator:Photovoltaic",
+        "Lights",
+        "Shading:Zone:Detailed",
+    ]
     """extend choice-keys as Cases are added to code"""
 
     def update(
@@ -5594,21 +5407,18 @@ class ComponentCostLineItem_v8_9_to_v9_5(_g.AnyComponentCostLineItem):
     _creation_signature: _cv46.ComponentCostLineItem_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _ComponentCostLineItem_v8_9_to_v9_5Fields(_g._ComponentCostLineItemCommonFields, total=False):
-    line_item_type: (
-        Literal[
-            "Chiller:Electric",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:DX",
-            "Coil:Heating:Fuel",
-            "Construction",
-            "Daylighting:Controls",
-            "General",
-            "Generator:Photovoltaic",
-            "Lights",
-            "Shading:Zone:Detailed",
-        ]
-        | None
-    )
+    line_item_type: Literal[
+        "Chiller:Electric",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:DX",
+        "Coil:Heating:Fuel",
+        "Construction",
+        "Daylighting:Controls",
+        "General",
+        "Generator:Photovoltaic",
+        "Lights",
+        "Shading:Zone:Detailed",
+    ]
 
 class ZoneGroup_v8_9_to_v22_1(_g.AnyZoneGroup):
     """``ZoneGroup`` as declared in EnergyPlus 8.9.0 to 22.1.0. Adds a multiplier to a ZoneList. This can be used to reduce the amount of input necessary for simulating repetitive s..."""
@@ -5675,16 +5485,16 @@ class _HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2Fields(
 class CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4(_g.AnyCoilHeatingWaterToAirHeatPumpEquationFit):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 8.9.0 to 9.4.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
 
-    heating_capacity_coefficient_1: float | None
-    heating_capacity_coefficient_2: float | None
-    heating_capacity_coefficient_3: float | None
-    heating_capacity_coefficient_4: float | None
-    heating_capacity_coefficient_5: float | None
-    heating_power_consumption_coefficient_1: float | None
-    heating_power_consumption_coefficient_2: float | None
-    heating_power_consumption_coefficient_3: float | None
-    heating_power_consumption_coefficient_4: float | None
-    heating_power_consumption_coefficient_5: float | None
+    heating_capacity_coefficient_1: float
+    heating_capacity_coefficient_2: float
+    heating_capacity_coefficient_3: float
+    heating_capacity_coefficient_4: float
+    heating_capacity_coefficient_5: float
+    heating_power_consumption_coefficient_1: float
+    heating_power_consumption_coefficient_2: float
+    heating_power_consumption_coefficient_3: float
+    heating_power_consumption_coefficient_4: float
+    heating_power_consumption_coefficient_5: float
 
     def update(
         self,
@@ -5697,22 +5507,22 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4(_g.AnyCoilHeatingWat
 class _CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4Fields(
     _g._CoilHeatingWaterToAirHeatPumpEquationFitCommonFields, total=False
 ):
-    heating_capacity_coefficient_1: float | None
-    heating_capacity_coefficient_2: float | None
-    heating_capacity_coefficient_3: float | None
-    heating_capacity_coefficient_4: float | None
-    heating_capacity_coefficient_5: float | None
-    heating_power_consumption_coefficient_1: float | None
-    heating_power_consumption_coefficient_2: float | None
-    heating_power_consumption_coefficient_3: float | None
-    heating_power_consumption_coefficient_4: float | None
-    heating_power_consumption_coefficient_5: float | None
+    heating_capacity_coefficient_1: float
+    heating_capacity_coefficient_2: float
+    heating_capacity_coefficient_3: float
+    heating_capacity_coefficient_4: float
+    heating_capacity_coefficient_5: float
+    heating_power_consumption_coefficient_1: float
+    heating_power_consumption_coefficient_2: float
+    heating_power_consumption_coefficient_3: float
+    heating_power_consumption_coefficient_4: float
+    heating_power_consumption_coefficient_5: float
 
 class CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1(_g.AnyCoilHeatingWaterToAirHeatPumpEquationFit):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 9.5.0 to 22.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
 
-    heating_capacity_curve_name: str | None
-    heating_power_consumption_curve_name: str | None
+    heating_capacity_curve_name: str
+    heating_power_consumption_curve_name: str
 
     def update(
         self,
@@ -5725,8 +5535,8 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1(_g.AnyCoilHeatingWa
 class _CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1Fields(
     _g._CoilHeatingWaterToAirHeatPumpEquationFitCommonFields, total=False
 ):
-    heating_capacity_curve_name: str | None
-    heating_power_consumption_curve_name: str | None
+    heating_capacity_curve_name: str
+    heating_power_consumption_curve_name: str
 
 class CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1(_g.AnyCoilHeatingWaterToAirHeatPumpEquationFit):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
@@ -5737,8 +5547,8 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1(_g.AnyCoilHeatingW
     """Rated entering air dry-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 20.0; Range: > 0.0"""
     ratio_of_rated_heating_capacity_to_rated_cooling_capacity: float | None
     """Ratio of rated heating capacity to rated cooling capacity. This input is used to calculate the heating or cooling cap...; Default: 1.0; Range: > 0.0"""
-    heating_capacity_curve_name: str | None
-    heating_power_consumption_curve_name: str | None
+    heating_capacity_curve_name: str
+    heating_power_consumption_curve_name: str
 
     def update(
         self,
@@ -5754,8 +5564,8 @@ class _CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1Fields(
     rated_entering_water_temperature: float | None
     rated_entering_air_dry_bulb_temperature: float | None
     ratio_of_rated_heating_capacity_to_rated_cooling_capacity: float | None
-    heating_capacity_curve_name: str | None
-    heating_power_consumption_curve_name: str | None
+    heating_capacity_curve_name: str
+    heating_power_consumption_curve_name: str
 
 class CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1(_g.AnyCoilHeatingWaterToAirHeatPumpEquationFit):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
@@ -5766,9 +5576,9 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1(_g.AnyCoilHeatingW
     """Rated entering air dry-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 20.0; Range: > 0.0"""
     ratio_of_rated_heating_capacity_to_rated_cooling_capacity: float | None
     """Ratio of rated heating capacity to rated cooling capacity. This input is used to calculate the heating or cooling cap...; Default: 1.0; Range: > 0.0"""
-    heating_capacity_curve_name: str | None
-    heating_power_consumption_curve_name: str | None
-    part_load_fraction_correlation_curve_name: str | None
+    heating_capacity_curve_name: str
+    heating_power_consumption_curve_name: str
+    part_load_fraction_correlation_curve_name: str
     """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (heat load..."""
 
     def update(
@@ -5785,9 +5595,9 @@ class _CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1Fields(
     rated_entering_water_temperature: float | None
     rated_entering_air_dry_bulb_temperature: float | None
     ratio_of_rated_heating_capacity_to_rated_cooling_capacity: float | None
-    heating_capacity_curve_name: str | None
-    heating_power_consumption_curve_name: str | None
-    part_load_fraction_correlation_curve_name: str | None
+    heating_capacity_curve_name: str
+    heating_power_consumption_curve_name: str
+    part_load_fraction_correlation_curve_name: str
 
 class ChillerElectricReformulatedEIR_v8_9_to_v24_1(_g.AnyChillerElectricReformulatedEIR):
     """``Chiller:Electric:ReformulatedEIR`` as declared in EnergyPlus 8.9.0 to 24.1.0. This chiller model is an empirical model, a reformulated version of Chiller:Electric:EIR where the performance is a f..."""
@@ -5807,13 +5617,13 @@ class _ChillerElectricReformulatedEIR_v8_9_to_v24_1Fields(
 class SizingPeriodWeatherFileDays_v8_9_to_v22_1(_g.AnySizingPeriodWeatherFileDays):
     """``SizingPeriod:WeatherFileDays`` as declared in EnergyPlus 8.9.0 to 22.1.0. Use a weather file period for design sizing calculations."""
 
-    begin_month: float | None
+    begin_month: float
     """Range: >= 1.0, <= 12.0"""
-    begin_day_of_month: float | None
+    begin_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
-    end_month: float | None
+    end_month: float
     """Range: >= 1.0, <= 12.0"""
-    end_day_of_month: float | None
+    end_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
 
     def update(
@@ -5825,20 +5635,20 @@ class SizingPeriodWeatherFileDays_v8_9_to_v22_1(_g.AnySizingPeriodWeatherFileDay
     _creation_signature: _cv84.SizingPeriodWeatherFileDays_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _SizingPeriodWeatherFileDays_v8_9_to_v22_1Fields(_g._SizingPeriodWeatherFileDaysCommonFields, total=False):
-    begin_month: float | None
-    begin_day_of_month: float | None
-    end_month: float | None
-    end_day_of_month: float | None
+    begin_month: float
+    begin_day_of_month: float
+    end_month: float
+    end_day_of_month: float
 
 class People_v8_9_to_v9_4(_g.AnyPeople):
     """``People`` as declared in EnergyPlus 8.9.0 to 9.4.0. Sets internal gains and contaminant rates for occupants in the zone. If you use a ZoneList in the Zone or ZoneList na..."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     people_per_zone_floor_area: float | None
     """[person/m2]; Range: >= 0.0"""
     zone_floor_area_per_person: float | None
     """[m2/person]; Range: >= 0.0"""
-    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
+    mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
     """optional (only required for thermal comfort runs); Default: ZoneAveraged"""
     thermal_comfort_model_1_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
     """optional (only needed for people thermal comfort results reporting)"""
@@ -5857,10 +5667,10 @@ class People_v8_9_to_v9_4(_g.AnyPeople):
     _creation_signature: _cv8.People_v8_9_to_v9_4  # type: ignore[assignment]
 
 class _People_v8_9_to_v9_4Fields(_g._PeopleCommonFields, total=False):
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     people_per_zone_floor_area: float | None
     zone_floor_area_per_person: float | None
-    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
+    mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
     thermal_comfort_model_1_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
     thermal_comfort_model_2_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
     thermal_comfort_model_3_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
@@ -5870,12 +5680,12 @@ class _People_v8_9_to_v9_4Fields(_g._PeopleCommonFields, total=False):
 class People_v9_5(_g.AnyPeople):
     """``People`` as declared in EnergyPlus 9.5.0. Sets internal gains and contaminant rates for occupants in the zone. If you use a ZoneList in the Zone or ZoneList na..."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     people_per_zone_floor_area: float | None
     """[person/m2]; Range: >= 0.0"""
     zone_floor_area_per_person: float | None
     """[m2/person]; Range: >= 0.0"""
-    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
+    mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
     """optional (only required for thermal comfort runs); Default: ZoneAveraged"""
     thermal_comfort_model_1_type: (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
@@ -5919,10 +5729,10 @@ class People_v9_5(_g.AnyPeople):
     _creation_signature: _cv28.People_v9_5  # type: ignore[assignment]
 
 class _People_v9_5Fields(_g._PeopleCommonFields, total=False):
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     people_per_zone_floor_area: float | None
     zone_floor_area_per_person: float | None
-    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
+    mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
     thermal_comfort_model_1_type: (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
         | None
@@ -5956,12 +5766,12 @@ class _People_v9_5Fields(_g._PeopleCommonFields, total=False):
 class People_v9_6_to_v22_1(_g.AnyPeople):
     """``People`` as declared in EnergyPlus 9.6.0 to 22.1.0. Sets internal gains and contaminant rates for occupants in the zone. If a ZoneList, SpaceList, or a Zone comprised of..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     people_per_floor_area: float | None
     """[person/m2]; Range: >= 0.0"""
     floor_area_per_person: float | None
     """[m2/person]; Range: >= 0.0"""
-    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
+    mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
     """optional (only required for thermal comfort runs); Default: ZoneAveraged"""
     thermal_comfort_model_1_type: (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
@@ -6007,10 +5817,10 @@ class People_v9_6_to_v22_1(_g.AnyPeople):
     _creation_signature: _cv23.People_v9_6_to_v22_1  # type: ignore[assignment]
 
 class _People_v9_6_to_v22_1Fields(_g._PeopleCommonFields, total=False):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     people_per_floor_area: float | None
     floor_area_per_person: float | None
-    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
+    mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
     thermal_comfort_model_1_type: (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
         | None
@@ -6044,12 +5854,12 @@ class _People_v9_6_to_v22_1Fields(_g._PeopleCommonFields, total=False):
 class People_v22_2_to_v23_2(_g.AnyPeople):
     """``People`` as declared in EnergyPlus 22.2.0 to 23.2.0. Sets internal gains and contaminant rates for occupants in the zone. If a ZoneList, SpaceList, or a Zone comprised of..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     people_per_floor_area: float | None
     """[person/m2]; Range: >= 0.0"""
     floor_area_per_person: float | None
     """[m2/person]; Range: >= 0.0"""
-    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
+    mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
     """optional (only required for thermal comfort runs); Default: ZoneAveraged"""
     thermal_comfort_model_1_type: (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
@@ -6099,10 +5909,10 @@ class People_v22_2_to_v23_2(_g.AnyPeople):
     _creation_signature: _cv80.People_v22_2_to_v23_2  # type: ignore[assignment]
 
 class _People_v22_2_to_v23_2Fields(_g._PeopleCommonFields, total=False):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     people_per_floor_area: float | None
     floor_area_per_person: float | None
-    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
+    mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"] | None
     thermal_comfort_model_1_type: (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
         | None
@@ -6138,23 +5948,20 @@ class _People_v22_2_to_v23_2Fields(_g._PeopleCommonFields, total=False):
 class AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2(_g.AnyAirflowNetworkDistributionComponentCoil):
     """``AirflowNetwork:Distribution:Component:Coil`` as declared in EnergyPlus 8.9.0 to 9.2.0. This object defines the name of a coil used in an air loop."""
 
-    coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:Water",
-            "Coil:Cooling:Water:DetailedGeometry",
-            "Coil:Heating:DX:MultiSpeed",
-            "Coil:Heating:DX:SingleSpeed",
-            "Coil:Heating:Desuperheater",
-            "Coil:Heating:Electric",
-            "Coil:Heating:Fuel",
-            "Coil:Heating:Water",
-        ]
-        | None
-    )
+    coil_object_type: Literal[
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:Water",
+        "Coil:Cooling:Water:DetailedGeometry",
+        "Coil:Heating:DX:MultiSpeed",
+        "Coil:Heating:DX:SingleSpeed",
+        "Coil:Heating:Desuperheater",
+        "Coil:Heating:Electric",
+        "Coil:Heating:Fuel",
+        "Coil:Heating:Water",
+    ]
     """Select the type of coil corresponding to the name entered in the field above."""
 
     def update(
@@ -6168,45 +5975,39 @@ class AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2(_g.AnyAirflowNetworkD
 class _AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2Fields(
     _g._AirflowNetworkDistributionComponentCoilCommonFields, total=False
 ):
-    coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:Water",
-            "Coil:Cooling:Water:DetailedGeometry",
-            "Coil:Heating:DX:MultiSpeed",
-            "Coil:Heating:DX:SingleSpeed",
-            "Coil:Heating:Desuperheater",
-            "Coil:Heating:Electric",
-            "Coil:Heating:Fuel",
-            "Coil:Heating:Water",
-        ]
-        | None
-    )
+    coil_object_type: Literal[
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:Water",
+        "Coil:Cooling:Water:DetailedGeometry",
+        "Coil:Heating:DX:MultiSpeed",
+        "Coil:Heating:DX:SingleSpeed",
+        "Coil:Heating:Desuperheater",
+        "Coil:Heating:Electric",
+        "Coil:Heating:Fuel",
+        "Coil:Heating:Water",
+    ]
 
 class AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2(_g.AnyAirflowNetworkDistributionComponentCoil):
     """``AirflowNetwork:Distribution:Component:Coil`` as declared in EnergyPlus 9.3.0 to 23.2.0. This object defines the name of a coil used in an air loop."""
 
-    coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:Water",
-            "Coil:Cooling:Water:DetailedGeometry",
-            "Coil:Heating:DX:MultiSpeed",
-            "Coil:Heating:DX:SingleSpeed",
-            "Coil:Heating:Desuperheater",
-            "Coil:Heating:Electric",
-            "Coil:Heating:Fuel",
-            "Coil:Heating:Water",
-        ]
-        | None
-    )
+    coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:Water",
+        "Coil:Cooling:Water:DetailedGeometry",
+        "Coil:Heating:DX:MultiSpeed",
+        "Coil:Heating:DX:SingleSpeed",
+        "Coil:Heating:Desuperheater",
+        "Coil:Heating:Electric",
+        "Coil:Heating:Fuel",
+        "Coil:Heating:Water",
+    ]
     """Select the type of coil corresponding to the name entered in the field above."""
 
     def update(
@@ -6220,48 +6021,42 @@ class AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2(_g.AnyAirflowNetwork
 class _AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2Fields(
     _g._AirflowNetworkDistributionComponentCoilCommonFields, total=False
 ):
-    coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:Water",
-            "Coil:Cooling:Water:DetailedGeometry",
-            "Coil:Heating:DX:MultiSpeed",
-            "Coil:Heating:DX:SingleSpeed",
-            "Coil:Heating:Desuperheater",
-            "Coil:Heating:Electric",
-            "Coil:Heating:Fuel",
-            "Coil:Heating:Water",
-        ]
-        | None
-    )
+    coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:Water",
+        "Coil:Cooling:Water:DetailedGeometry",
+        "Coil:Heating:DX:MultiSpeed",
+        "Coil:Heating:DX:SingleSpeed",
+        "Coil:Heating:Desuperheater",
+        "Coil:Heating:Electric",
+        "Coil:Heating:Fuel",
+        "Coil:Heating:Water",
+    ]
 
 class AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2(_g.AnyAirflowNetworkDistributionComponentCoil):
     """``AirflowNetwork:Distribution:Component:Coil`` as declared in EnergyPlus 24.1.0 to 24.2.0. This object defines the name of a coil used in an air loop."""
 
-    coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:Water",
-            "Coil:Cooling:Water:DetailedGeometry",
-            "Coil:Heating:DX:MultiSpeed",
-            "Coil:Heating:DX:SingleSpeed",
-            "Coil:Heating:Desuperheater",
-            "Coil:Heating:Electric",
-            "Coil:Heating:Electric:MultiStage",
-            "Coil:Heating:Fuel",
-            "Coil:Heating:Gas:MultiStage",
-            "Coil:Heating:Water",
-        ]
-        | None
-    )
+    coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:Water",
+        "Coil:Cooling:Water:DetailedGeometry",
+        "Coil:Heating:DX:MultiSpeed",
+        "Coil:Heating:DX:SingleSpeed",
+        "Coil:Heating:Desuperheater",
+        "Coil:Heating:Electric",
+        "Coil:Heating:Electric:MultiStage",
+        "Coil:Heating:Fuel",
+        "Coil:Heating:Gas:MultiStage",
+        "Coil:Heating:Water",
+    ]
     """Select the type of coil corresponding to the name entered in the field above."""
 
     def update(
@@ -6275,51 +6070,45 @@ class AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2(_g.AnyAirflowNetwor
 class _AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2Fields(
     _g._AirflowNetworkDistributionComponentCoilCommonFields, total=False
 ):
-    coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:Water",
-            "Coil:Cooling:Water:DetailedGeometry",
-            "Coil:Heating:DX:MultiSpeed",
-            "Coil:Heating:DX:SingleSpeed",
-            "Coil:Heating:Desuperheater",
-            "Coil:Heating:Electric",
-            "Coil:Heating:Electric:MultiStage",
-            "Coil:Heating:Fuel",
-            "Coil:Heating:Gas:MultiStage",
-            "Coil:Heating:Water",
-        ]
-        | None
-    )
+    coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:Water",
+        "Coil:Cooling:Water:DetailedGeometry",
+        "Coil:Heating:DX:MultiSpeed",
+        "Coil:Heating:DX:SingleSpeed",
+        "Coil:Heating:Desuperheater",
+        "Coil:Heating:Electric",
+        "Coil:Heating:Electric:MultiStage",
+        "Coil:Heating:Fuel",
+        "Coil:Heating:Gas:MultiStage",
+        "Coil:Heating:Water",
+    ]
 
 class LifeCycleCostUseAdjustment_v8_9_to_v9_2(_g.AnyLifeCycleCostUseAdjustment):
     """``LifeCycleCost:UseAdjustment`` as declared in EnergyPlus 8.9.0 to 9.2.0. Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensa..."""
 
-    resource: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "ElectricityNet",
-            "ElectricityProduced",
-            "ElectricityPurchased",
-            "ElectricitySurplusSold",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    resource: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "ElectricityNet",
+        "ElectricityProduced",
+        "ElectricityPurchased",
+        "ElectricitySurplusSold",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
 
     def update(
         self,
@@ -6330,52 +6119,46 @@ class LifeCycleCostUseAdjustment_v8_9_to_v9_2(_g.AnyLifeCycleCostUseAdjustment):
     _creation_signature: _cv118.LifeCycleCostUseAdjustment_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _LifeCycleCostUseAdjustment_v8_9_to_v9_2Fields(_g._LifeCycleCostUseAdjustmentCommonFields, total=False):
-    resource: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "ElectricityNet",
-            "ElectricityProduced",
-            "ElectricityPurchased",
-            "ElectricitySurplusSold",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    resource: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "ElectricityNet",
+        "ElectricityProduced",
+        "ElectricityPurchased",
+        "ElectricitySurplusSold",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
 
 class LifeCycleCostUseAdjustment_v9_3_to_v23_1(_g.AnyLifeCycleCostUseAdjustment):
     """``LifeCycleCost:UseAdjustment`` as declared in EnergyPlus 9.3.0 to 23.1.0. Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensa..."""
 
-    resource: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "ElectricityNet",
-            "ElectricityProduced",
-            "ElectricityPurchased",
-            "ElectricitySurplusSold",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    resource: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "ElectricityNet",
+        "ElectricityProduced",
+        "ElectricityPurchased",
+        "ElectricitySurplusSold",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
 
     def update(
         self,
@@ -6386,27 +6169,24 @@ class LifeCycleCostUseAdjustment_v9_3_to_v23_1(_g.AnyLifeCycleCostUseAdjustment)
     _creation_signature: _cv110.LifeCycleCostUseAdjustment_v9_3_to_v23_1  # type: ignore[assignment]
 
 class _LifeCycleCostUseAdjustment_v9_3_to_v23_1Fields(_g._LifeCycleCostUseAdjustmentCommonFields, total=False):
-    resource: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "ElectricityNet",
-            "ElectricityProduced",
-            "ElectricityPurchased",
-            "ElectricitySurplusSold",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    resource: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "ElectricityNet",
+        "ElectricityProduced",
+        "ElectricityPurchased",
+        "ElectricitySurplusSold",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
 
 class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1(_g._TypedExtensibleGroup):
     """One view_factors group inside :class:`ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1`."""
@@ -6484,7 +6264,7 @@ class _ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3Fields(TypedDict, to
 class ZoneHVACForcedAirUserDefined_v8_9_to_v22_1(_g.AnyZoneHVACForcedAirUserDefined):
     """``ZoneHVAC:ForcedAir:UserDefined`` as declared in EnergyPlus 8.9.0 to 22.1.0. Defines a generic zone air unit for custom modeling using Energy Management System or External Interface"""
 
-    number_of_plant_loop_connections: float | None
+    number_of_plant_loop_connections: float
     """Range: >= 0.0, <= 3.0"""
 
     def update(
@@ -6496,7 +6276,7 @@ class ZoneHVACForcedAirUserDefined_v8_9_to_v22_1(_g.AnyZoneHVACForcedAirUserDefi
     _creation_signature: _cv125.ZoneHVACForcedAirUserDefined_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _ZoneHVACForcedAirUserDefined_v8_9_to_v22_1Fields(_g._ZoneHVACForcedAirUserDefinedCommonFields, total=False):
-    number_of_plant_loop_connections: float | None
+    number_of_plant_loop_connections: float
 
 class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTemperatureRadiantVariableFlow):
     """``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` as declared in EnergyPlus 8.9.0 to 9.3.0. Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
@@ -6505,7 +6285,6 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTe
     """[m] (in); Default: 0.013; Range: >= 0.0, > True"""
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -6516,7 +6295,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTe
     )
     """(Temperature on which unit is controlled); Default: MeanAirTemperature"""
     heating_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
+        Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
     """Enter the method used to determine the heating design capacity. HeatingDesignCapacity = > selected when the design he...; Default: HeatingDesignCapacity"""
     heating_design_capacity_per_floor_area: float | None
@@ -6527,8 +6306,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTe
     """[deltaC]; Default: 0.5; Range: >= 0.5"""
     heating_control_temperature_schedule_name: str | None
     cooling_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"]
-        | None
+        Literal["CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"] | None
     )
     """Enter the method used to determine the cooling design capacity for scalable sizing. CoolingDesignCapacity => selected...; Default: CoolingDesignCapacity"""
     cooling_design_capacity_per_floor_area: float | None
@@ -6538,7 +6316,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTe
     cooling_control_throttling_range: float | None
     """[deltaC]; Default: 0.5; Range: >= 0.5"""
     cooling_control_temperature_schedule_name: str | None
-    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
+    condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None
     """Default: SimpleOff"""
     condensation_control_dewpoint_offset: float | None
     """[C]; Default: 1.0"""
@@ -6557,7 +6335,6 @@ class _ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3Fields(
     hydronic_tubing_inside_diameter: float | None
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -6567,27 +6344,26 @@ class _ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3Fields(
         | None
     )
     heating_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
+        Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
     heating_design_capacity_per_floor_area: float | None
     fraction_of_autosized_heating_design_capacity: float | None
     heating_control_throttling_range: float | None
     heating_control_temperature_schedule_name: str | None
     cooling_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"]
-        | None
+        Literal["CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"] | None
     )
     cooling_design_capacity_per_floor_area: float | None
     fraction_of_autosized_cooling_design_capacity: float | None
     cooling_control_throttling_range: float | None
     cooling_control_temperature_schedule_name: str | None
-    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
+    condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None
     condensation_control_dewpoint_offset: float | None
 
 class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4(_g.AnyZoneHVACLowTemperatureRadiantVariableFlow):
     """``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` as declared in EnergyPlus 9.4.0. Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
 
-    fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
+    fluid_to_radiant_surface_heat_transfer_model: Literal["ConvectionOnly", "ISOStandard"] | None
     """This parameter identifies how the heat transfer between fluid being circulated through the radiant system and the rad...; Default: ConvectionOnly"""
     hydronic_tubing_inside_diameter: float | None
     """[m] (in); Default: 0.013; Range: >= 0.0, > True"""
@@ -6597,7 +6373,6 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4(_g.AnyZoneHVACLowTemperatur
     """Conductivity of the tubing/piping material; [W/m-K]; Default: 0.35; Range: >= 0.0, > True"""
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -6609,10 +6384,10 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4(_g.AnyZoneHVACLowTemperatur
         | None
     )
     """(Temperature on which unit is controlled); Default: MeanAirTemperature"""
-    setpoint_control_type: Literal["", "HalfFlowPower", "ZeroFlowPower"] | None
+    setpoint_control_type: Literal["HalfFlowPower", "ZeroFlowPower"] | None
     """How setpoint temperature is defined; Default: HalfFlowPower"""
     heating_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
+        Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
     """Enter the method used to determine the heating design capacity. HeatingDesignCapacity = > selected when the design he...; Default: HeatingDesignCapacity"""
     heating_design_capacity_per_floor_area: float | None
@@ -6623,8 +6398,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4(_g.AnyZoneHVACLowTemperatur
     """[deltaC]; Default: 0.5; Range: >= 0.0"""
     heating_control_temperature_schedule_name: str | None
     cooling_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"]
-        | None
+        Literal["CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"] | None
     )
     """Enter the method used to determine the cooling design capacity for scalable sizing. CoolingDesignCapacity => selected...; Default: CoolingDesignCapacity"""
     cooling_design_capacity_per_floor_area: float | None
@@ -6634,7 +6408,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4(_g.AnyZoneHVACLowTemperatur
     cooling_control_throttling_range: float | None
     """[deltaC]; Default: 0.5; Range: >= 0.0"""
     cooling_control_temperature_schedule_name: str | None
-    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
+    condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None
     """Default: SimpleOff"""
     condensation_control_dewpoint_offset: float | None
     """[C]; Default: 1.0"""
@@ -6652,13 +6426,12 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4(_g.AnyZoneHVACLowTemperatur
 class _ZoneHVACLowTemperatureRadiantVariableFlow_v9_4Fields(
     _g._ZoneHVACLowTemperatureRadiantVariableFlowCommonFields, total=False
 ):
-    fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
+    fluid_to_radiant_surface_heat_transfer_model: Literal["ConvectionOnly", "ISOStandard"] | None
     hydronic_tubing_inside_diameter: float | None
     hydronic_tubing_outside_diameter: float | None
     hydronic_tubing_conductivity: float | None
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -6669,31 +6442,30 @@ class _ZoneHVACLowTemperatureRadiantVariableFlow_v9_4Fields(
         ]
         | None
     )
-    setpoint_control_type: Literal["", "HalfFlowPower", "ZeroFlowPower"] | None
+    setpoint_control_type: Literal["HalfFlowPower", "ZeroFlowPower"] | None
     heating_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
+        Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
     heating_design_capacity_per_floor_area: float | None
     fraction_of_autosized_heating_design_capacity: float | None
     heating_control_throttling_range: float | None
     heating_control_temperature_schedule_name: str | None
     cooling_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"]
-        | None
+        Literal["CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"] | None
     )
     cooling_design_capacity_per_floor_area: float | None
     fraction_of_autosized_cooling_design_capacity: float | None
     cooling_control_throttling_range: float | None
     cooling_control_temperature_schedule_name: str | None
-    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
+    condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None
     condensation_control_dewpoint_offset: float | None
     changeover_delay_time_period_schedule: str | None
 
 class ConstructionComplexFenestrationState_v8_9_to_v9_5(_g.AnyConstructionComplexFenestrationState):
     """``Construction:ComplexFenestrationState`` as declared in EnergyPlus 8.9.0 to 9.5.0. Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software..."""
 
-    outside_layer_directional_front_absoptance_matrix_name: str | None
-    outside_layer_directional_back_absoptance_matrix_name: str | None
+    outside_layer_directional_front_absoptance_matrix_name: str
+    outside_layer_directional_back_absoptance_matrix_name: str
     cfs_gap_1_directional_front_absoptance_matrix_name: str | None
     """Reserved for future use. Leave it blank for this version"""
     cfs_gap_1_directional_back_absoptance_matrix_name: str | None
@@ -6731,8 +6503,8 @@ class ConstructionComplexFenestrationState_v8_9_to_v9_5(_g.AnyConstructionComple
 class _ConstructionComplexFenestrationState_v8_9_to_v9_5Fields(
     _g._ConstructionComplexFenestrationStateCommonFields, total=False
 ):
-    outside_layer_directional_front_absoptance_matrix_name: str | None
-    outside_layer_directional_back_absoptance_matrix_name: str | None
+    outside_layer_directional_front_absoptance_matrix_name: str
+    outside_layer_directional_back_absoptance_matrix_name: str
     cfs_gap_1_directional_front_absoptance_matrix_name: str | None
     cfs_gap_1_directional_back_absoptance_matrix_name: str | None
     layer_2_directional_front_absoptance_matrix_name: str | None
@@ -6754,8 +6526,8 @@ class _ConstructionComplexFenestrationState_v8_9_to_v9_5Fields(
 class ConstructionComplexFenestrationState_v9_6_to_v23_1(_g.AnyConstructionComplexFenestrationState):
     """``Construction:ComplexFenestrationState`` as declared in EnergyPlus 9.6.0 to 23.1.0. Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software..."""
 
-    outside_layer_directional_front_absoptance_matrix_name: str | None
-    outside_layer_directional_back_absoptance_matrix_name: str | None
+    outside_layer_directional_front_absoptance_matrix_name: str
+    outside_layer_directional_back_absoptance_matrix_name: str
     cfs_gap_1_directional_front_absoptance_matrix_name: str | None
     """Reserved for future use. Leave it blank for this version"""
     cfs_gap_1_directional_back_absoptance_matrix_name: str | None
@@ -6793,8 +6565,8 @@ class ConstructionComplexFenestrationState_v9_6_to_v23_1(_g.AnyConstructionCompl
 class _ConstructionComplexFenestrationState_v9_6_to_v23_1Fields(
     _g._ConstructionComplexFenestrationStateCommonFields, total=False
 ):
-    outside_layer_directional_front_absoptance_matrix_name: str | None
-    outside_layer_directional_back_absoptance_matrix_name: str | None
+    outside_layer_directional_front_absoptance_matrix_name: str
+    outside_layer_directional_back_absoptance_matrix_name: str
     cfs_gap_1_directional_front_absoptance_matrix_name: str | None
     cfs_gap_1_directional_back_absoptance_matrix_name: str | None
     layer_2_directional_front_absoptance_matrix_name: str | None
@@ -6816,7 +6588,7 @@ class _ConstructionComplexFenestrationState_v9_6_to_v23_1Fields(
 class CoilHeatingElectricMultiStage_v8_9_to_v22_1(_g.AnyCoilHeatingElectricMultiStage):
     """``Coil:Heating:Electric:MultiStage`` as declared in EnergyPlus 8.9.0 to 22.1.0. Electric heating coil, multi-stage. If the coil is located directly in an air loop branch or outdoor air equipment li..."""
 
-    number_of_stages: float | None
+    number_of_stages: float
     """Enter the number of the following sets of data for coil capacity and Efficiency.; Range: >= 1.0, <= 4.0"""
 
     def update(
@@ -6828,7 +6600,7 @@ class CoilHeatingElectricMultiStage_v8_9_to_v22_1(_g.AnyCoilHeatingElectricMulti
     _creation_signature: _cv99.CoilHeatingElectricMultiStage_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _CoilHeatingElectricMultiStage_v8_9_to_v22_1Fields(_g._CoilHeatingElectricMultiStageCommonFields, total=False):
-    number_of_stages: float | None
+    number_of_stages: float
 
 class GroundHeatExchangerSurface_v8_9_to_v22_1(_g.AnyGroundHeatExchangerSurface):
     """``GroundHeatExchanger:Surface`` as declared in EnergyPlus 8.9.0 to 22.1.0. A hydronic surface/panel consisting of a multi-layer construction with embedded rows of tubes. Typically used in hybr..."""
@@ -6850,32 +6622,31 @@ class _GroundHeatExchangerSurface_v8_9_to_v22_1Fields(_g._GroundHeatExchangerSur
 class RunPeriodCustomRange_v8_9(_g._TypedIDFObject):
     """``RunPeriod:CustomRange`` as declared in EnergyPlus 8.9.0. run simulation for a custom created weather file"""
 
-    begin_month: float | None
+    begin_month: float
     """Range: >= 1.0, <= 12.0"""
-    begin_day_of_month: float | None
+    begin_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
-    begin_year: float | None
+    begin_year: float
     """must be start year of this date on weather file"""
-    end_month: float | None
+    end_month: float
     """Range: >= 1.0, <= 12.0"""
-    end_day_of_month: float | None
+    end_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
-    end_year: float | None
+    end_year: float
     """must be end year of this date on weather file"""
     day_of_week_for_start_day: (
-        Literal["", "Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"]
-        | None
+        Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"] | None
     )
     """=<blank - use WeatherFile>|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday];; Default: UseWeatherFile"""
-    use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None
+    use_weather_file_holidays_and_special_days: Literal["No", "Yes"] | None
     """If yes or blank, use holidays as specified on Weatherfile. If no, do not use the holidays specified on the Weatherfil...; Default: Yes"""
-    use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None
+    use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None
     """If yes or blank, use daylight saving period as specified on Weatherfile. If no, do not use the daylight saving period...; Default: Yes"""
-    apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None
+    apply_weekend_holiday_rule: Literal["No", "Yes"] | None
     """if yes and single day holiday falls on weekend, 'holiday' occurs on following Monday; Default: No"""
-    use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None
+    use_weather_file_rain_indicators: Literal["No", "Yes"] | None
     """Default: Yes"""
-    use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None
+    use_weather_file_snow_indicators: Literal["No", "Yes"] | None
     """Default: Yes"""
 
     def update(
@@ -6884,21 +6655,20 @@ class RunPeriodCustomRange_v8_9(_g._TypedIDFObject):
     _creation_signature: _cv0.RunPeriodCustomRange_v8_9  # type: ignore[assignment]
 
 class _RunPeriodCustomRange_v8_9Fields(TypedDict, total=False):
-    begin_month: float | None
-    begin_day_of_month: float | None
-    begin_year: float | None
-    end_month: float | None
-    end_day_of_month: float | None
-    end_year: float | None
+    begin_month: float
+    begin_day_of_month: float
+    begin_year: float
+    end_month: float
+    end_day_of_month: float
+    end_year: float
     day_of_week_for_start_day: (
-        Literal["", "Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"]
-        | None
+        Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"] | None
     )
-    use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None
-    use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None
-    apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None
-    use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None
-    use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None
+    use_weather_file_holidays_and_special_days: Literal["No", "Yes"] | None
+    use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None
+    apply_weekend_holiday_rule: Literal["No", "Yes"] | None
+    use_weather_file_rain_indicators: Literal["No", "Yes"] | None
+    use_weather_file_snow_indicators: Literal["No", "Yes"] | None
 
 class CoilHeatingDXSingleSpeed_v8_9_to_v22_1(_g.AnyCoilHeatingDXSingleSpeed):
     """``Coil:Heating:DX:SingleSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
@@ -7083,7 +6853,7 @@ class _CoilHeatingDXVariableSpeed_v23_2_to_v25_1Fields(_g._CoilHeatingDXVariable
 class ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1(_g.AnyZoneVentilationWindandStackOpenArea):
     """``ZoneVentilation:WindandStackOpenArea`` as declared in EnergyPlus 8.9.0 to 22.1.0. This object is specified as natural ventilation driven by wind and stack effect only: Ventilation Wind = Cw * Opening..."""
 
-    zone_name: str | None
+    zone_name: str
 
     def update(
         self,
@@ -7096,7 +6866,7 @@ class ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1(_g.AnyZoneVentilationWin
 class _ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1Fields(
     _g._ZoneVentilationWindandStackOpenAreaCommonFields, total=False
 ):
-    zone_name: str | None
+    zone_name: str
 
 class HeaderedPumpsConstantSpeed_v8_9_to_v9_0(_g.AnyHeaderedPumpsConstantSpeed):
     """``HeaderedPumps:ConstantSpeed`` as declared in EnergyPlus 8.9.0 to 9.0.1. This Headered pump object describes a pump bank with more than 1 pump in parallel"""
@@ -7268,17 +7038,15 @@ class _Window_v8_9Fields(_g._WindowCommonFields, total=False):
 class ShadowCalculation_v8_9_to_v9_2(_g.AnyShadowCalculation):
     """``ShadowCalculation`` as declared in EnergyPlus 8.9.0 to 9.2.0. This object is used to control details of the solar, shading, and daylighting models"""
 
-    calculation_method: Literal["", "AverageOverDaysInFrequency", "TimestepFrequency"] | None
+    calculation_method: Literal["AverageOverDaysInFrequency", "TimestepFrequency"] | None
     """choose calculation method. note that TimestepFrequency is only needed for certain cases and can increase execution ti...; Default: AverageOverDaysInFrequency"""
     calculation_frequency: float | None
     """enter number of days this field is only used if the previous field is set to AverageOverDaysInFrequency 0=Use Default...; Default: 20.0; Range: >= 1.0"""
     maximum_figures_in_shadow_overlap_calculations: float | None
     """Number of allowable figures in shadow overlap calculations; Default: 15000.0; Range: >= 200.0"""
-    polygon_clipping_algorithm: Literal["", "ConvexWeilerAtherton", "SutherlandHodgman"] | None
+    polygon_clipping_algorithm: Literal["ConvexWeilerAtherton", "SutherlandHodgman"] | None
     """Advanced Feature. Internal default is SutherlandHodgman Refer to InputOutput Reference and Engineering Reference for ...; Default: SutherlandHodgman"""
-    external_shading_calculation_method: (
-        Literal["", "ImportedShading", "InternalCalculation", "ScheduledShading"] | None
-    )
+    external_shading_calculation_method: Literal["ImportedShading", "InternalCalculation", "ScheduledShading"] | None
     """If ScheduledShading is chosen, the External Shading Fraction Schedule Name is required in SurfaceProperty:LocalEnviro...; Default: InternalCalculation"""
 
     def update(
@@ -7287,27 +7055,25 @@ class ShadowCalculation_v8_9_to_v9_2(_g.AnyShadowCalculation):
     _creation_signature: _cv34.ShadowCalculation_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _ShadowCalculation_v8_9_to_v9_2Fields(_g._ShadowCalculationCommonFields, total=False):
-    calculation_method: Literal["", "AverageOverDaysInFrequency", "TimestepFrequency"] | None
+    calculation_method: Literal["AverageOverDaysInFrequency", "TimestepFrequency"] | None
     calculation_frequency: float | None
     maximum_figures_in_shadow_overlap_calculations: float | None
-    polygon_clipping_algorithm: Literal["", "ConvexWeilerAtherton", "SutherlandHodgman"] | None
-    external_shading_calculation_method: (
-        Literal["", "ImportedShading", "InternalCalculation", "ScheduledShading"] | None
-    )
+    polygon_clipping_algorithm: Literal["ConvexWeilerAtherton", "SutherlandHodgman"] | None
+    external_shading_calculation_method: Literal["ImportedShading", "InternalCalculation", "ScheduledShading"] | None
 
 class ShadowCalculation_v9_3_to_v22_1(_g.AnyShadowCalculation):
     """``ShadowCalculation`` as declared in EnergyPlus 9.3.0 to 22.1.0. This object is used to control details of the solar, shading, and daylighting models"""
 
-    shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
+    shading_calculation_method: Literal["Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
     """Select between CPU-based polygon clipping method, the GPU-based pixel counting method, or importing from external sha...; Default: PolygonClipping"""
-    shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
+    shading_calculation_update_frequency_method: Literal["Periodic", "Timestep"] | None
     """choose calculation frequency method. note that Timestep is only needed for certain cases and can increase execution t...; Default: Periodic"""
     shading_calculation_update_frequency: float | None
     """enter number of days this field is only used if the previous field is set to Periodic warning issued if >31; Default: 20.0; Range: >= 1.0"""
     maximum_figures_in_shadow_overlap_calculations: float | None
     """Number of allowable figures in shadow overlap in PolygonClipping calculations; Default: 15000.0; Range: >= 200.0"""
     polygon_clipping_algorithm: (
-        Literal["", "ConvexWeilerAtherton", "SlaterBarskyandSutherlandHodgman", "SutherlandHodgman"] | None
+        Literal["ConvexWeilerAtherton", "SlaterBarskyandSutherlandHodgman", "SutherlandHodgman"] | None
     )
     """Advanced Feature. Internal default is SutherlandHodgman Refer to InputOutput Reference and Engineering Reference for ...; Default: SutherlandHodgman"""
     pixel_counting_resolution: float | None
@@ -7319,12 +7085,12 @@ class ShadowCalculation_v9_3_to_v22_1(_g.AnyShadowCalculation):
     _creation_signature: _cv86.ShadowCalculation_v9_3_to_v22_1  # type: ignore[assignment]
 
 class _ShadowCalculation_v9_3_to_v22_1Fields(_g._ShadowCalculationCommonFields, total=False):
-    shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
-    shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
+    shading_calculation_method: Literal["Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
+    shading_calculation_update_frequency_method: Literal["Periodic", "Timestep"] | None
     shading_calculation_update_frequency: float | None
     maximum_figures_in_shadow_overlap_calculations: float | None
     polygon_clipping_algorithm: (
-        Literal["", "ConvexWeilerAtherton", "SlaterBarskyandSutherlandHodgman", "SutherlandHodgman"] | None
+        Literal["ConvexWeilerAtherton", "SlaterBarskyandSutherlandHodgman", "SutherlandHodgman"] | None
     )
     pixel_counting_resolution: float | None
 
@@ -7402,27 +7168,24 @@ class _ChillerElectricEIR_v8_9_to_v24_1Fields(_g._ChillerElectricEIRCommonFields
 class WallDetailed_v8_9_to_v9_5(_g.AnyWallDetailed):
     """``Wall:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of wall heat transfer surfaces."""
 
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallDetailed_v8_9_to_v9_5Fields]
@@ -7430,54 +7193,48 @@ class WallDetailed_v8_9_to_v9_5(_g.AnyWallDetailed):
     _creation_signature: _cv79.WallDetailed_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _WallDetailed_v8_9_to_v9_5Fields(_g._WallDetailedCommonFields, total=False):
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
 class WallDetailed_v9_6_to_v24_2(_g.AnyWallDetailed):
     """``Wall:Detailed`` as declared in EnergyPlus 9.6.0 to 24.2.0. Allows for detailed entry of wall heat transfer surfaces."""
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallDetailed_v9_6_to_v24_2Fields]
@@ -7486,32 +7243,29 @@ class WallDetailed_v9_6_to_v24_2(_g.AnyWallDetailed):
 
 class _WallDetailed_v9_6_to_v24_2Fields(_g._WallDetailedCommonFields, total=False):
     space_name: str | None
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
 class OutputIlluminanceMap_v8_9_to_v22_1(_g.AnyOutputIlluminanceMap):
     """``Output:IlluminanceMap`` as declared in EnergyPlus 8.9.0 to 22.1.0. reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point Coo..."""
 
-    zone_name: str | None
+    zone_name: str
     number_of_x_grid_points: float | None
     """Maximum number of total grid points must be <= 2500 (X*Y); Default: 2.0; Range: >= 1.0"""
     number_of_y_grid_points: float | None
@@ -7523,14 +7277,14 @@ class OutputIlluminanceMap_v8_9_to_v22_1(_g.AnyOutputIlluminanceMap):
     _creation_signature: _cv80.OutputIlluminanceMap_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _OutputIlluminanceMap_v8_9_to_v22_1Fields(_g._OutputIlluminanceMapCommonFields, total=False):
-    zone_name: str | None
+    zone_name: str
     number_of_x_grid_points: float | None
     number_of_y_grid_points: float | None
 
 class OutputIlluminanceMap_v22_2_to_v24_1(_g.AnyOutputIlluminanceMap):
     """``Output:IlluminanceMap`` as declared in EnergyPlus 22.2.0 to 24.1.0. reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point Coo..."""
 
-    zone_name: str | None
+    zone_name: str
     number_of_x_grid_points: int | None
     """Maximum number of total grid points must be <= 2500 (X*Y); Default: 2; Range: >= 1"""
     number_of_y_grid_points: int | None
@@ -7542,7 +7296,7 @@ class OutputIlluminanceMap_v22_2_to_v24_1(_g.AnyOutputIlluminanceMap):
     _creation_signature: _cv67.OutputIlluminanceMap_v22_2_to_v24_1  # type: ignore[assignment]
 
 class _OutputIlluminanceMap_v22_2_to_v24_1Fields(_g._OutputIlluminanceMapCommonFields, total=False):
-    zone_name: str | None
+    zone_name: str
     number_of_x_grid_points: int | None
     number_of_y_grid_points: int | None
 
@@ -7566,7 +7320,7 @@ class _GroundHeatExchangerSlinky_v8_9_to_v22_1Fields(_g._GroundHeatExchangerSlin
 class FenestrationSurfaceDetailed_v8_9(_g.AnyFenestrationSurfaceDetailed):
     """``FenestrationSurface:Detailed`` as declared in EnergyPlus 8.9.0. Allows for detailed entry of subsurfaces (windows, doors, glass doors, tubular daylighting devices)."""
 
-    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
+    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"]
     shading_control_name: str | None
     """enter the name of a WindowProperty:ShadingControl object used for windows and glass doors only If not specified, wind..."""
 
@@ -7576,13 +7330,13 @@ class FenestrationSurfaceDetailed_v8_9(_g.AnyFenestrationSurfaceDetailed):
     _creation_signature: _cv39.FenestrationSurfaceDetailed_v8_9  # type: ignore[assignment]
 
 class _FenestrationSurfaceDetailed_v8_9Fields(_g._FenestrationSurfaceDetailedCommonFields, total=False):
-    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
+    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"]
     shading_control_name: str | None
 
 class FenestrationSurfaceDetailed_v9_0_to_v26_1(_g.AnyFenestrationSurfaceDetailed):
     """``FenestrationSurface:Detailed`` as declared in EnergyPlus 9.0.1 to 26.1.0. Allows for detailed entry of subsurfaces (windows, doors, glass doors, tubular daylighting devices)."""
 
-    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
+    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"]
 
     def update(
         self,
@@ -7593,12 +7347,12 @@ class FenestrationSurfaceDetailed_v9_0_to_v26_1(_g.AnyFenestrationSurfaceDetaile
     _creation_signature: _cv0.FenestrationSurfaceDetailed_v9_0_to_v26_1  # type: ignore[assignment]
 
 class _FenestrationSurfaceDetailed_v9_0_to_v26_1Fields(_g._FenestrationSurfaceDetailedCommonFields, total=False):
-    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
+    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"]
 
 class InternalMass_v8_9_to_v9_1(_g.AnyInternalMass):
     """``InternalMass`` as declared in EnergyPlus 8.9.0 to 9.1.0. Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
 
-    zone_name: str | None
+    zone_name: str
     """Zone the surface is a part of used to be Interior Environment"""
 
     def update(
@@ -7607,7 +7361,7 @@ class InternalMass_v8_9_to_v9_1(_g.AnyInternalMass):
     _creation_signature: _cv102.InternalMass_v8_9_to_v9_1  # type: ignore[assignment]
 
 class _InternalMass_v8_9_to_v9_1Fields(_g._InternalMassCommonFields, total=False):
-    zone_name: str | None
+    zone_name: str
 
 class InternalMass_v9_2_to_v9_5(_g.AnyInternalMass):
     """``InternalMass`` as declared in EnergyPlus 9.2.0 to 9.5.0. Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
@@ -7626,7 +7380,7 @@ class _InternalMass_v9_2_to_v9_5Fields(_g._InternalMassCommonFields, total=False
 class SteamEquipment_v8_9_to_v9_5(_g.AnySteamEquipment):
     """``SteamEquipment`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains for steam equipment in the zone."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
 
@@ -7636,13 +7390,13 @@ class SteamEquipment_v8_9_to_v9_5(_g.AnySteamEquipment):
     _creation_signature: _cv7.SteamEquipment_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _SteamEquipment_v8_9_to_v9_5Fields(_g._SteamEquipmentCommonFields, total=False):
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
 
 class SteamEquipment_v9_6_to_v23_2(_g.AnySteamEquipment):
     """``SteamEquipment`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains for steam equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one S..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
 
@@ -7652,7 +7406,7 @@ class SteamEquipment_v9_6_to_v23_2(_g.AnySteamEquipment):
     _creation_signature: _cv81.SteamEquipment_v9_6_to_v23_2  # type: ignore[assignment]
 
 class _SteamEquipment_v9_6_to_v23_2Fields(_g._SteamEquipmentCommonFields, total=False):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
 
 class OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2(_g.AnyOutputTableSummaryReportsReportsGroup):
@@ -8174,7 +7928,7 @@ class _CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1Fields(
 class DaylightingReferencePoint_v8_9_to_v9_5(_g.AnyDaylightingReferencePoint):
     """``Daylighting:ReferencePoint`` as declared in EnergyPlus 8.9.0 to 9.5.0. Used by Daylighting:Controls to identify the reference point coordinates for each sensor. Reference points are given ..."""
 
-    zone_name: str | None
+    zone_name: str
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingReferencePoint_v8_9_to_v9_5Fields]
@@ -8182,15 +7936,15 @@ class DaylightingReferencePoint_v8_9_to_v9_5(_g.AnyDaylightingReferencePoint):
     _creation_signature: _cv42.DaylightingReferencePoint_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _DaylightingReferencePoint_v8_9_to_v9_5Fields(_g._DaylightingReferencePointCommonFields, total=False):
-    zone_name: str | None
+    zone_name: str
 
 class FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0(_g._TypedIDFObject):
     """``FaultModel:PressureSensorOffset:OutdoorAir`` as declared in EnergyPlus 8.9.0 to 9.0.1. This object describes outdoor air pressure sensor offset"""
 
     availability_schedule_name: str | None
     severity_schedule_name: str | None
-    controller_object_type: Literal["Controller:OutdoorAir"] | None
-    controller_object_name: str | None
+    controller_object_type: Literal["Controller:OutdoorAir"]
+    controller_object_name: str
     pressure_sensor_offset: float | None
     """[Pa]; Default: 0.0; Range: >= -10000.0, > True, <= 10000.0, < True"""
 
@@ -8205,30 +7959,27 @@ class FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0(_g._TypedIDFObject):
 class _FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0Fields(TypedDict, total=False):
     availability_schedule_name: str | None
     severity_schedule_name: str | None
-    controller_object_type: Literal["Controller:OutdoorAir"] | None
-    controller_object_name: str | None
+    controller_object_type: Literal["Controller:OutdoorAir"]
+    controller_object_name: str
     pressure_sensor_offset: float | None
 
 class WaterHeaterStratified_v8_9_to_v9_2(_g.AnyWaterHeaterStratified):
     """``WaterHeater:Stratified`` as declared in EnergyPlus 8.9.0 to 9.2.0. Water heater with stratified, multi-node water tank. May be used to model a tankless water heater (small tank volume)..."""
 
-    heater_fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "PropaneGas",
-            "Steam",
-        ]
-        | None
-    )
+    heater_fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "PropaneGas",
+        "Steam",
+    ]
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -8272,23 +8023,20 @@ class WaterHeaterStratified_v8_9_to_v9_2(_g.AnyWaterHeaterStratified):
     _creation_signature: _cv17.WaterHeaterStratified_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _WaterHeaterStratified_v8_9_to_v9_2Fields(_g._WaterHeaterStratifiedCommonFields, total=False):
-    heater_fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "PropaneGas",
-            "Steam",
-        ]
-        | None
-    )
+    heater_fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "PropaneGas",
+        "Steam",
+    ]
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -8328,23 +8076,20 @@ class _WaterHeaterStratified_v8_9_to_v9_2Fields(_g._WaterHeaterStratifiedCommonF
 class WaterHeaterStratified_v9_3_to_v22_1(_g.AnyWaterHeaterStratified):
     """``WaterHeater:Stratified`` as declared in EnergyPlus 9.3.0 to 22.1.0. Water heater with stratified, multi-node water tank. May be used to model a tankless water heater (small tank volume)..."""
 
-    heater_fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-        ]
-        | None
-    )
+    heater_fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+    ]
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -8388,23 +8133,20 @@ class WaterHeaterStratified_v9_3_to_v22_1(_g.AnyWaterHeaterStratified):
     _creation_signature: _cv43.WaterHeaterStratified_v9_3_to_v22_1  # type: ignore[assignment]
 
 class _WaterHeaterStratified_v9_3_to_v22_1Fields(_g._WaterHeaterStratifiedCommonFields, total=False):
-    heater_fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-        ]
-        | None
-    )
+    heater_fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+    ]
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -8444,23 +8186,20 @@ class _WaterHeaterStratified_v9_3_to_v22_1Fields(_g._WaterHeaterStratifiedCommon
 class WaterHeaterStratified_v22_2_to_v23_1(_g.AnyWaterHeaterStratified):
     """``WaterHeater:Stratified`` as declared in EnergyPlus 22.2.0 to 23.1.0. Water heater with stratified, multi-node water tank. May be used to model a tankless water heater (small tank volume)..."""
 
-    heater_fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-        ]
-        | None
-    )
+    heater_fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+    ]
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -8504,23 +8243,20 @@ class WaterHeaterStratified_v22_2_to_v23_1(_g.AnyWaterHeaterStratified):
     _creation_signature: _cv10.WaterHeaterStratified_v22_2_to_v23_1  # type: ignore[assignment]
 
 class _WaterHeaterStratified_v22_2_to_v23_1Fields(_g._WaterHeaterStratifiedCommonFields, total=False):
-    heater_fuel_type: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "DistrictHeating",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-        ]
-        | None
-    )
+    heater_fuel_type: Literal[
+        "Coal",
+        "Diesel",
+        "DistrictHeating",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+    ]
     off_cycle_parasitic_fuel_type: (
         Literal[
             "Coal",
@@ -8560,7 +8296,7 @@ class _WaterHeaterStratified_v22_2_to_v23_1Fields(_g._WaterHeaterStratifiedCommo
 class UtilityCostVariable_v8_9_to_v9_4(_g.AnyUtilityCostVariable):
     """``UtilityCost:Variable`` as declared in EnergyPlus 8.9.0 to 9.4.0. Allows for the direct entry of monthly values into a utility tariff variable."""
 
-    variable_type: Literal["", "Currency", "Dimensionless", "Energy", "Power"] | None
+    variable_type: Literal["Currency", "Dimensionless", "Energy", "Power"] | None
     """Default: Dimensionless"""
 
     def update(
@@ -8569,14 +8305,14 @@ class UtilityCostVariable_v8_9_to_v9_4(_g.AnyUtilityCostVariable):
     _creation_signature: _cv20.UtilityCostVariable_v8_9_to_v9_4  # type: ignore[assignment]
 
 class _UtilityCostVariable_v8_9_to_v9_4Fields(_g._UtilityCostVariableCommonFields, total=False):
-    variable_type: Literal["", "Currency", "Dimensionless", "Energy", "Power"] | None
+    variable_type: Literal["Currency", "Dimensionless", "Energy", "Power"] | None
 
 class MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1(
     _g.AnyMaterialPropertyHeatAndMoistureTransferDiffusion
 ):
     """``MaterialProperty:HeatAndMoistureTransfer:Diffusion`` as declared in EnergyPlus 8.9.0 to 22.1.0. HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between water vapor..."""
 
-    number_of_data_pairs: float | None
+    number_of_data_pairs: float
     """Water Vapor Diffusion Resistance Factor; Range: >= 1.0, <= 25.0"""
 
     def update(
@@ -8590,15 +8326,15 @@ class MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1(
 class _MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferDiffusionCommonFields, total=False
 ):
-    number_of_data_pairs: float | None
+    number_of_data_pairs: float
 
 class ZoneCrossMixing_v8_9_to_v22_1(_g.AnyZoneCrossMixing):
     """``ZoneCrossMixing`` as declared in EnergyPlus 8.9.0 to 22.1.0. ZoneCrossMixing exchanges an equal amount of air between two zones. Note that this statement affects the energy balan..."""
 
-    zone_name: str | None
+    zone_name: str
     flow_rate_per_zone_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
-    source_zone_name: str | None
+    source_zone_name: str
     minimum_zone_temperature_schedule_name: str | None
     """This schedule contains the indoor temperature versus time below which cross mixing is shutoff."""
     maximum_zone_temperature_schedule_name: str | None
@@ -8614,9 +8350,9 @@ class ZoneCrossMixing_v8_9_to_v22_1(_g.AnyZoneCrossMixing):
     _creation_signature: _cv1.ZoneCrossMixing_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _ZoneCrossMixing_v8_9_to_v22_1Fields(_g._ZoneCrossMixingCommonFields, total=False):
-    zone_name: str | None
+    zone_name: str
     flow_rate_per_zone_floor_area: float | None
-    source_zone_name: str | None
+    source_zone_name: str
     minimum_zone_temperature_schedule_name: str | None
     maximum_zone_temperature_schedule_name: str | None
     minimum_source_zone_temperature_schedule_name: str | None
@@ -8625,7 +8361,7 @@ class _ZoneCrossMixing_v8_9_to_v22_1Fields(_g._ZoneCrossMixingCommonFields, tota
 class ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1(_g.AnyZoneInfiltrationEffectiveLeakageArea):
     """``ZoneInfiltration:EffectiveLeakageArea`` as declared in EnergyPlus 8.9.0 to 22.1.0. Infiltration is specified as effective leakage area at 4 Pa, schedule fraction, stack and wind coefficients, and is a..."""
 
-    zone_name: str | None
+    zone_name: str
 
     def update(
         self,
@@ -8638,7 +8374,7 @@ class ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1(_g.AnyZoneInfiltrationE
 class _ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1Fields(
     _g._ZoneInfiltrationEffectiveLeakageAreaCommonFields, total=False
 ):
-    zone_name: str | None
+    zone_name: str
 
 class FloorAdiabatic_v8_9_to_v9_5(_g.AnyFloorAdiabatic):
     """``Floor:Adiabatic`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of exterior floors ignoring ground contact or interior floors. View Factor to Ground is a..."""
@@ -8812,9 +8548,7 @@ class ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2(_g.AnyChillerHeaterAbsorpt
     """``ChillerHeater:Absorption:DirectFired`` as declared in EnergyPlus 8.9.0 to 9.2.0. Direct fired gas absorption chiller-heater using performance curves similar to DOE-2"""
 
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
-        ]
+        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
         | None
     )
     """Default: NaturalGas"""
@@ -8831,17 +8565,13 @@ class _ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2Fields(
     _g._ChillerHeaterAbsorptionDirectFiredCommonFields, total=False
 ):
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
-        ]
+        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
         | None
     )
 
 class CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1(_g.AnyCoolingTowerVariableSpeedMerkel):
     """``CoolingTower:VariableSpeed:Merkel`` as declared in EnergyPlus 8.9.0 to 22.1.0. This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
 
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
     number_of_cells: float | None
     """Default: 1.0; Range: >= 1.0"""
 
@@ -8856,14 +8586,12 @@ class CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1(_g.AnyCoolingTowerVariableSp
 class _CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1Fields(
     _g._CoolingTowerVariableSpeedMerkelCommonFields, total=False
 ):
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
     number_of_cells: float | None
 
 class RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1(_g.AnyRoomAirTemperaturePatternSurfaceMapping):
     """``RoomAir:TemperaturePattern:SurfaceMapping`` as declared in EnergyPlus 8.9.0 to 22.1.0. Defines a distribution pattern for the air temperatures adjacent to individual surfaces. This allows controlling the ..."""
 
-    control_integer_for_pattern_control_schedule_name: float | None
+    control_integer_for_pattern_control_schedule_name: float
     """reference this entry in schedule"""
 
     def update(
@@ -8877,24 +8605,21 @@ class RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1(_g.AnyRoomAirTempera
 class _RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1Fields(
     _g._RoomAirTemperaturePatternSurfaceMappingCommonFields, total=False
 ):
-    control_integer_for_pattern_control_schedule_name: float | None
+    control_integer_for_pattern_control_schedule_name: float
 
 class CoilHeatingDesuperheater_v8_9_to_v22_1(_g.AnyCoilHeatingDesuperheater):
     """``Coil:Heating:Desuperheater`` as declared in EnergyPlus 8.9.0 to 22.1.0. Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
 
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
     parasitic_electric_load: float | None
     """parasitic electric load associated with the desuperheater coil operation such as solenoid valves, etc.; [W] (W); Range: >= 0.0"""
 
@@ -8904,38 +8629,32 @@ class CoilHeatingDesuperheater_v8_9_to_v22_1(_g.AnyCoilHeatingDesuperheater):
     _creation_signature: _cv95.CoilHeatingDesuperheater_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _CoilHeatingDesuperheater_v8_9_to_v22_1Fields(_g._CoilHeatingDesuperheaterCommonFields, total=False):
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
     parasitic_electric_load: float | None
 
 class CoilHeatingDesuperheater_v22_2_to_v23_1(_g.AnyCoilHeatingDesuperheater):
     """``Coil:Heating:Desuperheater`` as declared in EnergyPlus 22.2.0 to 23.1.0. Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
 
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
     parasitic_electric_load: float | None
     """parasitic electric load associated with the desuperheater coil operation such as solenoid valves, etc.; [W] (W); Range: >= 0.0"""
 
@@ -8948,20 +8667,17 @@ class CoilHeatingDesuperheater_v22_2_to_v23_1(_g.AnyCoilHeatingDesuperheater):
     _creation_signature: _cv117.CoilHeatingDesuperheater_v22_2_to_v23_1  # type: ignore[assignment]
 
 class _CoilHeatingDesuperheater_v22_2_to_v23_1Fields(_g._CoilHeatingDesuperheaterCommonFields, total=False):
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
     parasitic_electric_load: float | None
 
 class PhotovoltaicPerformanceEquivalentOneDiode_v8_9_to_v22_1(_g.AnyPhotovoltaicPerformanceEquivalentOneDiode):
@@ -8986,7 +8702,7 @@ class _PhotovoltaicPerformanceEquivalentOneDiode_v8_9_to_v22_1Fields(
 class GroundHeatExchangerResponseFactors_v8_9_to_v22_1(_g.AnyGroundHeatExchangerResponseFactors):
     """``GroundHeatExchanger:ResponseFactors`` as declared in EnergyPlus 8.9.0 to 22.1.0. Response factor definitions from third-party tool, commonly referred to a 'g-functions'"""
 
-    number_of_boreholes: float | None
+    number_of_boreholes: float
 
     def update(
         self,
@@ -8999,7 +8715,7 @@ class GroundHeatExchangerResponseFactors_v8_9_to_v22_1(_g.AnyGroundHeatExchanger
 class _GroundHeatExchangerResponseFactors_v8_9_to_v22_1Fields(
     _g._GroundHeatExchangerResponseFactorsCommonFields, total=False
 ):
-    number_of_boreholes: float | None
+    number_of_boreholes: float
 
 class AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1(_g.AnyAirLoopHVACUnitaryHeatPumpAirToAir):
     """``AirLoopHVAC:UnitaryHeatPump:AirToAir`` as declared in EnergyPlus 8.9.0 to 25.1.0. Unitary heat pump system, heating and cooling, single-speed with supply fan, direct expansion (DX) cooling coil, DX h..."""
@@ -9029,17 +8745,14 @@ class _WallInterzone_v8_9_to_v9_5Fields(_g._WallInterzoneCommonFields, total=Fal
 class CoilSystemCoolingDX_v8_9_to_v22_1(_g.AnyCoilSystemCoolingDX):
     """``CoilSystem:Cooling:DX`` as declared in EnergyPlus 8.9.0 to 22.1.0. Virtual container component that consists of a DX cooling coil and its associated controls. This control object suppo..."""
 
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemCoolingDX_v8_9_to_v22_1Fields]
@@ -9047,17 +8760,14 @@ class CoilSystemCoolingDX_v8_9_to_v22_1(_g.AnyCoilSystemCoolingDX):
     _creation_signature: _cv96.CoilSystemCoolingDX_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _CoilSystemCoolingDX_v8_9_to_v22_1Fields(_g._CoilSystemCoolingDXCommonFields, total=False):
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+    ]
 
 class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1(
     _g.AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed
@@ -9068,7 +8778,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1(
     """[dimensionless]; Default: 1.0; Range: >= 1.0, <= 10.0"""
     nominal_speed_level: float | None
     """must be lower than or equal to the highest speed number; [dimensionless]; Default: 1.0"""
-    rated_water_heating_capacity_at_speed_1: float | None
+    rated_water_heating_capacity_at_speed_1: float
     """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
     rated_water_heating_cop_at_speed_1: float | None
     """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
@@ -9142,7 +8852,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1Fields(
 ):
     number_of_speeds: float | None
     nominal_speed_level: float | None
-    rated_water_heating_capacity_at_speed_1: float | None
+    rated_water_heating_capacity_at_speed_1: float
     rated_water_heating_cop_at_speed_1: float | None
     rated_sensible_heat_ratio_at_speed_1: float | None
     rated_water_heating_capacity_at_speed_2: float | None
@@ -9182,7 +8892,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v22_2_to_v23_1(
     """[dimensionless]; Default: 1; Range: >= 1, <= 10"""
     nominal_speed_level: int | None
     """must be lower than or equal to the highest speed number; [dimensionless]; Default: 1"""
-    rated_water_heating_capacity_at_speed_1: float | None
+    rated_water_heating_capacity_at_speed_1: float
     """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
     rated_water_heating_cop_at_speed_1: float | None
     """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
@@ -9256,7 +8966,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v22_2_to_v23_1Fields(
 ):
     number_of_speeds: int | None
     nominal_speed_level: int | None
-    rated_water_heating_capacity_at_speed_1: float | None
+    rated_water_heating_capacity_at_speed_1: float
     rated_water_heating_cop_at_speed_1: float | None
     rated_sensible_heat_ratio_at_speed_1: float | None
     rated_water_heating_capacity_at_speed_2: float | None
@@ -9298,7 +9008,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v23_2_to_v25_1(
     """must be lower than or equal to the highest speed number; [dimensionless]; Default: 1"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
     """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
-    rated_water_heating_capacity_at_speed_1: float | None
+    rated_water_heating_capacity_at_speed_1: float
     """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
     rated_water_heating_cop_at_speed_1: float | None
     """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
@@ -9373,7 +9083,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v23_2_to_v25_1Fields(
     number_of_speeds: int | None
     nominal_speed_level: int | None
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    rated_water_heating_capacity_at_speed_1: float | None
+    rated_water_heating_capacity_at_speed_1: float
     rated_water_heating_cop_at_speed_1: float | None
     rated_sensible_heat_ratio_at_speed_1: float | None
     rated_water_heating_capacity_at_speed_2: float | None
@@ -9450,12 +9160,12 @@ class AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2(_g._TypedIDFObject):
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
-    zone_supply_air_node_name: str | None
-    maximum_air_flow_rate: float | Literal["Autosize"] | None
+    zone_supply_air_node_name: str
+    maximum_air_flow_rate: float | Literal["Autosize"]
     """[m3/s]"""
     design_specification_outdoor_air_object_name: str | None
     """When the name of a DesignSpecification:OutdoorAir object is entered, the terminal unit will adjust flow to meet this ..."""
-    per_person_ventilation_rate_mode: Literal["", "CurrentOccupancy", "DesignOccupancy"] | None
+    per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None
     """CurrentOccupancy models demand controlled ventilation using the current number of people DesignOccupancy uses the tot...; Default: CurrentOccupancy"""
     design_specification_air_terminal_sizing_object_name: str | None
     """This optional field is the name of a DesignSpecification:AirTerminal:Sizing object which specifies sizing adjustments..."""
@@ -9470,18 +9180,18 @@ class AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2(_g._TypedIDFObject):
 
 class _AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2Fields(TypedDict, total=False):
     availability_schedule_name: str | None
-    zone_supply_air_node_name: str | None
-    maximum_air_flow_rate: float | Literal["Autosize"] | None
+    zone_supply_air_node_name: str
+    maximum_air_flow_rate: float | Literal["Autosize"]
     design_specification_outdoor_air_object_name: str | None
-    per_person_ventilation_rate_mode: Literal["", "CurrentOccupancy", "DesignOccupancy"] | None
+    per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None
     design_specification_air_terminal_sizing_object_name: str | None
 
 class ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1(_g.AnyZoneControlThermostatStagedDualSetpoint):
     """``ZoneControl:Thermostat:StagedDualSetpoint`` as declared in EnergyPlus 8.9.0 to 22.1.0. Define the Thermostat StagedDualSetpoint settings for a zone or list of zones. If you use a ZoneList in the Zone or Z..."""
 
-    number_of_heating_stages: float | None
+    number_of_heating_stages: float
     """Enter the number of the following sets of data for heating temperature offset; Range: >= 1.0, <= 4.0"""
-    number_of_cooling_stages: float | None
+    number_of_cooling_stages: float
     """Enter the number of the following sets of data for cooling temperature offset; Range: >= 1.0, <= 4.0"""
 
     def update(
@@ -9495,13 +9205,13 @@ class ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1(_g.AnyZoneControlThe
 class _ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1Fields(
     _g._ZoneControlThermostatStagedDualSetpointCommonFields, total=False
 ):
-    number_of_heating_stages: float | None
-    number_of_cooling_stages: float | None
+    number_of_heating_stages: float
+    number_of_cooling_stages: float
 
 class ElectricEquipment_v8_9_to_v9_5(_g.AnyElectricEquipment):
     """``ElectricEquipment`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains for electric equipment in the zone. If you use a ZoneList in the Zone or ZoneList name field then..."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     watts_per_zone_floor_area: float | None
     """[W/m2] (W/ft2); Range: >= 0.0"""
 
@@ -9511,13 +9221,13 @@ class ElectricEquipment_v8_9_to_v9_5(_g.AnyElectricEquipment):
     _creation_signature: _cv93.ElectricEquipment_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _ElectricEquipment_v8_9_to_v9_5Fields(_g._ElectricEquipmentCommonFields, total=False):
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     watts_per_zone_floor_area: float | None
 
 class ElectricEquipment_v9_6_to_v23_2(_g.AnyElectricEquipment):
     """``ElectricEquipment`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains for electric equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than on..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     watts_per_zone_floor_area: float | None
     """[W/m2] (W/ft2); Range: >= 0.0"""
 
@@ -9527,13 +9237,13 @@ class ElectricEquipment_v9_6_to_v23_2(_g.AnyElectricEquipment):
     _creation_signature: _cv45.ElectricEquipment_v9_6_to_v23_2  # type: ignore[assignment]
 
 class _ElectricEquipment_v9_6_to_v23_2Fields(_g._ElectricEquipmentCommonFields, total=False):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     watts_per_zone_floor_area: float | None
 
 class CoilUserDefined_v8_9_to_v22_1(_g.AnyCoilUserDefined):
     """``Coil:UserDefined`` as declared in EnergyPlus 8.9.0 to 22.1.0. Defines a generic air system component for custom modeling using Energy Management System or External Interface"""
 
-    number_of_air_connections: float | None
+    number_of_air_connections: float
     """Range: >= 1.0, <= 2.0"""
 
     def update(
@@ -9542,14 +9252,14 @@ class CoilUserDefined_v8_9_to_v22_1(_g.AnyCoilUserDefined):
     _creation_signature: _cv34.CoilUserDefined_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _CoilUserDefined_v8_9_to_v22_1Fields(_g._CoilUserDefinedCommonFields, total=False):
-    number_of_air_connections: float | None
+    number_of_air_connections: float
 
 class HVACTemplateZoneFanCoil_v8_9(_g.AnyHVACTemplateZoneFanCoil):
     """``HVACTemplate:Zone:FanCoil`` as declared in EnergyPlus 8.9.0. 4 pipe fan coil unit with optional outdoor air."""
 
-    cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None
+    cooling_coil_type: Literal["ChilledWater", "ChilledWaterDetailedFlatModel"] | None
     """Default: ChilledWater"""
-    heating_coil_type: Literal["", "HotWater"] | None
+    heating_coil_type: Literal["HotWater"] | None
     """Default: HotWater"""
     capacity_control_method: (
         Literal["ConstantFanVariableFlow", "CyclingFan", "VariableFanConstantFlow", "VariableFanVariableFlow"] | None
@@ -9562,8 +9272,8 @@ class HVACTemplateZoneFanCoil_v8_9(_g.AnyHVACTemplateZoneFanCoil):
     _creation_signature: _cv101.HVACTemplateZoneFanCoil_v8_9  # type: ignore[assignment]
 
 class _HVACTemplateZoneFanCoil_v8_9Fields(_g._HVACTemplateZoneFanCoilCommonFields, total=False):
-    cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None
-    heating_coil_type: Literal["", "HotWater"] | None
+    cooling_coil_type: Literal["ChilledWater", "ChilledWaterDetailedFlatModel"] | None
+    heating_coil_type: Literal["HotWater"] | None
     capacity_control_method: (
         Literal["ConstantFanVariableFlow", "CyclingFan", "VariableFanConstantFlow", "VariableFanVariableFlow"] | None
     )
@@ -9571,9 +9281,9 @@ class _HVACTemplateZoneFanCoil_v8_9Fields(_g._HVACTemplateZoneFanCoilCommonField
 class HVACTemplateZoneFanCoil_v9_0(_g.AnyHVACTemplateZoneFanCoil):
     """``HVACTemplate:Zone:FanCoil`` as declared in EnergyPlus 9.0.1. 4 pipe fan coil unit with optional outdoor air."""
 
-    cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None
+    cooling_coil_type: Literal["ChilledWater", "ChilledWaterDetailedFlatModel"] | None
     """Default: ChilledWater"""
-    heating_coil_type: Literal["", "HotWater"] | None
+    heating_coil_type: Literal["HotWater"] | None
     """Default: HotWater"""
     capacity_control_method: (
         Literal[
@@ -9593,8 +9303,8 @@ class HVACTemplateZoneFanCoil_v9_0(_g.AnyHVACTemplateZoneFanCoil):
     _creation_signature: _cv118.HVACTemplateZoneFanCoil_v9_0  # type: ignore[assignment]
 
 class _HVACTemplateZoneFanCoil_v9_0Fields(_g._HVACTemplateZoneFanCoilCommonFields, total=False):
-    cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None
-    heating_coil_type: Literal["", "HotWater"] | None
+    cooling_coil_type: Literal["ChilledWater", "ChilledWaterDetailedFlatModel"] | None
+    heating_coil_type: Literal["HotWater"] | None
     capacity_control_method: (
         Literal[
             "ASHRAE90VariableFan",
@@ -9620,7 +9330,7 @@ class OutputSQLite_v9_5_to_v23_2(_g.AnyOutputSQLite):
     """``Output:SQLite`` as declared in EnergyPlus 9.5.0 to 23.2.0. Output from EnergyPlus can be written to an SQLite format file."""
 
     unit_conversion_for_tabular_data: (
-        Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"] | None
+        Literal["InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"] | None
     )
     """Unit conversion option used when writing SQLite Tabular Data This option applies to TabularData and TabularDatawithSt...; Default: UseOutputControlTableStyle"""
 
@@ -9631,7 +9341,7 @@ class OutputSQLite_v9_5_to_v23_2(_g.AnyOutputSQLite):
 
 class _OutputSQLite_v9_5_to_v23_2Fields(_g._OutputSQLiteCommonFields, total=False):
     unit_conversion_for_tabular_data: (
-        Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"] | None
+        Literal["InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"] | None
     )
 
 class OutputSQLite_v24_1_to_v25_1(_g.AnyOutputSQLite):
@@ -9639,14 +9349,7 @@ class OutputSQLite_v24_1_to_v25_1(_g.AnyOutputSQLite):
 
     unit_conversion_for_tabular_data: (
         Literal[
-            "",
-            "InchPound",
-            "InchPoundExceptElectricity",
-            "JtoGJ",
-            "JtoKWH",
-            "JtoMJ",
-            "None",
-            "UseOutputControlTableStyle",
+            "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"
         ]
         | None
     )
@@ -9660,51 +9363,10 @@ class OutputSQLite_v24_1_to_v25_1(_g.AnyOutputSQLite):
 class _OutputSQLite_v24_1_to_v25_1Fields(_g._OutputSQLiteCommonFields, total=False):
     unit_conversion_for_tabular_data: (
         Literal[
-            "",
-            "InchPound",
-            "InchPoundExceptElectricity",
-            "JtoGJ",
-            "JtoKWH",
-            "JtoMJ",
-            "None",
-            "UseOutputControlTableStyle",
+            "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"
         ]
         | None
     )
-
-class SurfacePropertyExposedFoundationPerimeterSurfacesGroup_v8_9_to_v9_2(
-    _g.AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup
-):
-    """One surfaces group inside :class:`SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2`."""
-
-    surface_segment_exposed: Literal["No", "Yes"] | None
-    def as_dict(self) -> SurfacePropertyExposedFoundationPerimeterSurfacesItem_v8_9_to_v9_2: ...  # type: ignore[override]
-
-class SurfacePropertyExposedFoundationPerimeterSurfacesItem_v8_9_to_v9_2(TypedDict, total=False):
-    """One group of :class:`SurfacePropertyExposedFoundationPerimeterSurfacesGroup_v8_9_to_v9_2` as a dict, as ``add()`` and ``update()`` take it."""
-
-    surface_segment_exposed: Literal["No", "Yes"] | None
-
-class SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2(_g.AnySurfacePropertyExposedFoundationPerimeter):
-    """``SurfaceProperty:ExposedFoundationPerimeter`` as declared in EnergyPlus 8.9.0 to 9.2.0. Defines the perimeter of a foundation floor that is exposed to the exterior environment through the floor. User may e..."""
-
-    surfaces: ExtensibleList[SurfacePropertyExposedFoundationPerimeterSurfacesGroup_v8_9_to_v9_2]
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2Fields],
-    ) -> None: ...  # type: ignore[override]
-    _creation_signature: _cv12.SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2  # type: ignore[assignment]
-
-class _SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2Fields(
-    _g._SurfacePropertyExposedFoundationPerimeterCommonFields, total=False
-):
-    surfaces: Sequence[
-        SurfacePropertyExposedFoundationPerimeterSurfacesItem_v8_9_to_v9_2
-        | SurfacePropertyExposedFoundationPerimeterSurfacesGroup_v8_9_to_v9_2
-    ]
 
 class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1(_g.AnyEvaporativeFluidCoolerSingleSpeed):
     """``EvaporativeFluidCooler:SingleSpeed`` as declared in EnergyPlus 8.9.0 to 25.1.0. This model is based on Merkel's theory, which is also the basis for the cooling tower model in EnergyPlus. The Evapor..."""
@@ -9728,7 +9390,7 @@ class _EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1Fields(
 class GeneratorMicroTurbine_v8_9_to_v9_2(_g.AnyGeneratorMicroTurbine):
     """``Generator:MicroTurbine`` as declared in EnergyPlus 8.9.0 to 9.2.0. MicroTurbine generators are small combustion turbines (e.g., 25kW to 500kW). The model calculates electrical power ou..."""
 
-    fuel_type: Literal["", "NaturalGas", "PropaneGas"] | None
+    fuel_type: Literal["NaturalGas", "PropaneGas"] | None
     """Default: NaturalGas"""
 
     def update(
@@ -9737,12 +9399,12 @@ class GeneratorMicroTurbine_v8_9_to_v9_2(_g.AnyGeneratorMicroTurbine):
     _creation_signature: _cv89.GeneratorMicroTurbine_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _GeneratorMicroTurbine_v8_9_to_v9_2Fields(_g._GeneratorMicroTurbineCommonFields, total=False):
-    fuel_type: Literal["", "NaturalGas", "PropaneGas"] | None
+    fuel_type: Literal["NaturalGas", "PropaneGas"] | None
 
 class GeneratorMicroTurbine_v9_3_to_v9_4(_g.AnyGeneratorMicroTurbine):
     """``Generator:MicroTurbine`` as declared in EnergyPlus 9.3.0 to 9.4.0. MicroTurbine generators are small combustion turbines (e.g., 25kW to 500kW). The model calculates electrical power ou..."""
 
-    fuel_type: Literal["", "NaturalGas", "Propane"] | None
+    fuel_type: Literal["NaturalGas", "Propane"] | None
     """Default: NaturalGas"""
 
     def update(
@@ -9751,7 +9413,7 @@ class GeneratorMicroTurbine_v9_3_to_v9_4(_g.AnyGeneratorMicroTurbine):
     _creation_signature: _cv50.GeneratorMicroTurbine_v9_3_to_v9_4  # type: ignore[assignment]
 
 class _GeneratorMicroTurbine_v9_3_to_v9_4Fields(_g._GeneratorMicroTurbineCommonFields, total=False):
-    fuel_type: Literal["", "NaturalGas", "Propane"] | None
+    fuel_type: Literal["NaturalGas", "Propane"] | None
 
 class AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1(_g.AnyAirTerminalSingleDuctParallelPIUReheat):
     """``AirTerminal:SingleDuct:ParallelPIU:Reheat`` as declared in EnergyPlus 8.9.0 to 24.1.0. Central air system terminal unit, single duct, variable volume, parallel powered induction unit (PIU), with reheat co..."""
@@ -9777,7 +9439,7 @@ class AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2(_g.AnyAirTerminalSin
 
     reheat_coil_air_inlet_node_name: str | None
     """mixer outlet node"""
-    fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None
+    fan_control_type: Literal["ConstantSpeed", "VariableSpeed"] | None
     """If VariableSpeed, then the fan object type must be Fan:SystemModel; Default: ConstantSpeed"""
     minimum_fan_turn_down_ratio: float | None
     """flow through terminal at minimum fan speed is this ratio multiplied by Maximum Air Flow Rate; [dimensionless]; Default: 0.3; Range: >= 0.0, <= 1.0"""
@@ -9799,7 +9461,7 @@ class _AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2Fields(
     _g._AirTerminalSingleDuctParallelPIUReheatCommonFields, total=False
 ):
     reheat_coil_air_inlet_node_name: str | None
-    fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None
+    fan_control_type: Literal["ConstantSpeed", "VariableSpeed"] | None
     minimum_fan_turn_down_ratio: float | None
     heating_control_type: Literal["Modulated", "Staged"] | None
     design_heating_discharge_air_temperature: float | None
@@ -9808,7 +9470,7 @@ class _AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2Fields(
 class ThermalStorageIceSimple_v8_9_to_v25_1(_g.AnyThermalStorageIceSimple):
     """``ThermalStorage:Ice:Simple`` as declared in EnergyPlus 8.9.0 to 25.1.0. This ice storage model is a simplified model It requires a setpoint placed on the Chilled Water Side Outlet Node It s..."""
 
-    capacity: float | None
+    capacity: float
     """[GJ] (ton-hrs)"""
 
     def update(
@@ -9817,7 +9479,7 @@ class ThermalStorageIceSimple_v8_9_to_v25_1(_g.AnyThermalStorageIceSimple):
     _creation_signature: _cv22.ThermalStorageIceSimple_v8_9_to_v25_1  # type: ignore[assignment]
 
 class _ThermalStorageIceSimple_v8_9_to_v25_1Fields(_g._ThermalStorageIceSimpleCommonFields, total=False):
-    capacity: float | None
+    capacity: float
 
 class GroundHeatExchangerSystem_v8_9_to_v9_5(_g.AnyGroundHeatExchangerSystem):
     """``GroundHeatExchanger:System`` as declared in EnergyPlus 8.9.0 to 9.5.0. Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response fac..."""
@@ -9832,7 +9494,7 @@ class _GroundHeatExchangerSystem_v8_9_to_v9_5Fields(_g._GroundHeatExchangerSyste
 class GroundHeatExchangerSystem_v9_6_to_v25_1(_g.AnyGroundHeatExchangerSystem):
     """``GroundHeatExchanger:System`` as declared in EnergyPlus 9.6.0 to 25.1.0. Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response fac..."""
 
-    g_function_calculation_method: Literal["", "UBHWTcalc", "UHFcalc"] | None
+    g_function_calculation_method: Literal["UBHWTcalc", "UHFcalc"] | None
     """Default: UHFcalc"""
 
     def update(
@@ -9844,7 +9506,7 @@ class GroundHeatExchangerSystem_v9_6_to_v25_1(_g.AnyGroundHeatExchangerSystem):
     _creation_signature: _cv90.GroundHeatExchangerSystem_v9_6_to_v25_1  # type: ignore[assignment]
 
 class _GroundHeatExchangerSystem_v9_6_to_v25_1Fields(_g._GroundHeatExchangerSystemCommonFields, total=False):
-    g_function_calculation_method: Literal["", "UBHWTcalc", "UHFcalc"] | None
+    g_function_calculation_method: Literal["UBHWTcalc", "UHFcalc"] | None
 
 class LifeCycleCostRecurringCosts_v8_9_to_v22_1(_g.AnyLifeCycleCostRecurringCosts):
     """``LifeCycleCost:RecurringCosts`` as declared in EnergyPlus 8.9.0 to 22.1.0. Recurring costs are costs that repeat over time on a regular schedule during the study period. If costs associated wi..."""
@@ -9875,7 +9537,7 @@ class _LifeCycleCostRecurringCosts_v8_9_to_v22_1Fields(_g._LifeCycleCostRecurrin
 class RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1(_g.AnyRoomAirTemperaturePatternTwoGradient):
     """``RoomAir:TemperaturePattern:TwoGradient`` as declared in EnergyPlus 8.9.0 to 22.1.0. Used to model room air with two temperature gradients in the vertical direction. Used in combination with RoomAir:Tem..."""
 
-    control_integer_for_pattern_control_schedule_name: float | None
+    control_integer_for_pattern_control_schedule_name: float
     """reference this entry in Schedule Name"""
 
     def update(
@@ -9889,15 +9551,15 @@ class RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1(_g.AnyRoomAirTemperatur
 class _RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1Fields(
     _g._RoomAirTemperaturePatternTwoGradientCommonFields, total=False
 ):
-    control_integer_for_pattern_control_schedule_name: float | None
+    control_integer_for_pattern_control_schedule_name: float
 
 class ZoneMixing_v8_9_to_v22_1(_g.AnyZoneMixing):
     """``ZoneMixing`` as declared in EnergyPlus 8.9.0 to 22.1.0. ZoneMixing is a simple air exchange from one zone to another. Note that this statement only affects the energy balanc..."""
 
-    zone_name: str | None
+    zone_name: str
     flow_rate_per_zone_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
-    source_zone_name: str | None
+    source_zone_name: str
     minimum_zone_temperature_schedule_name: str | None
     """This schedule contains the zone dry-bulb temperature versus time below which mixing is shutoff."""
     maximum_zone_temperature_schedule_name: str | None
@@ -9913,9 +9575,9 @@ class ZoneMixing_v8_9_to_v22_1(_g.AnyZoneMixing):
     _creation_signature: _cv8.ZoneMixing_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _ZoneMixing_v8_9_to_v22_1Fields(_g._ZoneMixingCommonFields, total=False):
-    zone_name: str | None
+    zone_name: str
     flow_rate_per_zone_floor_area: float | None
-    source_zone_name: str | None
+    source_zone_name: str
     minimum_zone_temperature_schedule_name: str | None
     maximum_zone_temperature_schedule_name: str | None
     minimum_source_zone_temperature_schedule_name: str | None
@@ -9924,23 +9586,20 @@ class _ZoneMixing_v8_9_to_v22_1Fields(_g._ZoneMixingCommonFields, total=False):
 class CoilHeatingDXMultiSpeed_v8_9_to_v9_2(_g.AnyCoilHeatingDXMultiSpeed):
     """``Coil:Heating:DX:MultiSpeed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven com..."""
 
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
     region_number_for_calculating_hspf: float | None
     """Standard Region number for which HSPF and other standard ratings are calculated; Default: 4.0; Range: >= 1.0, <= 6.0"""
-    number_of_speeds: float | None
+    number_of_speeds: float
     """Enter the number of the following sets of data for coil capacity, COP, flow rate, and associated curves.; Range: >= 2.0, <= 4.0"""
     speed_1_rated_supply_air_fan_power_per_volume_flow_rate: float | None
     """Enter the supply air fan power per air volume flow rate at the rated speed 1 test conditions. The test conditions var...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0"""
@@ -9957,22 +9616,19 @@ class CoilHeatingDXMultiSpeed_v8_9_to_v9_2(_g.AnyCoilHeatingDXMultiSpeed):
     _creation_signature: _cv19.CoilHeatingDXMultiSpeed_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _CoilHeatingDXMultiSpeed_v8_9_to_v9_2Fields(_g._CoilHeatingDXMultiSpeedCommonFields, total=False):
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
     region_number_for_calculating_hspf: float | None
-    number_of_speeds: float | None
+    number_of_speeds: float
     speed_1_rated_supply_air_fan_power_per_volume_flow_rate: float | None
     speed_2_rated_supply_air_fan_power_per_volume_flow_rate: float | None
     speed_3_rated_supply_air_fan_power_per_volume_flow_rate: float | None
@@ -9981,23 +9637,20 @@ class _CoilHeatingDXMultiSpeed_v8_9_to_v9_2Fields(_g._CoilHeatingDXMultiSpeedCom
 class CoilHeatingDXMultiSpeed_v9_3_to_v22_1(_g.AnyCoilHeatingDXMultiSpeed):
     """``Coil:Heating:DX:MultiSpeed`` as declared in EnergyPlus 9.3.0 to 22.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven com..."""
 
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
     region_number_for_calculating_hspf: float | None
     """Standard Region number for which HSPF and other standard ratings are calculated; Default: 4.0; Range: >= 1.0, <= 6.0"""
-    number_of_speeds: float | None
+    number_of_speeds: float
     """Enter the number of the following sets of data for coil capacity, COP, flow rate, and associated curves.; Range: >= 2.0, <= 4.0"""
     speed_1_rated_supply_air_fan_power_per_volume_flow_rate: float | None
     """Enter the supply air fan power per air volume flow rate at the rated speed 1 test conditions. The test conditions var...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0"""
@@ -10014,22 +9667,19 @@ class CoilHeatingDXMultiSpeed_v9_3_to_v22_1(_g.AnyCoilHeatingDXMultiSpeed):
     _creation_signature: _cv124.CoilHeatingDXMultiSpeed_v9_3_to_v22_1  # type: ignore[assignment]
 
 class _CoilHeatingDXMultiSpeed_v9_3_to_v22_1Fields(_g._CoilHeatingDXMultiSpeedCommonFields, total=False):
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
     region_number_for_calculating_hspf: float | None
-    number_of_speeds: float | None
+    number_of_speeds: float
     speed_1_rated_supply_air_fan_power_per_volume_flow_rate: float | None
     speed_2_rated_supply_air_fan_power_per_volume_flow_rate: float | None
     speed_3_rated_supply_air_fan_power_per_volume_flow_rate: float | None
@@ -10038,23 +9688,20 @@ class _CoilHeatingDXMultiSpeed_v9_3_to_v22_1Fields(_g._CoilHeatingDXMultiSpeedCo
 class CoilHeatingDXMultiSpeed_v22_2_to_v23_1(_g.AnyCoilHeatingDXMultiSpeed):
     """``Coil:Heating:DX:MultiSpeed`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven com..."""
 
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
     region_number_for_calculating_hspf: int | None
     """Standard Region number for which HSPF and other standard ratings are calculated; Default: 4; Range: >= 1, <= 6"""
-    number_of_speeds: int | None
+    number_of_speeds: int
     """Enter the number of the following sets of data for coil capacity, COP, flow rate, and associated curves.; Range: >= 2, <= 4"""
 
     def update(
@@ -10063,27 +9710,24 @@ class CoilHeatingDXMultiSpeed_v22_2_to_v23_1(_g.AnyCoilHeatingDXMultiSpeed):
     _creation_signature: _cv24.CoilHeatingDXMultiSpeed_v22_2_to_v23_1  # type: ignore[assignment]
 
 class _CoilHeatingDXMultiSpeed_v22_2_to_v23_1Fields(_g._CoilHeatingDXMultiSpeedCommonFields, total=False):
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
     region_number_for_calculating_hspf: int | None
-    number_of_speeds: int | None
+    number_of_speeds: int
 
 class ZoneVentilationDesignFlowRate_v8_9_to_v22_1(_g.AnyZoneVentilationDesignFlowRate):
     """``ZoneVentilation:DesignFlowRate`` as declared in EnergyPlus 8.9.0 to 22.1.0. Ventilation is specified as a design level which is modified by a schedule fraction, temperature difference and wind ..."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     flow_rate_per_zone_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
 
@@ -10096,13 +9740,13 @@ class ZoneVentilationDesignFlowRate_v8_9_to_v22_1(_g.AnyZoneVentilationDesignFlo
     _creation_signature: _cv123.ZoneVentilationDesignFlowRate_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _ZoneVentilationDesignFlowRate_v8_9_to_v22_1Fields(_g._ZoneVentilationDesignFlowRateCommonFields, total=False):
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     flow_rate_per_zone_floor_area: float | None
 
 class ZoneVentilationDesignFlowRate_v22_2_to_v24_2(_g.AnyZoneVentilationDesignFlowRate):
     """``ZoneVentilation:DesignFlowRate`` as declared in EnergyPlus 22.2.0 to 24.2.0. Ventilation is specified as a design level which is modified by a schedule fraction, temperature difference and wind ..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     flow_rate_per_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
 
@@ -10115,19 +9759,19 @@ class ZoneVentilationDesignFlowRate_v22_2_to_v24_2(_g.AnyZoneVentilationDesignFl
     _creation_signature: _cv125.ZoneVentilationDesignFlowRate_v22_2_to_v24_2  # type: ignore[assignment]
 
 class _ZoneVentilationDesignFlowRate_v22_2_to_v24_2Fields(_g._ZoneVentilationDesignFlowRateCommonFields, total=False):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     flow_rate_per_floor_area: float | None
 
 class WindowPropertyStormWindow_v8_9_to_v22_1(_g.AnyWindowPropertyStormWindow):
     """``WindowProperty:StormWindow`` as declared in EnergyPlus 8.9.0 to 22.1.0. This is a movable exterior glass layer that is usually applied in the winter and removed in the summer."""
 
-    month_that_storm_glass_layer_is_put_on: float | None
+    month_that_storm_glass_layer_is_put_on: float
     """Range: >= 1.0, <= 12.0"""
-    day_of_month_that_storm_glass_layer_is_put_on: float | None
+    day_of_month_that_storm_glass_layer_is_put_on: float
     """Range: >= 1.0, <= 31.0"""
-    month_that_storm_glass_layer_is_taken_off: float | None
+    month_that_storm_glass_layer_is_taken_off: float
     """Range: >= 1.0, <= 12.0"""
-    day_of_month_that_storm_glass_layer_is_taken_off: float | None
+    day_of_month_that_storm_glass_layer_is_taken_off: float
     """Range: >= 1.0, <= 31.0"""
 
     def update(
@@ -10139,10 +9783,10 @@ class WindowPropertyStormWindow_v8_9_to_v22_1(_g.AnyWindowPropertyStormWindow):
     _creation_signature: _cv2.WindowPropertyStormWindow_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _WindowPropertyStormWindow_v8_9_to_v22_1Fields(_g._WindowPropertyStormWindowCommonFields, total=False):
-    month_that_storm_glass_layer_is_put_on: float | None
-    day_of_month_that_storm_glass_layer_is_put_on: float | None
-    month_that_storm_glass_layer_is_taken_off: float | None
-    day_of_month_that_storm_glass_layer_is_taken_off: float | None
+    month_that_storm_glass_layer_is_put_on: float
+    day_of_month_that_storm_glass_layer_is_put_on: float
+    month_that_storm_glass_layer_is_taken_off: float
+    day_of_month_that_storm_glass_layer_is_taken_off: float
 
 class SiteWaterMainsTemperature_v8_9(_g.AnySiteWaterMainsTemperature):
     """``Site:WaterMainsTemperature`` as declared in EnergyPlus 8.9.0. Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
@@ -10160,7 +9804,7 @@ class _SiteWaterMainsTemperature_v8_9Fields(_g._SiteWaterMainsTemperatureCommonF
 class SiteWaterMainsTemperature_v9_0_to_v25_1(_g.AnySiteWaterMainsTemperature):
     """``Site:WaterMainsTemperature`` as declared in EnergyPlus 9.0.1 to 25.1.0. Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
 
-    calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
+    calculation_method: Literal["Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
     """If calculation method is CorrelationFromWeatherFile, the two numeric input fields are ignored. Instead, EnergyPlus ca...; Default: CorrelationFromWeatherFile"""
 
     def update(
@@ -10172,14 +9816,14 @@ class SiteWaterMainsTemperature_v9_0_to_v25_1(_g.AnySiteWaterMainsTemperature):
     _creation_signature: _cv90.SiteWaterMainsTemperature_v9_0_to_v25_1  # type: ignore[assignment]
 
 class _SiteWaterMainsTemperature_v9_0_to_v25_1Fields(_g._SiteWaterMainsTemperatureCommonFields, total=False):
-    calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
+    calculation_method: Literal["Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
 
 class MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1(
     _g.AnyMaterialPropertyHeatAndMoistureTransferSuction
 ):
     """``MaterialProperty:HeatAndMoistureTransfer:Suction`` as declared in EnergyPlus 8.9.0 to 22.1.0. HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between liquid suct..."""
 
-    number_of_suction_points: float | None
+    number_of_suction_points: float
     """Number of Suction Liquid Transport Coefficient coordinates; Range: >= 1.0, <= 25.0"""
 
     def update(
@@ -10193,7 +9837,7 @@ class MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1(
 class _MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferSuctionCommonFields, total=False
 ):
-    number_of_suction_points: float | None
+    number_of_suction_points: float
 
 class OutputDiagnostics_v8_9_to_v9_3(_g.AnyOutputDiagnostics):
     """``Output:Diagnostics`` as declared in EnergyPlus 8.9.0 to 9.3.0. Special keys to produce certain warning messages or effect certain simulation characteristics."""
@@ -10281,7 +9925,7 @@ class PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1(_g.AnyPipingSystemUndergr
     """Default: 500.0; Range: >= 3.0, <= 10000.0"""
     number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region: float | None
     """Default: 3.0; Range: >= 1.0, <= 15.0"""
-    number_of_pipe_segments_entered_for_this_pipe_circuit: float | None
+    number_of_pipe_segments_entered_for_this_pipe_circuit: float
     """Range: >= 1.0"""
 
     def update(
@@ -10297,19 +9941,19 @@ class _PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1Fields(
 ):
     maximum_iterations_in_the_inner_radial_iteration_loop: float | None
     number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region: float | None
-    number_of_pipe_segments_entered_for_this_pipe_circuit: float | None
+    number_of_pipe_segments_entered_for_this_pipe_circuit: float
 
 class GlobalGeometryRules_v8_9_to_v9_2(_g.AnyGlobalGeometryRules):
     """``GlobalGeometryRules`` as declared in EnergyPlus 8.9.0 to 9.2.0. Specifies the geometric rules used to describe the input of surface vertices and daylighting reference points."""
 
-    starting_vertex_position: str | None
+    starting_vertex_position: str
     """Specified as entry for a 4 sided surface/rectangle Surfaces are specified as viewed from outside the surface Shading ..."""
-    vertex_entry_direction: str | None
-    coordinate_system: str | None
+    vertex_entry_direction: str
+    coordinate_system: str
     """relative -- coordinates are entered relative to zone origin world -- all coordinates entered are 'absolute' for this ..."""
-    daylighting_reference_point_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None
+    daylighting_reference_point_coordinate_system: Literal["Absolute", "Relative", "World"] | None
     """Relative -- coordinates are entered relative to zone origin World -- all coordinates entered are 'absolute' for this ...; Default: Relative"""
-    rectangular_surface_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None
+    rectangular_surface_coordinate_system: Literal["Absolute", "Relative", "World"] | None
     """Relative -- Starting corner is entered relative to zone origin World -- Starting corner is entered in 'absolute' abso...; Default: Relative"""
 
     def update(
@@ -10318,11 +9962,11 @@ class GlobalGeometryRules_v8_9_to_v9_2(_g.AnyGlobalGeometryRules):
     _creation_signature: _cv90.GlobalGeometryRules_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _GlobalGeometryRules_v8_9_to_v9_2Fields(_g._GlobalGeometryRulesCommonFields, total=False):
-    starting_vertex_position: str | None
-    vertex_entry_direction: str | None
-    coordinate_system: str | None
-    daylighting_reference_point_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None
-    rectangular_surface_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None
+    starting_vertex_position: str
+    vertex_entry_direction: str
+    coordinate_system: str
+    daylighting_reference_point_coordinate_system: Literal["Absolute", "Relative", "World"] | None
+    rectangular_surface_coordinate_system: Literal["Absolute", "Relative", "World"] | None
 
 class SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1(
     _g.AnySolarCollectorPerformanceIntegralCollectorStorage
@@ -10413,7 +10057,7 @@ class _CondenserEquipmentList_v8_9_to_v9_0Fields(_g._CondenserEquipmentListCommo
 class ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1(_g.AnyZoneInfiltrationFlowCoefficient):
     """``ZoneInfiltration:FlowCoefficient`` as declared in EnergyPlus 8.9.0 to 22.1.0. Infiltration is specified as flow coefficient, schedule fraction, stack and wind coefficients, and is a function of t..."""
 
-    zone_name: str | None
+    zone_name: str
 
     def update(
         self,
@@ -10426,12 +10070,12 @@ class ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1(_g.AnyZoneInfiltrationFlowCo
 class _ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1Fields(
     _g._ZoneInfiltrationFlowCoefficientCommonFields, total=False
 ):
-    zone_name: str | None
+    zone_name: str
 
 class WindowMaterialComplexShade_v8_9(_g.AnyWindowMaterialComplexShade):
     """``WindowMaterial:ComplexShade`` as declared in EnergyPlus 8.9.0. Complex window shading layer thermal properties"""
 
-    layer_type: Literal["", "BSDF", "OtherShadingType", "Perforated", "Venetian", "Woven"] | None
+    layer_type: Literal["BSDF", "OtherShadingType", "Perforated", "Venetian", "Woven"] | None
     """Default: OtherShadingType"""
 
     def update(
@@ -10440,12 +10084,12 @@ class WindowMaterialComplexShade_v8_9(_g.AnyWindowMaterialComplexShade):
     _creation_signature: _cv18.WindowMaterialComplexShade_v8_9  # type: ignore[assignment]
 
 class _WindowMaterialComplexShade_v8_9Fields(_g._WindowMaterialComplexShadeCommonFields, total=False):
-    layer_type: Literal["", "BSDF", "OtherShadingType", "Perforated", "Venetian", "Woven"] | None
+    layer_type: Literal["BSDF", "OtherShadingType", "Perforated", "Venetian", "Woven"] | None
 
 class Lights_v8_9_to_v9_5(_g.AnyLights):
     """``Lights`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains for lights in the zone. If you use a ZoneList in the Zone or ZoneList name field then this defini..."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     watts_per_zone_floor_area: float | None
     """[W/m2] (W/ft2); Range: >= 0.0"""
 
@@ -10455,13 +10099,13 @@ class Lights_v8_9_to_v9_5(_g.AnyLights):
     _creation_signature: _cv36.Lights_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _Lights_v8_9_to_v9_5Fields(_g._LightsCommonFields, total=False):
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     watts_per_zone_floor_area: float | None
 
 class Lights_v9_6_to_v23_2(_g.AnyLights):
     """``Lights`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains for lights in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is s..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     watts_per_zone_floor_area: float | None
     """[W/m2] (W/ft2); Range: >= 0.0"""
     exhaust_air_heat_gain_node_name: str | None
@@ -10473,7 +10117,7 @@ class Lights_v9_6_to_v23_2(_g.AnyLights):
     _creation_signature: _cv48.Lights_v9_6_to_v23_2  # type: ignore[assignment]
 
 class _Lights_v9_6_to_v23_2Fields(_g._LightsCommonFields, total=False):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     watts_per_zone_floor_area: float | None
     exhaust_air_heat_gain_node_name: str | None
 
@@ -10515,14 +10159,9 @@ class _HeaderedPumpsVariableSpeed_v9_1_to_v22_1Fields(_g._HeaderedPumpsVariableS
 class ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1(_g.AnyZoneHVACPackagedTerminalAirConditioner):
     """``ZoneHVAC:PackagedTerminalAirConditioner`` as declared in EnergyPlus 8.9.0 to 22.1.0. Packaged terminal air conditioner (PTAC). Forced-convection heating-cooling unit with supply fan, direct expansion (D..."""
 
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"
+    ]
     """Select the type of Cooling Coil. Only works with Coil:Cooling:DX:SingleSpeed or CoilSystem:Cooling:DX:HeatExchangerAs..."""
 
     def update(
@@ -10536,27 +10175,19 @@ class ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1(_g.AnyZoneHVACPackage
 class _ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1Fields(
     _g._ZoneHVACPackagedTerminalAirConditionerCommonFields, total=False
 ):
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"
+    ]
 
 class ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2(_g.AnyZoneHVACPackagedTerminalAirConditioner):
     """``ZoneHVAC:PackagedTerminalAirConditioner`` as declared in EnergyPlus 22.2.0 to 23.2.0. Packaged terminal air conditioner (PTAC). Forced-convection heating-cooling unit with supply fan, direct expansion (D..."""
 
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:VariableSpeed",
+        "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+    ]
     """Select the type of Cooling Coil. Only works with Coil:Cooling:DX or Coil:Cooling:DX:SingleSpeed or CoilSystem:Cooling..."""
 
     def update(
@@ -10570,24 +10201,21 @@ class ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2(_g.AnyZoneHVACPackag
 class _ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2Fields(
     _g._ZoneHVACPackagedTerminalAirConditionerCommonFields, total=False
 ):
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:VariableSpeed",
+        "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+    ]
 
 class SizingPeriodDesignDay_v8_9(_g.AnySizingPeriodDesignDay):
     """``SizingPeriod:DesignDay`` as declared in EnergyPlus 8.9.0. The design day object creates the parameters for the program to create the 24 hour weather profile that can be used f..."""
 
-    month: float | None
+    month: float
     """Range: >= 1.0, <= 12.0"""
-    day_of_month: float | None
+    day_of_month: float
     """must be valid for Month field; Range: >= 1.0, <= 31.0"""
-    solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang"] | None
+    solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang"] | None
     """Default: ASHRAEClearSky"""
 
     def update(
@@ -10596,18 +10224,18 @@ class SizingPeriodDesignDay_v8_9(_g.AnySizingPeriodDesignDay):
     _creation_signature: _cv126.SizingPeriodDesignDay_v8_9  # type: ignore[assignment]
 
 class _SizingPeriodDesignDay_v8_9Fields(_g._SizingPeriodDesignDayCommonFields, total=False):
-    month: float | None
-    day_of_month: float | None
-    solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang"] | None
+    month: float
+    day_of_month: float
+    solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang"] | None
 
 class SizingPeriodDesignDay_v9_0_to_v9_2(_g.AnySizingPeriodDesignDay):
     """``SizingPeriod:DesignDay`` as declared in EnergyPlus 9.0.1 to 9.2.0. The design day object creates the parameters for the program to create the 24 hour weather profile that can be used f..."""
 
-    month: float | None
+    month: float
     """Range: >= 1.0, <= 12.0"""
-    day_of_month: float | None
+    day_of_month: float
     """must be valid for Month field; Range: >= 1.0, <= 31.0"""
-    solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"] | None
+    solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"] | None
     """Default: ASHRAEClearSky"""
 
     def update(
@@ -10616,22 +10244,22 @@ class SizingPeriodDesignDay_v9_0_to_v9_2(_g.AnySizingPeriodDesignDay):
     _creation_signature: _cv54.SizingPeriodDesignDay_v9_0_to_v9_2  # type: ignore[assignment]
 
 class _SizingPeriodDesignDay_v9_0_to_v9_2Fields(_g._SizingPeriodDesignDayCommonFields, total=False):
-    month: float | None
-    day_of_month: float | None
-    solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"] | None
+    month: float
+    day_of_month: float
+    solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"] | None
 
 class SizingPeriodDesignDay_v9_3_to_v22_1(_g.AnySizingPeriodDesignDay):
     """``SizingPeriod:DesignDay`` as declared in EnergyPlus 9.3.0 to 22.1.0. The design day object creates the parameters for the program to create the 24 hour weather profile that can be used f..."""
 
-    month: float | None
+    month: float
     """Range: >= 1.0, <= 12.0"""
-    day_of_month: float | None
+    day_of_month: float
     """must be valid for Month field; Range: >= 1.0, <= 31.0"""
-    solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"] | None
+    solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"] | None
     """Default: ASHRAEClearSky"""
     maximum_number_warmup_days: float | None
     """If used this design day will be run with a custom limit on the maximum number of days that are repeated for warmup. L..."""
-    begin_environment_reset_mode: Literal["", "FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"] | None
+    begin_environment_reset_mode: Literal["FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"] | None
     """If used this can control if you want the thermal history to be reset at the beginning of the design day. When using a...; Default: FullResetAtBeginEnvironment"""
 
     def update(
@@ -10640,31 +10268,31 @@ class SizingPeriodDesignDay_v9_3_to_v22_1(_g.AnySizingPeriodDesignDay):
     _creation_signature: _cv24.SizingPeriodDesignDay_v9_3_to_v22_1  # type: ignore[assignment]
 
 class _SizingPeriodDesignDay_v9_3_to_v22_1Fields(_g._SizingPeriodDesignDayCommonFields, total=False):
-    month: float | None
-    day_of_month: float | None
-    solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"] | None
+    month: float
+    day_of_month: float
+    solar_model_indicator: Literal["ASHRAEClearSky", "ASHRAETau", "ASHRAETau2017", "Schedule", "ZhangHuang"] | None
     maximum_number_warmup_days: float | None
-    begin_environment_reset_mode: Literal["", "FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"] | None
+    begin_environment_reset_mode: Literal["FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"] | None
 
 class CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4(_g.AnyCoilCoolingWaterToAirHeatPumpEquationFit):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 8.9.0 to 9.4.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
 
-    total_cooling_capacity_coefficient_1: float | None
-    total_cooling_capacity_coefficient_2: float | None
-    total_cooling_capacity_coefficient_3: float | None
-    total_cooling_capacity_coefficient_4: float | None
-    total_cooling_capacity_coefficient_5: float | None
-    sensible_cooling_capacity_coefficient_1: float | None
-    sensible_cooling_capacity_coefficient_2: float | None
-    sensible_cooling_capacity_coefficient_3: float | None
-    sensible_cooling_capacity_coefficient_4: float | None
-    sensible_cooling_capacity_coefficient_5: float | None
-    sensible_cooling_capacity_coefficient_6: float | None
-    cooling_power_consumption_coefficient_1: float | None
-    cooling_power_consumption_coefficient_2: float | None
-    cooling_power_consumption_coefficient_3: float | None
-    cooling_power_consumption_coefficient_4: float | None
-    cooling_power_consumption_coefficient_5: float | None
+    total_cooling_capacity_coefficient_1: float
+    total_cooling_capacity_coefficient_2: float
+    total_cooling_capacity_coefficient_3: float
+    total_cooling_capacity_coefficient_4: float
+    total_cooling_capacity_coefficient_5: float
+    sensible_cooling_capacity_coefficient_1: float
+    sensible_cooling_capacity_coefficient_2: float
+    sensible_cooling_capacity_coefficient_3: float
+    sensible_cooling_capacity_coefficient_4: float
+    sensible_cooling_capacity_coefficient_5: float
+    sensible_cooling_capacity_coefficient_6: float
+    cooling_power_consumption_coefficient_1: float
+    cooling_power_consumption_coefficient_2: float
+    cooling_power_consumption_coefficient_3: float
+    cooling_power_consumption_coefficient_4: float
+    cooling_power_consumption_coefficient_5: float
 
     def update(
         self,
@@ -10677,29 +10305,29 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4(_g.AnyCoilCoolingWat
 class _CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4Fields(
     _g._CoilCoolingWaterToAirHeatPumpEquationFitCommonFields, total=False
 ):
-    total_cooling_capacity_coefficient_1: float | None
-    total_cooling_capacity_coefficient_2: float | None
-    total_cooling_capacity_coefficient_3: float | None
-    total_cooling_capacity_coefficient_4: float | None
-    total_cooling_capacity_coefficient_5: float | None
-    sensible_cooling_capacity_coefficient_1: float | None
-    sensible_cooling_capacity_coefficient_2: float | None
-    sensible_cooling_capacity_coefficient_3: float | None
-    sensible_cooling_capacity_coefficient_4: float | None
-    sensible_cooling_capacity_coefficient_5: float | None
-    sensible_cooling_capacity_coefficient_6: float | None
-    cooling_power_consumption_coefficient_1: float | None
-    cooling_power_consumption_coefficient_2: float | None
-    cooling_power_consumption_coefficient_3: float | None
-    cooling_power_consumption_coefficient_4: float | None
-    cooling_power_consumption_coefficient_5: float | None
+    total_cooling_capacity_coefficient_1: float
+    total_cooling_capacity_coefficient_2: float
+    total_cooling_capacity_coefficient_3: float
+    total_cooling_capacity_coefficient_4: float
+    total_cooling_capacity_coefficient_5: float
+    sensible_cooling_capacity_coefficient_1: float
+    sensible_cooling_capacity_coefficient_2: float
+    sensible_cooling_capacity_coefficient_3: float
+    sensible_cooling_capacity_coefficient_4: float
+    sensible_cooling_capacity_coefficient_5: float
+    sensible_cooling_capacity_coefficient_6: float
+    cooling_power_consumption_coefficient_1: float
+    cooling_power_consumption_coefficient_2: float
+    cooling_power_consumption_coefficient_3: float
+    cooling_power_consumption_coefficient_4: float
+    cooling_power_consumption_coefficient_5: float
 
 class CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1(_g.AnyCoilCoolingWaterToAirHeatPumpEquationFit):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 9.5.0 to 22.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
 
-    total_cooling_capacity_curve_name: str | None
-    sensible_cooling_capacity_curve_name: str | None
-    cooling_power_consumption_curve_name: str | None
+    total_cooling_capacity_curve_name: str
+    sensible_cooling_capacity_curve_name: str
+    cooling_power_consumption_curve_name: str
 
     def update(
         self,
@@ -10712,9 +10340,9 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1(_g.AnyCoilCoolingWa
 class _CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1Fields(
     _g._CoilCoolingWaterToAirHeatPumpEquationFitCommonFields, total=False
 ):
-    total_cooling_capacity_curve_name: str | None
-    sensible_cooling_capacity_curve_name: str | None
-    cooling_power_consumption_curve_name: str | None
+    total_cooling_capacity_curve_name: str
+    sensible_cooling_capacity_curve_name: str
+    cooling_power_consumption_curve_name: str
 
 class CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1(_g.AnyCoilCoolingWaterToAirHeatPumpEquationFit):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
@@ -10725,9 +10353,9 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1(_g.AnyCoilCoolingW
     """Rated entering air dry-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 27.0; Range: > 0.0"""
     rated_entering_air_wet_bulb_temperature: float | None
     """Rated entering air wet-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 19.0; Range: > 0.0"""
-    total_cooling_capacity_curve_name: str | None
-    sensible_cooling_capacity_curve_name: str | None
-    cooling_power_consumption_curve_name: str | None
+    total_cooling_capacity_curve_name: str
+    sensible_cooling_capacity_curve_name: str
+    cooling_power_consumption_curve_name: str
 
     def update(
         self,
@@ -10743,9 +10371,9 @@ class _CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1Fields(
     rated_entering_water_temperature: float | None
     rated_entering_air_dry_bulb_temperature: float | None
     rated_entering_air_wet_bulb_temperature: float | None
-    total_cooling_capacity_curve_name: str | None
-    sensible_cooling_capacity_curve_name: str | None
-    cooling_power_consumption_curve_name: str | None
+    total_cooling_capacity_curve_name: str
+    sensible_cooling_capacity_curve_name: str
+    cooling_power_consumption_curve_name: str
 
 class CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1(_g.AnyCoilCoolingWaterToAirHeatPumpEquationFit):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
@@ -10756,10 +10384,10 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1(_g.AnyCoilCoolingW
     """Rated entering air dry-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 27.0; Range: > 0.0"""
     rated_entering_air_wet_bulb_temperature: float | None
     """Rated entering air wet-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 19.0; Range: > 0.0"""
-    total_cooling_capacity_curve_name: str | None
-    sensible_cooling_capacity_curve_name: str | None
-    cooling_power_consumption_curve_name: str | None
-    part_load_fraction_correlation_curve_name: str | None
+    total_cooling_capacity_curve_name: str
+    sensible_cooling_capacity_curve_name: str
+    cooling_power_consumption_curve_name: str
+    part_load_fraction_correlation_curve_name: str
     """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (cooling l..."""
     maximum_cycling_rate: float | None
     """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 0.0; Range: >= 0.0, <= 5.0"""
@@ -10782,10 +10410,10 @@ class _CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1Fields(
     rated_entering_water_temperature: float | None
     rated_entering_air_dry_bulb_temperature: float | None
     rated_entering_air_wet_bulb_temperature: float | None
-    total_cooling_capacity_curve_name: str | None
-    sensible_cooling_capacity_curve_name: str | None
-    cooling_power_consumption_curve_name: str | None
-    part_load_fraction_correlation_curve_name: str | None
+    total_cooling_capacity_curve_name: str
+    sensible_cooling_capacity_curve_name: str
+    cooling_power_consumption_curve_name: str
+    part_load_fraction_correlation_curve_name: str
     maximum_cycling_rate: float | None
     latent_capacity_time_constant: float | None
     fan_delay_time: float | None
@@ -10794,7 +10422,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4(_g.AnyZoneHVACBaseboa
     """``ZoneHVAC:Baseboard:RadiantConvective:Water`` as declared in EnergyPlus 8.9.0 to 9.4.0. The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
 
     heating_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
+        Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
     """Enter the method used to determine the heating design capacity. HeatingDesignCapacity = > selected when the design he...; Default: HeatingDesignCapacity"""
     heating_design_capacity_per_floor_area: float | None
@@ -10803,7 +10431,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4(_g.AnyZoneHVACBaseboa
     """Enter the fraction of auto - sized heating design capacity.Required field when capacity the heating design capacity m...; Default: 1.0; Range: >= 0.0"""
     convergence_tolerance: float | None
     """Default: 0.001; Range: >= 0.0, > True"""
-    fraction_radiant: float | None
+    fraction_radiant: float
     """Range: >= 0.0, <= 1.0"""
     fraction_of_radiant_energy_incident_on_people: float | None
     """Range: >= 0.0, <= 1.0"""
@@ -10820,18 +10448,18 @@ class _ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4Fields(
     _g._ZoneHVACBaseboardRadiantConvectiveWaterCommonFields, total=False
 ):
     heating_design_capacity_method: (
-        Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
+        Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
     heating_design_capacity_per_floor_area: float | None
     fraction_of_autosized_heating_design_capacity: float | None
     convergence_tolerance: float | None
-    fraction_radiant: float | None
+    fraction_radiant: float
     fraction_of_radiant_energy_incident_on_people: float | None
 
 class ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1(_g.AnyZoneInfiltrationDesignFlowRate):
     """``ZoneInfiltration:DesignFlowRate`` as declared in EnergyPlus 8.9.0 to 22.1.0. Infiltration is specified as a design level which is modified by a Schedule fraction, temperature difference and wind..."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     flow_per_zone_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
     flow_per_exterior_surface_area: float | None
@@ -10846,14 +10474,14 @@ class ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1(_g.AnyZoneInfiltrationDesignF
     _creation_signature: _cv7.ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1Fields(_g._ZoneInfiltrationDesignFlowRateCommonFields, total=False):
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     flow_per_zone_floor_area: float | None
     flow_per_exterior_surface_area: float | None
 
 class ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2(_g.AnyZoneInfiltrationDesignFlowRate):
     """``ZoneInfiltration:DesignFlowRate`` as declared in EnergyPlus 22.2.0 to 24.2.0. Infiltration is specified as a design level which is modified by a Schedule fraction, temperature difference and wind..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     flow_rate_per_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
     flow_rate_per_exterior_surface_area: float | None
@@ -10868,7 +10496,7 @@ class ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2(_g.AnyZoneInfiltrationDesign
     _creation_signature: _cv35.ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2  # type: ignore[assignment]
 
 class _ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2Fields(_g._ZoneInfiltrationDesignFlowRateCommonFields, total=False):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     flow_rate_per_floor_area: float | None
     flow_rate_per_exterior_surface_area: float | None
 
@@ -10895,8 +10523,6 @@ class _DemandManagerElectricEquipment_v8_9_to_v22_1Fields(_g._DemandManagerElect
 class CoolingTowerVariableSpeed_v8_9_to_v22_1(_g.AnyCoolingTowerVariableSpeed):
     """``CoolingTower:VariableSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. This open wet tower model is based on purely empirical algorithms derived from manufacturer's performance data or fie..."""
 
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
     number_of_cells: float | None
     """Default: 1.0; Range: >= 1.0"""
 
@@ -10909,8 +10535,6 @@ class CoolingTowerVariableSpeed_v8_9_to_v22_1(_g.AnyCoolingTowerVariableSpeed):
     _creation_signature: _cv68.CoolingTowerVariableSpeed_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _CoolingTowerVariableSpeed_v8_9_to_v22_1Fields(_g._CoolingTowerVariableSpeedCommonFields, total=False):
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
     number_of_cells: float | None
 
 class ZoneEarthtube_v8_9_to_v23_1(_g.AnyZoneEarthtube):
@@ -10926,7 +10550,7 @@ class _ZoneEarthtube_v8_9_to_v23_1Fields(_g._ZoneEarthtubeCommonFields, total=Fa
 class HotWaterEquipment_v8_9_to_v9_5(_g.AnyHotWaterEquipment):
     """``HotWaterEquipment`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains for hot water equipment in the zone. If you use a ZoneList in the Zone name field then this defin..."""
 
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
 
@@ -10936,13 +10560,13 @@ class HotWaterEquipment_v8_9_to_v9_5(_g.AnyHotWaterEquipment):
     _creation_signature: _cv1.HotWaterEquipment_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _HotWaterEquipment_v8_9_to_v9_5Fields(_g._HotWaterEquipmentCommonFields, total=False):
-    zone_or_zonelist_name: str | None
+    zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
 
 class HotWaterEquipment_v9_6_to_v23_2(_g.AnyHotWaterEquipment):
     """``HotWaterEquipment`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains for hot water equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than o..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
 
@@ -10952,7 +10576,7 @@ class HotWaterEquipment_v9_6_to_v23_2(_g.AnyHotWaterEquipment):
     _creation_signature: _cv59.HotWaterEquipment_v9_6_to_v23_2  # type: ignore[assignment]
 
 class _HotWaterEquipment_v9_6_to_v23_2Fields(_g._HotWaterEquipmentCommonFields, total=False):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
 
 class PipingSystemUndergroundDomain_v8_9_to_v22_1(_g.AnyPipingSystemUndergroundDomain):
@@ -10966,7 +10590,7 @@ class PipingSystemUndergroundDomain_v8_9_to_v22_1(_g.AnyPipingSystemUndergroundD
     """If mesh type is symmetric geometric, this should be an even number.; Default: 4.0; Range: > 0.0"""
     maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: float | None
     """Default: 500.0; Range: >= 3.0, <= 10000.0"""
-    number_of_pipe_circuits_entered_for_this_domain: float | None
+    number_of_pipe_circuits_entered_for_this_domain: float
     """Range: >= 1.0"""
 
     def update(
@@ -10982,19 +10606,14 @@ class _PipingSystemUndergroundDomain_v8_9_to_v22_1Fields(_g._PipingSystemUndergr
     y_direction_mesh_density_parameter: float | None
     z_direction_mesh_density_parameter: float | None
     maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: float | None
-    number_of_pipe_circuits_entered_for_this_domain: float | None
+    number_of_pipe_circuits_entered_for_this_domain: float
 
 class ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1(_g.AnyZoneHVACPackagedTerminalHeatPump):
     """``ZoneHVAC:PackagedTerminalHeatPump`` as declared in EnergyPlus 8.9.0 to 22.1.0. Packaged terminal heat pump (PTHP). Forced-convection heating-cooling unit with supply fan, direct expansion (DX) coo..."""
 
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"
+    ]
     """Only works with Coil:Cooling:DX:SingleSpeed or CoilSystem:Cooling:DX:HeatExchangerAssisted or Coil:Cooling:DX:Variabl..."""
 
     def update(
@@ -11008,27 +10627,19 @@ class ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1(_g.AnyZoneHVACPackagedTermi
 class _ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1Fields(
     _g._ZoneHVACPackagedTerminalHeatPumpCommonFields, total=False
 ):
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"
+    ]
 
 class ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2(_g.AnyZoneHVACPackagedTerminalHeatPump):
     """``ZoneHVAC:PackagedTerminalHeatPump`` as declared in EnergyPlus 22.2.0 to 23.2.0. Packaged terminal heat pump (PTHP). Forced-convection heating-cooling unit with supply fan, direct expansion (DX) coo..."""
 
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:VariableSpeed",
+        "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+    ]
     """Only works with Coil:Cooling:DX or Coil:Cooling:DX:SingleSpeed or CoilSystem:Cooling:DX:HeatExchangerAssisted or Coil..."""
 
     def update(
@@ -11042,30 +10653,24 @@ class ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2(_g.AnyZoneHVACPackagedTerm
 class _ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2Fields(
     _g._ZoneHVACPackagedTerminalHeatPumpCommonFields, total=False
 ):
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:VariableSpeed",
+        "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+    ]
 
 class ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1(_g.AnyZoneHVACPackagedTerminalHeatPump):
     """``ZoneHVAC:PackagedTerminalHeatPump`` as declared in EnergyPlus 24.1.0 to 25.1.0. Packaged terminal heat pump (PTHP). Forced-convection heating-cooling unit with supply fan, direct expansion (DX) coo..."""
 
-    no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
+    no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None
     """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes"""
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:VariableSpeed",
+        "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+    ]
     """Only works with Coil:Cooling:DX or Coil:Cooling:DX:SingleSpeed or CoilSystem:Cooling:DX:HeatExchangerAssisted or Coil..."""
 
     def update(
@@ -11079,16 +10684,13 @@ class ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1(_g.AnyZoneHVACPackagedTerm
 class _ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1Fields(
     _g._ZoneHVACPackagedTerminalHeatPumpCommonFields, total=False
 ):
-    no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
-    cooling_coil_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-        ]
-        | None
-    )
+    no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None
+    cooling_coil_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:VariableSpeed",
+        "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+    ]
 
 class AirTerminalSingleDuctVAVHeatAndCoolReheat_v8_9_to_v9_2(_g.AnyAirTerminalSingleDuctVAVHeatAndCoolReheat):
     """``AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat`` as declared in EnergyPlus 8.9.0 to 9.2.0. Central air system terminal unit, single duct, variable volume for both cooling and heating, with reheat coil (hot wa..."""
@@ -11127,7 +10729,6 @@ class ControllerMechanicalVentilation_v8_9_to_v9_2(_g.AnyControllerMechanicalVen
 
     system_outdoor_air_method: (
         Literal[
-            "",
             "IndoorAirQualityProcedure",
             "IndoorAirQualityProcedureCombined",
             "IndoorAirQualityProcedureGenericContaminant",
@@ -11153,7 +10754,6 @@ class ControllerMechanicalVentilation_v8_9_to_v9_2(_g.AnyControllerMechanicalVen
 class _ControllerMechanicalVentilation_v8_9_to_v9_2Fields(_g._ControllerMechanicalVentilationCommonFields, total=False):
     system_outdoor_air_method: (
         Literal[
-            "",
             "IndoorAirQualityProcedure",
             "IndoorAirQualityProcedureCombined",
             "IndoorAirQualityProcedureGenericContaminant",
@@ -11192,7 +10792,6 @@ class ControllerMechanicalVentilation_v9_3_to_v9_4(_g.AnyControllerMechanicalVen
 
     system_outdoor_air_method: (
         Literal[
-            "",
             "IndoorAirQualityProcedure",
             "IndoorAirQualityProcedureCombined",
             "IndoorAirQualityProcedureGenericContaminant",
@@ -11218,7 +10817,6 @@ class ControllerMechanicalVentilation_v9_3_to_v9_4(_g.AnyControllerMechanicalVen
 class _ControllerMechanicalVentilation_v9_3_to_v9_4Fields(_g._ControllerMechanicalVentilationCommonFields, total=False):
     system_outdoor_air_method: (
         Literal[
-            "",
             "IndoorAirQualityProcedure",
             "IndoorAirQualityProcedureCombined",
             "IndoorAirQualityProcedureGenericContaminant",
@@ -11257,7 +10855,6 @@ class ControllerMechanicalVentilation_v9_5(_g.AnyControllerMechanicalVentilation
 
     system_outdoor_air_method: (
         Literal[
-            "",
             "IndoorAirQualityProcedure",
             "IndoorAirQualityProcedureCombined",
             "IndoorAirQualityProcedureGenericContaminant",
@@ -11280,7 +10877,6 @@ class ControllerMechanicalVentilation_v9_5(_g.AnyControllerMechanicalVentilation
 class _ControllerMechanicalVentilation_v9_5Fields(_g._ControllerMechanicalVentilationCommonFields, total=False):
     system_outdoor_air_method: (
         Literal[
-            "",
             "IndoorAirQualityProcedure",
             "IndoorAirQualityProcedureCombined",
             "IndoorAirQualityProcedureGenericContaminant",
@@ -11320,17 +10916,14 @@ class _LifeCycleCostNonrecurringCost_v8_9_to_v22_1Fields(_g._LifeCycleCostNonrec
 class PlantEquipmentOperationSchemes_v8_9(_g.AnyPlantEquipmentOperationSchemes):
     """``PlantEquipmentOperationSchemes`` as declared in EnergyPlus 8.9.0. Operation schemes are listed in 'priority' order. Note that each scheme must address the entire load and/or condition..."""
 
-    control_scheme_1_object_type: (
-        Literal[
-            "PlantEquipmentOperation:ComponentSetpoint",
-            "PlantEquipmentOperation:CoolingLoad",
-            "PlantEquipmentOperation:HeatingLoad",
-            "PlantEquipmentOperation:ThermalEnergyStorage",
-            "PlantEquipmentOperation:Uncontrolled",
-            "PlantEquipmentOperation:UserDefined",
-        ]
-        | None
-    )
+    control_scheme_1_object_type: Literal[
+        "PlantEquipmentOperation:ComponentSetpoint",
+        "PlantEquipmentOperation:CoolingLoad",
+        "PlantEquipmentOperation:HeatingLoad",
+        "PlantEquipmentOperation:ThermalEnergyStorage",
+        "PlantEquipmentOperation:Uncontrolled",
+        "PlantEquipmentOperation:UserDefined",
+    ]
     control_scheme_2_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -11415,17 +11008,14 @@ class PlantEquipmentOperationSchemes_v8_9(_g.AnyPlantEquipmentOperationSchemes):
     _creation_signature: _cv54.PlantEquipmentOperationSchemes_v8_9  # type: ignore[assignment]
 
 class _PlantEquipmentOperationSchemes_v8_9Fields(_g._PlantEquipmentOperationSchemesCommonFields, total=False):
-    control_scheme_1_object_type: (
-        Literal[
-            "PlantEquipmentOperation:ComponentSetpoint",
-            "PlantEquipmentOperation:CoolingLoad",
-            "PlantEquipmentOperation:HeatingLoad",
-            "PlantEquipmentOperation:ThermalEnergyStorage",
-            "PlantEquipmentOperation:Uncontrolled",
-            "PlantEquipmentOperation:UserDefined",
-        ]
-        | None
-    )
+    control_scheme_1_object_type: Literal[
+        "PlantEquipmentOperation:ComponentSetpoint",
+        "PlantEquipmentOperation:CoolingLoad",
+        "PlantEquipmentOperation:HeatingLoad",
+        "PlantEquipmentOperation:ThermalEnergyStorage",
+        "PlantEquipmentOperation:Uncontrolled",
+        "PlantEquipmentOperation:UserDefined",
+    ]
     control_scheme_2_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -11507,24 +11097,21 @@ class _PlantEquipmentOperationSchemes_v8_9Fields(_g._PlantEquipmentOperationSche
 class PlantEquipmentOperationSchemes_v9_0_to_v23_1(_g.AnyPlantEquipmentOperationSchemes):
     """``PlantEquipmentOperationSchemes`` as declared in EnergyPlus 9.0.1 to 23.1.0. Operation schemes are listed in 'priority' order. Note that each scheme must address the entire load and/or condition..."""
 
-    control_scheme_1_object_type: (
-        Literal[
-            "PlantEquipmentOperation:ComponentSetpoint",
-            "PlantEquipmentOperation:CoolingLoad",
-            "PlantEquipmentOperation:HeatingLoad",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ThermalEnergyStorage",
-            "PlantEquipmentOperation:Uncontrolled",
-            "PlantEquipmentOperation:UserDefined",
-        ]
-        | None
-    )
+    control_scheme_1_object_type: Literal[
+        "PlantEquipmentOperation:ComponentSetpoint",
+        "PlantEquipmentOperation:CoolingLoad",
+        "PlantEquipmentOperation:HeatingLoad",
+        "PlantEquipmentOperation:OutdoorDewpoint",
+        "PlantEquipmentOperation:OutdoorDewpointDifference",
+        "PlantEquipmentOperation:OutdoorDryBulb",
+        "PlantEquipmentOperation:OutdoorDryBulbDifference",
+        "PlantEquipmentOperation:OutdoorRelativeHumidity",
+        "PlantEquipmentOperation:OutdoorWetBulb",
+        "PlantEquipmentOperation:OutdoorWetBulbDifference",
+        "PlantEquipmentOperation:ThermalEnergyStorage",
+        "PlantEquipmentOperation:Uncontrolled",
+        "PlantEquipmentOperation:UserDefined",
+    ]
     control_scheme_2_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -11661,24 +11248,21 @@ class PlantEquipmentOperationSchemes_v9_0_to_v23_1(_g.AnyPlantEquipmentOperation
     _creation_signature: _cv76.PlantEquipmentOperationSchemes_v9_0_to_v23_1  # type: ignore[assignment]
 
 class _PlantEquipmentOperationSchemes_v9_0_to_v23_1Fields(_g._PlantEquipmentOperationSchemesCommonFields, total=False):
-    control_scheme_1_object_type: (
-        Literal[
-            "PlantEquipmentOperation:ComponentSetpoint",
-            "PlantEquipmentOperation:CoolingLoad",
-            "PlantEquipmentOperation:HeatingLoad",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ThermalEnergyStorage",
-            "PlantEquipmentOperation:Uncontrolled",
-            "PlantEquipmentOperation:UserDefined",
-        ]
-        | None
-    )
+    control_scheme_1_object_type: Literal[
+        "PlantEquipmentOperation:ComponentSetpoint",
+        "PlantEquipmentOperation:CoolingLoad",
+        "PlantEquipmentOperation:HeatingLoad",
+        "PlantEquipmentOperation:OutdoorDewpoint",
+        "PlantEquipmentOperation:OutdoorDewpointDifference",
+        "PlantEquipmentOperation:OutdoorDryBulb",
+        "PlantEquipmentOperation:OutdoorDryBulbDifference",
+        "PlantEquipmentOperation:OutdoorRelativeHumidity",
+        "PlantEquipmentOperation:OutdoorWetBulb",
+        "PlantEquipmentOperation:OutdoorWetBulbDifference",
+        "PlantEquipmentOperation:ThermalEnergyStorage",
+        "PlantEquipmentOperation:Uncontrolled",
+        "PlantEquipmentOperation:UserDefined",
+    ]
     control_scheme_2_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -11833,34 +11417,31 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v2
 class EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2(_g.AnyEnergyManagementSystemMeteredOutputVariable):
     """``EnergyManagementSystem:MeteredOutputVariable`` as declared in EnergyPlus 8.9.0 to 9.2.0. This object sets up an EnergyPlus output variable from an Erl variable"""
 
-    resource_type: (
-        Literal[
-            "Coal",
-            "CondensateWaterCollected",
-            "Diesel",
-            "DistrictCooling",
-            "DistrictHeating",
-            "Electricity",
-            "ElectricityProducedOnSite",
-            "EnergyTransfer",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "MainsWaterSupply",
-            "NaturalGas",
-            "OnSiteWaterProduced",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "RainWaterCollected",
-            "SolarAirHeating",
-            "SolarWaterHeating",
-            "Steam",
-            "WaterUse",
-            "WellWaterDrawn",
-        ]
-        | None
-    )
+    resource_type: Literal[
+        "Coal",
+        "CondensateWaterCollected",
+        "Diesel",
+        "DistrictCooling",
+        "DistrictHeating",
+        "Electricity",
+        "ElectricityProducedOnSite",
+        "EnergyTransfer",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "MainsWaterSupply",
+        "NaturalGas",
+        "OnSiteWaterProduced",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "RainWaterCollected",
+        "SolarAirHeating",
+        "SolarWaterHeating",
+        "Steam",
+        "WaterUse",
+        "WellWaterDrawn",
+    ]
     """choose the type of fuel, water, electricity, pollution or heat rate that should be metered."""
 
     def update(
@@ -11874,66 +11455,60 @@ class EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2(_g.AnyEnergyManag
 class _EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2Fields(
     _g._EnergyManagementSystemMeteredOutputVariableCommonFields, total=False
 ):
-    resource_type: (
-        Literal[
-            "Coal",
-            "CondensateWaterCollected",
-            "Diesel",
-            "DistrictCooling",
-            "DistrictHeating",
-            "Electricity",
-            "ElectricityProducedOnSite",
-            "EnergyTransfer",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "MainsWaterSupply",
-            "NaturalGas",
-            "OnSiteWaterProduced",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "RainWaterCollected",
-            "SolarAirHeating",
-            "SolarWaterHeating",
-            "Steam",
-            "WaterUse",
-            "WellWaterDrawn",
-        ]
-        | None
-    )
+    resource_type: Literal[
+        "Coal",
+        "CondensateWaterCollected",
+        "Diesel",
+        "DistrictCooling",
+        "DistrictHeating",
+        "Electricity",
+        "ElectricityProducedOnSite",
+        "EnergyTransfer",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "MainsWaterSupply",
+        "NaturalGas",
+        "OnSiteWaterProduced",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "RainWaterCollected",
+        "SolarAirHeating",
+        "SolarWaterHeating",
+        "Steam",
+        "WaterUse",
+        "WellWaterDrawn",
+    ]
 
 class EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1(_g.AnyEnergyManagementSystemMeteredOutputVariable):
     """``EnergyManagementSystem:MeteredOutputVariable`` as declared in EnergyPlus 9.3.0 to 23.1.0. This object sets up an EnergyPlus output variable from an Erl variable"""
 
-    resource_type: (
-        Literal[
-            "Coal",
-            "CondensateWaterCollected",
-            "Diesel",
-            "DistrictCooling",
-            "DistrictHeating",
-            "Electricity",
-            "ElectricityProducedOnSite",
-            "EnergyTransfer",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "MainsWaterSupply",
-            "NaturalGas",
-            "OnSiteWaterProduced",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "RainWaterCollected",
-            "SolarAirHeating",
-            "SolarWaterHeating",
-            "Steam",
-            "WaterUse",
-            "WellWaterDrawn",
-        ]
-        | None
-    )
+    resource_type: Literal[
+        "Coal",
+        "CondensateWaterCollected",
+        "Diesel",
+        "DistrictCooling",
+        "DistrictHeating",
+        "Electricity",
+        "ElectricityProducedOnSite",
+        "EnergyTransfer",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "MainsWaterSupply",
+        "NaturalGas",
+        "OnSiteWaterProduced",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "RainWaterCollected",
+        "SolarAirHeating",
+        "SolarWaterHeating",
+        "Steam",
+        "WaterUse",
+        "WellWaterDrawn",
+    ]
     """choose the type of fuel, water, electricity, pollution or heat rate that should be metered."""
 
     def update(
@@ -11947,34 +11522,31 @@ class EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1(_g.AnyEnergyMana
 class _EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1Fields(
     _g._EnergyManagementSystemMeteredOutputVariableCommonFields, total=False
 ):
-    resource_type: (
-        Literal[
-            "Coal",
-            "CondensateWaterCollected",
-            "Diesel",
-            "DistrictCooling",
-            "DistrictHeating",
-            "Electricity",
-            "ElectricityProducedOnSite",
-            "EnergyTransfer",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "MainsWaterSupply",
-            "NaturalGas",
-            "OnSiteWaterProduced",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "RainWaterCollected",
-            "SolarAirHeating",
-            "SolarWaterHeating",
-            "Steam",
-            "WaterUse",
-            "WellWaterDrawn",
-        ]
-        | None
-    )
+    resource_type: Literal[
+        "Coal",
+        "CondensateWaterCollected",
+        "Diesel",
+        "DistrictCooling",
+        "DistrictHeating",
+        "Electricity",
+        "ElectricityProducedOnSite",
+        "EnergyTransfer",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "MainsWaterSupply",
+        "NaturalGas",
+        "OnSiteWaterProduced",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "RainWaterCollected",
+        "SolarAirHeating",
+        "SolarWaterHeating",
+        "Steam",
+        "WaterUse",
+        "WellWaterDrawn",
+    ]
 
 class TableOneIndependentVariableValuesGroup_v8_9(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableOneIndependentVariable_v8_9`."""
@@ -12006,10 +11578,10 @@ class TableOneIndependentVariable_v8_9(_g._TypedIDFObject):
     maximum_table_output: float | None
     """Specify the maximum value calculated by this table lookup object used only when Interpolation Type is Evaluate Curve ..."""
     input_unit_type_for_x: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
     normalization_reference: float | None
     """This field is used to normalize the following ouput data. The minimum and maximum table output fields are also normal..."""
@@ -12031,9 +11603,9 @@ class _TableOneIndependentVariable_v8_9Fields(TypedDict, total=False):
     minimum_table_output: float | None
     maximum_table_output: float | None
     input_unit_type_for_x: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     normalization_reference: float | None
     values: Sequence[TableOneIndependentVariableValuesItem_v8_9 | TableOneIndependentVariableValuesGroup_v8_9]
 
@@ -12067,10 +11639,10 @@ class TableOneIndependentVariable_v9_0_to_v9_1(_g._TypedIDFObject):
     maximum_table_output: float | None
     """Specify the maximum value calculated by this table lookup object used only when Interpolation Type is Evaluate Curve ..."""
     input_unit_type_for_x: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
     normalization_reference: float | None
     """This field is used to normalize the following ouput data. The minimum and maximum table output fields are also normal..."""
@@ -12095,9 +11667,9 @@ class _TableOneIndependentVariable_v9_0_to_v9_1Fields(TypedDict, total=False):
     minimum_table_output: float | None
     maximum_table_output: float | None
     input_unit_type_for_x: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     normalization_reference: float | None
     values: Sequence[
         TableOneIndependentVariableValuesItem_v9_0_to_v9_1 | TableOneIndependentVariableValuesGroup_v9_0_to_v9_1
@@ -12116,14 +11688,12 @@ class _ChillerElectric_v8_9_to_v24_1Fields(_g._ChillerElectricCommonFields, tota
 class CoolingTowerSingleSpeed_v8_9_to_v9_1(_g.AnyCoolingTowerSingleSpeed):
     """``CoolingTower:SingleSpeed`` as declared in EnergyPlus 8.9.0 to 9.1.0. This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
 
-    free_convection_air_flow_rate: float | Literal["", "Autocalculate"] | None
+    free_convection_air_flow_rate: float | Literal["Autocalculate"] | None
     """[m3/s]; Default: 0.0"""
     free_convection_air_flow_rate_sizing_factor: float | None
     """This field is only used if the previous field is set to autocalculate.; Default: 0.1; Range: >= 0.0, > True, <= 1.0, < True"""
-    free_convection_u_factor_times_area_value: float | Literal["", "Autocalculate"] | None
+    free_convection_u_factor_times_area_value: float | Literal["Autocalculate"] | None
     """[W/K]; Default: 0.0"""
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
     number_of_cells: float | None
     """Default: 1.0; Range: >= 1.0"""
 
@@ -12133,24 +11703,20 @@ class CoolingTowerSingleSpeed_v8_9_to_v9_1(_g.AnyCoolingTowerSingleSpeed):
     _creation_signature: _cv55.CoolingTowerSingleSpeed_v8_9_to_v9_1  # type: ignore[assignment]
 
 class _CoolingTowerSingleSpeed_v8_9_to_v9_1Fields(_g._CoolingTowerSingleSpeedCommonFields, total=False):
-    free_convection_air_flow_rate: float | Literal["", "Autocalculate"] | None
+    free_convection_air_flow_rate: float | Literal["Autocalculate"] | None
     free_convection_air_flow_rate_sizing_factor: float | None
-    free_convection_u_factor_times_area_value: float | Literal["", "Autocalculate"] | None
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
+    free_convection_u_factor_times_area_value: float | Literal["Autocalculate"] | None
     number_of_cells: float | None
 
 class CoolingTowerSingleSpeed_v9_2_to_v22_1(_g.AnyCoolingTowerSingleSpeed):
     """``CoolingTower:SingleSpeed`` as declared in EnergyPlus 9.2.0 to 22.1.0. This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
 
-    free_convection_regime_air_flow_rate: float | Literal["", "Autocalculate"] | None
+    free_convection_regime_air_flow_rate: float | Literal["Autocalculate"] | None
     """[m3/s]; Default: 0.0"""
     free_convection_regime_air_flow_rate_sizing_factor: float | None
     """This field is only used if the previous field is set to autocalculate.; Default: 0.1; Range: > 0.0, < 1.0"""
-    free_convection_regime_u_factor_times_area_value: float | Literal["", "Autocalculate"] | None
+    free_convection_regime_u_factor_times_area_value: float | Literal["Autocalculate"] | None
     """[W/K]; Default: 0.0"""
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
     number_of_cells: float | None
     """Default: 1.0; Range: >= 1.0"""
 
@@ -12160,11 +11726,9 @@ class CoolingTowerSingleSpeed_v9_2_to_v22_1(_g.AnyCoolingTowerSingleSpeed):
     _creation_signature: _cv15.CoolingTowerSingleSpeed_v9_2_to_v22_1  # type: ignore[assignment]
 
 class _CoolingTowerSingleSpeed_v9_2_to_v22_1Fields(_g._CoolingTowerSingleSpeedCommonFields, total=False):
-    free_convection_regime_air_flow_rate: float | Literal["", "Autocalculate"] | None
+    free_convection_regime_air_flow_rate: float | Literal["Autocalculate"] | None
     free_convection_regime_air_flow_rate_sizing_factor: float | None
-    free_convection_regime_u_factor_times_area_value: float | Literal["", "Autocalculate"] | None
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
+    free_convection_regime_u_factor_times_area_value: float | Literal["Autocalculate"] | None
     number_of_cells: float | None
 
 class Roof_v8_9_to_v9_5(_g.AnyRoof):
@@ -12196,9 +11760,7 @@ class GeneratorCombustionTurbine_v8_9_to_v9_2(_g.AnyGeneratorCombustionTurbine):
     """``Generator:CombustionTurbine`` as declared in EnergyPlus 8.9.0 to 9.2.0. This generator model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Genera..."""
 
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
-        ]
+        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
         | None
     )
     """Default: NaturalGas"""
@@ -12213,9 +11775,7 @@ class GeneratorCombustionTurbine_v8_9_to_v9_2(_g.AnyGeneratorCombustionTurbine):
 
 class _GeneratorCombustionTurbine_v8_9_to_v9_2Fields(_g._GeneratorCombustionTurbineCommonFields, total=False):
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
-        ]
+        Literal["Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"]
         | None
     )
 
@@ -12223,9 +11783,7 @@ class GeneratorCombustionTurbine_v9_3_to_v9_4(_g.AnyGeneratorCombustionTurbine):
     """``Generator:CombustionTurbine`` as declared in EnergyPlus 9.3.0 to 9.4.0. This generator model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Genera..."""
 
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
-        ]
+        Literal["Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"]
         | None
     )
     """Default: NaturalGas"""
@@ -12240,9 +11798,7 @@ class GeneratorCombustionTurbine_v9_3_to_v9_4(_g.AnyGeneratorCombustionTurbine):
 
 class _GeneratorCombustionTurbine_v9_3_to_v9_4Fields(_g._GeneratorCombustionTurbineCommonFields, total=False):
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
-        ]
+        Literal["Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"]
         | None
     )
 
@@ -12261,7 +11817,7 @@ class CoilHeatingGasMultiStage_v8_9_to_v22_1(_g.AnyCoilHeatingGasMultiStage):
 
     parasitic_gas_load: float | None
     """parasitic gas load associated with the gas coil operation (i.e., standing pilot); [W]"""
-    number_of_stages: float | None
+    number_of_stages: float
     """Enter the number of the following sets of data for coil capacity and Gas Burner Efficiency.; Range: >= 1.0, <= 4.0"""
     stage_1_parasitic_electric_load: float | None
     """Stage 1 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W)"""
@@ -12279,7 +11835,7 @@ class CoilHeatingGasMultiStage_v8_9_to_v22_1(_g.AnyCoilHeatingGasMultiStage):
 
 class _CoilHeatingGasMultiStage_v8_9_to_v22_1Fields(_g._CoilHeatingGasMultiStageCommonFields, total=False):
     parasitic_gas_load: float | None
-    number_of_stages: float | None
+    number_of_stages: float
     stage_1_parasitic_electric_load: float | None
     stage_2_parasitic_electric_load: float | None
     stage_3_parasitic_electric_load: float | None
@@ -12290,7 +11846,7 @@ class CoilHeatingGasMultiStage_v22_2_to_v23_1(_g.AnyCoilHeatingGasMultiStage):
 
     parasitic_gas_load: float | None
     """parasitic gas load associated with the gas coil operation (i.e., standing pilot); [W]"""
-    number_of_stages: int | None
+    number_of_stages: int
     """Enter the number of the following sets of data for coil capacity and Gas Burner Efficiency.; Range: >= 1, <= 4"""
     stage_1_parasitic_electric_load: float | None
     """Stage 1 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W)"""
@@ -12311,7 +11867,7 @@ class CoilHeatingGasMultiStage_v22_2_to_v23_1(_g.AnyCoilHeatingGasMultiStage):
 
 class _CoilHeatingGasMultiStage_v22_2_to_v23_1Fields(_g._CoilHeatingGasMultiStageCommonFields, total=False):
     parasitic_gas_load: float | None
-    number_of_stages: int | None
+    number_of_stages: int
     stage_1_parasitic_electric_load: float | None
     stage_2_parasitic_electric_load: float | None
     stage_3_parasitic_electric_load: float | None
@@ -12341,7 +11897,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1(
     """[dimensionless]; Default: 2.0; Range: >= 1.0, <= 10.0"""
     nominal_speed_level: float | None
     """must be lower than or equal to the highest speed number; [dimensionless]; Default: 2.0"""
-    speed_1_reference_unit_rated_air_flow: float | None
+    speed_1_reference_unit_rated_air_flow: float
     """[m3/s]; Range: >= 0.0"""
 
     def update(
@@ -12357,7 +11913,7 @@ class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1Fields
 ):
     number_of_speeds: float | None
     nominal_speed_level: float | None
-    speed_1_reference_unit_rated_air_flow: float | None
+    speed_1_reference_unit_rated_air_flow: float
 
 class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1(
     _g.AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit
@@ -12368,7 +11924,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1(
     """[dimensionless]; Default: 2; Range: >= 1, <= 10"""
     nominal_speed_level: int | None
     """must be lower than or equal to the highest speed number; [dimensionless]; Default: 2"""
-    speed_1_reference_unit_rated_air_flow: float | None
+    speed_1_reference_unit_rated_air_flow: float
     """[m3/s]; Range: >= 0.0"""
 
     def update(
@@ -12384,12 +11940,12 @@ class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1Field
 ):
     number_of_speeds: int | None
     nominal_speed_level: int | None
-    speed_1_reference_unit_rated_air_flow: float | None
+    speed_1_reference_unit_rated_air_flow: float
 
 class AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1(_g.AnyAirTerminalSingleDuctConstantVolumeCooledBeam):
     """``AirTerminal:SingleDuct:ConstantVolume:CooledBeam`` as declared in EnergyPlus 8.9.0 to 22.1.0. Central air system terminal unit, single duct, constant volume, with cooled beam (active or passive)."""
 
-    number_of_beams: float | Literal["", "Autosize"] | None
+    number_of_beams: float | Literal["Autosize"] | None
     """Number of individual beam units in the zone; Default: Autosize"""
 
     def update(
@@ -12403,7 +11959,7 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1(_g.AnyAirTermi
 class _AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1Fields(
     _g._AirTerminalSingleDuctConstantVolumeCooledBeamCommonFields, total=False
 ):
-    number_of_beams: float | Literal["", "Autosize"] | None
+    number_of_beams: float | Literal["Autosize"] | None
 
 class ConvergenceLimits_v8_9_to_v22_1(_g.AnyConvergenceLimits):
     """``ConvergenceLimits`` as declared in EnergyPlus 8.9.0 to 22.1.0. Specifies limits on HVAC system simulation timesteps and iterations. This item is an advanced feature that should be ..."""
@@ -12431,59 +11987,53 @@ class _ConvergenceLimits_v8_9_to_v22_1Fields(_g._ConvergenceLimitsCommonFields, 
 class WindowPropertyShadingControl_v8_9(_g._TypedIDFObject):
     """``WindowProperty:ShadingControl`` as declared in EnergyPlus 8.9.0. Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referenced by th..."""
 
-    shading_type: (
-        Literal[
-            "BetweenGlassBlind",
-            "BetweenGlassShade",
-            "ExteriorBlind",
-            "ExteriorScreen",
-            "ExteriorShade",
-            "InteriorBlind",
-            "InteriorShade",
-            "SwitchableGlazing",
-        ]
-        | None
-    )
+    shading_type: Literal[
+        "BetweenGlassBlind",
+        "BetweenGlassShade",
+        "ExteriorBlind",
+        "ExteriorScreen",
+        "ExteriorShade",
+        "InteriorBlind",
+        "InteriorShade",
+        "SwitchableGlazing",
+    ]
     construction_with_shading_name: str | None
     """Required if Shading Type = SwitchableGlazing Required if Shading Type = interior or exterior shade or blind, or exter..."""
-    shading_control_type: (
-        Literal[
-            "AlwaysOff",
-            "AlwaysOn",
-            "MeetDaylightIlluminanceSetpoint",
-            "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnIfHighGlare",
-            "OnIfHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
-            "OnIfHighOutdoorAirTemperature",
-            "OnIfHighSolarOnWindow",
-            "OnIfHighZoneAirTempAndHighHorizontalSolar",
-            "OnIfHighZoneAirTempAndHighSolarOnWindow",
-            "OnIfHighZoneAirTemperature",
-            "OnIfHighZoneCooling",
-            "OnIfScheduleAllows",
-            "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnNightIfHeatingAndOffDay",
-            "OnNightIfHeatingAndOnDayIfCooling",
-            "OnNightIfLowInsideTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOnDayIfCooling",
-        ]
-        | None
-    )
+    shading_control_type: Literal[
+        "AlwaysOff",
+        "AlwaysOn",
+        "MeetDaylightIlluminanceSetpoint",
+        "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnIfHighGlare",
+        "OnIfHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
+        "OnIfHighOutdoorAirTemperature",
+        "OnIfHighSolarOnWindow",
+        "OnIfHighZoneAirTempAndHighHorizontalSolar",
+        "OnIfHighZoneAirTempAndHighSolarOnWindow",
+        "OnIfHighZoneAirTemperature",
+        "OnIfHighZoneCooling",
+        "OnIfScheduleAllows",
+        "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnNightIfHeatingAndOffDay",
+        "OnNightIfHeatingAndOnDayIfCooling",
+        "OnNightIfLowInsideTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOnDayIfCooling",
+    ]
     """OnIfScheduleAllows requires that Schedule Name be specified and Shading Control Is Scheduled = Yes. AlwaysOn, AlwaysO..."""
     schedule_name: str | None
     """Required if Shading Control Is Scheduled = Yes. If schedule value = 1, shading control is active, i.e., shading can t..."""
     setpoint: float | None
     """W/m2 for solar-based controls, W for cooling- or heating-based controls, deg C for temperature-based controls. Unused...; [W/m2, W or deg C]"""
-    shading_control_is_scheduled: Literal["", "No", "Yes"] | None
+    shading_control_is_scheduled: Literal["No", "Yes"] | None
     """If Yes, Schedule Name is required; if No, Schedule Name is not used. Shading Control Is Scheduled = Yes is required i...; Default: No"""
-    glare_control_is_active: Literal["", "No", "Yes"] | None
+    glare_control_is_active: Literal["No", "Yes"] | None
     """If Yes and window is in a daylit zone, shading is on if zone's discomfort glare index exceeds the maximum discomfort ...; Default: No"""
     shading_device_material_name: str | None
     """Enter the name of a WindowMaterial:Shade, WindowMaterial:Screen or WindowMaterial:Blind object. Required if 'Construc..."""
-    type_of_slat_angle_control_for_blinds: Literal["", "BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"] | None
+    type_of_slat_angle_control_for_blinds: Literal["BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"] | None
     """Used only if Shading Type = InteriorBlind, ExteriorBlind or BetweenGlassBlind. If choice is ScheduledSlatAngle then S...; Default: FixedSlatAngle"""
     slat_angle_schedule_name: str | None
     """Used only if Shading Type = InteriorBlind, ExteriorBlind or BetweenGlassBlind. Required if Type of Slat Angle Control..."""
@@ -12496,52 +12046,46 @@ class WindowPropertyShadingControl_v8_9(_g._TypedIDFObject):
     _creation_signature: _cv13.WindowPropertyShadingControl_v8_9  # type: ignore[assignment]
 
 class _WindowPropertyShadingControl_v8_9Fields(TypedDict, total=False):
-    shading_type: (
-        Literal[
-            "BetweenGlassBlind",
-            "BetweenGlassShade",
-            "ExteriorBlind",
-            "ExteriorScreen",
-            "ExteriorShade",
-            "InteriorBlind",
-            "InteriorShade",
-            "SwitchableGlazing",
-        ]
-        | None
-    )
+    shading_type: Literal[
+        "BetweenGlassBlind",
+        "BetweenGlassShade",
+        "ExteriorBlind",
+        "ExteriorScreen",
+        "ExteriorShade",
+        "InteriorBlind",
+        "InteriorShade",
+        "SwitchableGlazing",
+    ]
     construction_with_shading_name: str | None
-    shading_control_type: (
-        Literal[
-            "AlwaysOff",
-            "AlwaysOn",
-            "MeetDaylightIlluminanceSetpoint",
-            "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnIfHighGlare",
-            "OnIfHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
-            "OnIfHighOutdoorAirTemperature",
-            "OnIfHighSolarOnWindow",
-            "OnIfHighZoneAirTempAndHighHorizontalSolar",
-            "OnIfHighZoneAirTempAndHighSolarOnWindow",
-            "OnIfHighZoneAirTemperature",
-            "OnIfHighZoneCooling",
-            "OnIfScheduleAllows",
-            "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnNightIfHeatingAndOffDay",
-            "OnNightIfHeatingAndOnDayIfCooling",
-            "OnNightIfLowInsideTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOnDayIfCooling",
-        ]
-        | None
-    )
+    shading_control_type: Literal[
+        "AlwaysOff",
+        "AlwaysOn",
+        "MeetDaylightIlluminanceSetpoint",
+        "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnIfHighGlare",
+        "OnIfHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
+        "OnIfHighOutdoorAirTemperature",
+        "OnIfHighSolarOnWindow",
+        "OnIfHighZoneAirTempAndHighHorizontalSolar",
+        "OnIfHighZoneAirTempAndHighSolarOnWindow",
+        "OnIfHighZoneAirTemperature",
+        "OnIfHighZoneCooling",
+        "OnIfScheduleAllows",
+        "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnNightIfHeatingAndOffDay",
+        "OnNightIfHeatingAndOnDayIfCooling",
+        "OnNightIfLowInsideTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOnDayIfCooling",
+    ]
     schedule_name: str | None
     setpoint: float | None
-    shading_control_is_scheduled: Literal["", "No", "Yes"] | None
-    glare_control_is_active: Literal["", "No", "Yes"] | None
+    shading_control_is_scheduled: Literal["No", "Yes"] | None
+    glare_control_is_active: Literal["No", "Yes"] | None
     shading_device_material_name: str | None
-    type_of_slat_angle_control_for_blinds: Literal["", "BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"] | None
+    type_of_slat_angle_control_for_blinds: Literal["BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"] | None
     slat_angle_schedule_name: str | None
     setpoint_2: float | None
 
@@ -12628,13 +12172,13 @@ class _AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2Fields(
 class HybridModelZone_v8_9_to_v9_0(_g.AnyHybridModelZone):
     """``HybridModel:Zone`` as declared in EnergyPlus 8.9.0 to 9.0.1. Zones with measured air temperature data and a range of dates. If the range of temperature measurement dates includes..."""
 
-    begin_month: float | None
+    begin_month: float
     """Range: >= 1.0, <= 12.0"""
-    begin_day_of_month: float | None
+    begin_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
-    end_month: float | None
+    end_month: float
     """Range: >= 1.0, <= 12.0"""
-    end_day_of_month: float | None
+    end_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
 
     def update(
@@ -12643,15 +12187,15 @@ class HybridModelZone_v8_9_to_v9_0(_g.AnyHybridModelZone):
     _creation_signature: _cv43.HybridModelZone_v8_9_to_v9_0  # type: ignore[assignment]
 
 class _HybridModelZone_v8_9_to_v9_0Fields(_g._HybridModelZoneCommonFields, total=False):
-    begin_month: float | None
-    begin_day_of_month: float | None
-    end_month: float | None
-    end_day_of_month: float | None
+    begin_month: float
+    begin_day_of_month: float
+    end_month: float
+    end_day_of_month: float
 
 class HybridModelZone_v9_1_to_v22_1(_g.AnyHybridModelZone):
     """``HybridModel:Zone`` as declared in EnergyPlus 9.1.0 to 22.1.0. Zones with measured air temperature data and a range of dates. If the range of temperature measurement dates includes..."""
 
-    calculate_zone_people_count: Literal["", "No", "Yes"] | None
+    calculate_zone_people_count: Literal["No", "Yes"] | None
     """Use measured humidity ratio data (temperature, humidity ratio, or CO2 concentration) to calculate zone people count. ...; Default: No"""
     zone_measured_air_humidity_ratio_schedule_name: str | None
     """from Schedule:File"""
@@ -12673,13 +12217,13 @@ class HybridModelZone_v9_1_to_v22_1(_g.AnyHybridModelZone):
     """from Schedule:File"""
     zone_input_supply_air_co2_concentration_schedule_name: str | None
     """from Schedule:File"""
-    begin_month: float | None
+    begin_month: float
     """Range: >= 1.0, <= 12.0"""
-    begin_day_of_month: float | None
+    begin_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
-    end_month: float | None
+    end_month: float
     """Range: >= 1.0, <= 12.0"""
-    end_day_of_month: float | None
+    end_day_of_month: float
     """Range: >= 1.0, <= 31.0"""
 
     def update(
@@ -12688,7 +12232,7 @@ class HybridModelZone_v9_1_to_v22_1(_g.AnyHybridModelZone):
     _creation_signature: _cv46.HybridModelZone_v9_1_to_v22_1  # type: ignore[assignment]
 
 class _HybridModelZone_v9_1_to_v22_1Fields(_g._HybridModelZoneCommonFields, total=False):
-    calculate_zone_people_count: Literal["", "No", "Yes"] | None
+    calculate_zone_people_count: Literal["No", "Yes"] | None
     zone_measured_air_humidity_ratio_schedule_name: str | None
     zone_measured_air_co2_concentration_schedule_name: str | None
     zone_input_people_activity_schedule_name: str | None
@@ -12699,29 +12243,26 @@ class _HybridModelZone_v9_1_to_v22_1Fields(_g._HybridModelZoneCommonFields, tota
     zone_input_supply_air_mass_flow_rate_schedule_name: str | None
     zone_input_supply_air_humidity_ratio_schedule_name: str | None
     zone_input_supply_air_co2_concentration_schedule_name: str | None
-    begin_month: float | None
-    begin_day_of_month: float | None
-    end_month: float | None
-    end_day_of_month: float | None
+    begin_month: float
+    begin_day_of_month: float
+    end_month: float
+    end_day_of_month: float
 
 class CoilWaterHeatingDesuperheater_v8_9_to_v9_1(_g.AnyCoilWaterHeatingDesuperheater):
     """``Coil:WaterHeating:Desuperheater`` as declared in EnergyPlus 8.9.0 to 9.1.0. Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
 
-    tank_object_type: Literal["", "WaterHeater:Mixed"] | None
+    tank_object_type: Literal["WaterHeater:Mixed"] | None
     """Specify the type of water heater tank used by this desuperheater water heating coil.; Default: WaterHeater:Mixed"""
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
     """The type of DX system that is providing waste heat for reclaim."""
 
     def update(
@@ -12733,41 +12274,35 @@ class CoilWaterHeatingDesuperheater_v8_9_to_v9_1(_g.AnyCoilWaterHeatingDesuperhe
     _creation_signature: _cv75.CoilWaterHeatingDesuperheater_v8_9_to_v9_1  # type: ignore[assignment]
 
 class _CoilWaterHeatingDesuperheater_v8_9_to_v9_1Fields(_g._CoilWaterHeatingDesuperheaterCommonFields, total=False):
-    tank_object_type: Literal["", "WaterHeater:Mixed"] | None
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    tank_object_type: Literal["WaterHeater:Mixed"] | None
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
 
 class CoilWaterHeatingDesuperheater_v9_2_to_v22_1(_g.AnyCoilWaterHeatingDesuperheater):
     """``Coil:WaterHeating:Desuperheater`` as declared in EnergyPlus 9.2.0 to 22.1.0. Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
 
-    tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None
+    tank_object_type: Literal["WaterHeater:Mixed", "WaterHeater:Stratified"] | None
     """Specify the type of water heater tank used by this desuperheater water heating coil.; Default: WaterHeater:Mixed"""
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Coil:Cooling:WaterToAirHeatPump:EquationFit",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Coil:Cooling:WaterToAirHeatPump:EquationFit",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
     """The type of DX system that is providing waste heat for reclaim."""
 
     def update(
@@ -12779,44 +12314,38 @@ class CoilWaterHeatingDesuperheater_v9_2_to_v22_1(_g.AnyCoilWaterHeatingDesuperh
     _creation_signature: _cv58.CoilWaterHeatingDesuperheater_v9_2_to_v22_1  # type: ignore[assignment]
 
 class _CoilWaterHeatingDesuperheater_v9_2_to_v22_1Fields(_g._CoilWaterHeatingDesuperheaterCommonFields, total=False):
-    tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Coil:Cooling:WaterToAirHeatPump:EquationFit",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    tank_object_type: Literal["WaterHeater:Mixed", "WaterHeater:Stratified"] | None
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Coil:Cooling:WaterToAirHeatPump:EquationFit",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
 
 class CoilWaterHeatingDesuperheater_v22_2_to_v24_2(_g.AnyCoilWaterHeatingDesuperheater):
     """``Coil:WaterHeating:Desuperheater`` as declared in EnergyPlus 22.2.0 to 24.2.0. Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
 
-    tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None
+    tank_object_type: Literal["WaterHeater:Mixed", "WaterHeater:Stratified"] | None
     """Specify the type of water heater tank used by this desuperheater water heating coil.; Default: WaterHeater:Mixed"""
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Coil:Cooling:WaterToAirHeatPump:EquationFit",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Coil:Cooling:WaterToAirHeatPump:EquationFit",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
     """The type of DX system that is providing waste heat for reclaim."""
 
     def update(
@@ -12828,23 +12357,20 @@ class CoilWaterHeatingDesuperheater_v22_2_to_v24_2(_g.AnyCoilWaterHeatingDesuper
     _creation_signature: _cv11.CoilWaterHeatingDesuperheater_v22_2_to_v24_2  # type: ignore[assignment]
 
 class _CoilWaterHeatingDesuperheater_v22_2_to_v24_2Fields(_g._CoilWaterHeatingDesuperheaterCommonFields, total=False):
-    tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None
-    heating_source_object_type: (
-        Literal[
-            "Coil:Cooling:DX",
-            "Coil:Cooling:DX:MultiSpeed",
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:TwoSpeed",
-            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
-            "Coil:Cooling:DX:VariableSpeed",
-            "Coil:Cooling:WaterToAirHeatPump:EquationFit",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:Condenser:AirCooled",
-            "Refrigeration:Condenser:EvaporativeCooled",
-            "Refrigeration:Condenser:WaterCooled",
-        ]
-        | None
-    )
+    tank_object_type: Literal["WaterHeater:Mixed", "WaterHeater:Stratified"] | None
+    heating_source_object_type: Literal[
+        "Coil:Cooling:DX",
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+        "Coil:Cooling:DX:VariableSpeed",
+        "Coil:Cooling:WaterToAirHeatPump:EquationFit",
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled",
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+    ]
 
 class AirTerminalSingleDuctSeriesPIUReheat_v8_9_to_v24_1(_g.AnyAirTerminalSingleDuctSeriesPIUReheat):
     """``AirTerminal:SingleDuct:SeriesPIU:Reheat`` as declared in EnergyPlus 8.9.0 to 24.1.0. Central air system terminal unit, single duct, variable volume, series powered induction unit (PIU), with reheat coil..."""
@@ -12868,7 +12394,7 @@ class AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2(_g.AnyAirTerminalSingl
     """``AirTerminal:SingleDuct:SeriesPIU:Reheat`` as declared in EnergyPlus 24.2.0 to 25.2.0. Central air system terminal unit, single duct, variable volume, series powered induction unit (PIU), with reheat coil..."""
 
     reheat_coil_air_inlet_node_name: str | None
-    fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None
+    fan_control_type: Literal["ConstantSpeed", "VariableSpeed"] | None
     """If VariableSpeed, then the fan object type must be Fan:SystemModel; Default: ConstantSpeed"""
     minimum_fan_turn_down_ratio: float | None
     """flow through terminal at minimum fan speed is this ratio multiplied by Maximum Air Flow Rate; [dimensionless]; Default: 0.3; Range: >= 0.0, <= 1.0"""
@@ -12890,7 +12416,7 @@ class _AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2Fields(
     _g._AirTerminalSingleDuctSeriesPIUReheatCommonFields, total=False
 ):
     reheat_coil_air_inlet_node_name: str | None
-    fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None
+    fan_control_type: Literal["ConstantSpeed", "VariableSpeed"] | None
     minimum_fan_turn_down_ratio: float | None
     heating_control_type: Literal["Modulated", "Staged"] | None
     design_heating_discharge_air_temperature: float | None
@@ -12899,16 +12425,16 @@ class _AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2Fields(
 class HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4(_g.AnyHeatPumpWaterToWaterEquationFitCooling):
     """``HeatPump:WaterToWater:EquationFit:Cooling`` as declared in EnergyPlus 8.9.0 to 9.4.0. simple water-water heat pump curve-fit model"""
 
-    cooling_capacity_coefficient_1: float | None
-    cooling_capacity_coefficient_2: float | None
-    cooling_capacity_coefficient_3: float | None
-    cooling_capacity_coefficient_4: float | None
-    cooling_capacity_coefficient_5: float | None
-    cooling_compressor_power_coefficient_1: float | None
-    cooling_compressor_power_coefficient_2: float | None
-    cooling_compressor_power_coefficient_3: float | None
-    cooling_compressor_power_coefficient_4: float | None
-    cooling_compressor_power_coefficient_5: float | None
+    cooling_capacity_coefficient_1: float
+    cooling_capacity_coefficient_2: float
+    cooling_capacity_coefficient_3: float
+    cooling_capacity_coefficient_4: float
+    cooling_capacity_coefficient_5: float
+    cooling_compressor_power_coefficient_1: float
+    cooling_compressor_power_coefficient_2: float
+    cooling_compressor_power_coefficient_3: float
+    cooling_compressor_power_coefficient_4: float
+    cooling_compressor_power_coefficient_5: float
 
     def update(
         self,
@@ -12921,16 +12447,16 @@ class HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4(_g.AnyHeatPumpWaterToW
 class _HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4Fields(
     _g._HeatPumpWaterToWaterEquationFitCoolingCommonFields, total=False
 ):
-    cooling_capacity_coefficient_1: float | None
-    cooling_capacity_coefficient_2: float | None
-    cooling_capacity_coefficient_3: float | None
-    cooling_capacity_coefficient_4: float | None
-    cooling_capacity_coefficient_5: float | None
-    cooling_compressor_power_coefficient_1: float | None
-    cooling_compressor_power_coefficient_2: float | None
-    cooling_compressor_power_coefficient_3: float | None
-    cooling_compressor_power_coefficient_4: float | None
-    cooling_compressor_power_coefficient_5: float | None
+    cooling_capacity_coefficient_1: float
+    cooling_capacity_coefficient_2: float
+    cooling_capacity_coefficient_3: float
+    cooling_capacity_coefficient_4: float
+    cooling_capacity_coefficient_5: float
+    cooling_compressor_power_coefficient_1: float
+    cooling_compressor_power_coefficient_2: float
+    cooling_compressor_power_coefficient_3: float
+    cooling_compressor_power_coefficient_4: float
+    cooling_compressor_power_coefficient_5: float
 
 class Building_v8_9_to_v22_1(_g.AnyBuilding):
     """``Building`` as declared in EnergyPlus 8.9.0 to 22.1.0. Describes parameters that are used during the simulation of the building. There are necessary correlations between th..."""
@@ -12969,7 +12495,7 @@ class _Building_v22_2_to_v26_1Fields(_g._BuildingCommonFields, total=False):
 class CentralHeatPumpSystem_v8_9_to_v22_1(_g.AnyCentralHeatPumpSystem):
     """``CentralHeatPumpSystem`` as declared in EnergyPlus 8.9.0 to 22.1.0. This chiller bank can contain multiple chiller heaters and heat pump performance objects. Its function is to encapsul..."""
 
-    control_method: Literal["", "SmartMixing"] | None
+    control_method: Literal["SmartMixing"] | None
     """Default: SmartMixing"""
     number_of_chiller_heater_modules_1: float | None
     """Default: 1.0; Range: >= 1.0"""
@@ -13018,7 +12544,7 @@ class CentralHeatPumpSystem_v8_9_to_v22_1(_g.AnyCentralHeatPumpSystem):
     _creation_signature: _cv34.CentralHeatPumpSystem_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _CentralHeatPumpSystem_v8_9_to_v22_1Fields(_g._CentralHeatPumpSystemCommonFields, total=False):
-    control_method: Literal["", "SmartMixing"] | None
+    control_method: Literal["SmartMixing"] | None
     number_of_chiller_heater_modules_1: float | None
     number_of_chiller_heater_modules_2: float | None
     number_of_chiller_heater_modules_3: float | None
@@ -13043,7 +12569,7 @@ class _CentralHeatPumpSystem_v8_9_to_v22_1Fields(_g._CentralHeatPumpSystemCommon
 class CentralHeatPumpSystem_v22_2_to_v26_1(_g.AnyCentralHeatPumpSystem):
     """``CentralHeatPumpSystem`` as declared in EnergyPlus 22.2.0 to 26.1.0. This chiller bank can contain multiple chiller heaters and heat pump performance objects. Its function is to encapsul..."""
 
-    control_method: Literal["", "SmartMixing"] | None
+    control_method: Literal["SmartMixing"] | None
     """Default: SmartMixing"""
     number_of_chiller_heater_modules_1: int | None
     """Default: 1; Range: >= 1"""
@@ -13092,7 +12618,7 @@ class CentralHeatPumpSystem_v22_2_to_v26_1(_g.AnyCentralHeatPumpSystem):
     _creation_signature: _cv59.CentralHeatPumpSystem_v22_2_to_v26_1  # type: ignore[assignment]
 
 class _CentralHeatPumpSystem_v22_2_to_v26_1Fields(_g._CentralHeatPumpSystemCommonFields, total=False):
-    control_method: Literal["", "SmartMixing"] | None
+    control_method: Literal["SmartMixing"] | None
     number_of_chiller_heater_modules_1: int | None
     number_of_chiller_heater_modules_2: int | None
     number_of_chiller_heater_modules_3: int | None
@@ -13581,7 +13107,6 @@ class WindowPropertyFrameAndDivider_v22_1_to_v26_1(_g.AnyWindowPropertyFrameAndD
     """'Vertical' means parallel to local window Y-axis; Default: 0.0; Range: >= 0.0"""
     nfrc_product_type_for_assembly_calculations: (
         Literal[
-            "",
             "CasementDouble",
             "CasementSingle",
             "CurtainWall",
@@ -13622,7 +13147,6 @@ class _WindowPropertyFrameAndDivider_v22_1_to_v26_1Fields(_g._WindowPropertyFram
     number_of_vertical_dividers: float | None
     nfrc_product_type_for_assembly_calculations: (
         Literal[
-            "",
             "CasementDouble",
             "CasementSingle",
             "CurtainWall",
@@ -13769,7 +13293,7 @@ class _CoilCoolingDXVariableSpeed_v23_2_to_v25_1Fields(_g._CoilCoolingDXVariable
 class GroundHeatExchangerPond_v8_9_to_v22_1(_g.AnyGroundHeatExchangerPond):
     """``GroundHeatExchanger:Pond`` as declared in EnergyPlus 8.9.0 to 22.1.0. A model of a shallow pond with immersed pipe loops. Typically used in hybrid geothermal systems and included in the c..."""
 
-    number_of_tubing_circuits: float | None
+    number_of_tubing_circuits: float
     """Range: >= 1.0"""
 
     def update(
@@ -13778,7 +13302,7 @@ class GroundHeatExchangerPond_v8_9_to_v22_1(_g.AnyGroundHeatExchangerPond):
     _creation_signature: _cv65.GroundHeatExchangerPond_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _GroundHeatExchangerPond_v8_9_to_v22_1Fields(_g._GroundHeatExchangerPondCommonFields, total=False):
-    number_of_tubing_circuits: float | None
+    number_of_tubing_circuits: float
 
 class TableMultiVariableLookupValuesGroup_v8_9(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableMultiVariableLookup_v8_9`."""
@@ -13795,7 +13319,7 @@ class TableMultiVariableLookup_v8_9(_g._TypedIDFObject):
     """``Table:MultiVariableLookup`` as declared in EnergyPlus 8.9.0. The multi-variable lookup table can represent from 1 to 6 independent variables and can interpolate these independent..."""
 
     interpolation_method: (
-        Literal["", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
+        Literal["EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
         | None
     )
     """Default: LagrangeInterpolationLinearExtrapolation"""
@@ -13817,12 +13341,12 @@ class TableMultiVariableLookup_v8_9(_g._TypedIDFObject):
         | None
     )
     """The curve types BiCubic and TriQuadratic may not be used with Interpolation Method = EvaluateCurveToLimits"""
-    table_data_format: Literal["", "SingleLineIndependentVariableWithMatrix"] | None
+    table_data_format: Literal["SingleLineIndependentVariableWithMatrix"] | None
     """Default: SingleLineIndependentVariableWithMatrix"""
     external_file_name: str | None
-    x1_sort_order: Literal["", "Ascending", "Descending"] | None
+    x1_sort_order: Literal["Ascending", "Descending"] | None
     """Default: Ascending"""
-    x2_sort_order: Literal["", "Ascending", "Descending"] | None
+    x2_sort_order: Literal["Ascending", "Descending"] | None
     """Default: Ascending"""
     normalization_reference: float | None
     """This field is used to normalize the table output data. The minimum and maximum table output fields are also normalize..."""
@@ -13843,30 +13367,30 @@ class TableMultiVariableLookup_v8_9(_g._TypedIDFObject):
     maximum_table_output: float | None
     """Specify the maximum value calculated by this curve object"""
     input_unit_type_for_x1: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x2: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x3: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x4: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x5: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x6: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
     number_of_independent_variables: float | None
     """Range: >= 0.0, > True, <= 6.0"""
@@ -13882,7 +13406,7 @@ class TableMultiVariableLookup_v8_9(_g._TypedIDFObject):
 
 class _TableMultiVariableLookup_v8_9Fields(TypedDict, total=False):
     interpolation_method: (
-        Literal["", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
+        Literal["EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
         | None
     )
     number_of_interpolation_points: float | None
@@ -13901,10 +13425,10 @@ class _TableMultiVariableLookup_v8_9Fields(TypedDict, total=False):
         ]
         | None
     )
-    table_data_format: Literal["", "SingleLineIndependentVariableWithMatrix"] | None
+    table_data_format: Literal["SingleLineIndependentVariableWithMatrix"] | None
     external_file_name: str | None
-    x1_sort_order: Literal["", "Ascending", "Descending"] | None
-    x2_sort_order: Literal["", "Ascending", "Descending"] | None
+    x1_sort_order: Literal["Ascending", "Descending"] | None
+    x2_sort_order: Literal["Ascending", "Descending"] | None
     normalization_reference: float | None
     minimum_value_of_x1: float | None
     maximum_value_of_x1: float | None
@@ -13921,24 +13445,24 @@ class _TableMultiVariableLookup_v8_9Fields(TypedDict, total=False):
     minimum_table_output: float | None
     maximum_table_output: float | None
     input_unit_type_for_x1: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x2: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x3: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x4: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x5: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x6: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     number_of_independent_variables: float | None
     number_of_values_for_independent_variable_x1: float | None
     field_1_determined_by_the_number_of_independent_variables: float | None
@@ -13960,19 +13484,19 @@ class TableMultiVariableLookup_v9_0_to_v9_1(_g._TypedIDFObject):
     """``Table:MultiVariableLookup`` as declared in EnergyPlus 9.0.1 to 9.1.0. The multi-variable lookup table can represent from 1 to 6 independent variables and can interpolate these independent..."""
 
     interpolation_method: (
-        Literal["", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
+        Literal["EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
         | None
     )
     """Default: LagrangeInterpolationLinearExtrapolation"""
     number_of_interpolation_points: float | None
     """Default: 3.0; Range: >= 1.0, > True, <= 4.0"""
     curve_type: Literal["BiQuadratic", "Cubic", "Linear", "Quadratic", "QuadraticLinear", "Quartic"] | None
-    table_data_format: Literal["", "SingleLineIndependentVariableWithMatrix"] | None
+    table_data_format: Literal["SingleLineIndependentVariableWithMatrix"] | None
     """Default: SingleLineIndependentVariableWithMatrix"""
     external_file_name: str | None
-    x1_sort_order: Literal["", "Ascending", "Descending"] | None
+    x1_sort_order: Literal["Ascending", "Descending"] | None
     """Default: Ascending"""
-    x2_sort_order: Literal["", "Ascending", "Descending"] | None
+    x2_sort_order: Literal["Ascending", "Descending"] | None
     """Default: Ascending"""
     normalization_reference: float | None
     """This field is used to normalize the table output data. The minimum and maximum table output fields are also normalize..."""
@@ -13993,30 +13517,30 @@ class TableMultiVariableLookup_v9_0_to_v9_1(_g._TypedIDFObject):
     maximum_table_output: float | None
     """Specify the maximum value calculated by this curve object"""
     input_unit_type_for_x1: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x2: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x3: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x4: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x5: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_x6: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
     number_of_independent_variables: float | None
     """Range: >= 0.0, > True, <= 6.0"""
@@ -14032,15 +13556,15 @@ class TableMultiVariableLookup_v9_0_to_v9_1(_g._TypedIDFObject):
 
 class _TableMultiVariableLookup_v9_0_to_v9_1Fields(TypedDict, total=False):
     interpolation_method: (
-        Literal["", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
+        Literal["EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
         | None
     )
     number_of_interpolation_points: float | None
     curve_type: Literal["BiQuadratic", "Cubic", "Linear", "Quadratic", "QuadraticLinear", "Quartic"] | None
-    table_data_format: Literal["", "SingleLineIndependentVariableWithMatrix"] | None
+    table_data_format: Literal["SingleLineIndependentVariableWithMatrix"] | None
     external_file_name: str | None
-    x1_sort_order: Literal["", "Ascending", "Descending"] | None
-    x2_sort_order: Literal["", "Ascending", "Descending"] | None
+    x1_sort_order: Literal["Ascending", "Descending"] | None
+    x2_sort_order: Literal["Ascending", "Descending"] | None
     normalization_reference: float | None
     minimum_value_of_x1: float | None
     maximum_value_of_x1: float | None
@@ -14057,32 +13581,32 @@ class _TableMultiVariableLookup_v9_0_to_v9_1Fields(TypedDict, total=False):
     minimum_table_output: float | None
     maximum_table_output: float | None
     input_unit_type_for_x1: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x2: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x3: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x4: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x5: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_x6: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     number_of_independent_variables: float | None
     number_of_values_for_independent_variable_x1: float | None
     field_1_determined_by_the_number_of_independent_variables: float | None
     field_2_determined_by_the_number_of_independent_variables: float | None
     values: Sequence[TableMultiVariableLookupValuesItem_v9_0_to_v9_1 | TableMultiVariableLookupValuesGroup_v9_0_to_v9_1]
 
-class ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1(_g.AnyZoneHVACWaterToAirHeatPump):
-    """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 8.9.0 to 9.1.0. Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
+class ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1(_g.AnyZoneHVACWaterToAirHeatPump):
+    """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 8.9.0 to 23.1.0. Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
 
     maximum_cycling_rate: float | None
     """The maximum on-off cycling rate for the compressor Suggested value is 2.5 for a typical heat pump; [cycles/hr]; Default: 2.5; Range: >= 0.0, <= 5.0"""
@@ -14092,58 +13616,24 @@ class ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1(_g.AnyZoneHVACWaterToAirHeatPump):
     """The fraction of on-cycle power use to adjust the part load fraction based on the off-cycle power consumption due to c...; Default: 0.01; Range: >= 0.0, <= 0.05"""
     heat_pump_fan_delay_time: float | None
     """Programmed time delay for heat pump fan to shut off after compressor cycle off. Only required when fan operating mode...; [s]; Default: 60.0; Range: >= 0.0"""
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
-    """[C]"""
 
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1Fields],
+        **kwargs: Unpack[_ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1Fields],
     ) -> None: ...  # type: ignore[override]
-    _creation_signature: _cv12.ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1  # type: ignore[assignment]
+    _creation_signature: _cv115.ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1  # type: ignore[assignment]
 
-class _ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1Fields(_g._ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
+class _ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1Fields(_g._ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
     maximum_cycling_rate: float | None
     heat_pump_time_constant: float | None
     fraction_of_on_cycle_power_use: float | None
     heat_pump_fan_delay_time: float | None
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
-
-class ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1(_g.AnyZoneHVACWaterToAirHeatPump):
-    """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 9.2.0 to 23.1.0. Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
-
-    maximum_cycling_rate: float | None
-    """The maximum on-off cycling rate for the compressor Suggested value is 2.5 for a typical heat pump; [cycles/hr]; Default: 2.5; Range: >= 0.0, <= 5.0"""
-    heat_pump_time_constant: float | None
-    """Time constant for the cooling coil's capacity to reach steady state after startup Suggested value is 60 for a typical...; [s]; Default: 60.0; Range: >= 0.0, <= 500.0"""
-    fraction_of_on_cycle_power_use: float | None
-    """The fraction of on-cycle power use to adjust the part load fraction based on the off-cycle power consumption due to c...; Default: 0.01; Range: >= 0.0, <= 0.05"""
-    heat_pump_fan_delay_time: float | None
-    """Programmed time delay for heat pump fan to shut off after compressor cycle off. Only required when fan operating mode...; [s]; Default: 60.0; Range: >= 0.0"""
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
-    """Supply air temperature from the supplemental heater will not exceed this value.; [C]; Default: Autosize"""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1Fields],
-    ) -> None: ...  # type: ignore[override]
-    _creation_signature: _cv107.ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1  # type: ignore[assignment]
-
-class _ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1Fields(_g._ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
-    maximum_cycling_rate: float | None
-    heat_pump_time_constant: float | None
-    fraction_of_on_cycle_power_use: float | None
-    heat_pump_fan_delay_time: float | None
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
 
 class ZoneHVACWaterToAirHeatPump_v23_2(_g.AnyZoneHVACWaterToAirHeatPump):
     """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 23.2.0. Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
 
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
-    """Supply air temperature from the supplemental heater will not exceed this value.; [C]; Default: Autosize"""
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     """Enter the type of performance specification object used to describe the multispeed coil or fan."""
     design_specification_multispeed_object_name: str | None
@@ -14155,17 +13645,14 @@ class ZoneHVACWaterToAirHeatPump_v23_2(_g.AnyZoneHVACWaterToAirHeatPump):
     _creation_signature: _cv118.ZoneHVACWaterToAirHeatPump_v23_2  # type: ignore[assignment]
 
 class _ZoneHVACWaterToAirHeatPump_v23_2Fields(_g._ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     design_specification_multispeed_object_name: str | None
 
 class ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1(_g.AnyZoneHVACWaterToAirHeatPump):
     """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 24.1.0 to 25.1.0. Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
 
-    no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
+    no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None
     """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes"""
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
-    """Supply air temperature from the supplemental heater will not exceed this value.; [C]; Default: Autosize"""
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     """Enter the type of performance specification object used to describe the multispeed coil or fan."""
     design_specification_multispeed_object_name: str | None
@@ -14180,35 +13667,31 @@ class ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1(_g.AnyZoneHVACWaterToAirHeatPump
     _creation_signature: _cv127.ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1  # type: ignore[assignment]
 
 class _ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1Fields(_g._ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
-    no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
+    no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     design_specification_multispeed_object_name: str | None
 
 class FloorDetailed_v8_9_to_v9_5(_g.AnyFloorDetailed):
     """``Floor:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of floor heat transfer surfaces."""
 
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorDetailed_v8_9_to_v9_5Fields]
@@ -14216,54 +13699,48 @@ class FloorDetailed_v8_9_to_v9_5(_g.AnyFloorDetailed):
     _creation_signature: _cv36.FloorDetailed_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _FloorDetailed_v8_9_to_v9_5Fields(_g._FloorDetailedCommonFields, total=False):
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
 class FloorDetailed_v9_6_to_v24_2(_g.AnyFloorDetailed):
     """``Floor:Detailed`` as declared in EnergyPlus 9.6.0 to 24.2.0. Allows for detailed entry of floor heat transfer surfaces."""
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorDetailed_v9_6_to_v24_2Fields]
@@ -14272,34 +13749,30 @@ class FloorDetailed_v9_6_to_v24_2(_g.AnyFloorDetailed):
 
 class _FloorDetailed_v9_6_to_v24_2Fields(_g._FloorDetailedCommonFields, total=False):
     space_name: str | None
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
 class HeatExchangerFluidToFluid_v8_9_to_v25_2(_g.AnyHeatExchangerFluidToFluid):
     """``HeatExchanger:FluidToFluid`` as declared in EnergyPlus 8.9.0 to 25.2.0. A fluid/fluid heat exchanger designed to couple the supply side of one loop to the demand side of another loop Loops ..."""
 
     heat_transfer_metering_end_use_type: (
         Literal[
-            "",
             "FreeCooling",
             "HeatRecovery",
             "HeatRecoveryForCooling",
@@ -14322,7 +13795,6 @@ class HeatExchangerFluidToFluid_v8_9_to_v25_2(_g.AnyHeatExchangerFluidToFluid):
 class _HeatExchangerFluidToFluid_v8_9_to_v25_2Fields(_g._HeatExchangerFluidToFluidCommonFields, total=False):
     heat_transfer_metering_end_use_type: (
         Literal[
-            "",
             "FreeCooling",
             "HeatRecovery",
             "HeatRecoveryForCooling",
@@ -14677,7 +14149,7 @@ class _AirLoopHVACUnitarySystem_v23_2Fields(_g._AirLoopHVACUnitarySystemCommonFi
 class EnergyManagementSystemTrendVariable_v8_9_to_v22_1(_g.AnyEnergyManagementSystemTrendVariable):
     """``EnergyManagementSystem:TrendVariable`` as declared in EnergyPlus 8.9.0 to 22.1.0. This object sets up an EMS trend variable from an Erl variable A trend variable logs values across timesteps"""
 
-    number_of_timesteps_to_be_logged: float | None
+    number_of_timesteps_to_be_logged: float
     """Range: >= 1.0"""
 
     def update(
@@ -14691,7 +14163,7 @@ class EnergyManagementSystemTrendVariable_v8_9_to_v22_1(_g.AnyEnergyManagementSy
 class _EnergyManagementSystemTrendVariable_v8_9_to_v22_1Fields(
     _g._EnergyManagementSystemTrendVariableCommonFields, total=False
 ):
-    number_of_timesteps_to_be_logged: float | None
+    number_of_timesteps_to_be_logged: float
 
 class HVACTemplateSystemUnitarySystem_v8_9_to_v22_1(_g.AnyHVACTemplateSystemUnitarySystem):
     """``HVACTemplate:System:UnitarySystem`` as declared in EnergyPlus 8.9.0 to 22.1.0. Unitary HVAC system with optional cooling and heating. Supports DX and chilled water, cooling, gas, electric, and hot..."""
@@ -14718,21 +14190,18 @@ class _HVACTemplateSystemUnitarySystem_v8_9_to_v22_1Fields(
 class CoilCoolingDXMultiSpeed_v8_9_to_v9_2(_g.AnyCoilCoolingDXMultiSpeed):
     """``Coil:Cooling:DX:MultiSpeed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Direct expansion (DX) cooling coil and condensing unit (includes electric or engine-driven compressor and condenser f..."""
 
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
-    number_of_speeds: float | None
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
+    number_of_speeds: float
     """Enter the number of the following sets of data for coil capacity, SHR, COP, flow rate, and associated curves.; Range: >= 2.0, <= 4.0"""
     speed_1_rated_evaporator_fan_power_per_volume_flow_rate: float | None
     """Enter the evaporator fan power per air volume flow rate at the rated test conditions. The test conditions vary extern...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0"""
@@ -14749,21 +14218,18 @@ class CoilCoolingDXMultiSpeed_v8_9_to_v9_2(_g.AnyCoilCoolingDXMultiSpeed):
     _creation_signature: _cv68.CoilCoolingDXMultiSpeed_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _CoilCoolingDXMultiSpeed_v8_9_to_v9_2Fields(_g._CoilCoolingDXMultiSpeedCommonFields, total=False):
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
-    number_of_speeds: float | None
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOil#1",
+        "FuelOil#2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
+    number_of_speeds: float
     speed_1_rated_evaporator_fan_power_per_volume_flow_rate: float | None
     speed_2_rated_evaporator_fan_power_per_volume_flow_rate: float | None
     speed_3_rated_evaporator_fan_power_per_volume_flow_rate: float | None
@@ -14772,21 +14238,18 @@ class _CoilCoolingDXMultiSpeed_v8_9_to_v9_2Fields(_g._CoilCoolingDXMultiSpeedCom
 class CoilCoolingDXMultiSpeed_v9_3_to_v22_1(_g.AnyCoilCoolingDXMultiSpeed):
     """``Coil:Cooling:DX:MultiSpeed`` as declared in EnergyPlus 9.3.0 to 22.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric or engine-driven compressor and condenser f..."""
 
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
-    number_of_speeds: float | None
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
+    number_of_speeds: float
     """Enter the number of the following sets of data for coil capacity, SHR, COP, flow rate, and associated curves.; Range: >= 2.0, <= 4.0"""
     speed_1_rated_evaporator_fan_power_per_volume_flow_rate: float | None
     """Enter the evaporator fan power per air volume flow rate at the rated test conditions. The test conditions vary extern...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0"""
@@ -14803,21 +14266,18 @@ class CoilCoolingDXMultiSpeed_v9_3_to_v22_1(_g.AnyCoilCoolingDXMultiSpeed):
     _creation_signature: _cv28.CoilCoolingDXMultiSpeed_v9_3_to_v22_1  # type: ignore[assignment]
 
 class _CoilCoolingDXMultiSpeed_v9_3_to_v22_1Fields(_g._CoilCoolingDXMultiSpeedCommonFields, total=False):
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
-    number_of_speeds: float | None
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
+    number_of_speeds: float
     speed_1_rated_evaporator_fan_power_per_volume_flow_rate: float | None
     speed_2_rated_evaporator_fan_power_per_volume_flow_rate: float | None
     speed_3_rated_evaporator_fan_power_per_volume_flow_rate: float | None
@@ -14826,21 +14286,18 @@ class _CoilCoolingDXMultiSpeed_v9_3_to_v22_1Fields(_g._CoilCoolingDXMultiSpeedCo
 class CoilCoolingDXMultiSpeed_v22_2_to_v23_1(_g.AnyCoilCoolingDXMultiSpeed):
     """``Coil:Cooling:DX:MultiSpeed`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric or engine-driven compressor and condenser f..."""
 
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
-    number_of_speeds: int | None
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
+    number_of_speeds: int
     """Enter the number of the following sets of data for coil capacity, SHR, COP, flow rate, and associated curves.; Range: >= 2, <= 4"""
 
     def update(
@@ -14849,27 +14306,24 @@ class CoilCoolingDXMultiSpeed_v22_2_to_v23_1(_g.AnyCoilCoolingDXMultiSpeed):
     _creation_signature: _cv127.CoilCoolingDXMultiSpeed_v22_2_to_v23_1  # type: ignore[assignment]
 
 class _CoilCoolingDXMultiSpeed_v22_2_to_v23_1Fields(_g._CoilCoolingDXMultiSpeedCommonFields, total=False):
-    fuel_type: (
-        Literal[
-            "Diesel",
-            "Electricity",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-        ]
-        | None
-    )
-    number_of_speeds: int | None
+    fuel_type: Literal[
+        "Diesel",
+        "Electricity",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+    ]
+    number_of_speeds: int
 
 class MatrixTwoDimension_v8_9_to_v22_1(_g.AnyMatrixTwoDimension):
     """``Matrix:TwoDimension`` as declared in EnergyPlus 8.9.0 to 22.1.0. matrix data in row-major order list each row keeping the columns in order number of values must equal N1 x N2"""
 
-    number_of_rows: float | None
-    number_of_columns: float | None
+    number_of_rows: float
+    number_of_columns: float
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MatrixTwoDimension_v8_9_to_v22_1Fields]
@@ -14877,8 +14331,8 @@ class MatrixTwoDimension_v8_9_to_v22_1(_g.AnyMatrixTwoDimension):
     _creation_signature: _cv66.MatrixTwoDimension_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _MatrixTwoDimension_v8_9_to_v22_1Fields(_g._MatrixTwoDimensionCommonFields, total=False):
-    number_of_rows: float | None
-    number_of_columns: float | None
+    number_of_rows: float
+    number_of_columns: float
 
 class WallExterior_v8_9_to_v9_5(_g.AnyWallExterior):
     """``Wall:Exterior`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of exterior walls. View Factor to Ground is automatically calculated."""
@@ -14893,7 +14347,7 @@ class _WallExterior_v8_9_to_v9_5Fields(_g._WallExteriorCommonFields, total=False
 class DemandManagerAssignmentList_v8_9_to_v22_1(_g.AnyDemandManagerAssignmentList):
     """``DemandManagerAssignmentList`` as declared in EnergyPlus 8.9.0 to 22.1.0. a list of meters that can be reported are available after a run on the meter dictionary file (.mdd) if the Output:Var..."""
 
-    demand_window_length: float | None
+    demand_window_length: float
     """[minutes]; Range: > 0.0"""
 
     def update(
@@ -14905,12 +14359,12 @@ class DemandManagerAssignmentList_v8_9_to_v22_1(_g.AnyDemandManagerAssignmentLis
     _creation_signature: _cv112.DemandManagerAssignmentList_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _DemandManagerAssignmentList_v8_9_to_v22_1Fields(_g._DemandManagerAssignmentListCommonFields, total=False):
-    demand_window_length: float | None
+    demand_window_length: float
 
 class ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1(_g.AnyChillerHeaterPerformanceElectricEIR):
     """``ChillerHeaterPerformance:Electric:EIR`` as declared in EnergyPlus 8.9.0 to 26.1.0. This chiller model is a generic chiller-heater where the cooling mode performance is a function of condenser entering..."""
 
-    condenser_type: Literal["", "AirCooled", "WaterCooled"] | None
+    condenser_type: Literal["AirCooled", "WaterCooled"] | None
     """Default: WaterCooled"""
 
     def update(
@@ -14924,7 +14378,7 @@ class ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1(_g.AnyChillerHeaterPerfo
 class _ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1Fields(
     _g._ChillerHeaterPerformanceElectricEIRCommonFields, total=False
 ):
-    condenser_type: Literal["", "AirCooled", "WaterCooled"] | None
+    condenser_type: Literal["AirCooled", "WaterCooled"] | None
 
 class ThermalStorageChilledWaterStratified_v8_9_to_v22_1(_g.AnyThermalStorageChilledWaterStratified):
     """``ThermalStorage:ChilledWater:Stratified`` as declared in EnergyPlus 8.9.0 to 22.1.0. Chilled water storage with a stratified, multi-node tank. The chilled water is 'used' by drawing from the 'Use Side' ..."""
@@ -15000,15 +14454,15 @@ class _DemandManagerLights_v8_9_to_v22_1Fields(_g._DemandManagerLightsCommonFiel
 class ConstructionInternalSource_v8_9_to_v9_3(_g._TypedIDFObject):
     """``Construction:InternalSource`` as declared in EnergyPlus 8.9.0 to 9.3.0. Start with outside layer and work your way to the inside Layer Up to 10 layers total, 8 for windows Enter the materia..."""
 
-    source_present_after_layer_number: float | None
+    source_present_after_layer_number: float
     """refers to the list of materials which follows; Range: >= 1.0"""
-    temperature_calculation_requested_after_layer_number: float | None
+    temperature_calculation_requested_after_layer_number: float
     """refers to the list of materials which follows"""
-    dimensions_for_the_ctf_calculation: float | None
+    dimensions_for_the_ctf_calculation: float
     """1 = 1-dimensional calculation, 2 = 2-dimensional calculation; Range: >= 1.0, <= 2.0"""
-    tube_spacing: float | None
+    tube_spacing: float
     """uniform spacing between tubes or resistance wires in direction perpendicular to main intended direction of heat transfer; [m]"""
-    outside_layer: str | None
+    outside_layer: str
     layer_2: str | None
     layer_3: str | None
     layer_4: str | None
@@ -15028,11 +14482,11 @@ class ConstructionInternalSource_v8_9_to_v9_3(_g._TypedIDFObject):
     _creation_signature: _cv113.ConstructionInternalSource_v8_9_to_v9_3  # type: ignore[assignment]
 
 class _ConstructionInternalSource_v8_9_to_v9_3Fields(TypedDict, total=False):
-    source_present_after_layer_number: float | None
-    temperature_calculation_requested_after_layer_number: float | None
-    dimensions_for_the_ctf_calculation: float | None
-    tube_spacing: float | None
-    outside_layer: str | None
+    source_present_after_layer_number: float
+    temperature_calculation_requested_after_layer_number: float
+    dimensions_for_the_ctf_calculation: float
+    tube_spacing: float
+    outside_layer: str
     layer_2: str | None
     layer_3: str | None
     layer_4: str | None
@@ -15046,17 +14500,17 @@ class _ConstructionInternalSource_v8_9_to_v9_3Fields(TypedDict, total=False):
 class ConstructionInternalSource_v9_4(_g._TypedIDFObject):
     """``Construction:InternalSource`` as declared in EnergyPlus 9.4.0. Start with outside layer and work your way to the inside Layer Up to 10 layers total Enter the material name for each..."""
 
-    source_present_after_layer_number: float | None
+    source_present_after_layer_number: float
     """refers to the list of materials which follows; Range: >= 1.0, <= 10.0"""
-    temperature_calculation_requested_after_layer_number: float | None
+    temperature_calculation_requested_after_layer_number: float
     """refers to the list of materials which follows; Range: >= 1.0, <= 10.0"""
-    dimensions_for_the_ctf_calculation: float | None
+    dimensions_for_the_ctf_calculation: float
     """1 = 1-dimensional calculation, 2 = 2-dimensional calculation; Range: >= 1.0, <= 2.0"""
-    tube_spacing: float | None
+    tube_spacing: float
     """uniform spacing between tubes or resistance wires in direction perpendicular to main intended direction of heat transfer; [m]; Range: >= 0.0, <= 1.0, < True"""
     two_dimensional_temperature_calculation_position: float | None
     """used in conjunction with field Temperature Calculation Requested After Layer Number this field is the location perpen...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
-    outside_layer: str | None
+    outside_layer: str
     layer_2: str | None
     layer_3: str | None
     layer_4: str | None
@@ -15073,12 +14527,12 @@ class ConstructionInternalSource_v9_4(_g._TypedIDFObject):
     _creation_signature: _cv106.ConstructionInternalSource_v9_4  # type: ignore[assignment]
 
 class _ConstructionInternalSource_v9_4Fields(TypedDict, total=False):
-    source_present_after_layer_number: float | None
-    temperature_calculation_requested_after_layer_number: float | None
-    dimensions_for_the_ctf_calculation: float | None
-    tube_spacing: float | None
+    source_present_after_layer_number: float
+    temperature_calculation_requested_after_layer_number: float
+    dimensions_for_the_ctf_calculation: float
+    tube_spacing: float
     two_dimensional_temperature_calculation_position: float | None
-    outside_layer: str | None
+    outside_layer: str
     layer_2: str | None
     layer_3: str | None
     layer_4: str | None
@@ -15094,7 +14548,7 @@ class MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1(
 ):
     """``MaterialProperty:HeatAndMoistureTransfer:Redistribution`` as declared in EnergyPlus 8.9.0 to 22.1.0. HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between liquid tran..."""
 
-    number_of_redistribution_points: float | None
+    number_of_redistribution_points: float
     """number of data points; Range: >= 1.0, <= 25.0"""
 
     def update(
@@ -15108,7 +14562,7 @@ class MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1(
 class _MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1Fields(
     _g._MaterialPropertyHeatAndMoistureTransferRedistributionCommonFields, total=False
 ):
-    number_of_redistribution_points: float | None
+    number_of_redistribution_points: float
 
 class AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9(_g.AnyAirflowNetworkDistributionComponentOutdoorAirFlow):
     """``AirflowNetwork:Distribution:Component:OutdoorAirFlow`` as declared in EnergyPlus 8.9.0. This object includes the outdoor air flow rate set by the Controller:OutdoorAir object in the airflow network."""
@@ -15128,25 +14582,22 @@ class _AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9Fields(
 class RoofCeilingDetailed_v8_9_to_v9_5(_g.AnyRoofCeilingDetailed):
     """``RoofCeiling:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of roof/ceiling heat transfer surfaces."""
 
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofCeilingDetailed_v8_9_to_v9_5Fields]
@@ -15154,50 +14605,44 @@ class RoofCeilingDetailed_v8_9_to_v9_5(_g.AnyRoofCeilingDetailed):
     _creation_signature: _cv124.RoofCeilingDetailed_v8_9_to_v9_5  # type: ignore[assignment]
 
 class _RoofCeilingDetailed_v8_9_to_v9_5Fields(_g._RoofCeilingDetailedCommonFields, total=False):
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
 class RoofCeilingDetailed_v9_6_to_v24_2(_g.AnyRoofCeilingDetailed):
     """``RoofCeiling:Detailed`` as declared in EnergyPlus 9.6.0 to 24.2.0. Allows for detailed entry of roof/ceiling heat transfer surfaces."""
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofCeilingDetailed_v9_6_to_v24_2Fields]
@@ -15206,25 +14651,22 @@ class RoofCeilingDetailed_v9_6_to_v24_2(_g.AnyRoofCeilingDetailed):
 
 class _RoofCeilingDetailed_v9_6_to_v24_2Fields(_g._RoofCeilingDetailedCommonFields, total=False):
     space_name: str | None
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Surface",
+        "Zone",
+    ]
 
 class ZoneHVACEvaporativeCoolerUnit_v8_9_to_v23_1(_g.AnyZoneHVACEvaporativeCoolerUnit):
     """``ZoneHVAC:EvaporativeCoolerUnit`` as declared in EnergyPlus 8.9.0 to 23.1.0. Zone evaporative cooler. Forced-convection cooling-only unit with supply fan, 100% outdoor air supply. Optional relie..."""
@@ -15244,7 +14686,7 @@ class _ZoneHVACEvaporativeCoolerUnit_v8_9_to_v23_1Fields(
 class LifeCycleCostUsePriceEscalation_v8_9_to_v9_2(_g.AnyLifeCycleCostUsePriceEscalation):
     """``LifeCycleCost:UsePriceEscalation`` as declared in EnergyPlus 8.9.0 to 9.2.0. Life cycle cost escalation factors. The values for this object may be found in the annual supplement to NIST Handbook..."""
 
-    resource: str | None
+    resource: str
     escalation_start_year: float | None
     """This field and the Escalation Start Month define the time that corresponds to Year 1 Escalation such as 2010 when the...; Range: >= 1900.0, <= 2100.0"""
 
@@ -15257,33 +14699,30 @@ class LifeCycleCostUsePriceEscalation_v8_9_to_v9_2(_g.AnyLifeCycleCostUsePriceEs
     _creation_signature: _cv35.LifeCycleCostUsePriceEscalation_v8_9_to_v9_2  # type: ignore[assignment]
 
 class _LifeCycleCostUsePriceEscalation_v8_9_to_v9_2Fields(_g._LifeCycleCostUsePriceEscalationCommonFields, total=False):
-    resource: str | None
+    resource: str
     escalation_start_year: float | None
 
 class LifeCycleCostUsePriceEscalation_v9_3_to_v22_1(_g.AnyLifeCycleCostUsePriceEscalation):
     """``LifeCycleCost:UsePriceEscalation`` as declared in EnergyPlus 9.3.0 to 22.1.0. Life cycle cost escalation factors. The values for this object may be found in the annual supplement to NIST Handbook..."""
 
-    resource: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "ElectricityNet",
-            "ElectricityProduced",
-            "ElectricityPurchased",
-            "ElectricitySurplusSold",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    resource: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "ElectricityNet",
+        "ElectricityProduced",
+        "ElectricityPurchased",
+        "ElectricitySurplusSold",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
     escalation_start_year: float | None
     """This field and the Escalation Start Month define the time that corresponds to Year 1 Escalation such as 2010 when the...; Range: >= 1900.0, <= 2100.0"""
 
@@ -15298,53 +14737,47 @@ class LifeCycleCostUsePriceEscalation_v9_3_to_v22_1(_g.AnyLifeCycleCostUsePriceE
 class _LifeCycleCostUsePriceEscalation_v9_3_to_v22_1Fields(
     _g._LifeCycleCostUsePriceEscalationCommonFields, total=False
 ):
-    resource: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "ElectricityNet",
-            "ElectricityProduced",
-            "ElectricityPurchased",
-            "ElectricitySurplusSold",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    resource: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "ElectricityNet",
+        "ElectricityProduced",
+        "ElectricityPurchased",
+        "ElectricitySurplusSold",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
     escalation_start_year: float | None
 
 class LifeCycleCostUsePriceEscalation_v22_2_to_v23_1(_g.AnyLifeCycleCostUsePriceEscalation):
     """``LifeCycleCost:UsePriceEscalation`` as declared in EnergyPlus 22.2.0 to 23.1.0. Life cycle cost escalation factors. The values for this object may be found in the annual supplement to NIST Handbook..."""
 
-    resource: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "ElectricityNet",
-            "ElectricityProduced",
-            "ElectricityPurchased",
-            "ElectricitySurplusSold",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    resource: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "ElectricityNet",
+        "ElectricityProduced",
+        "ElectricityPurchased",
+        "ElectricitySurplusSold",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
     escalation_start_year: int | None
     """This field and the Escalation Start Month define the time that corresponds to Year 1 Escalation such as 2010 when the...; Range: >= 1900, <= 2100"""
 
@@ -15359,27 +14792,24 @@ class LifeCycleCostUsePriceEscalation_v22_2_to_v23_1(_g.AnyLifeCycleCostUsePrice
 class _LifeCycleCostUsePriceEscalation_v22_2_to_v23_1Fields(
     _g._LifeCycleCostUsePriceEscalationCommonFields, total=False
 ):
-    resource: (
-        Literal[
-            "Coal",
-            "Diesel",
-            "Electricity",
-            "ElectricityNet",
-            "ElectricityProduced",
-            "ElectricityPurchased",
-            "ElectricitySurplusSold",
-            "FuelOilNo1",
-            "FuelOilNo2",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
-            "Steam",
-            "Water",
-        ]
-        | None
-    )
+    resource: Literal[
+        "Coal",
+        "Diesel",
+        "Electricity",
+        "ElectricityNet",
+        "ElectricityProduced",
+        "ElectricityPurchased",
+        "ElectricitySurplusSold",
+        "FuelOilNo1",
+        "FuelOilNo2",
+        "Gasoline",
+        "NaturalGas",
+        "OtherFuel1",
+        "OtherFuel2",
+        "Propane",
+        "Steam",
+        "Water",
+    ]
     escalation_start_year: int | None
 
 class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5(_g.AnyCoilCoolingWaterDetailedGeometry):
@@ -15417,7 +14847,7 @@ class TableTwoIndependentVariables_v8_9_to_v9_1(_g._TypedIDFObject):
 
     curve_type: Literal["BiQuadratic", "QuadraticLinear"] | None
     interpolation_method: (
-        Literal["", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
+        Literal["EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
         | None
     )
     """Default: LagrangeInterpolationLinearExtrapolation"""
@@ -15430,15 +14860,14 @@ class TableTwoIndependentVariables_v8_9_to_v9_1(_g._TypedIDFObject):
     maximum_table_output: float | None
     """Specify the maximum value calculated by this table lookup object"""
     input_unit_type_for_x: (
-        Literal["", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     """Default: Dimensionless"""
     input_unit_type_for_y: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"]
-        | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"] | None
     )
     """Default: Dimensionless"""
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
     normalization_reference: float | None
     """This field is used to normalize the following output data. The minimum and maximum table output fields are also norma..."""
@@ -15456,7 +14885,7 @@ class TableTwoIndependentVariables_v8_9_to_v9_1(_g._TypedIDFObject):
 class _TableTwoIndependentVariables_v8_9_to_v9_1Fields(TypedDict, total=False):
     curve_type: Literal["BiQuadratic", "QuadraticLinear"] | None
     interpolation_method: (
-        Literal["", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
+        Literal["EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"]
         | None
     )
     minimum_value_of_x: float | None
@@ -15466,13 +14895,12 @@ class _TableTwoIndependentVariables_v8_9_to_v9_1Fields(TypedDict, total=False):
     minimum_table_output: float | None
     maximum_table_output: float | None
     input_unit_type_for_x: (
-        Literal["", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
+        Literal["Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"] | None
     )
     input_unit_type_for_y: (
-        Literal["", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"]
-        | None
+        Literal["Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"] | None
     )
-    output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
+    output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     normalization_reference: float | None
     external_file_name: str | None
     values: Sequence[
@@ -15548,7 +14976,6 @@ class HVACTemplateSystemVRF_v8_9_to_v9_2(_g.AnyHVACTemplateSystemVRF):
     """Enter the total number of compressor. This input is used only for crankcase heater calculations.; [dimensionless]; Default: 2.0"""
     fuel_type: (
         Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOil#1",
@@ -15572,7 +14999,6 @@ class _HVACTemplateSystemVRF_v8_9_to_v9_2Fields(_g._HVACTemplateSystemVRFCommonF
     number_of_compressors: float | None
     fuel_type: (
         Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOil#1",
@@ -15593,7 +15019,6 @@ class HVACTemplateSystemVRF_v9_3_to_v22_1(_g.AnyHVACTemplateSystemVRF):
     """Enter the total number of compressor. This input is used only for crankcase heater calculations.; [dimensionless]; Default: 2.0"""
     fuel_type: (
         Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -15617,7 +15042,6 @@ class _HVACTemplateSystemVRF_v9_3_to_v22_1Fields(_g._HVACTemplateSystemVRFCommon
     number_of_compressors: float | None
     fuel_type: (
         Literal[
-            "",
             "Diesel",
             "Electricity",
             "FuelOilNo1",
@@ -15690,9 +15114,9 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1(_g.AnyAirLoopHV
 
     minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None
     """Needs to match the corresponding minimum outdoor temperature defined in the DX heating coil object.; [C]; Default: -8.0"""
-    number_of_speeds_for_heating: float | None
+    number_of_speeds_for_heating: float
     """Enter the number of the following sets of data for air flow rates. If Heating Coil Object Type is Coil:Heating:Water ...; Range: >= 1.0, <= 4.0"""
-    number_of_speeds_for_cooling: float | None
+    number_of_speeds_for_cooling: float
     """Enter the number of the following sets of data for air flow rates.; Range: >= 2.0, <= 4.0"""
 
     def update(
@@ -15707,17 +15131,17 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1Fields(
     _g._AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedCommonFields, total=False
 ):
     minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None
-    number_of_speeds_for_heating: float | None
-    number_of_speeds_for_cooling: float | None
+    number_of_speeds_for_heating: float
+    number_of_speeds_for_cooling: float
 
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1(_g.AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed):
     """``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` as declared in EnergyPlus 22.2.0 to 25.1.0. Unitary system, heating and cooling, multi-speed with constant volume supply fan (continuous or cycling), direct expa..."""
 
     minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None
     """Needs to match the corresponding minimum outdoor temperature defined in the DX heating coil object.; [C]; Default: -8.0"""
-    number_of_speeds_for_heating: int | None
+    number_of_speeds_for_heating: int
     """Enter the number of the following sets of data for air flow rates. If Heating Coil Object Type is Coil:Heating:Water ...; Range: >= 1, <= 4"""
-    number_of_speeds_for_cooling: int | None
+    number_of_speeds_for_cooling: int
     """Enter the number of the following sets of data for air flow rates.; Range: >= 2, <= 4"""
 
     def update(
@@ -15732,8 +15156,8 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1Fields(
     _g._AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedCommonFields, total=False
 ):
     minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None
-    number_of_speeds_for_heating: int | None
-    number_of_speeds_for_cooling: int | None
+    number_of_speeds_for_heating: int
+    number_of_speeds_for_cooling: int
 
 class Timestep_v8_9_to_v22_1(_g.AnyTimestep):
     """``Timestep`` as declared in EnergyPlus 8.9.0 to 22.1.0. Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is..."""
@@ -16954,9 +16378,7 @@ class OutputMeter_v8_9_to_v22_1(_g.AnyOutputMeter):
     """``Output:Meter`` as declared in EnergyPlus 8.9.0 to 22.1.0. Each Output:Meter command picks meters to be put onto the standard output file (.eso) and meter file (.mtr). Not all ..."""
 
     reporting_frequency: (
-        Literal[
-            "", "Annual", "Daily", "Detailed", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
-        ]
+        Literal["Annual", "Daily", "Detailed", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"]
         | None
     )
     """Timestep refers to the zone Timestep/Number of Timesteps in hour value RunPeriod and Environment are the same; Default: Hourly"""
@@ -16968,9 +16390,7 @@ class OutputMeter_v8_9_to_v22_1(_g.AnyOutputMeter):
 
 class _OutputMeter_v8_9_to_v22_1Fields(_g._OutputMeterCommonFields, total=False):
     reporting_frequency: (
-        Literal[
-            "", "Annual", "Daily", "Detailed", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
-        ]
+        Literal["Annual", "Daily", "Detailed", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"]
         | None
     )
 
@@ -16994,7 +16414,7 @@ class _DemandManagerThermostats_v8_9_to_v22_1Fields(_g._DemandManagerThermostats
 class PlantComponentUserDefined_v8_9_to_v22_1(_g.AnyPlantComponentUserDefined):
     """``PlantComponent:UserDefined`` as declared in EnergyPlus 8.9.0 to 22.1.0. Defines a generic plant component for custom modeling using Energy Management System or External Interface"""
 
-    number_of_plant_loop_connections: float | None
+    number_of_plant_loop_connections: float
     """Range: >= 1.0, <= 4.0"""
 
     def update(
@@ -17006,7 +16426,7 @@ class PlantComponentUserDefined_v8_9_to_v22_1(_g.AnyPlantComponentUserDefined):
     _creation_signature: _cv16.PlantComponentUserDefined_v8_9_to_v22_1  # type: ignore[assignment]
 
 class _PlantComponentUserDefined_v8_9_to_v22_1Fields(_g._PlantComponentUserDefinedCommonFields, total=False):
-    number_of_plant_loop_connections: float | None
+    number_of_plant_loop_connections: float
 
 class CoilWaterHeatingAirToWaterHeatPumpWrapped_v8_9_to_v23_1(_g.AnyCoilWaterHeatingAirToWaterHeatPumpWrapped):
     """``Coil:WaterHeating:AirToWaterHeatPump:Wrapped`` as declared in EnergyPlus 8.9.0 to 23.1.0. Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
@@ -17301,17 +16721,17 @@ class _GlazedDoor_v8_9Fields(_g._GlazedDoorCommonFields, total=False):
 class MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1(_g.AnyMaterialPropertyVariableThermalConductivity):
     """``MaterialProperty:VariableThermalConductivity`` as declared in EnergyPlus 8.9.0 to 24.1.0. Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity ..."""
 
-    temperature_1: float | None
+    temperature_1: float
     """for Temperature-Thermal Conductivity function; [C]"""
-    thermal_conductivity_1: float | None
+    thermal_conductivity_1: float
     """for Temperature-Thermal Conductivity function corresponding to temperature 1; [W/m-K]"""
-    temperature_2: float | None
+    temperature_2: float
     """for Temperature-Thermal Conductivity function; [C]"""
-    thermal_conductivity_2: float | None
+    thermal_conductivity_2: float
     """for Temperature-Thermal Conductivity function corresponding to temperature 2; [W/m-K]"""
-    temperature_3: float | None
+    temperature_3: float
     """for Temperature-Thermal Conductivity function; [C]"""
-    thermal_conductivity_3: float | None
+    thermal_conductivity_3: float
     """for Temperature-Thermal Conductivity function corresponding to temperature 3; [W/m-K]"""
     temperature_4: float | None
     """for Temperature-Thermal Conductivity function; [C]"""
@@ -17353,12 +16773,12 @@ class MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1(_g.AnyMaterialPr
 class _MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1Fields(
     _g._MaterialPropertyVariableThermalConductivityCommonFields, total=False
 ):
-    temperature_1: float | None
-    thermal_conductivity_1: float | None
-    temperature_2: float | None
-    thermal_conductivity_2: float | None
-    temperature_3: float | None
-    thermal_conductivity_3: float | None
+    temperature_1: float
+    thermal_conductivity_1: float
+    temperature_2: float
+    thermal_conductivity_2: float
+    temperature_3: float
+    thermal_conductivity_3: float
     temperature_4: float | None
     thermal_conductivity_4: float | None
     temperature_5: float | None
@@ -17396,7 +16816,7 @@ class AirflowNetworkSimulationControl_v9_5_to_v22_1(_g.AnyAirflowNetworkSimulati
 
     maximum_number_of_iterations: float | None
     """Determines the maximum number of iterations used to converge on a solution. If this limit is exceeded, the program te...; [dimensionless]; Default: 500.0; Range: > 10.0, <= 30000.0"""
-    allow_unsupported_zone_equipment: Literal["", "No", "Yes"] | None
+    allow_unsupported_zone_equipment: Literal["No", "Yes"] | None
     """Set this input to Yes to have zone equipment that are currently unsupported in the AirflowNetwork model allowed in th...; Default: No"""
 
     def update(
@@ -17411,7 +16831,7 @@ class _AirflowNetworkSimulationControl_v9_5_to_v22_1Fields(
     _g._AirflowNetworkSimulationControlCommonFields, total=False
 ):
     maximum_number_of_iterations: float | None
-    allow_unsupported_zone_equipment: Literal["", "No", "Yes"] | None
+    allow_unsupported_zone_equipment: Literal["No", "Yes"] | None
 
 class CoilWaterHeatingAirToWaterHeatPumpPumped_v8_9_to_v23_1(_g.AnyCoilWaterHeatingAirToWaterHeatPumpPumped):
     """``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` as declared in EnergyPlus 8.9.0 to 23.1.0. Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
@@ -17452,16 +16872,7 @@ class CoilHeatingFuel_v8_9_to_v9_2(_g.AnyCoilHeatingFuel):
 
     fuel_type: (
         Literal[
-            "",
-            "Diesel",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gas",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
+            "Diesel", "FuelOil#1", "FuelOil#2", "Gas", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
         ]
         | None
     )
@@ -17479,16 +16890,7 @@ class CoilHeatingFuel_v8_9_to_v9_2(_g.AnyCoilHeatingFuel):
 class _CoilHeatingFuel_v8_9_to_v9_2Fields(_g._CoilHeatingFuelCommonFields, total=False):
     fuel_type: (
         Literal[
-            "",
-            "Diesel",
-            "FuelOil#1",
-            "FuelOil#2",
-            "Gas",
-            "Gasoline",
-            "NaturalGas",
-            "OtherFuel1",
-            "OtherFuel2",
-            "Propane",
+            "Diesel", "FuelOil#1", "FuelOil#2", "Gas", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
         ]
         | None
     )
@@ -17499,9 +16901,7 @@ class CoilHeatingFuel_v9_3(_g.AnyCoilHeatingFuel):
     """``Coil:Heating:Fuel`` as declared in EnergyPlus 9.3.0. Gas or other fuel heating coil. If the coil is located directly in an air loop branch or outdoor air equipment list, ..."""
 
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
-        ]
+        Literal["Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"]
         | None
     )
     """Default: NaturalGas"""
@@ -17517,9 +16917,7 @@ class CoilHeatingFuel_v9_3(_g.AnyCoilHeatingFuel):
 
 class _CoilHeatingFuel_v9_3Fields(_g._CoilHeatingFuelCommonFields, total=False):
     fuel_type: (
-        Literal[
-            "", "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
-        ]
+        Literal["Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"]
         | None
     )
     parasitic_electric_load: float | None
@@ -17530,7 +16928,6 @@ class CoilHeatingFuel_v9_4_to_v23_1(_g.AnyCoilHeatingFuel):
 
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -17557,7 +16954,6 @@ class CoilHeatingFuel_v9_4_to_v23_1(_g.AnyCoilHeatingFuel):
 class _CoilHeatingFuel_v9_4_to_v23_1Fields(_g._CoilHeatingFuelCommonFields, total=False):
     fuel_type: (
         Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -17576,7 +16972,7 @@ class _CoilHeatingFuel_v9_4_to_v23_1Fields(_g._CoilHeatingFuelCommonFields, tota
 class ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5(_g.AnyZoneBaseboardOutdoorTemperatureControlled):
     """``ZoneBaseboard:OutdoorTemperatureControlled`` as declared in EnergyPlus 8.9.0 to 9.5.0. Specifies outside temperature-controlled electric baseboard heating."""
 
-    zone_name: str | None
+    zone_name: str
     capacity_at_low_temperature: float | None
     """[W]; Range: >= 0.0, > True"""
     low_temperature: float | None
@@ -17597,7 +16993,7 @@ class ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5(_g.AnyZoneBaseboard
 class _ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5Fields(
     _g._ZoneBaseboardOutdoorTemperatureControlledCommonFields, total=False
 ):
-    zone_name: str | None
+    zone_name: str
     capacity_at_low_temperature: float | None
     low_temperature: float | None
     capacity_at_high_temperature: float | None
@@ -17606,7 +17002,7 @@ class _ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5Fields(
 class ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1(_g.AnyZoneBaseboardOutdoorTemperatureControlled):
     """``ZoneBaseboard:OutdoorTemperatureControlled`` as declared in EnergyPlus 9.6.0 to 26.1.0. Specifies outside temperature-controlled electric baseboard heating. If a ZoneList, SpaceList, or a Zone comprised of..."""
 
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     capacity_at_low_temperature: float | None
     """[W]; Range: > 0.0"""
     low_temperature: float | None
@@ -17627,7 +17023,7 @@ class ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1(_g.AnyZoneBaseboar
 class _ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1Fields(
     _g._ZoneBaseboardOutdoorTemperatureControlledCommonFields, total=False
 ):
-    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str
     capacity_at_low_temperature: float | None
     low_temperature: float | None
     capacity_at_high_temperature: float | None
@@ -17638,7 +17034,6 @@ class ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3(_g.AnyZoneHVACLowTemper
 
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -17662,7 +17057,6 @@ class _ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3Fields(
 ):
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -17679,7 +17073,6 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTe
     """[m]; Default: 0.013; Range: >= 0.0, > True"""
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -17693,7 +17086,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTe
     """Default: 0.9; Range: >= 0.0, <= 1.0"""
     fraction_of_motor_inefficiencies_to_fluid_stream: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
-    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
+    condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None
     """Default: SimpleOff"""
     condensation_control_dewpoint_offset: float | None
     """[C]; Default: 1.0"""
@@ -17712,7 +17105,6 @@ class _ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3Fields(
     hydronic_tubing_inside_diameter: float | None
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -17723,13 +17115,13 @@ class _ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3Fields(
     )
     motor_efficiency: float | None
     fraction_of_motor_inefficiencies_to_fluid_stream: float | None
-    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
+    condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None
     condensation_control_dewpoint_offset: float | None
 
 class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4(_g.AnyZoneHVACLowTemperatureRadiantConstantFlow):
     """``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` as declared in EnergyPlus 9.4.0. Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
 
-    fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
+    fluid_to_radiant_surface_heat_transfer_model: Literal["ConvectionOnly", "ISOStandard"] | None
     """This parameter identifies how the heat transfer between fluid being circulated through the radiant system and the rad...; Default: ConvectionOnly"""
     hydronic_tubing_inside_diameter: float | None
     """[m] (in); Default: 0.013; Range: >= 0.0, > True"""
@@ -17739,7 +17131,6 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4(_g.AnyZoneHVACLowTemperatur
     """Conductivity of the tubing/piping material; [W/m-K]; Default: 0.35; Range: >= 0.0, > True"""
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -17758,7 +17149,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4(_g.AnyZoneHVACLowTemperatur
     """Default: 0.9; Range: >= 0.0, <= 1.0"""
     fraction_of_motor_inefficiencies_to_fluid_stream: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
-    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
+    condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None
     """Default: SimpleOff"""
     condensation_control_dewpoint_offset: float | None
     """[C]; Default: 1.0"""
@@ -17776,13 +17167,12 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4(_g.AnyZoneHVACLowTemperatur
 class _ZoneHVACLowTemperatureRadiantConstantFlow_v9_4Fields(
     _g._ZoneHVACLowTemperatureRadiantConstantFlowCommonFields, total=False
 ):
-    fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
+    fluid_to_radiant_surface_heat_transfer_model: Literal["ConvectionOnly", "ISOStandard"] | None
     hydronic_tubing_inside_diameter: float | None
     hydronic_tubing_outside_diameter: float | None
     hydronic_tubing_conductivity: float | None
     temperature_control_type: (
         Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -17797,7 +17187,7 @@ class _ZoneHVACLowTemperatureRadiantConstantFlow_v9_4Fields(
     running_mean_outdoor_dry_bulb_temperature_weighting_factor: float | None
     motor_efficiency: float | None
     fraction_of_motor_inefficiencies_to_fluid_stream: float | None
-    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
+    condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None
     condensation_control_dewpoint_offset: float | None
     changeover_delay_time_period_schedule: str | None
 
@@ -17943,9 +17333,9 @@ class _MeterCustom_v9_4_to_v23_1Fields(_g._MeterCustomCommonFields, total=False)
 class UnitarySystemPerformanceMultispeed_v8_9_to_v22_1(_g.AnyUnitarySystemPerformanceMultispeed):
     """``UnitarySystemPerformance:Multispeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. The UnitarySystemPerformance object is used to specify the air flow ratio at each operating speed. This object is pri..."""
 
-    number_of_speeds_for_heating: float | None
+    number_of_speeds_for_heating: float
     """Used only for Multi speed coils Enter the number of the following sets of data for air flow rates.; Range: >= 0.0, <= 10.0"""
-    number_of_speeds_for_cooling: float | None
+    number_of_speeds_for_cooling: float
     """Used only for Multi speed coils Enter the number of the following sets of data for air flow rates.; Range: >= 0.0, <= 10.0"""
 
     def update(
@@ -17959,13 +17349,13 @@ class UnitarySystemPerformanceMultispeed_v8_9_to_v22_1(_g.AnyUnitarySystemPerfor
 class _UnitarySystemPerformanceMultispeed_v8_9_to_v22_1Fields(
     _g._UnitarySystemPerformanceMultispeedCommonFields, total=False
 ):
-    number_of_speeds_for_heating: float | None
-    number_of_speeds_for_cooling: float | None
+    number_of_speeds_for_heating: float
+    number_of_speeds_for_cooling: float
 
 class RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1(_g.AnyRoomAirTemperaturePatternNondimensionalHeight):
     """``RoomAir:TemperaturePattern:NondimensionalHeight`` as declared in EnergyPlus 8.9.0 to 22.1.0. Defines a distribution pattern for air temperatures relative to the current mean air temperature as a function of hei..."""
 
-    control_integer_for_pattern_control_schedule_name: float | None
+    control_integer_for_pattern_control_schedule_name: float
     """this value should appear in as a schedule value"""
 
     def update(
@@ -17979,7 +17369,7 @@ class RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1(_g.AnyRoomAirT
 class _RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1Fields(
     _g._RoomAirTemperaturePatternNondimensionalHeightCommonFields, total=False
 ):
-    control_integer_for_pattern_control_schedule_name: float | None
+    control_integer_for_pattern_control_schedule_name: float
 
 class CoilHeatingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1(
     _g.AnyCoilHeatingWaterToAirHeatPumpParameterEstimation
@@ -18003,7 +17393,7 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1(
 ):
     """``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
-    part_load_fraction_correlation_curve_name: str | None
+    part_load_fraction_correlation_curve_name: str
     """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (heating l..."""
 
     def update(
@@ -18017,13 +17407,13 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1(
 class _CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1Fields(
     _g._CoilHeatingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
 ):
-    part_load_fraction_correlation_curve_name: str | None
+    part_load_fraction_correlation_curve_name: str
 
 class CurveDoubleExponentialDecay_v8_9_to_v9_3(_g.AnyCurveDoubleExponentialDecay):
     """``Curve:DoubleExponentialDecay`` as declared in EnergyPlus 8.9.0 to 9.3.0. Double exponential decay curve with one independent variable. Input consists of the curve name, the five coefficients..."""
 
-    coefficient3_c4: float | None
-    coefficient3_c5: float | None
+    coefficient3_c4: float
+    coefficient3_c5: float
 
     def update(
         self,
@@ -18034,8 +17424,8 @@ class CurveDoubleExponentialDecay_v8_9_to_v9_3(_g.AnyCurveDoubleExponentialDecay
     _creation_signature: _cv11.CurveDoubleExponentialDecay_v8_9_to_v9_3  # type: ignore[assignment]
 
 class _CurveDoubleExponentialDecay_v8_9_to_v9_3Fields(_g._CurveDoubleExponentialDecayCommonFields, total=False):
-    coefficient3_c4: float | None
-    coefficient3_c5: float | None
+    coefficient3_c4: float
+    coefficient3_c5: float
 
 class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1(
     _g.AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit
@@ -18123,7 +17513,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1(
 ):
     """``AirflowNetwork:MultiZone:Component:DetailedOpening`` as declared in EnergyPlus 8.9.0 to 22.1.0. This object specifies the properties of airflow through windows and doors (window, door and glass door heat transfer ..."""
 
-    number_of_sets_of_opening_factor_data: float | None
+    number_of_sets_of_opening_factor_data: float
     """Enter the number of the following sets of data for opening factor, discharge coefficient, width factor, height factor...; Range: >= 2.0, <= 4.0"""
 
     def update(
@@ -18137,7 +17527,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1(
 class _AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1Fields(
     _g._AirflowNetworkMultiZoneComponentDetailedOpeningCommonFields, total=False
 ):
-    number_of_sets_of_opening_factor_data: float | None
+    number_of_sets_of_opening_factor_data: float
 
 class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4(
     _g.AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup
@@ -18278,7 +17668,7 @@ class _RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4Fields(
 class SurfaceConvectionAlgorithmInside_v8_9_to_v9_4(_g.AnySurfaceConvectionAlgorithmInside):
     """``SurfaceConvectionAlgorithm:Inside`` as declared in EnergyPlus 8.9.0 to 9.4.0. Default indoor surface heat transfer convection algorithm to be used for all zones"""
 
-    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
+    algorithm: Literal["AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
     """Simple = constant value natural convection (ASHRAE) TARP = variable natural convection based on temperature differenc...; Default: TARP"""
 
     def update(
@@ -18292,7 +17682,7 @@ class SurfaceConvectionAlgorithmInside_v8_9_to_v9_4(_g.AnySurfaceConvectionAlgor
 class _SurfaceConvectionAlgorithmInside_v8_9_to_v9_4Fields(
     _g._SurfaceConvectionAlgorithmInsideCommonFields, total=False
 ):
-    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
+    algorithm: Literal["AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
 
 class WindowShadingControl_v9_0_to_v9_1(_g.AnyWindowShadingControl):
     """``WindowShadingControl`` as declared in EnergyPlus 9.0.1 to 9.1.0. Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ..."""
@@ -18301,32 +17691,29 @@ class WindowShadingControl_v9_0_to_v9_1(_g.AnyWindowShadingControl):
     """If multiple WindowShadingControl objects are used than the order that they deploy the window shades can be set with t...; Default: 1.0; Range: >= 1.0"""
     construction_with_shading_name_: str | None
     """Required if Shading Type = SwitchableGlazing Required if Shading Type = interior or exterior shade or blind, or exter..."""
-    shading_control_type: (
-        Literal[
-            "AlwaysOff",
-            "AlwaysOn",
-            "MeetDaylightIlluminanceSetpoint",
-            "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnIfHighGlare",
-            "OnIfHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
-            "OnIfHighOutdoorAirTemperature",
-            "OnIfHighSolarOnWindow",
-            "OnIfHighZoneAirTempAndHighHorizontalSolar",
-            "OnIfHighZoneAirTempAndHighSolarOnWindow",
-            "OnIfHighZoneAirTemperature",
-            "OnIfHighZoneCooling",
-            "OnIfScheduleAllows",
-            "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnNightIfHeatingAndOffDay",
-            "OnNightIfHeatingAndOnDayIfCooling",
-            "OnNightIfLowInsideTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOnDayIfCooling",
-        ]
-        | None
-    )
+    shading_control_type: Literal[
+        "AlwaysOff",
+        "AlwaysOn",
+        "MeetDaylightIlluminanceSetpoint",
+        "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnIfHighGlare",
+        "OnIfHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
+        "OnIfHighOutdoorAirTemperature",
+        "OnIfHighSolarOnWindow",
+        "OnIfHighZoneAirTempAndHighHorizontalSolar",
+        "OnIfHighZoneAirTempAndHighSolarOnWindow",
+        "OnIfHighZoneAirTemperature",
+        "OnIfHighZoneCooling",
+        "OnIfScheduleAllows",
+        "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnNightIfHeatingAndOffDay",
+        "OnNightIfHeatingAndOnDayIfCooling",
+        "OnNightIfLowInsideTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOnDayIfCooling",
+    ]
     """OnIfScheduleAllows requires that Schedule Name be specified and Shading Control Is Scheduled = Yes. AlwaysOn, AlwaysO..."""
     construction_with_shading_name: str | None
     """Alias of :attr:`construction_with_shading_name_`, the same field without the trailing underscore."""
@@ -18339,32 +17726,29 @@ class WindowShadingControl_v9_0_to_v9_1(_g.AnyWindowShadingControl):
 class _WindowShadingControl_v9_0_to_v9_1Fields(_g._WindowShadingControlCommonFields, total=False):
     shading_control_sequence_number: float | None
     construction_with_shading_name_: str | None
-    shading_control_type: (
-        Literal[
-            "AlwaysOff",
-            "AlwaysOn",
-            "MeetDaylightIlluminanceSetpoint",
-            "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnIfHighGlare",
-            "OnIfHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
-            "OnIfHighOutdoorAirTemperature",
-            "OnIfHighSolarOnWindow",
-            "OnIfHighZoneAirTempAndHighHorizontalSolar",
-            "OnIfHighZoneAirTempAndHighSolarOnWindow",
-            "OnIfHighZoneAirTemperature",
-            "OnIfHighZoneCooling",
-            "OnIfScheduleAllows",
-            "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnNightIfHeatingAndOffDay",
-            "OnNightIfHeatingAndOnDayIfCooling",
-            "OnNightIfLowInsideTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOnDayIfCooling",
-        ]
-        | None
-    )
+    shading_control_type: Literal[
+        "AlwaysOff",
+        "AlwaysOn",
+        "MeetDaylightIlluminanceSetpoint",
+        "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnIfHighGlare",
+        "OnIfHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
+        "OnIfHighOutdoorAirTemperature",
+        "OnIfHighSolarOnWindow",
+        "OnIfHighZoneAirTempAndHighHorizontalSolar",
+        "OnIfHighZoneAirTempAndHighSolarOnWindow",
+        "OnIfHighZoneAirTemperature",
+        "OnIfHighZoneCooling",
+        "OnIfScheduleAllows",
+        "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnNightIfHeatingAndOffDay",
+        "OnNightIfHeatingAndOnDayIfCooling",
+        "OnNightIfLowInsideTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOnDayIfCooling",
+    ]
     construction_with_shading_name: str | None
 
 class WindowShadingControl_v9_2_to_v22_1(_g.AnyWindowShadingControl):
@@ -18372,32 +17756,29 @@ class WindowShadingControl_v9_2_to_v22_1(_g.AnyWindowShadingControl):
 
     shading_control_sequence_number: float | None
     """If multiple WindowShadingControl objects are used than the order that they deploy the window shades can be set with t...; Default: 1.0; Range: >= 1.0"""
-    shading_control_type: (
-        Literal[
-            "AlwaysOff",
-            "AlwaysOn",
-            "MeetDaylightIlluminanceSetpoint",
-            "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnIfHighGlare",
-            "OnIfHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
-            "OnIfHighOutdoorAirTemperature",
-            "OnIfHighSolarOnWindow",
-            "OnIfHighZoneAirTempAndHighHorizontalSolar",
-            "OnIfHighZoneAirTempAndHighSolarOnWindow",
-            "OnIfHighZoneAirTemperature",
-            "OnIfHighZoneCooling",
-            "OnIfScheduleAllows",
-            "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnNightIfHeatingAndOffDay",
-            "OnNightIfHeatingAndOnDayIfCooling",
-            "OnNightIfLowInsideTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOnDayIfCooling",
-        ]
-        | None
-    )
+    shading_control_type: Literal[
+        "AlwaysOff",
+        "AlwaysOn",
+        "MeetDaylightIlluminanceSetpoint",
+        "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnIfHighGlare",
+        "OnIfHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
+        "OnIfHighOutdoorAirTemperature",
+        "OnIfHighSolarOnWindow",
+        "OnIfHighZoneAirTempAndHighHorizontalSolar",
+        "OnIfHighZoneAirTempAndHighSolarOnWindow",
+        "OnIfHighZoneAirTemperature",
+        "OnIfHighZoneCooling",
+        "OnIfScheduleAllows",
+        "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnNightIfHeatingAndOffDay",
+        "OnNightIfHeatingAndOnDayIfCooling",
+        "OnNightIfLowInsideTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOnDayIfCooling",
+    ]
     """OnIfScheduleAllows requires that Schedule Name be specified and Shading Control Is Scheduled = Yes. AlwaysOn, AlwaysO..."""
 
     def update(
@@ -18407,57 +17788,54 @@ class WindowShadingControl_v9_2_to_v22_1(_g.AnyWindowShadingControl):
 
 class _WindowShadingControl_v9_2_to_v22_1Fields(_g._WindowShadingControlCommonFields, total=False):
     shading_control_sequence_number: float | None
-    shading_control_type: (
-        Literal[
-            "AlwaysOff",
-            "AlwaysOn",
-            "MeetDaylightIlluminanceSetpoint",
-            "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnIfHighGlare",
-            "OnIfHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
-            "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
-            "OnIfHighOutdoorAirTemperature",
-            "OnIfHighSolarOnWindow",
-            "OnIfHighZoneAirTempAndHighHorizontalSolar",
-            "OnIfHighZoneAirTempAndHighSolarOnWindow",
-            "OnIfHighZoneAirTemperature",
-            "OnIfHighZoneCooling",
-            "OnIfScheduleAllows",
-            "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
-            "OnNightIfHeatingAndOffDay",
-            "OnNightIfHeatingAndOnDayIfCooling",
-            "OnNightIfLowInsideTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOffDay",
-            "OnNightIfLowOutdoorTempAndOnDayIfCooling",
-        ]
-        | None
-    )
+    shading_control_type: Literal[
+        "AlwaysOff",
+        "AlwaysOn",
+        "MeetDaylightIlluminanceSetpoint",
+        "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnIfHighGlare",
+        "OnIfHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
+        "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
+        "OnIfHighOutdoorAirTemperature",
+        "OnIfHighSolarOnWindow",
+        "OnIfHighZoneAirTempAndHighHorizontalSolar",
+        "OnIfHighZoneAirTempAndHighSolarOnWindow",
+        "OnIfHighZoneAirTemperature",
+        "OnIfHighZoneCooling",
+        "OnIfScheduleAllows",
+        "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
+        "OnNightIfHeatingAndOffDay",
+        "OnNightIfHeatingAndOnDayIfCooling",
+        "OnNightIfLowInsideTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOffDay",
+        "OnNightIfLowOutdoorTempAndOnDayIfCooling",
+    ]
 
 class HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2(_g._TypedIDFObject):
     """``HeatPump:WaterToWater:EIR:Heating`` as declared in EnergyPlus 9.1.0 to 9.2.0. An EIR formulated water to water heat pump model, heating operation"""
 
-    load_side_inlet_node_name: str | None
-    load_side_outlet_node_name: str | None
-    source_side_inlet_node_name: str | None
-    source_side_outlet_node_name: str | None
+    load_side_inlet_node_name: str
+    load_side_outlet_node_name: str
+    source_side_inlet_node_name: str
+    source_side_outlet_node_name: str
     companion_heat_pump_name: str | None
     """This field allows the user to specify a companion cooling object for this heating object. The companion is used in si..."""
-    load_side_reference_flow_rate: float | Literal["", "Autosize"] | None
+    load_side_reference_flow_rate: float | Literal["Autosize"] | None
     """This component is currently a constant-flow device, meaning it will always try to request the full design flow from t...; [m3/s] (gal/min); Default: Autosize"""
-    source_side_reference_flow_rate: float | Literal["", "Autosize"] | None
+    source_side_reference_flow_rate: float | Literal["Autosize"] | None
     """[m3/s] (gal/min); Default: Autosize"""
-    reference_capacity: float | Literal["", "Autosize"] | None
+    reference_capacity: float | Literal["Autosize"] | None
     """[W]; Default: Autosize"""
     reference_coefficient_of_performance: float | None
     """[W/W]; Default: 7.5; Range: >= 0.0, > True"""
     sizing_factor: float | None
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: >= 0.0, > True"""
-    capacity_modifier_function_of_temperature_curve_name: str | None
+    capacity_modifier_function_of_temperature_curve_name: str
     """Heating capacity modifier as a function of CW supply temp and entering condenser temp curve = a + b*CWS + c*CWS**2 + ..."""
-    electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None
+    electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str
     """Electric Input Ratio (EIR) modifier as a function of temperature EIR = 1/COP curve = a + b*CWS + c*CWS**2 + d*ECT + e..."""
-    electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
+    electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str
     """Electric Input Ratio (EIR) modifier as a function of Part Load Ratio (PLR) EIR = 1/COP quadratic curve = a + b*PLR + ..."""
 
     def update(
@@ -18469,44 +17847,44 @@ class HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2(_g._TypedIDFObject):
     _creation_signature: _cv106.HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2  # type: ignore[assignment]
 
 class _HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2Fields(TypedDict, total=False):
-    load_side_inlet_node_name: str | None
-    load_side_outlet_node_name: str | None
-    source_side_inlet_node_name: str | None
-    source_side_outlet_node_name: str | None
+    load_side_inlet_node_name: str
+    load_side_outlet_node_name: str
+    source_side_inlet_node_name: str
+    source_side_outlet_node_name: str
     companion_heat_pump_name: str | None
-    load_side_reference_flow_rate: float | Literal["", "Autosize"] | None
-    source_side_reference_flow_rate: float | Literal["", "Autosize"] | None
-    reference_capacity: float | Literal["", "Autosize"] | None
+    load_side_reference_flow_rate: float | Literal["Autosize"] | None
+    source_side_reference_flow_rate: float | Literal["Autosize"] | None
+    reference_capacity: float | Literal["Autosize"] | None
     reference_coefficient_of_performance: float | None
     sizing_factor: float | None
-    capacity_modifier_function_of_temperature_curve_name: str | None
-    electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None
-    electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
+    capacity_modifier_function_of_temperature_curve_name: str
+    electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str
+    electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str
 
 class HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2(_g._TypedIDFObject):
     """``HeatPump:WaterToWater:EIR:Cooling`` as declared in EnergyPlus 9.1.0 to 9.2.0. An EIR formulated water to water heat pump model, cooling operation."""
 
-    load_side_inlet_node_name: str | None
-    load_side_outlet_node_name: str | None
-    source_side_inlet_node_name: str | None
-    source_side_outlet_node_name: str | None
+    load_side_inlet_node_name: str
+    load_side_outlet_node_name: str
+    source_side_inlet_node_name: str
+    source_side_outlet_node_name: str
     companion_heat_pump_name: str | None
     """This field allows the user to specify a companion heating object for this cooling object. The companion is used in si..."""
-    load_side_reference_flow_rate: float | Literal["", "Autosize"] | None
+    load_side_reference_flow_rate: float | Literal["Autosize"] | None
     """This component is currently a constant-flow device, meaning it will always try to request the full design flow from t...; [m3/s] (gal/min); Default: Autosize"""
-    source_side_reference_flow_rate: float | Literal["", "Autosize"] | None
+    source_side_reference_flow_rate: float | Literal["Autosize"] | None
     """[m3/s] (gal/min); Default: Autosize"""
-    reference_capacity: float | Literal["", "Autosize"] | None
+    reference_capacity: float | Literal["Autosize"] | None
     """[W]; Default: Autosize"""
     reference_coefficient_of_performance: float | None
     """[W/W]; Default: 7.5; Range: >= 0.0, > True"""
     sizing_factor: float | None
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: >= 0.0, > True"""
-    capacity_modifier_function_of_temperature_curve_name: str | None
+    capacity_modifier_function_of_temperature_curve_name: str
     """Cooling capacity modifier as a function of CW supply temp and entering condenser temp curve = a + b*CWS + c*CWS**2 + ..."""
-    electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None
+    electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str
     """Electric Input Ratio (EIR) modifier as a function of temperature EIR = 1/COP curve = a + b*CWS + c*CWS**2 + d*ECT + e..."""
-    electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
+    electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str
     """Electric Input Ratio (EIR) modifier as a function of Part Load Ratio (PLR) EIR = 1/COP quadratic curve = a + b*PLR + ..."""
 
     def update(
@@ -18518,19 +17896,19 @@ class HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2(_g._TypedIDFObject):
     _creation_signature: _cv12.HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2  # type: ignore[assignment]
 
 class _HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2Fields(TypedDict, total=False):
-    load_side_inlet_node_name: str | None
-    load_side_outlet_node_name: str | None
-    source_side_inlet_node_name: str | None
-    source_side_outlet_node_name: str | None
+    load_side_inlet_node_name: str
+    load_side_outlet_node_name: str
+    source_side_inlet_node_name: str
+    source_side_outlet_node_name: str
     companion_heat_pump_name: str | None
-    load_side_reference_flow_rate: float | Literal["", "Autosize"] | None
-    source_side_reference_flow_rate: float | Literal["", "Autosize"] | None
-    reference_capacity: float | Literal["", "Autosize"] | None
+    load_side_reference_flow_rate: float | Literal["Autosize"] | None
+    source_side_reference_flow_rate: float | Literal["Autosize"] | None
+    reference_capacity: float | Literal["Autosize"] | None
     reference_coefficient_of_performance: float | None
     sizing_factor: float | None
-    capacity_modifier_function_of_temperature_curve_name: str | None
-    electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None
-    electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
+    capacity_modifier_function_of_temperature_curve_name: str
+    electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str
+    electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str
 
 class OutputJSON_v9_1_to_v25_1(_g.AnyOutputJSON):
     """``Output:JSON`` as declared in EnergyPlus 9.1.0 to 25.1.0. Output from EnergyPlus can be written to JSON format files."""
@@ -18545,9 +17923,9 @@ class _OutputJSON_v9_1_to_v25_1Fields(_g._OutputJSONCommonFields, total=False): 
 class ConstructionAirBoundary_v9_2_to_v9_4(_g.AnyConstructionAirBoundary):
     """``Construction:AirBoundary`` as declared in EnergyPlus 9.2.0 to 9.4.0. Indicates an open boundary between two zones. It may be used for base surfaces and fenestration surfaces. When this c..."""
 
-    solar_and_daylighting_method: Literal["", "GroupedZones", "InteriorWindow"] | None
+    solar_and_daylighting_method: Literal["GroupedZones", "InteriorWindow"] | None
     """This field controls how the surface is modeled for solar distribution and daylighting calculations.; Default: GroupedZones"""
-    radiant_exchange_method: Literal["", "GroupedZones", "IRTSurface"] | None
+    radiant_exchange_method: Literal["GroupedZones", "IRTSurface"] | None
     """This field controls how the surface is modeled for radiant exchange calculations.; Default: GroupedZones"""
 
     def update(
@@ -18556,8 +17934,8 @@ class ConstructionAirBoundary_v9_2_to_v9_4(_g.AnyConstructionAirBoundary):
     _creation_signature: _cv13.ConstructionAirBoundary_v9_2_to_v9_4  # type: ignore[assignment]
 
 class _ConstructionAirBoundary_v9_2_to_v9_4Fields(_g._ConstructionAirBoundaryCommonFields, total=False):
-    solar_and_daylighting_method: Literal["", "GroupedZones", "InteriorWindow"] | None
-    radiant_exchange_method: Literal["", "GroupedZones", "IRTSurface"] | None
+    solar_and_daylighting_method: Literal["GroupedZones", "InteriorWindow"] | None
+    radiant_exchange_method: Literal["GroupedZones", "IRTSurface"] | None
 
 class PerformancePrecisionTradeoffs_v9_2(_g.AnyPerformancePrecisionTradeoffs):
     """``PerformancePrecisionTradeoffs`` as declared in EnergyPlus 9.2.0. This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea..."""
@@ -18572,9 +17950,9 @@ class _PerformancePrecisionTradeoffs_v9_2Fields(_g._PerformancePrecisionTradeoff
 class PerformancePrecisionTradeoffs_v9_3(_g.AnyPerformancePrecisionTradeoffs):
     """``PerformancePrecisionTradeoffs`` as declared in EnergyPlus 9.3.0. This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea..."""
 
-    zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
+    zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None
     """Determines which algorithm will be used to solve long wave radiant exchange among surfaces within a zone.; Default: ScriptF"""
-    override_mode: Literal["", "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Normal"] | None
+    override_mode: Literal["Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Normal"] | None
     """The increasing mode number roughly correspond with increased speed. A description of each mode are shown in the docum...; Default: Normal"""
     maxzonetempdiff: float | None
     """Maximum zone temperature change before HVAC timestep is shortened. Only used when Override Mode is set to Advanced; Default: 0.3; Range: >= 0.1, <= 3.0"""
@@ -18585,17 +17963,17 @@ class PerformancePrecisionTradeoffs_v9_3(_g.AnyPerformancePrecisionTradeoffs):
     _creation_signature: _cv62.PerformancePrecisionTradeoffs_v9_3  # type: ignore[assignment]
 
 class _PerformancePrecisionTradeoffs_v9_3Fields(_g._PerformancePrecisionTradeoffsCommonFields, total=False):
-    zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
-    override_mode: Literal["", "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Normal"] | None
+    zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None
+    override_mode: Literal["Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Normal"] | None
     maxzonetempdiff: float | None
 
 class PerformancePrecisionTradeoffs_v9_4_to_v9_5(_g.AnyPerformancePrecisionTradeoffs):
     """``PerformancePrecisionTradeoffs`` as declared in EnergyPlus 9.4.0 to 9.5.0. This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea..."""
 
-    zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
+    zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None
     """Determines which algorithm will be used to solve long wave radiant exchange among surfaces within a zone.; Default: ScriptF"""
     override_mode: (
-        Literal["", "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Mode06", "Mode07", "Normal"] | None
+        Literal["Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Mode06", "Mode07", "Normal"] | None
     )
     """The increasing mode number roughly correspond with increased speed. A description of each mode are shown in the docum...; Default: Normal"""
     maxzonetempdiff: float | None
@@ -18612,9 +17990,9 @@ class PerformancePrecisionTradeoffs_v9_4_to_v9_5(_g.AnyPerformancePrecisionTrade
     _creation_signature: _cv0.PerformancePrecisionTradeoffs_v9_4_to_v9_5  # type: ignore[assignment]
 
 class _PerformancePrecisionTradeoffs_v9_4_to_v9_5Fields(_g._PerformancePrecisionTradeoffsCommonFields, total=False):
-    zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
+    zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None
     override_mode: (
-        Literal["", "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Mode06", "Mode07", "Normal"] | None
+        Literal["Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Mode06", "Mode07", "Normal"] | None
     )
     maxzonetempdiff: float | None
     maxalloweddeltemp: float | None
@@ -18639,7 +18017,7 @@ class _TableIndependentVariable_v9_2_to_v22_1Fields(_g._TableIndependentVariable
 class AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1(_g.AnyAirLoopHVACDedicatedOutdoorAirSystem):
     """``AirLoopHVAC:DedicatedOutdoorAirSystem`` as declared in EnergyPlus 9.2.0 to 22.1.0. Defines a central forced air system to provide dedicated outdoor air to multiple AirLoopHVACs."""
 
-    number_of_airloophvac: float | None
+    number_of_airloophvac: float
     """Enter the number of the AirLoopHAVC served by AirLoopHVAC:DedicatedOutdoorAirSystem"""
 
     def update(
@@ -18653,7 +18031,7 @@ class AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1(_g.AnyAirLoopHVACDedica
 class _AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1Fields(
     _g._AirLoopHVACDedicatedOutdoorAirSystemCommonFields, total=False
 ):
-    number_of_airloophvac: float | None
+    number_of_airloophvac: float
 
 class TableLookup_v9_2_to_v22_1(_g.AnyTableLookup):
     """``Table:Lookup`` as declared in EnergyPlus 9.2.0 to 22.1.0. Lookup tables are used in place of curves and can represent any number of independent variables (defined as Table:Ind..."""
@@ -18758,9 +18136,9 @@ class _HeatPumpPlantLoopEIRCooling_v9_3_to_v23_1Fields(_g._HeatPumpPlantLoopEIRC
 class HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1(_g.AnyHeatPumpPlantLoopEIRCooling):
     """``HeatPump:PlantLoop:EIR:Cooling`` as declared in EnergyPlus 23.2.0 to 24.1.0. An EIR formulated water to water heat pump model, cooling operation."""
 
-    control_type: Literal["", "Load", "Setpoint"] | None
+    control_type: Literal["Load", "Setpoint"] | None
     """Heat pump can be controlled on leaving water temperature set point or plant load; Default: Load"""
-    flow_mode: Literal["", "ConstantFlow", "VariableSpeedPumping"] | None
+    flow_mode: Literal["ConstantFlow", "VariableSpeedPumping"] | None
     """Select operating mode for fluid flow through the chiller. 'ConstantFlow' is for constant pumping with flow controlled...; Default: ConstantFlow"""
     minimum_part_load_ratio: float | None
     """Below this operating limit compressor cycling will occur; Default: 0.0; Range: >= 0.0"""
@@ -18782,8 +18160,8 @@ class HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1(_g.AnyHeatPumpPlantLoopEIRCooli
     _creation_signature: _cv114.HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1  # type: ignore[assignment]
 
 class _HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1Fields(_g._HeatPumpPlantLoopEIRCoolingCommonFields, total=False):
-    control_type: Literal["", "Load", "Setpoint"] | None
-    flow_mode: Literal["", "ConstantFlow", "VariableSpeedPumping"] | None
+    control_type: Literal["Load", "Setpoint"] | None
+    flow_mode: Literal["ConstantFlow", "VariableSpeedPumping"] | None
     minimum_part_load_ratio: float | None
     minimum_source_inlet_temperature: float | None
     maximum_source_inlet_temperature: float | None
@@ -18808,11 +18186,11 @@ class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1(_g.AnyHeatPumpPlantLoopEIRHeati
 
     heating_to_cooling_capacity_sizing_ratio: float | None
     """Multiplies the autosized heating capacity; Default: 1.0; Range: >= 0.0"""
-    heat_pump_sizing_method: Literal["", "CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity"] | None
+    heat_pump_sizing_method: Literal["CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity"] | None
     """Specifies sizing method when companion coil exists; Default: CoolingCapacity"""
-    control_type: Literal["", "Load", "Setpoint"] | None
+    control_type: Literal["Load", "Setpoint"] | None
     """Heat pump can be controlled on leaving water temperature set point or plant load; Default: Load"""
-    flow_mode: Literal["", "ConstantFlow", "VariableSpeedPumping"] | None
+    flow_mode: Literal["ConstantFlow", "VariableSpeedPumping"] | None
     """Select operating mode for fluid flow through the chiller. 'ConstantFlow' is for constant pumping with flow controlled...; Default: ConstantFlow"""
     minimum_part_load_ratio: float | None
     """Below this operating limit compressor cycling will occur; Default: 0.0; Range: >= 0.0"""
@@ -18850,9 +18228,9 @@ class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1(_g.AnyHeatPumpPlantLoopEIRHeati
 
 class _HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1Fields(_g._HeatPumpPlantLoopEIRHeatingCommonFields, total=False):
     heating_to_cooling_capacity_sizing_ratio: float | None
-    heat_pump_sizing_method: Literal["", "CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity"] | None
-    control_type: Literal["", "Load", "Setpoint"] | None
-    flow_mode: Literal["", "ConstantFlow", "VariableSpeedPumping"] | None
+    heat_pump_sizing_method: Literal["CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity"] | None
+    control_type: Literal["Load", "Setpoint"] | None
+    flow_mode: Literal["ConstantFlow", "VariableSpeedPumping"] | None
     minimum_part_load_ratio: float | None
     minimum_source_inlet_temperature: float | None
     maximum_source_inlet_temperature: float | None
@@ -18939,7 +18317,7 @@ class _PythonPluginVariables_v9_3Fields(_g._PythonPluginVariablesCommonFields, t
 class PythonPluginTrendVariable_v9_3_to_v22_1(_g.AnyPythonPluginTrendVariable):
     """``PythonPlugin:TrendVariable`` as declared in EnergyPlus 9.3.0 to 22.1.0. This object sets up a Python plugin trend variable from an Python plugin variable A trend variable logs values across..."""
 
-    number_of_timesteps_to_be_logged: float | None
+    number_of_timesteps_to_be_logged: float
     """Range: >= 1.0"""
 
     def update(
@@ -18951,7 +18329,7 @@ class PythonPluginTrendVariable_v9_3_to_v22_1(_g.AnyPythonPluginTrendVariable):
     _creation_signature: _cv48.PythonPluginTrendVariable_v9_3_to_v22_1  # type: ignore[assignment]
 
 class _PythonPluginTrendVariable_v9_3_to_v22_1Fields(_g._PythonPluginTrendVariableCommonFields, total=False):
-    number_of_timesteps_to_be_logged: float | None
+    number_of_timesteps_to_be_logged: float
 
 class PythonPluginOutputVariable_v9_3(_g.AnyPythonPluginOutputVariable):
     """``PythonPlugin:OutputVariable`` as declared in EnergyPlus 9.3.0. This object sets up an EnergyPlus output variable from a Python Plugin variable"""
@@ -19124,7 +18502,7 @@ class _OutputControlFiles_v9_4_to_v24_1Fields(_g._OutputControlFilesCommonFields
 class OutputControlFiles_v24_2_to_v25_1(_g.AnyOutputControlFiles):
     """``OutputControl:Files`` as declared in EnergyPlus 24.2.0 to 25.1.0. Conditionally turn on/off output from EnergyPlus."""
 
-    output_space_sizing: Literal["", "No", "Yes"] | None
+    output_space_sizing: Literal["No", "Yes"] | None
     """Default: Yes"""
 
     def update(
@@ -19133,16 +18511,16 @@ class OutputControlFiles_v24_2_to_v25_1(_g.AnyOutputControlFiles):
     _creation_signature: _cv107.OutputControlFiles_v24_2_to_v25_1  # type: ignore[assignment]
 
 class _OutputControlFiles_v24_2_to_v25_1Fields(_g._OutputControlFilesCommonFields, total=False):
-    output_space_sizing: Literal["", "No", "Yes"] | None
+    output_space_sizing: Literal["No", "Yes"] | None
 
 class ConstructionPropertyInternalHeatSource_v9_5_to_v22_1(_g.AnyConstructionPropertyInternalHeatSource):
     """``ConstructionProperty:InternalHeatSource`` as declared in EnergyPlus 9.5.0 to 22.1.0. Internal heat source to be attached to a construction layer"""
 
-    thermal_source_present_after_layer_number: float | None
+    thermal_source_present_after_layer_number: float
     """refers to the list of materials which follows; Range: >= 1.0"""
-    temperature_calculation_requested_after_layer_number: float | None
+    temperature_calculation_requested_after_layer_number: float
     """refers to the list of materials which follows"""
-    dimensions_for_the_ctf_calculation: float | None
+    dimensions_for_the_ctf_calculation: float
     """1 = 1-dimensional calculation, 2 = 2-dimensional calculation; Range: >= 1.0, <= 2.0"""
 
     def update(
@@ -19156,16 +18534,16 @@ class ConstructionPropertyInternalHeatSource_v9_5_to_v22_1(_g.AnyConstructionPro
 class _ConstructionPropertyInternalHeatSource_v9_5_to_v22_1Fields(
     _g._ConstructionPropertyInternalHeatSourceCommonFields, total=False
 ):
-    thermal_source_present_after_layer_number: float | None
-    temperature_calculation_requested_after_layer_number: float | None
-    dimensions_for_the_ctf_calculation: float | None
+    thermal_source_present_after_layer_number: float
+    temperature_calculation_requested_after_layer_number: float
+    dimensions_for_the_ctf_calculation: float
 
 class ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1(_g.AnyElectricLoadCenterStorageLiIonNMCBattery):
     """``ElectricLoadCenter:Storage:LiIonNMCBattery`` as declared in EnergyPlus 9.5.0 to 22.1.0. Uses Lithium Ion NMC model to simulate rechargeable battery banks in an electrical load center. The battery bank is a..."""
 
-    number_of_cells_in_series: float | None
+    number_of_cells_in_series: float
     """Battery voltage is calculated by multiplying this field by the nominal cell voltage (N13, default 3.342V); Range: >= 1.0"""
-    number_of_strings_in_parallel: float | None
+    number_of_strings_in_parallel: float
     """Capacity (Ah) is determined by multiplying this field by the cell capacity (N14, default 3.2 Ah); Range: >= 1.0"""
 
     def update(
@@ -19179,8 +18557,8 @@ class ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1(_g.AnyElectricLoadC
 class _ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1Fields(
     _g._ElectricLoadCenterStorageLiIonNMCBatteryCommonFields, total=False
 ):
-    number_of_cells_in_series: float | None
-    number_of_strings_in_parallel: float | None
+    number_of_cells_in_series: float
+    number_of_strings_in_parallel: float
 
 class Space_v9_6_to_v22_1(_g.AnySpace):
     """``Space`` as declared in EnergyPlus 9.6.0 to 22.1.0. Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space ..."""
@@ -19195,9 +18573,9 @@ class _Space_v9_6_to_v22_1Fields(_g._SpaceCommonFields, total=False): ...
 class Space_v22_2_to_v26_1(_g.AnySpace):
     """``Space`` as declared in EnergyPlus 22.2.0 to 26.1.0. Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space ..."""
 
-    ceiling_height: float | Literal["", "Autocalculate"] | None
+    ceiling_height: float | Literal["Autocalculate"] | None
     """If this field is 0.0, negative or autocalculate, then the average height of the space is automatically calculated and...; [m]; Default: Autocalculate"""
-    volume: float | Literal["", "Autocalculate"] | None
+    volume: float | Literal["Autocalculate"] | None
     """If this field is 0.0, negative or autocalculate, then the volume of the space is automatically calculated and used in...; [m3]; Default: Autocalculate"""
 
     def update(
@@ -19206,13 +18584,13 @@ class Space_v22_2_to_v26_1(_g.AnySpace):
     _creation_signature: _cv9.Space_v22_2_to_v26_1  # type: ignore[assignment]
 
 class _Space_v22_2_to_v26_1Fields(_g._SpaceCommonFields, total=False):
-    ceiling_height: float | Literal["", "Autocalculate"] | None
-    volume: float | Literal["", "Autocalculate"] | None
+    ceiling_height: float | Literal["Autocalculate"] | None
+    volume: float | Literal["Autocalculate"] | None
 
 class OutputTableReportPeriod_v22_2_to_v25_1(_g.AnyOutputTableReportPeriod):
     """``Output:Table:ReportPeriod`` as declared in EnergyPlus 22.2.0 to 25.1.0. This object allows the user to generate the resilience tabular reports over a subset of a run period. When it is defi..."""
 
-    name_: str | None
+    name_: str
     """descriptive name cannot be blank and must be unique"""
     report_name_: (
         Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
@@ -19231,7 +18609,7 @@ class OutputTableReportPeriod_v22_2_to_v25_1(_g.AnyOutputTableReportPeriod):
     _creation_signature: _cv126.OutputTableReportPeriod_v22_2_to_v25_1  # type: ignore[assignment]
 
 class _OutputTableReportPeriod_v22_2_to_v25_1Fields(_g._OutputTableReportPeriodCommonFields, total=False):
-    name_: str | None
+    name_: str
     report_name_: (
         Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
         | None
@@ -19317,28 +18695,25 @@ class BuildingSurfaceDetailed_v25_1_to_v26_1(_g.AnyBuildingSurfaceDetailed):
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Space",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Space",
+        "Surface",
+        "Zone",
+    ]
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailed_v25_1_to_v26_1Fields]
@@ -19347,28 +18722,25 @@ class BuildingSurfaceDetailed_v25_1_to_v26_1(_g.AnyBuildingSurfaceDetailed):
 
 class _BuildingSurfaceDetailed_v25_1_to_v26_1Fields(_g._BuildingSurfaceDetailedCommonFields, total=False):
     space_name: str | None
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Space",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
+    outside_boundary_condition: Literal[
+        "Adiabatic",
+        "Foundation",
+        "Ground",
+        "GroundBasementPreprocessorAverageFloor",
+        "GroundBasementPreprocessorAverageWall",
+        "GroundBasementPreprocessorLowerWall",
+        "GroundBasementPreprocessorUpperWall",
+        "GroundFCfactorMethod",
+        "GroundSlabPreprocessorAverage",
+        "GroundSlabPreprocessorCore",
+        "GroundSlabPreprocessorPerimeter",
+        "OtherSideCoefficients",
+        "OtherSideConditionsModel",
+        "Outdoors",
+        "Space",
+        "Surface",
+        "Zone",
+    ]
 
 class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1(_g.ZoneHVACBaseboardRadiantConvectiveSteam):
     """``ZoneHVAC:Baseboard:RadiantConvective:Steam`` as declared in EnergyPlus 9.5.0 to 25.1.0: the fields of :class:`ZoneHVACBaseboardRadiantConvectiveSteam`, with the fields these releases require."""
@@ -19645,6 +19017,32 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1(_g.ZoneHVACBaseboard
 class _ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1Fields(
     _g._ZoneHVACBaseboardRadiantConvectiveWaterFields, total=False
 ): ...
+
+class ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1(ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1):
+    """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 8.9.0 to 9.1.0: the fields of :class:`ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1`, with the fields these releases require."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv12.ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1  # type: ignore[assignment]
+
+class _ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1Fields(_ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1Fields, total=False): ...
+
+class ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1(ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1):
+    """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 9.2.0 to 23.1.0: the fields of :class:`ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1`, with the fields these releases require."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1Fields],
+    ) -> None: ...  # type: ignore[override]
+    _creation_signature: _cv107.ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1  # type: ignore[assignment]
+
+class _ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1Fields(_ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1Fields, total=False): ...
 
 class TableTwoIndependentVariables_v8_9(TableTwoIndependentVariables_v8_9_to_v9_1):
     """``Table:TwoIndependentVariables`` as declared in EnergyPlus 8.9.0: the fields of :class:`TableTwoIndependentVariables_v8_9_to_v9_1`, with the fields these releases require."""
@@ -19933,10 +19331,6 @@ class _Accessors_v8_9_to_v9_2:
     @property
     def shadow_calculations(self) -> IDFCollection[ShadowCalculation_v8_9_to_v9_2]: ...
     @property
-    def surface_property_exposed_foundation_perimeters(
-        self,
-    ) -> IDFCollection[SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2]: ...
-    @property
     def water_heater_mixeds(self) -> IDFCollection[WaterHeaterMixed_v8_9_to_v9_2]: ...
     @property
     def water_heater_stratifieds(self) -> IDFCollection[WaterHeaterStratified_v8_9_to_v9_2]: ...
@@ -19953,11 +19347,7 @@ class _Accessors_v8_9_to_v9_3:
     @property
     def construction_internal_sources(self) -> IDFCollection[ConstructionInternalSource_v8_9_to_v9_3]: ...
     @property
-    def controller_water_coils(self) -> IDFCollection[ControllerWaterCoil_v8_9_to_v9_3]: ...
-    @property
     def curve_double_exponential_decays(self) -> IDFCollection[CurveDoubleExponentialDecay_v8_9_to_v9_3]: ...
-    @property
-    def fan_system_models(self) -> IDFCollection[FanSystemModel_v8_9_to_v9_3]: ...
     @property
     def output_debugging_datas(self) -> IDFCollection[OutputDebuggingData_v8_9_to_v9_3]: ...
     @property
@@ -20224,6 +19614,8 @@ class _Accessors_v8_9_to_v22_1:
     def external_interface_functional_mockup_unit_imports(
         self,
     ) -> IDFCollection[ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1]: ...
+    @property
+    def fan_system_models(self) -> IDFCollection[FanSystemModel_v8_9_to_v22_1]: ...
     @property
     def ground_heat_exchanger_horizontal_trenches(
         self,
@@ -20782,6 +20174,8 @@ class _Accessors_v8_9_to_v26_2:
     def construction_window_equivalent_layers(self) -> IDFCollection[_g.ConstructionWindowEquivalentLayer]: ...
     @property
     def constructions(self) -> IDFCollection[_g.Construction]: ...
+    @property
+    def controller_water_coils(self) -> IDFCollection[_g.ControllerWaterCoil]: ...
     @property
     def cooling_tower_performance_cool_tools(self) -> IDFCollection[_g.CoolingTowerPerformanceCoolTools]: ...
     @property
@@ -21643,6 +21037,10 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def surface_properties_vapor_coefficients(self) -> IDFCollection[_g.SurfacePropertiesVaporCoefficients]: ...
     @property
+    def surface_property_exposed_foundation_perimeters(
+        self,
+    ) -> IDFCollection[_g.SurfacePropertyExposedFoundationPerimeter]: ...
+    @property
     def surface_property_exterior_natural_vented_cavities(
         self,
     ) -> IDFCollection[_g.SurfacePropertyExteriorNaturalVentedCavity]: ...
@@ -21869,8 +21267,6 @@ class _Accessors_v8_9_to_v26_2:
 
 class _Accessors_v9_0:
     @property
-    def boiler_hot_waters(self) -> IDFCollection[BoilerHotWater_v9_0]: ...
-    @property
     def hvac_template_zone_fan_coils(self) -> IDFCollection[HVACTemplateZoneFanCoil_v9_0]: ...
 
 class _Accessors_v9_0_to_v9_1:
@@ -21888,6 +21284,8 @@ class _Accessors_v9_0_to_v9_1:
     def window_shading_controls(self) -> IDFCollection[WindowShadingControl_v9_0_to_v9_1]: ...
 
 class _Accessors_v9_0_to_v9_2:
+    @property
+    def boiler_hot_waters(self) -> IDFCollection[BoilerHotWater_v9_0_to_v9_2]: ...
     @property
     def sizing_period_design_days(self) -> IDFCollection[SizingPeriodDesignDay_v9_0_to_v9_2]: ...
 
@@ -21942,8 +21340,6 @@ class _Accessors_v9_1:
     def zone_hvac_equipment_lists(self) -> IDFCollection[ZoneHVACEquipmentList_v9_1]: ...
 
 class _Accessors_v9_1_to_v9_2:
-    @property
-    def boiler_hot_waters(self) -> IDFCollection[BoilerHotWater_v9_1_to_v9_2]: ...
     @property
     def heat_pump_water_to_water_eir_coolings(self) -> IDFCollection[HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2]: ...
     @property
@@ -22209,10 +21605,6 @@ class _Accessors_v9_3_to_v26_2:
     @property
     def python_plugin_instances(self) -> IDFCollection[_g.PythonPluginInstance]: ...
     @property
-    def surface_property_exposed_foundation_perimeters(
-        self,
-    ) -> IDFCollection[_g.SurfacePropertyExposedFoundationPerimeter]: ...
-    @property
     def weather_property_sky_temperatures(self) -> IDFCollection[_g.WeatherPropertySkyTemperature]: ...
     @property
     def zone_hvac_cooling_panel_radiant_convective_waters(
@@ -22247,10 +21639,6 @@ class _Accessors_v9_4_to_v9_6:
     @property
     def python_plugin_search_paths(self) -> IDFCollection[PythonPluginSearchPaths_v9_4_to_v9_6]: ...
 
-class _Accessors_v9_4_to_v22_1:
-    @property
-    def fan_system_models(self) -> IDFCollection[FanSystemModel_v9_4_to_v22_1]: ...
-
 class _Accessors_v9_4_to_v23_1:
     @property
     def coil_heating_fuels(self) -> IDFCollection[CoilHeatingFuel_v9_4_to_v23_1]: ...
@@ -22268,8 +21656,6 @@ class _Accessors_v9_4_to_v24_1:
     def output_control_files(self) -> IDFCollection[OutputControlFiles_v9_4_to_v24_1]: ...
 
 class _Accessors_v9_4_to_v26_2:
-    @property
-    def controller_water_coils(self) -> IDFCollection[_g.ControllerWaterCoil]: ...
     @property
     def curve_double_exponential_decays(self) -> IDFCollection[_g.CurveDoubleExponentialDecay]: ...
     @property

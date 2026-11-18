@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from .document import AnyIDFDocument, IDFDocument
 from .exceptions import VersionNotFoundError
-from .objects import IDFObject, drop_blank_group_slots
+from .objects import IDFObject, drop_blank_group_slots, is_blank_slot
 
 logger = logging.getLogger(__name__)
 
@@ -270,7 +270,8 @@ class EpJSONParser:
                 obj = IDFObject(
                     obj_type=obj_type,
                     name=name,
-                    data=dict(fields_dict),  # Copy the fields dict
+                    # A copy, without blank values ("" or null): a blank field is unset, as in IDF (idfkit#183).
+                    data={key: value for key, value in fields_dict.items() if not is_blank_slot(value)},
                     schema=obj_schema,
                     field_order=field_order,
                     ref_fields=ref_fields,

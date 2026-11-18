@@ -408,6 +408,39 @@ uv run idfkit check src/ --targets all      # --from/--to compares one migration
 
 mypy sees the document's methods, properties and accessors, but collapses a union of release types into what they share (see Code for a range of releases), and does not check the name of a field that is read (it types `zone.ceiling_hieght` as `object`), so prefer pyright for idfkit code. It reports a misspelled field that is assigned to as `variable has type "_NotAFieldOfThisObjectType"`.
 
+## Reading fields
+
+Reading a field gives its value, or `None` when it is unset. The exception is a field that every release having it requires with no default (`Material.thickness`, `BuildingSurface:Detailed.zone_name`, `Construction.outside_layer`, about 2,700 fields): it reads as its value type, never `None` (`float`, not `float | None`), so arithmetic on it needs no guard. `add()` refuses an object without it, and assigning `None` to it, or passing `None` to `update()`, is a type error. An object can still lack one when it comes from a file EnergyPlus would refuse, or from `doc.add(..., validate=False)`; reading the field then raises `MissingRequiredFieldError`, an `AttributeError` naming the object and the field, instead of returning `None`. To ask whether such a field is set without raising, use `obj.get("thickness")` (or `getattr(obj, "thickness", None)`), and `validate_document(doc)` lists every missing one (`E001`). A field with a schema default reads `None` when blank, not the default: EnergyPlus applies the default, idfkit stores only what was written.
+
+```python
+from idfkit import MissingRequiredFieldError
+
+if TYPE_CHECKING:
+    from idfkit.document import AnyMaterial
+
+
+def r_value(mat: AnyMaterial) -> float:
+    """thickness and conductivity are required in every release: they read as float, no guard."""
+    return mat.thickness / mat.conductivity
+
+
+absorptance = doc.materials["Concrete"].thermal_absorptance  # float | None: it has a default
+effective = absorptance if absorptance is not None else 0.9  # the value EnergyPlus applies
+
+legacy = load_idf("hand_written.idf")  # a file EnergyPlus would refuse may lack a required field
+for mat in legacy.materials:
+    if mat.get("thickness") is None:  # the untyped check: None when unset, never raises
+        print(f"{mat.name} has no thickness")
+        continue
+    print(r_value(mat))
+try:
+    print(legacy.materials["Brick"].thickness)
+except MissingRequiredFieldError as err:  # an AttributeError naming the object and the field
+    print(err.obj_type, err.obj_name, err.field_name)
+```
+
+A blank value is stored as absent wherever it comes from (`add(..., f="")`, `obj.f = ""`, `""` or `null` in epJSON, an empty IDF field), so no field reads `""`, and `""` is not part of any field's type: clear a field with `None` in type-checked code. Choice values are read in the spelling of the file (`"WALL"`, `"hourly"`), which may differ in case from the `Literal` the type lists: compare them with `.casefold()` when the model was loaded from a file.
+
 ## Modifying objects
 
 Field access is via attribute. Setting a value re-validates against the schema and updates the reference graph automatically:
@@ -464,6 +497,20 @@ for obj in doc.all_objects:
 ```
 
 ## Common mistakes
+
+!!! failure "guarding a required field against None"
+
+    ```python
+    if material.thickness is None:  # pyright strict: reportUnnecessaryComparison; it is a float
+        raise ValueError(material.name)
+    ```
+
+!!! success "read it; check with get() only when the model may be incomplete"
+
+    ```python
+    r = material.thickness / material.conductivity  # raises MissingRequiredFieldError if unset
+    if material.get("thickness") is None: ...  # the untyped check, for loaded files
+    ```
 
 !!! failure "guarding a release-specific lookup with `in`"
 

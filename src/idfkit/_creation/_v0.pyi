@@ -23,14 +23,14 @@ class RunPeriodCustomRange_v8_9:
         end_day_of_month: float,
         end_year: float,
         day_of_week_for_start_day: Literal[
-            "", "Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"
+            "Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"
         ]
         | None = "UseWeatherFile",
-        use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
-        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_holidays_and_special_days: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        apply_weekend_holiday_rule: Literal["No", "Yes"] | None = "No",
+        use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``RunPeriod:CustomRange`` and add it to the document.
 
@@ -56,10 +56,10 @@ class FenestrationSurfaceDetailed_v9_0_to_v26_1:
         vertex_3_y_coordinate: float,
         vertex_3_z_coordinate: float,
         outside_boundary_condition_object: str | None = ...,
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         frame_and_divider_name: str | None = ...,
         multiplier: float | None = 1,
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertex_4_x_coordinate: float | None = ...,
         vertex_4_y_coordinate: float | None = ...,
         vertex_4_z_coordinate: float | None = ...,
@@ -94,10 +94,10 @@ class PerformancePrecisionTradeoffs_v9_4_to_v9_5:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        use_coil_direct_solutions: Literal["", "No", "Yes"] | None = "No",
-        zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None = "ScriptF",
+        use_coil_direct_solutions: Literal["No", "Yes"] | None = "No",
+        zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None = "ScriptF",
         override_mode: Literal[
-            "", "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Mode06", "Mode07", "Normal"
+            "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Mode06", "Mode07", "Normal"
         ]
         | None = "Normal",
         maxzonetempdiff: float | None = 0.3,

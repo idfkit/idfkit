@@ -35,7 +35,6 @@ class SizingPeriodWeatherFileConditionType:
             "WinterTypical",
         ],
         day_of_week_for_start_day: Literal[
-            "",
             "CustomDay1",
             "CustomDay2",
             "Friday",
@@ -49,8 +48,8 @@ class SizingPeriodWeatherFileConditionType:
             "WinterDesignDay",
         ]
         | None = "Monday",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_rain_and_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_rain_and_snow_indicators: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``SizingPeriod:WeatherFileConditionType`` and add it to the document.
 
@@ -131,8 +130,8 @@ class GroundHeatTransferControl:
         name: str = "",
         /,
         *,
-        run_basement_preprocessor: Literal["", "No", "Yes"] | None = "No",
-        run_slab_preprocessor: Literal["", "No", "Yes"] | None = "No",
+        run_basement_preprocessor: Literal["No", "Yes"] | None = "No",
+        run_slab_preprocessor: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``GroundHeatTransfer:Control`` and add it to the document.
 
@@ -157,7 +156,7 @@ class ZoneCoolTowerShower:
         rated_power_consumption: float,
         availability_schedule_name: str | None = ...,
         water_supply_storage_tank_name: str | None = ...,
-        flow_control_type: Literal["", "WaterFlowSchedule", "WindDrivenFlow"] | None = "WindDrivenFlow",
+        flow_control_type: Literal["WaterFlowSchedule", "WindDrivenFlow"] | None = "WindDrivenFlow",
         fraction_of_water_loss: float | None = ...,
         fraction_of_flow_schedule: float | None = ...,
     ) -> None:
@@ -176,8 +175,8 @@ class ZoneControlThermostatTemperatureAndHumidity:
         *,
         thermostat_name: str,
         dehumidifying_relative_humidity_setpoint_schedule_name: str,
-        dehumidification_control_type: Literal["", "None", "Overcool"] | None = "Overcool",
-        overcool_range_input_method: Literal["", "Constant", "Scheduled"] | None = "Constant",
+        dehumidification_control_type: Literal["None", "Overcool"] | None = "Overcool",
+        overcool_range_input_method: Literal["Constant", "Scheduled"] | None = "Constant",
         overcool_constant_range: float | None = 1.7,
         overcool_range_schedule_name: str | None = ...,
         overcool_control_ratio: float | None = 3.6,
@@ -266,18 +265,18 @@ class CurveTriquadratic:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_y: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_z: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:Triquadratic`` and add it to the document.

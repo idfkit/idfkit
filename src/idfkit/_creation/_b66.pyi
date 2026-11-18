@@ -75,9 +75,9 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit:
         availability_schedule_name: str | None = ...,
         number_of_speeds: int | None = 2,
         nominal_speed_level: int | None = 2,
-        rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None = "Autosize",
+        rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
+        rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
+        rated_water_flow_rate_at_selected_nominal_speed_level: float | Literal["Autosize"] | None = "Autosize",
         speed_2_reference_unit_gross_rated_heating_capacity: float | None = ...,
         speed_2_reference_unit_gross_rated_heating_cop: float | None = ...,
         speed_2_reference_unit_rated_air_flow_rate: float | None = ...,
@@ -228,10 +228,10 @@ class AnyAirLoopHVACUnitaryHeatPumpWaterToAir:
         cooling_convergence: float | None = 0.001,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "None"] | None = "None",
-        heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
+        dehumidification_control_type: Literal["CoolReheat", "None"] | None = "None",
+        heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` and add it to the document.
 
@@ -265,7 +265,7 @@ class ChillerEngineDriven:
         fuel_type: Literal[
             "Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"
         ],
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
         minimum_part_load_ratio: float | None = ...,
@@ -295,11 +295,10 @@ class ChillerEngineDriven:
         maximum_exhaust_flow_per_unit_of_power_output: float | None = ...,
         design_minimum_exhaust_temperature: float | None = ...,
         fuel_higher_heating_value: float | None = ...,
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         maximum_temperature_for_heat_recovery_at_heat_recovery_outlet_node: float | None = 60,
         sizing_factor: float | None = 1,
         basin_heater_capacity: float | None = 0,

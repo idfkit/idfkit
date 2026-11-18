@@ -17,12 +17,12 @@ class AnySimulationControl:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        do_zone_sizing_calculation: Literal["", "No", "Yes"] | None = "No",
-        do_system_sizing_calculation: Literal["", "No", "Yes"] | None = "No",
-        do_plant_sizing_calculation: Literal["", "No", "Yes"] | None = "No",
-        run_simulation_for_sizing_periods: Literal["", "No", "Yes"] | None = "Yes",
-        run_simulation_for_weather_file_run_periods: Literal["", "No", "Yes"] | None = "Yes",
-        do_hvac_sizing_simulation_for_sizing_periods: Literal["", "No", "Yes"] | None = "No",
+        do_zone_sizing_calculation: Literal["No", "Yes"] | None = "No",
+        do_system_sizing_calculation: Literal["No", "Yes"] | None = "No",
+        do_plant_sizing_calculation: Literal["No", "Yes"] | None = "No",
+        run_simulation_for_sizing_periods: Literal["No", "Yes"] | None = "Yes",
+        run_simulation_for_weather_file_run_periods: Literal["No", "Yes"] | None = "Yes",
+        do_hvac_sizing_simulation_for_sizing_periods: Literal["No", "Yes"] | None = "No",
         maximum_number_of_hvac_sizing_simulation_passes: int | None = 1,
     ) -> None:
         """Create a new ``SimulationControl`` and add it to the document.

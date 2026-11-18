@@ -203,11 +203,11 @@ class CoilHeatingDXMultiSpeed_v9_3_to_v22_1:
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         defrost_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "ReverseCycle",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "ReverseCycle",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
-        apply_part_load_fraction_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
+        apply_part_load_fraction_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
         region_number_for_calculating_hspf: float | None = 4,
         speed_1_rated_supply_air_fan_power_per_volume_flow_rate: float | None = 773.3,
         speed_1_rated_waste_heat_fraction_of_power_input: float | None = 0.2,
@@ -273,16 +273,16 @@ class TableMultiVariableLookup_v9_0_to_v9_1:
         /,
         *,
         interpolation_method: Literal[
-            "", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
+            "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
         ]
         | None = "LagrangeInterpolationLinearExtrapolation",
         number_of_interpolation_points: float | None = 3,
         curve_type: Literal["BiQuadratic", "Cubic", "Linear", "Quadratic", "QuadraticLinear", "Quartic"] | None = ...,
-        table_data_format: Literal["", "SingleLineIndependentVariableWithMatrix"]
+        table_data_format: Literal["SingleLineIndependentVariableWithMatrix"]
         | None = "SingleLineIndependentVariableWithMatrix",
         external_file_name: str | None = ...,
-        x1_sort_order: Literal["", "Ascending", "Descending"] | None = "Ascending",
-        x2_sort_order: Literal["", "Ascending", "Descending"] | None = "Ascending",
+        x1_sort_order: Literal["Ascending", "Descending"] | None = "Ascending",
+        x2_sort_order: Literal["Ascending", "Descending"] | None = "Ascending",
         normalization_reference: float | None = ...,
         minimum_value_of_x1: float | None = ...,
         maximum_value_of_x1: float | None = ...,
@@ -299,30 +299,30 @@ class TableMultiVariableLookup_v9_0_to_v9_1:
         minimum_table_output: float | None = ...,
         maximum_table_output: float | None = ...,
         input_unit_type_for_x1: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x2: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x3: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x4: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x5: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x6: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         number_of_independent_variables: float | None = ...,
         number_of_values_for_independent_variable_x1: float | None = ...,
@@ -362,10 +362,10 @@ class RoofCeilingDetailed_v8_9_to_v9_5:
             "Zone",
         ],
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.RoofCeilingDetailedVerticesItem | _g.RoofCeilingDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``RoofCeiling:Detailed`` and add it to the document.

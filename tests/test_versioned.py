@@ -532,6 +532,27 @@ class TestCommittedStubs:
                 r"    def zone_or_zonelist_or_space_or_spacelist_name(self, value: str | None) -> None: ...\n",
                 "zone_or_zonelist_or_space_or_spacelist_name: writable, but not a field of every version",
             ),
+            # A field every release requires, read as optional: the type would promise less than the run time.
+            (
+                0,
+                r"(class AnyMaterial\(_TypedIDFObject\):\n(?:.*\n)*?    thickness: )float\n",
+                r"\1float | None\n",
+                "mistyped ['thickness']",
+            ),
+            # A field no release requires, read as never None: the type would promise more than the run time.
+            (
+                0,
+                r'(class AnyZone\(_TypedIDFObject\):\n(?:.*\n)*?    ceiling_height: float \| Literal\["Autocalculate"\]) \| None\n',
+                r"\1\n",
+                "mistyped ['ceiling_height']",
+            ),
+            # The blank "" back among a field's values: a blank is stored as absent and never read.
+            (
+                0,
+                r'(class AnyZone\(_TypedIDFObject\):\n(?:.*\n)*?    ceiling_height: float \| Literal\[)"Autocalculate"\]',
+                r'\1"", "Autocalculate"]',
+                "mistyped ['ceiling_height']",
+            ),
             # A range alias one release short.
             (
                 2,

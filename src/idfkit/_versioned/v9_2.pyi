@@ -181,7 +181,9 @@ class IDFDocumentV9_2(
         self, obj_type: Literal["Construction:WindowEquivalentLayer"], /
     ) -> IDFCollection[_g.ConstructionWindowEquivalentLayer]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["Fan:SystemModel"], /) -> IDFCollection[_v.FanSystemModel_v8_9_to_v9_3]: ...
+    def __getitem__(
+        self, obj_type: Literal["Fan:SystemModel"], /
+    ) -> IDFCollection[_v.FanSystemModel_v8_9_to_v22_1]: ...
     @overload
     def __getitem__(self, obj_type: Literal["Refrigeration:WalkIn"], /) -> IDFCollection[_g.RefrigerationWalkIn]: ...
     @overload
@@ -365,9 +367,7 @@ class IDFDocumentV9_2(
         self, obj_type: Literal["FaultModel:Fouling:Boiler"], /
     ) -> IDFCollection[_g.FaultModelFoulingBoiler]: ...
     @overload
-    def __getitem__(
-        self, obj_type: Literal["Controller:WaterCoil"], /
-    ) -> IDFCollection[_v.ControllerWaterCoil_v8_9_to_v9_3]: ...
+    def __getitem__(self, obj_type: Literal["Controller:WaterCoil"], /) -> IDFCollection[_g.ControllerWaterCoil]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["WindowMaterial:Glazing:EquivalentLayer"], /
@@ -467,7 +467,7 @@ class IDFDocumentV9_2(
         self, obj_type: Literal["Site:GroundTemperature:FCfactorMethod"], /
     ) -> IDFCollection[_g.SiteGroundTemperatureFCfactorMethod]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["Boiler:HotWater"], /) -> IDFCollection[_v.BoilerHotWater_v9_1_to_v9_2]: ...
+    def __getitem__(self, obj_type: Literal["Boiler:HotWater"], /) -> IDFCollection[_v.BoilerHotWater_v9_0_to_v9_2]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["Pump:VariableSpeed:Condensate"], /
@@ -1711,7 +1711,7 @@ class IDFDocumentV9_2(
     @overload
     def __getitem__(
         self, obj_type: Literal["SurfaceProperty:ExposedFoundationPerimeter"], /
-    ) -> IDFCollection[_v.SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2]: ...
+    ) -> IDFCollection[_g.SurfacePropertyExposedFoundationPerimeter]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["FaultModel:TemperatureSensorOffset:ChillerSupplyWater"], /

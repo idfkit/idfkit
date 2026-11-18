@@ -113,7 +113,7 @@ class WindowPropertyFrameAndDivider:
         frame_solar_absorptance: float | None = 0.7,
         frame_visible_absorptance: float | None = 0.7,
         frame_thermal_hemispherical_emissivity: float | None = 0.9,
-        divider_type: Literal["", "DividedLite", "Suspended"] | None = "DividedLite",
+        divider_type: Literal["DividedLite", "Suspended"] | None = "DividedLite",
         divider_width: float | None = 0,
         number_of_horizontal_dividers: int | None = 0,
         number_of_vertical_dividers: int | None = 0,
@@ -130,7 +130,6 @@ class WindowPropertyFrameAndDivider:
         inside_reveal_depth: float | None = 0,
         inside_reveal_solar_absorptance: float | None = 0,
         nfrc_product_type_for_assembly_calculations: Literal[
-            "",
             "CasementDouble",
             "CasementSingle",
             "CurtainWall",
@@ -182,10 +181,10 @@ class AnyCoilSystemCoolingDX:
         ],
         cooling_coil_name: str,
         availability_schedule_name: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
-        run_on_sensible_load: Literal["", "No", "Yes"] | None = "Yes",
-        run_on_latent_load: Literal["", "No", "Yes"] | None = "No",
-        use_outdoor_air_dx_cooling_coil: Literal["", "No", "Yes"] | None = "No",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
+        run_on_sensible_load: Literal["No", "Yes"] | None = "Yes",
+        run_on_latent_load: Literal["No", "Yes"] | None = "No",
+        use_outdoor_air_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
         outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None = 2,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:DX`` and add it to the document.
@@ -207,8 +206,8 @@ class EvaporativeCoolerDirectResearchSpecial:
         availability_schedule_name: str | None = ...,
         cooler_design_effectiveness: float | None = ...,
         effectiveness_flow_ratio_modifier_curve_name: str | None = ...,
-        primary_air_design_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        recirculating_water_pump_design_power: float | Literal["", "Autosize"] | None = "Autosize",
+        primary_air_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        recirculating_water_pump_design_power: float | Literal["Autosize"] | None = "Autosize",
         water_pump_power_sizing_factor: float | None = 90,
         water_pump_power_modifier_curve_name: str | None = ...,
         water_supply_storage_tank_name: str | None = ...,
@@ -237,7 +236,7 @@ class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl:
         outdoor_unit_condensing_temperature_function_of_subcooling_curve_name: str,
         availability_schedule_name: str | None = ...,
         refrigerant_type: str | None = "R410A",
-        rated_evaporative_capacity: float | Literal["", "Autosize"] | None = 40000,
+        rated_evaporative_capacity: float | Literal["Autosize"] | None = 40000,
         rated_compressor_power_per_unit_of_rated_evaporative_capacity: float | None = 0.35,
         minimum_outdoor_air_temperature_in_cooling_mode: float | None = -6,
         maximum_outdoor_air_temperature_in_cooling_mode: float | None = 43,
@@ -245,7 +244,7 @@ class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl:
         maximum_outdoor_air_temperature_in_heating_mode: float | None = 16,
         reference_outdoor_unit_superheating: float | None = 3,
         reference_outdoor_unit_subcooling: float | None = 5,
-        refrigerant_temperature_control_algorithm_for_indoor_unit: Literal["", "ConstantTemp", "VariableTemp"]
+        refrigerant_temperature_control_algorithm_for_indoor_unit: Literal["ConstantTemp", "VariableTemp"]
         | None = "VariableTemp",
         reference_evaporating_temperature_for_indoor_unit: float | None = 6,
         reference_condensing_temperature_for_indoor_unit: float | None = 44,
@@ -265,11 +264,11 @@ class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl:
         number_of_compressors: int | None = 2,
         ratio_of_compressor_size_to_total_compressor_capacity: float | None = 0.5,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "Resistive",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
+        defrost_strategy: Literal["Resistive", "ReverseCycle"] | None = "Resistive",
+        defrost_control: Literal["OnDemand", "Timed"] | None = "Timed",
         defrost_energy_input_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
+        resistive_defrost_heater_capacity: float | Literal["Autosize"] | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
         compressor_maximum_delta_pressure: float | None = 4500000,
         number_of_compressor_loading_index_entries: int | None = 2,
@@ -316,10 +315,10 @@ class AnyOutputControlTableStyle:
         /,
         *,
         column_separator: Literal[
-            "", "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
+            "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
         ]
         | None = "Comma",
-        unit_conversion: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None = "None",
+        unit_conversion: Literal["InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None = "None",
     ) -> None:
         """Create a new ``OutputControl:Table:Style`` and add it to the document.
 

@@ -41,7 +41,7 @@ class TableMultiVariableLookup_v8_9:
         /,
         *,
         interpolation_method: Literal[
-            "", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
+            "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
         ]
         | None = "LagrangeInterpolationLinearExtrapolation",
         number_of_interpolation_points: float | None = 3,
@@ -58,11 +58,11 @@ class TableMultiVariableLookup_v8_9:
             "TriQuadratic",
         ]
         | None = ...,
-        table_data_format: Literal["", "SingleLineIndependentVariableWithMatrix"]
+        table_data_format: Literal["SingleLineIndependentVariableWithMatrix"]
         | None = "SingleLineIndependentVariableWithMatrix",
         external_file_name: str | None = ...,
-        x1_sort_order: Literal["", "Ascending", "Descending"] | None = "Ascending",
-        x2_sort_order: Literal["", "Ascending", "Descending"] | None = "Ascending",
+        x1_sort_order: Literal["Ascending", "Descending"] | None = "Ascending",
+        x2_sort_order: Literal["Ascending", "Descending"] | None = "Ascending",
         normalization_reference: float | None = ...,
         minimum_value_of_x1: float | None = ...,
         maximum_value_of_x1: float | None = ...,
@@ -79,30 +79,30 @@ class TableMultiVariableLookup_v8_9:
         minimum_table_output: float | None = ...,
         maximum_table_output: float | None = ...,
         input_unit_type_for_x1: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x2: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x3: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x4: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x5: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x6: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         number_of_independent_variables: float | None = ...,
         number_of_values_for_independent_variable_x1: float | None = ...,
@@ -128,13 +128,13 @@ class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5:
         air_inlet_node_name: str,
         air_outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        maximum_water_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        tube_outside_surface_area: float | Literal["", "Autosize"] | None = "Autosize",
-        total_tube_inside_area: float | Literal["", "Autosize"] | None = "Autosize",
-        fin_surface_area: float | Literal["", "Autosize"] | None = "Autosize",
-        minimum_airflow_area: float | Literal["", "Autosize"] | None = "Autosize",
-        coil_depth: float | Literal["", "Autosize"] | None = "Autosize",
-        fin_diameter: float | Literal["", "Autosize"] | None = "Autosize",
+        maximum_water_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        tube_outside_surface_area: float | Literal["Autosize"] | None = "Autosize",
+        total_tube_inside_area: float | Literal["Autosize"] | None = "Autosize",
+        fin_surface_area: float | Literal["Autosize"] | None = "Autosize",
+        minimum_airflow_area: float | Literal["Autosize"] | None = "Autosize",
+        coil_depth: float | Literal["Autosize"] | None = "Autosize",
+        fin_diameter: float | Literal["Autosize"] | None = "Autosize",
         fin_thickness: float | None = 0.0015,
         tube_inside_diameter: float | None = 0.01445,
         tube_outside_diameter: float | None = 0.0159,
@@ -143,7 +143,7 @@ class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5:
         fin_spacing: float | None = 0.0018,
         tube_depth_spacing: float | None = 0.026,
         number_of_tube_rows: float | None = 4,
-        number_of_tubes_per_row: float | Literal["", "Autosize"] | None = "Autosize",
+        number_of_tubes_per_row: float | Literal["Autosize"] | None = "Autosize",
         condensate_collection_water_storage_tank_name: str | None = ...,
         design_water_temperature_difference: float | None = ...,
     ) -> None:

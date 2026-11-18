@@ -25,28 +25,28 @@ class ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1:
         minimum_cooling_supply_air_temperature: float | None = 13,
         maximum_heating_supply_air_humidity_ratio: float | None = 0.0156,
         minimum_cooling_supply_air_humidity_ratio: float | None = 0.0077,
-        heating_limit: Literal["", "LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
+        heating_limit: Literal["LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
         | None = "NoLimit",
         maximum_heating_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_sensible_heating_capacity: float | Literal["Autosize"] | None = ...,
-        cooling_limit: Literal["", "LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
+        cooling_limit: Literal["LimitCapacity", "LimitFlowRate", "LimitFlowRateAndCapacity", "NoLimit"]
         | None = "NoLimit",
         maximum_cooling_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_total_cooling_capacity: float | Literal["Autosize"] | None = ...,
         heating_availability_schedule_name: str | None = ...,
         cooling_availability_schedule_name: str | None = ...,
         dehumidification_control_type: Literal[
-            "", "ConstantSensibleHeatRatio", "ConstantSupplyHumidityRatio", "Humidistat", "None"
+            "ConstantSensibleHeatRatio", "ConstantSupplyHumidityRatio", "Humidistat", "None"
         ]
         | None = "ConstantSensibleHeatRatio",
         cooling_sensible_heat_ratio: float | None = 0.7,
-        humidification_control_type: Literal["", "ConstantSupplyHumidityRatio", "Humidistat", "None"] | None = "None",
+        humidification_control_type: Literal["ConstantSupplyHumidityRatio", "Humidistat", "None"] | None = "None",
         design_specification_outdoor_air_object_name: str | None = ...,
         outdoor_air_inlet_node_name: str | None = ...,
-        demand_controlled_ventilation_type: Literal["", "CO2Setpoint", "None", "OccupancySchedule"] | None = "None",
-        outdoor_air_economizer_type: Literal["", "DifferentialDryBulb", "DifferentialEnthalpy", "NoEconomizer"]
+        demand_controlled_ventilation_type: Literal["CO2Setpoint", "None", "OccupancySchedule"] | None = "None",
+        outdoor_air_economizer_type: Literal["DifferentialDryBulb", "DifferentialEnthalpy", "NoEconomizer"]
         | None = "NoEconomizer",
-        heat_recovery_type: Literal["", "Enthalpy", "None", "Sensible"] | None = "None",
+        heat_recovery_type: Literal["Enthalpy", "None", "Sensible"] | None = "None",
         sensible_heat_recovery_effectiveness: float | None = 0.7,
         latent_heat_recovery_effectiveness: float | None = 0.65,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
@@ -67,20 +67,20 @@ class People_v9_5:
         zone_or_zonelist_name: str,
         number_of_people_schedule_name: str,
         activity_level_schedule_name: str,
-        number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None = "People",
+        number_of_people_calculation_method: Literal["Area/Person", "People", "People/Area"] | None = "People",
         number_of_people: float | None = ...,
         people_per_zone_floor_area: float | None = ...,
         zone_floor_area_per_person: float | None = ...,
         fraction_radiant: float | None = 0.3,
-        sensible_heat_fraction: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sensible_heat_fraction: float | Literal["Autocalculate"] | None = "Autocalculate",
         carbon_dioxide_generation_rate: float | None = ...,
-        enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None = "No",
-        mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"]
+        enable_ashrae_55_comfort_warnings: Literal["No", "Yes"] | None = "No",
+        mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"]
         | None = "ZoneAveraged",
         surface_name_angle_factor_list_name: str | None = ...,
         work_efficiency_schedule_name: str | None = ...,
         clothing_insulation_calculation_method: Literal[
-            "", "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
+            "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
         ]
         | None = "ClothingInsulationSchedule",
         clothing_insulation_calculation_method_schedule_name: str | None = ...,
@@ -137,10 +137,10 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4:
         rated_average_water_temperature: float | None = 87.78,
         rated_water_mass_flow_rate: float | None = 0.063,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         convergence_tolerance: float | None = 0.001,
@@ -168,7 +168,7 @@ class ChillerElectric_v8_9_to_v24_1:
         chilled_water_inlet_node_name: str,
         chilled_water_outlet_node_name: str,
         temperature_rise_coefficient: float,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
         minimum_part_load_ratio: float | None = ...,
@@ -188,9 +188,8 @@ class ChillerElectric_v8_9_to_v24_1:
         coefficient_2_of_full_load_ratio_curve: float | None = ...,
         coefficient_3_of_full_load_ratio_curve: float | None = ...,
         chilled_water_outlet_temperature_lower_limit: float | None = ...,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
@@ -247,12 +246,12 @@ class CoilCoolingDXMultiSpeed_v9_3_to_v22_1:
         speed_2_part_load_fraction_correlation_curve_name: str,
         availability_schedule_name: str | None = ...,
         condenser_air_inlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -25,
         supply_water_storage_tank_name: str | None = ...,
         condensate_collection_water_storage_tank_name: str | None = ...,
-        apply_part_load_fraction_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
-        apply_latent_degradation_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
+        apply_part_load_fraction_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
+        apply_latent_degradation_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
         crankcase_heater_capacity: float | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         basin_heater_capacity: float | None = 0,

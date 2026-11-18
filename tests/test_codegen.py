@@ -274,8 +274,9 @@ class TestEnumToLiteral:
         assert result == 'Literal["A", "B", "C"]'
 
     def test_empty_string(self) -> None:
-        result = _enum_to_literal(["", "X"])
-        assert result == 'Literal["", "X"]'
+        # A blank choice is stored as absent and reads None, so it is not a value of the field.
+        assert _enum_to_literal(["", "X"]) == 'Literal["X"]'
+        assert _enum_to_literal([""]) == "str"
 
     def test_non_string_values(self) -> None:
         """Cover line 88: non-string enum value."""
@@ -608,7 +609,13 @@ def _preserve_generated_stubs() -> Iterator[tuple[Path, Path]]:
     doc_file = real_base / "document.pyi"
     documents_dir = real_base / "_versioned"
     creation_dir = real_base / "_creation"
-    generated = [types_file, doc_file, real_base / "versioned.pyi", real_base / "versioned.py"]
+    generated = [
+        types_file,
+        doc_file,
+        real_base / "versioned.pyi",
+        real_base / "versioned.py",
+        real_base / "_read_required.py",
+    ]
     generated += sorted(documents_dir.glob("*.pyi"))
     generated += sorted(creation_dir.glob("*.pyi"))
     backups = {path: path.read_text(encoding="utf-8") if path.exists() else None for path in generated}
@@ -812,7 +819,7 @@ class TestCreationSignature:
         # alias beside the required key would type-check a call the run time refuses.
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         lines = _generate_object_class(get_schema(LATEST_VERSION), "WindowMaterial:Gap", sink=sink)
-        assert any(line.strip() == "gas_or_gas_mixture: str | None" for line in lines)  # still an attribute
+        assert any(line.strip() == "gas_or_gas_mixture: str" for line in lines)  # still an attribute, required on read
         signature = _signature_of(sink, "WindowMaterialGap")
         assert "gas_or_gas_mixture_: str," in signature
         assert "gas_or_gas_mixture:" not in signature

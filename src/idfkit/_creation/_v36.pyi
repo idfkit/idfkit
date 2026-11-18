@@ -19,7 +19,7 @@ class Lights_v8_9_to_v9_5:
         *,
         zone_or_zonelist_name: str,
         schedule_name: str,
-        design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"]
+        design_level_calculation_method: Literal["LightingLevel", "Watts/Area", "Watts/Person"]
         | None = "LightingLevel",
         lighting_level: float | None = ...,
         watts_per_zone_floor_area: float | None = ...,
@@ -29,7 +29,7 @@ class Lights_v8_9_to_v9_5:
         fraction_visible: float | None = 0,
         fraction_replaceable: float | None = 1,
         end_use_subcategory: str | None = "General",
-        return_air_fraction_calculated_from_plenum_temperature: Literal["", "No", "Yes"] | None = "No",
+        return_air_fraction_calculated_from_plenum_temperature: Literal["No", "Yes"] | None = "No",
         return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
         return_air_heat_gain_node_name: str | None = ...,
@@ -68,10 +68,10 @@ class FloorDetailed_v8_9_to_v9_5:
             "Zone",
         ],
         outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sun_exposure: Literal["NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.FloorDetailedVerticesItem | _g.FloorDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``Floor:Detailed`` and add it to the document.
@@ -90,14 +90,13 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4:
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
-        fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"]
+        fluid_to_radiant_surface_heat_transfer_model: Literal["ConvectionOnly", "ISOStandard"]
         | None = "ConvectionOnly",
         hydronic_tubing_inside_diameter: float | None = 0.013,
         hydronic_tubing_outside_diameter: float | None = 0.016,
-        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
+        hydronic_tubing_length: float | Literal["Autosize"] | None = "Autosize",
         hydronic_tubing_conductivity: float | None = 0.35,
         temperature_control_type: Literal[
-            "",
             "MeanAirTemperature",
             "MeanRadiantTemperature",
             "OperativeTemperature",
@@ -127,9 +126,9 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4:
         cooling_low_water_temperature_schedule_name: str | None = ...,
         cooling_high_control_temperature_schedule_name: str | None = ...,
         cooling_low_control_temperature_schedule_name: str | None = ...,
-        condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
+        condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
-        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
+        number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
         changeover_delay_time_period_schedule: str | None = ...,
     ) -> None:

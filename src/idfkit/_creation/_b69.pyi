@@ -57,7 +57,7 @@ class GroundHeatTransferBasementSurfaceProps:
         epsln_surface_emissivity_with_snow: float | None = 0.86,
         veght_surface_roughness_no_snow_conditions: float | None = 6,
         veght_surface_roughness_snow_conditions: float | None = 0.25,
-        pet_flag_potential_evapotranspiration_on_: Literal["", "FALSE", "TRUE"] | None = "FALSE",
+        pet_flag_potential_evapotranspiration_on_: Literal["FALSE", "TRUE"] | None = "FALSE",
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:SurfaceProps`` and add it to the document.
 
@@ -95,29 +95,27 @@ class HVACTemplateZoneUnitary:
         zone_name: str,
         template_unitary_system_name: str,
         template_thermostat_name: str | None = ...,
-        supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
         outdoor_air_flow_rate_per_zone: float | None = 0,
         supply_plenum_name: str | None = ...,
         return_plenum_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SystemSupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = 12.8,
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SystemSupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
@@ -139,20 +137,19 @@ class HVACTemplatePlantHotWaterLoop:
         /,
         *,
         pump_schedule_name: str | None = ...,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Intermittent",
-        hot_water_plant_operation_scheme_type: Literal["", "Default", "UserDefined"] | None = "Default",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Intermittent",
+        hot_water_plant_operation_scheme_type: Literal["Default", "UserDefined"] | None = "Default",
         hot_water_plant_equipment_operation_schemes_name: str | None = ...,
         hot_water_setpoint_schedule_name: str | None = ...,
         hot_water_design_setpoint: float | None = 82,
-        hot_water_pump_configuration: Literal["", "ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
+        hot_water_pump_configuration: Literal["ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
         hot_water_pump_rated_head: float | None = 179352,
-        hot_water_setpoint_reset_type: Literal["", "None", "OutdoorAirTemperatureReset"] | None = "None",
+        hot_water_setpoint_reset_type: Literal["None", "OutdoorAirTemperatureReset"] | None = "None",
         hot_water_setpoint_at_outdoor_dry_bulb_low: float | None = 82.2,
         hot_water_reset_outdoor_dry_bulb_low: float | None = -6.7,
         hot_water_setpoint_at_outdoor_dry_bulb_high: float | None = 65.6,
         hot_water_reset_outdoor_dry_bulb_high: float | None = 10,
         hot_water_pump_type: Literal[
-            "",
             "FiveHeaderedPumps",
             "FourHeaderedPumps",
             "PumpPerBoiler",
@@ -161,10 +158,9 @@ class HVACTemplatePlantHotWaterLoop:
             "TwoHeaderedPumps",
         ]
         | None = "SinglePump",
-        supply_side_bypass_pipe: Literal["", "No", "Yes"] | None = "Yes",
-        demand_side_bypass_pipe: Literal["", "No", "Yes"] | None = "Yes",
+        supply_side_bypass_pipe: Literal["No", "Yes"] | None = "Yes",
+        demand_side_bypass_pipe: Literal["No", "Yes"] | None = "Yes",
         fluid_type: Literal[
-            "",
             "EthyleneGlycol30",
             "EthyleneGlycol40",
             "EthyleneGlycol50",
@@ -179,7 +175,7 @@ class HVACTemplatePlantHotWaterLoop:
         loop_design_delta_temperature: float | None = 11,
         maximum_outdoor_dry_bulb_temperature: float | None = ...,
         load_distribution_scheme: Literal[
-            "", "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
+            "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
         ]
         | None = "SequentialLoad",
     ) -> None:
@@ -211,8 +207,7 @@ class AirTerminalSingleDuctMixer:
         mixer_secondary_air_inlet_node_name: str,
         mixer_connection_type: Literal["InletSide", "SupplySide"],
         design_specification_outdoor_air_object_name: str | None = ...,
-        per_person_ventilation_rate_mode: Literal["", "CurrentOccupancy", "DesignOccupancy"]
-        | None = "CurrentOccupancy",
+        per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None = "CurrentOccupancy",
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:Mixer`` and add it to the document.
 
@@ -227,9 +222,9 @@ class LifeCycleCostNonrecurringCost:
         name: str,
         /,
         *,
-        category: Literal["", "Construction", "OtherCapital", "Salvage"] | None = "Construction",
+        category: Literal["Construction", "OtherCapital", "Salvage"] | None = "Construction",
         cost: float | None = ...,
-        start_of_costs: Literal["", "BasePeriod", "ServicePeriod"] | None = "ServicePeriod",
+        start_of_costs: Literal["BasePeriod", "ServicePeriod"] | None = "ServicePeriod",
         years_from_start: int | None = ...,
         months_from_start: int | None = ...,
     ) -> None:

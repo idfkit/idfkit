@@ -22,7 +22,6 @@ class SizingPeriodWeatherFileDays_v8_9_to_v22_1:
         end_month: float,
         end_day_of_month: float,
         day_of_week_for_start_day: Literal[
-            "",
             "CustomDay1",
             "CustomDay2",
             "Friday",
@@ -36,8 +35,8 @@ class SizingPeriodWeatherFileDays_v8_9_to_v22_1:
             "WinterDesignDay",
         ]
         | None = "Monday",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_rain_and_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
+        use_weather_file_rain_and_snow_indicators: Literal["No", "Yes"] | None = "Yes",
     ) -> None:
         """Create a new ``SizingPeriod:WeatherFileDays`` and add it to the document.
 
@@ -53,9 +52,8 @@ class ControllerMechanicalVentilation_v9_3_to_v9_4:
         /,
         *,
         availability_schedule_name: str | None = ...,
-        demand_controlled_ventilation: Literal["", "No", "Yes"] | None = "No",
+        demand_controlled_ventilation: Literal["No", "Yes"] | None = "No",
         system_outdoor_air_method: Literal[
-            "",
             "IndoorAirQualityProcedure",
             "IndoorAirQualityProcedureCombined",
             "IndoorAirQualityProcedureGenericContaminant",

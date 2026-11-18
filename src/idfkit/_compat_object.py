@@ -43,6 +43,7 @@ class EppyObjectMixin:
 
         def _set_name(self, value: str) -> None: ...
         def _field_key(self, key: str) -> str: ...
+        def get(self, key: str, default: Any = None) -> Any: ...
 
     # -- Properties ----------------------------------------------------------
 
@@ -196,7 +197,7 @@ class EppyObjectMixin:
         """
         from .exceptions import RangeError
 
-        value = getattr(self, field_name)
+        value = self.get(field_name)  # None for an unset field, required or not
         if value is None or not isinstance(value, (int, float)):
             return True
 

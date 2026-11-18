@@ -19,10 +19,10 @@ class ZoneAirHeatBalanceAlgorithm:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        algorithm: Literal["", "AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"]
+        algorithm: Literal["AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"]
         | None = "ThirdOrderBackwardDifference",
-        do_space_heat_balance_for_sizing: Literal["", "No", "Yes"] | None = "No",
-        do_space_heat_balance_for_simulation: Literal["", "No", "Yes"] | None = "No",
+        do_space_heat_balance_for_sizing: Literal["No", "Yes"] | None = "No",
+        do_space_heat_balance_for_simulation: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``ZoneAirHeatBalanceAlgorithm`` and add it to the document.
 
@@ -55,7 +55,7 @@ class SiteSolarAndVisibleSpectrum:
         name: str,
         /,
         *,
-        spectrum_data_method: Literal["", "Default", "UserDefined"] | None = "Default",
+        spectrum_data_method: Literal["Default", "UserDefined"] | None = "Default",
         solar_spectrum_data_object_name: str | None = ...,
         visible_spectrum_data_object_name: str | None = ...,
     ) -> None:
@@ -72,9 +72,8 @@ class WindowThermalModelParams:
         name: str,
         /,
         *,
-        standard: Literal["", "EN673Declared", "EN673Design", "ISO15099"] | None = "ISO15099",
+        standard: Literal["EN673Declared", "EN673Design", "ISO15099"] | None = "ISO15099",
         thermal_model: Literal[
-            "",
             "ConvectiveScalarModel_NoSDThickness",
             "ConvectiveScalarModel_withSDThickness",
             "ISO15099",
@@ -82,7 +81,7 @@ class WindowThermalModelParams:
         ]
         | None = "ISO15099",
         sdscalar: float | None = 1,
-        deflection_model: Literal["", "MeasuredDeflection", "NoDeflection", "TemperatureAndPressureInput"]
+        deflection_model: Literal["MeasuredDeflection", "NoDeflection", "TemperatureAndPressureInput"]
         | None = "NoDeflection",
         vacuum_pressure_limit: float | None = 13.238,
         initial_temperature: float | None = 25,
@@ -218,7 +217,7 @@ class AnyGasEquipment:
         narrow_with_as_version_first: Never,
         schedule_name: str,
         design_level_calculation_method: Literal[
-            "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
+            "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
         ]
         | None = "EquipmentLevel",
         design_level: float | None = ...,
@@ -246,55 +245,53 @@ class AnyHVACTemplateZoneWaterToAirHeatPump:
         *,
         zone_name: str,
         template_thermostat_name: str | None = ...,
-        cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        heating_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
         outdoor_air_flow_rate_per_zone: float | None = 0,
         system_availability_schedule_name: str | None = ...,
         supply_fan_operating_mode_schedule_name: str | None = ...,
-        supply_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        supply_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_fan_total_efficiency: float | None = 0.7,
         supply_fan_delta_pressure: float | None = 75,
         supply_fan_motor_efficiency: float | None = 0.9,
-        cooling_coil_type: Literal["", "Coil:Cooling:WaterToAirHeatPump:EquationFit"] | None = ...,
-        cooling_coil_gross_rated_total_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_coil_type: Literal["Coil:Cooling:WaterToAirHeatPump:EquationFit"] | None = ...,
+        cooling_coil_gross_rated_total_capacity: float | Literal["Autosize"] | None = "Autosize",
+        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["Autosize"] | None = "Autosize",
         cooling_coil_gross_rated_cop: float | None = 3.5,
-        heat_pump_heating_coil_type: Literal["", "Coil:Heating:WaterToAirHeatPump:EquationFit"] | None = ...,
-        heat_pump_heating_coil_gross_rated_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heat_pump_heating_coil_type: Literal["Coil:Heating:WaterToAirHeatPump:EquationFit"] | None = ...,
+        heat_pump_heating_coil_gross_rated_capacity: float | Literal["Autosize"] | None = "Autosize",
         heat_pump_heating_coil_gross_rated_cop: float | None = 4.2,
         supplemental_heating_coil_availability_schedule_name: str | None = ...,
-        supplemental_heating_coil_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        supplemental_heating_coil_capacity: float | Literal["Autosize"] | None = "Autosize",
         maximum_cycling_rate: float | None = 2.5,
         heat_pump_fan_delay_time: float | None = 60,
         dedicated_outdoor_air_system_name: str | None = ...,
-        supplemental_heating_coil_type: Literal["", "Electric", "HotWater"] | None = "Electric",
+        supplemental_heating_coil_type: Literal["Electric", "HotWater"] | None = "Electric",
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = 14,
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
-        heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
+        heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_outdoor_air_object_name: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``HVACTemplate:Zone:WaterToAirHeatPump`` and add it to the document.
 
@@ -465,8 +462,8 @@ class RefrigerationWalkIn:
         rated_cooling_coil_fan_power: float | None = 375,
         rated_circulation_fan_power: float | None = 0,
         lighting_schedule_name: str | None = ...,
-        defrost_type: Literal["", "Electric", "HotFluid", "None", "OffCycle"] | None = "Electric",
-        defrost_control_type: Literal["", "TemperatureTermination", "TimeSchedule"] | None = "TimeSchedule",
+        defrost_type: Literal["Electric", "HotFluid", "None", "OffCycle"] | None = "Electric",
+        defrost_control_type: Literal["TemperatureTermination", "TimeSchedule"] | None = "TimeSchedule",
         defrost_drip_down_schedule_name: str | None = ...,
         defrost_power: float | None = ...,
         temperature_termination_defrost_fraction_to_ice: float | None = ...,

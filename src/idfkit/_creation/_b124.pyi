@@ -48,7 +48,7 @@ class WindowMaterialScreenEquivalentLayer:
         screen_beam_beam_visible_transmittance: float,
         screen_beam_diffuse_visible_transmittance: float,
         screen_beam_diffuse_visible_reflectance: float,
-        screen_beam_beam_solar_transmittance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        screen_beam_beam_solar_transmittance: float | Literal["Autocalculate"] | None = "Autocalculate",
         screen_infrared_transmittance: float | None = 0.02,
         screen_infrared_emissivity: float | None = 0.93,
         screen_wire_spacing: float | None = 0.025,
@@ -69,7 +69,7 @@ class ShadingZoneDetailed:
         *,
         base_surface_name: str,
         transmittance_schedule_name: str | None = ...,
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.ShadingZoneDetailedVerticesItem | _g.ShadingZoneDetailedVerticesGroup] = ...,
     ) -> None:
         """Create a new ``Shading:Zone:Detailed`` and add it to the document.
@@ -145,7 +145,7 @@ class ZoneAirBalanceOutdoorAir:
         /,
         *,
         zone_name: str,
-        air_balance_method: Literal["", "None", "Quadrature"] | None = "Quadrature",
+        air_balance_method: Literal["None", "Quadrature"] | None = "Quadrature",
         induced_outdoor_air_due_to_unbalanced_duct_leakage: float | None = 0,
         induced_outdoor_air_schedule_name: str | None = ...,
     ) -> None:
@@ -166,7 +166,7 @@ class AnyAirflowNetworkMultiZoneComponentDetailedOpening:
         number_of_sets_of_opening_factor_data: int,
         opening_factor_2: float,
         air_mass_flow_exponent_when_opening_is_closed: float | None = 0.65,
-        type_of_rectangular_large_vertical_opening_lvo_: Literal["", "HorizontallyPivoted", "NonPivoted"]
+        type_of_rectangular_large_vertical_opening_lvo_: Literal["HorizontallyPivoted", "NonPivoted"]
         | None = "NonPivoted",
         extra_crack_length_or_height_of_pivoting_axis: float | None = 0,
         opening_factor_1: float | None = 0,
@@ -228,35 +228,33 @@ class HVACTemplateZoneVAVHeatAndCool:
         zone_name: str,
         template_vav_system_name: str,
         template_thermostat_name: str | None = ...,
-        supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
         constant_minimum_air_flow_fraction: float | None = 0.2,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
         outdoor_air_flow_rate_per_zone: float | None = 0,
         design_specification_outdoor_air_object_name_for_sizing: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
-        reheat_coil_type: Literal["", "Electric", "Gas", "HotWater", "None"] | None = "None",
+        reheat_coil_type: Literal["Electric", "Gas", "HotWater", "None"] | None = "None",
         reheat_coil_availability_schedule_name: str | None = ...,
         maximum_reheat_air_temperature: float | None = ...,
         supply_plenum_name: str | None = ...,
         return_plenum_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SystemSupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = 12.8,
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
@@ -282,15 +280,13 @@ class SizingSystem:
         precool_design_humidity_ratio: float,
         central_cooling_design_supply_air_temperature: float,
         central_heating_design_supply_air_temperature: float,
-        type_of_load_to_size_on: Literal["", "Latent", "Sensible", "Total", "VentilationRequirement"]
-        | None = "Sensible",
-        design_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        central_heating_maximum_system_air_flow_ratio: float | Literal["", "Autosize"] | None = "Autosize",
-        type_of_zone_sum_to_use: Literal["", "Coincident", "NonCoincident"] | None = "NonCoincident",
+        type_of_load_to_size_on: Literal["Latent", "Sensible", "Total", "VentilationRequirement"] | None = "Sensible",
+        design_outdoor_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        central_heating_maximum_system_air_flow_ratio: float | Literal["Autosize"] | None = "Autosize",
+        type_of_zone_sum_to_use: Literal["Coincident", "NonCoincident"] | None = "NonCoincident",
         central_cooling_design_supply_air_humidity_ratio: float | None = 0.008,
         central_heating_design_supply_air_humidity_ratio: float | None = 0.008,
         cooling_supply_air_flow_rate_method: Literal[
-            "",
             "DesignDay",
             "Flow/System",
             "FlowPerCoolingCapacity",
@@ -303,7 +299,6 @@ class SizingSystem:
         cooling_fraction_of_autosized_cooling_supply_air_flow_rate: float | None = ...,
         cooling_supply_air_flow_rate_per_unit_cooling_capacity: float | None = ...,
         heating_supply_air_flow_rate_method: Literal[
-            "",
             "DesignDay",
             "Flow/System",
             "FlowPerFloorArea",
@@ -318,29 +313,27 @@ class SizingSystem:
         heating_fraction_of_autosized_cooling_supply_air_flow_rate: float | None = ...,
         heating_supply_air_flow_rate_per_unit_heating_capacity: float | None = ...,
         system_outdoor_air_method: Literal[
-            "", "Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"
+            "Standard62.1SimplifiedProcedure", "Standard62.1VentilationRateProcedure", "ZoneSum"
         ]
         | None = "ZoneSum",
         zone_maximum_outdoor_air_fraction: float | None = 1,
         cooling_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
+            "CapacityPerFloorArea", "CoolingDesignCapacity", "FractionOfAutosizedCoolingCapacity", "None"
         ]
         | None = "CoolingDesignCapacity",
-        cooling_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         cooling_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_cooling_design_capacity: float | None = ...,
         heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity", "None"
+            "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity", "None"
         ]
         | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = ...,
-        central_cooling_capacity_control_method: Literal["", "Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
-        occupant_diversity: float | Literal["", "Autosize"] | None = "Autosize",
-        heating_coil_sizing_method: Literal[
-            "", "CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity", "None"
-        ]
+        central_cooling_capacity_control_method: Literal["Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
+        occupant_diversity: float | Literal["Autosize"] | None = "Autosize",
+        heating_coil_sizing_method: Literal["CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity", "None"]
         | None = "None",
         maximum_heating_capacity_to_cooling_capacity_sizing_ratio: float | None = 1,
     ) -> None:
@@ -379,12 +372,12 @@ class AnyCoilCoolingDXMultiSpeed:
         speed_2_part_load_fraction_correlation_curve_name: str,
         availability_schedule_name: str | None = ...,
         condenser_air_inlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled"] | None = "AirCooled",
         minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None = -25,
         supply_water_storage_tank_name: str | None = ...,
         condensate_collection_water_storage_tank_name: str | None = ...,
-        apply_part_load_fraction_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
-        apply_latent_degradation_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None = "No",
+        apply_part_load_fraction_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
+        apply_latent_degradation_to_speeds_greater_than_1: Literal["No", "Yes"] | None = "No",
         crankcase_heater_capacity: float | None = 0,
         maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None = 10,
         basin_heater_capacity: float | None = 0,
@@ -496,7 +489,6 @@ class HeatPumpAirToWaterFuelFiredCooling:
         air_source_node_name: str | None = ...,
         companion_heating_heat_pump_name: str | None = ...,
         fuel_type: Literal[
-            "",
             "Coal",
             "Diesel",
             "FuelOilNo1",
@@ -513,11 +505,11 @@ class HeatPumpAirToWaterFuelFiredCooling:
         nominal_cop: float | None = 1,
         design_flow_rate: float | Literal["Autosize"] | None = ...,
         design_supply_temperature: float | None = 7,
-        design_temperature_lift: float | Literal["", "Autosize"] | None = 11.1,
+        design_temperature_lift: float | Literal["Autosize"] | None = 11.1,
         sizing_factor: float | None = 1,
-        flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
-        outdoor_air_temperature_curve_input_variable: Literal["", "DryBulb", "WetBulb"] | None = "DryBulb",
-        water_temperature_curve_input_variable: Literal["", "EnteringEvaporator", "LeavingEvaporator"]
+        flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
+        outdoor_air_temperature_curve_input_variable: Literal["DryBulb", "WetBulb"] | None = "DryBulb",
+        water_temperature_curve_input_variable: Literal["EnteringEvaporator", "LeavingEvaporator"]
         | None = "EnteringEvaporator",
         minimum_part_load_ratio: float | None = 0.1,
         maximum_part_load_ratio: float | None = 1,

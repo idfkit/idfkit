@@ -63,7 +63,7 @@ class ChillerEngineDriven_v8_9_to_v9_2:
         fuel_type: Literal[
             "Diesel", "FuelOil#1", "FuelOil#2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "PropaneGas"
         ],
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
         condenser_inlet_node_name: str | None = ...,
         condenser_outlet_node_name: str | None = ...,
         minimum_part_load_ratio: float | None = ...,
@@ -93,11 +93,10 @@ class ChillerEngineDriven_v8_9_to_v9_2:
         maximum_exhaust_flow_per_unit_of_power_output: float | None = ...,
         design_minimum_exhaust_temperature: float | None = ...,
         fuel_higher_heating_value: float | None = ...,
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
+        design_heat_recovery_water_flow_rate: float | Literal["Autosize"] | None = 0,
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
+        chiller_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         maximum_temperature_for_heat_recovery_at_heat_recovery_outlet_node: float | None = 60,
         sizing_factor: float | None = 1,
         basin_heater_capacity: float | None = 0,
@@ -155,10 +154,10 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped_v8_9_to_v23_1:
         rated_evaporator_inlet_air_wet_bulb_temperature: float | None = 13.5,
         rated_condenser_water_temperature: float | None = 57.5,
         rated_evaporator_air_flow_rate: float | Literal["Autocalculate"] | None = ...,
-        evaporator_fan_power_included_in_rated_cop: Literal["", "No", "Yes"] | None = "Yes",
+        evaporator_fan_power_included_in_rated_cop: Literal["No", "Yes"] | None = "Yes",
         crankcase_heater_capacity: float | None = 0,
         maximum_ambient_temperature_for_crankcase_heater_operation: float | None = 10,
-        evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
+        evaporator_air_temperature_type_for_curve_objects: Literal["DryBulbTemperature", "WetBulbTemperature"]
         | None = "WetBulbTemperature",
         heating_capacity_function_of_temperature_curve_name: str | None = ...,
         heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
@@ -179,7 +178,7 @@ class PerformancePrecisionTradeoffs_v9_2:
         this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
-        use_coil_direct_solutions: Literal["", "No", "Yes"] | None = "No",
+        use_coil_direct_solutions: Literal["No", "Yes"] | None = "No",
     ) -> None:
         """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
 

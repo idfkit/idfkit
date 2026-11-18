@@ -60,52 +60,50 @@ class HVACTemplateZonePTAC_v8_9:
         *,
         zone_name: str,
         template_thermostat_name: str | None = ...,
-        cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        heating_supply_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
         outdoor_air_flow_rate_per_zone: float | None = 0,
         system_availability_schedule_name: str | None = ...,
         supply_fan_operating_mode_schedule_name: str | None = ...,
-        supply_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "DrawThrough",
+        supply_fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "DrawThrough",
         supply_fan_total_efficiency: float | None = 0.7,
         supply_fan_delta_pressure: float | None = 75,
         supply_fan_motor_efficiency: float | None = 0.9,
-        cooling_coil_type: Literal["", "SingleSpeedDX"] | None = "SingleSpeedDX",
+        cooling_coil_type: Literal["SingleSpeedDX"] | None = "SingleSpeedDX",
         cooling_coil_availability_schedule_name: str | None = ...,
-        cooling_coil_gross_rated_total_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["", "Autosize"] | None = "Autosize",
+        cooling_coil_gross_rated_total_capacity: float | Literal["Autosize"] | None = "Autosize",
+        cooling_coil_gross_rated_sensible_heat_ratio: float | Literal["Autosize"] | None = "Autosize",
         cooling_coil_gross_rated_cooling_cop: float | None = 3,
-        heating_coil_type: Literal["", "Electric", "Gas", "HotWater"] | None = "Electric",
+        heating_coil_type: Literal["Electric", "Gas", "HotWater"] | None = "Electric",
         heating_coil_availability_schedule_name: str | None = ...,
-        heating_coil_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_coil_capacity: float | Literal["Autosize"] | None = "Autosize",
         gas_heating_coil_efficiency: float | None = 0.8,
         gas_heating_coil_parasitic_electric_load: float | None = 0,
         dedicated_outdoor_air_system_name: str | None = ...,
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = 14,
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
         design_specification_outdoor_air_object_name: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``HVACTemplate:Zone:PTAC`` and add it to the document.
 
@@ -131,8 +129,8 @@ class PumpVariableSpeed_v8_9_to_v9_0:
         coefficient_2_of_the_part_load_performance_curve: float | None = 1,
         coefficient_3_of_the_part_load_performance_curve: float | None = 0,
         coefficient_4_of_the_part_load_performance_curve: float | None = 0,
-        design_minimum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        design_minimum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         pump_curve_name: str | None = ...,
         impeller_diameter: float | None = ...,
@@ -144,7 +142,7 @@ class PumpVariableSpeed_v8_9_to_v9_0:
         maximum_rpm_schedule: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -165,7 +163,7 @@ class TableTwoIndependentVariables_v8_9:
         *,
         curve_type: Literal["BiQuadratic", "QuadraticLinear"],
         interpolation_method: Literal[
-            "", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
+            "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
         ]
         | None = "LagrangeInterpolationLinearExtrapolation",
         minimum_value_of_x: float | None = ...,
@@ -175,14 +173,14 @@ class TableTwoIndependentVariables_v8_9:
         minimum_table_output: float | None = ...,
         maximum_table_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_y: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
         normalization_reference: float | None = ...,
         external_file_name: str | None = ...,

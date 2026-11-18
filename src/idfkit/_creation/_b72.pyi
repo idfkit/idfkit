@@ -23,7 +23,7 @@ class AnyWindowMaterialGlazingEquivalentLayer:
         back_side_beam_beam_solar_transmittance: float,
         front_side_beam_beam_solar_reflectance: float,
         back_side_beam_beam_solar_reflectance: float,
-        optical_data_type: Literal["", "Spectral", "SpectralAverage"] | None = "SpectralAverage",
+        optical_data_type: Literal["Spectral", "SpectralAverage"] | None = "SpectralAverage",
         window_glass_spectral_data_set_name: str | None = ...,
         front_side_beam_beam_visible_solar_transmittance: float | None = ...,
         back_side_beam_beam_visible_solar_transmittance: float | None = ...,
@@ -37,16 +37,12 @@ class AnyWindowMaterialGlazingEquivalentLayer:
         back_side_beam_diffuse_visible_solar_transmittance: float | None = 0,
         front_side_beam_diffuse_visible_solar_reflectance: float | None = 0,
         back_side_beam_diffuse_visible_solar_reflectance: float | None = 0,
-        diffuse_diffuse_solar_transmittance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        front_side_diffuse_diffuse_solar_reflectance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        back_side_diffuse_diffuse_solar_reflectance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        diffuse_diffuse_visible_solar_transmittance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        front_side_diffuse_diffuse_visible_solar_reflectance: float
-        | Literal["", "Autocalculate"]
-        | None = "Autocalculate",
-        back_side_diffuse_diffuse_visible_solar_reflectance: float
-        | Literal["", "Autocalculate"]
-        | None = "Autocalculate",
+        diffuse_diffuse_solar_transmittance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        front_side_diffuse_diffuse_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        back_side_diffuse_diffuse_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        diffuse_diffuse_visible_solar_transmittance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        front_side_diffuse_diffuse_visible_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        back_side_diffuse_diffuse_visible_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
         infrared_transmittance_applies_to_front_and_back_: float | None = 0,
         front_side_infrared_emissivity: float | None = 0.84,
         back_side_infrared_emissivity: float | None = 0.84,
@@ -77,10 +73,10 @@ class AnyFenestrationSurfaceDetailed:
         vertex_3_y_coordinate: float,
         vertex_3_z_coordinate: float,
         outside_boundary_condition_object: str | None = ...,
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         frame_and_divider_name: str | None = ...,
         multiplier: float | None = 1,
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertex_4_x_coordinate: float | None = ...,
         vertex_4_y_coordinate: float | None = ...,
         vertex_4_z_coordinate: float | None = ...,
@@ -122,13 +118,11 @@ class HVACTemplateZoneDualDuct:
         zone_name: str,
         template_dual_duct_system_name: str,
         template_thermostat_name: str | None = ...,
-        supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
+        supply_air_maximum_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
         zone_minimum_air_flow_fraction: float | None = 0.2,
-        outdoor_air_method: Literal[
-            "", "DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"
-        ]
+        outdoor_air_method: Literal["DetailedSpecification", "Flow/Area", "Flow/Person", "Flow/Zone", "Maximum", "Sum"]
         | None = "Flow/Person",
         outdoor_air_flow_rate_per_person: float | None = 0.00944,
         outdoor_air_flow_rate_per_zone_floor_area: float | None = 0,
@@ -139,17 +133,17 @@ class HVACTemplateZoneDualDuct:
         cold_supply_plenum_name: str | None = ...,
         hot_supply_plenum_name: str | None = ...,
         return_plenum_name: str | None = ...,
-        baseboard_heating_type: Literal["", "Electric", "HotWater", "None"] | None = "None",
+        baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
-        baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SystemSupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = 12.8,
         zone_cooling_design_supply_air_temperature_difference: float | None = 11.11,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "SystemSupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SystemSupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
@@ -172,8 +166,8 @@ class HVACTemplatePlantChiller:
             "DistrictChilledWater", "ElectricCentrifugalChiller", "ElectricReciprocatingChiller", "ElectricScrewChiller"
         ],
         nominal_cop: float,
-        capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "WaterCooled",
+        capacity: float | Literal["Autosize"] | None = "Autosize",
+        condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "WaterCooled",
         priority: str | None = ...,
         sizing_factor: float | None = 1,
         minimum_part_load_ratio: float | None = 0,
@@ -199,7 +193,7 @@ class AnyZoneHVACLowTemperatureRadiantConstantFlow:
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
-        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
+        hydronic_tubing_length: float | Literal["Autosize"] | None = "Autosize",
         rated_flow_rate: float | Literal["Autosize"] | None = ...,
         pump_flow_rate_schedule_name: str | None = ...,
         rated_pump_head: float | None = 179352,
@@ -216,7 +210,7 @@ class AnyZoneHVACLowTemperatureRadiantConstantFlow:
         cooling_low_water_temperature_schedule_name: str | None = ...,
         cooling_high_control_temperature_schedule_name: str | None = ...,
         cooling_low_control_temperature_schedule_name: str | None = ...,
-        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
+        number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
@@ -235,9 +229,9 @@ class CoilDXASHRAE205Performance:
         /,
         *,
         representation_file_name: str,
-        performance_interpolation_method: Literal["", "Cubic", "Linear"] | None = "Linear",
-        rated_total_cooling_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        rated_steady_state_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        performance_interpolation_method: Literal["Cubic", "Linear"] | None = "Linear",
+        rated_total_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
+        rated_steady_state_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
     ) -> None:
         """Create a new ``Coil:DX:ASHRAE205:Performance`` and add it to the document.
 
@@ -262,7 +256,7 @@ class HumidifierSteamGas:
         air_inlet_node_name: str | None = ...,
         air_outlet_node_name: str | None = ...,
         water_storage_tank_name: str | None = ...,
-        inlet_water_temperature_option: Literal["", "FixedInletWaterTemperature", "VariableInletWaterTemperature"]
+        inlet_water_temperature_option: Literal["FixedInletWaterTemperature", "VariableInletWaterTemperature"]
         | None = "FixedInletWaterTemperature",
     ) -> None:
         """Create a new ``Humidifier:Steam:Gas`` and add it to the document.
@@ -325,14 +319,14 @@ class CurveBicubic:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_x: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
         input_unit_type_for_y: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
         ]
         | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
     ) -> None:
         """Create a new ``Curve:Bicubic`` and add it to the document.
@@ -349,7 +343,7 @@ class AnyUtilityCostVariable:
         /,
         *,
         tariff_name: str,
-        variable_type: Literal["", "Currency", "Dimensionless", "Energy"] | None = "Dimensionless",
+        variable_type: Literal["Currency", "Dimensionless", "Energy"] | None = "Dimensionless",
         january_value: float | None = ...,
         february_value: float | None = ...,
         march_value: float | None = ...,
@@ -396,7 +390,6 @@ class AnyLifeCycleCostUsePriceEscalation:
         ],
         escalation_start_year: int | None = ...,
         escalation_start_month: Literal[
-            "",
             "April",
             "August",
             "December",

@@ -34,7 +34,7 @@ class ConstructionAirBoundary:
         name: str,
         /,
         *,
-        air_exchange_method: Literal["", "None", "SimpleMixing"] | None = "None",
+        air_exchange_method: Literal["None", "SimpleMixing"] | None = "None",
         simple_mixing_air_changes_per_hour: float | None = 0.5,
         simple_mixing_schedule_name: str | None = ...,
     ) -> None:
@@ -99,7 +99,7 @@ class AirflowNetworkOccupantVentilationControl:
         thermal_comfort_temperature_boundary_point: float | None = 10,
         thermal_comfort_high_temperature_curve_name: str | None = ...,
         maximum_threshold_for_persons_dissatisfied_ppd: float | None = 10,
-        occupancy_check: Literal["", "No", "Yes"] | None = "No",
+        occupancy_check: Literal["No", "Yes"] | None = "No",
         opening_probability_schedule_name: str | None = ...,
         closing_probability_schedule_name: str | None = ...,
     ) -> None:
@@ -340,58 +340,23 @@ class CurveQuintLinear:
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
         input_unit_type_for_v: Literal[
-            "",
-            "Dimensionless",
-            "Distance",
-            "MassFlow",
-            "Power",
-            "Temperature",
-            "VolumetricFlow",
-            "VolumetricFlowPerPower",
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
         input_unit_type_for_w: Literal[
-            "",
-            "Dimensionless",
-            "Distance",
-            "MassFlow",
-            "Power",
-            "Temperature",
-            "VolumetricFlow",
-            "VolumetricFlowPerPower",
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
         input_unit_type_for_x: Literal[
-            "",
-            "Dimensionless",
-            "Distance",
-            "MassFlow",
-            "Power",
-            "Temperature",
-            "VolumetricFlow",
-            "VolumetricFlowPerPower",
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
         input_unit_type_for_y: Literal[
-            "",
-            "Dimensionless",
-            "Distance",
-            "MassFlow",
-            "Power",
-            "Temperature",
-            "VolumetricFlow",
-            "VolumetricFlowPerPower",
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
         input_unit_type_for_z: Literal[
-            "",
-            "Dimensionless",
-            "Distance",
-            "MassFlow",
-            "Power",
-            "Temperature",
-            "VolumetricFlow",
-            "VolumetricFlowPerPower",
+            "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
     ) -> None:

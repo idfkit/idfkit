@@ -21,13 +21,13 @@ class SizingZone_v22_2_to_v24_1:
         zone_cooling_design_supply_air_humidity_ratio: float,
         zone_heating_design_supply_air_humidity_ratio: float,
         zone_cooling_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_cooling_design_supply_air_temperature: float | None = ...,
         zone_cooling_design_supply_air_temperature_difference: float | None = ...,
         zone_heating_design_supply_air_temperature_input_method: Literal[
-            "", "SupplyAirTemperature", "TemperatureDifference"
+            "SupplyAirTemperature", "TemperatureDifference"
         ]
         | None = "SupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = ...,
@@ -35,38 +35,36 @@ class SizingZone_v22_2_to_v24_1:
         design_specification_outdoor_air_object_name: str | None = ...,
         zone_heating_sizing_factor: float | None = ...,
         zone_cooling_sizing_factor: float | None = ...,
-        cooling_design_air_flow_method: Literal["", "DesignDay", "DesignDayWithLimit", "Flow/Zone"]
-        | None = "DesignDay",
+        cooling_design_air_flow_method: Literal["DesignDay", "DesignDayWithLimit", "Flow/Zone"] | None = "DesignDay",
         cooling_design_air_flow_rate: float | None = 0,
         cooling_minimum_air_flow_per_zone_floor_area: float | None = 0.000762,
         cooling_minimum_air_flow: float | None = 0,
         cooling_minimum_air_flow_fraction: float | None = 0.2,
-        heating_design_air_flow_method: Literal["", "DesignDay", "DesignDayWithLimit", "Flow/Zone"]
-        | None = "DesignDay",
+        heating_design_air_flow_method: Literal["DesignDay", "DesignDayWithLimit", "Flow/Zone"] | None = "DesignDay",
         heating_design_air_flow_rate: float | None = 0,
         heating_maximum_air_flow_per_zone_floor_area: float | None = 0.002032,
         heating_maximum_air_flow: float | None = 0.1415762,
         heating_maximum_air_flow_fraction: float | None = 0.3,
         design_specification_zone_air_distribution_object_name: str | None = ...,
-        account_for_dedicated_outdoor_air_system: Literal["", "No", "Yes"] | None = "No",
+        account_for_dedicated_outdoor_air_system: Literal["No", "Yes"] | None = "No",
         dedicated_outdoor_air_system_control_strategy: Literal[
-            "", "ColdSupplyAir", "NeutralDehumidifiedSupplyAir", "NeutralSupplyAir"
+            "ColdSupplyAir", "NeutralDehumidifiedSupplyAir", "NeutralSupplyAir"
         ]
         | None = "NeutralSupplyAir",
-        dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["", "Autosize"] | None = "Autosize",
-        dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["", "Autosize"] | None = "Autosize",
+        dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
+        dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
         zone_load_sizing_method: Literal[
-            "", "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"
+            "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"
         ]
         | None = "Sensible Load Only No Latent Load",
         zone_latent_cooling_design_supply_air_humidity_ratio_input_method: Literal[
-            "", "HumidityRatioDifference", "SupplyAirHumidityRatio"
+            "HumidityRatioDifference", "SupplyAirHumidityRatio"
         ]
         | None = "HumidityRatioDifference",
         zone_dehumidification_design_supply_air_humidity_ratio: float | None = ...,
         zone_cooling_design_supply_air_humidity_ratio_difference: float | None = 0.005,
         zone_latent_heating_design_supply_air_humidity_ratio_input_method: Literal[
-            "", "HumidityRatioDifference", "SupplyAirHumidityRatio"
+            "HumidityRatioDifference", "SupplyAirHumidityRatio"
         ]
         | None = "HumidityRatioDifference",
         zone_humidification_design_supply_air_humidity_ratio: float | None = ...,
@@ -91,16 +89,16 @@ class HeaderedPumpsConstantSpeed_v9_1_to_v22_1:
         outlet_node_name: str,
         total_design_flow_rate: float | Literal["Autosize"] | None = ...,
         number_of_pumps_in_bank: float | None = ...,
-        flow_sequencing_control_scheme: Literal["", "Sequential"] | None = "Sequential",
+        flow_sequencing_control_scheme: Literal["Sequential"] | None = "Sequential",
         design_pump_head: float | None = 179352,
         design_power_consumption: float | Literal["Autosize"] | None = ...,
         motor_efficiency: float | None = 0.9,
         fraction_of_motor_inefficiencies_to_fluid_stream: float | None = 0,
-        pump_control_type: Literal["", "Continuous", "Intermittent"] | None = "Continuous",
+        pump_control_type: Literal["Continuous", "Intermittent"] | None = "Continuous",
         pump_flow_rate_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         skin_loss_radiative_fraction: float | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure"]
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure"]
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
@@ -188,10 +186,10 @@ class WindowPropertyShadingControl_v8_9:
         construction_with_shading_name: str | None = ...,
         schedule_name: str | None = ...,
         setpoint: float | None = ...,
-        shading_control_is_scheduled: Literal["", "No", "Yes"] | None = "No",
-        glare_control_is_active: Literal["", "No", "Yes"] | None = "No",
+        shading_control_is_scheduled: Literal["No", "Yes"] | None = "No",
+        glare_control_is_active: Literal["No", "Yes"] | None = "No",
         shading_device_material_name: str | None = ...,
-        type_of_slat_angle_control_for_blinds: Literal["", "BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"]
+        type_of_slat_angle_control_for_blinds: Literal["BlockBeamSolar", "FixedSlatAngle", "ScheduledSlatAngle"]
         | None = "FixedSlatAngle",
         slat_angle_schedule_name: str | None = ...,
         setpoint_2: float | None = ...,
@@ -229,9 +227,9 @@ class ConstructionAirBoundary_v9_2_to_v9_4:
         name: str,
         /,
         *,
-        solar_and_daylighting_method: Literal["", "GroupedZones", "InteriorWindow"] | None = "GroupedZones",
-        radiant_exchange_method: Literal["", "GroupedZones", "IRTSurface"] | None = "GroupedZones",
-        air_exchange_method: Literal["", "None", "SimpleMixing"] | None = "None",
+        solar_and_daylighting_method: Literal["GroupedZones", "InteriorWindow"] | None = "GroupedZones",
+        radiant_exchange_method: Literal["GroupedZones", "IRTSurface"] | None = "GroupedZones",
+        air_exchange_method: Literal["None", "SimpleMixing"] | None = "None",
         simple_mixing_air_changes_per_hour: float | None = 0.5,
         simple_mixing_schedule_name: str | None = ...,
     ) -> None:

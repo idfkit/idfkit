@@ -21,7 +21,6 @@ class ScheduleTypeLimits:
         upper_limit_value: float | None = ...,
         numeric_type: Literal["Continuous", "Discrete"] | None = ...,
         unit_type: Literal[
-            "",
             "ActivityLevel",
             "Angle",
             "Availability",
@@ -56,7 +55,7 @@ class WindowMaterialGlazingEquivalentLayer:
         back_side_beam_beam_solar_transmittance: float,
         front_side_beam_beam_solar_reflectance: float,
         back_side_beam_beam_solar_reflectance: float,
-        optical_data_type: Literal["", "Spectral", "SpectralAverage"] | None = "SpectralAverage",
+        optical_data_type: Literal["Spectral", "SpectralAverage"] | None = "SpectralAverage",
         window_glass_spectral_data_set_name: str | None = ...,
         front_side_beam_beam_visible_solar_transmittance: float | None = ...,
         back_side_beam_beam_visible_solar_transmittance: float | None = ...,
@@ -70,16 +69,12 @@ class WindowMaterialGlazingEquivalentLayer:
         back_side_beam_diffuse_visible_solar_transmittance: float | None = 0,
         front_side_beam_diffuse_visible_solar_reflectance: float | None = 0,
         back_side_beam_diffuse_visible_solar_reflectance: float | None = 0,
-        diffuse_diffuse_solar_transmittance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        front_side_diffuse_diffuse_solar_reflectance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        back_side_diffuse_diffuse_solar_reflectance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        diffuse_diffuse_visible_solar_transmittance: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        front_side_diffuse_diffuse_visible_solar_reflectance: float
-        | Literal["", "Autocalculate"]
-        | None = "Autocalculate",
-        back_side_diffuse_diffuse_visible_solar_reflectance: float
-        | Literal["", "Autocalculate"]
-        | None = "Autocalculate",
+        diffuse_diffuse_solar_transmittance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        front_side_diffuse_diffuse_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        back_side_diffuse_diffuse_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        diffuse_diffuse_visible_solar_transmittance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        front_side_diffuse_diffuse_visible_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
+        back_side_diffuse_diffuse_visible_solar_reflectance: float | Literal["Autocalculate"] | None = "Autocalculate",
         infrared_transmittance_applies_to_front_and_back_: float | None = 0,
         front_side_infrared_emissivity: float | None = 0.84,
         back_side_infrared_emissivity: float | None = 0.84,
@@ -164,7 +159,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam:
         outlet_node_name: str,
         maximum_steam_flow_rate: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["Autosize"] | None = "Autosize",
         degree_of_subcooling: float | None = 5,
         surface_fractions: Sequence[
             _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem
@@ -188,8 +183,8 @@ class ZoneHVACExhaustControl:
         inlet_node_name: str,
         outlet_node_name: str,
         availability_schedule_name: str | None = ...,
-        design_exhaust_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        flow_control_type: Literal["", "FollowSupply", "Scheduled"] | None = "Scheduled",
+        design_exhaust_flow_rate: float | Literal["Autosize"] | None = "Autosize",
+        flow_control_type: Literal["FollowSupply", "Scheduled"] | None = "Scheduled",
         exhaust_flow_fraction_schedule_name: str | None = ...,
         supply_node_or_nodelist_name: str | None = ...,
         minimum_zone_temperature_limit_schedule_name: str | None = ...,
@@ -209,7 +204,7 @@ class AnyZoneHVACEquipmentList:
         name: str,
         /,
         *,
-        load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
+        load_distribution_scheme: Literal["SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
         equipment: Sequence[_g.AnyZoneHVACEquipmentListEquipmentItem | _g.AnyZoneHVACEquipmentListEquipmentGroup] = ...,
     ) -> None:
@@ -233,7 +228,6 @@ class AnyControllerOutdoorAir:
         minimum_outdoor_air_flow_rate: float | Literal["Autosize"],
         maximum_outdoor_air_flow_rate: float | Literal["Autosize"],
         economizer_control_type: Literal[
-            "",
             "DifferentialDryBulb",
             "DifferentialDryBulbAndEnthalpy",
             "DifferentialEnthalpy",
@@ -244,25 +238,25 @@ class AnyControllerOutdoorAir:
             "NoEconomizer",
         ]
         | None = "NoEconomizer",
-        economizer_control_action_type: Literal["", "MinimumFlowWithBypass", "ModulateFlow"] | None = "ModulateFlow",
+        economizer_control_action_type: Literal["MinimumFlowWithBypass", "ModulateFlow"] | None = "ModulateFlow",
         economizer_maximum_limit_dry_bulb_temperature: float | None = ...,
         economizer_maximum_limit_enthalpy: float | None = ...,
         economizer_maximum_limit_dewpoint_temperature: float | None = ...,
         electronic_enthalpy_limit_curve_name: str | None = ...,
         economizer_minimum_limit_dry_bulb_temperature: float | None = ...,
-        lockout_type: Literal["", "LockoutWithCompressor", "LockoutWithHeating", "NoLockout"] | None = "NoLockout",
-        minimum_limit_type: Literal["", "FixedMinimum", "ProportionalMinimum"] | None = "ProportionalMinimum",
+        lockout_type: Literal["LockoutWithCompressor", "LockoutWithHeating", "NoLockout"] | None = "NoLockout",
+        minimum_limit_type: Literal["FixedMinimum", "ProportionalMinimum"] | None = "ProportionalMinimum",
         minimum_outdoor_air_schedule_name: str | None = ...,
         minimum_fraction_of_outdoor_air_schedule_name: str | None = ...,
         maximum_fraction_of_outdoor_air_schedule_name: str | None = ...,
         mechanical_ventilation_controller_name: str | None = ...,
         time_of_day_economizer_control_schedule_name: str | None = ...,
-        high_humidity_control: Literal["", "No", "Yes"] | None = "No",
+        high_humidity_control: Literal["No", "Yes"] | None = "No",
         humidistat_control_zone_name: str | None = ...,
         high_humidity_outdoor_air_flow_ratio: float | None = 1,
-        control_high_indoor_humidity_based_on_outdoor_humidity_ratio: Literal["", "No", "Yes"] | None = "Yes",
+        control_high_indoor_humidity_based_on_outdoor_humidity_ratio: Literal["No", "Yes"] | None = "Yes",
         heat_recovery_bypass_control_type: Literal[
-            "", "BypassWhenOAFlowGreaterThanMinimum", "BypassWhenWithinEconomizerLimits"
+            "BypassWhenOAFlowGreaterThanMinimum", "BypassWhenWithinEconomizerLimits"
         ]
         | None = "BypassWhenWithinEconomizerLimits",
     ) -> None:
@@ -296,18 +290,18 @@ class AnyChillerHeaterPerformanceElectricEIR:
         reference_heating_mode_leaving_condenser_water_temperature: float | None = 49,
         reference_heating_mode_entering_condenser_fluid_temperature: float | None = 29.44,
         heating_mode_entering_chilled_water_temperature_low_limit: float | None = 12.22,
-        chilled_water_flow_mode_type: Literal["", "ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
+        chilled_water_flow_mode_type: Literal["ConstantFlow", "VariableFlow"] | None = "ConstantFlow",
         design_chilled_water_flow_rate: float | Literal["Autosize"] | None = ...,
         design_condenser_water_flow_rate: float | Literal["Autosize"] | None = ...,
         design_hot_water_flow_rate: float | None = 0,
         compressor_motor_efficiency: float | None = 1,
         cooling_mode_temperature_curve_condenser_water_independent_variable: Literal[
-            "", "EnteringCondenser", "LeavingCondenser"
+            "EnteringCondenser", "LeavingCondenser"
         ]
         | None = "EnteringCondenser",
         cooling_mode_cooling_capacity_optimum_part_load_ratio: float | None = 1,
         heating_mode_temperature_curve_condenser_water_independent_variable: Literal[
-            "", "EnteringCondenser", "LeavingCondenser"
+            "EnteringCondenser", "LeavingCondenser"
         ]
         | None = "LeavingCondenser",
         heating_mode_cooling_capacity_optimum_part_load_ratio: float | None = 1,

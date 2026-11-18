@@ -6,9 +6,47 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Literal
 
 from .. import _generated_types as _g
+
+class FanSystemModel_v8_9_to_v22_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        air_inlet_node_name: str,
+        air_outlet_node_name: str,
+        design_maximum_air_flow_rate: float | Literal["Autosize"],
+        design_pressure_rise: float,
+        availability_schedule_name: str | None = ...,
+        speed_control_method: Literal["Continuous", "Discrete"] | None = "Discrete",
+        electric_power_minimum_flow_rate_fraction: float | None = 0.2,
+        motor_efficiency: float | None = 0.9,
+        motor_in_air_stream_fraction: float | None = 1,
+        design_electric_power_consumption: float | Literal["Autosize"] | None = ...,
+        design_power_sizing_method: Literal["PowerPerFlow", "PowerPerFlowPerPressure", "TotalEfficiencyAndPressure"]
+        | None = "PowerPerFlowPerPressure",
+        electric_power_per_unit_flow_rate: float | None = ...,
+        electric_power_per_unit_flow_rate_per_unit_pressure: float | None = 1.66667,
+        fan_total_efficiency: float | None = 0.7,
+        electric_power_function_of_flow_fraction_curve_name: str | None = ...,
+        night_ventilation_mode_pressure_rise: float | None = ...,
+        night_ventilation_mode_flow_fraction: float | None = ...,
+        motor_loss_zone_name: str | None = ...,
+        motor_loss_radiative_fraction: float | None = ...,
+        end_use_subcategory: str | None = "General",
+        number_of_speeds: float | None = 1,
+        speed_fractions: Sequence[_g.FanSystemModelSpeedFractionsItem | _g.FanSystemModelSpeedFractionsGroup] = ...,
+    ) -> None:
+        """Create a new ``Fan:SystemModel`` and add it to the document.
+
+        Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-speed applications. Performance at different flow rates, or speed levels, is determined using separate performance curve or table or prescribed power fractions at discrete speed levels for two-speed or multi-speed fans.
+
+        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-fans/#fansystemmodel
+        """
 
 class MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1:
     def __call__(
@@ -85,20 +123,20 @@ class People_v22_2_to_v23_2:
         zone_or_zonelist_or_space_or_spacelist_name: str,
         number_of_people_schedule_name: str,
         activity_level_schedule_name: str,
-        number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None = "People",
+        number_of_people_calculation_method: Literal["Area/Person", "People", "People/Area"] | None = "People",
         number_of_people: float | None = ...,
         people_per_floor_area: float | None = ...,
         floor_area_per_person: float | None = ...,
         fraction_radiant: float | None = 0.3,
-        sensible_heat_fraction: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        sensible_heat_fraction: float | Literal["Autocalculate"] | None = "Autocalculate",
         carbon_dioxide_generation_rate: float | None = ...,
-        enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None = "No",
-        mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"]
+        enable_ashrae_55_comfort_warnings: Literal["No", "Yes"] | None = "No",
+        mean_radiant_temperature_calculation_type: Literal["AngleFactor", "SurfaceWeighted", "ZoneAveraged"]
         | None = "ZoneAveraged",
         surface_name_angle_factor_list_name: str | None = ...,
         work_efficiency_schedule_name: str | None = ...,
         clothing_insulation_calculation_method: Literal[
-            "", "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
+            "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
         ]
         | None = "ClothingInsulationSchedule",
         clothing_insulation_calculation_method_schedule_name: str | None = ...,
@@ -197,9 +235,9 @@ class AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1:
         availability_schedule_name: str | None = ...,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
+        dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir`` and add it to the document.
 
