@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         heat_pump_name: str,
@@ -73,6 +74,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1
 class SizingSystem_v22_2_to_v25_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         airloop_name: str,
@@ -187,6 +189,7 @@ class WindowPropertyFrameAndDivider_v8_9_to_v9_6:
 class SurfaceConvectionAlgorithmInside_v8_9_to_v9_4:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None = "TARP",

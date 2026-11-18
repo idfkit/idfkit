@@ -113,6 +113,7 @@ class ZoneThermalChimney_v8_9_to_v24_1:
 class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         material_name: str,

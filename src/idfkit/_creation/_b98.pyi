@@ -167,6 +167,7 @@ class HVACTemplateSystemDedicatedOutdoorAir:
 class ZoneControlThermostatOperativeTemperature:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         thermostat_name: str,

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class AnyCoilCoolingDXVariableSpeed:
     def __call__(
         self,
@@ -459,7 +461,14 @@ class SetpointManagerReturnTemperatureChilledWater:
         """
 
 class AnyOutputDebuggingData:
-    def __call__(self, /, *, report_debugging_data: None = ..., report_during_warmup: None = ...) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        report_debugging_data: None = ...,
+        report_during_warmup: None = ...,
+    ) -> None:
         """Create a new ``Output:DebuggingData`` and add it to the document.
 
         switch eplusout.dbg file on or off

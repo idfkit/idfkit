@@ -16,6 +16,7 @@ from .. import _generated_types as _g
 class AnyMaterialPropertyHeatAndMoistureTransferDiffusion:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         material_name: str,

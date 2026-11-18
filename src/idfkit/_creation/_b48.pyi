@@ -16,6 +16,7 @@ from .. import _generated_types as _g
 class SiteGroundReflectanceSnowModifier:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         ground_reflected_solar_modifier: float | None = 1,
@@ -31,6 +32,7 @@ class SiteGroundReflectanceSnowModifier:
 class RoofIrrigation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         irrigation_model_type: Literal["Schedule", "SmartSchedule"] | None = ...,
@@ -58,6 +60,7 @@ class AnyMaterialPropertyVariableThermalConductivity:
 class SurfacePropertiesVaporCoefficients:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_name: str,
@@ -157,6 +160,7 @@ class AnyZoneThermalChimney:
 class AirflowNetworkMultiZoneSurface:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_name: str,
@@ -198,6 +202,7 @@ class AirflowNetworkMultiZoneSurface:
 class HVACTemplateZoneFanCoil:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,

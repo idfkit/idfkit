@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class SiteGroundTemperatureFCfactorMethod:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         january_ground_temperature: float | None = 13,
@@ -81,6 +82,7 @@ class ShadingZoneDetailed:
 class GroundHeatTransferBasementManualGrid:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         nx_number_of_cells_in_the_x_direction_20_: float,
@@ -220,6 +222,7 @@ class AirflowNetworkDistributionComponentDuct:
 class HVACTemplateZoneVAVHeatAndCool:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -269,6 +272,7 @@ class HVACTemplateZoneVAVHeatAndCool:
 class SizingSystem:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         airloop_name: str,

@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class ShadowCalculation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"]
@@ -136,6 +137,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening:
 class HVACTemplateZoneVAV:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,

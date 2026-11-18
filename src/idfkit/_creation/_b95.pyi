@@ -12,7 +12,9 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class Version:
-    def __call__(self, /, *, version_identifier: str | None = ...) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, version_identifier: str | None = ...
+    ) -> None:
         """Create a new ``Version`` and add it to the document.
 
         Specifies the EnergyPlus version of the IDF file.
@@ -23,6 +25,7 @@ class Version:
 class HVACSystemRootFindingAlgorithm:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal[
@@ -41,6 +44,7 @@ class HVACSystemRootFindingAlgorithm:
 class AnyRoomAirTemperaturePatternConstantGradient:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         room_air_temperature_pattern_constant_gradient_name: str,

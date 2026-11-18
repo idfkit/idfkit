@@ -8,8 +8,10 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class GroundHeatTransferBasementXFACE:
-    def __call__(self, /) -> None:
+    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
         """Create a new ``GroundHeatTransfer:Basement:XFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) XFACE: X Direction cell face coordinates: m

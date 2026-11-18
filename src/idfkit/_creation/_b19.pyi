@@ -16,6 +16,7 @@ from .. import _generated_types as _g
 class AnySiteWaterMainsTemperature:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         calculation_method: Literal["Correlation", "Schedule"],
@@ -456,6 +457,7 @@ class SetpointManagerSingleZoneHumidityMinimum:
 class OutputTableTimeBins:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         variable_name: str,

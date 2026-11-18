@@ -12,7 +12,13 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class ComplianceBuilding:
-    def __call__(self, /, *, building_rotation_for_appendix_g: float | None = 0) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        building_rotation_for_appendix_g: float | None = 0,
+    ) -> None:
         """Create a new ``Compliance:Building`` and add it to the document.
 
         Building level inputs related to compliance to building standards, building codes, and beyond energy code programs.
@@ -61,6 +67,7 @@ class AirflowNetworkMultiZoneSpecifiedFlowRate:
 class SizingZone:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_or_zonelist_name: str,

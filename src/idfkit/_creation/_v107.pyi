@@ -8,9 +8,12 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         room_air_temperature_pattern_constant_gradient_name: str,
@@ -240,6 +243,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1:
 class OutputControlFiles_v24_2_to_v25_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         output_csv: Literal["", "No", "Yes"] | None = "No",

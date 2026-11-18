@@ -10,9 +10,12 @@ from typing import Literal
 
 from typing_extensions import Never
 
+from .. import _generated_types as _g
+
 class GroundHeatTransferBasementMatlProps:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         nmat_number_of_materials_in_this_domain: float,
@@ -45,6 +48,7 @@ class GroundHeatTransferBasementMatlProps:
 class GroundHeatTransferBasementSurfaceProps:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         albedo_surface_albedo_for_no_snow_conditions: float | None = 0.16,
@@ -85,6 +89,7 @@ class AnyDaylightingReferencePoint:
 class HVACTemplateZoneUnitary:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,

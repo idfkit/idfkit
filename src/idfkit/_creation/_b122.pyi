@@ -12,7 +12,13 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class Timestep:
-    def __call__(self, /, *, number_of_timesteps_per_hour: int | None = 6) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        number_of_timesteps_per_hour: int | None = 6,
+    ) -> None:
         """Create a new ``Timestep`` and add it to the document.
 
         Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is used in the Zone Heat Balance Model calculation as the driving timestep for heat transfer and load calculations.

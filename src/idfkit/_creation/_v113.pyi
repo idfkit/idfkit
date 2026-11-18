@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class HVACSystemRootFindingAlgorithm_v8_9_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal[
@@ -32,6 +33,7 @@ class HVACSystemRootFindingAlgorithm_v8_9_to_v22_1:
 class ZoneAirMassFlowConservation_v8_9_to_v9_4:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["", "No", "Yes"] | None = "No",

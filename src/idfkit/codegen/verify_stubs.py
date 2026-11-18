@@ -164,14 +164,27 @@ def _read_class(node: ast.ClassDef) -> _Class:
     return cls
 
 
+# The parameter a creation signature requires when no call can satisfy every release it serves.
+_NARROW_FIRST = "narrow_with_as_version_first"
+
+# The positional-only parameter a type without a Name field takes in place of the name.
+_NO_NAME_PARAM = "this_type_has_no_name_field"
+
+
 def _read_signature(node: ast.ClassDef) -> _CreationSignature | None:
     """The ``__call__`` of a class in a creation module, or ``None`` when it has none."""
     for item in node.body:
         if isinstance(item, ast.FunctionDef) and item.name == "__call__":
             args = item.args
             positional = args.posonlyargs[1:]
-            name = "none"
-            if positional:
+            # A type without a Name field takes the guard there, which nothing satisfies; one that
+            # takes nothing positional reads "unguarded", which no expected signature is.
+            name = "unguarded"
+            if [arg.arg for arg in positional] == [_NO_NAME_PARAM]:
+                guard = positional[0].annotation
+                typed = guard is not None and ast.unparse(guard).rpartition(".")[2] == "_PassFieldsAsKeywords"
+                name = "none" if typed and args.defaults else "unguarded"
+            elif positional:
                 name = "optional" if args.defaults else "required"
             params: dict[str, tuple[str, str | None]] = {}
             for arg, default in zip(args.kwonlyargs, args.kw_defaults, strict=True):
@@ -430,10 +443,6 @@ class _ExpectedCreation:
     name_conflict: bool = False
 
 
-# The parameter a creation signature requires when no call can satisfy every release it serves.
-_NARROW_FIRST = "narrow_with_as_version_first"
-
-
 def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedCreation:
     """The name, required fields and defaults *obj_type*'s creation must have to suit all *schemas*.
 
@@ -525,7 +534,9 @@ def _check_signature(
     problems: list[str],
 ) -> None:
     """Check one creation signature of *cls* against what it is *expected* to say."""
-    if signature.name != expected.name:
+    if signature.name == "unguarded" and expected.name == "none":
+        problems.append(f"{where}: add() does not refuse a name with {_NO_NAME_PARAM}: _PassFieldsAsKeywords")
+    elif signature.name != expected.name:
         problems.append(f"{where}: the name is {signature.name} in add(), {expected.name} in the schema")
     keywords = {k: v for k, v in _update_keywords(module, cls).items() if k not in expected.hidden}
     params = dict(signature.params)

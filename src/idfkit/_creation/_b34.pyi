@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class SizingPeriodDesignDay:
     def __call__(
         self,
@@ -102,7 +104,7 @@ class AnyFloorAdiabatic:
         """
 
 class GroundHeatTransferBasementZFACE:
-    def __call__(self, /) -> None:
+    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
         """Create a new ``GroundHeatTransfer:Basement:ZFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) ZFACE: Z Direction cell face coordinates: m

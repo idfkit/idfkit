@@ -191,6 +191,7 @@ class AnyDemandManagerLights:
 class AnyOutputControlFiles:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         output_csv: Literal["", "No", "Yes"] | None = "No",

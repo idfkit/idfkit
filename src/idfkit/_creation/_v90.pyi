@@ -61,6 +61,7 @@ class CoilCoolingDXSingleSpeed_v22_2_to_v23_1:
 class SizingZone_v24_2_to_v25_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_or_zonelist_name: str,
@@ -163,6 +164,7 @@ class GroundHeatExchangerSystem_v9_6_to_v25_1:
 class SiteWaterMainsTemperature_v8_9:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         calculation_method: Literal["Correlation", "Schedule"],
@@ -180,6 +182,7 @@ class SiteWaterMainsTemperature_v8_9:
 class SiteWaterMainsTemperature_v9_0_to_v25_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"]
@@ -198,6 +201,7 @@ class SiteWaterMainsTemperature_v9_0_to_v25_1:
 class GlobalGeometryRules_v8_9_to_v9_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         starting_vertex_position: str,

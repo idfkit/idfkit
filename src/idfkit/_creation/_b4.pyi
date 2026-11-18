@@ -44,6 +44,7 @@ class SurfacePropertyExteriorNaturalVentedCavity:
 class GroundHeatTransferSlabAutoGrid:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         slabx_x_dimension_of_the_building_slab: float,
@@ -62,6 +63,7 @@ class GroundHeatTransferSlabAutoGrid:
 class GroundHeatTransferBasementInsulation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         insfull_flag_is_the_wall_fully_insulated_: Literal["FALSE", "TRUE"],
@@ -249,6 +251,7 @@ class ThermalStorageSizing:
 class EnergyManagementSystemGlobalVariable:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         variables: Sequence[

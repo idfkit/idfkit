@@ -84,6 +84,7 @@ class HybridModelZone_v9_1_to_v22_1:
 class LifeCycleCostUsePriceEscalation_v22_2_to_v23_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         lcc_price_escalation_name: str,

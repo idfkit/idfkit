@@ -44,6 +44,7 @@ class FoundationKiva_v8_9_to_v9_1:
 class AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         coil_name: str,

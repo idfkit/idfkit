@@ -43,6 +43,7 @@ class ConstructionCfactorUndergroundWall:
 class SurfaceControlMovableInsulation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         insulation_type: Literal["Inside", "Outside"],
@@ -353,7 +354,15 @@ class CoilWaterHeatingDesuperheater:
         """
 
 class AnyExternalInterfaceFunctionalMockupUnitImport:
-    def __call__(self, /, *, fmu_file_name: str, fmu_timeout: float | None = 0, fmu_loggingon: int | None = 0) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        fmu_file_name: str,
+        fmu_timeout: float | None = 0,
+        fmu_loggingon: int | None = 0,
+    ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport`` and add it to the document.
 
         This object declares an FMU
@@ -404,6 +413,7 @@ class FaultModelFoulingCoolingTower:
 class FuelFactors:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         existing_fuel_resource_name: Literal[

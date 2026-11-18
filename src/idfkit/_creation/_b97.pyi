@@ -16,6 +16,7 @@ from .. import _generated_types as _g
 class SiteGroundTemperatureDeep:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         january_deep_ground_temperature: float | None = 16,
@@ -583,6 +584,7 @@ class RefrigerationCondenserWaterCooled:
 class UtilityCostChargeSimple:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         utility_cost_charge_simple_name: str,

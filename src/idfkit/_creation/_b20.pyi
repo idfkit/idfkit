@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class SurfaceConvectionAlgorithmInside:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal["", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"]
@@ -57,6 +58,7 @@ class WindowMaterialScreen:
 class FoundationKivaSettings:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         soil_conductivity: float | None = 1.73,
