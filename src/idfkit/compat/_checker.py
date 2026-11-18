@@ -7,11 +7,13 @@ for cross-version EnergyPlus compatibility issues.
 from __future__ import annotations
 
 import difflib
-from collections.abc import Collection, Mapping
+from collections.abc import Collection, Iterable, Mapping
+from dataclasses import dataclass
 from functools import lru_cache
 
+from ..objects import parse_extensible_index, to_python_name
 from ..schema import EpJSONSchema, get_schema
-from ..versions import find_closest_version, find_release, version_string
+from ..versions import ENERGYPLUS_VERSIONS, find_closest_version, find_release, version_string
 from ._diff import SchemaIndex, build_schema_index
 from ._extract import extract_literals
 from ._models import (
@@ -197,6 +199,8 @@ def check_compatibility(
             _check_object_type(literal, indices, filename, diagnostics, scope=scope)
         elif literal.kind == LiteralKind.CHOICE_VALUE:
             _check_choice_value(literal, indices, filename, diagnostics, scope=scope)
+        elif literal.kind == LiteralKind.FIELD_NAME:
+            _check_field_name(literal, indices, filename, diagnostics, scope=scope)
 
     # A bare comment on a line whose only diagnostics are of rules this run does not check still
     # earns its place: those rules run in other configurations (per-file ignores, --select).
@@ -329,26 +333,11 @@ def _check_object_type(
         # Exists everywhere in scope, or in no target at all -- nothing more to report.
         return
 
-    ref_version = _reference_version(present_in, scope)
-
-    for missing_version in sorted(absent_in):
-        out.append(
-            Diagnostic(
-                code="C001",
-                message=(
-                    f"Object type '{literal.value}' not found in "
-                    f"{version_string(missing_version)} "
-                    f"(exists in {version_string(ref_version)})"
-                ),
-                severity=RULE_SEVERITIES["C001"],
-                filename=filename,
-                line=literal.line,
-                col=literal.col,
-                end_col=literal.end_col,
-                from_version=version_string(ref_version),
-                to_version=version_string(missing_version),
-            )
+    out.append(
+        _version_difference(
+            "C001", f"Object type '{literal.value}'", literal, present_in, absent_in, filename, scope=scope
         )
+    )
 
 
 def _reference_version(
@@ -389,7 +378,7 @@ def _check_get_collection(
                 code="C003",
                 message=(
                     f"Object type '{literal.value}' is not in any target version "
-                    f"({', '.join(version_string(v) for v in sorted(scope))}); "
+                    f"({format_releases(scope)}); "
                     f"get_collection returns an empty collection for it{hint}"
                 ),
                 severity=RULE_SEVERITIES["C003"],
@@ -490,9 +479,17 @@ def _check_choice_value(
 
     if not present_in and literal.in_idfkit_add and len(absent_in) == len(scope):
         # Every target the code can run on lists the field's choices, and none lists this value.
+        field_keys = _field_keys(max(scope), obj_type)
+        numeric = field_keys is not None and field_name in field_keys.numeric
         _report_add_literal(
             literal,
-            f"Choice value '{literal.value}' for {obj_type}.{field_name} is not in any target version",
+            (
+                f"Value '{literal.value}' for {obj_type}.{field_name} is neither a number nor one of the "
+                f"field's choices ({', '.join(sorted(c for c in _choices_of(indices[max(scope)], obj_type, field_name) or () if c))}) "
+                "in any target version"
+                if numeric
+                else f"Choice value '{literal.value}' for {obj_type}.{field_name} is not in any target version"
+            ),
             "add() raises ValidationFailedError for it, and EnergyPlus rejects it",
             _closest(
                 literal.value,
@@ -507,27 +504,17 @@ def _check_choice_value(
     if not absent_in or not present_in:
         return
 
-    ref_version = _reference_version(present_in, scope)
-
-    for missing_version in sorted(absent_in):
-        out.append(
-            Diagnostic(
-                code="C002",
-                message=(
-                    f"Choice value '{literal.value}' for "
-                    f"{obj_type}.{field_name} not found in "
-                    f"{version_string(missing_version)} "
-                    f"(exists in {version_string(ref_version)})"
-                ),
-                severity=RULE_SEVERITIES["C002"],
-                filename=filename,
-                line=literal.line,
-                col=literal.col,
-                end_col=literal.end_col,
-                from_version=version_string(ref_version),
-                to_version=version_string(missing_version),
-            )
+    out.append(
+        _version_difference(
+            "C002",
+            f"Choice value '{literal.value}' for {obj_type}.{field_name}",
+            literal,
+            present_in,
+            absent_in,
+            filename,
+            scope=scope,
         )
+    )
 
 
 def _closest(value: str, by_folded: Mapping[str, str]) -> str | None:
@@ -545,6 +532,7 @@ def _report_add_literal(
     out: list[Diagnostic],
     *,
     scope: frozenset[tuple[int, int, int]],
+    fix: str | None = None,
 ) -> None:
     """Emit ``C006`` for a literal in an ``add()`` call that no target in *scope* accepts.
 
@@ -557,7 +545,7 @@ def _report_add_literal(
     out.append(
         Diagnostic(
             code="C006",
-            message=(f"{what} ({', '.join(version_string(v) for v in sorted(scope))}); {consequence}{hint}"),
+            message=f"{what} ({format_releases(scope)}); {consequence}{hint}",
             severity=RULE_SEVERITIES["C006"],
             filename=filename,
             line=literal.line,
@@ -565,6 +553,170 @@ def _report_add_literal(
             end_col=literal.end_col,
             from_version=version_string(min(scope)),
             to_version=version_string(max(scope)),
-            suggested_fix=f'"{suggestion}"' if suggestion else None,
+            suggested_fix=fix if fix is not None else (f'"{suggestion}"' if suggestion else None),
         )
     )
+
+
+def format_releases(releases: Iterable[tuple[int, int, int]]) -> str:
+    """*releases*, oldest first, with each run of three or more consecutive supported releases as a range.
+
+    Consecutive means adjacent in :data:`~idfkit.versions.ENERGYPLUS_VERSIONS`, not in the list
+    given, so a range never covers a release that was not checked: ``8.9.0 to 9.5.0`` names seven
+    releases, and ``8.9.0, 9.5.0`` the two of a run of targets that skipped the ones between.
+    """
+    order = {v: i for i, v in enumerate(ENERGYPLUS_VERSIONS)}
+    ordered = sorted(set(releases))
+    runs: list[list[tuple[int, int, int]]] = []
+    for v in ordered:
+        if runs and v in order and runs[-1][-1] in order and order[v] == order[runs[-1][-1]] + 1:
+            runs[-1].append(v)
+        else:
+            runs.append([v])
+    parts: list[str] = []
+    for run in runs:
+        if len(run) >= 3:
+            parts.append(f"{version_string(run[0])} to {version_string(run[-1])}")
+        else:
+            parts.extend(version_string(v) for v in run)
+    return ", ".join(parts)
+
+
+def _adjacent(earlier: tuple[int, int, int], later: tuple[int, int, int]) -> bool:
+    """Whether *later* is the supported release right after *earlier*."""
+    try:
+        return ENERGYPLUS_VERSIONS.index(later) == ENERGYPLUS_VERSIONS.index(earlier) + 1
+    except ValueError:
+        return False
+
+
+def _version_difference(
+    code: str,
+    subject: str,
+    literal: ExtractedLiteral,
+    present_in: list[tuple[int, int, int]],
+    absent_in: list[tuple[int, int, int]],
+    filename: str,
+    *,
+    scope: frozenset[tuple[int, int, int]],
+) -> Diagnostic:
+    """One ``C001`` or ``C002`` finding for a literal some targets lack, naming every target in *scope* that does.
+
+    The releases that have it are described as briefly as is still exact: ``added in 9.6.0`` when
+    every release lacking it comes before every release having it and the two meet, ``removed in
+    23.1.0`` for the reverse, and otherwise the targets that have it.
+    """
+    missing = sorted(absent_in)
+    present = sorted(present_in)
+    if missing[-1] < present[0] and _adjacent(missing[-1], present[0]):
+        having = f"added in {version_string(present[0])}"
+    elif missing[0] > present[-1] and _adjacent(present[-1], missing[0]):
+        having = f"removed in {version_string(missing[0])}"
+    else:
+        having = f"exists in {format_releases(present)}"
+    return Diagnostic(
+        code=code,
+        message=f"{subject} not found in {format_releases(missing)}; {having}",
+        severity=RULE_SEVERITIES[code],
+        filename=filename,
+        line=literal.line,
+        col=literal.col,
+        end_col=literal.end_col,
+        from_version=version_string(_reference_version(present_in, scope)),
+        to_version=version_string(missing[0]),
+        missing_in=tuple(version_string(v) for v in missing),
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class _FieldKeys:
+    """What ``IDFDocument.add()`` accepts as a field key for one object type of one release.
+
+    Mirrors the run time: flat extensible spellings (``vertex_x_coordinate_2``) are folded into the
+    wrapper key, a trailing-underscore field may be given without its underscore, and what is then
+    left must be a key of the type's epJSON properties (fixed fields and the wrapper key).
+    """
+
+    known: frozenset[str]
+    aliases: frozenset[str]
+    extensibles: frozenset[str]
+    fixed: frozenset[str]
+    numeric: frozenset[str]
+
+    def accepts(self, key: str) -> bool:
+        if key in self.known or key in self.aliases:
+            return True
+        return bool(self.extensibles) and parse_extensible_index(key, self.extensibles, self.fixed)[0] is not None
+
+
+@lru_cache(maxsize=4096)
+def _field_keys(version: tuple[int, int, int], obj_type: str) -> _FieldKeys | None:
+    """The field keys *obj_type* accepts in *version*, the type matched case-insensitively; ``None`` if it has no such type."""
+    schema = get_schema(version)
+    canonical = schema.resolve_type_name(obj_type)
+    if canonical is None:
+        return None
+    pc = schema.get_parsing_cache(canonical)
+    if pc is None:
+        return None
+    extensibles: frozenset[str] = frozenset(pc.ext_field_names) if pc.ext_wrapper_key else frozenset()
+    return _FieldKeys(
+        known=pc.known_keys,
+        aliases=frozenset(pc.field_aliases),
+        extensibles=extensibles,
+        fixed=frozenset(pc.all_field_names),
+        numeric=frozenset(f for f, t in pc.field_types.items() if t in ("number", "integer")),
+    )
+
+
+def _check_field_name(
+    literal: ExtractedLiteral,
+    indices: dict[tuple[int, int, int], SchemaIndex],
+    filename: str,
+    out: list[Diagnostic],
+    *,
+    scope: frozenset[tuple[int, int, int]],
+) -> None:
+    """Emit ``C006`` for a field name passed to ``add()`` that no target release accepts for the type.
+
+    As for a choice value, a target without the object type is in neither list, and the name is
+    reported only when every target in *scope* has the type: an unknown type is reported on its
+    own, and a type some targets lack is ``C001``'s.
+    """
+    obj_type = literal.obj_type
+    if obj_type is None or not literal.in_idfkit_add:
+        return
+    keys = {v: _field_keys(v, obj_type) for v in indices}
+    in_scope = [k for v, k in keys.items() if v in scope and k is not None]
+    if len(in_scope) < len(scope):
+        return
+    if any(k is not None and k.accepts(literal.value) for k in keys.values()):
+        return
+    candidates = sorted({key for k in in_scope for key in (*k.known, *k.extensibles)})
+    suggestion = _field_suggestion(literal.value, candidates)
+    usable = suggestion is not None and (not literal.keyword or suggestion.isidentifier())
+    _report_add_literal(
+        literal,
+        f"Field '{literal.value}' is not a field of {_type_spelling(obj_type, scope)} in any target version",
+        "add() refuses it, with or without validate=False",
+        suggestion,
+        filename,
+        out,
+        scope=scope,
+        fix=(suggestion if literal.keyword else f'"{suggestion}"') if usable and suggestion is not None else None,
+    )
+
+
+def _type_spelling(obj_type: str, scope: frozenset[tuple[int, int, int]]) -> str:
+    """The schema's spelling of *obj_type* in the newest release of *scope*."""
+    return _canonical_object_type(obj_type, _get_index(max(scope)).object_types) or obj_type
+
+
+def _field_suggestion(value: str, candidates: list[str]) -> str | None:
+    """The field *value* most likely means: its Python spelling when that is a field, else the closest name."""
+    python_name = to_python_name(value)
+    if python_name in candidates:
+        return python_name
+    if python_name + "_" in candidates:
+        return python_name + "_"
+    return _closest(value, {c.casefold(): c for c in candidates})
