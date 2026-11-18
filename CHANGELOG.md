@@ -92,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The bundled `developing-with-idfkit` reference's ceiling-height examples treated a whole-number
   height such as `3`, stored as an `int`, as missing; they now accept any number
-  ([321161b](https://github.com/idfkit/idfkit/commit/321161b)).
+  ([#311](https://github.com/idfkit/idfkit/pull/311)).
 - `add()` and `load_epjson()` stored a blank value (`""`, epJSON `null`) as set instead of leaving
   the field unset, as the IDF parser did ([#183](https://github.com/idfkit/idfkit/issues/183),
   [#303](https://github.com/idfkit/idfkit/pull/303)).
