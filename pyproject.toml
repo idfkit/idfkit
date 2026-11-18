@@ -82,6 +82,7 @@ dev = [
     "aiobotocore>=2.5",
     "plotly>=5.0",
     "pyyaml>=6.0.3",
+    "pytest-xdist>=3.6",
 ]
 benchmark = [
     "eppy>=0.5.63",
@@ -204,6 +205,7 @@ addopts = "--doctest-modules --ignore=src/idfkit/simulation --ignore=src/idfkit/
 doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE"]
 markers = [
     "integration: marks tests as requiring EnergyPlus installation (deselect with '-m \"not integration\"')",
+    "slow: marks tests that take seconds each, such as stub generation (deselect with '-m \"not slow\"'; make test-fast does)",
 ]
 
 [tool.ruff]

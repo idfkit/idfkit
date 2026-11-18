@@ -7,6 +7,7 @@ promise that the stubs describe every supported version exactly, today and after
 
 from __future__ import annotations
 
+import functools
 import re
 import typing
 from pathlib import Path
@@ -18,7 +19,7 @@ import idfkit.versioned as versioned
 from idfkit import load_idf, new_document, write_idf
 from idfkit._document_types import release_of
 from idfkit.codegen import generate_stubs as gen
-from idfkit.codegen.verify_stubs import verify
+from idfkit.codegen.verify_stubs import Version, verify
 from idfkit.document import AnyIDFDocument, IDFDocument
 from idfkit.exceptions import UnsupportedVersionError
 from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
@@ -31,7 +32,17 @@ _Sources = tuple[str, str, str, str, dict[str, str]]
 
 def _committed() -> _Sources:
     """The committed stubs: types, document, versioned, the per-release document modules joined, and
-    the creation signature modules by name."""
+    the creation signature modules by name.
+
+    Read once per session (about 10 MB); the dict of creation modules is copied on every call, so a
+    test may replace one of its entries without affecting the next test.
+    """
+    types, document, versioned_source, documents, creation = _read_committed()
+    return types, document, versioned_source, documents, dict(creation)
+
+
+@functools.cache
+def _read_committed() -> _Sources:
     documents = sorted((_PACKAGE / "_versioned").glob("v*.pyi"))
     return (
         (_PACKAGE / "_generated_types.pyi").read_text(encoding="utf-8"),
@@ -59,8 +70,19 @@ def _generated() -> _Sources:
     )
 
 
-def _verify(sources: _Sources | list[Any], versions: tuple[tuple[int, int, int], ...]) -> list[str]:
-    return verify(sources[0], sources[1], [sources[2], sources[3]], versions, sources[4])
+def _verify(
+    sources: _Sources | list[Any], versions: tuple[Version, ...], releases: tuple[Version, ...] | None = None
+) -> list[str]:
+    return verify(sources[0], sources[1], [sources[2], sources[3]], versions, sources[4], releases=releases)
+
+
+# Where the verifier's mutation tests look for the fault each plants: the releases whose document
+# types verify() checks (its ``releases``). A problem reported with ``releases`` given is reported
+# by the full verifier too, so naming the release a fault shows in proves the full verifier catches
+# it, at a fraction of the cost. One case of each test runs the full verifier all the same.
+_ALL_RELEASES = None
+# Only the checks of AnyIDFDocument and the version ranges, which always run.
+_NO_RELEASE: tuple[Version, ...] = ()
 
 
 # ---------------------------------------------------------------------------
@@ -385,6 +407,7 @@ class TestRangeAliases:
 
 
 class TestCommittedStubs:
+    @pytest.mark.slow
     def test_describe_every_supported_version_exactly(self) -> None:
         assert _verify(_committed(), ENERGYPLUS_VERSIONS) == []
 
@@ -428,18 +451,31 @@ class TestCommittedStubs:
         assert len(modules) == len(ENERGYPLUS_VERSIONS)  # one per older release, and __init__.pyi
 
     @pytest.mark.parametrize(
-        ("source", "pattern", "replacement", "expected"),
+        ("source", "pattern", "replacement", "expected", "releases"),
         [
             # A 9.4 field dropped from the class of its range.
-            (2, r"(?m)^    rated_evaporator_fan_power_per_volume_flow_rate: float \| None\n", "", "missing"),
+            (
+                2,
+                r"(?m)^    rated_evaporator_fan_power_per_volume_flow_rate: float \| None\n",
+                "",
+                "missing",
+                _ALL_RELEASES,
+            ),
             # A type filed under the wrong class for a range of versions.
-            (3, r"IDFCollection\[_v\.Space_v9_6_to_v22_1\]", "IDFCollection[_v.Space_v22_2_to_v26_1]", "Space"),
+            (
+                3,
+                r"IDFCollection\[_v\.Space_v9_6_to_v22_1\]",
+                "IDFCollection[_v.Space_v22_2_to_v26_1]",
+                "Space",
+                ((22, 1, 0),),
+            ),
             # A type overloaded on no release's document: indexing with it would match nothing.
             (
                 3,
                 r'(?m)^    @overload\n    def __getitem__\(self, obj_type: Literal\["Space"\].*\n',
                 "",
                 "missing types ['Space']",
+                ((22, 1, 0),),
             ),
             # A release's last overload taking a name, which every name the release lacks would match.
             (
@@ -447,6 +483,7 @@ class TestCommittedStubs:
                 r"obj_type: _NotAnObjectTypeOfEnergyPlus9_4, /\)",
                 "obj_type: str, /)",
                 "IDFDocumentV9_4: __getitem__ does not end with the one overload that matches no object type",
+                ((9, 4, 0),),
             ),
             # A release's last overload taking the class itself rather than a Sequence of it: mypy would
             # then list every overload under a misspelled name instead of reporting this one alone.
@@ -455,6 +492,7 @@ class TestCommittedStubs:
                 r"(?m)^_NotAnObjectTypeOfEnergyPlus9_4: TypeAlias = Sequence\[(\w+)\]",
                 r"_NotAnObjectTypeOfEnergyPlus9_4: TypeAlias = \1",
                 "IDFDocumentV9_4: __getitem__ does not end with the one overload that matches no object type",
+                ((9, 4, 0),),
             ),
             # A release's document that no longer derives from IDFDocumentAllVersions.
             (
@@ -462,6 +500,7 @@ class TestCommittedStubs:
                 r"(?m)^    IDFDocumentAllVersions\[Strict\],\n\):\n(    \"\"\"An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9\.4)",
                 r"):\n\1",
                 "IDFDocumentV9_4: does not derive from IDFDocumentAllVersions",
+                ((9, 4, 0),),
             ),
             # An accessor typed with the wrong class.
             (
@@ -469,6 +508,7 @@ class TestCommittedStubs:
                 r"def spaces\(self\) -> IDFCollection\[Space_v9_6_to_v22_1\]",
                 "def spaces(self) -> IDFCollection[_g.Zone]",
                 "accessors",
+                ((22, 1, 0),),
             ),
             # A type some version lacks, added to AnyIDFDocument: indexing a document of any release
             # with it would type-check.
@@ -477,6 +517,7 @@ class TestCommittedStubs:
                 r'(?m)^    def __getitem__\(self, obj_type: Literal\["Zone"\], /\) -> IDFCollection\[AnyZone\]: \.\.\.\n',
                 r'\g<0>    @overload\n    def __getitem__(self, obj_type: Literal["Space"], /) -> IDFCollection[Space]: ...\n',
                 "extra ['Space']",
+                _NO_RELEASE,
             ),
             # A group every version has, dropped from the any-release class.
             (
@@ -484,6 +525,8 @@ class TestCommittedStubs:
                 r"(?m)^    vertices: ExtensibleList\[BuildingSurfaceDetailedVerticesGroup\]\n",
                 "",
                 "AnyBuildingSurfaceDetailed: no vertices group",
+                # Shows without checking a release; the latest's checks report it too ("no vertices attribute").
+                (LATEST_VERSION,),
             ),
             # A merged group's field made writable with a value some version rejects (a float from 22.2 on).
             (
@@ -491,15 +534,17 @@ class TestCommittedStubs:
                 r"def digits_after_decimal\(self, value: int \| None\)",
                 "def digits_after_decimal(self, value: float | None)",
                 "digits_after_decimal: writable values some version rejects",
+                _NO_RELEASE,
             ),
             # An object type without its public any-release name.
-            (0, r"(?m)^AnyZoneList: TypeAlias = ZoneList\n", "", "no AnyZoneList"),
+            (0, r"(?m)^AnyZoneList: TypeAlias = ZoneList\n", "", "no AnyZoneList", _NO_RELEASE),
             # A value only some versions accept, made writable through the shared base.
             (
                 0,
                 r'(?ms)(@heater_fuel_type\.setter.*?value: Literal\[\n\s+)"Coal",',
                 r'\1"Coal",\n            "Steam",',
                 "heater_fuel_type: writable values some version rejects",
+                _NO_RELEASE,
             ),
             # A type every version has, dropped from AnyIDFDocument.
             (
@@ -507,6 +552,7 @@ class TestCommittedStubs:
                 r'(?m)^    @overload\n    def __getitem__\(self, obj_type: Literal\["Zone"\], /\) -> IDFCollection\[AnyZone\]: \.\.\.\n',
                 "",
                 "AnyIDFDocument",
+                _NO_RELEASE,
             ),
             # AnyIDFDocument typing a collection with a class that is not defined: reported, not a KeyError.
             (
@@ -514,6 +560,7 @@ class TestCommittedStubs:
                 r'Literal\["Zone"\], /\) -> IDFCollection\[AnyZone\]',
                 'Literal["Zone"], /) -> IDFCollection[AnyZoneX]',
                 "class AnyZoneX not defined",
+                _NO_RELEASE,
             ),
             # A group's item type that misnames one of the group's fields.
             (
@@ -521,6 +568,7 @@ class TestCommittedStubs:
                 r"(class BuildingSurfaceDetailedVerticesItem\(TypedDict, total=False\):\n(?:.*\n)*?    )vertex_x_coordinate",
                 r"\1vertex_x_coordinat",
                 "BuildingSurfaceDetailedVerticesItem does not hold the version's inner fields",
+                (LATEST_VERSION,),
             ),
             # A writable field that some version lacks (People before 9.6): reported, not a KeyError.
             (
@@ -531,6 +579,7 @@ class TestCommittedStubs:
                 r"    @zone_or_zonelist_or_space_or_spacelist_name.setter\n"
                 r"    def zone_or_zonelist_or_space_or_spacelist_name(self, value: str | None) -> None: ...\n",
                 "zone_or_zonelist_or_space_or_spacelist_name: writable, but not a field of every version",
+                _NO_RELEASE,
             ),
             # A field every release requires, read as optional: the type would promise less than the run time.
             (
@@ -538,6 +587,7 @@ class TestCommittedStubs:
                 r"(class AnyMaterial\(_TypedIDFObject\):\n(?:.*\n)*?    thickness: )float\n",
                 r"\1float | None\n",
                 "mistyped ['thickness']",
+                (LATEST_VERSION,),
             ),
             # A field no release requires, read as never None: the type would promise more than the run time.
             (
@@ -545,6 +595,7 @@ class TestCommittedStubs:
                 r'(class AnyZone\(_TypedIDFObject\):\n(?:.*\n)*?    ceiling_height: float \| Literal\["Autocalculate"\]) \| None\n',
                 r"\1\n",
                 "mistyped ['ceiling_height']",
+                (LATEST_VERSION,),
             ),
             # The blank "" back among a field's values: a blank is stored as absent and never read.
             (
@@ -552,6 +603,7 @@ class TestCommittedStubs:
                 r'(class AnyZone\(_TypedIDFObject\):\n(?:.*\n)*?    ceiling_height: float \| Literal\[)"Autocalculate"\]',
                 r'\1"", "Autocalculate"]',
                 "mistyped ['ceiling_height']",
+                (LATEST_VERSION,),
             ),
             # A range alias one release short.
             (
@@ -559,6 +611,7 @@ class TestCommittedStubs:
                 r"(IDFDocumentBefore9_6: TypeAlias = \(\n(?:    .*\n)*?)    \| IDFDocumentV9_5\n",
                 r"\1",
                 "IDFDocumentBefore9_6: names",
+                _NO_RELEASE,
             ),
             # A since= overload typed with the wrong range.
             (
@@ -566,6 +619,7 @@ class TestCommittedStubs:
                 r'(since: type\[IDFDocumentV9_6\] \| Literal\["9\.6", "9\.6\.0"\]\n\) -> )IDFDocumentSince9_6',
                 r"\1IDFDocumentSince9_5",
                 "as_version(since=(9, 6, 0), before=None): returns",
+                _NO_RELEASE,
             ),
             # A bound's literal naming another release than its type.
             (
@@ -573,6 +627,7 @@ class TestCommittedStubs:
                 r'(since: type\[IDFDocumentV9_6\] \| Literal\[)"9\.6"',
                 r'\1"9.5"',
                 "as_version(since=IDFDocumentV9_6): typed",
+                _NO_RELEASE,
             ),
             # A range left without an overload.
             (
@@ -581,93 +636,116 @@ class TestCommittedStubs:
                 r'\| Literal\["9\.6", "9\.6\.0"\]\n\) -> IDFDocumentSince9_6: \.\.\.\n',
                 "",
                 "as_version(since=(9, 6, 0), before=None): no overload",
+                _NO_RELEASE,
             ),
         ],
     )
-    def test_a_misdescription_is_reported(self, source: int, pattern: str, replacement: str, expected: str) -> None:
+    def test_a_misdescription_is_reported(
+        self, source: int, pattern: str, replacement: str, expected: str, releases: tuple[Version, ...] | None
+    ) -> None:
         sources = list(_committed())
         mutated = re.sub(pattern, replacement, sources[source], count=1)
         assert mutated != sources[source], "the mutation did not apply"
         sources[source] = mutated
-        problems = _verify(sources, ENERGYPLUS_VERSIONS)
+        problems = _verify(sources, ENERGYPLUS_VERSIONS, releases=releases)
         assert any(expected in problem for problem in problems), problems
 
     @pytest.mark.parametrize(
-        ("pattern", "replacement", "expected"),
+        ("pattern", "replacement", "expected", "releases"),
         [
             (
                 r"(class Material:.*?)thickness: float,",
                 r"\1thickness: float | None = ...,",
                 "Material in 26.2.0 (Material): add() does not require thickness",
+                _ALL_RELEASES,
             ),
             (
                 r"(class Material:.*?)thermal_absorptance: float \| None = 0\.9",
                 r"\1thermal_absorptance: float | None = 0.8",
                 "add() shows thermal_absorptance = 0.8, not the schema's default",
+                (LATEST_VERSION,),
             ),
             (
                 r"(class OutputSQLite:\s+def __call__\(\s*self,)",
                 r'\1 name: str = "",',
                 "the name is optional in add(), none in the schema",
+                (LATEST_VERSION,),
             ),
             (
                 r"(class OutputSQLite:.*?)this_type_has_no_name_field: _g\._PassFieldsAsKeywords = \.\.\.,",
                 r"\1",
                 "Output:SQLite in 26.2.0 (OutputSQLite): add() does not refuse a name with this_type_has_no_name_field",
+                (LATEST_VERSION,),
             ),
             (
                 r"(class OutputSQLite:.*?)this_type_has_no_name_field: _g\._PassFieldsAsKeywords",
                 r"\1this_type_has_no_name_field: str",
                 "(OutputSQLite): add() does not refuse a name with this_type_has_no_name_field",
+                (LATEST_VERSION,),
             ),
             (
                 # Option A: AnyIDFDocument requires what any release requires.
                 r"(class AnyBuildingSurfaceDetailed:.*?)construction_name: str,",
                 r"\1construction_name: str | None = ...,",
                 "(AnyBuildingSurfaceDetailed): add() does not require construction_name",
+                _NO_RELEASE,
             ),
             (
                 r"(class AnyPeople:.*?)narrow_with_as_version_first: Never,",
                 r"\1",
                 "(AnyPeople): add() can satisfy no release's required fields or name but does not say so",
+                _NO_RELEASE,
             ),
             (
                 r"(class WindowMaterialGap:.*?)\) -> None",
                 r"\1gas_or_gas_mixture: str | None = ...) -> None",
                 "WindowMaterial:Gap in 26.2.0 (WindowMaterialGap): add() keywords differ",
+                (LATEST_VERSION,),
             ),
             (
                 r"(class InternalMass_v9_2_to_v9_5:.*?)zone_or_zonelist_name: str,",
                 r"\1zone_or_zonelist_name: str | None = ...,",
                 "add() does not require zone_or_zonelist_name",
+                ((9, 5, 0),),
             ),
             # The docstring an editor shows for add(): the type's own, and the way out when there is one.
             (
                 r"(class Material:.*?)Create a new ``Material``",
                 r"\1Create a new ``Zone``",
                 "Material in 26.2.0 (Material): add() is not documented as creating a Material",
+                (LATEST_VERSION,),
             ),
             (
                 r'(class Zone:.*?\) -> None:)\n\s+""".*?"""',
                 r"\1 ...",
                 "Zone in 26.2.0 (Zone): add() is not documented as creating a Zone",
+                (LATEST_VERSION,),
             ),
             (
                 r"(class AnyPeople:.*?)No call suits every release: narrow the document with ``as_version`` first\.",
                 r"\1",
                 "(AnyPeople): add()'s docstring and narrow_with_as_version_first disagree on narrowing first",
+                _NO_RELEASE,
             ),
         ],
     )
-    def test_a_misdescribed_creation_signature_is_reported(self, pattern: str, replacement: str, expected: str) -> None:
+    def test_a_misdescribed_creation_signature_is_reported(
+        self, pattern: str, replacement: str, expected: str, releases: tuple[Version, ...] | None
+    ) -> None:
         sources = list(_committed())
         creation = dict(sources[4])
         name = next(name for name, source in creation.items() if re.search(pattern, source, flags=re.S))
         creation[name] = re.sub(pattern, replacement, creation[name], count=1, flags=re.S)
         sources[4] = creation
-        problems = _verify(sources, ENERGYPLUS_VERSIONS)
+        problems = _verify(sources, ENERGYPLUS_VERSIONS, releases=releases)
         assert any(expected in problem for problem in problems), problems
 
+    def test_a_scope_naming_an_unverified_release_is_refused(self) -> None:
+        # A release outside the verified ones, misspelled or since dropped, would otherwise check nothing.
+        with pytest.raises(ValueError, match=r"\(9, 4, 1\)"):
+            _verify(_committed(), ENERGYPLUS_VERSIONS, releases=((9, 4, 1),))
+
+    @pytest.mark.slow
     def test_a_fault_in_the_generators_type_mapping_is_reported(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # The check derives each field's values from the schema itself, so a generator that maps a
         # schema type wrongly is caught rather than repeated: here every integer becomes a float.
@@ -691,6 +769,7 @@ class TestCommittedStubs:
 class TestAdoption:
     """Adopting a release is regenerating; the stubs must come out right without a hand edit."""
 
+    @pytest.mark.slow
     def test_adopting_the_latest_release_regenerates_correctly(self) -> None:
         previous = ENERGYPLUS_VERSIONS[-2]
         with gen.supported_up_to(previous):
@@ -709,6 +788,7 @@ class TestAdoption:
         for name in ended:
             assert re.search(rf"(?m)^class {name}\(", after), f"{name} disappeared on adoption"
 
+    @pytest.mark.slow
     def test_generating_for_an_older_release_does_not_leak_into_the_latest(self) -> None:
         # Every version-dependent cache must be cleared when the supported releases change, or an
         # earlier generation for 24.1 is reused for the full set (a merged group did, once).
@@ -717,6 +797,7 @@ class TestAdoption:
         gen.generate_stubs((24, 1, 0))
         assert _verify(_generated(), gen.SUPPORTED.versions) == []
 
+    @pytest.mark.slow
     def test_the_as_version_docstring_names_the_latest_release_it_was_generated_for(self) -> None:
         # The advice "name the latest release by its own type" must move on with the latest release.
         with gen.supported_up_to((24, 1, 0)):

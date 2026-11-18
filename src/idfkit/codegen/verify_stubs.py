@@ -40,7 +40,7 @@ from __future__ import annotations
 import ast
 import dataclasses
 import functools
-from collections.abc import Iterable, Mapping
+from collections.abc import Collection, Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -194,17 +194,44 @@ def _read_signature(node: ast.ClassDef) -> _CreationSignature | None:
     return None
 
 
+# Reading is memoised by source text. A source does not change what it says between calls, and the
+# stubs are about 10 MB: re-reading them was about half of a call to verify() that differs from the
+# last only in one source, as the mutation tests' calls do. What is cached is shared by every caller
+# and must never be mutated after it is read; merging copies the containers. The bounds are sized for
+# the tests' calls, which pass the 257 creation modules and four other sources (the ``_versioned``
+# modules joined into one), plus a few one-off sources each. ``generate_stubs`` passes the
+# ``_versioned`` modules separately, more sources than ``_read_source`` holds, but calls once.
+@functools.lru_cache(maxsize=512)
+def _read_creation_module(source: str) -> tuple[tuple[str, _CreationSignature], ...]:
+    """The creation signatures of one creation module, by class name."""
+    return tuple(
+        (node.name, signature)
+        for node in ast.parse(source).body
+        if isinstance(node, ast.ClassDef) and (signature := _read_signature(node)) is not None
+    )
+
+
 def _read_creation(sources: Mapping[str, str], module: _Module) -> _Module:
     """Read the creation modules (``_b3`` -> its source) into *module*."""
     for name, source in sources.items():
-        for node in ast.parse(source).body:
-            if isinstance(node, ast.ClassDef) and (signature := _read_signature(node)) is not None:
-                module.signatures[name, node.name] = signature
+        for cls, signature in _read_creation_module(source):
+            module.signatures[name, cls] = signature
     return module
 
 
 def _read(source: str, module: _Module | None = None) -> _Module:
     module = module if module is not None else _Module()
+    part = _read_source(source)
+    module.imports.update(part.imports)
+    module.classes.update(part.classes)
+    module.aliases.update(part.aliases)
+    return module
+
+
+@functools.lru_cache(maxsize=8)
+def _read_source(source: str) -> _Module:
+    """One source read on its own; :func:`_read` merges it, later sources overriding earlier ones."""
+    module = _Module()
     for node in ast.parse(source).body:
         if isinstance(node, ast.ImportFrom) and node.module == "_creation":
             for alias in node.names:
@@ -284,6 +311,7 @@ def _getitem_entries(module: _Module, name: str, problems: list[str]) -> dict[st
     return out
 
 
+@functools.cache
 def _collection_class(annotation: str) -> str:
     """``IDFCollection[Zone]`` -> ``Zone``.
 
@@ -351,14 +379,23 @@ def _schema_fields(schema: EpJSONSchema, obj_type: str) -> dict[str, frozenset[s
     """Each attribute a typed object of *obj_type* has, with the values it may hold.
 
     The schema's identifier fields, then the spelling without the trailing underscore of each that
-    has one, as :class:`~idfkit.objects.IDFObject` resolves it at run time.
+    has one, as :class:`~idfkit.objects.IDFObject` resolves it at run time. Shared between calls:
+    not to be mutated.
     """
+    return _schema_fields_reading(schema, obj_type, _REQUIRED_READS.get(obj_type, frozenset()))
+
+
+# The expectations below are read from the bundled schemas alone, never from the generator, so they
+# are cached for the process: a generator fault cannot reach them, and recomputing them for every
+# version on every call made up half of a call to verify().
+@functools.cache
+def _schema_fields_reading(schema: EpJSONSchema, obj_type: str, always: frozenset[str]) -> dict[str, frozenset[str]]:
+    """:func:`_schema_fields`, given the fields that read without ``None`` (*always*)."""
     from idfkit.schema import trailing_underscore_aliases
 
     inner = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
     names = schema.get_field_names(obj_type)
-    always = _REQUIRED_READS.get(obj_type, frozenset())
     fields = {
         name: _value_members(properties.get(name), schema.get_field_type(obj_type, name))
         - ({"None"} if name in always else set())
@@ -371,6 +408,7 @@ def _schema_fields(schema: EpJSONSchema, obj_type: str) -> dict[str, frozenset[s
     return fields
 
 
+@functools.cache
 def _schema_group(schema: EpJSONSchema, obj_type: str) -> tuple[str, dict[str, frozenset[str]]] | None:
     """The extensible wrapper key of *obj_type* and the values each inner field may hold, or ``None``."""
     pc = schema.get_parsing_cache(obj_type)
@@ -427,7 +465,7 @@ def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problem
         retyped = sorted(k for k in set(actual) & set(expected) if actual[k] != expected[k])
         problems.append(f"{where}: missing {missing}, extra {extra}, mistyped {retyped}")
     _check_update(module, cls, keywords, where, problems)
-    _check_creation(module, cls, [_schema_of(ver)], obj_type, where, problems)
+    _check_creation(module, cls, (_schema_of(ver),), obj_type, where, problems)
 
 
 def _schema_of(ver: Version) -> EpJSONSchema:
@@ -450,7 +488,8 @@ class _ExpectedCreation:
     name_conflict: bool = False
 
 
-def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedCreation:
+@functools.cache
+def _expected_creation(schemas: tuple[EpJSONSchema, ...], obj_type: str) -> _ExpectedCreation:
     """The name, required fields and defaults *obj_type*'s creation must have to suit all *schemas*.
 
     A field is required when its schema lists it in ``required`` and gives it no default, as the
@@ -510,7 +549,7 @@ def _update_keywords(module: _Module, cls: str) -> dict[str, frozenset[str]]:
 
 
 def _check_creation(
-    module: _Module, cls: str, schemas: list[EpJSONSchema], obj_type: str, where: str, problems: list[str]
+    module: _Module, cls: str, schemas: tuple[EpJSONSchema, ...], obj_type: str, where: str, problems: list[str]
 ) -> None:
     """Check the creation signature of *cls* against its ``update`` keywords and *schemas*."""
     found = _creation_of(module, cls)
@@ -594,9 +633,15 @@ def _param_problem(
         return f"add() does not require {field}, which the schema requires"
     if _union_members(param_type) != members:
         return f"add() types {field} unlike update"
-    if default != "..." and (field not in expected.defaults or ast.literal_eval(default) != expected.defaults[field]):
+    if default != "..." and (field not in expected.defaults or _default_value(default) != expected.defaults[field]):
         return f"add() shows {field} = {default}, not the schema's default"
     return None
+
+
+@functools.cache
+def _default_value(source: str) -> object:
+    """The value a default's source spells; a scalar, as a creation signature's defaults are."""
+    return ast.literal_eval(source)
 
 
 def _item_name(group_cls: str) -> str:
@@ -652,6 +697,7 @@ def _check_update(
 _REQUIRED_READS: dict[str, frozenset[str]] = {}
 
 
+@functools.cache
 def _required_reads(versions: tuple[Version, ...]) -> dict[str, frozenset[str]]:
     """Re-derived from the schemas: a field every release in *versions* that has it requires, no default."""
     from idfkit.schema import get_schema
@@ -675,6 +721,8 @@ def verify(
     versioned_sources: Iterable[str],
     versions: tuple[Version, ...],
     creation_sources: Mapping[str, str],
+    *,
+    releases: Collection[Version] | None = None,
 ) -> list[str]:
     """Report every way the generated stubs misdescribe a supported version; empty when none.
 
@@ -688,7 +736,21 @@ def verify(
             be running as ``__main__``, a second copy of its module.
         creation_sources: The modules of ``_creation`` by module name (``_b3``), which hold the
             creation signatures the classes name.
+        releases: Check the document types of only these of *versions*; ``None``, the default,
+            checks every one. For a caller that knows which release a fault it planted shows in,
+            as the verifier's own mutation tests do: checking one release instead of eighteen is
+            most of the cost of a call. The checks of ``AnyIDFDocument`` and of the version ranges
+            always run. Leaving a release out only leaves its problems out: the checks of
+            different releases do not depend on one another, so every problem reported with
+            *releases* given is also reported without it.
+
+    Raises:
+        ValueError: *releases* names a release that is not one of *versions*.
     """
+    versions = tuple(versions)
+    if releases is not None and (unknown := [ver for ver in releases if ver not in versions]):
+        msg = f"releases {unknown} are not among the versions verified"
+        raise ValueError(msg)
     _REQUIRED_READS.clear()
     _REQUIRED_READS.update(_required_reads(versions))
     sources = list(versioned_sources)
@@ -698,7 +760,8 @@ def verify(
     _read_creation(creation_sources, module)
     problems: list[str] = []
     for ver in versions:
-        _check_version(module, ver, ver == versions[-1], problems)
+        if releases is None or ver in releases:
+            _check_version(module, ver, ver == versions[-1], problems)
     _check_any_document(module, versions, problems)
     _check_any_names(module, versions[-1], problems)
     _check_ranges(module, sources, versions, problems)
@@ -744,20 +807,28 @@ def _check_ranges(
         if i:
             _check_range_alias(ranges, f"IDFDocumentBefore{ver[0]}_{ver[1]}", ranges.members(None, ver), problems)
     seen: set[tuple[Version | None, Version | None]] = set()
-    nodes = [node for source in versioned_sources for node in ast.parse(source).body]
-    for node in nodes:
-        if isinstance(node, ast.FunctionDef) and node.name == "as_version" and node.args.kwonlyargs:
-            key = _check_range_overload(ranges, node, problems)
-            if key is None:
-                continue
-            if key in seen:
-                problems.append(f"as_version(since={key[0]}, before={key[1]}): more than one overload")
-            seen.add(key)
+    for node in (node for source in versioned_sources for node in _as_version_overloads(source)):
+        key = _check_range_overload(ranges, node, problems)
+        if key is None:
+            continue
+        if key in seen:
+            problems.append(f"as_version(since={key[0]}, before={key[1]}): more than one overload")
+        seen.add(key)
     bounds = (None, *versions)
     wanted = {(low, high) for low in bounds for high in bounds if (low, high) != (None, None)}
     for low, high in sorted(wanted - seen, key=str):
         if ranges.members(low, high):
             problems.append(f"as_version(since={low}, before={high}): no overload")
+
+
+@functools.lru_cache(maxsize=8)
+def _as_version_overloads(source: str) -> tuple[ast.FunctionDef, ...]:
+    """The module-level ``as_version`` overloads of *source* that take keywords; read, never changed."""
+    return tuple(
+        node
+        for node in ast.parse(source).body
+        if isinstance(node, ast.FunctionDef) and node.name == "as_version" and node.args.kwonlyargs
+    )
 
 
 def _check_range_alias(ranges: _Ranges, alias: str, expected: frozenset[str], problems: list[str]) -> None:
@@ -1012,7 +1083,7 @@ def _check_any_entry(
             if not decl[name] <= admitted:
                 problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: does not admit every version's values")
                 break
-    _check_creation(module, cls, having, obj_type, f"AnyIDFDocument[{obj_type!r}] ({cls})", problems)
+    _check_creation(module, cls, tuple(having), obj_type, f"AnyIDFDocument[{obj_type!r}] ({cls})", problems)
 
 
 def _intersection(sets: list[set[str]]) -> set[str]:

@@ -363,6 +363,7 @@ def _model(zones: int = 40) -> IDFDocument:
 
 
 class TestDocumentContract:
+    @pytest.mark.slow
     def test_one_document_can_be_read_from_many_threads(self) -> None:
         doc = _model()
         text = write_idf(doc)

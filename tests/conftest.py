@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fnmatch
+import functools
 import json
 from pathlib import Path
 
@@ -12,6 +13,43 @@ from idfkit import IDFDocument, new_document
 from idfkit.objects import IDFObject
 from idfkit.references import ReferenceGraph
 from idfkit.schema import EpJSONSchema, get_schema
+
+# ---------------------------------------------------------------------------
+# Generated stubs, once per session
+# ---------------------------------------------------------------------------
+#
+# A stub generation takes seconds (more under coverage), and several tests only read what it
+# produced. They share one generation per worker; the output is a string, so no test can change
+# what the next one reads. The cache is keyed on the release set the generator would describe as
+# well as the argument, so a call made inside ``supported_up_to`` or under a patched
+# ``ENERGYPLUS_VERSIONS`` generates afresh rather than reading, or leaving, another set's stubs.
+
+_Version = tuple[int, int, int]
+
+
+def generated_stubs(version: _Version | None = None) -> str:
+    """``generate_stubs(version)`` (``_generated_types.pyi``), generated once per session."""
+    from idfkit.codegen import generate_stubs as gen
+
+    return _generated("stubs", version, gen.SUPPORTED.versions, gen.ENERGYPLUS_VERSIONS)
+
+
+def generated_document_pyi(version: _Version | None = None) -> str:
+    """``generate_document_pyi(version)`` (``document.pyi``), generated once per session."""
+    from idfkit.codegen import generate_stubs as gen
+
+    return _generated("document", version, gen.SUPPORTED.versions, gen.ENERGYPLUS_VERSIONS)
+
+
+@functools.cache
+def _generated(
+    kind: str, version: _Version | None, supported: tuple[_Version, ...], bundled: tuple[_Version, ...]
+) -> str:
+    """One generation; *supported* and *bundled* are part of the key, not read here."""
+    from idfkit.codegen import generate_stubs as gen
+
+    return gen.generate_stubs(version) if kind == "stubs" else gen.generate_document_pyi(version)
+
 
 # ---------------------------------------------------------------------------
 # Weather admission refusals
