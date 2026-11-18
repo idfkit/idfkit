@@ -67,7 +67,8 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         not hold for a value read from a file or assigned in another case; compare such values
         with ``str.casefold()``.
 
-        This property is read-only; set it via the loader or the constructor.
+        This property is read-only; set it via the loader or the constructor. A document pickled
+        by a release before the setting existed holds its values as written, and reports ``False``.
         """
     @property
     def schema(self) -> EpJSONSchema | None:
@@ -580,8 +581,8 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         default machinery: every slot of a document copies correctly on its
         own, and the schema travels by version (see
         :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
-        The only hook, :meth:`__setstate__`, fills in a slot that a document
-        pickled by an earlier release does not have.
+        A document pickled by an earlier release has no ``normalize_choices``
+        slot, and reads it as ``False``.
         This method is the faster of the two, as it rebuilds the model
         object by object instead of walking every field through the memo.
 

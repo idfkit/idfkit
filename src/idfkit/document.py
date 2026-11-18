@@ -234,28 +234,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         not hold for a value read from a file or assigned in another case; compare such values
         with ``str.casefold()``.
 
-        This property is read-only; set it via the loader or the constructor.
+        This property is read-only; set it via the loader or the constructor. A document pickled
+        by a release before the setting existed holds its values as written, and reports ``False``.
         """
-        return self._normalize_choices
-
-    def __setstate__(self, state: Any) -> None:
-        """Restore a pickled or deep-copied document.
-
-        Every slot is restored as the default machinery would. A document pickled before
-        ``normalize_choices`` existed holds its choices as they were written, so it comes back
-        with the setting off, which describes its values, rather than without the slot.
-        """
-        slots: dict[str, Any] = {}
-        if isinstance(state, tuple):
-            slot_state = cast("tuple[Any, Any]", state)[1]
-            if isinstance(slot_state, dict):
-                slots = cast("dict[str, Any]", slot_state)
-        elif isinstance(state, dict):
-            slots = cast("dict[str, Any]", state)
-        for key, value in slots.items():
-            object.__setattr__(self, key, value)
-        if "_normalize_choices" not in slots:
-            object.__setattr__(self, "_normalize_choices", False)
+        # Read with a default rather than restored by a __setstate__ hook: unpickling builds the
+        # object without __init__, and an older pickle has no such slot.
+        return getattr(self, "_normalize_choices", False)
 
     @property
     def version(self) -> tuple[int, int, int]:
@@ -944,7 +928,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data = {key: value for key, value in field_data.items() if key not in known or not is_blank_slot(value)}
         # A choice is stored in its schema's spelling, so `surface_type="WALL"` reads back the "Wall"
         # its Literal type promises. `field_data` is this call's own dict; groups are copied on change.
-        if parsing_cache is not None and self._normalize_choices:
+        if parsing_cache is not None and self.normalize_choices:
             canonicalize_choices(field_data, parsing_cache)
 
         # Create object
@@ -999,7 +983,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         stores them, so an object built elsewhere or copied from a document that
         opted out holds what its ``Literal`` types say.
         """
-        if self._normalize_choices and self._schema is not None:
+        if self.normalize_choices and self._schema is not None:
             pc = self._schema.get_parsing_cache(obj.obj_type)
             if pc is not None:
                 canonicalize_choices(obj.data, pc)
@@ -1597,8 +1581,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         default machinery: every slot of a document copies correctly on its
         own, and the schema travels by version (see
         :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
-        The only hook, :meth:`__setstate__`, fills in a slot that a document
-        pickled by an earlier release does not have.
+        A document pickled by an earlier release has no ``normalize_choices``
+        slot, and reads it as ``False``.
         This method is the faster of the two, as it rebuilds the model
         object by object instead of walking every field through the memo.
 
@@ -1623,7 +1607,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             schema=self._schema,
             filepath=self.filepath,
             strict=self._strict,
-            normalize_choices=self._normalize_choices,
+            normalize_choices=self.normalize_choices,
         )
 
         # Keyed by the object: IDFObject hashes by identity, and the tree below needs

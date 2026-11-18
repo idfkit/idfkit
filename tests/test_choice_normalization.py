@@ -419,7 +419,8 @@ class TestFlag:
         _, slots = state
         older_slots = {key: value for key, value in slots.items() if key != "_normalize_choices"}
         older = restore(*args)
-        older.__setstate__((None, older_slots))
+        for key, value in older_slots.items():
+            object.__setattr__(older, key, value)
         assert older.normalize_choices is False
         assert _material(older, "ROUGH").roughness == "ROUGH"
         assert older.copy().normalize_choices is False
