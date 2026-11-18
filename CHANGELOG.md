@@ -156,7 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`idfkit/_creation`) that a type checker reads only to check an `add()` call, so a cold
   `pyright` run on a file importing idfkit took 1.26 s against 1.30 s before, 300 typed `add()`
   calls 1.61 s against 1.58 s, and cold signature help 1.10 s against 1.07 s
-  ([ffbafb3](https://github.com/idfkit/idfkit/commit/ffbafb3), [bcfe48d](https://github.com/idfkit/idfkit/commit/bcfe48d)).
+  ([#297](https://github.com/idfkit/idfkit/pull/297)).
 - For type checking only, an undeclared field on a typed object was reported against a type named
   for the mistake: pyright's message for `zone.ceiling_hieght = 3.0` read `parameter "key" of type
   "_NotAFieldOfThisObjectType"` rather than `of type "Never"` (`_NotAFieldOfThisExtensibleGroup`
