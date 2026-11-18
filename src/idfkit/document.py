@@ -911,7 +911,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 raise ValidationFailedError(errors)
 
         # Add to collection (the write path: this may create the collection)
-        self._collection_for_write(resolved_obj_type, adopt)._insert(obj)  # pyright: ignore[reportPrivateUsage]
+        self._collection_for_write(resolved_obj_type, adopt)._append(obj)  # pyright: ignore[reportPrivateUsage]
 
         # Index references
         self._index_object_references(obj)

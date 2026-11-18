@@ -1221,7 +1221,7 @@ class IDFObject(EppyObjectMixin):
 #
 # Covariance is sound here because no public method takes an object of the element type: add()
 # takes a name and fields and creates the object itself, of the collection's own type. (It took an
-# object up to 1.3.0rc1, through which a Material could be filed in doc["Zone"]; that is _insert now.)
+# object up to 1.3.0rc1, through which a Material could be filed in doc["Zone"]; that is _append now.)
 _T_co = TypeVar("_T_co", bound=IDFObject, covariant=True)
 _ObjT = TypeVar("_ObjT", bound=IDFObject)
 _D = TypeVar("_D")
@@ -1367,8 +1367,8 @@ class IDFCollection(Generic[_T_co]):
         """Dict mapping uppercase names to objects."""
         return self._by_name
 
-    def _insert(self: IDFCollection[_ObjT], obj: _ObjT) -> _ObjT:
-        """File an existing object in this collection, and nowhere else.
+    def _append(self: IDFCollection[_ObjT], obj: _ObjT) -> _ObjT:
+        """Append an existing object to the end of this collection, indexed by name, and nowhere else.
 
         The document's own filing step, after it has built, validated and indexed the object
         (``IDFDocument.add``, ``addidfobject``). It does not validate, link the object to a
@@ -1458,7 +1458,7 @@ class IDFCollection(Generic[_T_co]):
             ['Office', 'Lab']
         """
         if isinstance(cast("object", name), IDFObject):
-            return self._insert_deprecated(cast("IDFObject", name))
+            return self._append_deprecated(cast("IDFObject", name))
         document = self._document
         if document is None:
             msg = (
@@ -1472,7 +1472,7 @@ class IDFCollection(Generic[_T_co]):
         obj = document._create_in(self, name, fields)  # pyright: ignore[reportPrivateUsage]
         return cast("_T_co", obj)
 
-    def _insert_deprecated(self, obj: IDFObject) -> Any:
+    def _append_deprecated(self, obj: IDFObject) -> Any:
         """``add(obj)`` as it behaved up to idfkit 1.3.0rc1, with a warning."""
         warnings.warn(
             "IDFCollection.add(obj) is deprecated: it files the object in the collection without validating "
@@ -1481,7 +1481,7 @@ class IDFCollection(Generic[_T_co]):
             DeprecationWarning,
             stacklevel=3,
         )
-        return cast("IDFCollection[IDFObject]", self)._insert(obj)
+        return cast("IDFCollection[IDFObject]", self)._append(obj)
 
     def remove(self, obj: IDFObject) -> None:
         """Remove an object from the collection."""
