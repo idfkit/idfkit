@@ -1347,7 +1347,7 @@ def _creation_lines(
     ``validate: bool = True``, the switch ``IDFDocument.add`` takes, which ``IDFCollection.add``
     passes through: PEP 612 lets ``add`` declare no keyword of its own beside the signature it
     takes. ``validate=False`` relaxes no required field here: it is for loading data already
-    known good, not for leaving fields out, so a call that type-checks stays one that validates.
+    known good, not for leaving fields out, so a call that leaves one out stays a type error.
 
     A required field the class cannot be given a value for (one ``Any<Class>`` does not declare,
     because a release names it differently, or whose only value safe in every release is ``None``),

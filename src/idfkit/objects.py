@@ -53,7 +53,7 @@ if TYPE_CHECKING:
         """The document a collection creates its objects through (``IDFDocument``)."""
 
         def _create_in(
-            self, collection: IDFCollection[Any], name: str, fields: dict[str, Any], validate: bool = True
+            self, collection: IDFCollection[Any], name: str, fields: dict[str, Any], validate: bool
         ) -> IDFObject: ...
 
         def _holds(self, collection: IDFCollection[Any]) -> bool: ...
@@ -1547,8 +1547,9 @@ class IDFCollection(Generic[_T_co]):
             ``InvalidFieldError``. This form is meant to replace the string-keyed
             ``doc.add(obj_type, ...)``, so it takes the same switch; it used to validate always.
             ``validate=False`` relaxes no required field for the type checker: a call that leaves
-            one out is still a type error, so a call that type-checks is one that would also pass
-            validation. Fields are passed by keyword only; extensible groups go under their wrapper
+            one out is still a type error, as it is without the switch. (Type-checking a call does
+            not stand in for validation: a value out of range, ``multiplier=-3``, type-checks.)
+            Fields are passed by keyword only; extensible groups go under their wrapper
             key (``vertices=[{...}, ...]``), as with ``IDFDocument.add``.
 
             This method used to take an existing object and file it in the collection without
@@ -1582,7 +1583,8 @@ class IDFCollection(Generic[_T_co]):
                     (``doc.get_collection("Zoen")``).
                 ValidationFailedError: If validation fails (unknown fields, missing required fields,
                     invalid values).
-                InvalidFieldError: With ``validate=False``, if a field is not one of the type's.
+                InvalidFieldError: If a name is passed for a type without a Name field, in either
+                    mode; and, with ``validate=False``, if a field is not one of the type's.
                 DuplicateObjectError: If an object of the type already has the name, or the type is
                     a singleton that already has one.
 

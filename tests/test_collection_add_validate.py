@@ -85,8 +85,12 @@ def _seeded_lines(text: str) -> set[int]:
     return {number for number, line in enumerate(text.splitlines(), 1) if "# pyright: ignore[" in line}
 
 
-def test_mypy_reports_exactly_the_seeded_errors(tmp_path: Path) -> None:
+def test_mypy_reports_exactly_the_seeded_errors(pytestconfig: pytest.Config, tmp_path: Path) -> None:
     pytest.importorskip("mypy")
+    # pytest's own cache keeps mypy's warm between runs (a cold run reads all of idfkit's stubs);
+    # mypy invalidates it by content. Without the cache plugin (-p no:cacheprovider), a fresh one.
+    cache = getattr(pytestconfig, "cache", None)
+    cache_dir = cache.mkdir("mypy") if cache is not None else tmp_path / "mypy_cache"
     result = subprocess.run(  # noqa: S603  (the interpreter running the tests, on a file of this repository)
         [
             sys.executable,
@@ -96,7 +100,7 @@ def test_mypy_reports_exactly_the_seeded_errors(tmp_path: Path) -> None:
             "--no-error-summary",
             "--hide-error-context",
             "--cache-dir",
-            str(tmp_path / "mypy_cache"),
+            str(cache_dir),
             str(FIXTURE),
         ],
         capture_output=True,

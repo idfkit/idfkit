@@ -839,7 +839,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         return self._collections.get(collection.obj_type) is collection
 
     def _create_in(
-        self, collection: IDFCollection[Any], name: str, fields: dict[str, Any], validate: bool = True
+        self, collection: IDFCollection[Any], name: str, fields: dict[str, Any], validate: bool
     ) -> IDFObject:
         """Create an object for [IDFCollection.add][idfkit.objects.IDFCollection.add].
 
