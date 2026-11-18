@@ -10,7 +10,12 @@ from typing import Any, SupportsIndex, cast
 import pytest
 
 from idfkit import IDFDocument, new_document
-from idfkit.exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
+from idfkit.exceptions import (
+    DuplicateObjectError,
+    UnknownObjectTypeError,
+    UnknownObjectTypeWarning,
+    ValidationFailedError,
+)
 from idfkit.objects import IDFCollection, IDFObject
 
 
@@ -77,7 +82,7 @@ class TestAdd:
         assert len(surface.vertices) == 3
 
     def test_unknown_type_raises(self, doc: IDFDocument[Any]) -> None:
-        with pytest.raises(UnknownObjectTypeError):
+        with pytest.warns(UnknownObjectTypeWarning), pytest.raises(UnknownObjectTypeError):
             doc.get_collection("Zoen").add("Office")
         assert "Zoen" not in doc.collections
 

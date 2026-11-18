@@ -179,6 +179,10 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         for a name held in a variable; for a literal one, ``model["Zone"]``
         is typed and checked. ``idfkit check`` reports literal names passed
         here (rules ``C003`` and ``C004``).
+
+        A name no bundled release has warns
+        [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning],
+        as ``model[obj_type]`` does.
         """
     def __contains__(self, obj_type: str) -> bool:
         """Check if document has objects of a type.
@@ -186,7 +190,8 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         Matched case-insensitively and resolved against the schema, the same
         way [__getitem__][idfkit.document.IDFDocument.__getitem__] does, so
         ``"zone" in model`` and ``len(model["zone"]) > 0`` can never disagree.
-        An unrecognised type name answers False rather than raising.
+        An unrecognised type name answers False rather than raising, and
+        never warns: asking is not a misspelt read.
 
         A type checker does not narrow the document's type on this test.
         False does not mean the release lacks the type, only that the document
@@ -637,7 +642,9 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
         [removeidfobject][idfkit.document.IDFDocument.removeidfobject] all agree
         with this one.
 
-        Returns an empty collection if no objects of that type exist yet.
+        Returns an empty collection if no objects of that type exist yet, and
+        warns [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning]
+        if no bundled EnergyPlus release has the type at all.
 
         !!! note "Why an unknown type name returns empty rather than raising"
 
@@ -660,6 +667,20 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
             [describe][idfkit.document.IDFDocument.describe] raises for a name it
             cannot look up.  To ask the question directly, use
             ``model.schema.resolve_type_name(name) is not None``.
+
+            The read itself does not stay silent, though: a name that *no
+            bundled EnergyPlus release* has warns
+            [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning],
+            naming the closest real type, and still returns the empty
+            collection.  A warning meets all three objections.  It is judged
+            against every bundled release, never this document's schema, so a
+            document with no schema answers the same way, and probing a real
+            type this release lacks (``model["Space"]`` on 9.4) stays silent.
+            ``"Foo" in model`` does not warn, because asking is not a misspelt
+            read.  And probing code keeps working unchanged; it can silence the
+            warning by class.  [get_collection][idfkit.document.IDFDocument.get_collection],
+            ``idfobjects[...]``, [getobject][idfkit._compat.EppyDocumentMixin.getobject],
+            ``popidfobject`` and ``removeallidfobjects`` warn the same way.
 
             What this method must never do, and no longer does, is *store* the
             empty collection it returns.  A read that mutates the document is
@@ -696,10 +717,15 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
             >>> model["Zone"]["Perimeter_ZN_1"].name
             'Perimeter_ZN_1'
 
-            An unknown type name is empty, and reading it leaves no trace:
+            An unknown type name is empty, warns, and reading it leaves no trace:
 
-            >>> len(model["Zoen"])
+            >>> import warnings
+            >>> with warnings.catch_warnings(record=True) as caught:
+            ...     warnings.simplefilter("always")
+            ...     len(model["Zoen"])
             0
+            >>> print(caught[0].message)
+            Object type 'Zoen' is in no bundled EnergyPlus release; the collection is empty. Did you mean 'Zone'?
             >>> "Zoen" in model.collections
             False
         """
@@ -5712,7 +5738,9 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
         [removeidfobject][idfkit.document.IDFDocument.removeidfobject] all agree
         with this one.
 
-        Returns an empty collection if no objects of that type exist yet.
+        Returns an empty collection if no objects of that type exist yet, and
+        warns [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning]
+        if no bundled EnergyPlus release has the type at all.
 
         !!! note "Why an unknown type name returns empty rather than raising"
 
@@ -5735,6 +5763,20 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
             [describe][idfkit.document.IDFDocument.describe] raises for a name it
             cannot look up.  To ask the question directly, use
             ``model.schema.resolve_type_name(name) is not None``.
+
+            The read itself does not stay silent, though: a name that *no
+            bundled EnergyPlus release* has warns
+            [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning],
+            naming the closest real type, and still returns the empty
+            collection.  A warning meets all three objections.  It is judged
+            against every bundled release, never this document's schema, so a
+            document with no schema answers the same way, and probing a real
+            type this release lacks (``model["Space"]`` on 9.4) stays silent.
+            ``"Foo" in model`` does not warn, because asking is not a misspelt
+            read.  And probing code keeps working unchanged; it can silence the
+            warning by class.  [get_collection][idfkit.document.IDFDocument.get_collection],
+            ``idfobjects[...]``, [getobject][idfkit._compat.EppyDocumentMixin.getobject],
+            ``popidfobject`` and ``removeallidfobjects`` warn the same way.
 
             What this method must never do, and no longer does, is *store* the
             empty collection it returns.  A read that mutates the document is
@@ -5771,10 +5813,15 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
             >>> model["Zone"]["Perimeter_ZN_1"].name
             'Perimeter_ZN_1'
 
-            An unknown type name is empty, and reading it leaves no trace:
+            An unknown type name is empty, warns, and reading it leaves no trace:
 
-            >>> len(model["Zoen"])
+            >>> import warnings
+            >>> with warnings.catch_warnings(record=True) as caught:
+            ...     warnings.simplefilter("always")
+            ...     len(model["Zoen"])
             0
+            >>> print(caught[0].message)
+            Object type 'Zoen' is in no bundled EnergyPlus release; the collection is empty. Did you mean 'Zone'?
             >>> "Zoen" in model.collections
             False
         """

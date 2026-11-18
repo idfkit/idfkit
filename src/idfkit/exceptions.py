@@ -163,6 +163,31 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
         super().__init__(msg)
 
 
+class UnknownObjectTypeWarning(UserWarning):
+    """Warned when a document is read by an object type name no bundled EnergyPlus release has.
+
+    ``model["Zoen"]`` and ``model.get_collection("Zoen")`` return an empty collection rather than
+    raising (see the note on ``IDFDocument.__getitem__``), so a misspelt name would otherwise go
+    unnoticed. A name some bundled release has, even one the document's own release lacks, is not
+    warned about. Filter it like any warning:
+
+        warnings.filterwarnings("ignore", category=UnknownObjectTypeWarning)
+    """
+
+    def __init__(self, obj_type: str, suggestion: str | None = None) -> None:
+        # ``args`` holds the constructor's arguments, not the message, so ``cls(*args)`` rebuilds
+        # the warning as pickle, ``copy`` and pytest-xdist's warning transport all do.
+        super().__init__(obj_type, suggestion)
+        self.obj_type = obj_type
+        self.suggestion = suggestion
+
+    def __str__(self) -> str:
+        msg = f"Object type '{self.obj_type}' is in no bundled EnergyPlus release; the collection is empty"
+        if self.suggestion is not None:
+            msg += f". Did you mean '{self.suggestion}'?"
+        return msg
+
+
 @dataclass(frozen=True, slots=True)
 class RefusedEntry:
     """One entry of an ``IDFObject.update`` group, or ``IDFDocument.add`` call, that will not be applied.

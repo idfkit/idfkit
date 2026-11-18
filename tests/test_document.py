@@ -12,7 +12,7 @@ import pytest
 
 from idfkit import IDFDocument, load_idf, new_document, write_idf
 from idfkit.cst import DocumentCST
-from idfkit.exceptions import DuplicateObjectError, InvalidFieldError, ValidationFailedError
+from idfkit.exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeWarning, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.validation import ValidationError
 from idfkit.versions import LATEST_VERSION
@@ -171,7 +171,8 @@ class TestIDFDocumentObjectManipulation:
         assert obj is None
 
     def test_getobject_missing_type(self, simple_doc: IDFDocument) -> None:
-        obj = simple_doc.getobject("Nonexistent", "X")
+        with pytest.warns(UnknownObjectTypeWarning):
+            obj = simple_doc.getobject("Nonexistent", "X")
         assert obj is None
 
 

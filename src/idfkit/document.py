@@ -11,6 +11,8 @@ Provides:
 from __future__ import annotations
 
 import contextlib
+import difflib
+import functools
 import logging
 import sys
 import warnings
@@ -21,8 +23,15 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 from ._accessors import AccessorAttributeError, AccessorResolver, deprecated_plural_message
 from ._compat import EppyDocumentMixin
 from ._document_types import DocumentTypeMeta
+from ._object_types import ALL_OBJECT_TYPES
 from .cst import CSTNode, DocumentCST, SourceSpan
-from .exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeError, ValidationFailedError
+from .exceptions import (
+    DuplicateObjectError,
+    InvalidFieldError,
+    UnknownObjectTypeError,
+    UnknownObjectTypeWarning,
+    ValidationFailedError,
+)
 from .introspection import ObjectDescription, describe_object_type
 from .objects import (
     IDFCollection,
@@ -116,6 +125,37 @@ _PYTHON_TO_IDF = {
 
 # Inverse mapping
 _IDF_TO_PYTHON = {v.upper(): k for k, v in _PYTHON_TO_IDF.items()}
+
+
+@functools.cache
+def _object_types_by_folded_name() -> dict[str, str]:
+    """Every object type of every bundled release, keyed by its case-folded name."""
+    return {name.casefold(): name for name in ALL_OBJECT_TYPES}
+
+
+@functools.lru_cache(maxsize=256)
+def _closest_object_type(obj_type: str) -> str | None:
+    """The bundled object type closest to *obj_type*, or ``None`` if none is close.
+
+    Cached because it runs on every miss, before ``warnings.warn`` can tell whether the warning
+    will be shown (``warn`` formats the message before it consults the filters), and a long name
+    costs difflib milliseconds: a loop probing one misspelt name pays that once.
+    """
+    by_folded = _object_types_by_folded_name()
+    close = difflib.get_close_matches(obj_type.casefold(), by_folded.keys(), n=1, cutoff=0.6)
+    return by_folded[close[0]] if close else None
+
+
+def _warn_if_unknown_object_type(obj_type: str, *, stacklevel: int) -> None:
+    """Warn [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning] if no bundled release has *obj_type*.
+
+    Judged against every bundled release, never the document's own schema, so the answer is the
+    same with or without a schema, and probing a real type this release lacks stays silent.
+    *stacklevel* is counted as :func:`warnings.warn` counts it, from this function's caller.
+    """
+    if obj_type.casefold() in _object_types_by_folded_name():
+        return
+    warnings.warn(UnknownObjectTypeWarning(obj_type, _closest_object_type(obj_type)), stacklevel=stacklevel + 1)
 
 
 def _build_resolver(schema: EpJSONSchema) -> AccessorResolver:
@@ -302,7 +342,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         [removeidfobject][idfkit.document.IDFDocument.removeidfobject] all agree
         with this one.
 
-        Returns an empty collection if no objects of that type exist yet.
+        Returns an empty collection if no objects of that type exist yet, and
+        warns [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning]
+        if no bundled EnergyPlus release has the type at all.
 
         !!! note "Why an unknown type name returns empty rather than raising"
 
@@ -325,6 +367,20 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             [describe][idfkit.document.IDFDocument.describe] raises for a name it
             cannot look up.  To ask the question directly, use
             ``model.schema.resolve_type_name(name) is not None``.
+
+            The read itself does not stay silent, though: a name that *no
+            bundled EnergyPlus release* has warns
+            [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning],
+            naming the closest real type, and still returns the empty
+            collection.  A warning meets all three objections.  It is judged
+            against every bundled release, never this document's schema, so a
+            document with no schema answers the same way, and probing a real
+            type this release lacks (``model["Space"]`` on 9.4) stays silent.
+            ``"Foo" in model`` does not warn, because asking is not a misspelt
+            read.  And probing code keeps working unchanged; it can silence the
+            warning by class.  [get_collection][idfkit.document.IDFDocument.get_collection],
+            ``idfobjects[...]``, [getobject][idfkit._compat.EppyDocumentMixin.getobject],
+            ``popidfobject`` and ``removeallidfobjects`` warn the same way.
 
             What this method must never do, and no longer does, is *store* the
             empty collection it returns.  A read that mutates the document is
@@ -361,10 +417,15 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> model["Zone"]["Perimeter_ZN_1"].name
             'Perimeter_ZN_1'
 
-            An unknown type name is empty, and reading it leaves no trace:
+            An unknown type name is empty, warns, and reading it leaves no trace:
 
-            >>> len(model["Zoen"])
+            >>> import warnings
+            >>> with warnings.catch_warnings(record=True) as caught:
+            ...     warnings.simplefilter("always")
+            ...     len(model["Zoen"])
             0
+            >>> print(caught[0].message)
+            Object type 'Zoen' is in no bundled EnergyPlus release; the collection is empty. Did you mean 'Zone'?
             >>> "Zoen" in model.collections
             False
         """
@@ -374,7 +435,24 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         collection = self._collections.get(obj_type)
         if collection is not None:
             return collection
-        return self._lookup_collection(obj_type)
+        return self._read_collection(obj_type, stacklevel=2)
+
+    def _read_collection(self, obj_type: str, *, stacklevel: int) -> IDFCollection[IDFObject]:
+        """Look *obj_type* up for a caller that named it, warning if no bundled release has it.
+
+        Every public name-keyed read ([__getitem__][idfkit.document.IDFDocument.__getitem__],
+        [get_collection][idfkit.document.IDFDocument.get_collection] and the eppy ones) comes
+        here; ``__getitem__`` only after its own one-dict-hit hot path has missed. *stacklevel* is
+        counted as :func:`warnings.warn` counts it, from the public method that called this one,
+        so ``2`` points the warning at that method's caller.
+        """
+        collection = self._collections.get(obj_type)
+        if collection is not None:
+            return collection
+        collection = self._lookup_collection(obj_type)
+        if not collection:
+            _warn_if_unknown_object_type(obj_type, stacklevel=stacklevel + 1)
+        return collection
 
     def _lookup_collection(self, obj_type: str) -> IDFCollection[IDFObject]:
         """Resolve *obj_type* and return its stored collection, or a detached empty one.
@@ -443,8 +521,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         for a name held in a variable; for a literal one, ``model["Zone"]``
         is typed and checked. ``idfkit check`` reports literal names passed
         here (rules ``C003`` and ``C004``).
+
+        A name no bundled release has warns
+        [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning],
+        as ``model[obj_type]`` does.
         """
-        return self[obj_type]
+        return self._read_collection(obj_type, stacklevel=2)
 
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
         """
@@ -541,7 +623,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Matched case-insensitively and resolved against the schema, the same
         way [__getitem__][idfkit.document.IDFDocument.__getitem__] does, so
         ``"zone" in model`` and ``len(model["zone"]) > 0`` can never disagree.
-        An unrecognised type name answers False rather than raising.
+        An unrecognised type name answers False rather than raising, and
+        never warns: asking is not a misspelt read.
 
         A type checker does not narrow the document's type on this test.
         False does not mean the release lacks the type, only that the document
@@ -565,7 +648,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> "Zoen" in model
             False
         """
-        return len(self[obj_type]) > 0
+        # Not through ``__getitem__``: asking whether a type is present is not a misspelt read, so it never warns.
+        collection = self._collections.get(obj_type)
+        if collection is None:
+            collection = self._lookup_collection(obj_type)
+        return len(collection) > 0
 
     def __iter__(self) -> Iterator[str]:
         """Iterate over object type names."""

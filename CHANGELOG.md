@@ -46,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `doc["Zoen"]`, `get_collection(...)` and the eppy lookups warned `idfkit.exceptions.UnknownObjectTypeWarning`,
+  naming the closest type, for a type name in no bundled release, instead of silently returning an empty
+  collection; suites run with `filterwarnings = error` failed on such reads. ([#310](https://github.com/idfkit/idfkit/pull/310))
 - **Breaking:** choice values were read and stored in the schema's spelling whatever the source's
   case (`WALL` read `"Wall"`), so the `Literal` types held on files you did not write; compare with
   the schema's spelling or `.casefold()`, or pass `normalize_choices=False` to keep values as written

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 from .objects import refuse_name_for_nameless_type
 from .writers import OutputType
@@ -31,22 +31,30 @@ if TYPE_CHECKING:
 # ---------------------------------------------------------------------------
 
 
+class _CollectionReader(Protocol):
+    """``IDFDocument._read_collection``: a name-keyed read that warns for a type no release has."""
+
+    def __call__(self, obj_type: str, *, stacklevel: int) -> IDFCollection[IDFObject]: ...
+
+
 class _IDFObjectsView:
     """Case-insensitive view over document collections (eppy compatibility).
 
     Allows ``doc.idfobjects["ZONE"]`` to work the same as ``doc["Zone"]``.
     """
 
-    __slots__ = ("_doc",)
+    __slots__ = ("_doc", "_read")
 
-    def __init__(self, doc: EppyDocumentMixin) -> None:
+    def __init__(self, doc: EppyDocumentMixin, read: _CollectionReader) -> None:
         self._doc = doc
+        # The document's own name-keyed read, so a misspelt type warns here as ``doc[...]`` does.
+        self._read = read
 
     def __getitem__(self, key: str) -> IDFCollection[IDFObject]:
         # Document lookup is itself case-insensitive now, and resolves the type
         # name against the schema, so this view no longer carries its own scan:
         # one rule, in one place.
-        return self._doc[key]
+        return self._read(key, stacklevel=2)
 
     def __contains__(self, key: object) -> bool:
         if not isinstance(key, str):
@@ -104,6 +112,7 @@ class EppyDocumentMixin:
         def _compute_ref_fields(schema: EpJSONSchema, obj_type: str) -> frozenset[str]: ...
         def _index_object_references(self, obj: IDFObject) -> None: ...
         def _collection_for_write(self, obj_type: str) -> IDFCollection[IDFObject]: ...
+        def _read_collection(self, obj_type: str, *, stacklevel: int) -> IDFCollection[IDFObject]: ...
 
     # -- Object access -------------------------------------------------------
 
@@ -122,7 +131,7 @@ class EppyDocumentMixin:
                 zone = doc["Zone"]["Office"]
                 ```
         """
-        return _IDFObjectsView(self)
+        return _IDFObjectsView(self, self._read_collection)
 
     def getobject(self, obj_type: str, name: str) -> IDFObject | None:
         """Get a specific object by type and name (eppy compatibility).
@@ -151,10 +160,10 @@ class EppyDocumentMixin:
             >>> model.getobject("Zone", "NonExistent") is None
             True
         """
-        # Through ``__getitem__`` so the type name is resolved the same way it
-        # is everywhere else: a raw dict hit would miss ``getobject("zone", ...)``
+        # Resolved the same way ``__getitem__`` resolves it, warning the same way
+        # for a misspelt type: a raw dict hit would miss ``getobject("zone", ...)``
         # on a document whose collections are keyed by the schema's spelling.
-        collection = self[obj_type]
+        collection = self._read_collection(obj_type, stacklevel=2)
         if collection:
             return collection.get(name)
         return None
@@ -257,7 +266,7 @@ class EppyDocumentMixin:
         Raises:
             IndexError: If the index is out of range
         """
-        collection = self[obj_type]
+        collection = self._read_collection(obj_type, stacklevel=2)
         obj = collection[index]
         self.removeidfobject(obj)
         return obj
@@ -296,7 +305,7 @@ class EppyDocumentMixin:
             >>> len(model["Zone"])
             0
         """
-        for obj in list(self[obj_type]):
+        for obj in list(self._read_collection(obj_type, stacklevel=2)):
             self.removeidfobject(obj)
 
     def copyidfobject(self, obj: IDFObject, new_name: str | None = None) -> IDFObject:
