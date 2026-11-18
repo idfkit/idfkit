@@ -89,6 +89,61 @@ def _choice_spellings(field_schema: dict[str, Any]) -> dict[str, str]:
     return table
 
 
+def canonical_choice(spellings: ChoiceSpellings | None, value: Any) -> Any:
+    """*value* in the spelling its field's schema declares, or unchanged when it is no listed choice.
+
+    EnergyPlus matches choices case-insensitively, so ``"WALL"`` and ``"Wall"`` are the same value.
+    The typed stubs declare the schema's spelling (``Literal["Wall", ...]``), so a value is stored
+    in that spelling for the type to hold whatever case the source used. Only a string that folds
+    to a listed choice changes; anything else, a number or an unlisted string, is returned as is.
+    """
+    if spellings and type(value) is str:
+        return spellings.get(value.casefold(), value)
+    return value
+
+
+def canonicalize_choices(data: dict[str, Any], pc: ParsingCache) -> None:
+    """Rewrite, in place, every choice value of *data* in the spelling its schema declares.
+
+    Covers the fixed fields and each group under the extensible wrapper. A group is rewritten only
+    when it is a plain ``dict``; anything else is left for validation to report. A group that needs
+    a change is replaced by a changed copy, in a new list, so dicts a caller passed to ``add()`` are
+    never modified.
+    """
+    spellings = pc.choice_spellings
+    if spellings:
+        for key, value in data.items():
+            table = spellings.get(key)
+            if table is not None and type(value) is str:
+                data[key] = table.get(value.casefold(), value)
+    wrapper_key = pc.ext_wrapper_key
+    if pc.ext_choice_spellings and wrapper_key is not None:
+        groups = data.get(wrapper_key)
+        if isinstance(groups, list):
+            rewritten = _canonical_groups(cast("list[Any]", groups), pc.ext_choice_spellings)
+            if rewritten is not None:
+                data[wrapper_key] = rewritten
+
+
+def _canonical_groups(groups: list[Any], spellings: Mapping[str, ChoiceSpellings]) -> list[Any] | None:
+    """A copy of *groups* with each choice in its schema's spelling, or ``None`` when none changes."""
+    rewritten: list[Any] | None = None
+    for index, group in enumerate(groups):
+        if not isinstance(group, dict):
+            continue
+        slots = cast("dict[str, Any]", group)
+        changed = {
+            key: canonical
+            for key, value in slots.items()
+            if (canonical := canonical_choice(spellings.get(key), value)) != value
+        }
+        if changed:
+            if rewritten is None:
+                rewritten = list(groups)
+            rewritten[index] = {**slots, **changed}
+    return rewritten
+
+
 def trailing_underscore_aliases(field_names: Iterable[str]) -> dict[str, str]:
     """Map the spellings of a type's trailing-underscore fields to their epJSON keys.
 

@@ -131,7 +131,7 @@ A type checker reads a range only from a release's type or a string literal. A b
 
 For releases that are not one range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, IDFDocumentV26_2))` returns the document typed as their union. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered. Name every release in a tuple by its own type, the latest included: `IDFDocumentV26_2`, not `IDFDocument`. `IDFDocument` stands for whichever release is latest when the code runs. Once idfkit supports a newer release, a tuple that ends in `IDFDocument` no longer covers the release that was latest when it was written, and `as_version` raises `TypeError` on a model of that release. A union written by hand to annotate with has the same flaw (pyright and mypy then reject a model of that release), a flaw the generated `IDFDocumentSince…` aliases do not have.
 
-A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one:
+A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one. Choices are read in the schema's spelling by default, so this holds on files that write them in another case (see Choice values are read in the schema's spelling):
 
 ```python
 --8<-- "agent_references/snippets/document-and-objects.py:versioned-exhaustive"
@@ -212,7 +212,17 @@ Reading a field gives its value, or `None` when it is unset. The exception is a 
 --8<-- "agent_references/snippets/document-and-objects.py:read-required"
 ```
 
-A blank value is stored as absent wherever it comes from (`add(..., f="")`, `obj.f = ""`, `""` or `null` in epJSON, an empty IDF field), so no field reads `""`, and `""` is not part of any field's type: clear a field with `None` in type-checked code. Choice values are read in the spelling of the file (`"WALL"`, `"hourly"`), which may differ in case from the `Literal` the type lists: compare them with `.casefold()` when the model was loaded from a file.
+A blank value is stored as absent wherever it comes from (`add(..., f="")`, `obj.f = ""`, `""` or `null` in epJSON, an empty IDF field), so no field reads `""`, and `""` is not part of any field's type: clear a field with `None` in type-checked code.
+
+### Choice values are read in the schema's spelling
+
+A choice field reads in the spelling its schema declares, whatever case the source used: a surface the file calls `WALL` reads `surface_type == "Wall"`, the spelling its `Literal["Wall", "Floor", "Ceiling", "Roof"]` type lists. This holds for IDF and epJSON files, for values given to `doc.add()`, `update()` or assignment in another case (`doc.add("Material", "M", roughness="ROUGH", ...)` stores `"Rough"`; on a typed object only the `Literal` spelling type-checks anyway), for extensible groups, and for the sizing keywords of a numeric field (`AUTOSIZE` reads `"Autosize"`). A value that is no listed choice is kept as written, for `validate_document` to report. EnergyPlus reads choices case-insensitively, so this changes no simulation. A `preserve_formatting=True` load still writes every unmodified object byte for byte; an object you change is written with its choices in the schema's spelling. So an exhaustive `match` over a choice field is sound on models you did not write:
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:choice-spelling"
+```
+
+To keep the source's text, pass `normalize_choices=False` to `load_idf`, `load_epjson`, `load_idf_with_diagnostics` or `new_document`; `doc.normalize_choices` reports the setting, and `doc.copy()`, `migrate()` and `expand_objects()` keep it. It is independent of `strict` and `preserve_formatting`. The stubs do not change with it: on such a document a choice field still has its `Literal` type but can hold any case, so compare with `.casefold()` and do not rely on an exhaustive `match`.
 
 ## Modifying objects
 

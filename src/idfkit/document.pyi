@@ -55,6 +55,21 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         This property is read-only; set it via the constructor.
         """
     @property
+    def normalize_choices(self) -> bool:
+        """Whether choice values are stored in the spelling the schema declares.
+
+        When ``True`` (the default), a choice field holds its schema's spelling whatever case the
+        file, ``add()`` or an assignment used: a surface read from a file that says ``WALL``
+        has ``surface_type == "Wall"``, which is what its ``Literal["Wall", ...]`` type
+        promises. EnergyPlus matches choices case-insensitively, so this changes no simulation.
+
+        When ``False``, values are kept as written, and a choice field's ``Literal`` type does
+        not hold for a value read from a file or assigned in another case; compare such values
+        with ``str.casefold()``.
+
+        This property is read-only; set it via the loader or the constructor.
+        """
+    @property
     def schema(self) -> EpJSONSchema | None:
         """The EpJSON schema for validation and field info."""
     @property
@@ -5426,6 +5441,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
         filepath: Path | str | None = ...,
         *,
         strict: Strict = ...,
+        normalize_choices: bool = ...,
     ) -> None:
         """Initialize an IDFDocument.
 
@@ -5438,6 +5454,11 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
                 :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
                 typos early.  This value is immutable after construction.
+            normalize_choices: When ``True`` (the default), a choice value added or assigned
+                through this document is stored in the spelling its schema declares, whatever
+                its case: ``surface_type="WALL"`` reads back ``"Wall"``, so the ``Literal``
+                types of the stubs hold. ``False`` stores values as given. The loaders take
+                the same flag for values read from a file. Immutable after construction.
         """
 
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
