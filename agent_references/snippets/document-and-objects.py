@@ -333,9 +333,9 @@ def any_ceiling(zone: AnyZone) -> float | None:
     return None if height is None or isinstance(height, str) else float(height)
 
 
-def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
-    """Extensible groups are typed too: vertices exist in every release."""
-    return sum(1 for vertex in surface.vertices if vertex.vertex_x_coordinate is not None)
+def top_height(surface: AnyBuildingSurfaceDetailed) -> float:
+    """Extensible groups are typed too: every release requires a vertex's coordinates, so they read as float."""
+    return max(vertex.vertex_z_coordinate for vertex in surface.vertices)
 
 
 any_ceiling(doc["Zone"]["Office"])
@@ -369,3 +369,18 @@ try:
 except MissingRequiredFieldError as err:  # an AttributeError naming the object and the field
     print(err.obj_type, err.obj_name, err.field_name)
 # --8<-- [end:read-required]
+
+
+# --8<-- [start:read-required-groups]
+def top_of(surface: AnyBuildingSurfaceDetailed) -> float:
+    """A vertex's coordinates are required in every release: they read as float, no guard."""
+    return max(point["vertex_z_coordinate"] for point in surface.vertices.as_list())
+
+
+for surface in legacy["BuildingSurface:Detailed"]:
+    try:
+        print(surface.name, top_of(surface))
+    except MissingRequiredFieldError as err:  # a vertex lacks a coordinate
+        print(err.wrapper_key, err.group_index, err.field_name)  # "vertices", 2, "vertex_z_coordinate"
+        unset = [v.group_index for v in surface.vertices if v.get(err.field_name) is None]  # get() never raises
+# --8<-- [end:read-required-groups]

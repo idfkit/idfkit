@@ -69,9 +69,9 @@ def zone_height(zone: AnyZone) -> float | None:
     return height if isinstance(height, float) else None
 
 
-def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
-    """The vertices group, though 8.9 lists its fields in another order."""
-    return sum(1 for vertex in surface.vertices if vertex.vertex_x_coordinate is not None)
+def top_height(surface: AnyBuildingSurfaceDetailed) -> float:
+    """The vertices group, though 8.9 lists its fields in another order; every release requires them."""
+    return max(vertex.vertex_z_coordinate for vertex in surface.vertices)
 
 
 def zone_list_size(zone_list: AnyZoneList) -> int:
@@ -84,7 +84,7 @@ def any_release_objects(
 ) -> None:
     for doc in (latest, oldest, legacy):
         zone_height(doc["Zone"]["Office"])
-        vertex_count(doc["BuildingSurface:Detailed"]["Wall"])
+        top_height(doc["BuildingSurface:Detailed"]["Wall"])
         zone_list_size(doc["ZoneList"]["All"])
     for zone in any_doc.zones:
         zone_height(zone)

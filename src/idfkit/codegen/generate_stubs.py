@@ -84,6 +84,7 @@ def _clear_version_caches() -> None:
         _creation_pieces,
         _piece_classes,
         read_required,
+        read_required_groups,
     ):
         cached.cache_clear()
 
@@ -528,7 +529,12 @@ def _generate_object_class(
     group_cls_name: str | None = None
     if wrapper_key and ext_inner_props:
         group_cls_name = _group_class_name(obj_type, wrapper_key, suffix)
-        lines.extend(_generate_group_class(group_cls_name, cls_name, wrapper_key, ext_inner_props, indent, group_base))
+        required_keys = read_required_groups().get(obj_type, frozenset())
+        lines.extend(
+            _generate_group_class(
+                group_cls_name, cls_name, wrapper_key, ext_inner_props, indent, group_base, required_keys
+            )
+        )
 
     lines.append(f"{indent}class {cls_name}({base}):")
 
@@ -617,20 +623,31 @@ def _group_items(group_cls: str, prefix: str = "") -> str:
     return f"Sequence[{prefix}{_group_item_name(group_cls)} | {prefix}{group_cls}]"
 
 
-def _group_item_class(group_cls: str, fields: Iterable[tuple[str, str]], indent: str = "") -> list[str]:
-    """One group of *group_cls* as a dict: a ``TypedDict`` of its fields, each optional.
+def _group_item_class(
+    group_cls: str, fields: Iterable[tuple[str, str]], indent: str = "", required: frozenset[str] = frozenset()
+) -> list[str]:
+    """One group of *group_cls* as a dict: a ``TypedDict`` of its fields.
 
     It is public, so code that builds groups ahead of a call can annotate them
     (``points: list[BuildingSurfaceDetailedVerticesItem]``). *fields* are the group's fields with
-    the value type writing one accepts.
+    the value type writing one accepts. A key in *required* (:func:`read_required_groups`) is
+    ``Required`` and takes its value type alone: ``as_list()`` never gives a group without it, and
+    ``add()`` and ``update()`` refuse one. The others may be left out, or given ``None`` to leave
+    them unset.
     """
     fields = list(fields)
     lines = [
         f"{indent}class {_group_item_name(group_cls)}(TypedDict, total=False):",
-        f'{indent}    """One group of :class:`{group_cls}` as a dict, as ``add()`` and ``update()`` take it."""',
+        f'{indent}    """One group of :class:`{group_cls}` as a dict, as ``as_list()`` gives it and ``add()`` and'
+        f' ``update()`` take it."""',
         "",
     ]
-    lines += [f"{indent}    {name}: {_or_none(value_type)}" for name, value_type in fields]
+    lines += [
+        f"{indent}    {name}: Required[{value_type}]"
+        if name in required
+        else f"{indent}    {name}: {_or_none(value_type)}"
+        for name, value_type in fields
+    ]
     lines.append("")
     return lines
 
@@ -642,8 +659,12 @@ def _generate_group_class(
     inner_props: dict[str, Any],
     indent: str,
     group_base: str = _TYPED_GROUP_BASE,
+    required: frozenset[str] = frozenset(),
 ) -> list[str]:
-    """Generate the :class:`ExtensibleGroup` subclass of one extensible group, with its inner fields."""
+    """Generate the :class:`ExtensibleGroup` subclass of one extensible group, with its inner fields.
+
+    A field in *required* (:func:`read_required_groups`) reads as its value type, without ``None``.
+    """
     lines = [
         f"{indent}class {group_cls_name}({group_base}):",
         f'{indent}    """One {wrapper_key} group inside :class:`{cls_name}`."""',
@@ -654,11 +675,11 @@ def _generate_group_class(
             continue
         has_any_of = "anyOf" in inner_schema
         py_type = _schema_type_to_python(inner_schema, _schema_field_type(inner_schema), has_any_of)
-        lines.append(f"{indent}    {inner_name}: {py_type} | None")
+        lines.append(f"{indent}    {inner_name}: {py_type if inner_name in required else py_type + ' | None'}")
         item_fields.append((inner_name, py_type))
     lines.append(f"{indent}    def as_dict(self) -> {_group_item_name(group_cls_name)}: ...  # type: ignore[override]")
     lines.append("")
-    lines += _group_item_class(group_cls_name, item_fields, indent)
+    lines += _group_item_class(group_cls_name, item_fields, indent, required)
     return lines
 
 
@@ -1086,6 +1107,49 @@ def read_required() -> dict[str, frozenset[str]]:
         obj_type: frozenset(fields - optional.get(obj_type, set()))
         for obj_type, fields in sorted(required.items())
         if fields - optional.get(obj_type, set())
+    }
+
+
+def _release_group_required(schema: EpJSONSchema, obj_type: str) -> tuple[frozenset[str], frozenset[str]] | None:
+    """The identifier keys of *obj_type*'s extensible group in *schema*: required ones, then the others.
+
+    A key is required when the group's ``items`` lists it under ``required`` and gives it no
+    default. ``None`` when the type has no extensible group in this release.
+    """
+    pc = schema.get_parsing_cache(obj_type)
+    if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
+        return None
+    inner: dict[str, Any] = schema.get_inner_schema(obj_type) or {}
+    items: dict[str, Any] = inner.get("properties", {}).get(pc.ext_wrapper_key, {}).get("items", {})
+    listed = set(items.get("required", []))
+    keys = [name for name in pc.ext_inner_props if name.isidentifier()]
+    required = frozenset(k for k in keys if k in listed and "default" not in pc.ext_inner_props[k])
+    return required, frozenset(keys) - required
+
+
+@functools.cache
+def read_required_groups() -> dict[str, frozenset[str]]:
+    """The extensible group keys reading gives a value for, by object type, as :func:`read_required`.
+
+    A key is in it when every supported release whose group has the key requires it with no default
+    (``vertex_x_coordinate`` of ``BuildingSurface:Detailed``). It reads as its value type on the
+    group class, is ``Required`` in the group's item ``TypedDict`` (what ``as_list()`` gives and
+    ``add()`` takes), and the run time raises
+    :class:`~idfkit.exceptions.MissingRequiredFieldError` for a group that lacks it.
+    """
+    required: dict[str, set[str]] = {}
+    optional: dict[str, set[str]] = {}
+    for ver in SUPPORTED.versions:
+        schema = get_schema(ver)
+        for obj_type in schema.object_types:
+            keys = _release_group_required(schema, obj_type)
+            if keys is not None:
+                required.setdefault(obj_type, set()).update(keys[0])
+                optional.setdefault(obj_type, set()).update(keys[1])
+    return {
+        obj_type: frozenset(keys - optional.get(obj_type, set()))
+        for obj_type, keys in sorted(required.items())
+        if keys - optional.get(obj_type, set())
     }
 
 
@@ -1717,24 +1781,27 @@ def _merged_groups() -> dict[str, _MergedGroup]:
     return merged
 
 
-def _generate_merged_group(group: _MergedGroup, owner: str) -> list[str]:
-    """The group class of a :class:`_MergedGroup`: reads give the union, writes the intersection."""
+def _generate_merged_group(group: _MergedGroup, owner: str, required: frozenset[str] = frozenset()) -> list[str]:
+    """The group class of a :class:`_MergedGroup`: reads give the union, writes the intersection.
+
+    A field in *required* (:func:`read_required_groups`) reads without ``None``, as in every version.
+    """
     lines = [
         f"class {group.cls_name}({_TYPED_GROUP_BASE}):",
         f'    """One {group.wrapper} group inside :class:`{owner}`, as every supported version declares it."""',
     ]
     for name, read, write in group.fields:
         if read == write:
-            lines.append(f"    {name}: {read} | None")
+            lines.append(f"    {name}: {read if name in required else read + ' | None'}")
         else:
-            lines += _property_lines(name, read, write, "    ")
+            lines += _property_lines(name, read, write, "    ", name in required)
     # Typed with the item, so as_list() passes back to add() and update() through AnyIDFDocument as
     # it does through a release's document. The item types what writing accepts, every release's
     # values; reading one of the few fields whose releases accept different values can give another.
     lines.append(f"    def as_dict(self) -> {_group_item_name(group.cls_name)}: ...  # type: ignore[override]")
     lines.append("")
     # A dict written into a document of any release holds only what every release accepts.
-    lines += _group_item_class(group.cls_name, [(name, write) for name, _, write in group.fields])
+    lines += _group_item_class(group.cls_name, [(name, write) for name, _, write in group.fields], "", required)
     return lines
 
 
@@ -1802,7 +1869,7 @@ def _generate_base_class(
     lines.append("")
     merged_group = _merged_groups().get(obj_type)
     if merged_group is not None:
-        lines += _generate_merged_group(merged_group, base)
+        lines += _generate_merged_group(merged_group, base, read_required_groups().get(obj_type, frozenset()))
     lines += _generate_object_class(
         schema,
         obj_type,
@@ -2141,7 +2208,7 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         "from collections.abc import Mapping, Sequence",
         "from typing import Any, Literal, TypeAlias, TypeVar, overload",
         "",
-        "from typing_extensions import TypedDict, Unpack, deprecated",
+        "from typing_extensions import Required, TypedDict, Unpack, deprecated",
         "",
         "from . import _generated_types as _g",
         *sink.imports(),
@@ -2569,7 +2636,7 @@ def _generate_types_module(sink: _CreationModules | None = None) -> str:
     parts.append("from collections.abc import Mapping, Sequence")
     parts.append("from typing import Any, Literal, TypeAlias, TypedDict")
     parts.append("")
-    parts.append("from typing_extensions import Unpack")
+    parts.append("from typing_extensions import Required, Unpack")
     parts.append("")
     parts.extend(sink.imports())
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
@@ -2936,7 +3003,7 @@ checks an ``add()`` call on one of its classes.
 def generate_read_required_py() -> str:
     """The run-time table of :func:`read_required`: ``_read_required.py``."""
     lines = [
-        '"""The fields reading gives a value for, by object type. GENERATED by idfkit.codegen.generate_stubs.',
+        '"""The fields and group keys reading gives a value for, by object type. GENERATED by idfkit.codegen.generate_stubs.',
         "",
         "A field is listed when every supported release that has it requires it with no default. Its",
         "read type is not optional, and reading it from an object that lacks it raises",
@@ -2950,6 +3017,15 @@ def generate_read_required_py() -> str:
     ]
     for obj_type, fields in read_required().items():
         lines.append(f"    {obj_type!r}: {tuple(sorted(fields))!r},")
+    lines += [
+        "}",
+        "",
+        "# The same for the keys of each type's extensible group (``vertex_x_coordinate``): a group that",
+        "# lacks one raises on reading it, and on as_dict() and as_list(), which type it as present.",
+        "GROUP_READ_REQUIRED: dict[str, tuple[str, ...]] = {",
+    ]
+    for obj_type, keys in read_required_groups().items():
+        lines.append(f"    {obj_type!r}: {tuple(sorted(keys))!r},")
     lines += ["}", ""]
     return "\n".join(lines)
 

@@ -219,9 +219,9 @@ def any_ceiling(zone: AnyZone) -> float | None:
     return None if height is None or isinstance(height, str) else float(height)
 
 
-def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
-    """Extensible groups are typed too: vertices exist in every release."""
-    return sum(1 for vertex in surface.vertices if vertex.vertex_x_coordinate is not None)
+def top_height(surface: AnyBuildingSurfaceDetailed) -> float:
+    """Extensible groups are typed too: every release requires a vertex's coordinates, so they read as float."""
+    return max(vertex.vertex_z_coordinate for vertex in surface.vertices)
 
 
 any_ceiling(doc["Zone"]["Office"])
@@ -454,6 +454,22 @@ except MissingRequiredFieldError as err:  # an AttributeError naming the object 
     print(err.obj_type, err.obj_name, err.field_name)
 ```
 
+The same holds inside extensible groups. A group key that every release having it requires with no default (a vertex's `vertex_x_coordinate`, `vertex_y_coordinate` and `vertex_z_coordinate`, a `ZoneList` group's `zone_name`, about 120 keys in 69 types) reads as its value type on the group (`wall.vertices[0].vertex_z_coordinate` is a `float`) and is a `Required` key of the group's item `TypedDict`, so `p["vertex_z_coordinate"]` on an item of `as_list()` is a `float` with no `.get()` default. `add()` refuses a group without one (`E001` on `vertices[1].vertex_z_coordinate`), and a dict that leaves one out, or gives it `None`, is a type error. A group that lacks one anyway (a hand-written file, `validate=False`) raises `MissingRequiredFieldError` when the key is read, and so do `as_dict()` and `as_list()`, rather than return a dict its type says is complete; the error's `wrapper_key` and `group_index` (1-based) say which group. `group.get(key)`, `getattr(group, key, None)` and `group.items()` give `None` instead, and `obj.data[wrapper]` holds the groups as stored.
+
+```python
+def top_of(surface: AnyBuildingSurfaceDetailed) -> float:
+    """A vertex's coordinates are required in every release: they read as float, no guard."""
+    return max(point["vertex_z_coordinate"] for point in surface.vertices.as_list())
+
+
+for surface in legacy["BuildingSurface:Detailed"]:
+    try:
+        print(surface.name, top_of(surface))
+    except MissingRequiredFieldError as err:  # a vertex lacks a coordinate
+        print(err.wrapper_key, err.group_index, err.field_name)  # "vertices", 2, "vertex_z_coordinate"
+        unset = [v.group_index for v in surface.vertices if v.get(err.field_name) is None]  # get() never raises
+```
+
 A blank value is stored as absent wherever it comes from (`add(..., f="")`, `obj.f = ""`, `""` or `null` in epJSON, an empty IDF field), so no field reads `""`, and `""` is not part of any field's type: clear a field with `None` in type-checked code. Choice values are read in the spelling of the file (`"WALL"`, `"hourly"`), which may differ in case from the `Literal` the type lists: compare them with `.casefold()` when the model was loaded from a file.
 
 ## Modifying objects
@@ -496,7 +512,7 @@ surface.vertices.append(vertex_x_coordinate=10.0, vertex_y_coordinate=0.0, verte
 print(len(surface.vertices))  # 4
 ```
 
-`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`. In type-checked code, a group passed to `add()` or `update()` is a dict typed by the group's item type, a `TypedDict` of the group's fields, all optional: `vertices=[{"vertex_x_coordinate": 0.0, ...}]` takes a sequence of `BuildingSurfaceDetailedVerticesItem`, or of the group objects themselves (`vertices=list(other.vertices)`), so editors complete the keys and a misspelled key or wrong value is a type error. `wall.vertices.as_list()` returns `list[BuildingSurfaceDetailedVerticesItem]`, so a copy passes straight back (`vertices=wall.vertices.as_list()`); its keys are optional, as a blank field is left out, so read one with `.get()`. To build groups ahead of a call, annotate the list with the item type (`points: list[BuildingSurfaceDetailedVerticesItem] = []`, imported from `idfkit.document`); a list typed `list[dict[str, float]]` is not accepted. Each item type is named after its object type and group (`ScheduleWeekCompactDataItem`, `ZoneListZonesItem`).
+`ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`. In type-checked code, a group passed to `add()` or `update()` is a dict typed by the group's item type, a `TypedDict` of the group's fields, with the keys every release requires `Required` and the others optional (see Reading fields): `vertices=[{"vertex_x_coordinate": 0.0, ...}]` takes a sequence of `BuildingSurfaceDetailedVerticesItem`, or of the group objects themselves (`vertices=list(other.vertices)`), so editors complete the keys and a misspelled key or wrong value is a type error. `wall.vertices.as_list()` returns `list[BuildingSurfaceDetailedVerticesItem]`, so a copy passes straight back (`vertices=wall.vertices.as_list()`); a required key is always present, and an optional one is left out when blank, so read an optional one with `.get()`. To build groups ahead of a call, annotate the list with the item type (`points: list[BuildingSurfaceDetailedVerticesItem] = []`, imported from `idfkit.document`); a list typed `list[dict[str, float]]` is not accepted. Each item type is named after its object type and group (`ScheduleWeekCompactDataItem`, `ZoneListZonesItem`).
 
 ## Iterating the whole model
 
