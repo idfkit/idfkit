@@ -9,6 +9,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `IDFCollection.add(name, **fields)` became the typed way to create an object:
+  `doc.zones.add("Office", ceiling_height=3.0)` and `doc["Zone"].add(...)` created, validated and
+  indexed the object as `IDFDocument.add()` does by default, but the keywords were the type's own
+  fields, checked by pyright and mypy, and the result was the type's class (`Zone`), not
+  `IDFObject`. A misspelled field (`ceiling_hieght=`), a value the field does not accept
+  (`zone_inside_convection_algorithm="Tarp"`) or a wrong value type was a type error, where
+  `doc.add("Zone", ...)` type-checked and failed when it ran. The keywords followed the document's
+  type: 9.4's fields through `IDFDocumentV9_4`, and only those every release accepts through
+  `AnyIDFDocument`. They were read from the class's typed `update()`, so no overload was resolved
+  and a call cost the type checker the same for every object type: 300 calls took 1.8 s, against
+  1.55 s for 300 untyped `doc.add()` calls; typing `doc.add()` itself, with one overload per type,
+  took 24.5 s. `doc.add()` ran as fast as before (8.6 µs a call with validation). Collections came
+  to hold their document; adding through the empty collection read for a type with no objects
+  stored that collection, so it held the new object. A document pickled by an earlier release
+  still added through its collections, except one emptied before it was pickled, which raised
+  `TypeError` naming `IDFDocument.add()`. See Deprecated for the object form `add(obj)` this
+  replaces ([#296](https://github.com/idfkit/idfkit/pull/296)).
+- **Breaking:** `idfkit check` gained `C006`, an error checked by default, so a run that passed
+  before could fail on it. It reported an object type passed to `add()` that no target release has
+  (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a choice value no target
+  release lists for the field (`zone_inside_convection_algorithm="Bogus"`, which raises
+  `ValidationFailedError`), with the closest real name. Both used to go unreported: `C001` and
+  `C002` report only what some targets accept and others do not. Choices were matched
+  case-insensitively, as EnergyPlus matches them; a field that some target accepts as free text was
+  not reported, nor was a choice passed with `validate=False`, which `add()` stores unchecked. It
+  was read only in a file that imports idfkit; a group filter did not hide it.
+  - An unknown type was reported only on a receiver known to be a document with a schema
+    (`doc = new_document()`, `load_idf(...)`, `as_version(...)`, or a parameter annotated
+    `IDFDocument`, `AnyIDFDocument`, `IDFDocument | None`, ...), and there whatever the number of
+    arguments (`doc.add("SimulationControls")`). A collection's `add()` takes a name first, and a
+    bare `IDFDocument()` has no schema and accepts any type.
+  - A choice value was reported in a call given more than the type name, so `set.add("x")` was not
+    read. On a collection (`doc["Zone"]`, `doc.zones`, `doc.get_collection("Zone")`, or a name bound
+    to one) it was checked against the collection's type, which `C002` did not do before, with the
+    narrowing of the document the collection was read from.
+  - A document held where a collection could be kept the checks it had: an attribute named like a
+    type a model holds one of (`self.building = load_idf(...)`), a raw type spelling
+    (`app.window`), or an item of a dict (`variants["Window"]`, or a parameter annotated
+    `dict[...]`) ([#296](https://github.com/idfkit/idfkit/pull/296)).
 - `idfkit.versions.releases_between(since, before)` was added: every supported release from
   `since` (inclusive) to `before` (exclusive), the range `as_version(doc, since=..., before=...)`
   accepts ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
@@ -103,6 +142,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- For type checking only, an undeclared field on a typed object was reported against a type named
+  for the mistake: pyright's message for `zone.ceiling_hieght = 3.0` read `parameter "key" of type
+  "_NotAFieldOfThisObjectType"` rather than `of type "Never"` (`_NotAFieldOfThisExtensibleGroup`
+  on an extensible group). The type is an alias of `Never`, so what is reported, and mypy's
+  messages, were unchanged ([#296](https://github.com/idfkit/idfkit/pull/296)).
 - **Breaking:** `idfkit migrate --to` refused a release line idfkit does not support, such as
   `27.1`, as `idfkit check` and `migrate()` do. It used to migrate to the latest release without
   saying so ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
@@ -164,8 +208,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as long as before on a file using `new_document()` or `AnyIDFDocument` (2.1 to 2.4 s), and less
   on one naming `IDFDocumentV9_4` (2.5 s, from 2.8 to 3.0 s). Each lookup costs time in proportion to its type's place among the overloads, which follow the schema's order, so a file with hundreds of lookups of a type listed late took longer: 300 lookups of `Output:Variable` took 3.8 s, from 1.9 s ([#286](https://github.com/idfkit/idfkit/pull/286)).
 
+### Deprecated
+
+- **Breaking:** for type checking only, `IDFCollection.add(obj)`, which filed an existing object in
+  the collection without validating it, linking it to the document or indexing its references, was
+  deprecated, and the object form became a type error: `add()` became the typed way to create an
+  object (see Added). Called with an object, positionally or as `obj=`, it still filed it, with a
+  `DeprecationWarning`; it will be removed. Use `doc.addidfobject(obj)`, which adds the object to
+  the document. Through `IDFCollection[IDFObject]` it used to accept an object of any type, so a
+  `Material` could be filed in `doc["Zone"]` without an error, as noted under 1.3.0-rc.1
+  ([#296](https://github.com/idfkit/idfkit/pull/296)).
+
 ### Fixed
 
+- `IDFDocument.addidfobject` left an object it refused as a duplicate linked to the document, so
+  renaming that object afterwards rewrote the references to the object it duplicated. It is filed
+  before it is linked, and a refused object stays unlinked. The deprecation message of
+  `IDFCollection.add(obj)` sends its callers there ([#296](https://github.com/idfkit/idfkit/pull/296)).
+- The bundled agent reference (`document-and-objects.md`) narrowed a document to 22.2 and later
+  with a hand-written tuple of release types ending in `IDFDocument`, the pattern it warns against
+  a few paragraphs earlier: once idfkit adopts a newer release, that tuple stops covering 26.2. It
+  used `as_version(doc, since="22.2")` instead ([#296](https://github.com/idfkit/idfkit/pull/296)).
 - `load_idf()`, `load_idf_with_diagnostics()` and `load_epjson()` accepted a `pathlib.Path` at run time
   but typed `path` as `str`, so `load_idf(Path("model.idf"))` was a type-checker error. They are now
   typed `Path | str`, the same as `save_idf()`, `save_epjson()` and the parsers they call ([#299](https://github.com/idfkit/idfkit/pull/299)).

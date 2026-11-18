@@ -10,7 +10,7 @@ and ``library``)::
     # before = "24.1"               # ... and before 24.1 (exclusive), as as_version() reads them
     paths = ["src"]                 # what to lint when no path is given on the command line
     exclude = ["src/legacy/**"]     # glob patterns, relative to this pyproject.toml
-    select = ["C001", "C002", "C003", "C005"]
+    select = ["C001", "C002", "C003", "C005", "C006"]
     extend-select = ["C004"]
     ignore = []
     per-file-ignores = { "tests/**" = ["C004"] }

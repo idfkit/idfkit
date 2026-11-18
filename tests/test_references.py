@@ -418,7 +418,7 @@ class TestCollectionReferencing:
     def test_objects_outside_a_document_reference_nothing(self) -> None:
         collection: IDFCollection[IDFObject] = IDFCollection("Zone")
         assert collection.referencing("Office") == []
-        collection.add(
+        collection._append(  # pyright: ignore[reportPrivateUsage]
             IDFObject(obj_type="Lights", name="L", data={"zone_or_zonelist_or_space_or_spacelist_name": "Z"})
         )
         assert collection.referencing("Z") == []
@@ -426,16 +426,17 @@ class TestCollectionReferencing:
     def test_a_collection_built_by_hand_answers_only_for_its_own_objects(self) -> None:
         doc = self._model()
         subset: IDFCollection[IDFObject] = IDFCollection("BuildingSurface:Detailed")
-        subset.add(doc["BuildingSurface:Detailed"]["Office_Wall"])
+        subset._append(doc["BuildingSurface:Detailed"]["Office_Wall"])  # pyright: ignore[reportPrivateUsage]
         assert [s.name for s in subset.referencing("Office")] == ["Office_Wall"]
 
     def test_a_document_pickled_before_referencing_existed_answers(self) -> None:
         import pickle
 
         doc = self._model()
-        # A pickled collection carries only its own slots, so its state is the same as in idfkit
-        # releases before this method existed; check that stays so.
+        # A pickled collection carries only its own slots: those of idfkit releases before this
+        # method existed, and the document it creates objects in (IDFCollection.add), whose
+        # absence from an older pickle is tested in test_collection_add.py.
         state = doc["BuildingSurface:Detailed"].__reduce_ex__(2)[2]
-        assert set(state[1]) == {"_by_name", "_items", "_type"}
+        assert set(state[1]) == {"_by_name", "_items", "_type", "_document"}
         clone = pickle.loads(pickle.dumps(doc))  # noqa: S301
         assert len(clone["BuildingSurface:Detailed"].referencing("Office")) == 2

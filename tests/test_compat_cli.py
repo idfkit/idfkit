@@ -86,15 +86,14 @@ class TestCheckCompatibility:
         obj_type_issues = [d for d in diagnostics if d.code == "C001"]
         assert len(obj_type_issues) == 0
 
-    def test_nonexistent_type_no_diagnostic(self) -> None:
-        """A type not in ANY version produces no diagnostic (no from_version)."""
+    def test_nonexistent_type_is_c006_not_c001(self) -> None:
+        """A type not in ANY version is no difference between versions (no C001), but add() raises on it (C006)."""
         diagnostics = check_compatibility(
             NONEXISTENT_TYPE_SCRIPT,
             "test.py",
             targets=[(24, 1, 0), (24, 2, 0)],
         )
-        # The type doesn't exist in either version, so no "removed" diagnostic
-        assert len(diagnostics) == 0
+        assert [d.code for d in diagnostics] == ["C006"]
 
     def test_requires_two_targets(self) -> None:
         with pytest.raises(ValueError, match="at least two"):
@@ -1031,10 +1030,14 @@ class TestGetCollectionLiterals:
         assert [d.code for d in diagnostics] == ["C003"]
         assert diagnostics[0].suggested_fix is None
 
-    def test_add_of_unknown_type_is_not_c003(self) -> None:
-        """``add`` raises on an unknown type at run time, and ``set.add("x")`` shares the name."""
-        diagnostics = check_compatibility(_IMP + 'names.add("Zoen", "x")\n', "t.py", targets=[_V94, _V262])
-        assert diagnostics == []
+    def test_add_of_unknown_type_is_c006_not_c003(self) -> None:
+        """``add`` raises on an unknown type at run time (C006), on a receiver known to be a document."""
+        source = _IMP + 'from idfkit import new_document\ndoc = new_document()\ndoc.add("Zoen", "x")\n'
+        diagnostics = check_compatibility(source, "t.py", targets=[_V94, _V262])
+        assert [d.code for d in diagnostics] == ["C006"]
+        # set.add("x") takes one argument; an unknown receiver may be a collection, whose add() takes a name.
+        assert check_compatibility(_IMP + 'names.add("Zoen")\n', "t.py", targets=[_V94, _V262]) == []
+        assert check_compatibility(_IMP + 'names.add("Zoen", "x")\n', "t.py", targets=[_V94, _V262]) == []
 
     def test_known_type_reports_c004_with_typed_spelling(self) -> None:
         diagnostics = check_compatibility(
@@ -1086,9 +1089,19 @@ class TestGetCollectionLiterals:
         )
         assert [(d.line, d.code) for d in diagnostics] == [(2, "C003")]
 
-    def test_group_filter_still_drops_unknown_names_outside_get_collection(self) -> None:
+    def test_group_filter_keeps_unknown_names_in_add(self) -> None:
+        """As for get_collection: a name no target has belongs to no group, and C006 reports it."""
         diagnostics = check_compatibility(
-            _IMP + 'doc.add("Zoen", "x")\n',
+            _IMP + 'from idfkit import new_document\ndoc = new_document()\ndoc.add("Zoen", "x")\n',
+            "t.py",
+            targets=[_V94, _V262],
+            include_groups={"Thermal Zones and Surfaces"},
+        )
+        assert [d.code for d in diagnostics] == ["C006"]
+
+    def test_group_filter_still_drops_unknown_subscripts(self) -> None:
+        diagnostics = check_compatibility(
+            _IMP + 'doc["Zoen"]\n',
             "t.py",
             targets=[_V94, _V262],
             include_groups={"Thermal Zones and Surfaces"},

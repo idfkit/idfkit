@@ -285,8 +285,14 @@ def _field_docstring(
 # Plain ``IDFObject`` keeps the permissive signatures, so ``IDFCollection[IDFObject]`` is unaffected.
 # ``typing.Never`` is 3.11+, hence ``typing_extensions``; the import only exists in the stub, which
 # the type checker reads from its bundled typeshed, so it adds no runtime dependency.
+#
+# The ``Never`` is spelled through a type alias named for the mistake. pyright prints a parameter's
+# alias, so a misspelled field reads ``parameter "key" of type "_NotAFieldOfThisObjectType"`` rather
+# than ``of type "Never"``; mypy expands the alias, so what it reports is unchanged.
 _TYPED_OBJECT_BASE = "_TypedIDFObject"
 _TYPED_GROUP_BASE = "_TypedExtensibleGroup"
+_NOT_A_FIELD = "_NotAFieldOfThisObjectType"
+_NOT_A_GROUP_FIELD = "_NotAFieldOfThisExtensibleGroup"
 
 # The document methods every document type shares, through IDFDocumentAllVersions, which every
 # document type derives from (_generate_document_module).
@@ -297,17 +303,23 @@ _ALL_VERSIONS_BASE = "IDFDocumentAllVersions[Strict]"
 def _generate_typed_bases() -> list[str]:
     """Emit the stub-only base classes that turn off the catch-all attribute access."""
     return [
+        f"{_NOT_A_FIELD}: TypeAlias = Never",
+        '"""No name is one: a type checker reports an undeclared field of a typed object against this type."""',
+        "",
+        f"{_NOT_A_GROUP_FIELD}: TypeAlias = Never",
+        '"""No name is one: a type checker reports an undeclared field of a typed group against this type."""',
+        "",
         f"class {_TYPED_OBJECT_BASE}(IDFObject):",
         '    """Stub-only base: an undeclared field name is a type error on a typed object."""',
         "",
-        "    def __getattr__(self, key: Never) -> object: ...",
-        "    def __setattr__(self, key: Never, value: Never) -> None: ...",
+        f"    def __getattr__(self, key: {_NOT_A_FIELD}) -> object: ...",
+        f"    def __setattr__(self, key: {_NOT_A_FIELD}, value: {_NOT_A_FIELD}) -> None: ...",
         "",
         f"class {_TYPED_GROUP_BASE}(ExtensibleGroup):",
         '    """Stub-only base: an undeclared field name is a type error on a typed extensible group."""',
         "",
-        "    def __getattr__(self, name: Never) -> object: ...",
-        "    def __setattr__(self, name: Never, value: Never) -> None: ...",
+        f"    def __getattr__(self, name: {_NOT_A_GROUP_FIELD}) -> object: ...",
+        f"    def __setattr__(self, name: {_NOT_A_GROUP_FIELD}, value: {_NOT_A_GROUP_FIELD}) -> None: ...",
         "",
     ]
 

@@ -13,17 +13,23 @@ from typing_extensions import Never, Unpack
 
 from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
 
+_NotAFieldOfThisObjectType: TypeAlias = Never
+"""No name is one: a type checker reports an undeclared field of a typed object against this type."""
+
+_NotAFieldOfThisExtensibleGroup: TypeAlias = Never
+"""No name is one: a type checker reports an undeclared field of a typed group against this type."""
+
 class _TypedIDFObject(IDFObject):
     """Stub-only base: an undeclared field name is a type error on a typed object."""
 
-    def __getattr__(self, key: Never) -> object: ...
-    def __setattr__(self, key: Never, value: Never) -> None: ...
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
 class _TypedExtensibleGroup(ExtensibleGroup):
     """Stub-only base: an undeclared field name is a type error on a typed extensible group."""
 
-    def __getattr__(self, name: Never) -> object: ...
-    def __setattr__(self, name: Never, value: Never) -> None: ...
+    def __getattr__(self, name: _NotAFieldOfThisExtensibleGroup) -> object: ...
+    def __setattr__(self, name: _NotAFieldOfThisExtensibleGroup, value: _NotAFieldOfThisExtensibleGroup) -> None: ...
 
 # =========================================================================
 # Typed object classes (one per EnergyPlus object type)

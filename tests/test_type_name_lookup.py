@@ -166,7 +166,7 @@ class TestNoMutationOnRead:
 
     def test_the_collection_returned_for_an_absent_type_is_detached(self, doc: IDFDocument) -> None:
         orphan = doc["Lights"]
-        orphan.add(IDFObject(obj_type="Lights", name="L1", data={}))
+        orphan._append(IDFObject(obj_type="Lights", name="L1", data={}))  # pyright: ignore[reportPrivateUsage]
         assert len(doc["Lights"]) == 0
         assert "Lights" not in doc.collections
 

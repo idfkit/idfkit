@@ -45,6 +45,27 @@ material = doc.add(
 # --8<-- [end:add-object]
 
 
+# --8<-- [start:typed-collection-add]
+# Through the collection: the keywords are the type's own fields, checked by the type checker,
+# and the result is the type's class (Zone, Material, ...), not a plain IDFObject.
+office_zone = doc.zones.add("Office", x_origin=0.0, ceiling_height=3.0)
+office_zone.multiplier = 2  # typed: an int, checked on assignment
+
+insulation = doc["Material"].add(
+    "XPS_25mm",
+    roughness="Rough",
+    thickness=0.025,
+    conductivity=0.034,
+    density=35.0,
+    specific_heat=1400.0,
+)
+doc["Output:SQLite"].add(option_type="SimpleAndTabular")  # a type without a Name field: no name
+
+# doc.zones.add("Lab", ceiling_hieght=3.0)                       # error: No parameter named "ceiling_hieght"
+# doc.zones.add("Lab", zone_inside_convection_algorithm="Tarp")  # error: not one of the field's choices
+# --8<-- [end:typed-collection-add]
+
+
 # --8<-- [start:lookup]
 # By type → collection
 zones = doc["Zone"]
@@ -250,18 +271,6 @@ def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
 
 
 # --8<-- [start:versioned-containment]
-from idfkit.versioned import (
-    IDFDocumentV22_2,
-    IDFDocumentV23_1,
-    IDFDocumentV23_2,
-    IDFDocumentV24_1,
-    IDFDocumentV24_2,
-    IDFDocumentV25_1,
-    IDFDocumentV25_2,
-    IDFDocumentV26_1,
-)
-
-
 def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
     """Add Output:SQLite unless the model already holds one.
 
@@ -272,25 +281,15 @@ def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
         doc.add("Output:SQLite", option_type="SimpleAndTabular")
 
 
-# Space arrived in 9.6 and its ceiling_height field in 22.2.
-SINCE_22_2 = (
-    IDFDocumentV22_2,
-    IDFDocumentV23_1,
-    IDFDocumentV23_2,
-    IDFDocumentV24_1,
-    IDFDocumentV24_2,
-    IDFDocumentV25_1,
-    IDFDocumentV25_2,
-    IDFDocumentV26_1,
-    IDFDocument,
-)
-
-
 def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:
-    """Branch on the release, not on "Space" in doc, then narrow with as_version."""
+    """Branch on the release, not on "Space" in doc, then narrow with as_version.
+
+    Space arrived in 9.6 and its ceiling_height field in 22.2. since="22.2" is every release from
+    22.2 on, and grows when idfkit adopts a new one; a hand-written tuple of release types would not.
+    """
     if doc.version < (22, 2, 0):
         return
-    for space in as_version(doc, SINCE_22_2)["Space"]:
+    for space in as_version(doc, since="22.2")["Space"]:
         space.ceiling_height = height
 
 

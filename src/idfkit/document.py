@@ -293,8 +293,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             wrong on its own terms: probing five misspelled names used to leave
             five junk keys in ``collections``, visible to every later iteration
             over the document.  The empty collection returned for an absent type
-            is detached, so adding to it does not add to the document; use
-            [add][idfkit.document.IDFDocument.add] for that.
+            is detached: it is stored only when an object is created through it
+            with [IDFCollection.add][idfkit.objects.IDFCollection.add], which adds
+            the object to the document as [add][idfkit.document.IDFDocument.add]
+            does.
 
             ``@idfkit/core`` resolves and declines to store on exactly the same
             terms, in ``IdfDocument.all()``.
@@ -362,9 +364,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 if existing_type.upper() == obj_type_upper:
                     return existing
 
-        return IDFCollection(canonical)
+        detached = IDFCollection[IDFObject](canonical, self)  # pyright: ignore[reportArgumentType]  # .pyi types documents as AnyIDFDocument
+        return detached
 
-    def _collection_for_write(self, obj_type: str) -> IDFCollection[IDFObject]:
+    def _collection_for_write(self, obj_type: str, adopt: IDFCollection[Any] | None = None) -> IDFCollection[IDFObject]:
         """Get the collection objects of *obj_type* are filed under, creating and storing it if absent.
 
         The only path that may add a key to ``_collections``.  Reads go through
@@ -382,7 +385,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if collection is not None:
             return collection
 
-        created: IDFCollection[IDFObject] = IDFCollection(canonical)
+        # A detached collection read for this absent type, created through, becomes the stored one,
+        # so the caller's reference holds what was created through it.
+        if adopt is not None and adopt.obj_type == canonical and adopt._document is self and not adopt:  # pyright: ignore[reportPrivateUsage]
+            created: IDFCollection[IDFObject] = adopt
+        else:
+            created = IDFCollection[IDFObject](canonical, self)  # pyright: ignore[reportArgumentType]  # .pyi types documents as AnyIDFDocument
         self._collections[canonical] = created
         return created
 
@@ -823,7 +831,33 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         # Merge fields and kwargs
         field_data = dict(fields) if fields else {}
         field_data.update(kwargs)
+        return self._add(obj_type, name, field_data, validate, None)
 
+    def _holds(self, collection: IDFCollection[Any]) -> bool:
+        """Whether *collection* is the one this document stores its type's objects in."""
+        return self._collections.get(collection.obj_type) is collection
+
+    def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject:
+        """Create an object for [IDFCollection.add][idfkit.objects.IDFCollection.add].
+
+        Validated as ``add()`` validates by default. *collection* is the one the caller holds: if it
+        is the detached empty collection read for an absent type, it becomes the stored one.
+        """
+        return self._add(collection.obj_type, name, fields, True, collection)
+
+    def _add(
+        self,
+        obj_type: str,
+        name: str,
+        field_data: dict[str, Any],
+        validate: bool,
+        adopt: IDFCollection[Any] | None,
+    ) -> IDFObject:
+        """The body of :meth:`add`, with *field_data* already merged and owned by the call.
+
+        *adopt* is a detached collection of this document to store if the type has none yet (see
+        :meth:`_collection_for_write`).
+        """
         # Get schema info
         resolved_obj_type = obj_type
         obj_schema: dict[str, Any] | None = None
@@ -884,7 +918,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 raise ValidationFailedError(errors)
 
         # Add to collection (the write path: this may create the collection)
-        self._collection_for_write(resolved_obj_type).add(obj)
+        self._collection_for_write(resolved_obj_type, adopt)._append(obj)  # pyright: ignore[reportPrivateUsage]
 
         # Index references
         self._index_object_references(obj)
