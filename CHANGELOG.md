@@ -201,7 +201,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   pyright no longer rejects the meaningless `doc[[]]`. A misspelled field assigned to under mypy
   read `variable has type "_NotAFieldOfThisObjectType"` rather than `variable has type "Never"`:
   the type is a class no value is, where it was an alias of `Never`, and pyright's messages are
-  unchanged ([#PR](https://github.com/idfkit/idfkit/pull/PR)).
+  unchanged ([#302](https://github.com/idfkit/idfkit/pull/302)).
 - **Breaking:** for type checking only, a typed extensible group's snapshot was typed by its item
   type: `ExtensibleList.as_list()` returned `list[BuildingSurfaceDetailedVerticesItem]` where it
   returned `list[dict[str, Any]]`, and the group's `as_dict()` the item where it returned
