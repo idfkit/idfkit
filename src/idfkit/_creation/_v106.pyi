@@ -46,6 +46,7 @@ class ElectricEquipmentITEAirCooled_v8_9_to_v9_5:
         supply_temperature_difference_schedule: str | None = ...,
         return_temperature_difference: float | None = ...,
         return_temperature_difference_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment:ITE:AirCooled`` and add it to the document.
 
@@ -78,6 +79,7 @@ class DesignSpecificationOutdoorAir_v8_9_to_v9_4:
         outdoor_air_flow_air_changes_per_hour: float | None = 0,
         outdoor_air_schedule_name: str | None = ...,
         proportional_control_minimum_outdoor_air_flow_rate_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DesignSpecification:OutdoorAir`` and add it to the document.
 
@@ -120,6 +122,7 @@ class AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2:
         ]
         | None = ...,
         reheat_coil_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:Unitary:Furnace:HeatCool`` and add it to the document.
 
@@ -198,6 +201,7 @@ class ChillerCombustionTurbine_v8_9_to_v9_2:
         basin_heater_operating_schedule_name: str | None = ...,
         condenser_heat_recovery_relative_capacity_fraction: float | None = ...,
         turbine_engine_efficiency: float | None = 0.35,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:CombustionTurbine`` and add it to the document.
 
@@ -227,6 +231,7 @@ class ConstructionInternalSource_v9_4:
         layer_8: str | None = ...,
         layer_9: str | None = ...,
         layer_10: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:InternalSource`` and add it to the document.
 
@@ -252,6 +257,7 @@ class HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2:
         reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:EIR:Heating`` and add it to the document.
 
@@ -320,6 +326,7 @@ class PythonPluginOutputVariable_v9_3:
         ]
         | None = ...,
         end_use_subcategory: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:OutputVariable`` and add it to the document.
 

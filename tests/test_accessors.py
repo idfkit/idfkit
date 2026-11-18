@@ -10,6 +10,7 @@ import collections
 import gc
 import pickle
 import re
+import warnings
 import weakref
 
 import pytest
@@ -20,10 +21,11 @@ from idfkit._accessors import (
     MEMBER_CONFLICT,
     AccessorAttributeError,
     AccessorResolver,
+    deprecated_plural_message,
     pluralize,
     snake_case,
 )
-from idfkit.document import _PYTHON_TO_IDF, _RESERVED
+from idfkit.document import _PYTHON_TO_IDF, _RESERVED, _build_resolver
 from idfkit.objects import IDFCollection
 from idfkit.schema import get_schema, get_schema_manager
 from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
@@ -268,8 +270,7 @@ def test_document_underscore_spellings_still_resolve(empty_doc: IDFDocument, spe
     ("spelling", "expected"),
     [
         ("output_sqlite", "Output:SQLite"),
-        ("output_sqlites", "Output:SQLite"),
-        ("site_ground_temperature_fcfactor_methods", "Site:GroundTemperature:FCfactorMethod"),
+        ("site_ground_temperature_fcfactor_method", "Site:GroundTemperature:FCfactorMethod"),
         ("daylighting_delight_complex_fenestrations", "Daylighting:DELight:ComplexFenestration"),
         ("window_material_gases", "WindowMaterial:Gas"),
         ("window_material_gas", "WindowMaterial:Gas"),
@@ -278,7 +279,7 @@ def test_document_underscore_spellings_still_resolve(empty_doc: IDFDocument, spe
     ],
 )
 def test_document_naming_cases_from_review(empty_doc: IDFDocument, spelling: str, expected: str) -> None:
-    """The names #202 review found misspelled or missing, and the plural of each."""
+    """The names #202 review found misspelled or missing, and the plural of each that can be many."""
     assert getattr(empty_doc, spelling).obj_type == expected
 
 
@@ -357,7 +358,9 @@ def test_member_names_are_recorded_and_never_suggested() -> None:
 def test_version_property_is_untouched(empty_doc: IDFDocument) -> None:
     """A real member always wins; __getattr__ never fires for it."""
     assert not isinstance(empty_doc.version, IDFCollection)
-    assert empty_doc.versions.obj_type == "Version"
+    assert empty_doc["Version"].obj_type == "Version"
+    with pytest.warns(DeprecationWarning, match=r'use doc\["Version"\]'):
+        assert empty_doc.versions.obj_type == "Version"
 
 
 def test_suggestions_include_shorthands(empty_doc: IDFDocument) -> None:
@@ -506,6 +509,114 @@ def test_schema_is_collectable_after_accessor_use() -> None:
 
 
 # --------------------------------------------------------------------------
+# Types a model holds at most one of: singular names, deprecated plurals
+# --------------------------------------------------------------------------
+
+
+def test_unique_type_is_named_in_the_singular() -> None:
+    r = AccessorResolver(["Output:SQLite", "Zone", "Timestep"], unique=["Output:SQLite", "Timestep"])
+    assert r.attr_for == {"Output:SQLite": "output_sqlite", "Zone": "zones", "Timestep": "timestep"}
+    assert r.resolve("output_sqlite") == "Output:SQLite"
+    assert r.accessors() == {"output_sqlite": "Output:SQLite", "timestep": "Timestep", "zones": "Zone"}
+
+
+def test_plural_of_a_unique_type_is_deprecated_and_never_offered() -> None:
+    r = AccessorResolver(["Output:SQLite", "Zone"], unique=["Output:SQLite"])
+    assert r.resolve("output_sqlites") == "Output:SQLite"
+    assert r.deprecated_accessors() == {"output_sqlites": ("Output:SQLite", "output_sqlite")}
+    assert "output_sqlites" not in r.names()
+    assert "output_sqlites" not in r.accessors()
+    assert r.suggest("output_sqlitez") == ["output_sqlite"]
+
+
+def test_unique_type_whose_name_ends_in_s_has_no_deprecated_plural() -> None:
+    r = AccessorResolver(["ConvergenceLimits"], unique=["ConvergenceLimits"])
+    assert r.attr_for["ConvergenceLimits"] == "convergence_limits"
+    assert r.deprecated == {}
+
+
+def test_deprecated_plural_never_takes_a_name_already_owned() -> None:
+    """A shorthand or member that owns the plural keeps it; no deprecated alias is made."""
+    r = AccessorResolver(
+        ["Building", "Version"],
+        shorthands={"buildings": "Building"},
+        reserved={"versions"},
+        unique=["Building", "Version"],
+    )
+    assert r.deprecated == {}
+    assert r.resolve("buildings") == "Building"
+
+
+def test_deprecated_plural_of_a_type_without_a_reachable_singular_points_at_the_subscript() -> None:
+    r = AccessorResolver(["Version"], reserved={"version"}, unique=["Version"])
+    assert r.deprecated == {"versions": ("Version", None)}
+    assert 'doc["Version"]' in deprecated_plural_message("versions", "Version", None)
+
+
+def test_document_unique_type_singular_does_not_warn(empty_doc: IDFDocument) -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert empty_doc.output_sqlite.obj_type == "Output:SQLite"
+        assert empty_doc.building.obj_type == "Building"
+        assert empty_doc.timestep.obj_type == "Timestep"
+
+
+def test_document_unique_type_singular_reads_and_adds(empty_doc: IDFDocument) -> None:
+    empty_doc.output_sqlite.add(option_type="SimpleAndTabular")
+    sqlite = empty_doc.output_sqlite.first()
+    assert sqlite is not None
+    assert sqlite.option_type == "SimpleAndTabular"
+    assert empty_doc.output_sqlite is empty_doc["Output:SQLite"]
+
+
+@pytest.mark.parametrize(
+    ("plural", "singular"),
+    [("output_sqlites", "output_sqlite"), ("buildings", "building"), ("simulation_controls", "simulation_control")],
+)
+def test_document_plural_of_a_unique_type_warns(empty_doc: IDFDocument, plural: str, singular: str) -> None:
+    with pytest.warns(DeprecationWarning, match=rf"doc\.{plural} is deprecated.*doc\.{singular}\b") as caught:
+        collection = getattr(empty_doc, plural)
+    assert collection.obj_type == getattr(empty_doc, singular).obj_type
+    assert caught[0].filename == __file__  # reported against the caller
+
+
+def test_document_dir_offers_the_singular_not_the_plural(empty_doc: IDFDocument) -> None:
+    names = dir(empty_doc)
+    assert "output_sqlite" in names
+    assert "building" in names
+    assert "output_sqlites" not in names
+    assert "buildings" not in names
+    assert "timesteps" not in names
+
+
+def test_document_typo_suggests_the_singular(empty_doc: IDFDocument) -> None:
+    with pytest.raises(AttributeError, match="output_sqlite") as info:
+        _ = empty_doc.output_sqlitez
+    assert "output_sqlites" not in str(info.value)
+
+
+def test_uniqueness_follows_the_release() -> None:
+    """AirflowNetwork:Distribution:Component:OutdoorAirFlow is unique in 8.9 only."""
+    obj_type = "AirflowNetwork:Distribution:Component:OutdoorAirFlow"
+    old, new = new_document(version=(8, 9, 0)), new_document(version=(9, 0, 1))
+    assert _doc_resolver(old).attr_for[obj_type] == "airflow_network_distribution_component_outdoor_air_flow"
+    assert _doc_resolver(new).attr_for[obj_type] == "airflow_network_distribution_component_outdoor_air_flows"
+    with pytest.warns(DeprecationWarning):
+        _ = old.airflow_network_distribution_component_outdoor_air_flows
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert new.airflow_network_distribution_component_outdoor_air_flows.obj_type == obj_type
+    assert not hasattr(new, "airflow_network_distribution_component_outdoor_air_flow")
+
+
+def test_every_shorthand_resolves_without_warning(empty_doc: IDFDocument) -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        for alias in _PYTHON_TO_IDF.keys() - _RESERVED:
+            getattr(empty_doc, alias)
+
+
+# --------------------------------------------------------------------------
 # Sweeps across every bundled schema
 # --------------------------------------------------------------------------
 
@@ -576,8 +687,8 @@ def test_canonical_names_do_not_change_meaning_between_versions() -> None:
     """A name must reach the same object type in every bundled schema that has it."""
     seen: dict[str, set[str]] = collections.defaultdict(set)
     for version in ENERGYPLUS_VERSIONS:
-        r = AccessorResolver(get_schema(version).object_types)
-        for obj_type, attr in r.attr_for.items():
+        r = _build_resolver(get_schema(version))
+        for attr, obj_type in [*r.accessors().items(), *((a, t) for a, (t, _) in r.deprecated.items())]:
             seen[attr].add(obj_type.upper())  # type names are case-insensitive
     moved = {attr: types for attr, types in seen.items() if len(types) > 1}
     assert not moved, f"names that change type between versions: {moved}"
@@ -654,6 +765,38 @@ def test_no_shorthand_displaces_a_derived_name(version_doc: IDFDocument) -> None
     r = _doc_resolver(version_doc)
     lost = {a: pair for a, pair in r.conflicts.items() if pair[1] != MEMBER_CONFLICT}
     assert not lost, f"remove from _PYTHON_TO_IDF: {lost}"
+
+
+def _unique_types(doc: IDFDocument) -> set[str]:
+    schema = doc.schema
+    assert schema is not None
+    return {t for t in schema.object_types if (schema.get_object_schema(t) or {}).get("maxProperties") == 1}
+
+
+def test_names_follow_the_schema_uniqueness(version_doc: IDFDocument) -> None:
+    """The singular for each type with ``maxProperties: 1``, the plural for every other."""
+    r = _doc_resolver(version_doc)
+    unique = _unique_types(version_doc)
+    wrong = {
+        t: name
+        for t, name in r.attr_for.items()
+        if name != (snake_case(t) if t in unique else pluralize(snake_case(t)))
+    }
+    assert not wrong, wrong
+    # The plural of such a type is never offered as an accessor, only resolved as a deprecated alias.
+    plurals = {pluralize(snake_case(t)) for t in unique} - {snake_case(t) for t in unique}
+    assert not plurals & set(r.accessors()), plurals & set(r.accessors())
+
+
+def test_every_deprecated_plural_warns_and_resolves(version_doc: IDFDocument) -> None:
+    r = _doc_resolver(version_doc)
+    assert r.deprecated, "no deprecated plurals at all: the unique types did not reach the resolver"
+    for plural, (obj_type, replacement) in r.deprecated.items():
+        with pytest.warns(DeprecationWarning, match=re.escape(f"doc.{plural} is deprecated")):
+            assert getattr(version_doc, plural).obj_type == obj_type
+        if replacement is not None:
+            assert getattr(version_doc, replacement).obj_type == obj_type
+        assert plural not in dir(version_doc)
 
 
 def test_member_conflicts_are_known(version_doc: IDFDocument) -> None:

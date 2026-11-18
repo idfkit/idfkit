@@ -23,6 +23,7 @@ class AnyConvergenceLimits:
         maximum_hvac_iterations: int | None = 20,
         minimum_plant_iterations: int | None = 2,
         maximum_plant_iterations: int | None = 8,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ConvergenceLimits`` and add it to the document.
 
@@ -41,6 +42,7 @@ class SitePrecipitation:
         design_level_for_total_annual_precipitation: float | None = ...,
         precipitation_rates_schedule_name: str | None = ...,
         average_total_annual_precipitation: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:Precipitation`` and add it to the document.
 
@@ -68,6 +70,7 @@ class AnyZoneCoolTowerShower:
         flow_control_type: Literal["WaterFlowSchedule", "WindDrivenFlow"] | None = "WindDrivenFlow",
         fraction_of_water_loss: float | None = ...,
         fraction_of_flow_schedule: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneCoolTower:Shower`` and add it to the document.
 
@@ -126,6 +129,7 @@ class AnyHVACTemplateSystemVRF:
         | None = "Electricity",
         minimum_outdoor_temperature_in_heat_recovery_mode: float | None = -15,
         maximum_outdoor_temperature_in_heat_recovery_mode: float | None = 45,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:VRF`` and add it to the document.
 
@@ -141,6 +145,7 @@ class OutputControlSizingStyle:
         /,
         *,
         column_separator: Literal["Comma", "Fixed", "Tab"],
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Sizing:Style`` and add it to the document.
 
@@ -163,6 +168,7 @@ class EvaporativeCoolerDirectCelDekPad:
         direct_pad_depth: float | Literal["Autosize"] | None = "Autosize",
         control_type: str | None = ...,
         water_supply_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeCooler:Direct:CelDekPad`` and add it to the document.
 
@@ -198,6 +204,7 @@ class HeatPumpWaterToWaterParameterEstimationHeating:
         loss_factor: float | None = ...,
         high_pressure_cut_off: float | None = 500000000,
         low_pressure_cut_off: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:ParameterEstimation:Heating`` and add it to the document.
 
@@ -233,6 +240,7 @@ class ElectricLoadCenterTransformer:
         meters: Sequence[
             _g.ElectricLoadCenterTransformerMetersItem | _g.ElectricLoadCenterTransformerMetersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Transformer`` and add it to the document.
 
@@ -248,6 +256,7 @@ class AnyOutputSQLite:
         /,
         *,
         option_type: Literal["Simple", "SimpleAndTabular"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:SQLite`` and add it to the document.
 

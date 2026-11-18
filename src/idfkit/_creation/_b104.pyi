@@ -133,6 +133,7 @@ class AnyCoilCoolingDXVariableSpeed:
         speed_10_total_cooling_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:VariableSpeed`` and add it to the document.
 
@@ -274,6 +275,7 @@ class CoilCoolingDXVariableSpeed:
         speed_10_total_cooling_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:VariableSpeed`` and add it to the document.
 
@@ -431,6 +433,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed:
         speed_10_cop_function_of_temperature_curve_name: str | None = ...,
         speed_10_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` and add it to the document.
 
@@ -452,6 +455,7 @@ class SetpointManagerReturnTemperatureChilledWater:
         maximum_supply_temperature_setpoint: float | None = 10,
         return_temperature_setpoint_constant_value: float | None = 13,
         return_temperature_setpoint_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:ReturnTemperature:ChilledWater`` and add it to the document.
 
@@ -468,6 +472,7 @@ class AnyOutputDebuggingData:
         *,
         report_debugging_data: None = ...,
         report_during_warmup: None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:DebuggingData`` and add it to the document.
 

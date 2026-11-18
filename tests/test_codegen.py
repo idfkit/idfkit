@@ -780,8 +780,15 @@ class TestCreationSignature:
         assert lines[0].endswith(".Cls  # type: ignore[assignment]")
         assert _signature_of(sink, "Cls") == (
             '    def __call__(self, name: str, /, *, a: float, b: Literal["X", "Y"] | None = "X", '
-            'c: float | None = 0.5, d: Literal["X", "Y"] | None = ...) -> None:'
+            'c: float | None = 0.5, d: Literal["X", "Y"] | None = ..., validate: bool = True) -> None:'
         )
+
+    def test_a_field_named_validate_is_refused(self) -> None:
+        # add() takes validate= as its switch, as IDFDocument.add does: such a field could not be set.
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        creation = gen._Creation("required", frozenset(), ())  # pyright: ignore[reportPrivateUsage]
+        with pytest.raises(ValueError, match="field named validate"):
+            gen._creation_lines("Cls", [("validate", "bool | None")], creation, "    ", sink, _LATEST, "Zone")  # pyright: ignore[reportPrivateUsage]
 
     @pytest.mark.parametrize(
         "fields",
@@ -814,7 +821,8 @@ class TestCreationSignature:
         gen._creation_lines("Bare", [], creation, "    ", sink, _LATEST, "Output:SQLite")  # pyright: ignore[reportPrivateUsage]
         # The guard takes the place of the name, so a name passed by mistake is reported as such.
         assert _signature_of(sink, "Bare") == (
-            "    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:"
+            "    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, "
+            "validate: bool = True) -> None:"
         )
         module = next(source for source in sink.sources().values() if "class Bare:" in source)
         assert "from .. import _generated_types as _g" in module
@@ -955,8 +963,8 @@ class TestCreationAcrossReleases:
         # 26.2 requires them too, so the latest class serves every release: Any<Class> is an alias.
         assert "AnyEnergyManagementSystemProgram: TypeAlias = EnergyManagementSystemProgram" in stub
         assert (
-            "lines: Sequence[_g.EnergyManagementSystemProgramLinesItem | _g.EnergyManagementSystemProgramLinesGroup])"
-            in _signature_of(sink, "EnergyManagementSystemProgram")
+            "lines: Sequence[_g.EnergyManagementSystemProgramLinesItem | _g.EnergyManagementSystemProgramLinesGroup], "
+            "validate: bool = True)" in _signature_of(sink, "EnergyManagementSystemProgram")
         )
         # BuildingSurface:Detailed: 8.9 to 26.1 require the construction, 26.2 does not.
         assert "construction_name: str," in _signature_of(sink, "AnyBuildingSurfaceDetailed")

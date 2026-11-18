@@ -33,6 +33,7 @@ class Lights_v8_9_to_v9_5:
         return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
         return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
         return_air_heat_gain_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Lights`` and add it to the document.
 
@@ -73,6 +74,7 @@ class FloorDetailed_v8_9_to_v9_5:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.FloorDetailedVerticesItem | _g.FloorDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Detailed`` and add it to the document.
 
@@ -131,6 +133,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4:
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
         changeover_delay_time_period_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
 
@@ -149,6 +152,7 @@ class PhotovoltaicPerformanceSimple_v8_9_to_v25_2:
         conversion_efficiency_input_mode: Literal["Fixed", "Scheduled"] | None = ...,
         value_for_cell_efficiency_if_fixed: float | None = ...,
         efficiency_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:Simple`` and add it to the document.
 

@@ -120,6 +120,7 @@ class SurfacePropertyConvectionCoefficients_v9_5_to_v9_6:
         convection_coefficient_2: float | None = 0.1,
         convection_coefficient_2_schedule_name: str | None = ...,
         convection_coefficient_2_user_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:ConvectionCoefficients`` and add it to the document.
 
@@ -152,6 +153,7 @@ class AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2:
         ],
         air_path_length: float,
         air_path_hydraulic_diameter: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Coil`` and add it to the document.
 
@@ -258,6 +260,7 @@ class CoilHeatingDXMultiSpeed_v9_3_to_v22_1:
         speed_4_nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:MultiSpeed`` and add it to the document.
 
@@ -331,6 +334,7 @@ class TableMultiVariableLookup_v9_0_to_v9_1:
         values: Sequence[
             _vd.TableMultiVariableLookupValuesItem_v9_0_to_v9_1 | _vd.TableMultiVariableLookupValuesGroup_v9_0_to_v9_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:MultiVariableLookup`` and add it to the document.
 
@@ -367,6 +371,7 @@ class RoofCeilingDetailed_v8_9_to_v9_5:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.RoofCeilingDetailedVerticesItem | _g.RoofCeilingDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoofCeiling:Detailed`` and add it to the document.
 

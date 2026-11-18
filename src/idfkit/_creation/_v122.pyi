@@ -21,6 +21,7 @@ class ScheduleDayList_v8_9_to_v22_1:
         interpolate_to_timestep: Literal["Average", "Linear", "No"] | None = "No",
         minutes_per_item: float | None = ...,
         extensions: Sequence[_g.ScheduleDayListExtensionsItem | _g.ScheduleDayListExtensionsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Day:List`` and add it to the document.
 
@@ -180,6 +181,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
 

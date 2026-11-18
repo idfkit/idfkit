@@ -46,6 +46,7 @@ class SiteGroundDomainSlab:
         simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
         geometric_mesh_coefficient: float | None = 1.6,
         mesh_density_parameter: int | None = 6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundDomain:Slab`` and add it to the document.
 
@@ -56,7 +57,13 @@ class SiteGroundDomainSlab:
 
 class ScheduleConstant:
     def __call__(
-        self, name: str, /, *, schedule_type_limits_name: str | None = ..., hourly_value: float | None = 0
+        self,
+        name: str,
+        /,
+        *,
+        schedule_type_limits_name: str | None = ...,
+        hourly_value: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Constant`` and add it to the document.
 
@@ -78,6 +85,7 @@ class AnyZoneInfiltrationFlowCoefficient:
         wind_coefficient: float,
         shelter_factor: float,
         pressure_exponent: float | None = 0.67,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:FlowCoefficient`` and add it to the document.
 
@@ -117,6 +125,7 @@ class AnyZoneEarthtube:
         temperature_term_flow_coefficient: float | None = 0,
         velocity_term_flow_coefficient: float | None = 0,
         velocity_squared_term_flow_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneEarthtube`` and add it to the document.
 
@@ -134,6 +143,7 @@ class AirflowNetworkDistributionComponentFan:
         fan_name: str,
         supply_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"]
         | None = "Fan:ConstantVolume",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Fan`` and add it to the document.
 
@@ -174,6 +184,7 @@ class AirflowNetworkDistributionComponentCoil:
         ],
         air_path_length: float,
         air_path_hydraulic_diameter: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Coil`` and add it to the document.
 
@@ -203,6 +214,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow:
         cooling_water_outlet_node_name: str | None = ...,
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` and add it to the document.
 

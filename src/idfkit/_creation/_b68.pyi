@@ -23,6 +23,7 @@ class ConstructionPropertyInternalHeatSource:
         tube_spacing: float,
         construction_name: str | None = ...,
         two_dimensional_temperature_calculation_position: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ConstructionProperty:InternalHeatSource`` and add it to the document.
 
@@ -40,6 +41,7 @@ class AnySurfacePropertyLocalEnvironment:
         exterior_surface_name: str | None = ...,
         surrounding_surfaces_object_name: str | None = ...,
         outdoor_air_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:LocalEnvironment`` and add it to the document.
 
@@ -62,6 +64,7 @@ class LightsInstance:
         end_use_subcategory: str | None = "General",
         return_air_heat_gain_node_name: str | None = ...,
         exhaust_air_heat_gain_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Lights:Instance`` and add it to the document.
 
@@ -81,6 +84,7 @@ class DaylightingDeviceLightWell:
         perimeter_of_bottom_of_well: float,
         area_of_bottom_of_well: float,
         visible_reflectance_of_well_walls: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DaylightingDevice:LightWell`` and add it to the document.
 
@@ -165,6 +169,7 @@ class HVACTemplateSystemUnitaryHeatPumpAirToAir:
         return_fan_delta_pressure: float | None = 500,
         return_fan_motor_efficiency: float | None = 0.9,
         return_fan_motor_in_air_stream_fraction: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:UnitaryHeatPump:AirToAir`` and add it to the document.
 
@@ -215,6 +220,7 @@ class AnySizingZone:
         | None = "NeutralSupplyAir",
         dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
         dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Zone`` and add it to the document.
 
@@ -235,6 +241,7 @@ class FanPerformanceNightVentilation:
         motor_efficiency: float,
         maximum_flow_rate: float | Literal["Autosize"] | None = ...,
         motor_in_airstream_fraction: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FanPerformance:NightVentilation`` and add it to the document.
 
@@ -259,6 +266,7 @@ class CoilSystemCoolingDXHeatExchangerAssisted:
             "Coil:Cooling:DX", "Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"
         ],
         cooling_coil_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:DX:HeatExchangerAssisted`` and add it to the document.
 
@@ -290,6 +298,7 @@ class PipingSystemUndergroundPipeCircuit:
             _g.PipingSystemUndergroundPipeCircuitPipeSegmentsItem
             | _g.PipingSystemUndergroundPipeCircuitPipeSegmentsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PipingSystem:Underground:PipeCircuit`` and add it to the document.
 
@@ -317,6 +326,7 @@ class HeatPumpWaterToWaterEquationFitCooling:
         reference_coefficient_of_performance: float | None = 8,
         sizing_factor: float | None = 1,
         companion_heating_heat_pump_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:EquationFit:Cooling`` and add it to the document.
 
@@ -341,6 +351,7 @@ class ThermalStoragePCM:
         use_side_design_flow_rate: float | Literal["Autosize"],
         plant_side_design_flow_rate: float | Literal["Autosize"],
         heat_loss_rate: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:PCM`` and add it to the document.
 

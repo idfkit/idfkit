@@ -35,6 +35,7 @@ class PumpVariableSpeedCondensate_v8_9_to_v9_0:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pump:VariableSpeed:Condensate`` and add it to the document.
 
@@ -68,6 +69,7 @@ class MeterCustomDecrement_v9_3:
         variable_details: Sequence[
             _g.MeterCustomDecrementVariableDetailsItem | _g.MeterCustomDecrementVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:CustomDecrement`` and add it to the document.
 
@@ -145,6 +147,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22
             _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem
             | _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR`` and add it to the document.
 
@@ -166,6 +169,7 @@ class ZoneControlContaminantController_v8_9_to_v26_1:
         maximum_carbon_dioxide_concentration_schedule_name: str | None = ...,
         generic_contaminant_control_availability_schedule_name: str | None = ...,
         generic_contaminant_setpoint_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:ContaminantController`` and add it to the document.
 

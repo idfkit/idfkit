@@ -50,6 +50,7 @@ class ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1:
         sensible_heat_recovery_effectiveness: float | None = 0.7,
         latent_heat_recovery_effectiveness: float | None = 0.65,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:IdealLoadsAirSystem`` and add it to the document.
 
@@ -115,6 +116,7 @@ class People_v9_5:
         ]
         | None = ...,
         ankle_level_air_velocity_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``People`` and add it to the document.
 
@@ -149,6 +151,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4:
             _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Water`` and add it to the document.
 
@@ -200,6 +203,7 @@ class ChillerElectric_v8_9_to_v24_1:
         heat_recovery_inlet_high_temperature_limit_schedule_name: str | None = ...,
         heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric`` and add it to the document.
 
@@ -318,6 +322,7 @@ class CoilCoolingDXMultiSpeed_v9_3_to_v22_1:
         speed_4_evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
         speed_4_rated_evaporative_condenser_pump_power_consumption: float | Literal["Autosize"] | None = ...,
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:MultiSpeed`` and add it to the document.
 

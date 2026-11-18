@@ -157,12 +157,15 @@ def create_compact_schedule_from_values(
 
     # 4. Create the Schedule:Compact object using the canonical extensible
     #    wrapper shape: data=[{"field": ...}, {"field": ...}, ...].
-    kwargs: dict[str, Any] = {}
+    schedules = doc["Schedule:Compact"]
     if type_limits:
-        kwargs["schedule_type_limits_name"] = type_limits
-    kwargs["data"] = [{"field": field_val} for field_val in fields]
-
-    return doc.add("Schedule:Compact", name, validate=False, **kwargs)
+        return schedules.add(
+            name,
+            schedule_type_limits_name=type_limits,
+            data=[{"field": field_val} for field_val in fields],
+            validate=False,
+        )
+    return schedules.add(name, data=[{"field": field_val} for field_val in fields], validate=False)
 
 
 # ---------------------------------------------------------------------------

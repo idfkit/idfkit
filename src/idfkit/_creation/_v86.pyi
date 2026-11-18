@@ -112,6 +112,7 @@ class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1:
         heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
         initial_heat_recovery_heating_energy_fraction: float | None = 1,
         heat_recovery_heating_energy_time_constant: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow`` and add it to the document.
 
@@ -144,6 +145,7 @@ class ShadowCalculation_v9_3_to_v22_1:
         shading_zone_groups: Sequence[
             _g.ShadowCalculationShadingZoneGroupsItem | _g.ShadowCalculationShadingZoneGroupsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ShadowCalculation`` and add it to the document.
 
@@ -185,6 +187,7 @@ class FloorDetailed_v9_6_to_v24_2:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.FloorDetailedVerticesItem | _g.FloorDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Detailed`` and add it to the document.
 

@@ -37,6 +37,7 @@ class AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2:
         heating_control_type: Literal["Modulated", "Staged"] | None = ...,
         design_heating_discharge_air_temperature: float | None = 32.1,
         high_limit_heating_discharge_air_temperature: float | None = 37.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ParallelPIU:Reheat`` and add it to the document.
 
@@ -66,6 +67,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1:
         cooling_water_outlet_node_name: str | None = ...,
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` and add it to the document.
 

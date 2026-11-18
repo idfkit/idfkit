@@ -38,6 +38,7 @@ class FenestrationSurfaceDetailed_v8_9:
         vertex_4_x_coordinate: float | None = ...,
         vertex_4_y_coordinate: float | None = ...,
         vertex_4_z_coordinate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FenestrationSurface:Detailed`` and add it to the document.
 
@@ -62,6 +63,7 @@ class DemandManagerElectricEquipment_v8_9_to_v22_1:
         equipment: Sequence[
             _g.DemandManagerElectricEquipmentEquipmentItem | _g.DemandManagerElectricEquipmentEquipmentGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:ElectricEquipment`` and add it to the document.
 

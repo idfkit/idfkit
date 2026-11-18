@@ -37,6 +37,7 @@ class GeneratorInternalCombustionEngine_v8_9_to_v9_2:
         ]
         | None = "Diesel",
         heat_recovery_maximum_temperature: float | None = 80,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:InternalCombustionEngine`` and add it to the document.
 
@@ -65,6 +66,7 @@ class ThermalStorageIceDetailed_v8_9_to_v9_1:
         tank_loss_coefficient: float | None = ...,
         freezing_temperature_of_storage_medium: float | None = 0,
         thaw_process_indicator: Literal["InsideMelt", "OutsideMelt"] | None = "OutsideMelt",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:Ice:Detailed`` and add it to the document.
 
@@ -103,6 +105,7 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1:
         source_side_heat_transfer_coefficient: float | None = ...,
         source_side_heat_transfer_resistance1: float | None = ...,
         source_side_heat_transfer_resistance2: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
 

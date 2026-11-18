@@ -12,7 +12,7 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class MaterialInfraredTransparent:
-    def __call__(self, name: str, /) -> None:
+    def __call__(self, name: str, /, *, validate: bool = True) -> None:
         """Create a new ``Material:InfraredTransparent`` and add it to the document.
 
         Special infrared transparent material. Similar to a Material:Nomass with low thermal resistance. High absorptance in both wavelengths. Area will be doubled internally to make internal radiant exchange accurate. Should be only material in single layer surface construction. All thermal properties are set internally. User needs only to supply name. Cannot be used with ConductionFiniteDifference solution algorithms
@@ -31,6 +31,7 @@ class GlobalGeometryRules:
         coordinate_system: Literal["Relative", "World"],
         daylighting_reference_point_coordinate_system: Literal["Relative", "World"] | None = "Relative",
         rectangular_surface_coordinate_system: Literal["Relative", "World"] | None = "Relative",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GlobalGeometryRules`` and add it to the document.
 
@@ -69,6 +70,7 @@ class AnyRoofCeilingDetailed:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.RoofCeilingDetailedVerticesItem | _g.RoofCeilingDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoofCeiling:Detailed`` and add it to the document.
 
@@ -86,6 +88,7 @@ class RoomAirSettingsOneNodeDisplacementVentilation:
         zone_name: str,
         fraction_of_convective_internal_loads_added_to_floor_air: float | None = ...,
         fraction_of_infiltration_internal_loads_added_to_floor_air: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAirSettings:OneNodeDisplacementVentilation`` and add it to the document.
 
@@ -116,6 +119,7 @@ class CoilSystemCoolingWater:
         economizer_lockout: Literal["No", "Yes"] | None = "Yes",
         minimum_water_loop_temperature_for_heat_recovery: float | None = 0,
         companion_coil_used_for_heat_recovery: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:Water`` and add it to the document.
 
@@ -152,6 +156,7 @@ class CoilCoolingDXCurveFitOperatingMode:
         speed_8_name: str | None = ...,
         speed_9_name: str | None = ...,
         speed_10_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:OperatingMode`` and add it to the document.
 
@@ -185,6 +190,7 @@ class AnyWaterHeaterSizing:
         recovery_capacity_perunit: float | None = ...,
         storage_capacity_per_collector_area: float | None = ...,
         height_aspect_ratio: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Sizing`` and add it to the document.
 
@@ -210,6 +216,7 @@ class AnyTableIndependentVariable:
         external_file_column_number: int | None = ...,
         external_file_starting_row_number: int | None = ...,
         values: Sequence[_g.TableIndependentVariableValuesItem | _g.TableIndependentVariableValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:IndependentVariable`` and add it to the document.
 
@@ -228,6 +235,7 @@ class OutputEnergyManagementSystem:
         internal_variable_availability_dictionary_reporting: Literal["None", "NotByUniqueKeyNames", "Verbose"]
         | None = "None",
         ems_runtime_language_debug_output_level: Literal["ErrorsOnly", "None", "Verbose"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:EnergyManagementSystem`` and add it to the document.
 
@@ -254,6 +262,7 @@ class OutputTableReportPeriod:
         | None = ...,
         begin_year: int | None = ...,
         end_year: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:ReportPeriod`` and add it to the document.
 

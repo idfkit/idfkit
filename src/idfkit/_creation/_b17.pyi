@@ -23,6 +23,7 @@ class SurfacePropertyOtherSideConditionsModel:
             "ConvectiveUnderwater", "GapConvectionRadiation", "GroundCoupledSurface", "UndergroundPipingSystemSurface"
         ]
         | None = "GapConvectionRadiation",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:OtherSideConditionsModel`` and add it to the document.
 
@@ -42,6 +43,7 @@ class AnyZoneInfiltrationEffectiveLeakageArea:
         effective_air_leakage_area: float,
         stack_coefficient: float,
         wind_coefficient: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:EffectiveLeakageArea`` and add it to the document.
 
@@ -75,6 +77,7 @@ class ZoneCrossMixing:
         maximum_source_temperature_schedule_name: str | None = ...,
         minimum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneCrossMixing`` and add it to the document.
 
@@ -101,6 +104,7 @@ class AnyAirflowNetworkDistributionNode:
         ]
         | None = "Other",
         node_height: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Node`` and add it to the document.
 
@@ -131,6 +135,7 @@ class AirTerminalSingleDuctVAVReheatVariableSpeedFan:
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         heating_convergence_tolerance: float | None = 0.001,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan`` and add it to the document.
 
@@ -167,6 +172,7 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam:
         model_parameter_n: float | None = 0.4,
         coefficient_of_induction_kin: float | Literal["Autocalculate"] | None = "Autocalculate",
         leaving_pipe_inside_diameter: float | None = 0.0145,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:CooledBeam`` and add it to the document.
 
@@ -204,6 +210,7 @@ class AnyCoilCoolingDXCurveFitPerformance:
         | None = "Electricity",
         alternative_operating_mode_1: str | None = ...,
         alternative_operating_mode_2: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:Performance`` and add it to the document.
 
@@ -254,6 +261,7 @@ class PipingSystemUndergroundDomain:
         pipe_circuits: Sequence[
             _g.PipingSystemUndergroundDomainPipeCircuitsItem | _g.PipingSystemUndergroundDomainPipeCircuitsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PipingSystem:Underground:Domain`` and add it to the document.
 
@@ -271,6 +279,7 @@ class ExternalInterfaceFunctionalMockupUnitExportFromVariable:
         output_variable_index_key_name: str,
         output_variable_name: str,
         fmu_variable_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitExport:From:Variable`` and add it to the document.
 
@@ -298,6 +307,7 @@ class SetpointManagerScheduled:
         ],
         schedule_name: str,
         setpoint_node_or_nodelist_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:Scheduled`` and add it to the document.
 
@@ -335,6 +345,7 @@ class GeneratorInternalCombustionEngine:
         ]
         | None = "Diesel",
         heat_recovery_maximum_temperature: float | None = 80,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:InternalCombustionEngine`` and add it to the document.
 
@@ -359,6 +370,7 @@ class CurveRectangularHyperbola2:
         input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:RectangularHyperbola2`` and add it to the document.
 

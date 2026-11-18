@@ -62,11 +62,17 @@ insulation = doc["Material"].add(
 )
 doc["Output:SQLite"].add(option_type="SimpleAndTabular")  # a type without a Name field: no name
 
+# validate=False skips value, range and required-field checks at run time, as doc.add(...) does,
+# for bulk loading data already known good. An unknown key still raises InvalidFieldError, and the
+# type checker still requires the type's required fields.
+doc.zones.add("Imported", ceiling_height=2.7, validate=False)
+
 # doc.zones.add("Lab", ceiling_hieght=3.0)                       # error: No parameter named "ceiling_hieght"
 # doc.zones.add("Lab", zone_inside_convection_algorithm="Bogus")  # error: not one of the field's choices
 # doc["Material"].add("XPS_50mm", thickness=0.05)                 # error: Arguments missing for parameters
 #                                                                 #   "roughness", "conductivity", "density", ...
 # doc["Output:SQLite"].add("Out", option_type="Simple")          # error: parameter "this_type_has_no_name_field"
+# doc.zones.add("Lab", validate="no")                             # error: "str" is not assignable to "bool"
 # --8<-- [end:typed-collection-add]
 
 
@@ -94,6 +100,13 @@ loops = doc.air_loop_hvacs  # IDFCollection[AirLoopHVAC]
 coils = doc.coil_cooling_dx_single_speeds  # Coil:Cooling:DX:SingleSpeed
 also_loops = doc["AirLoopHVAC"]  # equivalent
 shades = doc.shading_building_detaileds  # Shading:Building:Detailed
+
+# A type a model holds at most one of is named in the singular. It is still the
+# collection, so add through it and read with .first().
+doc.output_sqlite.add(option_type="SimpleAndTabular")  # IDFCollection[OutputSQLite]
+building = doc.building.first()  # Building | None
+if building is not None:
+    north = building.north_axis
 
 # A typo names the closest matches and their object types:
 #   >>> doc.shading_bulding

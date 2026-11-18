@@ -46,6 +46,7 @@ class AnyBuildingSurfaceDetailed:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.BuildingSurfaceDetailedVerticesItem | _g.BuildingSurfaceDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``BuildingSurface:Detailed`` and add it to the document.
 
@@ -68,6 +69,7 @@ class AnyGlazedDoor:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GlazedDoor`` and add it to the document.
 
@@ -99,6 +101,7 @@ class FoundationKiva:
         footing_material_name: str | None = ...,
         footing_depth: float | None = 0.3,
         blocks: Sequence[_g.FoundationKivaBlocksItem | _g.FoundationKivaBlocksGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Foundation:Kiva`` and add it to the document.
 
@@ -127,6 +130,7 @@ class HVACTemplateZoneBaseboardHeat:
         outdoor_air_flow_rate_per_zone: float | None = 0,
         design_specification_outdoor_air_object_name: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:BaseboardHeat`` and add it to the document.
 
@@ -253,6 +257,7 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed:
         speed_10_cop_function_of_temperature_curve_name: str | None = ...,
         speed_10_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` and add it to the document.
 
@@ -273,6 +278,7 @@ class ZoneTerminalUnitList:
         terminal_units: Sequence[
             _g.ZoneTerminalUnitListTerminalUnitsItem | _g.ZoneTerminalUnitListTerminalUnitsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneTerminalUnitList`` and add it to the document.
 
@@ -290,6 +296,7 @@ class AvailabilityManagerAssignmentList:
         managers: Sequence[
             _g.AvailabilityManagerAssignmentListManagersItem | _g.AvailabilityManagerAssignmentListManagersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AvailabilityManagerAssignmentList`` and add it to the document.
 
@@ -324,6 +331,7 @@ class ElectricLoadCenterStorageBattery:
         battery_life_calculation: Literal["No", "Yes"] | None = "No",
         number_of_cycle_bins: int | None = 10,
         battery_life_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Storage:Battery`` and add it to the document.
 
@@ -451,6 +459,7 @@ class CurrencyType:
             "ZAR",
             "ZWD",
         ],
+        validate: bool = True,
     ) -> None:
         """Create a new ``CurrencyType`` and add it to the document.
 

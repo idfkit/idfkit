@@ -52,6 +52,7 @@ class EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeFluidCooler:TwoSpeed`` and add it to the document.
 
@@ -76,6 +77,7 @@ class DemandManagerAssignmentList_v8_9_to_v22_1:
         manager_data: Sequence[
             _g.DemandManagerAssignmentListManagerDataItem | _g.DemandManagerAssignmentListManagerDataGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManagerAssignmentList`` and add it to the document.
 

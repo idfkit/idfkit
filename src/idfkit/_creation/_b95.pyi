@@ -13,7 +13,12 @@ from .. import _generated_types as _g
 
 class Version:
     def __call__(
-        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, version_identifier: str | None = ...
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        version_identifier: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Version`` and add it to the document.
 
@@ -33,6 +38,7 @@ class HVACSystemRootFindingAlgorithm:
         ]
         | None = "RegulaFalsi",
         number_of_iterations_before_algorithm_switch: int | None = 5,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACSystemRootFindingAlgorithm`` and add it to the document.
 
@@ -53,6 +59,7 @@ class AnyRoomAirTemperaturePatternConstantGradient:
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
         temperature_gradient: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:ConstantGradient`` and add it to the document.
 
@@ -77,6 +84,7 @@ class AirTerminalSingleDuctVAVNoReheat:
         minimum_air_flow_fraction_schedule_name: str | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:NoReheat`` and add it to the document.
 
@@ -110,6 +118,7 @@ class AnyHeatExchangerAirToAirSensibleAndLatent:
         initial_defrost_time_fraction: float | None = 0.083,
         rate_of_defrost_time_fraction_increase: float | None = 0.012,
         economizer_lockout: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatExchanger:AirToAir:SensibleAndLatent`` and add it to the document.
 
@@ -137,6 +146,7 @@ class AnyAirLoopHVACDedicatedOutdoorAirSystem:
             _g.AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem
             | _g.AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:DedicatedOutdoorAirSystem`` and add it to the document.
 
@@ -193,6 +203,7 @@ class ChillerElectricEIR:
         condenser_minimum_flow_fraction: float | None = ...,
         thermosiphon_capacity_fraction_curve_name: str | None = ...,
         thermosiphon_minimum_temperature_difference: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric:EIR`` and add it to the document.
 
@@ -215,6 +226,7 @@ class AnyDemandManagerExteriorLights:
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
         lights: Sequence[_g.DemandManagerExteriorLightsLightsItem | _g.DemandManagerExteriorLightsLightsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:ExteriorLights`` and add it to the document.
 
@@ -239,6 +251,7 @@ class ElectricLoadCenterInverterFunctionOfPower:
         minimum_power_output: float | None = ...,
         maximum_power_output: float | None = ...,
         ancillary_power_consumed_in_standby: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Inverter:FunctionOfPower`` and add it to the document.
 

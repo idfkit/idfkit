@@ -21,6 +21,7 @@ class AnyWeatherPropertySkyTemperature:
         *,
         calculation_type: Literal["DifferenceScheduleDewPointValue", "DifferenceScheduleDryBulbValue", "ScheduleValue"],
         schedule_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WeatherProperty:SkyTemperature`` and add it to the document.
 
@@ -40,6 +41,7 @@ class AnyMaterialNoMass:
         thermal_absorptance: float | None = 0.9,
         solar_absorptance: float | None = 0.7,
         visible_absorptance: float | None = 0.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Material:NoMass`` and add it to the document.
 
@@ -58,6 +60,7 @@ class AnyRoomAirNodeAirflowNetworkHVACEquipment:
             _g.AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem
             | _g.AnyRoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork:HVACEquipment`` and add it to the document.
 
@@ -68,7 +71,14 @@ class AnyRoomAirNodeAirflowNetworkHVACEquipment:
 
 class SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink:
     def __call__(
-        self, name: str, /, *, surface_name: str, schedule_name: str, deposition_velocity: float | None = ...
+        self,
+        name: str,
+        /,
+        *,
+        surface_name: str,
+        schedule_name: str,
+        deposition_velocity: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceContaminantSourceAndSink:Generic:DepositionVelocitySink`` and add it to the document.
 
@@ -91,6 +101,7 @@ class OutputIlluminanceMap:
         y_minimum_coordinate: float | None = 0,
         y_maximum_coordinate: float | None = 1,
         number_of_y_grid_points: int | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:IlluminanceMap`` and add it to the document.
 
@@ -109,6 +120,7 @@ class AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea:
         discharge_coefficient: float | None = 1,
         reference_pressure_difference: float | None = 4,
         air_mass_flow_exponent: float | None = 0.65,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea`` and add it to the document.
 
@@ -139,6 +151,7 @@ class AnyAirTerminalSingleDuctSeriesPIUReheat:
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:SeriesPIU:Reheat`` and add it to the document.
 
@@ -177,6 +190,7 @@ class AnyCoilHeatingWaterToAirHeatPumpParameterEstimation:
         source_side_heat_transfer_coefficient: float | None = ...,
         source_side_heat_transfer_resistance1: float | None = ...,
         source_side_heat_transfer_resistance2: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
 
@@ -211,6 +225,7 @@ class AirLoopHVACOutdoorAirSystemEquipmentList:
         component_8_name: str | None = ...,
         component_9_object_type: str | None = ...,
         component_9_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:OutdoorAirSystem:EquipmentList`` and add it to the document.
 
@@ -250,6 +265,7 @@ class SolarCollectorUnglazedTranspired:
         surfaces: Sequence[
             _g.SolarCollectorUnglazedTranspiredSurfacesItem | _g.SolarCollectorUnglazedTranspiredSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollector:UnglazedTranspired`` and add it to the document.
 
@@ -268,6 +284,7 @@ class SetpointManagerMultiZoneHeatingAverage:
         setpoint_node_or_nodelist_name: str,
         minimum_setpoint_temperature: float | None = 20,
         maximum_setpoint_temperature: float | None = 50,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:MultiZone:Heating:Average`` and add it to the document.
 
@@ -293,6 +310,7 @@ class AnyDemandManagerThermostats:
         thermostats: Sequence[
             _g.DemandManagerThermostatsThermostatsItem | _g.DemandManagerThermostatsThermostatsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:Thermostats`` and add it to the document.
 

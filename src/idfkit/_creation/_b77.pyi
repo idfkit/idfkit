@@ -23,6 +23,7 @@ class SiteGroundTemperatureUndisturbedKusudaAchenbach:
         average_soil_surface_temperature: float | None = ...,
         average_amplitude_of_surface_temperature: float | None = ...,
         phase_shift_of_minimum_surface_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundTemperature:Undisturbed:KusudaAchenbach`` and add it to the document.
 
@@ -45,6 +46,7 @@ class SurfacePropertyExposedFoundationPerimeter:
             _g.SurfacePropertyExposedFoundationPerimeterSurfacesItem
             | _g.SurfacePropertyExposedFoundationPerimeterSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:ExposedFoundationPerimeter`` and add it to the document.
 
@@ -67,6 +69,7 @@ class SurfaceConvectionAlgorithmInsideUserCurve:
         hc_function_of_temperature_difference_divided_by_height_curve_name: str | None = ...,
         hc_function_of_air_change_rate_curve_name: str | None = ...,
         hc_function_of_air_system_volume_flow_rate_divided_by_zone_perimeter_length_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Inside:UserCurve`` and add it to the document.
 
@@ -85,6 +88,7 @@ class DaylightingReferencePoint:
         x_coordinate_of_reference_point: float,
         y_coordinate_of_reference_point: float,
         z_coordinate_of_reference_point: float | None = 0.8,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Daylighting:ReferencePoint`` and add it to the document.
 
@@ -100,6 +104,7 @@ class OutputDaylightFactors:
         /,
         *,
         reporting_days: Literal["AllShadowCalculationDays", "SizingDays"],
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:DaylightFactors`` and add it to the document.
 
@@ -118,6 +123,7 @@ class HVACTemplatePlantBoilerObjectReference:
         boiler_object_type: Literal["Boiler:HotWater"] | None = "Boiler:HotWater",
         priority: float | None = ...,
         template_plant_loop_type: Literal["HotWater", "MixedWater"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:Boiler:ObjectReference`` and add it to the document.
 
@@ -161,6 +167,7 @@ class AnyCoilHeatingDXSingleSpeed:
         nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:SingleSpeed`` and add it to the document.
 
@@ -181,6 +188,7 @@ class SetpointManagerColdest:
         minimum_setpoint_temperature: float | None = 20,
         maximum_setpoint_temperature: float | None = 50,
         strategy: Literal["MinimumTemperature"] | None = "MinimumTemperature",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:Coldest`` and add it to the document.
 
@@ -198,6 +206,7 @@ class RefrigerationCaseAndWalkInList:
         cases_and_walkins: Sequence[
             _g.RefrigerationCaseAndWalkInListCasesAndWalkinsItem | _g.RefrigerationCaseAndWalkInListCasesAndWalkinsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:CaseAndWalkInList`` and add it to the document.
 
@@ -216,6 +225,7 @@ class TableIndependentVariableList:
             _g.TableIndependentVariableListIndependentVariablesItem
             | _g.TableIndependentVariableListIndependentVariablesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:IndependentVariableList`` and add it to the document.
 

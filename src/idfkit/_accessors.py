@@ -1,13 +1,16 @@
 """Attribute-name resolution for :class:`~idfkit.document.IDFDocument` collection accessors.
 
-Lets every object type in a document's schema be reached as an attribute,
-
-for example:
+Lets every object type in a document's schema be reached as an attribute. A type a
+model can hold many of is named in the plural; a type it holds at most one of
+(``"maxProperties": 1`` in the schema) is named in the singular. For example:
 
     doc.zones                            # Zone
     doc.air_loop_hvacs                   # AirLoopHVAC
     doc.coil_cooling_dx_single_speeds    # Coil:Cooling:DX:SingleSpeed
-    doc.air_terminal_single_duct_vav_reheats
+    doc.output_sqlite                    # Output:SQLite, at most one per model
+    doc.building                         # Building, at most one per model
+
+Both forms return the type's collection, as ``doc["Output:SQLite"]`` does.
 """
 
 from __future__ import annotations
@@ -20,6 +23,7 @@ __all__ = [
     "MEMBER_CONFLICT",
     "AccessorAttributeError",
     "AccessorResolver",
+    "deprecated_plural_message",
     "pluralize",
     "snake_case",
 ]
@@ -106,6 +110,18 @@ def pluralize(singular: str) -> str:
     return singular + "s"
 
 
+def deprecated_plural_message(attr: str, obj_type: str, replacement: str | None) -> str:
+    """What a deprecated plural accessor says, at run time and in the type stub alike.
+
+    >>> deprecated_plural_message("output_sqlites", "Output:SQLite", "output_sqlite")
+    'doc.output_sqlites is deprecated: a model holds at most one Output:SQLite, so its accessor is doc.output_sqlite'
+    >>> deprecated_plural_message("versions", "Version", None)
+    'doc.versions is deprecated: a model holds at most one Version, so use doc["Version"]'
+    """
+    use = f"its accessor is doc.{replacement}" if replacement is not None else f'use doc["{obj_type}"]'
+    return f"doc.{attr} is deprecated: a model holds at most one {obj_type}, so {use}"
+
+
 def _underscore_key(obj_type: str) -> str:
     """Key for a raw type name written with ``_`` where it has ``:``, case-insensitive.
 
@@ -137,17 +153,26 @@ class AccessorResolver:
     2. Hand-written shorthands win over names derived from the schema, so a
        shorthand keeps the meaning it had before derived names existed. A derived
        name that a shorthand displaces is recorded in ``conflicts``.
-    3. Derived names fill in everywhere else.
+    3. Derived names fill in everywhere else: the ``snake_case`` singular for a type
+       in *unique*, the plural for every other type.
+    4. The plural of a type in *unique* still resolves where nothing above claims it,
+       as a deprecated alias (``deprecated``): it was the type's accessor before
+       singular names existed. It is left out of completion and suggestions.
 
     Args:
         obj_types: Every object type in the schema.
         shorthands: Hand-written attribute names, ``{attribute: object_type}``.
         reserved: Names owned by real ``IDFDocument`` members.
+        unique: The object types a model holds at most one of (``"maxProperties": 1``).
 
     Attributes:
-        attr_for: Canonical attribute name for every object type.
+        attr_for: Canonical attribute name for every object type. Where a shorthand or a
+            member owns that name, the type is not reachable by it (see ``conflicts``).
         shorthands: The shorthands that were registered, after member clashes were removed.
         conflicts: Every name claimed twice, as ``{name: (loser, winner)}``.
+        deprecated: Each deprecated plural with ``(object_type, replacement)``, where
+            *replacement* is the attribute to use instead, or ``None`` when the type has
+            none and is reached as ``doc["Type"]``.
     """
 
     def __init__(
@@ -155,8 +180,10 @@ class AccessorResolver:
         obj_types: Iterable[str],
         shorthands: Mapping[str, str] | None = None,
         reserved: Iterable[str] = (),
+        unique: Iterable[str] = (),
     ) -> None:
         types = list(obj_types)
+        unique_set = frozenset(unique)
         present = set(types)
         reserved_set = set(reserved)
         self._reserved = frozenset(reserved_set)
@@ -164,7 +191,8 @@ class AccessorResolver:
         self.attr_for: dict[str, str] = {}
         self.shorthands: dict[str, str] = {}
         self.conflicts: dict[str, tuple[str, str]] = {}
-        # Shorthands and snake_case plurals, matched exactly
+        self.deprecated: dict[str, tuple[str, str | None]] = {}
+        # Shorthands and derived names, matched exactly
         self._exact: dict[str, str] = {}
         # Raw type names, case-insensitive, with ':' replaced by '_'
         self._raw: dict[str, str] = {}
@@ -181,15 +209,26 @@ class AccessorResolver:
 
         # Then one derived name per type, where no shorthand or member owns it
         for obj_type in types:
-            plural = pluralize(snake_case(obj_type))
-            self.attr_for[obj_type] = plural
-            if plural in reserved_set:
-                self.conflicts[plural] = (obj_type, MEMBER_CONFLICT)
-            elif self._exact.get(plural, obj_type) != obj_type:
-                self.conflicts[plural] = (obj_type, self._exact[plural])
+            singular = snake_case(obj_type)
+            name = singular if obj_type in unique_set else pluralize(singular)
+            self.attr_for[obj_type] = name
+            if name in reserved_set:
+                self.conflicts[name] = (obj_type, MEMBER_CONFLICT)
+            elif self._exact.get(name, obj_type) != obj_type:
+                self.conflicts[name] = (obj_type, self._exact[name])
             else:
-                self._exact[plural] = obj_type
+                self._exact[name] = obj_type
             self._raw.setdefault(_underscore_key(obj_type), obj_type)
+
+        # Last, the plural a unique type had before singular names existed, where nothing owns it
+        for obj_type in types:
+            if obj_type not in unique_set:
+                continue
+            plural = pluralize(snake_case(obj_type))
+            if plural == self.attr_for[obj_type] or plural in reserved_set or plural in self._exact:
+                continue
+            reachable = self._exact.get(self.attr_for[obj_type]) == obj_type
+            self.deprecated[plural] = (obj_type, self.attr_for[obj_type] if reachable else None)
 
         # Suggestion and completion candidates: exactly the names that resolve exactly, so a
         # derived name that wins a collision with another derived name is still listed.
@@ -200,7 +239,7 @@ class AccessorResolver:
     def resolve(self, attr: str) -> str | None:
         """Return the object type an attribute name refers to, or ``None``.
 
-        Shorthands and snake_case plurals match exactly. Raw type names match
+        Shorthands, derived names and deprecated plurals match exactly. Raw type names match
         case-insensitively, with ``_`` in place of ``:``, as they did before derived
         names existed: ``doc.ZONE`` works like ``doc["ZONE"]`` and ``doc.Site_Location``
         reaches ``Site:Location``. Separator noise such as ``doc.z_o_n_e`` or
@@ -216,6 +255,9 @@ class AccessorResolver:
         hit = self._exact.get(attr)
         if hit is not None:
             return hit
+        old = self.deprecated.get(attr)
+        if old is not None:
+            return old[0]
         return self._raw.get(attr.lower())
 
     def suggest(self, attr: str, n: int = 3) -> list[str]:
@@ -228,6 +270,14 @@ class AccessorResolver:
         This is what the ``document.pyi`` stub declares as typed properties.
         """
         return {name: self._candidates[name] for name in self._names}
+
+    def deprecated_accessors(self) -> dict[str, tuple[str, str | None]]:
+        """Every deprecated plural with ``(object_type, replacement)``, sorted by name.
+
+        The type stub declares these too, marked ``@deprecated``, so that code using one
+        still type-checks and is flagged where it is written.
+        """
+        return dict(sorted(self.deprecated.items()))
 
     def names(self) -> list[str]:
         """Every canonical attribute name and shorthand, sorted, for ``__dir__``."""

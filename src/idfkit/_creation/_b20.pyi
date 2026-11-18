@@ -19,6 +19,7 @@ class SurfaceConvectionAlgorithmInside:
         *,
         algorithm: Literal["ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"]
         | None = "TARP",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Inside`` and add it to the document.
 
@@ -47,6 +48,7 @@ class WindowMaterialScreen:
         left_side_opening_multiplier: float | None = 0,
         right_side_opening_multiplier: float | None = 0,
         angle_of_resolution_for_screen_transmittance_output_map: Literal[0, 1, 2, 3, 5] | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Screen`` and add it to the document.
 
@@ -73,6 +75,7 @@ class FoundationKivaSettings:
         minimum_cell_dimension: float | None = 0.02,
         maximum_cell_growth_coefficient: float | None = 1.5,
         simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Foundation:Kiva:Settings`` and add it to the document.
 
@@ -83,7 +86,13 @@ class FoundationKivaSettings:
 
 class AirflowNetworkDistributionComponentLeak:
     def __call__(
-        self, name: str, /, *, air_mass_flow_coefficient: float, air_mass_flow_exponent: float | None = 0.65
+        self,
+        name: str,
+        /,
+        *,
+        air_mass_flow_coefficient: float,
+        air_mass_flow_exponent: float | None = 0.65,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Leak`` and add it to the document.
 
@@ -106,6 +115,7 @@ class CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl:
         availability_schedule_name: str | None = ...,
         indoor_unit_reference_superheating: float | None = 5,
         name_of_water_storage_tank_for_condensate_collection: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:VariableRefrigerantFlow:FluidTemperatureControl`` and add it to the document.
 
@@ -128,6 +138,7 @@ class OutdoorAirNode:
         wind_pressure_coefficient_curve_name: str | None = ...,
         symmetric_wind_pressure_coefficient_curve: Literal["No", "Yes"] | None = "No",
         wind_angle_type: Literal["Absolute", "Relative"] | None = "Absolute",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutdoorAir:Node`` and add it to the document.
 
@@ -169,6 +180,7 @@ class PlantLoop:
         common_pipe_simulation: Literal["CommonPipe", "None", "TwoWayCommonPipe"] | None = "None",
         pressure_simulation_type: Literal["LoopFlowCorrection", "None", "PumpPowerCorrection"] | None = "None",
         loop_circulation_time: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantLoop`` and add it to the document.
 
@@ -213,6 +225,7 @@ class PlantEquipmentOperationOutdoorDryBulb:
         dry_bulb_temperature_range_10_lower_limit: float | None = ...,
         dry_bulb_temperature_range_10_upper_limit: float | None = ...,
         range_10_equipment_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:OutdoorDryBulb`` and add it to the document.
 
@@ -231,6 +244,7 @@ class SetpointManagerMultiZoneCoolingAverage:
         setpoint_node_or_nodelist_name: str,
         minimum_setpoint_temperature: float | None = 12,
         maximum_setpoint_temperature: float | None = 18,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:MultiZone:Cooling:Average`` and add it to the document.
 
@@ -287,6 +301,7 @@ class ElectricLoadCenterDistribution:
         storage_discharge_power_fraction_schedule_name: str | None = ...,
         storage_control_utility_demand_target: float | None = ...,
         storage_control_utility_demand_target_fraction_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Distribution`` and add it to the document.
 
@@ -309,6 +324,7 @@ class AnyHybridModelZone:
         end_day_of_month: int,
         calculate_zone_internal_thermal_mass: Literal["No", "Yes"] | None = "No",
         calculate_zone_air_infiltration_rate: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HybridModel:Zone`` and add it to the document.
 
@@ -324,6 +340,7 @@ class ParametricRunControl:
         /,
         *,
         runs: Sequence[_g.ParametricRunControlRunsItem | _g.ParametricRunControlRunsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Parametric:RunControl`` and add it to the document.
 

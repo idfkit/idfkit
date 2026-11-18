@@ -22,6 +22,7 @@ class ZoneHVACEquipmentList_v8_9_to_v9_0:
         equipment: Sequence[
             _vd.ZoneHVACEquipmentListEquipmentItem_v8_9_to_v9_0 | _vd.ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
 

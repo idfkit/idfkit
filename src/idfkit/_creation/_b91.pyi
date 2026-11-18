@@ -24,6 +24,7 @@ class GlazedDoorInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GlazedDoor:Interzone`` and add it to the document.
 
@@ -44,6 +45,7 @@ class GroundHeatTransferSlabMatlProps:
         cp_soil_cp: float | None = 1200,
         tcon_slab_k: float | None = 0.9,
         tcon_soil_k: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:MatlProps`` and add it to the document.
 
@@ -150,6 +152,7 @@ class HVACTemplateSystemConstantVolume:
         return_fan_delta_pressure: float | None = 300,
         return_fan_motor_efficiency: float | None = 0.9,
         return_fan_motor_in_air_stream_fraction: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:ConstantVolume`` and add it to the document.
 
@@ -192,6 +195,7 @@ class AnyAirLoopHVACUnitaryFurnaceHeatCool:
         ]
         | None = ...,
         reheat_coil_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:Unitary:Furnace:HeatCool`` and add it to the document.
 
@@ -213,6 +217,7 @@ class SetpointManagerSystemNodeResetHumidity:
         high_reference_humidity_ratio: float,
         reference_node_name: str,
         setpoint_node_or_nodelist_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:SystemNodeReset:Humidity`` and add it to the document.
 
@@ -229,6 +234,7 @@ class OutputEnvironmentalImpactFactors:
         *,
         reporting_frequency: Literal["Annual", "Daily", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"]
         | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:EnvironmentalImpactFactors`` and add it to the document.
 

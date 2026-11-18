@@ -31,6 +31,7 @@ class GasEquipment_v9_6_to_v23_2:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GasEquipment`` and add it to the document.
 
@@ -54,6 +55,7 @@ class GroundHeatExchangerSurface_v8_9_to_v22_1:
         surface_length: float | None = ...,
         surface_width: float | None = ...,
         lower_surface_environment: Literal["Exposed", "Ground"] | None = "Ground",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Surface`` and add it to the document.
 
@@ -87,6 +89,7 @@ class MeterCustomDecrement_v8_9_to_v9_2:
         variable_details: Sequence[
             _g.MeterCustomDecrementVariableDetailsItem | _g.MeterCustomDecrementVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:CustomDecrement`` and add it to the document.
 

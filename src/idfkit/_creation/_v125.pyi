@@ -34,6 +34,7 @@ class ZoneHVACForcedAirUserDefined_v8_9_to_v22_1:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:ForcedAir:UserDefined`` and add it to the document.
 
@@ -65,6 +66,7 @@ class GroundHeatExchangerSystem_v8_9_to_v9_5:
             _g.GroundHeatExchangerSystemVerticalWellLocationsItem
             | _g.GroundHeatExchangerSystemVerticalWellLocationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:System`` and add it to the document.
 
@@ -105,6 +107,7 @@ class ZoneVentilationDesignFlowRate_v22_2_to_v24_2:
         maximum_outdoor_temperature: float | None = 100,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_wind_speed: float | None = 40,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneVentilation:DesignFlowRate`` and add it to the document.
 
@@ -157,6 +160,7 @@ class ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1:
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
 
@@ -191,6 +195,7 @@ class TableOneIndependentVariable_v9_0_to_v9_1:
             _vd.TableOneIndependentVariableValuesItem_v9_0_to_v9_1
             | _vd.TableOneIndependentVariableValuesGroup_v9_0_to_v9_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:OneIndependentVariable`` and add it to the document.
 
@@ -206,6 +211,7 @@ class AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9:
         air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float,
         air_mass_flow_exponent_when_no_outdoor_air_flow: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:OutdoorAirFlow`` and add it to the document.
 
@@ -248,6 +254,7 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped_v8_9_to_v23_1:
         heating_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         heating_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` and add it to the document.
 
@@ -265,6 +272,7 @@ class AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5:
         outdoor_air_equipment_list_name: str,
         controller_list_name: str | None = ...,
         availability_manager_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:OutdoorAirSystem`` and add it to the document.
 

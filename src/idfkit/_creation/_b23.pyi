@@ -24,6 +24,7 @@ class ConstructionAssignmentSet:
         interior_subsurface_construction_assignments_name: str | None = ...,
         interior_partition_construction_name: str | None = ...,
         adiabatic_surface_construction_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ConstructionAssignmentSet`` and add it to the document.
 
@@ -41,6 +42,7 @@ class GroundHeatTransferBasementEquivAutoGrid:
         clearance_distance_from_outside_of_wall_to_edge_of_3_d_ground_domain: float | None = 15,
         slabdepth_thickness_of_the_floor_slab: float | None = 0.1,
         basedepth_depth_of_the_basement_wall_below_grade: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:EquivAutoGrid`` and add it to the document.
 
@@ -59,6 +61,7 @@ class DaylightingDELightComplexFenestration:
         building_surface_name: str,
         window_name: str,
         fenestration_rotation: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Daylighting:DELight:ComplexFenestration`` and add it to the document.
 
@@ -80,6 +83,7 @@ class AirTerminalDualDuctVAVOutdoorAir:
         availability_schedule_name: str | None = ...,
         recirculated_air_inlet_node_name: str | None = ...,
         per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:DualDuct:VAV:OutdoorAir`` and add it to the document.
 
@@ -157,6 +161,7 @@ class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
             _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesItem
             | _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR`` and add it to the document.
 
@@ -197,6 +202,7 @@ class ChillerAbsorption:
         design_generator_fluid_flow_rate: float | Literal["Autosize"] | None = ...,
         degree_of_subcooling_in_steam_generator: float | None = 1,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Absorption`` and add it to the document.
 
@@ -215,6 +221,7 @@ class AnyThermalStorageIceSimple:
         capacity: float,
         inlet_node_name: str,
         outlet_node_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:Ice:Simple`` and add it to the document.
 
@@ -232,6 +239,7 @@ class ExternalInterface:
         name_of_external_interface: Literal[
             "FunctionalMockupUnitExport", "FunctionalMockupUnitImport", "PtolemyServer"
         ],
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface`` and add it to the document.
 
@@ -256,6 +264,7 @@ class RefrigerationCondenserAirCooled:
         condenser_refrigerant_operating_charge_inventory: float | None = 0,
         condensate_receiver_refrigerant_inventory: float | None = 0,
         condensate_piping_refrigerant_inventory: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:Condenser:AirCooled`` and add it to the document.
 
@@ -275,6 +284,7 @@ class FaultModelFoulingEvaporativeCooler:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         fouling_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:Fouling:EvaporativeCooler`` and add it to the document.
 
@@ -311,6 +321,7 @@ class MeterCustomDecrement:
         variable_details: Sequence[
             _g.MeterCustomDecrementVariableDetailsItem | _g.MeterCustomDecrementVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:CustomDecrement`` and add it to the document.
 

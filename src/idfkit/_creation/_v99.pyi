@@ -39,6 +39,7 @@ class EnergyManagementSystemProgramCallingManager_v8_9_to_v9_0:
             _g.EnergyManagementSystemProgramCallingManagerProgramsItem
             | _g.EnergyManagementSystemProgramCallingManagerProgramsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:ProgramCallingManager`` and add it to the document.
 
@@ -106,6 +107,7 @@ class LifeCycleCostParameters_v8_9_to_v22_1:
             "StraightLine-40year",
         ]
         | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:Parameters`` and add it to the document.
 
@@ -133,6 +135,7 @@ class CoilHeatingElectricMultiStage_v8_9_to_v22_1:
         stage_3_nominal_capacity: float | Literal["Autosize"] | None = ...,
         stage_4_efficiency: float | None = ...,
         stage_4_nominal_capacity: float | Literal["Autosize"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Electric:MultiStage`` and add it to the document.
 

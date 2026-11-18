@@ -20,6 +20,7 @@ class WindowMaterialSimpleGlazingSystem:
         u_factor: float,
         solar_heat_gain_coefficient: float,
         visible_transmittance: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:SimpleGlazingSystem`` and add it to the document.
 
@@ -53,6 +54,7 @@ class ExteriorFuelEquipment:
         schedule_name: str,
         design_level: float,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Exterior:FuelEquipment`` and add it to the document.
 
@@ -62,7 +64,7 @@ class ExteriorFuelEquipment:
         """
 
 class ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling:
-    def __call__(self, name: str, /, *, fanger_thermal_comfort_schedule_name: str) -> None:
+    def __call__(self, name: str, /, *, fanger_thermal_comfort_schedule_name: str, validate: bool = True) -> None:
         """Create a new ``ThermostatSetpoint:ThermalComfort:Fanger:SingleHeatingOrCooling`` and add it to the document.
 
         Used for heating and cooling thermal comfort control with a single setpoint. The PMV setpoint can be scheduled and varied throughout the simulation for both heating and cooling.
@@ -91,6 +93,7 @@ class ZoneHVACBaseboardRadiantConvectiveElectric:
             _g.ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Electric`` and add it to the document.
 
@@ -121,6 +124,7 @@ class CoilCoolingWater:
         heat_exchanger_configuration: Literal["CounterFlow", "CrossFlow"] | None = "CounterFlow",
         condensate_collection_water_storage_tank_name: str | None = ...,
         design_water_temperature_difference: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:Water`` and add it to the document.
 
@@ -161,6 +165,7 @@ class AnyEvaporativeFluidCoolerSingleSpeed:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeFluidCooler:SingleSpeed`` and add it to the document.
 
@@ -205,6 +210,7 @@ class PlantEquipmentOperationOutdoorWetBulb:
         wet_bulb_temperature_range_10_lower_limit: float | None = ...,
         wet_bulb_temperature_range_10_upper_limit: float | None = ...,
         range_10_equipment_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:OutdoorWetBulb`` and add it to the document.
 
@@ -244,6 +250,7 @@ class RefrigerationCompressorRack:
         end_use_subcategory: str | None = "General",
         refrigeration_case_name_or_walkin_name_or_caseandwalkinlist_name: str | None = ...,
         heat_rejection_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:CompressorRack`` and add it to the document.
 

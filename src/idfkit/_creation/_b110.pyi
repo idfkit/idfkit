@@ -12,7 +12,9 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class AnyZoneGroup:
-    def __call__(self, name: str, /, *, zone_list_name: str, zone_list_multiplier: int | None = 1) -> None:
+    def __call__(
+        self, name: str, /, *, zone_list_name: str, zone_list_multiplier: int | None = 1, validate: bool = True
+    ) -> None:
         """Create a new ``ZoneGroup`` and add it to the document.
 
         Adds a multiplier to a ZoneList. This can be used to reduce the amount of input necessary for simulating repetitive structures, such as the identical floors of a multi-story building.
@@ -34,6 +36,7 @@ class AnyCoilHeatingFuel:
         nominal_capacity: float | Literal["Autosize"] | None = ...,
         temperature_setpoint_node_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Fuel`` and add it to the document.
 
@@ -158,6 +161,7 @@ class WaterHeaterStratified:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Stratified`` and add it to the document.
 
@@ -180,6 +184,7 @@ class AnyDemandManagerLights:
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
         lights: Sequence[_g.DemandManagerLightsLightsItem | _g.DemandManagerLightsLightsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:Lights`` and add it to the document.
 
@@ -225,6 +230,7 @@ class AnyOutputControlFiles:
         output_screen: Literal["No", "Yes"] | None = "Yes",
         output_extshd: Literal["No", "Yes"] | None = "Yes",
         output_tarcog: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Files`` and add it to the document.
 

@@ -31,6 +31,7 @@ class GasEquipment_v8_9_to_v9_5:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GasEquipment`` and add it to the document.
 
@@ -64,6 +65,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4:
             _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Steam`` and add it to the document.
 
@@ -91,6 +93,7 @@ class CoilHeatingFuel_v8_9_to_v9_2:
         parasitic_electric_load: float | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
         parasitic_fuel_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Fuel`` and add it to the document.
 

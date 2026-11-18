@@ -50,6 +50,7 @@ class SizingPeriodWeatherFileConditionType:
         | None = "Monday",
         use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
         use_weather_file_rain_and_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SizingPeriod:WeatherFileConditionType`` and add it to the document.
 
@@ -116,6 +117,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferSuction:
         liquid_transport_coefficient_24: float | None = ...,
         moisture_content_25: float | None = ...,
         liquid_transport_coefficient_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Suction`` and add it to the document.
 
@@ -132,6 +134,7 @@ class GroundHeatTransferControl:
         *,
         run_basement_preprocessor: Literal["No", "Yes"] | None = "No",
         run_slab_preprocessor: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Control`` and add it to the document.
 
@@ -159,6 +162,7 @@ class ZoneCoolTowerShower:
         flow_control_type: Literal["WaterFlowSchedule", "WindDrivenFlow"] | None = "WindDrivenFlow",
         fraction_of_water_loss: float | None = ...,
         fraction_of_flow_schedule: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneCoolTower:Shower`` and add it to the document.
 
@@ -180,6 +184,7 @@ class ZoneControlThermostatTemperatureAndHumidity:
         overcool_constant_range: float | None = 1.7,
         overcool_range_schedule_name: str | None = ...,
         overcool_control_ratio: float | None = 3.6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:Thermostat:TemperatureAndHumidity`` and add it to the document.
 
@@ -197,6 +202,7 @@ class AirLoopHVACExhaustSystem:
         zone_mixer_name: str,
         fan_object_type: Literal["Fan:ComponentModel", "Fan:SystemModel"],
         fan_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:ExhaustSystem`` and add it to the document.
 
@@ -206,7 +212,7 @@ class AirLoopHVACExhaustSystem:
         """
 
 class Duct:
-    def __call__(self, name: str, /, *, inlet_node_name: str, outlet_node_name: str) -> None:
+    def __call__(self, name: str, /, *, inlet_node_name: str, outlet_node_name: str, validate: bool = True) -> None:
         """Create a new ``Duct`` and add it to the document.
 
         Passes inlet node state variables to outlet node state variables
@@ -215,7 +221,9 @@ class Duct:
         """
 
 class AnyEnergyManagementSystemTrendVariable:
-    def __call__(self, name: str, /, *, ems_variable_name: str, number_of_timesteps_to_be_logged: int) -> None:
+    def __call__(
+        self, name: str, /, *, ems_variable_name: str, number_of_timesteps_to_be_logged: int, validate: bool = True
+    ) -> None:
         """Create a new ``EnergyManagementSystem:TrendVariable`` and add it to the document.
 
         This object sets up an EMS trend variable from an Erl variable A trend variable logs values across timesteps
@@ -278,6 +286,7 @@ class CurveTriquadratic:
         | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Triquadratic`` and add it to the document.
 
