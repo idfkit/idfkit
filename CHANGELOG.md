@@ -14,11 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   indexed the object as `IDFDocument.add()` does by default, but the keywords were the type's own
   fields, checked by pyright and mypy, and the result was the type's class (`Zone`), not
   `IDFObject`. A misspelled field (`ceiling_hieght=`), a value the field does not accept
-  (`zone_inside_convection_algorithm="Tarp"`) or a wrong value type was a type error, where
+  (`zone_inside_convection_algorithm="Bogus"`) or a wrong value type was a type error, where
   `doc.add("Zone", ...)` type-checked and failed when it ran. The keywords followed the document's
   type: 9.4's fields through `IDFDocumentV9_4`, and only those every release accepts through
-  `AnyIDFDocument`. They were read from the class's typed `update()`, so no overload was resolved
-  and a call cost the type checker the same for every object type: 300 calls took 1.8 s, against
+  `AnyIDFDocument`. They were read from the class itself (see the next entry), so no overload was
+  resolved and a call cost the type checker the same for every object type: 300 calls took 1.8 s, against
   1.55 s for 300 untyped `doc.add()` calls; typing `doc.add()` itself, with one overload per type,
   took 24.5 s. `doc.add()` ran as fast as before (8.6 µs a call with validation). Collections came
   to hold their document; adding through the empty collection read for a type with no objects
@@ -26,6 +26,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   still added through its collections, except one emptied before it was pickled, which raised
   `TypeError` naming `IDFDocument.add()`. See Deprecated for the object form `add(obj)` this
   replaces ([#296](https://github.com/idfkit/idfkit/pull/296)).
+- `IDFCollection.add()` took the parameters of a creation signature generated from the schema, so
+  an editor's signature help showed them as the call was typed: `doc.materials.add(` listed the
+  name, then `roughness`, `thickness`, `conductivity`, `density` and `specific_heat` with no
+  default, then `thermal_absorptance: float | None = 0.9` and the other optional fields with their
+  schema defaults (`...` where a default is not a plain number or string). A shown default is the
+  value EnergyPlus applies to a field left empty; `add()` stores only the fields passed. Leaving out
+  a field the schema requires, or passing `None` for one, was a type error in pyright and mypy, as
+  it is a `ValidationFailedError` (E001) at run time, and so was a name for a type without a Name
+  field (`doc["Output:SQLite"].add("x")`, an `InvalidFieldError` at run time). The required fields
+  and defaults were the release's: 9.4's through `IDFDocumentV9_4`. Through `AnyIDFDocument` a
+  field was required where any release requires it, so no release refuses a call that
+  type-checks, and a default was shown only where every release has the same one. Where no call
+  can give every release what it requires, because a required field was renamed between releases
+  (`People`, `Lights`, `InternalMass`, ...), the signature required
+  `narrow_with_as_version_first`, which no argument satisfies: narrow the document with
+  `as_version` first. A required field whose key ends in `_` (`gas_or_gas_mixture_` on
+  `WindowMaterial:Gap`) was offered under that key only, since the run time refuses both
+  spellings together. A field whose key is not a Python name (`100_outdoor_air_in_cooling` on
+  `Sizing:System`) is not a keyword; set it with `IDFDocument.add()` or after creation. Releases of
+  a version range that require other fields got a subclass of the range's class, so every class
+  name in `idfkit.versioned` stayed, and the deprecated `add(obj)` refused fields passed beside the
+  object, which it used to drop. A collection a type checker cannot narrow
+  (`doc.get_collection(obj_type)`) still accepted any name and fields. Run time was unchanged, and
+  so was type-checking speed: the signatures were kept in modules of their own
+  (`idfkit/_creation`) that a type checker reads only to check an `add()` call
+  ([#297](https://github.com/idfkit/idfkit/pull/297)).
 - `idfkit check` gained `C006`, an error checked by default: an object type passed to `add()` that
   no target release has (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a
   choice value no target release lists for the field
@@ -135,28 +161,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking:** for type checking only, `IDFCollection.add()` took the parameters of a creation
-  signature generated from the schema, so an editor's signature help showed them as the call was
-  typed: `doc.materials.add(` listed the name, then `roughness`, `thickness`, `conductivity`,
-  `density` and `specific_heat` with no default, then `thermal_absorptance: float | None = 0.9`
-  and the other optional fields with their schema defaults (`...` where a default is not a plain
-  number or string), where every parameter used to read `= ...`. Leaving out a field the schema
-  requires, or passing `None` for one, became a type error in pyright and mypy, as it was a
-  `ValidationFailedError` (E001) at run time; code that type-checked while missing one now
-  failed. A name became a type error for a type without a Name field
-  (`doc["Output:SQLite"].add("x")`, an `InvalidFieldError` at run time), and the name was required
-  for a type whose schema requires one (`doc.zones.add()`). The required fields and defaults were
-  the release's: 9.4's through `IDFDocumentV9_4`, and through `AnyIDFDocument` a field was
-  required only where every release requires it and a default shown only where every release has
-  it, so a release that requires other fields got a class of its own, and the types whose
-  releases differ only in that (`Version`, `ZoneControl:ContaminantController`, ...) got an
-  `Any<Class>` class instead of an alias of the latest class. A collection a type checker cannot
-  narrow (`doc.get_collection(obj_type)`) still accepted any name and fields. Run time was
-  unchanged, and so was type-checking speed: the signatures were kept in modules of their own
-  (`idfkit/_creation`) that a type checker reads only to check an `add()` call, so a cold
-  `pyright` run on a file importing idfkit took 1.26 s against 1.30 s before, 300 typed `add()`
-  calls 1.61 s against 1.58 s, and cold signature help 1.10 s against 1.07 s
-  ([#297](https://github.com/idfkit/idfkit/pull/297)).
 - For type checking only, an undeclared field on a typed object was reported against a type named
   for the mistake: pyright's message for `zone.ceiling_hieght = 3.0` read `parameter "key" of type
   "_NotAFieldOfThisObjectType"` rather than `of type "Never"` (`_NotAFieldOfThisExtensibleGroup`

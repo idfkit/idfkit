@@ -63,7 +63,7 @@ insulation = doc["Material"].add(
 doc["Output:SQLite"].add(option_type="SimpleAndTabular")  # a type without a Name field: no name
 
 # doc.zones.add("Lab", ceiling_hieght=3.0)                       # error: No parameter named "ceiling_hieght"
-# doc.zones.add("Lab", zone_inside_convection_algorithm="Tarp")  # error: not one of the field's choices
+# doc.zones.add("Lab", zone_inside_convection_algorithm="Bogus")  # error: not one of the field's choices
 # doc["Material"].add("XPS_50mm", thickness=0.05)                 # error: Arguments missing for parameters
 #                                                                 #   "roughness", "conductivity", "density", ...
 # doc["Output:SQLite"].add("Out", option_type="Simple")          # error: Expected 0 positional arguments

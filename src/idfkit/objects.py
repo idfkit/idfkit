@@ -1418,7 +1418,7 @@ class IDFCollection(Generic[_T_co]):
         checked by the type checker, and the result is the collection's object class.
         ``doc["Zone"].add("Office", ceiling_height=3.0)`` returns a ``Zone``, and a misspelled
         field (``ceiling_hieght=``) or a value the field does not accept
-        (``zone_inside_convection_algorithm="Tarp"``) is a type error, as it is on assignment.
+        (``zone_inside_convection_algorithm="Bogus"``) is a type error, as it is on assignment.
         Through a document narrowed to a release (``IDFDocumentV9_4``) the fields are that
         release's, and through ``AnyIDFDocument`` only those every release accepts.
 
@@ -1426,10 +1426,16 @@ class IDFCollection(Generic[_T_co]):
         schema, so an editor's signature help lists them: the name first, for a type with a Name
         field; then the fields the schema requires, with no default; then the others with their
         schema default (``thermal_absorptance: float | None = 0.9``), or ``...`` where it is not a
-        plain number or string. Leaving out a required field (``doc.materials.add("XPS")``) is a
-        type error, as it is a ``ValidationFailedError`` at run time, and so is a name for a type
-        without a Name field (``doc["Output:SQLite"].add("x")``), an ``InvalidFieldError``. A field
-        is required through ``AnyIDFDocument`` only where every release requires it.
+        plain number or string. A shown default is the value EnergyPlus applies to a field left
+        empty: ``add()`` stores only the fields passed. Leaving out a required field
+        (``doc.materials.add("XPS")``) is a type error, as it is a ``ValidationFailedError`` at run
+        time, and so is a name for a type without a Name field (``doc["Output:SQLite"].add("x")``),
+        an ``InvalidFieldError``. Through ``AnyIDFDocument`` a field is required where any release
+        requires it, so no release refuses a call that type-checks; where no call suits every
+        release (a required field renamed between releases), the signature requires
+        ``narrow_with_as_version_first``, which nothing satisfies: narrow the document with
+        ``as_version`` first. A field whose key is not a Python name (``100_outdoor_air_in_cooling``)
+        is not a keyword here; set it with ``IDFDocument.add`` or after creation.
 
         The object is always validated, as ``IDFDocument.add`` validates by default; for
         unvalidated bulk loading use ``doc.add(obj_type, ..., validate=False)``. Fields are passed
@@ -1438,7 +1444,8 @@ class IDFCollection(Generic[_T_co]):
 
         Up to idfkit 1.3.0rc1 this method took an existing object and filed it in the collection
         without validating it or linking it to the document. That form still runs, with a
-        ``DeprecationWarning``, and will be removed; file an existing object with
+        ``DeprecationWarning`` (and a ``TypeError`` for fields passed beside the object, which it
+        would drop), and will be removed; file an existing object with
         ``IDFDocument.addidfobject``, which puts it in the document. Type checkers accept only the
         form above.
 
@@ -1478,6 +1485,10 @@ class IDFCollection(Generic[_T_co]):
             ['Office', 'Lab']
         """
         if args and isinstance(args[0], IDFObject):
+            if len(args) > 1 or fields:
+                # It files the object as it is: fields beside it would be dropped without a word.
+                msg = "add(obj) takes the object alone; set its fields on the object, or create one with add(name, **fields)"
+                raise TypeError(msg)
             return self._append_deprecated(args[0])
         legacy = fields.get("obj") if not args and len(fields) == 1 else None
         if isinstance(legacy, IDFObject):
