@@ -1458,7 +1458,7 @@ def refuse_name_for_nameless_type(obj_type: str, name: object, obj_schema: Mappi
     raise InvalidFieldError(obj_type, "name", message=msg)
 
 
-def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache, *, check_names: bool) -> None:
+def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache) -> None:
     """Refuse what ``IDFDocument.add`` must not store, as :meth:`IDFObject.update` refuses it.
 
     Runs on the new object before it joins the document, so a refusal leaves nothing behind.
@@ -1466,9 +1466,6 @@ def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache, *, check_nam
     Args:
         obj: The object ``add()`` built, not yet in any collection.
         pc: Its type's parsing cache.
-        check_names: Whether to refuse keys the type does not name. ``add(validate=True)`` reports
-            those as ``W003`` instead; the extensible wrapper value is checked either way, since
-            validation does not look inside its groups.
 
     Raises:
         InvalidFieldError: A key is not a field of the type, is ``name`` (which belongs in the
@@ -1481,7 +1478,7 @@ def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache, *, check_nam
     refused: list[RefusedEntry] = []
     known = pc.known_keys
     # Fast path: every key known. The refusal tests below run only when one is not.
-    if check_names and not data.keys() <= known:
+    if not data.keys() <= known:
         for key, value in data.items():
             if key == wrapper_key or key in known:
                 continue
@@ -1732,10 +1729,9 @@ class IDFCollection(Generic[_T_co]):
                     not a bool.
                 UnknownObjectTypeError: If the collection's type is in no schema
                     (``doc.get_collection("Zoen")``).
-                ValidationFailedError: If validation fails (unknown fields, missing required fields,
-                    invalid values).
-                InvalidFieldError: If a name is passed for a type without a Name field, in either
-                    mode; and, with ``validate=False``, if a field is not one of the type's.
+                ValidationFailedError: If validation fails (missing required fields, invalid values).
+                InvalidFieldError: If a name is passed for a type without a Name field, or a field
+                    is not one of the type's (naming the closest field), in either mode.
                 DuplicateObjectError: If an object of the type already has the name, or the type is
                     a singleton that already has one.
 

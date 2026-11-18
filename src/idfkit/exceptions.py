@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import difflib
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -14,6 +15,37 @@ class IdfKitError(Exception):
     """Base exception for all idfkit errors."""
 
     pass
+
+
+def closest_names(name: str, candidates: Iterable[str], n: int = 1) -> list[str]:
+    """Up to *n* candidates closest to *name*, ignoring case, closest first.
+
+    The one "did you mean" matcher: the unknown-type and unknown-field errors, attribute access
+    on a document and ``idfkit check`` all suggest through it, so they agree on a typo.
+
+    Examples:
+        >>> closest_names("zoens", ["zones", "zone_lists", "materials"], n=2)
+        ['zones']
+    """
+    by_folded = {candidate.casefold(): candidate for candidate in candidates}
+    return [by_folded[close] for close in difflib.get_close_matches(name.casefold(), by_folded.keys(), n=n, cutoff=0.6)]
+
+
+def closest_name(name: str, candidates: Iterable[str]) -> str | None:
+    """The candidate closest to *name*, ignoring case, or ``None`` if none is close.
+
+    The "did you mean" of the unknown-type and unknown-field errors; see `closest_names`.
+
+    Examples:
+        >>> closest_name("Zoen", ["Zone", "Material"])
+        'Zone'
+        >>> closest_name("ceiling_heigth", ["x_origin", "ceiling_height"])
+        'ceiling_height'
+        >>> closest_name("qwerty", ["Zone"]) is None
+        True
+    """
+    close = closest_names(name, candidates)
+    return close[0] if close else None
 
 
 def _format_subprocess_failure(
@@ -147,20 +179,39 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
     """Raised when an unknown object type is encountered.
 
     Inherits from ``KeyError`` so that existing code catching ``KeyError``
-    for missing object types continues to work.
+    for missing object types continues to work. Unlike a plain ``KeyError``,
+    ``str()`` gives the message as written, not its ``repr()``.
+
+    Attributes:
+        obj_type: The type name that was not found.
+        version: The EnergyPlus release it was looked up in, if known.
+        suggestion: The closest type name of that release, if one is close.
     """
 
-    def __init__(self, obj_type: str, version: tuple[int, int, int] | None = None) -> None:
+    def __init__(
+        self, obj_type: str, version: tuple[int, int, int] | None = None, suggestion: str | None = None
+    ) -> None:
         self.obj_type = obj_type
         self.version = version
+        self.suggestion = suggestion
         msg = f"Unknown object type: '{obj_type}'"
+        if suggestion is not None:
+            msg += f". Did you mean '{suggestion}'?"
         if version:
             from .docs import search_url
 
             s_url = search_url(obj_type, version)
             if s_url:
                 msg += f"\n  Search docs: {s_url.url}"
+        self.message = msg
         super().__init__(msg)
+
+    def __str__(self) -> str:
+        # KeyError.__str__ gives repr() of its argument: quoted, with a literal "\n".
+        return self.message
+
+    def __reduce__(self) -> tuple[type[UnknownObjectTypeError], tuple[str, tuple[int, int, int] | None, str | None]]:
+        return (type(self), (self.obj_type, self.version, self.suggestion))
 
 
 class UnknownObjectTypeWarning(UserWarning):
@@ -215,6 +266,30 @@ def format_refused(
     return "\n".join(lines)
 
 
+def _closest_fields(names: Sequence[str], available_fields: Sequence[str], hints: dict[str, str]) -> dict[str, str]:
+    """The closest of *available_fields* to each of *names*, for the names that have one.
+
+    A name whose refusal line already quotes that field, as ``spell it 'x_origin'`` does, is left
+    out, so the same hint is not given twice. *hints* maps a name to its refusal detail.
+    """
+    suggestions: dict[str, str] = {}
+    for name in names:
+        close = closest_name(name, available_fields)
+        if close is not None and close != name and f"'{close}'" not in hints.get(name, ""):
+            suggestions[name] = close
+    return suggestions
+
+
+def _did_you_mean(names: Sequence[str], suggestions: dict[str, str]) -> str:
+    """The "Did you mean" line for *suggestions*, naming each unknown name when there are several."""
+    if not suggestions:
+        return ""
+    if len(names) == 1:
+        return f"\nDid you mean '{suggestions[names[0]]}'?"
+    pairs = ", ".join(f"'{close}' for '{name}'" for name, close in suggestions.items())
+    return f"\nDid you mean {pairs}?"
+
+
 class InvalidFieldError(IdfKitError, AttributeError):
     """Raised when an invalid field is accessed or set.
 
@@ -247,6 +322,13 @@ class InvalidFieldError(IdfKitError, AttributeError):
             msg = format_refused(obj_type, refused, operation)
         else:
             msg = f"Invalid field '{field_name}' for object type '{obj_type}'"
+        unknown_entries = [entry for entry in refused if entry.reason == "unknown"] if refused else []
+        unknown = [entry.name for entry in unknown_entries] if refused else [field_name]
+        hints = {entry.name: entry.detail for entry in unknown_entries}
+        #: The closest field of the type to each unknown name, for the names that have one and whose
+        #: refusal line does not already name it.
+        self.suggestions = _closest_fields(unknown, available_fields or [], hints)
+        msg += _did_you_mean(unknown, self.suggestions)
         if available_fields:
             msg += f"\nAvailable fields: {', '.join(available_fields[:10])}"
             if len(available_fields) > 10:
@@ -364,11 +446,17 @@ class ValidationFailedError(IdfKitError):
 
     def __init__(self, errors: Sequence[object]) -> None:
         self.errors = list(errors)
-        msg = f"Validation failed with {len(errors)} error(s):\n"
-        for i, err in enumerate(list(errors)[:5], 1):
+        # Count by severity, so a warning is not called an error. Items without one count as errors.
+        counts: dict[str, int] = {}
+        for err in self.errors:
+            severity = getattr(getattr(err, "severity", None), "value", "error")
+            counts[severity] = counts.get(severity, 0) + 1
+        parts = [f"{counts[s]} {s}(s)" for s in ("error", "warning", "info") if counts.get(s)]
+        msg = f"Validation failed with {', '.join(parts) or '0 error(s)'}:\n"
+        for i, err in enumerate(self.errors[:5], 1):
             msg += f"  {i}. {err}\n"
-        if len(errors) > 5:
-            msg += f"  ... and {len(errors) - 5} more errors"
+        if len(self.errors) > 5:
+            msg += f"  ... and {len(self.errors) - 5} more"
         super().__init__(msg)
 
 

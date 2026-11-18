@@ -130,6 +130,27 @@ class TestUnknownObjectTypeError:
     def test_is_key_error(self) -> None:
         assert isinstance(UnknownObjectTypeError("X"), KeyError)
 
+    def test_str_is_the_message_not_its_repr(self) -> None:
+        """KeyError.__str__ would quote the message and show its line break as a literal backslash-n."""
+        err = UnknownObjectTypeError("Zoen", version=(24, 1, 0), suggestion="Zone")
+        text = str(err)
+        assert text.startswith("Unknown object type: 'Zoen'. Did you mean 'Zone'?")
+        assert "\\n" not in text
+        assert err.suggestion == "Zone"
+
+    def test_pickles(self) -> None:
+        import pickle
+
+        err = pickle.loads(pickle.dumps(UnknownObjectTypeError("Zoen", (24, 1, 0), "Zone")))  # noqa: S301
+        assert (err.obj_type, err.version, err.suggestion) == ("Zoen", (24, 1, 0), "Zone")
+
+    def test_add_suggests_the_closest_type(self) -> None:
+        from idfkit import new_document
+
+        with pytest.raises(UnknownObjectTypeError, match="Did you mean 'Zone'") as exc_info:
+            new_document().add("Zoen", "Z")
+        assert exc_info.value.suggestion == "Zone"
+
 
 class TestInvalidFieldError:
     def test_basic(self) -> None:
@@ -219,7 +240,18 @@ class TestValidationFailedError:
     def test_truncation(self) -> None:
         errors: list[object] = [f"error {i}" for i in range(10)]
         err = ValidationFailedError(errors)
-        assert "5 more errors" in str(err)
+        assert "... and 5 more" in str(err)
+
+    def test_header_counts_by_severity(self) -> None:
+        """A warning is counted as a warning, not as an error."""
+        from idfkit.validation import Severity, ValidationError
+
+        def issue(severity: Severity) -> ValidationError:
+            return ValidationError(severity=severity, obj_type="Zone", obj_name="Z", field=None, message="m", code="X")
+
+        err = ValidationFailedError([issue(Severity.ERROR), issue(Severity.WARNING), issue(Severity.WARNING)])
+        assert str(err).startswith("Validation failed with 1 error(s), 2 warning(s):")
+        assert str(ValidationFailedError([issue(Severity.WARNING)])).startswith("Validation failed with 1 warning(s):")
 
     def test_is_idfkit_error(self) -> None:
         assert isinstance(ValidationFailedError([]), IdfKitError)

@@ -49,6 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `add()` with a field the type does not have raised `InvalidFieldError`, as `update()`
+  does, instead of `ValidationFailedError` (`W003`); catch `InvalidFieldError`.
+  ([#324](https://github.com/idfkit/idfkit/pull/324))
+- `InvalidFieldError` and `UnknownObjectTypeError` named the closest field or object type
+  ("Did you mean 'ceiling_height'?"), as attribute access and `idfkit check` already did.
+  ([#324](https://github.com/idfkit/idfkit/pull/324))
 - **Breaking:** for type checking, the loaders returned `AnyIDFDocument` instead of `IDFDocument`,
   so a model of unstated release was no longer checked as the latest one; state its release with
   `as_type=` or `since=` when loading, or with `as_version()` ([#309](https://github.com/idfkit/idfkit/pull/309)).
@@ -127,6 +133,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `str()` of an `UnknownObjectTypeError` showed the quoted `KeyError` repr, with a literal `\n`,
+  instead of the message; `ValidationFailedError`'s header counted warnings as errors.
+  ([#324](https://github.com/idfkit/idfkit/pull/324))
+- An object missing its `;` before the next object, which loaded with that object inside a field,
+  was logged as a warning and returned by `load_idf_with_diagnostics()` as a `ParseError` finding.
+  ([#324](https://github.com/idfkit/idfkit/pull/324))
 - The bundled `developing-with-idfkit` reference's ceiling-height examples treated a whole-number
   height such as `3`, stored as an `int`, as missing; they accepted any number
   ([#311](https://github.com/idfkit/idfkit/pull/311)).

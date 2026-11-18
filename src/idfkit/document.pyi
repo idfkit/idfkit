@@ -313,8 +313,8 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
             validate: If True (default), validate the object against schema before adding.
                 Raises ValidationFailedError if validation fails. Set to False for
                 bulk operations where performance matters: values, required fields
-                and ranges are then not checked, but a key the schema does not name
-                still raises InvalidFieldError, whatever its value.
+                and ranges are then not checked. A key the schema does not name
+                raises InvalidFieldError in either mode, whatever its value.
             **kwargs: Additional field values
 
         Returns:
@@ -322,14 +322,14 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
 
         Raises:
             UnknownObjectTypeError: If the object type is not recognised by
-                the schema
+                the schema; the message names the closest type, if one is close
             DuplicateObjectError: If a singleton object type (marked with
                 schema ``maxProperties == 1``) already exists in the document
-            ValidationFailedError: If validation fails (unknown fields, missing
-                required fields, invalid values)
-            InvalidFieldError: If ``validate=False`` and a key is not a field of
-                the object type, naming every such key (the name goes in ``name``,
-                not in ``fields``); or, in either mode, if ``name`` is not empty and
+            ValidationFailedError: If validation fails (missing required fields,
+                invalid values)
+            InvalidFieldError: If a key is not a field of the object type, naming
+                every such key and the closest field to each (the name goes in
+                ``name``, not in ``fields``); or if ``name`` is not empty and
                 the type has no Name field (the message names the field to use
                 instead, e.g. ``key_name`` for Output:Meter)
             TypeError: If the extensible wrapper value is not a list of groups,
