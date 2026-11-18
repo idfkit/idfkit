@@ -44,6 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** for type checking, a type a model holds at most one of (`Building`, `Timestep`,
+  `Output:SQLite`, ...) is reached by its singular, `doc.building`, still returning the collection.
+  Replace `doc.output_sqlites` with `doc.output_sqlite`; for `Version`, use `doc["Version"]` ([#308](https://github.com/idfkit/idfkit/pull/308)).
+
 - **Breaking:** for type checking, a field that every release having it requires with no default
   lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;
   delete the `is None` guards pyright strict now flags ([#303](https://github.com/idfkit/idfkit/pull/303)).
@@ -82,6 +86,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by its own type (`IDFDocumentV26_2`), not `IDFDocument` ([#282](https://github.com/idfkit/idfkit/pull/282)).
 
 ### Deprecated
+
+- The plural accessor of such a type (`doc.output_sqlites`, `doc.buildings`) was deprecated: it still
+  works with a `DeprecationWarning`, and pyright strict reports it as an error ([#308](https://github.com/idfkit/idfkit/pull/308)).
 
 - **Breaking:** `IDFCollection.add(obj)` was deprecated and became a type error; it still ran,
   with a `DeprecationWarning`, but raised `TypeError` for fields passed beside the object, which it

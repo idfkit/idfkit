@@ -95,6 +95,13 @@ coils = doc.coil_cooling_dx_single_speeds  # Coil:Cooling:DX:SingleSpeed
 also_loops = doc["AirLoopHVAC"]  # equivalent
 shades = doc.shading_building_detaileds  # Shading:Building:Detailed
 
+# A type a model holds at most one of is named in the singular. It is still the
+# collection, so add through it and read with .first().
+doc.output_sqlite.add(option_type="SimpleAndTabular")  # IDFCollection[OutputSQLite]
+building = doc.building.first()  # Building | None
+if building is not None:
+    north = building.north_axis
+
 # A typo names the closest matches and their object types:
 #   >>> doc.shading_bulding
 #   AttributeError: 'IDFDocument' object has no attribute 'shading_bulding'.
