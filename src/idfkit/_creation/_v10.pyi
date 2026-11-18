@@ -147,6 +147,7 @@ class ScheduleYear_v8_9:
         start_day_26: float | None = ...,
         end_month_26: float | None = ...,
         end_day_26: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Year`` and add it to the document.
 
@@ -167,6 +168,7 @@ class EnvironmentalImpactFactors_v8_9_to_v23_1:
         total_carbon_equivalent_emission_factor_from_n2o: float | None = 80.7272,
         total_carbon_equivalent_emission_factor_from_ch4: float | None = 6.2727,
         total_carbon_equivalent_emission_factor_from_co2: float | None = 0.2727,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnvironmentalImpactFactors`` and add it to the document.
 
@@ -184,6 +186,7 @@ class SizingParameters_v8_9_to_v22_1:
         heating_sizing_factor: float | None = 1,
         cooling_sizing_factor: float | None = 1,
         timesteps_in_averaging_window: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Parameters`` and add it to the document.
 
@@ -249,6 +252,7 @@ class HVACTemplateZoneWaterToAirHeatPump_v8_9_to_v23_1:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:WaterToAirHeatPump`` and add it to the document.
 
@@ -373,6 +377,7 @@ class WaterHeaterStratified_v22_2_to_v23_1:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Stratified`` and add it to the document.
 
@@ -391,6 +396,7 @@ class ConvergenceLimits_v8_9_to_v22_1:
         maximum_hvac_iterations: float | None = 20,
         minimum_plant_iterations: float | None = 2,
         maximum_plant_iterations: float | None = 8,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ConvergenceLimits`` and add it to the document.
 
@@ -439,6 +445,7 @@ class ZoneHVACEvaporativeCoolerUnit_v8_9_to_v23_1:
         | None = ...,
         second_evaporative_cooler_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EvaporativeCoolerUnit`` and add it to the document.
 

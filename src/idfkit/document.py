@@ -18,7 +18,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
-from ._accessors import AccessorAttributeError, AccessorResolver
+from ._accessors import AccessorAttributeError, AccessorResolver, deprecated_plural_message
 from ._compat import EppyDocumentMixin
 from ._document_types import DocumentTypeMeta
 from .cst import CSTNode, DocumentCST, SourceSpan
@@ -118,8 +118,15 @@ _IDF_TO_PYTHON = {v.upper(): k for k, v in _PYTHON_TO_IDF.items()}
 
 
 def _build_resolver(schema: EpJSONSchema) -> AccessorResolver:
-    """Build the attribute resolver for *schema*; cached on the schema itself."""
-    return AccessorResolver(schema.object_types, shorthands=_PYTHON_TO_IDF, reserved=_RESERVED)
+    """Build the attribute resolver for *schema*; cached on the schema itself.
+
+    A type the schema caps at one object per model (``"maxProperties": 1``) is named in the
+    singular, every other type in the plural. Uniqueness is read from *schema*, so it follows
+    the release: a type unique in one release and not in another is named for each release.
+    """
+    types = schema.object_types
+    unique = [t for t in types if (schema.get_object_schema(t) or {}).get("maxProperties") == 1]
+    return AccessorResolver(types, shorthands=_PYTHON_TO_IDF, reserved=_RESERVED, unique=unique)
 
 
 class IDFDocument(EppyDocumentMixin, Generic[Strict]):
@@ -414,8 +421,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Get collection by Python-style attribute name.
 
         Every object type in the document's schema is reachable this way as its
-        ``snake_case`` plural (``model.air_loop_hvacs``), which the stub types as
-        ``IDFCollection`` of the generated class. Hand-written shorthands in
+        ``snake_case`` plural (``model.air_loop_hvacs``), or, for a type a model holds
+        at most one of, its singular (``model.output_sqlite``, ``model.building``). The
+        stub types either as ``IDFCollection`` of the generated class. The plural of such
+        a type (``model.output_sqlites``) still resolves, with a ``DeprecationWarning``. Hand-written shorthands in
         ``_PYTHON_TO_IDF`` (e.g. ``building_surfaces`` -> ``BuildingSurface:Detailed``,
         ``ideal_loads`` -> ``ZoneHVAC:IdealLoadsAirSystem``) also resolve, and keep
         their meaning where one coincides with a derived name. The raw type name, with
@@ -456,6 +465,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if resolver is not None:
             resolved = resolver.resolve(name)
             if resolved is not None:
+                old = resolver.deprecated.get(name)
+                if old is not None:
+                    message = deprecated_plural_message(name, *old)
+                    warnings.warn(f"{message}. The plural will be removed.", DeprecationWarning, stacklevel=2)
                 return self[resolved]
             raise AccessorAttributeError(type(self).__name__, name, resolver)
 
@@ -838,13 +851,15 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """Whether *collection* is the one this document stores its type's objects in."""
         return self._collections.get(collection.obj_type) is collection
 
-    def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject:
+    def _create_in(
+        self, collection: IDFCollection[Any], name: str, fields: dict[str, Any], validate: bool
+    ) -> IDFObject:
         """Create an object for [IDFCollection.add][idfkit.objects.IDFCollection.add].
 
-        Validated as ``add()`` validates by default. *collection* is the one the caller holds: if it
-        is the detached empty collection read for an absent type, it becomes the stored one.
+        Validated or not by *validate*, as ``add()`` is. *collection* is the one the caller holds: if
+        it is the detached empty collection read for an absent type, it becomes the stored one.
         """
-        return self._add(collection.obj_type, name, fields, True, collection)
+        return self._add(collection.obj_type, name, fields, validate, collection)
 
     def _add(
         self,

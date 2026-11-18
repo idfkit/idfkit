@@ -24,6 +24,7 @@ class SurfaceConvectionAlgorithmOutsideUserCurve:
         hf_function_of_wind_speed_curve_name: str | None = ...,
         hn_function_of_temperature_difference_curve_name: str | None = ...,
         hn_function_of_temperature_difference_divided_by_height_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Outside:UserCurve`` and add it to the document.
 
@@ -45,6 +46,7 @@ class AnySurfacePropertySurroundingSurfaces:
         surfaces: Sequence[
             _g.SurfacePropertySurroundingSurfacesSurfacesItem | _g.SurfacePropertySurroundingSurfacesSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:SurroundingSurfaces`` and add it to the document.
 
@@ -78,6 +80,7 @@ class RoomAirTemperaturePatternTwoGradient:
         lower_temperature_bound: float | None = ...,
         upper_heat_rate_bound: float | None = ...,
         lower_heat_rate_bound: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:TwoGradient`` and add it to the document.
 
@@ -108,6 +111,7 @@ class RoomAirSettingsUnderFloorAirDistributionInterior:
         coefficient_c: float | Literal["Autocalculate"] | None = "Autocalculate",
         coefficient_d: float | Literal["Autocalculate"] | None = "Autocalculate",
         coefficient_e: float | Literal["Autocalculate"] | None = "Autocalculate",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAirSettings:UnderFloorAirDistributionInterior`` and add it to the document.
 
@@ -127,6 +131,7 @@ class SteamEquipmentInstance:
         schedule_name: str,
         multiplier: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SteamEquipment:Instance`` and add it to the document.
 
@@ -145,6 +150,7 @@ class AirflowNetworkMultiZoneExternalNode:
         external_node_height: float | None = 0,
         symmetric_wind_pressure_coefficient_curve: Literal["No", "Yes"] | None = "No",
         wind_angle_type: Literal["Absolute", "Relative"] | None = "Absolute",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:ExternalNode`` and add it to the document.
 
@@ -245,6 +251,7 @@ class HVACTemplateSystemPackagedVAV:
             "VariableSpeedMotorPressureReset",
         ]
         | None = "InletVaneDampers",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:PackagedVAV`` and add it to the document.
 
@@ -293,6 +300,7 @@ class AnyZoneHVACCoolingPanelRadiantConvectiveWater:
             _g.ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:CoolingPanel:RadiantConvective:Water`` and add it to the document.
 
@@ -331,6 +339,7 @@ class ZoneHVACAirDistributionUnit:
         nominal_upstream_leakage_fraction: float | None = 0,
         constant_downstream_leakage_fraction: float | None = 0,
         design_specification_air_terminal_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:AirDistributionUnit`` and add it to the document.
 
@@ -351,6 +360,7 @@ class RefrigerationSubcooler:
         design_vapor_inlet_temperature: float | None = ...,
         capacity_providing_system: str | None = ...,
         outlet_control_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:Subcooler`` and add it to the document.
 
@@ -366,6 +376,7 @@ class OutputControlResilienceSummaries:
         /,
         *,
         heat_index_algorithm: Literal["Extended", "Simplified"] | None = "Simplified",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:ResilienceSummaries`` and add it to the document.
 

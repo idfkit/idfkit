@@ -134,13 +134,13 @@ def add_shading_block(
             Vector3D(p2[0], p2[1], z_top),  # UR
         ]
         poly = Polygon3D([corners[k] for k in wall_order])
-        obj = doc.add("Shading:Site:Detailed", wall_name, validate=False)
+        obj = doc["Shading:Site:Detailed"].add(wall_name, validate=False)
         set_surface_coords(obj, poly)
         created.append(obj)
 
     # Top cap — horizontal surface with normal pointing up
     cap_name = f"{name} Top"
-    cap = doc.add("Shading:Site:Detailed", cap_name, validate=False)
+    cap = doc["Shading:Site:Detailed"].add(cap_name, validate=False)
     set_surface_coords(cap, horizontal_poly(fp, z_top, reverse=clockwise))
     created.append(cap)
 

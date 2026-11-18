@@ -39,6 +39,7 @@ class LifeCycleCostUseAdjustment_v8_9_to_v9_2:
         multipliers: Sequence[
             _g.LifeCycleCostUseAdjustmentMultipliersItem | _g.LifeCycleCostUseAdjustmentMultipliersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:UseAdjustment`` and add it to the document.
 
@@ -101,6 +102,7 @@ class HVACTemplateZoneFanCoil_v9_0:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
 
@@ -150,6 +152,7 @@ class ZoneHVACWaterToAirHeatPump_v23_2:
         design_specification_zonehvac_sizing_object_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
 
@@ -170,6 +173,7 @@ class PythonPluginSearchPaths_v9_4_to_v9_6:
             _vd.PythonPluginSearchPathsPySearchPathsItem_v9_4_to_v9_6
             | _vd.PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:SearchPaths`` and add it to the document.
 

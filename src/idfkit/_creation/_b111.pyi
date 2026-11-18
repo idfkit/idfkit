@@ -17,6 +17,7 @@ class SurfaceConvectionAlgorithmOutside:
         /,
         *,
         algorithm: Literal["AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"] | None = "DOE-2",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Outside`` and add it to the document.
 
@@ -119,6 +120,7 @@ class HVACTemplateSystemVAV:
             "VariableSpeedMotorPressureReset",
         ]
         | None = "InletVaneDampers",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:VAV`` and add it to the document.
 
@@ -136,6 +138,7 @@ class AnySizingParameters:
         heating_sizing_factor: float | None = 1,
         cooling_sizing_factor: float | None = 1,
         timesteps_in_averaging_window: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Parameters`` and add it to the document.
 
@@ -172,6 +175,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlowDesign:
         condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
         changeover_delay_time_period_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow:Design`` and add it to the document.
 
@@ -224,6 +228,7 @@ class ControllerOutdoorAir:
         | None = "BypassWhenWithinEconomizerLimits",
         economizer_operation_staging: Literal["EconomizerFirst", "InterlockedWithMechanicalCooling"]
         | None = "InterlockedWithMechanicalCooling",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Controller:OutdoorAir`` and add it to the document.
 
@@ -273,6 +278,7 @@ class AnyEvaporativeFluidCoolerTwoSpeed:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeFluidCooler:TwoSpeed`` and add it to the document.
 
@@ -299,6 +305,7 @@ class ElectricLoadCenterInverterLookUpTable:
         efficiency_at_50_power_and_nominal_voltage: float | None = ...,
         efficiency_at_75_power_and_nominal_voltage: float | None = ...,
         efficiency_at_100_power_and_nominal_voltage: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Inverter:LookUpTable`` and add it to the document.
 
@@ -361,6 +368,7 @@ class UtilityCostChargeBlock:
         block_14_cost_per_unit_value_or_variable_name: float | str | None = ...,
         block_size_15_value_or_variable_name: float | str | None = ...,
         block_15_cost_per_unit_value_or_variable_name: float | str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UtilityCost:Charge:Block`` and add it to the document.
 

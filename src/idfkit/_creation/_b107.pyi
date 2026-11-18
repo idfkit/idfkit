@@ -37,6 +37,7 @@ class ScheduleTypeLimits:
             "Velocity",
         ]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ScheduleTypeLimits`` and add it to the document.
 
@@ -79,6 +80,7 @@ class WindowMaterialGlazingEquivalentLayer:
         front_side_infrared_emissivity: float | None = 0.84,
         back_side_infrared_emissivity: float | None = 0.84,
         thermal_resistance: float | None = 0.158,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Glazing:EquivalentLayer`` and add it to the document.
 
@@ -101,6 +103,7 @@ class Window:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Window`` and add it to the document.
 
@@ -118,6 +121,7 @@ class SurfacePropertyGroundSurfaces:
         ground_surfaces: Sequence[
             _g.SurfacePropertyGroundSurfacesGroundSurfacesItem | _g.SurfacePropertyGroundSurfacesGroundSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:GroundSurfaces`` and add it to the document.
 
@@ -140,6 +144,7 @@ class RoomAirTemperaturePatternNondimensionalHeight:
             _g.RoomAirTemperaturePatternNondimensionalHeightPairsItem
             | _g.RoomAirTemperaturePatternNondimensionalHeightPairsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:NondimensionalHeight`` and add it to the document.
 
@@ -165,6 +170,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam:
             _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Steam`` and add it to the document.
 
@@ -190,6 +196,7 @@ class ZoneHVACExhaustControl:
         minimum_zone_temperature_limit_schedule_name: str | None = ...,
         minimum_exhaust_flow_fraction_schedule_name: str | None = ...,
         balanced_exhaust_fraction_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:ExhaustControl`` and add it to the document.
 
@@ -207,6 +214,7 @@ class AnyZoneHVACEquipmentList:
         load_distribution_scheme: Literal["SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
         equipment: Sequence[_g.AnyZoneHVACEquipmentListEquipmentItem | _g.AnyZoneHVACEquipmentListEquipmentGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
 
@@ -259,6 +267,7 @@ class AnyControllerOutdoorAir:
             "BypassWhenOAFlowGreaterThanMinimum", "BypassWhenWithinEconomizerLimits"
         ]
         | None = "BypassWhenWithinEconomizerLimits",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Controller:OutdoorAir`` and add it to the document.
 
@@ -306,6 +315,7 @@ class AnyChillerHeaterPerformanceElectricEIR:
         | None = "LeavingCondenser",
         heating_mode_cooling_capacity_optimum_part_load_ratio: float | None = 1,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ChillerHeaterPerformance:Electric:EIR`` and add it to the document.
 
@@ -330,6 +340,7 @@ class AnyGroundHeatExchangerPond:
         ground_thermal_conductivity: float,
         number_of_tubing_circuits: int,
         length_of_each_tubing_circuit: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Pond`` and add it to the document.
 
@@ -340,7 +351,12 @@ class AnyGroundHeatExchangerPond:
 
 class ParametricLogic:
     def __call__(
-        self, name: str, /, *, lines: Sequence[_g.ParametricLogicLinesItem | _g.ParametricLogicLinesGroup] = ...
+        self,
+        name: str,
+        /,
+        *,
+        lines: Sequence[_g.ParametricLogicLinesItem | _g.ParametricLogicLinesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Parametric:Logic`` and add it to the document.
 

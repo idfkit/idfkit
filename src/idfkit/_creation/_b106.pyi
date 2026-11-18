@@ -69,6 +69,7 @@ class AnySizingPeriodDesignDay:
         ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_: float | None = 0,
         ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud_: float | None = 0,
         sky_clearness: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SizingPeriod:DesignDay`` and add it to the document.
 
@@ -108,6 +109,7 @@ class ScheduleDayHourly:
         hour_22: float | None = 0,
         hour_23: float | None = 0,
         hour_24: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Day:Hourly`` and add it to the document.
 
@@ -139,6 +141,7 @@ class AnyWindowMaterialComplexShade:
         slat_angle: float | None = 90,
         slat_conductivity: float | None = 160,
         slat_curve: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:ComplexShade`` and add it to the document.
 
@@ -171,6 +174,7 @@ class WindowMaterialComplexShade:
         slat_angle: float | None = 90,
         slat_conductivity: float | None = 160,
         slat_curve: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:ComplexShade`` and add it to the document.
 
@@ -198,6 +202,7 @@ class ZoneHVACBaseboardConvectiveWater:
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         convergence_tolerance: float | None = 0.001,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:Convective:Water`` and add it to the document.
 
@@ -254,6 +259,7 @@ class ThermalStorageChilledWaterStratified:
         node_8_additional_loss_coefficient: float | None = 0,
         node_9_additional_loss_coefficient: float | None = 0,
         node_10_additional_loss_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:ChilledWater:Stratified`` and add it to the document.
 
@@ -273,6 +279,7 @@ class ExternalInterfaceFunctionalMockupUnitImportFromVariable:
         fmu_file_name: str,
         fmu_instance_name: str,
         fmu_variable_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport:From:Variable`` and add it to the document.
 
@@ -298,6 +305,7 @@ class DemandManagerVentilation:
         controllers: Sequence[
             _g.DemandManagerVentilationControllersItem | _g.DemandManagerVentilationControllersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:Ventilation`` and add it to the document.
 
@@ -325,6 +333,7 @@ class CurveExponent:
         | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Exponent`` and add it to the document.
 

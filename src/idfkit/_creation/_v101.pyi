@@ -34,6 +34,7 @@ class Zone_v9_5_to_v22_1:
         ]
         | None = ...,
         part_of_total_floor_area: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Zone`` and add it to the document.
 
@@ -92,6 +93,7 @@ class HVACTemplateZoneFanCoil_v8_9:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
 
@@ -126,6 +128,7 @@ class ElectricLoadCenterStorageBattery_v8_9_to_v22_1:
         battery_life_calculation: Literal["No", "Yes"] | None = "No",
         number_of_cycle_bins: float | None = 10,
         battery_life_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Storage:Battery`` and add it to the document.
 
@@ -148,6 +151,7 @@ class ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5:
         high_temperature: float,
         fraction_radiant: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneBaseboard:OutdoorTemperatureControlled`` and add it to the document.
 
@@ -176,6 +180,7 @@ class HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1:
         reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:PlantLoop:EIR:Heating`` and add it to the document.
 

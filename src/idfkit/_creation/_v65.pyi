@@ -26,6 +26,7 @@ class WindowMaterialGasMixture_v8_9_to_v22_1:
         gas_3_fraction: float | None = ...,
         gas_4_type: Literal["Air", "Argon", "Krypton", "Xenon"] | None = ...,
         gas_4_fraction: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:GasMixture`` and add it to the document.
 
@@ -50,6 +51,7 @@ class GroundHeatExchangerPond_v8_9_to_v22_1:
         ground_thermal_conductivity: float,
         number_of_tubing_circuits: float,
         length_of_each_tubing_circuit: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Pond`` and add it to the document.
 
@@ -69,6 +71,7 @@ class OutputMeter_v8_9_to_v22_1:
             "Annual", "Daily", "Detailed", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Meter`` and add it to the document.
 

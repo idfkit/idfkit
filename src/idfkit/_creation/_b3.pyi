@@ -20,6 +20,7 @@ class SiteHeightVariation:
         wind_speed_profile_exponent: float | None = 0.22,
         wind_speed_profile_boundary_layer_thickness: float | None = 370,
         air_temperature_gradient_coefficient: float | None = 0.0065,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:HeightVariation`` and add it to the document.
 
@@ -37,6 +38,7 @@ class ConstructionAirBoundary:
         air_exchange_method: Literal["None", "SimpleMixing"] | None = "None",
         simple_mixing_air_changes_per_hour: float | None = 0.5,
         simple_mixing_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:AirBoundary`` and add it to the document.
 
@@ -46,7 +48,15 @@ class ConstructionAirBoundary:
         """
 
 class ZonePropertyLocalEnvironment:
-    def __call__(self, name: str, /, *, zone_name: str | None = ..., outdoor_air_node_name: str | None = ...) -> None:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        zone_name: str | None = ...,
+        outdoor_air_node_name: str | None = ...,
+        validate: bool = True,
+    ) -> None:
         """Create a new ``ZoneProperty:LocalEnvironment`` and add it to the document.
 
         This object defines the local environment properties of a zone object. A corresponding outdoor air node should be defined and linked to the zone object.
@@ -68,6 +78,7 @@ class AnyRoomAirTemperaturePatternNondimensionalHeight:
             _g.RoomAirTemperaturePatternNondimensionalHeightPairsItem
             | _g.RoomAirTemperaturePatternNondimensionalHeightPairsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:NondimensionalHeight`` and add it to the document.
 
@@ -78,7 +89,14 @@ class AnyRoomAirTemperaturePatternNondimensionalHeight:
 
 class ZoneContaminantSourceAndSinkCarbonDioxide:
     def __call__(
-        self, name: str, /, *, zone_name: str, schedule_name: str, design_generation_rate: float | None = ...
+        self,
+        name: str,
+        /,
+        *,
+        zone_name: str,
+        schedule_name: str,
+        design_generation_rate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneContaminantSourceAndSink:CarbonDioxide`` and add it to the document.
 
@@ -102,6 +120,7 @@ class AirflowNetworkOccupantVentilationControl:
         occupancy_check: Literal["No", "Yes"] | None = "No",
         opening_probability_schedule_name: str | None = ...,
         closing_probability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:OccupantVentilationControl`` and add it to the document.
 
@@ -122,6 +141,7 @@ class CoilSystemCoolingWaterHeatExchangerAssisted:
         heat_exchanger_name: str,
         cooling_coil_object_type: Literal["Coil:Cooling:Water", "Coil:Cooling:Water:DetailedGeometry"],
         cooling_coil_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:Water:HeatExchangerAssisted`` and add it to the document.
 
@@ -138,6 +158,7 @@ class ConnectorSplitter:
         *,
         inlet_branch_name: str,
         branches: Sequence[_g.ConnectorSplitterBranchesItem | _g.ConnectorSplitterBranchesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Connector:Splitter`` and add it to the document.
 
@@ -167,6 +188,7 @@ class AnyBoilerSteam:
         steam_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Boiler:Steam`` and add it to the document.
 
@@ -288,6 +310,7 @@ class AnyCentralHeatPumpSystem:
         chiller_heater_modules_performance_component_name_20: str | None = ...,
         chiller_heater_modules_control_schedule_name_20: str | None = ...,
         number_of_chiller_heater_modules_20: int | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CentralHeatPumpSystem`` and add it to the document.
 
@@ -307,6 +330,7 @@ class EnergyManagementSystemOutputVariable:
         update_frequency: Literal["SystemTimestep", "ZoneTimestep"],
         ems_program_or_subroutine_name: str | None = ...,
         units: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:OutputVariable`` and add it to the document.
 
@@ -359,6 +383,7 @@ class CurveQuintLinear:
             "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:QuintLinear`` and add it to the document.
 

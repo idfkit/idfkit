@@ -22,6 +22,7 @@ class ZonePropertyUserViewFactorsBySurfaceName:
             _g.ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem
             | _g.ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneProperty:UserViewFactors:BySurfaceName`` and add it to the document.
 
@@ -82,6 +83,7 @@ class AnyHVACTemplateZonePTAC:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:PTAC`` and add it to the document.
 
@@ -111,6 +113,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit:
         rated_entering_water_temperature: float | None = 20,
         rated_entering_air_dry_bulb_temperature: float | None = 20,
         ratio_of_rated_heating_capacity_to_rated_cooling_capacity: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -130,6 +133,7 @@ class AnyLoadProfilePlant:
         load_schedule_name: str,
         peak_flow_rate: float,
         flow_rate_fraction_schedule_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LoadProfile:Plant`` and add it to the document.
 
@@ -165,6 +169,7 @@ class ThermalStorageChilledWaterMixed:
         source_side_availability_schedule_name: str | None = ...,
         source_side_design_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         tank_recovery_time: float | None = 4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:ChilledWater:Mixed`` and add it to the document.
 
@@ -195,6 +200,7 @@ class AnyAvailabilityManagerOptimumStart:
         initial_temperature_gradient_during_heating: float | None = ...,
         constant_start_time: float | None = ...,
         number_of_previous_days: int | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AvailabilityManager:OptimumStart`` and add it to the document.
 

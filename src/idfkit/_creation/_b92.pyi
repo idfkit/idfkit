@@ -11,7 +11,9 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class ZoneGroup:
-    def __call__(self, name: str, /, *, zone_list_name: str, zone_list_multiplier: int | None = 1) -> None:
+    def __call__(
+        self, name: str, /, *, zone_list_name: str, zone_list_multiplier: int | None = 1, validate: bool = True
+    ) -> None:
         """Create a new ``ZoneGroup`` and add it to the document.
 
         Adds a multiplier to a ZoneList. This can be used to reduce the amount of input necessary for simulating repetitive structures, such as the identical floors of a multi-story building.
@@ -32,6 +34,7 @@ class AnyWindowPropertyStormWindow:
         month_that_storm_glass_layer_is_taken_off: int,
         day_of_month_that_storm_glass_layer_is_taken_off: int,
         distance_between_storm_glass_layer_and_adjacent_glass: float | None = 0.05,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowProperty:StormWindow`` and add it to the document.
 
@@ -76,6 +79,7 @@ class AnyZoneHVACPackagedTerminalAirConditioner:
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalAirConditioner`` and add it to the document.
 
@@ -111,6 +115,7 @@ class AnyCoilCoolingDXCurveFitOperatingMode:
         speed_8_name: str | None = ...,
         speed_9_name: str | None = ...,
         speed_10_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:OperatingMode`` and add it to the document.
 
@@ -139,6 +144,7 @@ class AnyCoilHeatingGasMultiStage:
         stage_3_nominal_capacity: float | Literal["Autosize"] | None = ...,
         stage_4_gas_burner_efficiency: float | None = ...,
         stage_4_nominal_capacity: float | Literal["Autosize"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Gas:MultiStage`` and add it to the document.
 
@@ -174,6 +180,7 @@ class HeatPumpWaterToWaterParameterEstimationCooling:
         loss_factor: float | None = ...,
         high_pressure_cut_off: float | None = 500000000,
         low_pressure_cut_off: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:ParameterEstimation:Cooling`` and add it to the document.
 
@@ -183,7 +190,15 @@ class HeatPumpWaterToWaterParameterEstimationCooling:
         """
 
 class SetpointManagerSingleZoneHumidityMaximum:
-    def __call__(self, name: str, /, *, setpoint_node_or_nodelist_name: str, control_zone_air_node_name: str) -> None:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        setpoint_node_or_nodelist_name: str,
+        control_zone_air_node_name: str,
+        validate: bool = True,
+    ) -> None:
         """Create a new ``SetpointManager:SingleZone:Humidity:Maximum`` and add it to the document.
 
         The Single Zone Maximum Humidity Setpoint Manager allows the control of a single zone maximum humidity level. This setpoint manager can be used in conjunction with object ZoneControl:Humidistat to detect humidity levels.
@@ -201,6 +216,7 @@ class OutputSurfacesDrawing:
         report_specifications_1: Literal["RegularPolyline", "ThickPolyline", "Triangulate3DFace"]
         | None = "Triangulate3DFace",
         report_specifications_2: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Surfaces:Drawing`` and add it to the document.
 

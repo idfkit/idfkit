@@ -15,6 +15,7 @@ class ZoneControlHumidistat_v8_9_to_v26_1:
         zone_name: str,
         humidifying_relative_humidity_setpoint_schedule_name: str,
         dehumidifying_relative_humidity_setpoint_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:Humidistat`` and add it to the document.
 

@@ -35,6 +35,7 @@ class ThermalStorageIceDetailed_v9_2_to_v25_1:
         tank_loss_coefficient: float | None = ...,
         freezing_temperature_of_storage_medium: float | None = 0,
         thaw_process_indicator: Literal["InsideMelt", "OutsideMelt"] | None = "OutsideMelt",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:Ice:Detailed`` and add it to the document.
 
@@ -50,6 +51,7 @@ class OutputSQLite_v8_9_to_v9_4:
         /,
         *,
         option_type: Literal["Simple", "SimpleAndTabular"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:SQLite`` and add it to the document.
 
@@ -78,6 +80,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1:
         cooling_power_consumption_curve_name: str,
         nominal_time_for_condensate_removal_to_begin: float | None = 0,
         ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -114,6 +117,7 @@ class AirflowNetworkSimulationControl_v9_5_to_v22_1:
         height_dependence_of_external_node_temperature: Literal["No", "Yes"] | None = "No",
         solver: Literal["ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
         allow_unsupported_zone_equipment: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:SimulationControl`` and add it to the document.
 
@@ -133,6 +137,7 @@ class ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5:
             _g.ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem
             | _g.ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneProperty:UserViewFactors:BySurfaceName`` and add it to the document.
 

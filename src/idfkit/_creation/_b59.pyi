@@ -45,6 +45,7 @@ class AnySiteGroundDomainSlab:
         simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
         geometric_mesh_coefficient: float | None = 1.6,
         mesh_density_parameter: int | None = 6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundDomain:Slab`` and add it to the document.
 
@@ -72,6 +73,7 @@ class DaylightingControls:
         maximum_allowable_discomfort_glare_index: float | None = 22,
         delight_gridding_resolution: float | None = ...,
         control_data: Sequence[_g.DaylightingControlsControlDataItem | _g.DaylightingControlsControlDataGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Daylighting:Controls`` and add it to the document.
 
@@ -99,6 +101,7 @@ class PipeUnderground:
         undisturbed_ground_temperature_model_name: str,
         pipe_inside_diameter: float | None = ...,
         pipe_length: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pipe:Underground`` and add it to the document.
 
@@ -131,6 +134,7 @@ class AnyPumpConstantSpeed:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pump:ConstantSpeed`` and add it to the document.
 
@@ -159,6 +163,7 @@ class AnyHeatPumpPlantLoopEIRHeating:
         reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = ...,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:PlantLoop:EIR:Heating`` and add it to the document.
 
@@ -180,6 +185,7 @@ class AvailabilityManagerNightVentilation:
         ventilation_temperature_difference: float | None = 2,
         ventilation_temperature_low_limit: float | None = 15,
         night_venting_flow_fraction: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AvailabilityManager:NightVentilation`` and add it to the document.
 
@@ -196,6 +202,7 @@ class OutputConstructions:
         *,
         details_type_1: Literal["Constructions", "Materials"] | None = ...,
         details_type_2: Literal["Constructions", "Materials"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Constructions`` and add it to the document.
 

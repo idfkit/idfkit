@@ -21,6 +21,7 @@ class OutputTableMonthly_v8_9_to_v22_1:
         variable_details: Sequence[
             _g.OutputTableMonthlyVariableDetailsItem | _g.OutputTableMonthlyVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:Monthly`` and add it to the document.
 
@@ -50,6 +51,7 @@ class RunPeriod_v9_6_to_v22_1:
         use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
         treat_weather_as_actual: Literal["No", "Yes"] | None = "No",
         first_hour_interpolation_starting_values: Literal["Hour1", "Hour24"] | None = "Hour24",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 
@@ -100,6 +102,7 @@ class ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1:
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
 
@@ -133,6 +136,7 @@ class CoilHeatingGasMultiStage_v22_2_to_v23_1:
         stage_4_gas_burner_efficiency: float | None = ...,
         stage_4_nominal_capacity: float | Literal["Autosize"] | None = ...,
         stage_4_parasitic_electric_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Gas:MultiStage`` and add it to the document.
 

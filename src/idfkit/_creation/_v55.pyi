@@ -39,6 +39,7 @@ class HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2:
         initial_defrost_time_fraction: float | None = 0.083,
         rate_of_defrost_time_fraction_increase: float | None = 0.012,
         economizer_lockout: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatExchanger:AirToAir:SensibleAndLatent`` and add it to the document.
 
@@ -90,6 +91,7 @@ class FuelFactors_v8_9_to_v9_2:
         nuclear_high_level_emission_factor_schedule_name: str | None = ...,
         nuclear_low_level_emission_factor: float | None = ...,
         nuclear_low_level_emission_factor_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FuelFactors`` and add it to the document.
 
@@ -132,6 +134,7 @@ class SiteGroundDomainSlab_v8_9_to_v22_1:
         simulation_timestep: Literal["Hourly", "Timestep"] | None = "Hourly",
         geometric_mesh_coefficient: float | None = 1.6,
         mesh_density_parameter: float | None = 6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundDomain:Slab`` and add it to the document.
 
@@ -184,6 +187,7 @@ class CoolingTowerSingleSpeed_v8_9_to_v9_1:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:SingleSpeed`` and add it to the document.
 

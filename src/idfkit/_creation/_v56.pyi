@@ -26,6 +26,7 @@ class DemandManagerExteriorLights_v8_9_to_v22_1:
         limit_step_change: float | None = ...,
         rotation_duration: float | None = ...,
         lights: Sequence[_g.DemandManagerExteriorLightsLightsItem | _g.DemandManagerExteriorLightsLightsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:ExteriorLights`` and add it to the document.
 
@@ -111,6 +112,7 @@ class TableMultiVariableLookup_v8_9:
         values: Sequence[
             _vd.TableMultiVariableLookupValuesItem_v8_9 | _vd.TableMultiVariableLookupValuesGroup_v8_9
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:MultiVariableLookup`` and add it to the document.
 
@@ -146,6 +148,7 @@ class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5:
         number_of_tubes_per_row: float | Literal["Autosize"] | None = "Autosize",
         condensate_collection_water_storage_tank_name: str | None = ...,
         design_water_temperature_difference: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:Water:DetailedGeometry`` and add it to the document.
 

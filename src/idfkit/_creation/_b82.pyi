@@ -36,6 +36,7 @@ class SizingPeriodWeatherFileDays:
         | None = "Monday",
         use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
         use_weather_file_rain_and_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SizingPeriod:WeatherFileDays`` and add it to the document.
 
@@ -60,6 +61,7 @@ class AnyWallInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Interzone`` and add it to the document.
 
@@ -80,6 +82,7 @@ class RoomAirSettingsThreeNodeDisplacementVentilation:
         thermostat_height: float | None = 1.1,
         comfort_height: float | None = 1.1,
         temperature_difference_threshold_for_reporting: float | None = 0.4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAirSettings:ThreeNodeDisplacementVentilation`` and add it to the document.
 
@@ -97,6 +100,7 @@ class SizingParameters:
         heating_sizing_factor: float | None = 1,
         cooling_sizing_factor: float | None = 1,
         timesteps_in_averaging_window: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Parameters`` and add it to the document.
 
@@ -146,6 +150,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlowDesign:
         condensation_control_type: Literal["Off", "SimpleOff", "VariableOff"] | None = "SimpleOff",
         condensation_control_dewpoint_offset: float | None = 1,
         changeover_delay_time_period_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:VariableFlow:Design`` and add it to the document.
 
@@ -341,6 +346,7 @@ class AnyPlantEquipmentOperationThermalEnergyStorage:
         component_10_setpoint_node_name: str | None = ...,
         component_10_flow_rate: float | Literal["Autosize"] | None = ...,
         component_10_operation_type: Literal["Cooling", "Dual", "Heating"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:ThermalEnergyStorage`` and add it to the document.
 
@@ -363,6 +369,7 @@ class GeneratorMicroCHP:
         air_outlet_node_name: str | None = ...,
         generator_fuel_supply_name: str | None = ...,
         availability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:MicroCHP`` and add it to the document.
 

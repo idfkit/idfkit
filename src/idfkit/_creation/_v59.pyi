@@ -33,6 +33,7 @@ class ExteriorFuelEquipment_v9_3_to_v23_1:
         schedule_name: str,
         design_level: float,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Exterior:FuelEquipment`` and add it to the document.
 
@@ -86,6 +87,7 @@ class PhotovoltaicPerformanceSandia_v8_9_to_v22_1:
         sandia_database_parameter_ixx0: float | None = ...,
         sandia_database_parameter_c6: float | None = ...,
         sandia_database_parameter_c7: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:Sandia`` and add it to the document.
 
@@ -105,6 +107,7 @@ class FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         pressure_sensor_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:PressureSensorOffset:OutdoorAir`` and add it to the document.
 
@@ -130,6 +133,7 @@ class HotWaterEquipment_v9_6_to_v23_2:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HotWaterEquipment`` and add it to the document.
 
@@ -252,6 +256,7 @@ class CentralHeatPumpSystem_v22_2_to_v26_1:
         chiller_heater_modules_performance_component_name_20: str | None = ...,
         chiller_heater_modules_control_schedule_name_20: str | None = ...,
         number_of_chiller_heater_modules_20: int | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CentralHeatPumpSystem`` and add it to the document.
 

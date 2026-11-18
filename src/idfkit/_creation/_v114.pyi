@@ -44,6 +44,7 @@ class BuildingSurfaceDetailed_v8_9_to_v9_5:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.BuildingSurfaceDetailedVerticesItem | _g.BuildingSurfaceDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``BuildingSurface:Detailed`` and add it to the document.
 
@@ -76,6 +77,7 @@ class SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1:
         emissivity_of_inner_cover: float | None = 0.88,
         absorptance_of_absorber_plate: float | None = 0.96,
         emissivity_of_absorber_plate: float | None = 0.3,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollectorPerformance:IntegralCollectorStorage`` and add it to the document.
 
@@ -111,6 +113,7 @@ class HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1:
         maximum_source_inlet_temperature: float | None = 100,
         minimum_supply_water_temperature_curve_name: float | None = ...,
         maximum_supply_water_temperature_curve_name: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:PlantLoop:EIR:Cooling`` and add it to the document.
 

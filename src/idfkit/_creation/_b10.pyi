@@ -27,6 +27,7 @@ class AnySiteGroundTemperatureUndisturbedXing:
         soil_surface_temperature_amplitude_2: float,
         phase_shift_of_temperature_amplitude_1: float,
         phase_shift_of_temperature_amplitude_2: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundTemperature:Undisturbed:Xing`` and add it to the document.
 
@@ -39,7 +40,12 @@ class AnySiteGroundTemperatureUndisturbedXing:
 
 class ScheduleWeekCompact:
     def __call__(
-        self, name: str, /, *, data: Sequence[_g.ScheduleWeekCompactDataItem | _g.ScheduleWeekCompactDataGroup] = ...
+        self,
+        name: str,
+        /,
+        *,
+        data: Sequence[_g.ScheduleWeekCompactDataItem | _g.ScheduleWeekCompactDataGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Week:Compact`` and add it to the document.
 
@@ -106,6 +112,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferRedistribution:
         liquid_transport_coefficient_24: float | None = ...,
         moisture_content_25: float | None = ...,
         liquid_transport_coefficient_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Redistribution`` and add it to the document.
 
@@ -137,6 +144,7 @@ class AnySwimmingPoolIndoor:
         pool_miscellaneous_equipment_power: float | None = ...,
         people_schedule: str | None = ...,
         people_heat_gain_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SwimmingPool:Indoor`` and add it to the document.
 
@@ -236,6 +244,7 @@ class ZoneHVACHybridUnitaryHVAC:
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
         modes: Sequence[_g.ZoneHVACHybridUnitaryHVACModesItem | _g.ZoneHVACHybridUnitaryHVACModesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:HybridUnitaryHVAC`` and add it to the document.
 
@@ -257,6 +266,7 @@ class AnyUnitarySystemPerformanceMultispeed:
         flow_ratios: Sequence[
             _g.UnitarySystemPerformanceMultispeedFlowRatiosItem | _g.UnitarySystemPerformanceMultispeedFlowRatiosGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UnitarySystemPerformance:Multispeed`` and add it to the document.
 
@@ -335,6 +345,7 @@ class ChillerCombustionTurbine:
         basin_heater_operating_schedule_name: str | None = ...,
         condenser_heat_recovery_relative_capacity_fraction: float | None = ...,
         turbine_engine_efficiency: float | None = 0.35,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:CombustionTurbine`` and add it to the document.
 
@@ -354,6 +365,7 @@ class ThermalStorageIceSimple:
         inlet_node_name: str,
         outlet_node_name: str,
         thermal_storage_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:Ice:Simple`` and add it to the document.
 
@@ -379,6 +391,7 @@ class AnyCurveDoubleExponentialDecay:
         input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:DoubleExponentialDecay`` and add it to the document.
 
@@ -391,7 +404,13 @@ class AnyCurveDoubleExponentialDecay:
 
 class AnyPythonPluginTrendVariable:
     def __call__(
-        self, name: str, /, *, name_of_a_python_plugin_variable: str, number_of_timesteps_to_be_logged: int
+        self,
+        name: str,
+        /,
+        *,
+        name_of_a_python_plugin_variable: str,
+        number_of_timesteps_to_be_logged: int,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:TrendVariable`` and add it to the document.
 

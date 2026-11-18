@@ -69,6 +69,7 @@ class MaterialPropertyHeatAndMoistureTransferThermalConductivity:
         thermal_conductivity_24: float | None = ...,
         moisture_content_25: float | None = ...,
         thermal_conductivity_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity`` and add it to the document.
 
@@ -91,6 +92,7 @@ class GlazedDoor:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GlazedDoor`` and add it to the document.
 
@@ -154,6 +156,7 @@ class WindowPropertyFrameAndDivider:
             "VerticalSlider",
         ]
         | None = "CurtainWall",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowProperty:FrameAndDivider`` and add it to the document.
 
@@ -186,6 +189,7 @@ class AnyCoilSystemCoolingDX:
         run_on_latent_load: Literal["No", "Yes"] | None = "No",
         use_outdoor_air_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
         outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:DX`` and add it to the document.
 
@@ -216,6 +220,7 @@ class EvaporativeCoolerDirectResearchSpecial:
         evaporative_operation_minimum_drybulb_temperature: float | None = ...,
         evaporative_operation_maximum_limit_wetbulb_temperature: float | None = ...,
         evaporative_operation_maximum_limit_drybulb_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeCooler:Direct:ResearchSpecial`` and add it to the document.
 
@@ -276,6 +281,7 @@ class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl:
             _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem
             | _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl`` and add it to the document.
 
@@ -300,6 +306,7 @@ class CurveFanPressureRise:
         maximum_value_of_psm: float,
         minimum_curve_output: float | None = ...,
         maximum_curve_output: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:FanPressureRise`` and add it to the document.
 
@@ -319,6 +326,7 @@ class AnyOutputControlTableStyle:
         ]
         | None = "Comma",
         unit_conversion: Literal["InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Table:Style`` and add it to the document.
 

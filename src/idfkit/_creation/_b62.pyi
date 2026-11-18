@@ -21,6 +21,7 @@ class ConvergenceLimits:
         maximum_hvac_iterations: int | None = 20,
         minimum_plant_iterations: int | None = 2,
         maximum_plant_iterations: int | None = 8,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ConvergenceLimits`` and add it to the document.
 
@@ -42,6 +43,7 @@ class Space:
         space_type: str | None = "General",
         construction_assignment_set_name: str | None = ...,
         tags: Sequence[_g.SpaceTagsItem | _g.SpaceTagsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Space`` and add it to the document.
 
@@ -65,6 +67,7 @@ class GroundHeatTransferSlabMaterials:
         z0_surface_roughness_snow: float | None = 0.25,
         hin_indoor_hconv_downward_flow: float | None = 6.13,
         hin_indoor_hconv_upward: float | None = 9.26,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:Materials`` and add it to the document.
 
@@ -83,6 +86,7 @@ class RoomAirNodeAirflowNetworkHVACEquipment:
             _g.RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem
             | _g.RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork:HVACEquipment`` and add it to the document.
 
@@ -107,6 +111,7 @@ class AnySizingPlant:
             "GlobalCoolingSizingFactor", "GlobalHeatingSizingFactor", "LoopComponentSizingFactor", "None"
         ]
         | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Plant`` and add it to the document.
 
@@ -257,6 +262,7 @@ class ZoneHVACOutdoorAirUnitEquipmentList:
         ]
         | None = ...,
         component_8_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:OutdoorAirUnit:EquipmentList`` and add it to the document.
 
@@ -280,6 +286,7 @@ class ZoneHVACBaseboardConvectiveElectric:
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         efficiency: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:Convective:Electric`` and add it to the document.
 
@@ -315,6 +322,7 @@ class CoilPerformanceDXCooling:
         evaporative_condenser_pump_rated_power_consumption: float | Literal["Autosize"] | None = 0,
         sensible_heat_ratio_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilPerformance:DX:Cooling`` and add it to the document.
 
@@ -338,6 +346,7 @@ class SolarCollectorPerformanceFlatPlate:
         coefficient_3_of_efficiency_equation: float | None = ...,
         coefficient_2_of_incident_angle_modifier: float | None = ...,
         coefficient_3_of_incident_angle_modifier: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollectorPerformance:FlatPlate`` and add it to the document.
 
@@ -387,6 +396,7 @@ class AnyCoolingTowerSingleSpeed:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:SingleSpeed`` and add it to the document.
 

@@ -341,6 +341,20 @@ class TestFieldName:
     def test_add_parameters_are_not_fields(self) -> None:
         assert _check('doc = new_document()\ndoc.add("Zone", name="D", validate=True, fields={})\n') == []
 
+    def test_validate_is_not_a_field_of_a_collection_add(self) -> None:
+        source = 'doc = new_document()\ndoc.zones.add("D", validate=False)\ndoc["Zone"].add("E", validate=True)\n'
+        assert _check(source) == []
+
+    def test_validate_false_on_a_collection_still_refuses_an_unknown_field(self) -> None:
+        (found,) = _check('doc = new_document()\ndoc.zones.add("D", ceiling_hieght=3.0, validate=False)\n')
+        assert "'ceiling_hieght'" in found
+
+    def test_validate_false_on_a_collection_stores_a_value_outside_the_choices(self) -> None:
+        source = 'doc = new_document()\ndoc.zones.add("A", zone_inside_convection_algorithm="Bogus", validate=False)\n'
+        assert _check(source) == []
+        source = 'doc = new_document()\ndoc.zones.add("A", zone_inside_convection_algorithm="Bogus")\n'
+        assert len(_check(source)) == 1
+
     def test_dict_key(self) -> None:
         (diagnostic,) = _diagnostics('doc = new_document()\ndoc.add("Zone", "D", {"ceilng_height": 3.0})\n')
         assert "'ceilng_height'" in diagnostic.message

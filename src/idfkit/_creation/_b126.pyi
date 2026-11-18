@@ -18,6 +18,7 @@ class ComplianceBuilding:
         /,
         *,
         building_rotation_for_appendix_g: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Compliance:Building`` and add it to the document.
 
@@ -40,6 +41,7 @@ class AnyScheduleFile:
         column_separator: Literal["Comma", "Semicolon", "Tab"] | None = "Comma",
         interpolate_to_timestep: Literal["No", "Yes"] | None = "No",
         minutes_per_item: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:File`` and add it to the document.
 
@@ -56,6 +58,7 @@ class AirflowNetworkMultiZoneSpecifiedFlowRate:
         *,
         air_flow_value: float,
         air_flow_units: Literal["MassFlow", "VolumetricFlow"] | None = "MassFlow",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:SpecifiedFlowRate`` and add it to the document.
 
@@ -128,6 +131,7 @@ class SizingZone:
         heating_coil_sizing_method: Literal["CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity", "None"]
         | None = "None",
         maximum_heating_capacity_to_cooling_load_sizing_ratio: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Zone`` and add it to the document.
 
@@ -159,6 +163,7 @@ class AnyCoilCoolingDXCurveFitSpeed:
         waste_heat_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:Speed`` and add it to the document.
 
@@ -190,6 +195,7 @@ class CoilCoolingDXCurveFitSpeed:
         waste_heat_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:CurveFit:Speed`` and add it to the document.
 
@@ -208,6 +214,7 @@ class OutdoorAirMixer:
         outdoor_air_stream_node_name: str,
         relief_air_stream_node_name: str,
         return_air_stream_node_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutdoorAir:Mixer`` and add it to the document.
 
@@ -223,6 +230,7 @@ class PlantEquipmentList:
         /,
         *,
         equipment: Sequence[_g.PlantEquipmentListEquipmentItem | _g.PlantEquipmentListEquipmentGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentList`` and add it to the document.
 
@@ -242,6 +250,7 @@ class ExternalInterfaceFunctionalMockupUnitExportToActuator:
         actuated_component_control_type: str,
         fmu_variable_name: str,
         initial_value: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitExport:To:Actuator`` and add it to the document.
 
@@ -270,6 +279,7 @@ class AnyAirTerminalSingleDuctUserDefined:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:UserDefined`` and add it to the document.
 
@@ -291,6 +301,7 @@ class SetpointManagerSingleZoneHeating:
         control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_supply_air_temperature: float | None = -99,
         maximum_supply_air_temperature: float | None = 99,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:SingleZone:Heating`` and add it to the document.
 
@@ -312,6 +323,7 @@ class SetpointManagerFollowSystemNodeTemperature:
         offset_temperature_difference: float | None = ...,
         maximum_limit_setpoint_temperature: float | None = ...,
         minimum_limit_setpoint_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:FollowSystemNodeTemperature`` and add it to the document.
 
@@ -338,6 +350,7 @@ class CurveLinear:
         | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Linear`` and add it to the document.
 

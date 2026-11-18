@@ -29,6 +29,7 @@ class ScheduleWeekDaily:
         winterdesignday_schedule_day_name: str,
         customday1_schedule_day_name: str,
         customday2_schedule_day_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Week:Daily`` and add it to the document.
 
@@ -53,6 +54,7 @@ class WallAdiabatic:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Adiabatic`` and add it to the document.
 
@@ -78,6 +80,7 @@ class ShadingFinProjection:
         right_distance_below_bottom_of_window: float | None = ...,
         right_tilt_angle_from_window_door: float | None = 90,
         right_depth_as_fraction_of_window_door_width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Shading:Fin:Projection`` and add it to the document.
 
@@ -95,6 +98,7 @@ class AirflowNetworkMultiZoneReferenceCrackConditions:
         reference_temperature: float,
         reference_barometric_pressure: float | None = 101325,
         reference_humidity_ratio: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:ReferenceCrackConditions`` and add it to the document.
 
@@ -165,6 +169,7 @@ class AnyHVACTemplateZonePTHP:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:PTHP`` and add it to the document.
 
@@ -181,6 +186,7 @@ class ThermostatSetpointDualSetpoint:
         *,
         heating_setpoint_temperature_schedule_name: str | None = ...,
         cooling_setpoint_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermostatSetpoint:DualSetpoint`` and add it to the document.
 
@@ -201,6 +207,7 @@ class AirTerminalSingleDuctConstantVolumeNoReheat:
         availability_schedule_name: str | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
         per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None = "CurrentOccupancy",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:NoReheat`` and add it to the document.
 
@@ -226,6 +233,7 @@ class FanZoneExhaust:
         system_availability_manager_coupling_mode: Literal["Coupled", "Decoupled"] | None = "Coupled",
         minimum_zone_temperature_limit_schedule_name: str | None = ...,
         balanced_exhaust_fraction_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Fan:ZoneExhaust`` and add it to the document.
 
@@ -247,6 +255,7 @@ class UnitarySystemPerformanceMultispeed:
         flow_ratios: Sequence[
             _g.UnitarySystemPerformanceMultispeedFlowRatiosItem | _g.UnitarySystemPerformanceMultispeedFlowRatiosGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UnitarySystemPerformance:Multispeed`` and add it to the document.
 
@@ -275,6 +284,7 @@ class AnyChillerConstantCOP:
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:ConstantCOP`` and add it to the document.
 
@@ -290,6 +300,7 @@ class CondenserEquipmentList:
         /,
         *,
         equipment: Sequence[_g.CondenserEquipmentListEquipmentItem | _g.CondenserEquipmentListEquipmentGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CondenserEquipmentList`` and add it to the document.
 

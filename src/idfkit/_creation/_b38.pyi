@@ -25,6 +25,7 @@ class ScheduleFile:
         interpolate_to_timestep: Literal["No", "Yes"] | None = "No",
         minutes_per_item: int | None = 60,
         adjust_schedule_for_daylight_savings: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:File`` and add it to the document.
 
@@ -91,6 +92,7 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm:
         moisture_content_24: float | None = ...,
         relative_humidity_fraction_25: float | None = ...,
         moisture_content_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:SorptionIsotherm`` and add it to the document.
 
@@ -111,6 +113,7 @@ class GroundHeatTransferBasementAutoGrid:
         concagheight_height_of_the_foundation_wall_above_grade: float | None = 0,
         slabdepth_thickness_of_the_floor_slab: float | None = 0.1,
         basedepth_depth_of_the_basement_wall_below_grade: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:AutoGrid`` and add it to the document.
 
@@ -147,6 +150,7 @@ class OtherEquipmentInstance:
         | None = "None",
         multiplier: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OtherEquipment:Instance`` and add it to the document.
 
@@ -172,6 +176,7 @@ class IndoorLivingWall:
         led_nominal_intensity: float | None = ...,
         led_nominal_power: float | None = ...,
         radiant_fraction_of_led_lights: float | None = 0.6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``IndoorLivingWall`` and add it to the document.
 
@@ -263,6 +268,7 @@ class AnyWaterHeaterStratified:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Stratified`` and add it to the document.
 
@@ -272,7 +278,7 @@ class AnyWaterHeaterStratified:
         """
 
 class AvailabilityManagerScheduled:
-    def __call__(self, name: str, /, *, schedule_name: str) -> None:
+    def __call__(self, name: str, /, *, schedule_name: str, validate: bool = True) -> None:
         """Create a new ``AvailabilityManager:Scheduled`` and add it to the document.
 
         Determines the availability of a loop or system: whether it is on or off. Schedule overrides fan/pump schedule.
@@ -290,6 +296,7 @@ class ElectricLoadCenterInverterSimple:
         zone_name: str | None = ...,
         radiative_fraction: float | None = ...,
         inverter_efficiency: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Inverter:Simple`` and add it to the document.
 
@@ -589,6 +596,7 @@ class AnyOutputControlSurfaceColorScheme:
         ]
         | None = ...,
         color_for_drawing_element_15: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:SurfaceColorScheme`` and add it to the document.
 

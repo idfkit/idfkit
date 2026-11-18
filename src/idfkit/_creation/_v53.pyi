@@ -26,6 +26,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1:
         gross_rated_heating_cop: float,
         heating_capacity_curve_name: str,
         heating_power_consumption_curve_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -92,6 +93,7 @@ class MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1:
         liquid_transport_coefficient_24: float | None = ...,
         moisture_content_25: float | None = ...,
         liquid_transport_coefficient_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Suction`` and add it to the document.
 
@@ -128,6 +130,7 @@ class AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2:
         heating_control_type: Literal["Modulated", "Staged"] | None = ...,
         design_heating_discharge_air_temperature: float | None = 32.1,
         high_limit_heating_discharge_air_temperature: float | None = 37.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:SeriesPIU:Reheat`` and add it to the document.
 

@@ -12,7 +12,9 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class GroundHeatTransferSlabXFACE:
-    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, validate: bool = True
+    ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:XFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) XFACE: X Direction cell face coordinates: m
@@ -43,6 +45,7 @@ class AnyAirflowNetworkDistributionComponentCoil:
         ],
         air_path_length: float,
         air_path_hydraulic_diameter: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Coil`` and add it to the document.
 
@@ -72,6 +75,7 @@ class AnyAirTerminalSingleDuctVAVReheatVariableSpeedFan:
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         heating_convergence_tolerance: float | None = 0.001,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan`` and add it to the document.
 
@@ -119,6 +123,7 @@ class AnyCoilCoolingDXSingleSpeed:
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
         report_ashrae_standard_127_performance_ratings: Literal["No", "Yes"] | None = "No",
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:SingleSpeed`` and add it to the document.
 
@@ -163,6 +168,7 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped:
         heating_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         heating_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` and add it to the document.
 
@@ -222,6 +228,7 @@ class HeatExchangerFluidToFluid:
         sizing_factor: float | None = 1,
         operation_minimum_temperature_limit: float | None = ...,
         operation_maximum_temperature_limit: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatExchanger:FluidToFluid`` and add it to the document.
 
@@ -297,6 +304,7 @@ class AnyWaterHeaterMixed:
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Mixed`` and add it to the document.
 
@@ -337,6 +345,7 @@ class GeneratorFuelCellExhaustGasToWaterHeatExchanger:
         method_4_hxl1_coefficient: float | None = ...,
         method_4_hxl2_coefficient: float | None = ...,
         method_4_condensation_threshold: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelCell:ExhaustGasToWaterHeatExchanger`` and add it to the document.
 
@@ -361,6 +370,7 @@ class WaterUseConnections:
         drain_water_heat_exchanger_destination: Literal["Equipment", "Plant", "PlantAndEquipment"] | None = "Plant",
         drain_water_heat_exchanger_u_factor_times_area: float | None = ...,
         connections: Sequence[_g.WaterUseConnectionsConnectionsItem | _g.WaterUseConnectionsConnectionsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterUse:Connections`` and add it to the document.
 
@@ -385,6 +395,7 @@ class CurveRectangularHyperbola1:
         input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:RectangularHyperbola1`` and add it to the document.
 
@@ -653,6 +664,7 @@ class FluidPropertiesSuperheated:
         property_value_248: float | None = ...,
         property_value_249: float | None = ...,
         property_value_250: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FluidProperties:Superheated`` and add it to the document.
 

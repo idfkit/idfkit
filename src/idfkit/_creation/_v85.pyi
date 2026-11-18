@@ -26,6 +26,7 @@ class CoilSystemCoolingDXHeatExchangerAssisted_v8_9_to_v22_1:
         heat_exchanger_name: str,
         cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"],
         cooling_coil_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:DX:HeatExchangerAssisted`` and add it to the document.
 
@@ -44,6 +45,7 @@ class ScheduleYear_v9_0_to_v22_1:
         schedule_weeks: Sequence[
             _vd.ScheduleYearScheduleWeeksItem_v9_0_to_v22_1 | _vd.ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Year`` and add it to the document.
 
@@ -71,6 +73,7 @@ class ZoneCoolTowerShower_v8_9_to_v24_1:
         flow_control_type: Literal["WaterFlowSchedule", "WindDrivenFlow"] | None = "WindDrivenFlow",
         fraction_of_water_loss: float | None = ...,
         fraction_of_flow_schedule: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneCoolTower:Shower`` and add it to the document.
 
@@ -104,6 +107,7 @@ class MeterCustom_v9_4_to_v23_1:
         ]
         | None = ...,
         variable_details: Sequence[_g.MeterCustomVariableDetailsItem | _g.MeterCustomVariableDetailsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:Custom`` and add it to the document.
 

@@ -37,6 +37,7 @@ class SizingPeriodWeatherFileDays_v8_9_to_v22_1:
         | None = "Monday",
         use_weather_file_daylight_saving_period: Literal["No", "Yes"] | None = "Yes",
         use_weather_file_rain_and_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SizingPeriod:WeatherFileDays`` and add it to the document.
 
@@ -69,6 +70,7 @@ class ControllerMechanicalVentilation_v9_3_to_v9_4:
             _vd.ControllerMechanicalVentilationZoneSpecificationsItem_v9_3_to_v9_4
             | _vd.ControllerMechanicalVentilationZoneSpecificationsGroup_v9_3_to_v9_4
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Controller:MechanicalVentilation`` and add it to the document.
 
@@ -92,6 +94,7 @@ class WallAdiabatic_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Adiabatic`` and add it to the document.
 

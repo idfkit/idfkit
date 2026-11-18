@@ -63,6 +63,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1
             _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesItem
             | _g.AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl`` and add it to the document.
 
@@ -93,6 +94,7 @@ class BoilerHotWater_v9_0_to_v9_2:
         parasitic_electric_load: float | None = ...,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Boiler:HotWater`` and add it to the document.
 
@@ -167,6 +169,7 @@ class SizingSystem_v22_2_to_v25_1:
         fraction_of_autosized_heating_design_capacity: float | None = ...,
         central_cooling_capacity_control_method: Literal["Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
         occupant_diversity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:System`` and add it to the document.
 
@@ -205,6 +208,7 @@ class WindowPropertyFrameAndDivider_v8_9_to_v9_6:
         inside_sill_solar_absorptance: float | None = 0,
         inside_reveal_depth: float | None = 0,
         inside_reveal_solar_absorptance: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowProperty:FrameAndDivider`` and add it to the document.
 
@@ -220,6 +224,7 @@ class SurfaceConvectionAlgorithmInside_v8_9_to_v9_4:
         /,
         *,
         algorithm: Literal["AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None = "TARP",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Inside`` and add it to the document.
 
@@ -243,6 +248,7 @@ class MaterialPropertyVariableAbsorptance_v23_1_to_v26_1:
         thermal_absorptance_schedule_name: str | None = ...,
         solar_absorptance_function_name: str | None = ...,
         solar_absorptance_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:VariableAbsorptance`` and add it to the document.
 

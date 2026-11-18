@@ -20,6 +20,7 @@ class AirflowNetworkDistributionComponentFan_v8_9_to_v9_1:
         fan_name: str,
         supply_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"]
         | None = "Fan:ConstantVolume",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:Fan`` and add it to the document.
 
@@ -60,6 +61,7 @@ class WallDetailed_v8_9_to_v9_5:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.WallDetailedVerticesItem | _g.WallDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Detailed`` and add it to the document.
 
@@ -92,6 +94,7 @@ class AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1:
         maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ParallelPIU:Reheat`` and add it to the document.
 
@@ -307,6 +310,7 @@ class ComfortViewFactorAngles_v9_6_to_v23_2:
         angle_factor_99: float | None = ...,
         surface_100_name: str | None = ...,
         angle_factor_100: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComfortViewFactorAngles`` and add it to the document.
 
@@ -327,6 +331,7 @@ class ConstructionPropertyInternalHeatSource_v9_5_to_v22_1:
         tube_spacing: float,
         construction_name: str | None = ...,
         two_dimensional_temperature_calculation_position: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ConstructionProperty:InternalHeatSource`` and add it to the document.
 

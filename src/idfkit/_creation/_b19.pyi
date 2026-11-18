@@ -23,6 +23,7 @@ class AnySiteWaterMainsTemperature:
         temperature_schedule_name: str | None = ...,
         annual_average_outdoor_air_temperature: float | None = ...,
         maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:WaterMainsTemperature`` and add it to the document.
 
@@ -66,6 +67,7 @@ class BuildingSurfaceDetailed:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.BuildingSurfaceDetailedVerticesItem | _g.BuildingSurfaceDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``BuildingSurface:Detailed`` and add it to the document.
 
@@ -106,6 +108,7 @@ class AnyWallDetailed:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.WallDetailedVerticesItem | _g.WallDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Detailed`` and add it to the document.
 
@@ -146,6 +149,7 @@ class AnyFloorDetailed:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.FloorDetailedVerticesItem | _g.FloorDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Detailed`` and add it to the document.
 
@@ -167,6 +171,7 @@ class Door:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Door`` and add it to the document.
 
@@ -184,6 +189,7 @@ class RoomAirNodeAirflowNetworkInternalGains:
         gains: Sequence[
             _g.RoomAirNodeAirflowNetworkInternalGainsGainsItem | _g.RoomAirNodeAirflowNetworkInternalGainsGainsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork:InternalGains`` and add it to the document.
 
@@ -210,6 +216,7 @@ class AnyZoneInfiltrationDesignFlowRate:
         temperature_term_coefficient: float | None = 0,
         velocity_term_coefficient: float | None = 0,
         velocity_squared_term_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:DesignFlowRate`` and add it to the document.
 
@@ -234,6 +241,7 @@ class AirTerminalDualDuctVAV:
         zone_minimum_air_flow_fraction: float | None = 0.2,
         design_specification_outdoor_air_object_name: str | None = ...,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:DualDuct:VAV`` and add it to the document.
 
@@ -274,6 +282,7 @@ class AnyBoilerHotWater:
         boiler_flow_mode: Literal["ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None = "NotModulated",
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Boiler:HotWater`` and add it to the document.
 
@@ -317,6 +326,7 @@ class HeatPumpPlantLoopEIRCooling:
         heat_recovery_electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         thermosiphon_capacity_fraction_curve_name: str | None = ...,
         thermosiphon_minimum_temperature_difference: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:PlantLoop:EIR:Cooling`` and add it to the document.
 
@@ -376,6 +386,7 @@ class AnyCoolingTowerVariableSpeedMerkel:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:VariableSpeed:Merkel`` and add it to the document.
 
@@ -427,6 +438,7 @@ class WaterHeaterHeatPumpWrappedCondenser:
         control_sensor_1_height_in_stratified_tank: float | None = ...,
         control_sensor_1_weight: float | None = 1,
         control_sensor_2_height_in_stratified_tank: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:HeatPump:WrappedCondenser`` and add it to the document.
 
@@ -436,7 +448,7 @@ class WaterHeaterHeatPumpWrappedCondenser:
         """
 
 class EnergyManagementSystemConstructionIndexVariable:
-    def __call__(self, name: str, /, *, construction_object_name: str) -> None:
+    def __call__(self, name: str, /, *, construction_object_name: str, validate: bool = True) -> None:
         """Create a new ``EnergyManagementSystem:ConstructionIndexVariable`` and add it to the document.
 
         Declares EMS variable that identifies a construction
@@ -445,7 +457,15 @@ class EnergyManagementSystemConstructionIndexVariable:
         """
 
 class SetpointManagerSingleZoneHumidityMinimum:
-    def __call__(self, name: str, /, *, setpoint_node_or_nodelist_name: str, control_zone_air_node_name: str) -> None:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        setpoint_node_or_nodelist_name: str,
+        control_zone_air_node_name: str,
+        validate: bool = True,
+    ) -> None:
         """Create a new ``SetpointManager:SingleZone:Humidity:Minimum`` and add it to the document.
 
         The Single Zone Minimum Humidity Setpoint Manager allows the control of a single zone minimum humidity level. This setpoint manager can be used in conjunction with object ZoneControl:Humidistat to detect humidity levels.
@@ -466,6 +486,7 @@ class OutputTableTimeBins:
         interval_count: int | None = ...,
         schedule_name: str | None = ...,
         variable_type: Literal["Energy", "Power", "Temperature", "VolumetricFlow"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:TimeBins`` and add it to the document.
 
@@ -484,6 +505,7 @@ class AnyMeterCustomDecrement:
         variable_details: Sequence[
             _g.MeterCustomDecrementVariableDetailsItem | _g.MeterCustomDecrementVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:CustomDecrement`` and add it to the document.
 
