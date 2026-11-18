@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class MaterialPropertyHeatAndMoistureTransferThermalConductivity:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         material_name: str,
@@ -226,6 +227,7 @@ class EvaporativeCoolerDirectResearchSpecial:
 class AnyAirConditionerVariableRefrigerantFlowFluidTemperatureControl:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         heat_pump_name: str,
@@ -309,6 +311,7 @@ class CurveFanPressureRise:
 class AnyOutputControlTableStyle:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         column_separator: Literal[

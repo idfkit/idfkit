@@ -35,6 +35,7 @@ class ConstructionAssignmentSet:
 class GroundHeatTransferBasementEquivAutoGrid:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         clearance_distance_from_outside_of_wall_to_edge_of_3_d_ground_domain: float | None = 15,
@@ -225,6 +226,7 @@ class AnyThermalStorageIceSimple:
 class ExternalInterface:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         name_of_external_interface: Literal[

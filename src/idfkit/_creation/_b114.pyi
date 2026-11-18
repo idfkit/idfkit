@@ -8,9 +8,12 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class SimulationControl:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         do_zone_sizing_calculation: Literal["No", "Yes"] | None = "No",
@@ -31,6 +34,7 @@ class SimulationControl:
 class ZoneAirMassFlowConservation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         adjust_zone_mixing_and_return_for_air_mass_flow_balance: Literal[
@@ -49,7 +53,7 @@ class ZoneAirMassFlowConservation:
         """
 
 class ScheduleFileShading:
-    def __call__(self, /, *, file_name: str) -> None:
+    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, file_name: str) -> None:
         """Create a new ``Schedule:File:Shading`` and add it to the document.
 
         A Schedule:File:Shading points to a CSV file that has 8760-8784 hours of sunlit fraction data for all or some of the exterior surfaces.
@@ -58,7 +62,7 @@ class ScheduleFileShading:
         """
 
 class GroundHeatTransferBasementYFACE:
-    def __call__(self, /) -> None:
+    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
         """Create a new ``GroundHeatTransfer:Basement:YFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) YFACE: Y Direction cell face coordinates: m
@@ -164,6 +168,7 @@ class CurveSigmoid:
 class OutputMeterMeterFileOnly:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         key_name: str,

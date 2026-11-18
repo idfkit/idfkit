@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class HeatBalanceSettingsConductionFiniteDifference:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         difference_scheme: Literal["CrankNicholsonSecondOrder", "FullyImplicitFirstOrder"]
@@ -50,6 +51,7 @@ class AnyScheduleDayList:
 class GeometryTransform:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         current_aspect_ratio: float,
@@ -151,6 +153,7 @@ class HVACTemplateSystemVRF:
 class SizingPlant:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         plant_or_condenser_loop_name: str,
@@ -239,7 +242,14 @@ class SetpointManagerMultiZoneHumidityMinimum:
         """
 
 class FluidPropertiesName:
-    def __call__(self, /, *, fluid_name: str, fluid_type: Literal["Glycol", "Refrigerant"]) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        fluid_name: str,
+        fluid_type: Literal["Glycol", "Refrigerant"],
+    ) -> None:
         """Create a new ``FluidProperties:Name`` and add it to the document.
 
         potential fluid name/type in the input file repeat this object for each fluid
@@ -248,7 +258,13 @@ class FluidPropertiesName:
         """
 
 class OutputSchedules:
-    def __call__(self, /, *, key_field: Literal["Hourly", "Timestep"]) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        key_field: Literal["Hourly", "Timestep"],
+    ) -> None:
         """Create a new ``Output:Schedules`` and add it to the document.
 
         Produces a condensed reporting that illustrates the full range of schedule values in the eio output file. In the style of input: DaySchedule, WeekSchedule, and Annual Schedule.

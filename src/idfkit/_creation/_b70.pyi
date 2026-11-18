@@ -14,7 +14,9 @@ from typing_extensions import Never
 from .. import _generated_types as _g
 
 class RunPeriodControlDaylightSavingTime:
-    def __call__(self, /, *, start_date: str, end_date: str) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, start_date: str, end_date: str
+    ) -> None:
         """Create a new ``RunPeriodControl:DaylightSavingTime`` and add it to the document.
 
         This object sets up the daylight saving time period for any RunPeriod. Ignores any daylight saving time period on the weather file and uses this definition. These are not used with SizingPeriod:DesignDay objects. Use with SizingPeriod:WeatherFileDays object can be controlled in that object.
@@ -211,6 +213,7 @@ class AvailabilityManagerLowTemperatureTurnOff:
 class OutputTableSummaryReports:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         reports: Sequence[_g.OutputTableSummaryReportsReportsItem | _g.OutputTableSummaryReportsReportsGroup] = ...,

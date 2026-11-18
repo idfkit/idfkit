@@ -113,6 +113,7 @@ class SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections:
 class AnyAirflowNetworkDistributionComponentFan:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         fan_name: str,
@@ -129,6 +130,7 @@ class AnyAirflowNetworkDistributionComponentFan:
 class AirflowNetworkDistributionComponentHeatExchanger:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         heatexchanger_name: str,
@@ -150,6 +152,7 @@ class AirflowNetworkDistributionComponentHeatExchanger:
 class HVACTemplateZonePTHP:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -587,6 +590,7 @@ class ParametricSetValueForRun:
 class AnyOutputTableSummaryReports:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         reports: Sequence[
@@ -603,6 +607,7 @@ class AnyOutputTableSummaryReports:
 class AnyOutputTableTimeBins:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         variable_name: str,

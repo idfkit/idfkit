@@ -223,6 +223,7 @@ class EnergyManagementSystemSubroutine:
 class OutputVariable:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         variable_name: str,

@@ -186,6 +186,7 @@ class PipingSystemUndergroundDomain_v8_9_to_v22_1:
 class SizingPlant_v8_9_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         plant_or_condenser_loop_name: str,

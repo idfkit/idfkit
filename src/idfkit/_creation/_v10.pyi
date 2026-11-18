@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class ScheduleYear_v8_9:
     def __call__(
         self,
@@ -156,6 +158,7 @@ class ScheduleYear_v8_9:
 class EnvironmentalImpactFactors_v8_9_to_v23_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         district_heating_efficiency: float | None = 0.3,
@@ -175,6 +178,7 @@ class EnvironmentalImpactFactors_v8_9_to_v23_1:
 class SizingParameters_v8_9_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         heating_sizing_factor: float | None = 1,
@@ -191,6 +195,7 @@ class SizingParameters_v8_9_to_v22_1:
 class HVACTemplateZoneWaterToAirHeatPump_v8_9_to_v23_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -379,6 +384,7 @@ class WaterHeaterStratified_v22_2_to_v23_1:
 class ConvergenceLimits_v8_9_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         minimum_system_timestep: float | None = ...,

@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class OutputControlTableStyle_v24_1_to_v25_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         column_separator: Literal[

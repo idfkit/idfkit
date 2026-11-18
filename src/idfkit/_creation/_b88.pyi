@@ -56,6 +56,7 @@ class AnySurfacePropertySurroundingSurfaces:
 class RoomAirTemperaturePatternTwoGradient:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         room_air_temperature_pattern_two_gradient_name: str,
@@ -88,6 +89,7 @@ class RoomAirTemperaturePatternTwoGradient:
 class RoomAirSettingsUnderFloorAirDistributionInterior:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -358,7 +360,13 @@ class RefrigerationSubcooler:
         """
 
 class OutputControlResilienceSummaries:
-    def __call__(self, /, *, heat_index_algorithm: Literal["Extended", "Simplified"] | None = "Simplified") -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        heat_index_algorithm: Literal["Extended", "Simplified"] | None = "Simplified",
+    ) -> None:
         """Create a new ``OutputControl:ResilienceSummaries`` and add it to the document.
 
         Specifies methods for resilience reporting variables

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1:
     def __call__(
         self,
@@ -35,6 +37,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1:
 class MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         material_name: str,

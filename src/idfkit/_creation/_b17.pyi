@@ -264,7 +264,13 @@ class PipingSystemUndergroundDomain:
 
 class ExternalInterfaceFunctionalMockupUnitExportFromVariable:
     def __call__(
-        self, /, *, output_variable_index_key_name: str, output_variable_name: str, fmu_variable_name: str
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        output_variable_index_key_name: str,
+        output_variable_name: str,
+        fmu_variable_name: str,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitExport:From:Variable`` and add it to the document.
 

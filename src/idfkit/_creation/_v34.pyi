@@ -33,6 +33,7 @@ class LoadProfilePlant_v8_9_to_v23_1:
 class ShadowCalculation_v8_9_to_v9_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         calculation_method: Literal["AverageOverDaysInFrequency", "TimestepFrequency"]
@@ -88,6 +89,7 @@ class CoilUserDefined_v8_9_to_v22_1:
 class OutputSQLite_v24_1_to_v25_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         option_type: Literal["Simple", "SimpleAndTabular"] | None = ...,

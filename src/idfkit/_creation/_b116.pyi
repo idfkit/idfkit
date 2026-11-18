@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class SiteGroundTemperatureBuildingSurface:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         january_ground_temperature: float | None = 18,

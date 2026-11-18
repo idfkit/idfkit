@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2:
     def __call__(
         self,
@@ -48,6 +50,7 @@ class HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2:
 class FuelFactors_v8_9_to_v9_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         existing_fuel_resource_name: str | None = ...,

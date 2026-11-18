@@ -50,6 +50,7 @@ class LifeCycleCostUseAdjustment_v8_9_to_v9_2:
 class HVACTemplateZoneFanCoil_v9_0:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,

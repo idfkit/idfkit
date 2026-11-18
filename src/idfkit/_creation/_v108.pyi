@@ -144,6 +144,7 @@ class ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2:
 class LifeCycleCostUsePriceEscalation_v9_3_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         lcc_price_escalation_name: str,

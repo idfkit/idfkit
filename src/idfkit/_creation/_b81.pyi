@@ -16,6 +16,7 @@ from .. import _generated_types as _g
 class AnyConvergenceLimits:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         minimum_system_timestep: int | None = ...,
@@ -33,6 +34,7 @@ class AnyConvergenceLimits:
 class SitePrecipitation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         precipitation_model_type: Literal["ScheduleAndDesignLevel"] | None = ...,
@@ -133,7 +135,13 @@ class AnyHVACTemplateSystemVRF:
         """
 
 class OutputControlSizingStyle:
-    def __call__(self, /, *, column_separator: Literal["Comma", "Fixed", "Tab"]) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        column_separator: Literal["Comma", "Fixed", "Tab"],
+    ) -> None:
         """Create a new ``OutputControl:Sizing:Style`` and add it to the document.
 
         Default style for the Sizing output files is comma -- this works well for importing into spreadsheet programs such as Excel(tm) but not so well for word processing programs -- there tab may be a better choice. Fixed puts spaces between the 'columns'
@@ -234,7 +242,13 @@ class ElectricLoadCenterTransformer:
         """
 
 class AnyOutputSQLite:
-    def __call__(self, /, *, option_type: Literal["Simple", "SimpleAndTabular"] | None = ...) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        option_type: Literal["Simple", "SimpleAndTabular"] | None = ...,
+    ) -> None:
         """Create a new ``Output:SQLite`` and add it to the document.
 
         Output from EnergyPlus can be written to an SQLite format file.

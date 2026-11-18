@@ -53,6 +53,7 @@ class RoofCeilingDetailed_v9_6_to_v24_2:
 class PerformancePrecisionTradeoffs_v9_3:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         use_coil_direct_solutions: Literal["No", "Yes"] | None = "No",

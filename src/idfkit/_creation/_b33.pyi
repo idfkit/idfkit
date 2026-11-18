@@ -239,6 +239,7 @@ class ElectricLoadCenterStorageLiIonNMCBattery:
 class AnyFuelFactors:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         existing_fuel_resource_name: Literal[

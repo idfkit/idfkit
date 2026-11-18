@@ -56,6 +56,7 @@ class FloorDetailed:
 class SurfacePropertyConvectionCoefficientsMultipleSurface:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_type: Literal[
@@ -184,6 +185,7 @@ class SurfacePropertyConvectionCoefficientsMultipleSurface:
 class AirflowNetworkDistributionComponentTerminalUnit:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         terminal_unit_name: str,
@@ -566,6 +568,7 @@ class ParametricFileNameSuffix:
 class OutputMeter:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         key_name: str,

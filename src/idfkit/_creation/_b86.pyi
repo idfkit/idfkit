@@ -31,6 +31,7 @@ class WindowGapDeflectionState:
 class GroundHeatTransferSlabBldgProps:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         iyrs_number_of_years_to_iterate: float | None = 10,
@@ -61,6 +62,7 @@ class GroundHeatTransferSlabBldgProps:
 class GroundHeatTransferBasementBldgData:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         dwall_wall_thickness: float | None = 0.2,
@@ -242,6 +244,7 @@ class CoilCoolingDXCurveFitPerformance:
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControl:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         heat_pump_name: str,
@@ -319,6 +322,7 @@ class SetpointManagerMultiZoneHumidityMaximum:
 class OutputControlFiles:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         output_csv: Literal["No", "Yes"] | None = "No",
@@ -365,6 +369,7 @@ class OutputControlFiles:
 class OutputControlTimestamp:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         iso_8601_format: Literal["No", "Yes"] | None = "No",
@@ -378,7 +383,7 @@ class OutputControlTimestamp:
         """
 
 class AnyOutputDiagnostics:
-    def __call__(self, /) -> None:
+    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
         """Create a new ``Output:Diagnostics`` and add it to the document.
 
         Special keys to produce certain warning messages or effect certain simulation characteristics.

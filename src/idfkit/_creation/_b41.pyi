@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class AnyHVACSystemRootFindingAlgorithm:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal[
@@ -325,6 +326,7 @@ class RefrigerationAirChiller:
 class OutputControlTableStyle:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         column_separator: Literal[

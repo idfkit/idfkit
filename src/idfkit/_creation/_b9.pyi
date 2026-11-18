@@ -55,6 +55,7 @@ class AnySiteGroundDomainBasement:
 class GroundHeatTransferSlabEquivalentSlab:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         apratio_the_area_to_perimeter_ratio_for_this_slab: float,
@@ -201,6 +202,7 @@ class ElectricLoadCenterStorageConverter:
 class OutputSQLite:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         option_type: Literal["Simple", "SimpleAndTabular"] | None = ...,

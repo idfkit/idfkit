@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class ScheduleFile:
     def __call__(
         self,
@@ -34,6 +36,7 @@ class ScheduleFile:
 class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         material_name: str,
@@ -99,6 +102,7 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm:
 class GroundHeatTransferBasementAutoGrid:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         slabx_x_dimension_of_the_building_slab: float,

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class ScheduleFile_v9_2_to_v9_6:
     def __call__(
         self,
@@ -33,6 +35,7 @@ class ScheduleFile_v9_2_to_v9_6:
 class AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         coil_name: str,
@@ -61,7 +64,13 @@ class AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2:
         """
 
 class Timestep_v8_9_to_v22_1:
-    def __call__(self, /, *, number_of_timesteps_per_hour: float | None = 6) -> None:
+    def __call__(
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        number_of_timesteps_per_hour: float | None = 6,
+    ) -> None:
         """Create a new ``Timestep`` and add it to the document.
 
         Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is used in the Zone Heat Balance Model calculation as the driving timestep for heat transfer and load calculations.

@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
+from .. import _generated_types as _g
 from .. import versioned as _vd
 
 class ChillerConstantCOP_v8_9_to_v24_1:
@@ -42,6 +43,7 @@ class ChillerConstantCOP_v8_9_to_v24_1:
 class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str | None = ...,
@@ -58,6 +60,7 @@ class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1:
 class OutputTableSummaryReports_v8_9_to_v9_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         reports: Sequence[

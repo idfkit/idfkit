@@ -204,6 +204,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1:
 class SizingSystem_v8_9_to_v9_5:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         airloop_name: str,

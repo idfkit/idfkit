@@ -10,6 +10,8 @@ from typing import Literal
 
 from typing_extensions import Never
 
+from .. import _generated_types as _g
+
 class SiteVariableLocation:
     def __call__(
         self,
@@ -114,6 +116,7 @@ class ZoneHVACWindowAirConditioner:
 class WaterHeaterSizing:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         waterheater_name: str,
@@ -234,6 +237,7 @@ class CurveQuadLinear:
 class OutputVariableDictionary:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         key_field: Literal["IDF", "regular"] | None = "regular",

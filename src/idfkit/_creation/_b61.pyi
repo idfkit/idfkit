@@ -29,7 +29,13 @@ class MaterialPropertyPhaseChange:
 
 class MaterialPropertyHeatAndMoistureTransferSettings:
     def __call__(
-        self, /, *, material_name: str, porosity: float, initial_water_content_ratio: float | None = 0.2
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        material_name: str,
+        porosity: float,
+        initial_water_content_ratio: float | None = 0.2,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Settings`` and add it to the document.
 

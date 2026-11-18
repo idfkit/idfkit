@@ -191,6 +191,7 @@ class AvailabilityManagerNightVentilation:
 class OutputConstructions:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         details_type_1: Literal["Constructions", "Materials"] | None = ...,

@@ -110,6 +110,7 @@ class FoundationKiva:
 class HVACTemplateZoneBaseboardHeat:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -265,6 +266,7 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed:
 class ZoneTerminalUnitList:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_terminal_unit_list_name: str,
@@ -333,6 +335,7 @@ class ElectricLoadCenterStorageBattery:
 class CurrencyType:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         monetary_unit: Literal[

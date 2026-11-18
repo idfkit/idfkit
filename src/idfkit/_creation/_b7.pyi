@@ -79,6 +79,7 @@ class PipingSystemUndergroundPipeSegment:
 class AnyEnvironmentalImpactFactors:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         district_cooling_cop: float | None = 3,
@@ -96,6 +97,7 @@ class AnyEnvironmentalImpactFactors:
 class EnvironmentalImpactFactors:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         district_heating_water_efficiency: float | None = 0.3,

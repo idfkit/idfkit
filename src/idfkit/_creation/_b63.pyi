@@ -10,6 +10,8 @@ from typing import Literal
 
 from typing_extensions import Never
 
+from .. import _generated_types as _g
+
 class SiteGroundDomainSlab:
     def __call__(
         self,
@@ -89,6 +91,7 @@ class AnyZoneInfiltrationFlowCoefficient:
 class AnyZoneEarthtube:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -125,6 +128,7 @@ class AnyZoneEarthtube:
 class AirflowNetworkDistributionComponentFan:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         fan_name: str,
@@ -141,6 +145,7 @@ class AirflowNetworkDistributionComponentFan:
 class AirflowNetworkDistributionComponentCoil:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         coil_name: str,

@@ -62,6 +62,7 @@ class ShadingBuilding:
 class GroundHeatTransferSlabInsulation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         rins_r_value_of_under_slab_insulation: float | None = 0,

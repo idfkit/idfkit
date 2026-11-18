@@ -8,9 +8,12 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class AnySurfaceConvectionAlgorithmInside:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         algorithm: Literal["AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None = "TARP",
@@ -44,6 +47,7 @@ class SiteLocation:
 class MaterialPropertyHeatAndMoistureTransferDiffusion:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         material_name: str,
@@ -154,6 +158,7 @@ class AnyWindow:
 class GroundHeatTransferBasementInterior:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         cond_flag_is_the_basement_conditioned_: Literal["FALSE", "TRUE"] | None = "TRUE",
@@ -267,6 +272,7 @@ class EnergyManagementSystemActuator:
 class AnyExternalInterfaceFunctionalMockupUnitExportToSchedule:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         schedule_name: str,

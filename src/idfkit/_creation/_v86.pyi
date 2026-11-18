@@ -123,6 +123,7 @@ class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1:
 class ShadowCalculation_v9_3_to_v22_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         shading_calculation_method: Literal["Imported", "PixelCounting", "PolygonClipping", "Scheduled"]

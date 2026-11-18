@@ -8,9 +8,12 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class OutputControlTableStyle_v8_9_to_v23_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         column_separator: Literal[
@@ -80,7 +83,12 @@ class CoolingTowerSingleSpeed_v9_2_to_v22_1:
 
 class OutputDebuggingData_v8_9_to_v9_3:
     def __call__(
-        self, /, *, report_debugging_data: float | None = ..., report_during_warmup: float | None = ...
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        report_debugging_data: float | None = ...,
+        report_during_warmup: float | None = ...,
     ) -> None:
         """Create a new ``Output:DebuggingData`` and add it to the document.
 

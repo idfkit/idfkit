@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
+from .. import _generated_types as _g
 from .. import versioned as _vd
 
 class BoilerHotWater_v9_3_to_v23_1:
@@ -287,6 +288,7 @@ class RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1:
 class ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         schedule_name: str,

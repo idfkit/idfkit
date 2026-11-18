@@ -54,6 +54,7 @@ class AnyInternalMass:
 class AirflowNetworkDistributionDuctViewFactors:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         linkage_name: str,
@@ -110,6 +111,7 @@ class WaterUseRainCollector:
 class OutputMeterCumulative:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         key_name: str,

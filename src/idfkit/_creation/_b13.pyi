@@ -41,6 +41,7 @@ class MaterialPropertyPhaseChangeHysteresis:
 class ZoneMRTCalculation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -129,6 +130,7 @@ class CurveCubicLinear:
 class ComponentCostReference:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         reference_building_line_item_costs: float | None = ...,

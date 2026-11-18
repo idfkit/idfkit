@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class RunPeriodCustomRange_v8_9:
     def __call__(
         self,
@@ -89,6 +91,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2:
 class PerformancePrecisionTradeoffs_v9_4_to_v9_5:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         use_coil_direct_solutions: Literal["No", "Yes"] | None = "No",

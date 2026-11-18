@@ -14,6 +14,7 @@ from .. import _generated_types as _g
 class PerformancePrecisionTradeoffs:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         use_coil_direct_solutions: Literal["No", "Yes"] | None = "No",
@@ -623,6 +624,7 @@ class FaultModelTemperatureSensorOffsetOutdoorAir:
 class FluidPropertiesSaturated:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         fluid_name: str | None = ...,

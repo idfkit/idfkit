@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class SizingPeriodWeatherFileConditionType:
     def __call__(
         self,
@@ -59,6 +61,7 @@ class SizingPeriodWeatherFileConditionType:
 class AnyMaterialPropertyHeatAndMoistureTransferSuction:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         material_name: str,
@@ -167,6 +170,7 @@ class ZoneCoolTowerShower:
 class ZoneControlThermostatTemperatureAndHumidity:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         thermostat_name: str,

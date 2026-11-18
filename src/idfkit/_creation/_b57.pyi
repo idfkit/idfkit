@@ -46,6 +46,7 @@ class Zone:
 class ZoneEarthtubeParameters:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         earth_tube_model_parameters_name: str,
@@ -208,6 +209,7 @@ class CurveChillerPartLoadWithLift:
 class OutputDiagnostics:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         diagnostics: Sequence[_g.OutputDiagnosticsDiagnosticsItem | _g.OutputDiagnosticsDiagnosticsGroup] = ...,

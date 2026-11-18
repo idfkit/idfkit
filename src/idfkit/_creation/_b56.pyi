@@ -10,9 +10,12 @@ from typing import Literal
 
 from typing_extensions import Never
 
+from .. import _generated_types as _g
+
 class SiteGroundReflectance:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         january_ground_reflectance: float | None = 0.2,
@@ -58,6 +61,7 @@ class ShadingOverhangProjection:
 class SurfacePropertyHeatBalanceSourceTerm:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_name: str,
@@ -235,6 +239,7 @@ class GeneratorFuelCellWaterSupply:
 class ComponentCostAdjustments:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         miscellaneous_cost_per_conditioned_area: float | None = ...,

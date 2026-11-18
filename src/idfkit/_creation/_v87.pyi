@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
+from .. import _generated_types as _g
 from .. import versioned as _vd
 
 class BoilerSteam_v8_9_to_v9_2:
@@ -54,6 +55,7 @@ class BoilerSteam_v8_9_to_v9_2:
 class HVACTemplateZonePTAC_v8_9:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,

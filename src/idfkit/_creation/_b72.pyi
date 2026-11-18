@@ -112,6 +112,7 @@ class ComplexFenestrationPropertySolarAbsorbedLayers:
 class HVACTemplateZoneDualDuct:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -366,6 +367,7 @@ class AnyUtilityCostVariable:
 class AnyLifeCycleCostUsePriceEscalation:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         lcc_price_escalation_name: str,

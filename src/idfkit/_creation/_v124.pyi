@@ -15,6 +15,7 @@ from .. import versioned as _vd
 class SurfacePropertyConvectionCoefficients_v9_5_to_v9_6:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         surface_name: str,
@@ -130,6 +131,7 @@ class SurfacePropertyConvectionCoefficients_v9_5_to_v9_6:
 class AirflowNetworkDistributionComponentCoil_v9_3_to_v23_2:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         coil_name: str,

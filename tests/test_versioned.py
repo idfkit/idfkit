@@ -603,6 +603,16 @@ class TestCommittedStubs:
                 "the name is optional in add(), none in the schema",
             ),
             (
+                r"(class OutputSQLite:.*?)this_type_has_no_name_field: _g\._PassFieldsAsKeywords = \.\.\.,",
+                r"\1",
+                "Output:SQLite in 26.2.0 (OutputSQLite): add() does not refuse a name with this_type_has_no_name_field",
+            ),
+            (
+                r"(class OutputSQLite:.*?)this_type_has_no_name_field: _g\._PassFieldsAsKeywords",
+                r"\1this_type_has_no_name_field: str",
+                "(OutputSQLite): add() does not refuse a name with this_type_has_no_name_field",
+            ),
+            (
                 # Option A: AnyIDFDocument requires what any release requires.
                 r"(class AnyBuildingSurfaceDetailed:.*?)construction_name: str,",
                 r"\1construction_name: str | None = ...,",

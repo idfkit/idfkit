@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class ConstructionComplexFenestrationState:
     def __call__(
         self,
@@ -60,6 +62,7 @@ class ConstructionComplexFenestrationState:
 class RoomAirSettingsUnderFloorAirDistributionExterior:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,
@@ -99,6 +102,7 @@ class RoomAirSettingsUnderFloorAirDistributionExterior:
 class HVACTemplateZoneConstantVolume:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,

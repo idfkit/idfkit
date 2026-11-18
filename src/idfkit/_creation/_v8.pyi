@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .. import _generated_types as _g
+
 class People_v8_9_to_v9_4:
     def __call__(
         self,
@@ -166,6 +168,7 @@ class ZoneMixing_v8_9_to_v22_1:
 class ZoneEarthtube_v8_9_to_v23_1:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         zone_name: str,

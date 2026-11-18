@@ -83,6 +83,7 @@ class MaterialPropertyMoisturePenetrationDepthSettings:
 class GroundHeatTransferSlabManualGrid:
     def __call__(
         self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
         /,
         *,
         nx_number_of_cells_in_the_x_direction: float,
