@@ -52,21 +52,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so was type-checking speed: the signatures were kept in modules of their own
   (`idfkit/_creation`) that a type checker reads only to check an `add()` call
   ([#297](https://github.com/idfkit/idfkit/pull/297)).
-- `idfkit check` gained `C006`, an error checked by default: an object type passed to `add()` that
-  no target release has (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a
-  choice value no target release lists for the field
-  (`zone_inside_convection_algorithm="Bogus"`, which raises `ValidationFailedError`), with the
-  closest real name. Both used to go unreported: `C001` and `C002` report only what some targets
-  accept and others do not. Choices were matched case-insensitively, as EnergyPlus matches them,
-  and a field that some target accepts as free text was not reported. It was read only in a file
-  that imports idfkit, in a call given more than the type name, so `set.add("x")` was not
-  reported; a group filter did not hide it. An unknown type was reported only on a receiver known
-  to be a document (`doc = new_document()`, `load_idf(...)`, `as_version(...)`, or a parameter
-  annotated `IDFDocument`, `AnyIDFDocument`, ...), since a collection's `add()` takes a name
-  first; on a collection (`doc["Zone"]`, `doc.zones`, `doc.get_collection("Zone")`, or a name bound
-  to one) the keyword choice values were checked against the collection's type, which `C002` did
-  not do before. A run that passed before could fail on it ([#296](https://github.com/idfkit/idfkit/pull/296)).
-
+- **Breaking:** `idfkit check` gained `C006`, an error checked by default, so a run that passed
+  before could fail on it. It reported an object type passed to `add()` that no target release has
+  (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a choice value no target
+  release lists for the field (`zone_inside_convection_algorithm="Bogus"`, which raises
+  `ValidationFailedError`), with the closest real name. Both used to go unreported: `C001` and
+  `C002` report only what some targets accept and others do not. Choices were matched
+  case-insensitively, as EnergyPlus matches them; a field that some target accepts as free text was
+  not reported, nor was a choice passed with `validate=False`, which `add()` stores unchecked. It
+  was read only in a file that imports idfkit; a group filter did not hide it.
+  - An unknown type was reported only on a receiver known to be a document with a schema
+    (`doc = new_document()`, `load_idf(...)`, `as_version(...)`, or a parameter annotated
+    `IDFDocument`, `AnyIDFDocument`, `IDFDocument | None`, ...), and there whatever the number of
+    arguments (`doc.add("SimulationControls")`). A collection's `add()` takes a name first, and a
+    bare `IDFDocument()` has no schema and accepts any type.
+  - A choice value was reported in a call given more than the type name, so `set.add("x")` was not
+    read. On a collection (`doc["Zone"]`, `doc.zones`, `doc.get_collection("Zone")`, or a name bound
+    to one) it was checked against the collection's type, which `C002` did not do before, with the
+    narrowing of the document the collection was read from.
+  - A document held where a collection could be kept the checks it had: an attribute named like a
+    type a model holds one of (`self.building = load_idf(...)`), a raw type spelling
+    (`app.window`), or an item of a dict (`variants["Window"]`, or a parameter annotated
+    `dict[...]`) ([#296](https://github.com/idfkit/idfkit/pull/296)).
 - `idfkit.versions.releases_between(since, before)` was added: every supported release from
   `since` (inclusive) to `before` (exclusive), the range `as_version(doc, since=..., before=...)`
   accepts ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
@@ -240,10 +247,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `IDFDocument.addidfobject` left an object it refused as a duplicate linked to the document, so
+  renaming that object afterwards rewrote the references to the object it duplicated. It is filed
+  before it is linked, and a refused object stays unlinked. The deprecation message of
+  `IDFCollection.add(obj)` sends its callers there ([#296](https://github.com/idfkit/idfkit/pull/296)).
 - The bundled agent reference (`document-and-objects.md`) narrowed a document to 22.2 and later
   with a hand-written tuple of release types ending in `IDFDocument`, the pattern it warns against
   a few paragraphs earlier: once idfkit adopts a newer release, that tuple stops covering 26.2. It
-  uses `as_version(doc, since="22.2")` instead ([#296](https://github.com/idfkit/idfkit/pull/296)).
+  used `as_version(doc, since="22.2")` instead ([#296](https://github.com/idfkit/idfkit/pull/296)).
 - `migrate()`, `async_migrate()`, `plan_migration_chain()` and `simulate(..., auto_migrate=True)` matched a model's version to
   its release the way schema selection and `as_version` do. A model loaded from a file headed
   `Version, 9.0;` reads as 9.0.0 while the release is 9.0.1, so migrating it raised

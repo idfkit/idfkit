@@ -283,6 +283,10 @@ class Narrower:
                 return DocumentRef(frozenset(kept | {text}), inner.releases)
         return DocumentRef(frozenset({text}), None)
 
+    def same_meaning(self, expr: ast.expr, owner: Scope, scope: Scope) -> bool:
+        """Whether *expr*, written in *owner*, means the same single bindings when read from *scope*."""
+        return self._stable_text(ast.unparse(expr), owner, scope)
+
     def _stable_text(self, text: str, owner: Scope, scope: Scope) -> bool:
         """Whether every name in the expression *text* means one fixed binding from both scopes."""
         try:

@@ -11,7 +11,13 @@ from ._models import ExtractedLiteral, LiteralKind
 from ._narrow import ALL_RELEASES, DocumentRef, Guard, Narrower, Releases, Scope, ScopeTable, escapes, rebinds
 
 
-def extract_literals(source: str, filename: str = "<unknown>", *, package: str | None = None) -> list[ExtractedLiteral]:
+def extract_literals(
+    source: str,
+    filename: str = "<unknown>",
+    *,
+    package: str | None = None,
+    version: tuple[int, int, int] | None = None,
+) -> list[ExtractedLiteral]:
     """Parse *source* as Python and extract high-confidence idfkit literals.
 
     Detected patterns (constant string literals only):
@@ -40,13 +46,17 @@ def extract_literals(source: str, filename: str = "<unknown>", *, package: str |
             ``src/idfkit/simulation/expand.py``), used to resolve relative imports: inside idfkit's
             own source, ``from .document import ...`` is an idfkit import. ``None`` treats every
             relative import as foreign.
+        version: The release whose schema names object types and document accessors when the
+            receiver of an ``add()`` call is classified (``doc.zones`` is a collection). ``None``
+            uses the latest supported release; ``check_compatibility`` passes its newest target,
+            whose schema it has loaded already.
 
     Returns:
         List of :class:`ExtractedLiteral` instances.
     """
     tree = ast.parse(source, filename)
     has_import = _has_idfkit_import(tree, package)
-    visitor = _LiteralVisitor(source, tree, has_idfkit_import=has_import)
+    visitor = _LiteralVisitor(source, tree, has_idfkit_import=has_import, version=version)
     visitor.visit(tree)
     return visitor.literals
 
@@ -97,8 +107,9 @@ def _end_col(node: ast.expr) -> int:
     return node.col_offset
 
 
-# Calls whose result is a document: a name bound once to one, or a parameter annotated with a
-# document type, is a document receiver (see _LiteralVisitor._receiver).
+# Calls whose result is a document with a schema: a name bound once to one, or a parameter annotated
+# with a document type, is a document receiver (see _LiteralVisitor._receiver). IDFDocument() is not
+# one: constructed without a schema, it accepts any type name.
 _DOCUMENT_FACTORIES = frozenset({
     "new_document",
     "load_idf",
@@ -106,31 +117,62 @@ _DOCUMENT_FACTORIES = frozenset({
     "parse_idf",
     "parse_epjson",
     "as_version",
-    "IDFDocument",
+})
+
+# Annotations and constructors of a mapping: a subscript of one is a value, not a collection.
+_MAPPING_HEADS = frozenset({
+    "dict",
+    "Dict",
+    "Mapping",
+    "MutableMapping",
+    "defaultdict",
+    "DefaultDict",
+    "OrderedDict",
+    "ChainMap",
 })
 
 _ReceiverKind = Literal["document", "collection", "unknown"]
 
 
+def _latest() -> tuple[int, int, int]:
+    from ..versions import LATEST_VERSION
+
+    return LATEST_VERSION
+
+
 @lru_cache(maxsize=4096)
-def _accessor_type(attr: str) -> str | None:
-    """The object type a document attribute such as ``zones`` names, read from the latest schema."""
+def _accessor_type(attr: str, version: tuple[int, int, int], *, exact: bool) -> str | None:
+    """The object type a document attribute names in *version*'s schema, or ``None``.
+
+    With *exact*, only the typed accessors count (``zones``, ``building_surfaces``, ``building``):
+    the case-insensitive raw spelling (``zone`` for ``Zone``) is a common variable name too.
+    """
     if attr.startswith("_"):
         return None
     from ..document import _build_resolver  # pyright: ignore[reportPrivateUsage]
     from ..schema import get_schema
-    from ..versions import LATEST_VERSION
 
-    return get_schema(LATEST_VERSION).accessor_resolver(_build_resolver).resolve(attr)
+    resolver = get_schema(version).accessor_resolver(_build_resolver)
+    if exact:
+        return resolver.accessors().get(attr)
+    return resolver.resolve(attr)
 
 
 @lru_cache(maxsize=4096)
-def _is_object_type(key: str) -> bool:
-    """Whether *key* names an object type of the latest schema, in any case."""
+def _is_singleton(obj_type: str, version: tuple[int, int, int]) -> bool:
+    """Whether a model holds at most one object of *obj_type* (``Building``, ``Version``, ...)."""
     from ..schema import get_schema
-    from ..versions import LATEST_VERSION
 
-    return get_schema(LATEST_VERSION).resolve_type_name(key) is not None
+    schema = get_schema(version).get_object_schema(obj_type)
+    return schema is not None and schema.get("maxProperties") == 1
+
+
+@lru_cache(maxsize=4096)
+def _is_object_type(key: str, version: tuple[int, int, int]) -> bool:
+    """Whether *key* names an object type of *version*'s schema, in any case."""
+    from ..schema import get_schema
+
+    return get_schema(version).resolve_type_name(key) is not None
 
 
 def _call_name(node: ast.Call) -> str | None:
@@ -142,27 +184,88 @@ def _call_name(node: ast.Call) -> str | None:
     return None
 
 
-def _annotation_kind(annotation: ast.expr | None) -> _ReceiverKind:
-    """What a parameter annotated *annotation* is: a document type, ``IDFCollection[...]``, or unknown."""
-    if annotation is None:
-        return "unknown"
+def _head(expr: ast.expr) -> str:
+    """The unqualified name an annotation member starts with: ``IDFCollection`` for ``ok.IDFCollection[Zone]``."""
+    while isinstance(expr, ast.Subscript):
+        expr = expr.value
+    if isinstance(expr, ast.Attribute):
+        return expr.attr
+    if isinstance(expr, ast.Name):
+        return expr.id
+    if isinstance(expr, ast.Constant) and expr.value is None:
+        return "None"
+    return ""
+
+
+def _union_members(expr: ast.expr) -> list[ast.expr]:
+    """The members of ``A | B``, ``Union[A, B]`` and ``Optional[A]``; ``[expr]`` for anything else."""
+    if isinstance(expr, ast.BinOp) and isinstance(expr.op, ast.BitOr):
+        return [*_union_members(expr.left), *_union_members(expr.right)]
+    if isinstance(expr, ast.Subscript) and _head(expr.value) in ("Union", "Optional"):
+        inner = expr.slice
+        members = list(inner.elts) if isinstance(inner, ast.Tuple) else [inner]
+        return [m for e in members for m in _union_members(e)]
+    return [expr]
+
+
+def _annotation_expr(annotation: ast.expr | None) -> ast.expr | None:
+    """*annotation*, with a string annotation parsed."""
     if isinstance(annotation, ast.Constant) and isinstance(annotation.value, str):
-        text = annotation.value
-    else:
-        text = ast.unparse(annotation)
-    head = text.split("[", 1)[0].strip().rsplit(".", 1)[-1]
-    if head == "IDFCollection":
-        return "collection"
-    if "IDFDocument" in head:
-        return "document"
-    return "unknown"
+        try:
+            return ast.parse(annotation.value, mode="eval").body
+        except SyntaxError:
+            return None
+    return annotation
+
+
+def _annotation_kind(annotation: ast.expr | None) -> _ReceiverKind:
+    """What a parameter annotated *annotation* is: a document, ``IDFCollection[...]``, or unknown.
+
+    A union counts only when every member but ``None`` is of one kind: ``IDFDocument | None`` is a
+    document, ``IDFDocument | IDFCollection[Zone]`` unknown.
+    """
+    expr = _annotation_expr(annotation)
+    if expr is None:
+        return "unknown"
+    kinds: set[_ReceiverKind] = set()
+    for member in _union_members(expr):
+        head = _head(member)
+        if head == "None":
+            continue
+        if head == "IDFCollection":
+            kinds.add("collection")
+        elif "IDFDocument" in head:
+            kinds.add("document")
+        else:
+            kinds.add("unknown")
+    return kinds.pop() if len(kinds) == 1 else "unknown"
+
+
+def _annotation_is_mapping(annotation: ast.expr | None) -> bool:
+    expr = _annotation_expr(annotation)
+    return expr is not None and any(_head(m) in _MAPPING_HEADS for m in _union_members(expr))
+
+
+def _passes_validate_false(node: ast.Call) -> bool:
+    """Whether an ``add()`` call passes ``validate=False``, which stores values unchecked."""
+    return any(
+        kw.arg == "validate" and isinstance(kw.value, ast.Constant) and kw.value.value is False for kw in node.keywords
+    )
 
 
 class _LiteralVisitor(ast.NodeVisitor):
     """AST visitor that collects idfkit-relevant string literals."""
 
-    def __init__(self, source: str, tree: ast.Module, *, has_idfkit_import: bool) -> None:
+    def __init__(
+        self,
+        source: str,
+        tree: ast.Module,
+        *,
+        has_idfkit_import: bool,
+        version: tuple[int, int, int] | None = None,
+    ) -> None:
         self.literals: list[ExtractedLiteral] = []
+        self._version = version or _latest()
         self._source = source
         self._has_idfkit_import = has_idfkit_import
         # Narrowing only applies to a file that imports idfkit; skip the scope walk otherwise.
@@ -394,7 +497,7 @@ class _LiteralVisitor(ast.NodeVisitor):
 
     def _receiver(
         self, expr: ast.expr, scope: Scope, depth: int = 0
-    ) -> tuple[_ReceiverKind, str | None, ast.expr | None]:
+    ) -> tuple[_ReceiverKind, str | None, ast.expr | None, Scope | None]:
         """What the receiver of an ``add()`` call is known to be.
 
         ``doc.add("Zone", "Office")`` takes an object type first, and a collection's
@@ -409,65 +512,124 @@ class _LiteralVisitor(ast.NodeVisitor):
         collection was read from, when it means the same in *scope*, for narrowing.
         """
         if depth > 8:
-            return "unknown", None, None
+            return "unknown", None, None, None
         if isinstance(expr, ast.Subscript):
-            key = expr.slice
-            if (
-                isinstance(key, ast.Constant)
-                and isinstance(key.value, str)
-                and (_is_object_type(key.value) or self._receiver(expr.value, scope, depth + 1)[0] == "document")
-            ):
-                return "collection", key.value, expr.value
-            return "unknown", None, None
+            return self._receiver_of_subscript(expr, scope, depth)
         if isinstance(expr, ast.Attribute):
-            obj_type = _accessor_type(expr.attr)
-            if obj_type is not None:
-                return "collection", obj_type, expr.value
-            return "unknown", None, None
+            return self._receiver_of_attribute(expr, scope, depth)
         if isinstance(expr, ast.Call):
             return self._receiver_of_call(expr, scope, depth)
         if isinstance(expr, ast.Name):
             return self._receiver_of_name(expr, scope, depth)
-        return "unknown", None, None
+        return "unknown", None, None, None
+
+    def _receiver_of_subscript(
+        self, expr: ast.Subscript, scope: Scope, depth: int
+    ) -> tuple[_ReceiverKind, str | None, ast.expr | None, Scope | None]:
+        """``doc["Zone"]``: a collection when the key names an object type and the base can be a document.
+
+        On a base known to be a document, any string key is a collection (``doc["zone"]``). On a
+        base known to be a mapping (a name bound to a dict, or annotated ``dict[...]``), the item is
+        a value, which may be a document held under a key such as ``"Window"``.
+        """
+        key = expr.slice
+        if not (isinstance(key, ast.Constant) and isinstance(key.value, str)):
+            return "unknown", None, None, None
+        base = self._receiver(expr.value, scope, depth + 1)[0]
+        if base == "document" or (
+            _is_object_type(key.value, self._version) and not self._is_mapping(expr.value, scope)
+        ):
+            return "collection", key.value, expr.value, None
+        return "unknown", None, None, None
+
+    def _receiver_of_attribute(
+        self, expr: ast.Attribute, scope: Scope, depth: int
+    ) -> tuple[_ReceiverKind, str | None, ast.expr | None, Scope | None]:
+        """``doc.zones``: a collection when the attribute is a document accessor and the base can be a document.
+
+        On a base known to be a document every accessor spelling counts. On any other base only the
+        typed accessors do, and not one of a type a model holds at most one of: ``self.building``
+        or ``app.version`` is as likely to hold a document or a value as the ``Building`` collection.
+        """
+        if self._receiver(expr.value, scope, depth + 1)[0] == "document":
+            obj_type = _accessor_type(expr.attr, self._version, exact=False)
+        else:
+            obj_type = _accessor_type(expr.attr, self._version, exact=True)
+            if obj_type is not None and _is_singleton(obj_type, self._version):
+                obj_type = None
+        if obj_type is not None:
+            return "collection", obj_type, expr.value, None
+        return "unknown", None, None, None
+
+    def _is_mapping(self, expr: ast.expr, scope: Scope) -> bool:
+        """Whether *expr* is known to be a mapping: a name bound once to a dict, or annotated as one."""
+        if not isinstance(expr, ast.Name):
+            return False
+        bound = self._table.value_of(expr.id, scope)
+        if bound is not None:
+            value = bound[0]
+            return isinstance(value, (ast.Dict, ast.DictComp)) or (
+                isinstance(value, ast.Call) and _call_name(value) in _MAPPING_HEADS
+            )
+        owner = self._table.lookup(expr.id, scope)
+        return owner is not None and _annotation_is_mapping(self._annotations.get(id(owner), {}).get(expr.id))
 
     def _receiver_of_call(
         self, expr: ast.Call, scope: Scope, depth: int
-    ) -> tuple[_ReceiverKind, str | None, ast.expr | None]:
+    ) -> tuple[_ReceiverKind, str | None, ast.expr | None, Scope | None]:
         name = _call_name(expr)
         if name == "get_collection" and isinstance(expr.func, ast.Attribute):
-            arg = expr.args[0] if expr.args else None
+            arg = expr.args[0] if expr.args else next((kw.value for kw in expr.keywords if kw.arg == "obj_type"), None)
             obj_type = arg.value if isinstance(arg, ast.Constant) and isinstance(arg.value, str) else None
-            return "collection", obj_type, expr.func.value
+            return "collection", obj_type, expr.func.value, None
         if name in _DOCUMENT_FACTORIES:
-            return "document", None, None
+            return "document", None, None, None
         if name == "copy" and isinstance(expr.func, ast.Attribute):
-            inner, _, _ = self._receiver(expr.func.value, scope, depth + 1)
+            inner, _, _, _ = self._receiver(expr.func.value, scope, depth + 1)
             if inner == "document":
-                return "document", None, None
-        return "unknown", None, None
+                return "document", None, None, None
+        return "unknown", None, None, None
 
     def _receiver_of_name(
         self, expr: ast.Name, scope: Scope, depth: int
-    ) -> tuple[_ReceiverKind, str | None, ast.expr | None]:
+    ) -> tuple[_ReceiverKind, str | None, ast.expr | None, Scope | None]:
         bound = self._table.value_of(expr.id, scope)
         if bound is not None:
-            kind, obj_type, document = self._receiver(bound[0], bound[1], depth + 1)
-            # The document a bound collection was read from narrows it only where that expression
-            # means the same: when the name is bound in the scope it is read in.
-            return kind, obj_type, document if bound[1] is scope else None
+            kind, obj_type, document, owner = self._receiver(bound[0], bound[1], depth + 1)
+            # The document expression is read in the scope it was written in.
+            return kind, obj_type, document, owner or bound[1]
         owner = self._table.lookup(expr.id, scope)
         if owner is not None and len(owner.bindings.get(expr.id, [])) == 1:
-            return _annotation_kind(self._annotations.get(id(owner), {}).get(expr.id)), None, None
-        return "unknown", None, None
+            return _annotation_kind(self._annotations.get(id(owner), {}).get(expr.id)), None, None, None
+        return "unknown", None, None, None
 
     def _handle_collection_add(
-        self, node: ast.Call, receiver: ast.expr, obj_type: str | None, document: ast.expr | None
+        self,
+        node: ast.Call,
+        receiver: ast.expr,
+        obj_type: str | None,
+        document: ast.expr | None,
+        owner: Scope | None,
     ) -> None:
         """A collection's ``add(name, **fields)``: the first argument is a name, the keywords its fields."""
         if obj_type is None:
             return
-        releases = self._releases(document) if document is not None else None
+        releases = self._collection_releases(document, owner)
         self._keyword_choice_literals(node, obj_type, self._receiver_text(receiver), releases, in_idfkit_add=True)
+
+    def _collection_releases(self, document: ast.expr | None, owner: Scope | None) -> Releases | None:
+        """The releases a collection read from *document* (written in *owner*) can run against here.
+
+        A narrowing in the expression itself (``as_version(doc, since=...)["Zone"]``) holds wherever
+        the collection is used. A version guard around the use (``if doc.version >= ...``) narrows
+        it only when the document's names mean the same single bindings here as where it was read.
+        """
+        if document is None:
+            return None
+        if owner is None or owner is self._scope or self._narrower.same_meaning(document, owner, self._scope):
+            return self._releases(document)
+        releases = self._narrower.document(document, owner).releases
+        return None if releases == ALL_RELEASES else releases
 
     def _keyword_choice_literals(
         self,
@@ -500,9 +662,9 @@ class _LiteralVisitor(ast.NodeVisitor):
         receiver = func.value
         kind: _ReceiverKind = "unknown"
         if self._has_idfkit_import:
-            kind, collection_type, document = self._receiver(receiver, self._scope)
+            kind, collection_type, document, owner = self._receiver(receiver, self._scope)
             if kind == "collection":
-                self._handle_collection_add(node, receiver, collection_type, document)
+                self._handle_collection_add(node, receiver, collection_type, document, owner)
                 return
         if not node.args:
             return
@@ -515,9 +677,10 @@ class _LiteralVisitor(ast.NodeVisitor):
         releases = self._releases(receiver)
         # idfkit's add() is called with a name, fields or both; set.add and its kin take one argument.
         in_idfkit_add = self._has_idfkit_import and len(node.args) + len(node.keywords) > 1
-        # A type name no release has is reported (C006) only on a receiver known to be a document:
-        # a collection's add() takes a name first, and an unknown receiver may be one.
-        type_in_idfkit_add = in_idfkit_add and kind == "document"
+        # A type name no release has is reported (C006) only on a receiver known to be a document,
+        # whatever the arity (doc.add("Timestep") is legal): a collection's add() takes a name
+        # first, and an unknown receiver may be one.
+        type_in_idfkit_add = self._has_idfkit_import and kind == "document"
 
         self.literals.append(
             ExtractedLiteral(
@@ -533,8 +696,10 @@ class _LiteralVisitor(ast.NodeVisitor):
             )
         )
 
-        self._keyword_choice_literals(node, obj_type_value, receiver_text, releases, in_idfkit_add=in_idfkit_add)
-        self._dict_choice_literals(node, obj_type_value, receiver_text, releases, in_idfkit_add)
+        # With validate=False, add() stores a value outside the choices rather than raising.
+        choice_in_idfkit_add = in_idfkit_add and not _passes_validate_false(node)
+        self._keyword_choice_literals(node, obj_type_value, receiver_text, releases, in_idfkit_add=choice_in_idfkit_add)
+        self._dict_choice_literals(node, obj_type_value, receiver_text, releases, choice_in_idfkit_add)
 
     def _dict_choice_literals(
         self,

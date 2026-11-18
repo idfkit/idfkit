@@ -232,3 +232,67 @@ class TestDeprecatedObjectForm:
         assert filed is legacy
         assert doc["Zone"]["Legacy"] is legacy
         assert record[0].filename == __file__
+
+
+class _TaggedCollection(IDFCollection[IDFObject]):
+    """A subclass with an attribute of its own (it has a ``__dict__``)."""
+
+
+class TestCopyingCollections:
+    @pytest.mark.parametrize("clone", [copy.copy, copy.deepcopy, lambda c: pickle.loads(pickle.dumps(c))])  # noqa: S301
+    def test_a_subclass_keeps_its_attributes(self, clone: Callable[[Any], Any]) -> None:
+        collection = _TaggedCollection("Zone")
+        collection.tag = "kept"  # type: ignore[attr-defined]
+        twin = clone(collection)
+        assert twin.tag == "kept"
+        assert twin.obj_type == "Zone"
+
+    def test_a_detached_collection_pickles_without_the_model(self, doc: IDFDocument[Any]) -> None:
+        for i in range(200):
+            doc.add(
+                "Material",
+                f"M{i}",
+                roughness="Rough",
+                thickness=0.1,
+                conductivity=1.0,
+                density=1.0,
+                specific_heat=900.0,
+            )
+        detached = doc["Zone"]
+        assert len(pickle.dumps(detached)) < 1000
+        restored: IDFCollection[IDFObject] = pickle.loads(pickle.dumps(detached))  # noqa: S301
+        with pytest.raises(TypeError, match="document"):
+            restored.add("Office")
+
+    def test_a_stored_collection_keeps_its_document(self, doc: IDFDocument[Any]) -> None:
+        doc["Zone"].add("Office")
+        twin: IDFDocument[Any] = copy.deepcopy(doc)
+        twin["Zone"].add("Lab")
+        assert [z.name for z in twin["Zone"]] == ["Office", "Lab"]
+
+
+class TestHandBuiltCollections:
+    def test_a_hand_built_collection_holding_objects_has_no_document(self, doc: IDFDocument[Any]) -> None:
+        zone = doc["Zone"].add("Office")
+        subset: IDFCollection[IDFObject] = IDFCollection("Zone")
+        subset._append(zone)  # pyright: ignore[reportPrivateUsage]
+        with pytest.raises(TypeError, match="document"):
+            subset.add("Lab")
+        assert [z.name for z in doc["Zone"]] == ["Office"]
+
+    def test_the_constructor_takes_a_document(self, doc: IDFDocument[Any]) -> None:
+        collection: IDFCollection[IDFObject] = IDFCollection("Zone", doc)
+        collection.add("Office")
+        assert doc["Zone"]["Office"].name == "Office"
+
+
+class TestAddidfobjectRefusal:
+    def test_a_refused_duplicate_is_not_linked_to_the_document(self, doc: IDFDocument[Any]) -> None:
+        doc.add("Zone", "A")
+        doc.add("BuildingSurface:Detailed", "Wall", zone_name="A", validate=False)
+        duplicate = IDFObject(obj_type="Zone", name="A")
+        with pytest.raises(DuplicateObjectError):
+            doc.addidfobject(duplicate)
+        duplicate.name = "B"
+        assert doc["Zone"]["A"].name == "A"
+        assert doc["BuildingSurface:Detailed"]["Wall"].zone_name == "A"

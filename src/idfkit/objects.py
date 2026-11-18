@@ -53,6 +53,8 @@ if TYPE_CHECKING:
 
         def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject: ...
 
+        def _holds(self, collection: IDFCollection[Any]) -> bool: ...
+
 
 # Field name conversion patterns
 _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
@@ -1311,6 +1313,19 @@ def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache, *, check_nam
         obj._refuse(refused, "add")  # pyright: ignore[reportPrivateUsage]
 
 
+class _FromOlderPickle:
+    """The document of a collection unpickled from a release before collections held one.
+
+    Such a collection's objects know their document, so ``add()`` takes it from them when first
+    called. A collection built by hand has no document (``None``) and refuses ``add()``.
+    """
+
+    __slots__ = ()
+
+
+_FROM_OLDER_PICKLE = _FromOlderPickle()
+
+
 class IDFCollection(Generic[_T_co]):
     """
     Indexed collection of IDFObjects with O(1) lookup by name.
@@ -1346,28 +1361,55 @@ class IDFCollection(Generic[_T_co]):
     _type: str
     _by_name: dict[str, _T_co]
     _items: list[_T_co]
-    _document: _ObjectFactory | None
+    _document: _ObjectFactory | _FromOlderPickle | None
 
-    def __init__(self, obj_type: str, document: _ObjectFactory | None = None) -> None:
+    def __init__(self, obj_type: str, document: AnyIDFDocument | None = None) -> None:
         self._type = obj_type
         self._by_name: dict[str, _T_co] = {}
         self._items: list[_T_co] = []
-        self._document = document
+        # The stub of IDFDocument does not declare the private hooks collections call.
+        self._document = cast("_ObjectFactory | None", document)
+
+    def __getstate__(self) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+        """The state pickle and ``copy`` save: the slots, and a subclass's ``__dict__`` if it has one.
+
+        The empty collection read for a type with no objects is not stored in its document, so it
+        is saved without the document: copying or pickling it on its own then copies one empty
+        collection rather than the whole model. Restored, it has no document, as one built by
+        hand has none.
+        """
+        slots: dict[str, Any] = {}
+        for cls in type(self).__mro__:
+            for name in cast("tuple[str, ...]", getattr(cls, "__slots__", ())):
+                if name not in ("__dict__", "__weakref__") and hasattr(self, name):
+                    slots[name] = getattr(self, name)
+        document = slots.get("_document")
+        if document is not None and not isinstance(document, _FromOlderPickle) and not document._holds(self):  # pyright: ignore[reportPrivateUsage]
+            slots["_document"] = None
+        return (getattr(self, "__dict__", None) or None, slots)
 
     def __setstate__(self, state: Any) -> None:
         """Restore a pickled or deep-copied collection.
 
-        A collection pickled before ``_document`` existed has no such slot in its state, and is
-        restored with none: ``add()`` takes the document of the objects it holds when it is
+        A collection pickled before ``_document`` existed has no such slot in its state. It is
+        marked as such, and ``add()`` takes the document of the objects it holds when it is
         called. The objects are not read here, as one may not be restored yet: when an object is
         pickled before its document (``pickle.dumps(zone)``), pickle restores the object's
-        collection while it is still reading that object's own state.
+        collection while it is still reading that object's own state. A subclass's ``__dict__``
+        is restored as well.
         """
-        slots = cast("dict[str, Any]", (state[1] if isinstance(state, tuple) else state) or {})
-        for key, value in slots.items():
+        attrs: dict[str, Any] | None = None
+        if isinstance(state, tuple):
+            pair = cast("tuple[Any, Any]", state)
+            attrs, slots = cast("dict[str, Any] | None", pair[0]), cast("dict[str, Any] | None", pair[1])
+        else:
+            slots = cast("dict[str, Any] | None", state)
+        for key, value in (attrs or {}).items():
             object.__setattr__(self, key, value)
-        if "_document" not in slots:
-            object.__setattr__(self, "_document", None)
+        for key, value in (slots or {}).items():
+            object.__setattr__(self, key, value)
+        if "_document" not in (slots or {}):
+            object.__setattr__(self, "_document", _FROM_OLDER_PICKLE)
 
     @property
     def obj_type(self) -> str:
@@ -1498,10 +1540,10 @@ class IDFCollection(Generic[_T_co]):
             msg = f"add() takes the object's name positionally: add({fields['name']!r}, ...), not add(name=...)"
             raise TypeError(msg)
         document = self._document
-        if document is None and self._items:
+        if isinstance(document, _FromOlderPickle):
             # Unpickled from a release before collections held their document; its objects do.
             items = cast("list[IDFObject]", self._items)
-            document = cast("_ObjectFactory | None", items[0]._document)  # pyright: ignore[reportPrivateUsage]
+            document = cast("_ObjectFactory | None", items[0]._document) if items else None  # pyright: ignore[reportPrivateUsage]
             self._document = document
         if document is None:
             msg = (
