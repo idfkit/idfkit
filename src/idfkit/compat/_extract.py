@@ -253,6 +253,26 @@ def _passes_validate_false(node: ast.Call) -> bool:
     )
 
 
+# Keywords of IDFDocument.add() that are its own parameters, not fields, and of IDFCollection.add().
+_DOCUMENT_ADD_PARAMS = frozenset({"name", "fields", "validate"})
+_COLLECTION_ADD_PARAMS = frozenset({"name"})
+
+
+def _fields_dicts(node: ast.Call) -> tuple[ast.Dict, ...]:
+    """The dict literals of field values a document ``add()`` call passes.
+
+    ``doc.add("Type", "Name", {...})``, ``doc.add("Type", {...})`` (no name) and
+    ``doc.add("Type", "Name", fields={...})``.
+    """
+    found: list[ast.Dict] = []
+    if len(node.args) >= 3 and isinstance(node.args[2], ast.Dict):
+        found.append(node.args[2])
+    elif len(node.args) == 2 and isinstance(node.args[1], ast.Dict):
+        found.append(node.args[1])
+    found.extend(kw.value for kw in node.keywords if kw.arg == "fields" and isinstance(kw.value, ast.Dict))
+    return tuple(found)
+
+
 class _LiteralVisitor(ast.NodeVisitor):
     """AST visitor that collects idfkit-relevant string literals."""
 
@@ -615,7 +635,11 @@ class _LiteralVisitor(ast.NodeVisitor):
         if obj_type is None:
             return
         releases = self._collection_releases(document, owner)
-        self._keyword_choice_literals(node, obj_type, self._receiver_text(receiver), releases, in_idfkit_add=True)
+        receiver_text = self._receiver_text(receiver)
+        self._keyword_choice_literals(node, obj_type, receiver_text, releases, in_idfkit_add=True)
+        # The name is positional-only: ``name=`` is a field to Python, but add() refuses it as one
+        # with its own message, and a type checker reports it.
+        self._field_name_literals(node, obj_type, receiver_text, releases, (), skip=_COLLECTION_ADD_PARAMS)
 
     def _collection_releases(self, document: ast.expr | None, owner: Scope | None) -> Releases | None:
         """The releases a collection read from *document* (written in *owner*) can run against here.
@@ -700,6 +724,60 @@ class _LiteralVisitor(ast.NodeVisitor):
         choice_in_idfkit_add = in_idfkit_add and not _passes_validate_false(node)
         self._keyword_choice_literals(node, obj_type_value, receiver_text, releases, in_idfkit_add=choice_in_idfkit_add)
         self._dict_choice_literals(node, obj_type_value, receiver_text, releases, choice_in_idfkit_add)
+        # An unknown field is refused with or without validate=False, so it is read either way.
+        if in_idfkit_add:
+            self._field_name_literals(
+                node, obj_type_value, receiver_text, releases, _fields_dicts(node), skip=_DOCUMENT_ADD_PARAMS
+            )
+
+    def _field_name_literals(
+        self,
+        node: ast.Call,
+        obj_type: str,
+        receiver_text: str,
+        releases: Releases | None,
+        dicts: tuple[ast.Dict, ...],
+        *,
+        skip: frozenset[str],
+    ) -> None:
+        """The field names an ``add()`` call passes: its keywords (less *skip*) and the keys of *dicts*.
+
+        A keyword is located at its name (``ceiling_hieght`` of ``ceiling_hieght=3.0``), a dict key
+        at its string. ``**fields`` and keys that are not string literals are not read.
+        """
+        for kw in node.keywords:
+            if kw.arg is None or kw.arg in skip:
+                continue
+            self.literals.append(
+                ExtractedLiteral(
+                    value=kw.arg,
+                    kind=LiteralKind.FIELD_NAME,
+                    line=kw.lineno,
+                    col=kw.col_offset,
+                    end_col=kw.col_offset + len(kw.arg.encode()),
+                    obj_type=obj_type,
+                    receiver=receiver_text,
+                    releases=releases,
+                    in_idfkit_add=True,
+                    keyword=True,
+                )
+            )
+        for dict_arg in dicts:
+            for key in dict_arg.keys:
+                if isinstance(key, ast.Constant) and isinstance(key.value, str):
+                    self.literals.append(
+                        ExtractedLiteral(
+                            value=key.value,
+                            kind=LiteralKind.FIELD_NAME,
+                            line=key.lineno,
+                            col=key.col_offset,
+                            end_col=_end_col(key),
+                            obj_type=obj_type,
+                            receiver=receiver_text,
+                            releases=releases,
+                            in_idfkit_add=True,
+                        )
+                    )
 
     def _dict_choice_literals(
         self,
@@ -710,15 +788,7 @@ class _LiteralVisitor(ast.NodeVisitor):
         in_idfkit_add: bool,
     ) -> None:
         """Choice values in a dict literal of ``doc.add("Type", "Name", {"field": "value"})``."""
-        # Pattern: doc.add("Type", "Name", {"field": "value", ...})
-        dict_arg: ast.Dict | None = None
-        if len(node.args) >= 3 and isinstance(node.args[2], ast.Dict):
-            dict_arg = node.args[2]
-        elif len(node.args) == 2 and isinstance(node.args[1], ast.Dict):
-            # Pattern: doc.add("Type", {"field": "value", ...})  (no name)
-            dict_arg = node.args[1]
-
-        if dict_arg is not None:
+        for dict_arg in _fields_dicts(node):
             for key_node, val_node in zip(dict_arg.keys, dict_arg.values, strict=True):
                 if (
                     key_node is not None

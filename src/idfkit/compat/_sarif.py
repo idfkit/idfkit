@@ -58,6 +58,8 @@ def _diagnostic_to_result(diag: Diagnostic) -> dict[str, Any]:
             "to_version": diag.to_version,
         },
     }
+    if diag.missing_in:
+        result["properties"]["missing_in"] = list(diag.missing_in)
     if diag.suggested_fix is not None:
         # Not a SARIF ``fix``: the schema requires every fix to carry ``artifactChanges`` (the
         # exact text edits), and a suggestion is prose or a replacement expression, not an edit.

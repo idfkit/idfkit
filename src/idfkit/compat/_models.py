@@ -19,6 +19,7 @@ class LiteralKind(Enum):
 
     OBJECT_TYPE = "object_type"
     CHOICE_VALUE = "choice_value"
+    FIELD_NAME = "field_name"
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +32,7 @@ class ExtractedLiteral:
         line: 1-based line number in source.
         col: 0-based column offset of the literal start.
         end_col: 0-based column offset of the literal end.
-        obj_type: For CHOICE_VALUE, the object type context (e.g. ``"Material"``).
+        obj_type: For CHOICE_VALUE and FIELD_NAME, the object type context (e.g. ``"Material"``).
         field_name: For CHOICE_VALUE, the field name context (e.g. ``"roughness"``).
         call: The method the literal is an argument of (``"add"`` or ``"get_collection"``), or
             ``None`` for a subscript.
@@ -41,10 +42,14 @@ class ExtractedLiteral:
             release accepts it, the only literals reported as ``C006``. The file imports idfkit;
             an object type is on a receiver known to be a document with a schema (a collection's
             ``add()`` takes a name first); a choice value is in a call given more than its first
-            argument (``set.add`` takes one) and without ``validate=False``.
+            argument (``set.add`` takes one) and without ``validate=False``; a field name is in a
+            call given more than its first argument, with or without ``validate=False``, which
+            refuses an unknown field too.
         releases: The supported releases the literal's code can run against, when the code
             around it narrows the document (``as_version(doc, IDFDocumentV9_4)[...]``, or a lookup
             inside ``if doc.version >= (9, 4, 0):``); ``None`` when nothing narrows it.
+        keyword: For FIELD_NAME, whether the name was passed as a keyword argument
+            (``ceiling_height=3.0``) rather than as a key of a dict of fields.
     """
 
     value: str
@@ -58,6 +63,7 @@ class ExtractedLiteral:
     receiver: str | None = None
     releases: frozenset[tuple[int, int, int]] | None = None
     in_idfkit_add: bool = False
+    keyword: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,10 +79,13 @@ class Diagnostic:
         col: 0-based column offset.
         end_col: 0-based end column offset.
         from_version: Version string where the literal is valid. For a rule that is not about a
-            difference between versions (``C003``, ``C004``), the lowest target version.
-        to_version: Version string where the literal is invalid. For a rule that is not about a
-            difference between versions, the highest target version.
+            difference between versions (``C003``, ``C004``, ``C006``), the lowest target version.
+        to_version: Version string where the literal is invalid: for ``C001`` and ``C002``, the
+            earliest of :attr:`missing_in`. For a rule that is not about a difference between
+            versions, the highest target version.
         suggested_fix: Optional suggested replacement or action.
+        missing_in: For ``C001`` and ``C002``, every target release (in the code's scope) that
+            lacks the literal, oldest first. One finding covers all of them.
     """
 
     code: str
@@ -89,6 +98,7 @@ class Diagnostic:
     from_version: str
     to_version: str
     suggested_fix: str | None = None
+    missing_in: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize to a plain dictionary for JSON output."""
@@ -103,6 +113,7 @@ class Diagnostic:
             "from_version": self.from_version,
             "to_version": self.to_version,
             "suggested_fix": self.suggested_fix,
+            "missing_in": list(self.missing_in),
         }
 
     def __str__(self) -> str:
@@ -115,7 +126,7 @@ DIAGNOSTIC_CODES: dict[str, str] = {
     "C003": "Object type passed to get_collection exists in none of the target versions",
     "C004": "Literal object type passed to get_collection, whose result is untyped; index the document instead",
     "C005": "Suppression comment that silences nothing, or names an unknown rule",
-    "C006": "Object type or choice value passed to add() that none of the target versions accepts",
+    "C006": "Object type, field name or choice value passed to add() that none of the target versions accepts",
 }
 
 RULE_SEVERITIES: dict[str, CompatSeverity] = {

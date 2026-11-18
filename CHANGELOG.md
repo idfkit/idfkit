@@ -101,6 +101,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     type a model holds one of (`self.building = load_idf(...)`), a raw type spelling
     (`app.window`), or an item of a dict (`variants["Window"]`, or a parameter annotated
     `dict[...]`) ([#296](https://github.com/idfkit/idfkit/pull/296)).
+  - A field name passed to `add()` that no target release has for the type was reported too, with
+    the closest real field as the fix: `doc.add("Zone", "D", ceiling_hieght=3.0)`, which type-checks
+    and which `add()` refuses with or without `validate=False`, had gone unreported by every rule.
+    Names were read from the keywords, less `add()`'s own `name`, `fields` and `validate`, and from
+    the keys of a dict of fields (`{"Ceiling Height": 3.0}` was reported with `"ceiling_height"` as
+    the fix, since `add()` stores keys as given), on the same receivers as choice values, a
+    collection's `add()` included. Keys were accepted exactly as `add()` accepts them, so a field
+    that is not a Python identifier (`"2017_rated_evaporator_fan_power_per_volume_flow_rate"`), a
+    trailing-underscore field with or without its underscore (`gas_or_gas_mixture`), the extensible
+    wrapper (`vertices=[...]`) and the deprecated flat extensible spellings (`vertex_x_coordinate_2`)
+    were not reported. A name was checked only when every target the code can run on has the type.
+    Choice values in `fields={...}` were read as well
+    ([#300](https://github.com/idfkit/idfkit/pull/300)).
+  - A word passed to a numeric field that also takes a choice (`ceiling_height="tall"`, where the
+    field takes a number or `Autocalculate`) was reported as a value that is "neither a number nor
+    one of the field's choices (Autocalculate)" instead of as a choice value
+    ([#300](https://github.com/idfkit/idfkit/pull/300)).
 - `idfkit.versions.releases_between(since, before)` was added: every supported release from
   `since` (inclusive) to `before` (exclusive), the range `as_version(doc, since=..., before=...)`
   accepts ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
@@ -195,6 +212,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `idfkit check` reported a literal some target releases lack once, not once per
+  release: `doc["Space"]` checked with `--targets all` gave one `C001` finding, `Object type 'Space'
+  not found in 8.9.0 to 9.5.0; added in 9.6.0`, where it printed seven lines, one for each release
+  from 8.9.0 to 9.5.0, and counted them as seven issues. `C002` was collapsed the same way. Runs of
+  three or more consecutive supported releases were written as a range and other releases were
+  listed; the releases that have the literal were written `added in`, `removed in` when it was
+  exact, and `exists in ...` otherwise. The summary, the JSON output and SARIF (one result each)
+  counted findings, not releases. Each finding carried a new `missing_in` list of every release
+  lacking the literal (`missing_in` in JSON, a SARIF result property); its `to_version`, which had
+  been the one release a line was about, became the earliest of them. Exit codes and `--fail-on`
+  were unchanged. Breaking for anything that parsed the text lines, or counted or read `to_version`
+  per JSON entry. The release lists of `C003` and `C006` messages were shortened the same way
+  (`(8.9.0 to 26.2.0)`) ([#300](https://github.com/idfkit/idfkit/pull/300)).
 - **Breaking:** for type checking only, a typed extensible group's snapshot was typed by its item
   type: `ExtensibleList.as_list()` returned `list[BuildingSurfaceDetailedVerticesItem]` where it
   returned `list[dict[str, Any]]`, and the group's `as_dict()` the item where it returned
