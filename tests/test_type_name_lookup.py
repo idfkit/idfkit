@@ -19,7 +19,8 @@ from collections.abc import Callable
 
 import pytest
 
-from idfkit import IDFDocument, UnknownObjectTypeWarning, new_document
+from idfkit import IDFDocument, new_document
+from idfkit.exceptions import UnknownObjectTypeWarning
 from idfkit.objects import IDFCollection, IDFObject
 
 
