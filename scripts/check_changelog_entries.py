@@ -5,9 +5,11 @@ edge cases, error-message transcripts and internal mechanics belong in the PR
 description, the docs (idfkit/idfkit-developers) or the bundled agent reference
 (``agent_references/``). See the "Changelog" section of CLAUDE.md.
 
-An entry is a top-level ``- `` bullet plus its continuation lines (indented
-lines, nested bullets and blank lines inside it) up to the next top-level
-bullet or heading. Released sections are not checked.
+An entry is a top-level bullet (``-``, ``*`` or ``+``) plus every line that
+belongs to it in Markdown: indented lines, nested bullets, blank lines inside
+it and unindented ("lazy") continuation lines, up to the next top-level bullet
+or heading. Released sections are not checked; a changelog with no
+``## [Unreleased]`` heading fails.
 
 Usage::
 
@@ -19,6 +21,13 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+CHANGELOG = Path(__file__).resolve().parent.parent / "CHANGELOG.md"
+"""The repository's changelog, checked when no path is given."""
+
+UNRELEASED = "## [Unreleased]"
+
+BULLETS = ("- ", "* ", "+ ")
 
 MAX_LINES = 5
 """Wrapped source lines an entry may span, the bullet line included."""
@@ -34,7 +43,7 @@ or internal mechanics: put those in the PR description, the docs (idfkit/idfkit-
 agent_references/. Group PRs that form one feature into one entry with several refs."""
 
 
-@dataclass(frozen=True)
+@dataclass
 class Entry:
     """One top-level bullet of the ``[Unreleased]`` section."""
 
@@ -49,27 +58,37 @@ class Entry:
         return " ".join(part.strip() for part in self.lines if part.strip())
 
 
+def has_unreleased(text: str) -> bool:
+    """Whether a changelog has a ``## [Unreleased]`` heading."""
+    return any(line.startswith(UNRELEASED) for line in text.splitlines())
+
+
 def unreleased_entries(text: str) -> list[Entry]:
     """Return the top-level bullets of the ``## [Unreleased]`` section of a changelog."""
     entries: list[Entry] = []
     in_unreleased = False
     current: Entry | None = None
+    previous_blank = False
     for number, line in enumerate(text.splitlines(), start=1):
         if line.startswith("## "):
-            in_unreleased = line.startswith("## [Unreleased]")
+            in_unreleased = line.startswith(UNRELEASED)
             current = None
             continue
         if not in_unreleased:
             continue
+        blank = not line.strip()
         if line.startswith("#"):
             current = None
-        elif line.startswith("- "):
+        elif line.startswith(BULLETS):
             current = Entry(number, [line])
             entries.append(current)
-        elif current is not None and (line.startswith(" ") or not line.strip()):
+        elif current is not None and (blank or line[0] in " \t" or not previous_blank):
+            # Indented lines stay in the item across blank lines; an unindented line continues it
+            # only straight after another line of it (lazy continuation), as Markdown reads it.
             current.lines.append(line)
         else:
             current = None
+        previous_blank = blank
     for entry in entries:
         while entry.lines and not entry.lines[-1].strip():
             entry.lines.pop()
@@ -78,8 +97,11 @@ def unreleased_entries(text: str) -> list[Entry]:
 
 def check(path: Path) -> list[str]:
     """Return one message per entry of ``path``'s ``[Unreleased]`` section that is over budget."""
+    text = path.read_text(encoding="utf-8")
+    if not has_unreleased(text):
+        return [f"{path}: no '{UNRELEASED}' heading; keep one at the top, empty if need be"]
     problems: list[str] = []
-    for entry in unreleased_entries(path.read_text(encoding="utf-8")):
+    for entry in unreleased_entries(text):
         n_lines, n_chars = len(entry.lines), len(entry.text)
         if n_lines > MAX_LINES or n_chars > MAX_CHARS:
             preview = entry.text[:80] + ("..." if n_chars > 80 else "")
@@ -91,8 +113,8 @@ def check(path: Path) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
-    """Check the changelog named in ``argv`` (default ``CHANGELOG.md``) and report overlong entries."""
-    paths = [Path(arg) for arg in argv] or [Path("CHANGELOG.md")]
+    """Check the changelogs named in ``argv`` (default: the repository's) and report overlong entries."""
+    paths = [Path(arg) for arg in argv] or [CHANGELOG]
     problems = [problem for path in paths for problem in check(path)]
     if problems:
         print("\n".join(problems), file=sys.stderr)

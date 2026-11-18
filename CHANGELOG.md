@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   flags unused ones), `--targets all`, `--since`/`--before`, a `[tool.idfkit.check]` table in
   `pyproject.toml`, directory paths and `--fail-on` ([#287](https://github.com/idfkit/idfkit/pull/287)).
 - `idfkit check` started reading literal names passed to `get_collection`: `C003` (error) reported a
-  name no release has, and the opt-in `C004` suggested the typed `doc["Zone"]`
+  name no target release has, and the opt-in `C004` suggested the typed `doc["Zone"]`
   ([#287](https://github.com/idfkit/idfkit/pull/287), [#288](https://github.com/idfkit/idfkit/pull/288)).
 - `as_version(doc, since=..., before=...)` was added to narrow a document to a range of releases,
   with matching `IDFDocumentSince<release>` and `IDFDocumentBefore<release>` types in
@@ -44,8 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking:** for type checking, a field that every release requires with no default lost its
-  `| None` (`material.thickness` became a `float`), so assigning `None` to it became an error;
+- **Breaking:** for type checking, a field that every release having it requires with no default
+  lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;
   delete the `is None` guards pyright strict now flags ([#303](https://github.com/idfkit/idfkit/pull/303)).
 - **Breaking:** reading such a field from an object that lacks it raised the new
   `MissingRequiredFieldError` (an `AttributeError`) instead of returning `None`; use
@@ -54,13 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with `None` ([#303](https://github.com/idfkit/idfkit/pull/303)).
 - **Breaking:** for type checking, document types stopped being `TypedDict`s. Use
   `doc.get_collection(name)` for a non-literal name, `as_version` instead of `"Space" in doc` to
-  narrow, and `doc.collections` instead of `dict(doc)`; `# pyright: ignore[reportGeneralTypeIssues]`
-  on a lookup stopped applying ([#286](https://github.com/idfkit/idfkit/pull/286)).
+  narrow, and `doc.collections` instead of `dict(doc)` or a `Mapping` parameter; a
+  `# pyright: ignore[reportGeneralTypeIssues]` on a lookup stopped applying ([#286](https://github.com/idfkit/idfkit/pull/286)).
 - **Breaking:** for type checking, `MigrationReport` became generic and a migration to a version
   string or tuple was typed `AnyIDFDocument`; name the target by its document type or narrow with
   `as_version` ([#285](https://github.com/idfkit/idfkit/pull/285)).
 - **Breaking:** for type checking, `ExtensibleList.as_list()` returned the group's item type
-  instead of `list[dict[str, Any]]`; annotate with the item type and read keys with `.get()`
+  instead of `list[dict[str, Any]]`, and `vertices=` and other group arguments stopped taking a
+  `list[dict]`; annotate with the item type and read keys with `.get()`
   ([#297](https://github.com/idfkit/idfkit/pull/297)).
 - **Breaking:** for type checking, some older-release collections came to hold a narrower
   per-range class (25.1's `BuildingSurface:Detailed` holds `BuildingSurfaceDetailed_v25_1_to_v26_1`);
@@ -83,20 +84,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - **Breaking:** `IDFCollection.add(obj)` was deprecated and became a type error; it still ran,
-  with a `DeprecationWarning`. Use `doc.addidfobject(obj)` ([#296](https://github.com/idfkit/idfkit/pull/296)).
+  with a `DeprecationWarning`, but raised `TypeError` for fields passed beside the object, which it
+  used to drop. Use `doc.addidfobject(obj)` ([#296](https://github.com/idfkit/idfkit/pull/296)).
 
 ### Fixed
 
-- `add()` and `load_epjson()` stored a blank value (`""`, epJSON `null`) as set; they now leave
-  the field unset, as the IDF parser does ([#183](https://github.com/idfkit/idfkit/issues/183),
+- `add()` and `load_epjson()` stored a blank value (`""`, epJSON `null`) as set instead of leaving
+  the field unset, as the IDF parser did ([#183](https://github.com/idfkit/idfkit/issues/183),
   [#303](https://github.com/idfkit/idfkit/pull/303)).
-- `IDFDocument.get_zone_surfaces()` returned every object naming the zone; it now returns only the
-  zone's own heat-transfer surfaces ([#289](https://github.com/idfkit/idfkit/pull/289)).
+- `IDFDocument.get_zone_surfaces()` returned every object naming the zone, not only the zone's own
+  heat-transfer surfaces; `get_referencing()` still returns them all ([#289](https://github.com/idfkit/idfkit/pull/289)).
 - Documents returned by `migrate()`, `expand_objects()` and the preprocessors pointed `filepath` at
-  a deleted scratch file; they now have none, so save them to an explicit path
+  a deleted scratch file; they came to have none, so save them to an explicit path
   ([#293](https://github.com/idfkit/idfkit/pull/293)).
-- `migrate()` and `simulate(auto_migrate=True)` failed on a `Version, 9.0;` model; 9.0 now
-  resolves to 9.0.1 ([#292](https://github.com/idfkit/idfkit/pull/292)).
+- `migrate()`, `async_migrate()`, `plan_migration_chain()` and `simulate(auto_migrate=True)`
+  failed on a `Version, 9.0;` model instead of resolving 9.0 to 9.0.1 ([#292](https://github.com/idfkit/idfkit/pull/292)).
 - A migrated document lost the source's `strict=False` setting ([#285](https://github.com/idfkit/idfkit/pull/285)).
 - `IDFDocument.addidfobject` left an object it refused as a duplicate linked to the document
   ([#296](https://github.com/idfkit/idfkit/pull/296)).
@@ -104,12 +106,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   they accept at run time ([#299](https://github.com/idfkit/idfkit/pull/299)).
 - pyright narrowed a document wrongly on `"Space" in doc` and skipped the body of
   `if "Zone" not in doc:` ([#286](https://github.com/idfkit/idfkit/pull/286)).
-- Type checkers missed a document's own methods: mypy now finds `doc.add` and `doc.zones`, the eppy
-  `doc.update({...})` type-checks, and `dict` methods that raise (`doc.get`, `pop`, `|`) are
-  reported ([#286](https://github.com/idfkit/idfkit/pull/286)).
+- Type checkers missed a document's own methods: mypy reported `doc.add` and `doc.zones` as
+  missing, the eppy `doc.update({...})` failed to type-check, and `dict` methods that raise
+  (`doc.get`, `pop`, `|`) went unreported ([#286](https://github.com/idfkit/idfkit/pull/286)).
 - `idfkit check --sarif` reported the wrong tool version ([#287](https://github.com/idfkit/idfkit/pull/287)).
-- The bundled agent reference narrowed to 22.2+ with the tuple pattern it warns against; it now
-  uses `as_version(doc, since="22.2")` ([#296](https://github.com/idfkit/idfkit/pull/296)).
+- The bundled agent reference narrowed to 22.2+ with the tuple pattern it warns against instead
+  of `as_version(doc, since="22.2")` ([#296](https://github.com/idfkit/idfkit/pull/296)).
 
 ## [1.3.0-rc.1] - 2026-11-14
 

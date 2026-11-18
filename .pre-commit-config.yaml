@@ -38,6 +38,7 @@ repos:
       - id: changelog-entry-length
         name: changelog entry length
         entry: python scripts/check_changelog_entries.py
-        language: system
+        # Its own interpreter, standard library only: no reliance on a `python` on PATH.
+        language: python
         files: ^CHANGELOG\.md$
         pass_filenames: false

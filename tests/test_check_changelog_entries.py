@@ -91,3 +91,40 @@ def test_overlong_entry_fails_with_the_rule(tmp_path: Path, body: str, capsys: p
 
 def test_repository_changelog_passes() -> None:
     assert gate.check(_REPO_ROOT / "CHANGELOG.md") == []
+
+
+def test_entry_at_the_limit_passes(tmp_path: Path) -> None:
+    body = "- " + "x" * (gate.MAX_CHARS - 2 - (gate.MAX_LINES - 1) * 2) + "\n" + "  y\n" * (gate.MAX_LINES - 1)
+    path = tmp_path / "CHANGELOG.md"
+    path.write_text(f"## [Unreleased]\n\n{body}", encoding="utf-8")
+    (entry,) = gate.unreleased_entries(path.read_text(encoding="utf-8"))
+    assert (len(entry.lines), len(entry.text)) == (gate.MAX_LINES, gate.MAX_CHARS)
+    assert gate.check(path) == []
+
+
+@pytest.mark.parametrize(
+    ("body", "lines"),
+    [
+        ("- first\nlazy continuation\nanother\n", 3),
+        ("- first\n\tTab-indented\n", 2),
+        ("* star bullet\n  continued\n", 2),
+        ("+ plus bullet\n", 1),
+        ("- first\n\n  indented after a blank\n", 3),
+        ("- first\n\nA paragraph after a blank is not the entry's\n", 1),
+    ],
+    ids=["lazy", "tab", "star", "plus", "indented-after-blank", "paragraph-after-blank"],
+)
+def test_every_line_markdown_puts_in_an_item_is_counted(body: str, lines: int) -> None:
+    (entry,) = gate.unreleased_entries(f"## [Unreleased]\n\n{body}")
+    assert len(entry.lines) == lines
+
+
+def test_a_changelog_without_unreleased_fails(tmp_path: Path) -> None:
+    path = tmp_path / "CHANGELOG.md"
+    path.write_text("## Unreleased\n\n- " + "x" * 1000 + "\n", encoding="utf-8")
+    (problem,) = gate.check(path)
+    assert "no '## [Unreleased]' heading" in problem
+
+
+def test_default_path_is_the_repository_changelog() -> None:
+    assert gate.CHANGELOG == _REPO_ROOT / "CHANGELOG.md"
