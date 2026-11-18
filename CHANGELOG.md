@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `load_idf()`, `load_epjson()` and `load_idf_with_diagnostics()` took `as_type=`, `since=` and
   `before=`, as `as_version()` does, and returned the document typed for that release or range,
-  raising `TypeError` if the file was of another ([3c5456d](https://github.com/idfkit/idfkit/commit/3c5456d)).
+  raising `TypeError` if the file was of another ([#309](https://github.com/idfkit/idfkit/pull/309)).
 - `IDFCollection.add(name, **fields)` became the typed way to create an object:
   `doc.zones.add("Office", ceiling_height=3.0)` returned a `Zone`, its fields type-checked for the
   document's release and the schema's defaults and docs shown in signature help and hover
@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking:** for type checking, the loaders returned `AnyIDFDocument` instead of `IDFDocument`,
   so a model of unstated release was no longer checked as the latest one; state its release with
-  `as_type=` or `since=` when loading, or with `as_version()` ([3c5456d](https://github.com/idfkit/idfkit/commit/3c5456d)).
+  `as_type=` or `since=` when loading, or with `as_version()` ([#309](https://github.com/idfkit/idfkit/pull/309)).
 
 - **Breaking:** for type checking, a field that every release having it requires with no default
   lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;
