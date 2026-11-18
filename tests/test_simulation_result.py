@@ -791,5 +791,12 @@ class TestOutputFileNaming:
         (tmp_path / "runTable.htm").write_text("<html></html>")
         assert _make_result(tmp_path).html_path == tmp_path / "runTable.htm"
 
-    def test_missing_local_run_dir(self, tmp_path: Path) -> None:
-        assert _make_result(tmp_path / "missing").err_path is None
+    def test_missing_local_run_dir_raises(self, tmp_path: Path) -> None:
+        """A run directory that does not exist is an error, not an empty result."""
+        with pytest.raises(FileNotFoundError):
+            _ = _make_result(tmp_path / "missing").err_path
+
+    def test_html_fallback_prefers_table_over_other_auxiliary(self, tmp_path: Path) -> None:
+        (tmp_path / "runMeter.htm").write_text("<html></html>")
+        (tmp_path / "runtbl.htm").write_text("<html></html>")
+        assert _make_result(tmp_path).html_path == tmp_path / "runtbl.htm"

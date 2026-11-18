@@ -59,6 +59,9 @@ _AUXILIARY_STEMS: tuple[str, ...] = (
 #: legacy, capital and dash ``--output-suffix`` styles.
 _TABLE_INFIXES: tuple[str, ...] = ("tbl", "Table", "-table")
 
+#: Lower-cased name stems that mark the tabular report.
+_TABLE_STEMS: tuple[str, ...] = ("table", "tbl")
+
 
 def _output_names(prefix: str, suffix: str, *, table: bool) -> tuple[str, ...]:
     """Return the file names EnergyPlus may give an output, most likely first.
@@ -82,10 +85,9 @@ def _output_names(prefix: str, suffix: str, *, table: bool) -> tuple[str, ...]:
     return (f"{prefix}{suffix}", f"{prefix}out{suffix}")
 
 
-def _is_auxiliary(name: str, suffix: str) -> bool:
-    """Whether *name* is one of EnergyPlus' auxiliary outputs for *suffix*."""
-    stem = name[: -len(suffix)].lower()
-    return stem.endswith(_AUXILIARY_STEMS)
+def _stem_endswith(name: str, suffix: str, stems: tuple[str, ...]) -> bool:
+    """Whether *name*, less *suffix*, ends with one of *stems*, ignoring case."""
+    return name[: -len(suffix)].lower().endswith(stems)
 
 
 def _pick_fallback(paths: Iterable[str | Path], suffix: str, *, table: bool) -> str | Path | None:
@@ -93,9 +95,9 @@ def _pick_fallback(paths: Iterable[str | Path], suffix: str, *, table: bool) -> 
 
     Only names ending with *suffix* qualify. For a main output, auxiliary
     files (``eplusSqlite.err``, ``eplusTable.csv``) never qualify; for the
-    tabular report, files named like one are preferred. Ties break on the
-    name, so the choice does not depend on the order the file system lists
-    the directory in.
+    tabular report, files named like one (``*Table``, ``*tbl``) are
+    preferred. Ties break on the name, so the choice does not depend on the
+    order the file system lists the directory in.
 
     Args:
         paths: Files in the run directory.
@@ -111,10 +113,12 @@ def _pick_fallback(paths: Iterable[str | Path], suffix: str, *, table: bool) -> 
         name = Path(path).name
         if not name.endswith(suffix):
             continue
-        auxiliary = _is_auxiliary(name, suffix)
-        if auxiliary and not table:
+        if table:
+            key = (not _stem_endswith(name, suffix, _TABLE_STEMS), name)
+        elif _stem_endswith(name, suffix, _AUXILIARY_STEMS):
             continue
-        key = (not auxiliary, name)
+        else:
+            key = (False, name)
         if best is None or key < best:
             best, chosen = key, path
     return chosen
@@ -461,9 +465,7 @@ class SimulationResult:
 
     def _scan_run_dir(self, suffix: str, *, table: bool = False) -> Path | None:
         """Return the local run directory's fallback file for *suffix*, if any."""
-        if not self.run_dir.is_dir():
-            return None
-        files = (p for p in self.run_dir.iterdir() if p.is_file())
+        files = (p for p in self.run_dir.iterdir() if p.name.endswith(suffix) and p.is_file())
         match = _pick_fallback(files, suffix, table=table)
         return None if match is None else Path(match)
 
