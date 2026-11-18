@@ -383,14 +383,19 @@ def as_version(
     resolved = [_resolve(candidate) for candidate in candidates]
     # A type argument states the document's strictness (``IDFDocumentV9_4[Literal[False]]``), which
     # the type then promises through ``doc.strict``: refuse a document that has the other one, as the
-    # loaders and ``new_document`` refuse to create it.
-    stated = {value for candidate in candidates if (value := _stated_strictness(candidate)) is not None}
-    if stated and doc.strict not in stated:
+    # loaders and ``new_document`` refuse to create it. Release and strictness are matched against
+    # the same member, so a member's strictness never vouches for another member's release.
+    stated = [_stated_strictness(candidate) for candidate in candidates]
+    release = find_closest_version(doc.version)
+    release_matches = [required is None or required == release for _, required in resolved]
+    if any(
+        matches and (value is None or value == doc.strict)
+        for matches, value in zip(release_matches, stated, strict=True)
+    ):
+        return cast("_D", doc)
+    if any(release_matches):
         msg = f"The document has strict={doc.strict}, so it cannot be typed as {document_type!r}"
         raise TypeError(msg)
-    release = find_closest_version(doc.version)
-    if any(required is None or required == release for _, required in resolved):
-        return cast("_D", doc)
     if len(resolved) == 1:
         origin, required = resolved[0]
         expected = f"not {version_string(cast('tuple[int, int, int]', required))}"

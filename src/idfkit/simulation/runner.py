@@ -330,6 +330,7 @@ def simulate(
             output_prefix=output_prefix,
             fs=fs,
             migration_report=migration_report,
+            output_suffix=output_suffix,
         )
     else:
         result = SimulationResult(
@@ -341,6 +342,7 @@ def simulate(
             runtime_seconds=elapsed,
             output_prefix=output_prefix,
             migration_report=migration_report,
+            output_suffix=output_suffix,
         )
     if cache is not None and cache_key is not None and result.success:
         cache.put(cache_key, result)

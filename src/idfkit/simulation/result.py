@@ -10,7 +10,7 @@ import os
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from .parsers.err import ErrorReport
 
@@ -47,6 +47,7 @@ _AUXILIARY_STEMS: tuple[str, ...] = (
     "map",
     "meter",
     "mtr",
+    "perflog",
     "psz",
     "screen",
     "shading",
@@ -63,8 +64,13 @@ _AUXILIARY_STEMS: tuple[str, ...] = (
 #: in a reused output directory is not taken for this run's.
 _TABLE_INFIXES: tuple[str, ...] = ("Table", "tbl", "-table")
 
+#: The tabular-report infix each ``--output-suffix`` style writes.
+_STYLE_TABLE_INFIX: dict[str, str] = {"C": "Table", "L": "tbl", "D": "-table"}
 
-def _output_names(prefix: str, suffix: str, *, table: bool) -> tuple[str, ...]:
+
+def _output_names(
+    prefix: str, suffix: str, *, table: bool, style: Literal["C", "L", "D"] | None = None
+) -> tuple[str, ...]:
     """Return the file names EnergyPlus may give an output, most likely first.
 
     The runner passes ``-s C`` by default, which names the main outputs
@@ -77,12 +83,21 @@ def _output_names(prefix: str, suffix: str, *, table: bool) -> tuple[str, ...]:
         prefix: The run's output prefix (``-p``).
         suffix: File suffix including the dot (e.g. ``".err"``).
         table: Whether the wanted file is the tabular report.
+        style: The run's ``--output-suffix`` style, when known. Its names are
+            tried first, so a stale output another style left in a reused
+            output directory is not taken for this run's.
 
     Returns:
         Candidate file names, in lookup order.
     """
     if table:
-        return tuple(f"{prefix}{infix}{suffix}" for infix in _TABLE_INFIXES)
+        infixes = _TABLE_INFIXES
+        if style is not None:
+            first = _STYLE_TABLE_INFIX[style]
+            infixes = (first, *(infix for infix in _TABLE_INFIXES if infix != first))
+        return tuple(f"{prefix}{infix}{suffix}" for infix in infixes)
+    if style == "L":
+        return (f"{prefix}out{suffix}", f"{prefix}{suffix}")
     return (f"{prefix}{suffix}", f"{prefix}out{suffix}")
 
 
@@ -139,6 +154,9 @@ class SimulationResult:
         migration_report: Populated when ``simulate(..., auto_migrate=True)``
             forward-migrated the model before running. ``None`` when no
             migration occurred.
+        output_suffix: The run's ``--output-suffix`` style (``"C"``, ``"L"``
+            or ``"D"``), whose file names are looked up first. ``None`` when
+            unknown, which tries the default ``"C"`` names first.
     """
 
     run_dir: Path
@@ -151,6 +169,7 @@ class SimulationResult:
     fs: FileSystem | None = field(default=None, repr=False)
     async_fs: AsyncFileSystem | None = field(default=None, repr=False)
     migration_report: MigrationReport | None = field(default=None, repr=False)
+    output_suffix: Literal["C", "L", "D"] | None = field(default=None, repr=False)
     _cached_errors: Any = field(default=_UNSET, init=False, repr=False)
     _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
@@ -442,7 +461,10 @@ class SimulationResult:
         if self.run_dir == REFUSED_RUN_DIR:
             return None
 
-        candidates = [self.run_dir / name for name in _output_names(self.output_prefix, suffix, table=table)]
+        candidates = [
+            self.run_dir / name
+            for name in _output_names(self.output_prefix, suffix, table=table, style=self.output_suffix)
+        ]
 
         if self.fs is not None:
             fs = self.fs
@@ -703,7 +725,7 @@ class SimulationResult:
 
         if self.async_fs is not None:
             async_fs = self.async_fs
-            for name in _output_names(self.output_prefix, suffix, table=table):
+            for name in _output_names(self.output_prefix, suffix, table=table, style=self.output_suffix):
                 candidate = self.run_dir / name
                 if await async_fs.exists(str(candidate)):
                     return candidate
@@ -718,6 +740,7 @@ class SimulationResult:
         path: str | Path,
         *,
         output_prefix: str = "eplus",
+        output_suffix: Literal["C", "L", "D"] | None = None,
         fs: FileSystem | None = None,
         async_fs: AsyncFileSystem | None = None,
     ) -> SimulationResult:
@@ -728,6 +751,8 @@ class SimulationResult:
         Args:
             path: Path to the simulation output directory.
             output_prefix: Output file prefix used during the run.
+            output_suffix: The run's ``--output-suffix`` style, if known; its
+                file names are looked up first.
             fs: Optional sync file system backend for reading output files.
             async_fs: Optional async file system backend for non-blocking reads.
 
@@ -745,4 +770,5 @@ class SimulationResult:
             output_prefix=output_prefix,
             fs=fs,
             async_fs=async_fs,
+            output_suffix=output_suffix,
         )
