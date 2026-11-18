@@ -425,6 +425,27 @@ class TestCommittedStubs:
         expected = '"""``Space`` as every supported EnergyPlus version that has it declares it: 9.6.0 and later."""'
         assert expected in types_source
 
+    def test_a_type_a_model_holds_one_of_is_typed_in_the_singular(self) -> None:
+        document_source = _committed()[1]
+        # IDFDocument and AnyIDFDocument both declare the singular, and the plural only as deprecated.
+        assert len(re.findall(r"(?m)^    def output_sqlite\(self\)", document_source)) == 2
+        deprecated = re.findall(r"(?m)^    @deprecated\(\n?\s*\"doc\.output_sqlites is deprecated", document_source)
+        assert len(deprecated) == 2
+        for match in re.finditer(r"(?m)^    def output_sqlites\(self\)", document_source):
+            assert (
+                "@deprecated" in document_source[document_source.rfind("@property", 0, match.start()) : match.start()]
+            )
+
+    def test_a_type_unique_in_only_some_releases_is_not_an_any_document_accessor(self) -> None:
+        # Unique in 8.9 only: named in the singular there and the plural elsewhere, so neither name is
+        # every release's accessor. doc["..."] reaches it through AnyIDFDocument.
+        document_source = _committed()[1]
+        any_body = document_source[
+            document_source.index("class IDFDocumentAllVersions(") : document_source.index("AnyIDFDocument: TypeAlias")
+        ]
+        assert "def airflow_network_distribution_component_outdoor_air_flow" not in any_body
+        assert 'Literal["AirflowNetwork:Distribution:Component:OutdoorAirFlow"]' in any_body
+
     def test_no_document_type_is_a_typed_dict(self) -> None:
         # pyright narrows a TypedDict on `"Space" in doc` by its own rules: a positive test retyped an
         # AnyIDFDocument as the latest release, a negative one on a type every release has made its

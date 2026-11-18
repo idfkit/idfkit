@@ -10,7 +10,7 @@ from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import Any, Generic, Literal, TypeAlias, TypeVar, overload
 
-from typing_extensions import Self
+from typing_extensions import Self, deprecated
 
 from ._accessors import AccessorResolver
 from ._compat import EppyDocumentMixin
@@ -3507,14 +3507,6 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
         self,
     ) -> IDFCollection[AirflowNetworkDistributionComponentLeak]: ...
     @property
-    def airflow_network_distribution_component_outdoor_air_flows(
-        self,
-    ) -> IDFCollection[AnyAirflowNetworkDistributionComponentOutdoorAirFlow]: ...
-    @property
-    def airflow_network_distribution_component_relief_air_flows(
-        self,
-    ) -> IDFCollection[AnyAirflowNetworkDistributionComponentReliefAirFlow]: ...
-    @property
     def airflow_network_distribution_component_terminal_units(
         self,
     ) -> IDFCollection[AirflowNetworkDistributionComponentTerminalUnit]: ...
@@ -3575,8 +3567,20 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
         self,
     ) -> IDFCollection[AirflowNetworkOccupantVentilationControl]: ...
     @property
+    def airflow_network_simulation_control(self) -> IDFCollection[AnyAirflowNetworkSimulationControl]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_simulation_controls is deprecated: a model holds at most one AirflowNetwork:SimulationControl, so its accessor is doc.airflow_network_simulation_control"
+    )
     def airflow_network_simulation_controls(self) -> IDFCollection[AnyAirflowNetworkSimulationControl]: ...
     @property
+    def airflow_network_zone_control_pressure_controller(
+        self,
+    ) -> IDFCollection[AirflowNetworkZoneControlPressureController]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_zone_control_pressure_controllers is deprecated: a model holds at most one AirflowNetwork:ZoneControl:PressureController, so its accessor is doc.airflow_network_zone_control_pressure_controller"
+    )
     def airflow_network_zone_control_pressure_controllers(
         self,
     ) -> IDFCollection[AirflowNetworkZoneControlPressureController]: ...
@@ -3631,6 +3635,7 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def building_surfaces(self) -> IDFCollection[AnyBuildingSurfaceDetailed]: ...
     @property
+    @deprecated("doc.buildings is deprecated: a model holds at most one Building, so its accessor is doc.building")
     def buildings(self) -> IDFCollection[AnyBuilding]: ...
     @property
     def ceiling_adiabatics(self) -> IDFCollection[AnyCeilingAdiabatic]: ...
@@ -3777,6 +3782,11 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
         self,
     ) -> IDFCollection[ComplexFenestrationPropertySolarAbsorbedLayers]: ...
     @property
+    def compliance_building(self) -> IDFCollection[ComplianceBuilding]: ...
+    @property
+    @deprecated(
+        "doc.compliance_buildings is deprecated: a model holds at most one Compliance:Building, so its accessor is doc.compliance_building"
+    )
     def compliance_buildings(self) -> IDFCollection[ComplianceBuilding]: ...
     @property
     def component_cost_adjustments(self) -> IDFCollection[ComponentCostAdjustments]: ...
@@ -3831,6 +3841,11 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def cooling_tower_variable_speeds(self) -> IDFCollection[AnyCoolingTowerVariableSpeed]: ...
     @property
+    def currency_type(self) -> IDFCollection[CurrencyType]: ...
+    @property
+    @deprecated(
+        "doc.currency_types is deprecated: a model holds at most one CurrencyType, so its accessor is doc.currency_type"
+    )
     def currency_types(self) -> IDFCollection[CurrencyType]: ...
     @property
     def curve_bicubics(self) -> IDFCollection[CurveBicubic]: ...
@@ -4185,6 +4200,11 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def generator_wind_turbines(self) -> IDFCollection[GeneratorWindTurbine]: ...
     @property
+    def geometry_transform(self) -> IDFCollection[GeometryTransform]: ...
+    @property
+    @deprecated(
+        "doc.geometry_transforms is deprecated: a model holds at most one GeometryTransform, so its accessor is doc.geometry_transform"
+    )
     def geometry_transforms(self) -> IDFCollection[GeometryTransform]: ...
     @property
     def glazed_door_interzones(self) -> IDFCollection[GlazedDoorInterzone]: ...
@@ -4271,8 +4291,20 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def headered_pumps_variable_speeds(self) -> IDFCollection[AnyHeaderedPumpsVariableSpeed]: ...
     @property
+    def heat_balance_algorithm(self) -> IDFCollection[HeatBalanceAlgorithm]: ...
+    @property
+    @deprecated(
+        "doc.heat_balance_algorithms is deprecated: a model holds at most one HeatBalanceAlgorithm, so its accessor is doc.heat_balance_algorithm"
+    )
     def heat_balance_algorithms(self) -> IDFCollection[HeatBalanceAlgorithm]: ...
     @property
+    def heat_balance_settings_conduction_finite_difference(
+        self,
+    ) -> IDFCollection[HeatBalanceSettingsConductionFiniteDifference]: ...
+    @property
+    @deprecated(
+        "doc.heat_balance_settings_conduction_finite_differences is deprecated: a model holds at most one HeatBalanceSettings:ConductionFiniteDifference, so its accessor is doc.heat_balance_settings_conduction_finite_difference"
+    )
     def heat_balance_settings_conduction_finite_differences(
         self,
     ) -> IDFCollection[HeatBalanceSettingsConductionFiniteDifference]: ...
@@ -4315,12 +4347,22 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def humidifier_steam_gases(self) -> IDFCollection[HumidifierSteamGas]: ...
     @property
+    def hvac_system_root_finding_algorithm(self) -> IDFCollection[AnyHVACSystemRootFindingAlgorithm]: ...
+    @property
+    @deprecated(
+        "doc.hvac_system_root_finding_algorithms is deprecated: a model holds at most one HVACSystemRootFindingAlgorithm, so its accessor is doc.hvac_system_root_finding_algorithm"
+    )
     def hvac_system_root_finding_algorithms(self) -> IDFCollection[AnyHVACSystemRootFindingAlgorithm]: ...
     @property
     def hvac_template_plant_boiler_object_references(self) -> IDFCollection[HVACTemplatePlantBoilerObjectReference]: ...
     @property
     def hvac_template_plant_boilers(self) -> IDFCollection[AnyHVACTemplatePlantBoiler]: ...
     @property
+    def hvac_template_plant_chilled_water_loop(self) -> IDFCollection[HVACTemplatePlantChilledWaterLoop]: ...
+    @property
+    @deprecated(
+        "doc.hvac_template_plant_chilled_water_loops is deprecated: a model holds at most one HVACTemplate:Plant:ChilledWaterLoop, so its accessor is doc.hvac_template_plant_chilled_water_loop"
+    )
     def hvac_template_plant_chilled_water_loops(self) -> IDFCollection[HVACTemplatePlantChilledWaterLoop]: ...
     @property
     def hvac_template_plant_chiller_object_references(
@@ -4329,8 +4371,18 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def hvac_template_plant_chillers(self) -> IDFCollection[HVACTemplatePlantChiller]: ...
     @property
+    def hvac_template_plant_hot_water_loop(self) -> IDFCollection[HVACTemplatePlantHotWaterLoop]: ...
+    @property
+    @deprecated(
+        "doc.hvac_template_plant_hot_water_loops is deprecated: a model holds at most one HVACTemplate:Plant:HotWaterLoop, so its accessor is doc.hvac_template_plant_hot_water_loop"
+    )
     def hvac_template_plant_hot_water_loops(self) -> IDFCollection[HVACTemplatePlantHotWaterLoop]: ...
     @property
+    def hvac_template_plant_mixed_water_loop(self) -> IDFCollection[HVACTemplatePlantMixedWaterLoop]: ...
+    @property
+    @deprecated(
+        "doc.hvac_template_plant_mixed_water_loops is deprecated: a model holds at most one HVACTemplate:Plant:MixedWaterLoop, so its accessor is doc.hvac_template_plant_mixed_water_loop"
+    )
     def hvac_template_plant_mixed_water_loops(self) -> IDFCollection[HVACTemplatePlantMixedWaterLoop]: ...
     @property
     def hvac_template_plant_tower_object_references(self) -> IDFCollection[HVACTemplatePlantTowerObjectReference]: ...
@@ -4481,22 +4533,47 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def output_constructions(self) -> IDFCollection[OutputConstructions]: ...
     @property
+    def output_control_illuminance_map_style(self) -> IDFCollection[OutputControlIlluminanceMapStyle]: ...
+    @property
+    @deprecated(
+        "doc.output_control_illuminance_map_styles is deprecated: a model holds at most one OutputControl:IlluminanceMap:Style, so its accessor is doc.output_control_illuminance_map_style"
+    )
     def output_control_illuminance_map_styles(self) -> IDFCollection[OutputControlIlluminanceMapStyle]: ...
     @property
     def output_control_reporting_tolerances(self) -> IDFCollection[OutputControlReportingTolerances]: ...
     @property
+    def output_control_sizing_style(self) -> IDFCollection[OutputControlSizingStyle]: ...
+    @property
+    @deprecated(
+        "doc.output_control_sizing_styles is deprecated: a model holds at most one OutputControl:Sizing:Style, so its accessor is doc.output_control_sizing_style"
+    )
     def output_control_sizing_styles(self) -> IDFCollection[OutputControlSizingStyle]: ...
     @property
     def output_control_surface_color_schemes(self) -> IDFCollection[AnyOutputControlSurfaceColorScheme]: ...
     @property
+    def output_control_table_style(self) -> IDFCollection[AnyOutputControlTableStyle]: ...
+    @property
+    @deprecated(
+        "doc.output_control_table_styles is deprecated: a model holds at most one OutputControl:Table:Style, so its accessor is doc.output_control_table_style"
+    )
     def output_control_table_styles(self) -> IDFCollection[AnyOutputControlTableStyle]: ...
     @property
     def output_daylight_factors(self) -> IDFCollection[OutputDaylightFactors]: ...
     @property
+    def output_debugging_data(self) -> IDFCollection[AnyOutputDebuggingData]: ...
+    @property
+    @deprecated(
+        "doc.output_debugging_datas is deprecated: a model holds at most one Output:DebuggingData, so its accessor is doc.output_debugging_data"
+    )
     def output_debugging_datas(self) -> IDFCollection[AnyOutputDebuggingData]: ...
     @property
     def output_diagnostics(self) -> IDFCollection[AnyOutputDiagnostics]: ...
     @property
+    def output_energy_management_system(self) -> IDFCollection[OutputEnergyManagementSystem]: ...
+    @property
+    @deprecated(
+        "doc.output_energy_management_systems is deprecated: a model holds at most one Output:EnergyManagementSystem, so its accessor is doc.output_energy_management_system"
+    )
     def output_energy_management_systems(self) -> IDFCollection[OutputEnergyManagementSystem]: ...
     @property
     def output_environmental_impact_factors(self) -> IDFCollection[OutputEnvironmentalImpactFactors]: ...
@@ -4515,6 +4592,11 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def output_schedules(self) -> IDFCollection[OutputSchedules]: ...
     @property
+    def output_sqlite(self) -> IDFCollection[AnyOutputSQLite]: ...
+    @property
+    @deprecated(
+        "doc.output_sqlites is deprecated: a model holds at most one Output:SQLite, so its accessor is doc.output_sqlite"
+    )
     def output_sqlites(self) -> IDFCollection[AnyOutputSQLite]: ...
     @property
     def output_surfaces_drawings(self) -> IDFCollection[OutputSurfacesDrawing]: ...
@@ -4535,10 +4617,25 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def output_variables(self) -> IDFCollection[OutputVariable]: ...
     @property
+    def parametric_file_name_suffix(self) -> IDFCollection[ParametricFileNameSuffix]: ...
+    @property
+    @deprecated(
+        "doc.parametric_file_name_suffixes is deprecated: a model holds at most one Parametric:FileNameSuffix, so its accessor is doc.parametric_file_name_suffix"
+    )
     def parametric_file_name_suffixes(self) -> IDFCollection[ParametricFileNameSuffix]: ...
     @property
+    def parametric_logic(self) -> IDFCollection[ParametricLogic]: ...
+    @property
+    @deprecated(
+        "doc.parametric_logics is deprecated: a model holds at most one Parametric:Logic, so its accessor is doc.parametric_logic"
+    )
     def parametric_logics(self) -> IDFCollection[ParametricLogic]: ...
     @property
+    def parametric_run_control(self) -> IDFCollection[ParametricRunControl]: ...
+    @property
+    @deprecated(
+        "doc.parametric_run_controls is deprecated: a model holds at most one Parametric:RunControl, so its accessor is doc.parametric_run_control"
+    )
     def parametric_run_controls(self) -> IDFCollection[ParametricRunControl]: ...
     @property
     def parametric_set_value_for_runs(self) -> IDFCollection[ParametricSetValueForRun]: ...
@@ -4719,6 +4816,11 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def run_period(self) -> IDFCollection[AnyRunPeriod]: ...
     @property
+    def run_period_control_daylight_saving_time(self) -> IDFCollection[RunPeriodControlDaylightSavingTime]: ...
+    @property
+    @deprecated(
+        "doc.run_period_control_daylight_saving_times is deprecated: a model holds at most one RunPeriodControl:DaylightSavingTime, so its accessor is doc.run_period_control_daylight_saving_time"
+    )
     def run_period_control_daylight_saving_times(self) -> IDFCollection[RunPeriodControlDaylightSavingTime]: ...
     @property
     def run_period_control_special_days(self) -> IDFCollection[RunPeriodControlSpecialDays]: ...
@@ -4735,6 +4837,11 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def schedule_day_lists(self) -> IDFCollection[AnyScheduleDayList]: ...
     @property
+    def schedule_file_shading(self) -> IDFCollection[ScheduleFileShading]: ...
+    @property
+    @deprecated(
+        "doc.schedule_file_shadings is deprecated: a model holds at most one Schedule:File:Shading, so its accessor is doc.schedule_file_shading"
+    )
     def schedule_file_shadings(self) -> IDFCollection[ScheduleFileShading]: ...
     @property
     def schedule_files(self) -> IDFCollection[AnyScheduleFile]: ...
@@ -4873,26 +4980,59 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def shading_zone_detaileds(self) -> IDFCollection[ShadingZoneDetailed]: ...
     @property
+    def shadow_calculation(self) -> IDFCollection[AnyShadowCalculation]: ...
+    @property
+    @deprecated(
+        "doc.shadow_calculations is deprecated: a model holds at most one ShadowCalculation, so its accessor is doc.shadow_calculation"
+    )
     def shadow_calculations(self) -> IDFCollection[AnyShadowCalculation]: ...
     @property
     def simulation_control(self) -> IDFCollection[AnySimulationControl]: ...
     @property
+    @deprecated(
+        "doc.simulation_controls is deprecated: a model holds at most one SimulationControl, so its accessor is doc.simulation_control"
+    )
     def simulation_controls(self) -> IDFCollection[AnySimulationControl]: ...
     @property
     def site_ground_domain_basements(self) -> IDFCollection[AnySiteGroundDomainBasement]: ...
     @property
     def site_ground_domain_slabs(self) -> IDFCollection[AnySiteGroundDomainSlab]: ...
     @property
+    def site_ground_reflectance(self) -> IDFCollection[SiteGroundReflectance]: ...
+    @property
     def site_ground_reflectance_snow_modifiers(self) -> IDFCollection[SiteGroundReflectanceSnowModifier]: ...
     @property
+    @deprecated(
+        "doc.site_ground_reflectances is deprecated: a model holds at most one Site:GroundReflectance, so its accessor is doc.site_ground_reflectance"
+    )
     def site_ground_reflectances(self) -> IDFCollection[SiteGroundReflectance]: ...
     @property
+    def site_ground_temperature_building_surface(self) -> IDFCollection[SiteGroundTemperatureBuildingSurface]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_building_surfaces is deprecated: a model holds at most one Site:GroundTemperature:BuildingSurface, so its accessor is doc.site_ground_temperature_building_surface"
+    )
     def site_ground_temperature_building_surfaces(self) -> IDFCollection[SiteGroundTemperatureBuildingSurface]: ...
     @property
+    def site_ground_temperature_deep(self) -> IDFCollection[SiteGroundTemperatureDeep]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_deeps is deprecated: a model holds at most one Site:GroundTemperature:Deep, so its accessor is doc.site_ground_temperature_deep"
+    )
     def site_ground_temperature_deeps(self) -> IDFCollection[SiteGroundTemperatureDeep]: ...
     @property
+    def site_ground_temperature_fcfactor_method(self) -> IDFCollection[SiteGroundTemperatureFCfactorMethod]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_fcfactor_methods is deprecated: a model holds at most one Site:GroundTemperature:FCfactorMethod, so its accessor is doc.site_ground_temperature_fcfactor_method"
+    )
     def site_ground_temperature_fcfactor_methods(self) -> IDFCollection[SiteGroundTemperatureFCfactorMethod]: ...
     @property
+    def site_ground_temperature_shallow(self) -> IDFCollection[SiteGroundTemperatureShallow]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_shallows is deprecated: a model holds at most one Site:GroundTemperature:Shallow, so its accessor is doc.site_ground_temperature_shallow"
+    )
     def site_ground_temperature_shallows(self) -> IDFCollection[SiteGroundTemperatureShallow]: ...
     @property
     def site_ground_temperature_undisturbed_finite_differences(
@@ -4905,22 +5045,45 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def site_ground_temperature_undisturbed_xings(self) -> IDFCollection[AnySiteGroundTemperatureUndisturbedXing]: ...
     @property
+    def site_height_variation(self) -> IDFCollection[SiteHeightVariation]: ...
+    @property
+    @deprecated(
+        "doc.site_height_variations is deprecated: a model holds at most one Site:HeightVariation, so its accessor is doc.site_height_variation"
+    )
     def site_height_variations(self) -> IDFCollection[SiteHeightVariation]: ...
     @property
     def site_location(self) -> IDFCollection[AnySiteLocation]: ...
     @property
+    @deprecated(
+        "doc.site_locations is deprecated: a model holds at most one Site:Location, so its accessor is doc.site_location"
+    )
     def site_locations(self) -> IDFCollection[AnySiteLocation]: ...
     @property
     def site_precipitations(self) -> IDFCollection[SitePrecipitation]: ...
     @property
+    def site_solar_and_visible_spectrum(self) -> IDFCollection[SiteSolarAndVisibleSpectrum]: ...
+    @property
+    @deprecated(
+        "doc.site_solar_and_visible_spectrums is deprecated: a model holds at most one Site:SolarAndVisibleSpectrum, so its accessor is doc.site_solar_and_visible_spectrum"
+    )
     def site_solar_and_visible_spectrums(self) -> IDFCollection[SiteSolarAndVisibleSpectrum]: ...
     @property
     def site_spectrum_datas(self) -> IDFCollection[SiteSpectrumData]: ...
     @property
+    def site_variable_location(self) -> IDFCollection[SiteVariableLocation]: ...
+    @property
+    @deprecated(
+        "doc.site_variable_locations is deprecated: a model holds at most one Site:VariableLocation, so its accessor is doc.site_variable_location"
+    )
     def site_variable_locations(self) -> IDFCollection[SiteVariableLocation]: ...
     @property
     def site_water_mains_temperatures(self) -> IDFCollection[AnySiteWaterMainsTemperature]: ...
     @property
+    def site_weather_station(self) -> IDFCollection[SiteWeatherStation]: ...
+    @property
+    @deprecated(
+        "doc.site_weather_stations is deprecated: a model holds at most one Site:WeatherStation, so its accessor is doc.site_weather_station"
+    )
     def site_weather_stations(self) -> IDFCollection[SiteWeatherStation]: ...
     @property
     def sizing_parameters(self) -> IDFCollection[AnySizingParameters]: ...
@@ -4981,6 +5144,8 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def surface_control_movable_insulations(self) -> IDFCollection[SurfaceControlMovableInsulation]: ...
     @property
+    def surface_convection_algorithm_inside(self) -> IDFCollection[AnySurfaceConvectionAlgorithmInside]: ...
+    @property
     def surface_convection_algorithm_inside_adaptive_model_selections(
         self,
     ) -> IDFCollection[SurfaceConvectionAlgorithmInsideAdaptiveModelSelections]: ...
@@ -4989,7 +5154,12 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
         self,
     ) -> IDFCollection[SurfaceConvectionAlgorithmInsideUserCurve]: ...
     @property
+    @deprecated(
+        "doc.surface_convection_algorithm_insides is deprecated: a model holds at most one SurfaceConvectionAlgorithm:Inside, so its accessor is doc.surface_convection_algorithm_inside"
+    )
     def surface_convection_algorithm_insides(self) -> IDFCollection[AnySurfaceConvectionAlgorithmInside]: ...
+    @property
+    def surface_convection_algorithm_outside(self) -> IDFCollection[SurfaceConvectionAlgorithmOutside]: ...
     @property
     def surface_convection_algorithm_outside_adaptive_model_selections(
         self,
@@ -4999,6 +5169,9 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
         self,
     ) -> IDFCollection[SurfaceConvectionAlgorithmOutsideUserCurve]: ...
     @property
+    @deprecated(
+        "doc.surface_convection_algorithm_outsides is deprecated: a model holds at most one SurfaceConvectionAlgorithm:Outside, so its accessor is doc.surface_convection_algorithm_outside"
+    )
     def surface_convection_algorithm_outsides(self) -> IDFCollection[SurfaceConvectionAlgorithmOutside]: ...
     @property
     def surface_properties_vapor_coefficients(self) -> IDFCollection[SurfacePropertiesVaporCoefficients]: ...
@@ -5089,6 +5262,7 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def timestep(self) -> IDFCollection[AnyTimestep]: ...
     @property
+    @deprecated("doc.timesteps is deprecated: a model holds at most one Timestep, so its accessor is doc.timestep")
     def timesteps(self) -> IDFCollection[AnyTimestep]: ...
     @property
     def unitary_system_performance_multispeeds(self) -> IDFCollection[AnyUnitarySystemPerformanceMultispeed]: ...
@@ -5109,6 +5283,7 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def ventilation(self) -> IDFCollection[AnyZoneVentilationDesignFlowRate]: ...
     @property
+    @deprecated('doc.versions is deprecated: a model holds at most one Version, so use doc["Version"]')
     def versions(self) -> IDFCollection[Version]: ...
     @property
     def wall_adiabatics(self) -> IDFCollection[AnyWallAdiabatic]: ...
@@ -5205,10 +5380,25 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
     @property
     def zone_air_balance_outdoor_airs(self) -> IDFCollection[ZoneAirBalanceOutdoorAir]: ...
     @property
+    def zone_air_contaminant_balance(self) -> IDFCollection[ZoneAirContaminantBalance]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_contaminant_balances is deprecated: a model holds at most one ZoneAirContaminantBalance, so its accessor is doc.zone_air_contaminant_balance"
+    )
     def zone_air_contaminant_balances(self) -> IDFCollection[ZoneAirContaminantBalance]: ...
     @property
+    def zone_air_heat_balance_algorithm(self) -> IDFCollection[AnyZoneAirHeatBalanceAlgorithm]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_heat_balance_algorithms is deprecated: a model holds at most one ZoneAirHeatBalanceAlgorithm, so its accessor is doc.zone_air_heat_balance_algorithm"
+    )
     def zone_air_heat_balance_algorithms(self) -> IDFCollection[AnyZoneAirHeatBalanceAlgorithm]: ...
     @property
+    def zone_air_mass_flow_conservation(self) -> IDFCollection[AnyZoneAirMassFlowConservation]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_mass_flow_conservations is deprecated: a model holds at most one ZoneAirMassFlowConservation, so its accessor is doc.zone_air_mass_flow_conservation"
+    )
     def zone_air_mass_flow_conservations(self) -> IDFCollection[AnyZoneAirMassFlowConservation]: ...
     @property
     def zone_baseboard_outdoor_temperature_controlleds(
@@ -5444,8 +5634,10 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
         """Get collection by Python-style attribute name.
 
         Every object type in the document's schema is reachable this way as its
-        ``snake_case`` plural (``model.air_loop_hvacs``), which the stub types as
-        ``IDFCollection`` of the generated class. Hand-written shorthands in
+        ``snake_case`` plural (``model.air_loop_hvacs``), or, for a type a model holds
+        at most one of, its singular (``model.output_sqlite``, ``model.building``). The
+        stub types either as ``IDFCollection`` of the generated class. The plural of such
+        a type (``model.output_sqlites``) still resolves, with a ``DeprecationWarning``. Hand-written shorthands in
         ``_PYTHON_TO_IDF`` (e.g. ``building_surfaces`` -> ``BuildingSurface:Detailed``,
         ``ideal_loads`` -> ``ZoneHVAC:IdealLoadsAirSystem``) also resolve, and keep
         their meaning where one coincides with a derived name. The raw type name, with
@@ -8721,7 +8913,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     ) -> IDFCollection[AirflowNetworkDistributionComponentTerminalUnit]:
         """All ``AirflowNetwork:Distribution:Component:TerminalUnit`` objects in the document. This object defines the name of a terminal unit in an air loop."""
     @property
-    def airflow_network_distribution_duct_sizings(self) -> IDFCollection[AirflowNetworkDistributionDuctSizing]:
+    def airflow_network_distribution_duct_sizing(self) -> IDFCollection[AirflowNetworkDistributionDuctSizing]:
         """All ``AirflowNetwork:Distribution:DuctSizing`` objects in the document. This object defines required parameters for duct sizing in an Airflow Network simulation. To activate duct sizing, see AirflowNetwork:SimulationControl Do Distribution Duct Sizing Calculation."""
     @property
     def airflow_network_distribution_duct_view_factors(
@@ -8801,10 +8993,10 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def airflow_network_occupant_ventilation_controls(self) -> IDFCollection[AirflowNetworkOccupantVentilationControl]:
         """All ``AirflowNetwork:OccupantVentilationControl`` objects in the document. This object is used to provide advanced thermal comfort control of window opening and closing for both exterior and interior windows."""
     @property
-    def airflow_network_simulation_controls(self) -> IDFCollection[AirflowNetworkSimulationControl]:
+    def airflow_network_simulation_control(self) -> IDFCollection[AirflowNetworkSimulationControl]:
         """All ``AirflowNetwork:SimulationControl`` objects in the document. This object defines the global parameters used in an Airflow Network simulation."""
     @property
-    def airflow_network_zone_control_pressure_controllers(
+    def airflow_network_zone_control_pressure_controller(
         self,
     ) -> IDFCollection[AirflowNetworkZoneControlPressureController]:
         """All ``AirflowNetwork:ZoneControl:PressureController`` objects in the document. This object is used to control a zone to a specified indoor pressure using the AirflowNetwork model. The specified pressure setpoint is used to control the zone exhaust fan flow rate in a controlle..."""
@@ -8870,9 +9062,6 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     @property
     def building_surfaces(self) -> IDFCollection[BuildingSurfaceDetailed]:
         """All ``BuildingSurface:Detailed`` objects in the document. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
-    @property
-    def buildings(self) -> IDFCollection[Building]:
-        """All ``Building`` objects in the document. Describes parameters that are used during the simulation of the building. There are necessary correlations between the entries for this object and some entries in the Site:WeatherStation and Site:H..."""
     @property
     def ceiling_adiabatics(self) -> IDFCollection[CeilingAdiabatic]:
         """All ``Ceiling:Adiabatic`` objects in the document. Allows for simplified entry of interior ceilings."""
@@ -9090,7 +9279,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     ) -> IDFCollection[ComplexFenestrationPropertySolarAbsorbedLayers]:
         """All ``ComplexFenestrationProperty:SolarAbsorbedLayers`` objects in the document. Used to provide solar radiation absorbed in fenestration layers. References surface-construction pair and if that pair is used in a simulation, then program will use value provided in schedules ins..."""
     @property
-    def compliance_buildings(self) -> IDFCollection[ComplianceBuilding]:
+    def compliance_building(self) -> IDFCollection[ComplianceBuilding]:
         """All ``Compliance:Building`` objects in the document. Building level inputs related to compliance to building standards, building codes, and beyond energy code programs."""
     @property
     def component_cost_adjustments(self) -> IDFCollection[ComponentCostAdjustments]:
@@ -9180,7 +9369,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def cooling_tower_variable_speeds(self) -> IDFCollection[CoolingTowerVariableSpeed]:
         """All ``CoolingTower:VariableSpeed`` objects in the document. This open wet tower model is based on purely empirical algorithms derived from manufacturer's performance data or field measurements. The user can select from two existing algorithms (CoolTools or ..."""
     @property
-    def currency_types(self) -> IDFCollection[CurrencyType]:
+    def currency_type(self) -> IDFCollection[CurrencyType]:
         """All ``CurrencyType`` objects in the document. If CurrencyType is not specified, it will default to USD and produce $ in the reports."""
     @property
     def curve_bicubics(self) -> IDFCollection[CurveBicubic]:
@@ -9724,7 +9913,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def generator_wind_turbines(self) -> IDFCollection[GeneratorWindTurbine]:
         """All ``Generator:WindTurbine`` objects in the document. Wind turbine generator."""
     @property
-    def geometry_transforms(self) -> IDFCollection[GeometryTransform]:
+    def geometry_transform(self) -> IDFCollection[GeometryTransform]:
         """All ``GeometryTransform`` objects in the document. Provides a simple method of altering the footprint geometry of a model. The intent is to provide a single parameter that can be used to reshape the building description contained in the rest of the..."""
     @property
     def glazed_door_interzones(self) -> IDFCollection[GlazedDoorInterzone]:
@@ -9852,10 +10041,10 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def headered_pumps_variable_speeds(self) -> IDFCollection[HeaderedPumpsVariableSpeed]:
         """All ``HeaderedPumps:VariableSpeed`` objects in the document. This Headered pump object describes a pump bank with more than 1 pump in parallel"""
     @property
-    def heat_balance_algorithms(self) -> IDFCollection[HeatBalanceAlgorithm]:
+    def heat_balance_algorithm(self) -> IDFCollection[HeatBalanceAlgorithm]:
         """All ``HeatBalanceAlgorithm`` objects in the document. Determines which Heat Balance Algorithm will be used ie. CTF (Conduction Transfer Functions), EMPD (Effective Moisture Penetration Depth with Conduction Transfer Functions). Advanced/Research Usage..."""
     @property
-    def heat_balance_settings_conduction_finite_differences(
+    def heat_balance_settings_conduction_finite_difference(
         self,
     ) -> IDFCollection[HeatBalanceSettingsConductionFiniteDifference]:
         """All ``HeatBalanceSettings:ConductionFiniteDifference`` objects in the document. Determines settings for the Conduction Finite Difference algorithm for surface heat transfer modeling."""
@@ -9926,7 +10115,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def humidifier_steam_gases(self) -> IDFCollection[HumidifierSteamGas]:
         """All ``Humidifier:Steam:Gas`` objects in the document. Natural gas fired steam humidifier with optional blower fan."""
     @property
-    def hvac_system_root_finding_algorithms(self) -> IDFCollection[HVACSystemRootFindingAlgorithm]:
+    def hvac_system_root_finding_algorithm(self) -> IDFCollection[HVACSystemRootFindingAlgorithm]:
         """All ``HVACSystemRootFindingAlgorithm`` objects in the document. Specifies a HVAC system solver algorithm to find a root"""
     @property
     def hvac_template_plant_boiler_object_references(self) -> IDFCollection[HVACTemplatePlantBoilerObjectReference]:
@@ -9935,7 +10124,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def hvac_template_plant_boilers(self) -> IDFCollection[HVACTemplatePlantBoiler]:
         """All ``HVACTemplate:Plant:Boiler`` objects in the document. This object adds a boiler to an HVACTemplate:Plant:HotWaterLoop or MixedWaterLoop."""
     @property
-    def hvac_template_plant_chilled_water_loops(self) -> IDFCollection[HVACTemplatePlantChilledWaterLoop]:
+    def hvac_template_plant_chilled_water_loop(self) -> IDFCollection[HVACTemplatePlantChilledWaterLoop]:
         """All ``HVACTemplate:Plant:ChilledWaterLoop`` objects in the document. Plant and condenser loops to serve all HVACTemplate chilled water coils, chillers, and towers."""
     @property
     def hvac_template_plant_chiller_object_references(self) -> IDFCollection[HVACTemplatePlantChillerObjectReference]:
@@ -9944,10 +10133,10 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def hvac_template_plant_chillers(self) -> IDFCollection[HVACTemplatePlantChiller]:
         """All ``HVACTemplate:Plant:Chiller`` objects in the document. This object adds a chiller to an HVACTemplate:Plant:ChilledWaterLoop."""
     @property
-    def hvac_template_plant_hot_water_loops(self) -> IDFCollection[HVACTemplatePlantHotWaterLoop]:
+    def hvac_template_plant_hot_water_loop(self) -> IDFCollection[HVACTemplatePlantHotWaterLoop]:
         """All ``HVACTemplate:Plant:HotWaterLoop`` objects in the document. Plant loop to serve all HVACTemplate hot water coils and boilers."""
     @property
-    def hvac_template_plant_mixed_water_loops(self) -> IDFCollection[HVACTemplatePlantMixedWaterLoop]:
+    def hvac_template_plant_mixed_water_loop(self) -> IDFCollection[HVACTemplatePlantMixedWaterLoop]:
         """All ``HVACTemplate:Plant:MixedWaterLoop`` objects in the document. Central plant loop portion of a water source heat pump system."""
     @property
     def hvac_template_plant_tower_object_references(self) -> IDFCollection[HVACTemplatePlantTowerObjectReference]:
@@ -10184,7 +10373,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def output_control_files(self) -> IDFCollection[OutputControlFiles]:
         """All ``OutputControl:Files`` objects in the document. Conditionally turn on/off output from EnergyPlus."""
     @property
-    def output_control_illuminance_map_styles(self) -> IDFCollection[OutputControlIlluminanceMapStyle]:
+    def output_control_illuminance_map_style(self) -> IDFCollection[OutputControlIlluminanceMapStyle]:
         """All ``OutputControl:IlluminanceMap:Style`` objects in the document. default style for the Daylighting Illuminance Map is comma -- this works well for importing into spreadsheet programs such as Excel(tm) but not so well for word processing programs -- there tab may..."""
     @property
     def output_control_reporting_tolerances(self) -> IDFCollection[OutputControlReportingTolerances]:
@@ -10193,28 +10382,28 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def output_control_resilience_summaries(self) -> IDFCollection[OutputControlResilienceSummaries]:
         """All ``OutputControl:ResilienceSummaries`` objects in the document. Specifies methods for resilience reporting variables"""
     @property
-    def output_control_sizing_styles(self) -> IDFCollection[OutputControlSizingStyle]:
+    def output_control_sizing_style(self) -> IDFCollection[OutputControlSizingStyle]:
         """All ``OutputControl:Sizing:Style`` objects in the document. Default style for the Sizing output files is comma -- this works well for importing into spreadsheet programs such as Excel(tm) but not so well for word processing programs -- there tab may be a be..."""
     @property
     def output_control_surface_color_schemes(self) -> IDFCollection[OutputControlSurfaceColorScheme]:
         """All ``OutputControl:SurfaceColorScheme`` objects in the document. This object is used to set colors for reporting on various building elements particularly for the DXF reports. We know the user can enter 0 to 255 and the color map is available in DXF output. Ther..."""
     @property
-    def output_control_table_styles(self) -> IDFCollection[OutputControlTableStyle]:
+    def output_control_table_style(self) -> IDFCollection[OutputControlTableStyle]:
         """All ``OutputControl:Table:Style`` objects in the document. default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs such as Excel(tm) but not so well for word processing programs -- there tab may b..."""
     @property
-    def output_control_timestamps(self) -> IDFCollection[OutputControlTimestamp]:
+    def output_control_timestamp(self) -> IDFCollection[OutputControlTimestamp]:
         """All ``OutputControl:Timestamp`` objects in the document. Control timestamp format, currently applies only to JSON and native CSV (not CSV via ReadVars)"""
     @property
     def output_daylight_factors(self) -> IDFCollection[OutputDaylightFactors]:
         """All ``Output:DaylightFactors`` objects in the document. Reports hourly daylight factors for each exterior window for four sky types (clear, turbid clear, intermediate, and overcast)."""
     @property
-    def output_debugging_datas(self) -> IDFCollection[OutputDebuggingData]:
+    def output_debugging_data(self) -> IDFCollection[OutputDebuggingData]:
         """All ``Output:DebuggingData`` objects in the document. switch eplusout.dbg file on or off"""
     @property
     def output_diagnostics(self) -> IDFCollection[OutputDiagnostics]:
         """All ``Output:Diagnostics`` objects in the document. Special keys to produce certain warning messages or effect certain simulation characteristics."""
     @property
-    def output_energy_management_systems(self) -> IDFCollection[OutputEnergyManagementSystem]:
+    def output_energy_management_system(self) -> IDFCollection[OutputEnergyManagementSystem]:
         """All ``Output:EnergyManagementSystem`` objects in the document. This object is used to control the output produced by the Energy Management System"""
     @property
     def output_environmental_impact_factors(self) -> IDFCollection[OutputEnvironmentalImpactFactors]:
@@ -10223,7 +10412,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def output_illuminance_maps(self) -> IDFCollection[OutputIlluminanceMap]:
         """All ``Output:IlluminanceMap`` objects in the document. reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point CoordinateSystem field"""
     @property
-    def output_jsons(self) -> IDFCollection[OutputJSON]:
+    def output_json(self) -> IDFCollection[OutputJSON]:
         """All ``Output:JSON`` objects in the document. Output from EnergyPlus can be written to JSON format files."""
     @property
     def output_meter_cumulative_meter_file_onlies(self) -> IDFCollection[OutputMeterCumulativeMeterFileOnly]:
@@ -10244,7 +10433,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def output_schedules(self) -> IDFCollection[OutputSchedules]:
         """All ``Output:Schedules`` objects in the document. Produces a condensed reporting that illustrates the full range of schedule values in the eio output file. In the style of input: DaySchedule, WeekSchedule, and Annual Schedule."""
     @property
-    def output_sqlites(self) -> IDFCollection[OutputSQLite]:
+    def output_sqlite(self) -> IDFCollection[OutputSQLite]:
         """All ``Output:SQLite`` objects in the document. Output from EnergyPlus can be written to an SQLite format file."""
     @property
     def output_surfaces_drawings(self) -> IDFCollection[OutputSurfacesDrawing]:
@@ -10277,13 +10466,13 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def output_variables(self) -> IDFCollection[OutputVariable]:
         """All ``Output:Variable`` objects in the document. each Output:Variable command picks variables to be put onto the standard output file (.eso) some variables may not be reported for every simulation. a list of variables that can be reported are ava..."""
     @property
-    def parametric_file_name_suffixes(self) -> IDFCollection[ParametricFileNameSuffix]:
+    def parametric_file_name_suffix(self) -> IDFCollection[ParametricFileNameSuffix]:
         """All ``Parametric:FileNameSuffix`` objects in the document. Defines the suffixes to be appended to the idf and output file names for each parametric run. If this object is omitted, the suffix will default to the run number."""
     @property
-    def parametric_logics(self) -> IDFCollection[ParametricLogic]:
+    def parametric_logic(self) -> IDFCollection[ParametricLogic]:
         """All ``Parametric:Logic`` objects in the document. This object allows some types of objects to be included for some parametric cases and not for others. For example, you might want an overhang on a window in some parametric runs and not others. A s..."""
     @property
-    def parametric_run_controls(self) -> IDFCollection[ParametricRunControl]:
+    def parametric_run_control(self) -> IDFCollection[ParametricRunControl]:
         """All ``Parametric:RunControl`` objects in the document. Controls which parametric runs are simulated. This object is optional. If it is not included, then all parametric runs are performed."""
     @property
     def parametric_set_value_for_runs(self) -> IDFCollection[ParametricSetValueForRun]:
@@ -10557,7 +10746,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def run_period(self) -> IDFCollection[RunPeriod]:
         """All ``RunPeriod`` objects in the document. Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not overlap."""
     @property
-    def run_period_control_daylight_saving_times(self) -> IDFCollection[RunPeriodControlDaylightSavingTime]:
+    def run_period_control_daylight_saving_time(self) -> IDFCollection[RunPeriodControlDaylightSavingTime]:
         """All ``RunPeriodControl:DaylightSavingTime`` objects in the document. This object sets up the daylight saving time period for any RunPeriod. Ignores any daylight saving time period on the weather file and uses this definition. These are not used with SizingPeriod:Des..."""
     @property
     def run_period_control_special_days(self) -> IDFCollection[RunPeriodControlSpecialDays]:
@@ -10581,7 +10770,7 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def schedule_day_lists(self) -> IDFCollection[ScheduleDayList]:
         """All ``Schedule:Day:List`` objects in the document. Schedule:Day:List will allow the user to list 24 hours worth of values, which can be sub-hourly in nature."""
     @property
-    def schedule_file_shadings(self) -> IDFCollection[ScheduleFileShading]:
+    def schedule_file_shading(self) -> IDFCollection[ScheduleFileShading]:
         """All ``Schedule:File:Shading`` objects in the document. A Schedule:File:Shading points to a CSV file that has 8760-8784 hours of sunlit fraction data for all or some of the exterior surfaces."""
     @property
     def schedule_files(self) -> IDFCollection[ScheduleFile]:
@@ -10779,13 +10968,10 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def shading_zone_detaileds(self) -> IDFCollection[ShadingZoneDetailed]:
         """All ``Shading:Zone:Detailed`` objects in the document. used For fins, overhangs, elements that shade the building, are attached to the building but are not part of the heat transfer calculations"""
     @property
-    def shadow_calculations(self) -> IDFCollection[ShadowCalculation]:
+    def shadow_calculation(self) -> IDFCollection[ShadowCalculation]:
         """All ``ShadowCalculation`` objects in the document. This object is used to control details of the solar, shading, and daylighting models"""
     @property
     def simulation_control(self) -> IDFCollection[SimulationControl]:
-        """All ``SimulationControl`` objects in the document. Note that the following 3 fields are related to the Sizing:Zone, Sizing:System, and Sizing:Plant objects. Having these fields set to Yes but no corresponding Sizing object will not cause the sizing..."""
-    @property
-    def simulation_controls(self) -> IDFCollection[SimulationControl]:
         """All ``SimulationControl`` objects in the document. Note that the following 3 fields are related to the Sizing:Zone, Sizing:System, and Sizing:Plant objects. Having these fields set to Yes but no corresponding Sizing object will not cause the sizing..."""
     @property
     def site_ground_domain_basements(self) -> IDFCollection[SiteGroundDomainBasement]:
@@ -10794,22 +10980,22 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def site_ground_domain_slabs(self) -> IDFCollection[SiteGroundDomainSlab]:
         """All ``Site:GroundDomain:Slab`` objects in the document. Ground-coupled slab model for on-grade and in-grade cases with or without insulation."""
     @property
+    def site_ground_reflectance(self) -> IDFCollection[SiteGroundReflectance]:
+        """All ``Site:GroundReflectance`` objects in the document. Specifies the ground reflectance values used to calculate ground reflected solar. The ground reflectance can be further modified when snow is on the ground by Site:GroundReflectance:SnowModifier."""
+    @property
     def site_ground_reflectance_snow_modifiers(self) -> IDFCollection[SiteGroundReflectanceSnowModifier]:
         """All ``Site:GroundReflectance:SnowModifier`` objects in the document. Specifies ground reflectance multipliers when snow resident on the ground. These multipliers are applied to the 'normal' ground reflectances specified in Site:GroundReflectance."""
     @property
-    def site_ground_reflectances(self) -> IDFCollection[SiteGroundReflectance]:
-        """All ``Site:GroundReflectance`` objects in the document. Specifies the ground reflectance values used to calculate ground reflected solar. The ground reflectance can be further modified when snow is on the ground by Site:GroundReflectance:SnowModifier."""
-    @property
-    def site_ground_temperature_building_surfaces(self) -> IDFCollection[SiteGroundTemperatureBuildingSurface]:
+    def site_ground_temperature_building_surface(self) -> IDFCollection[SiteGroundTemperatureBuildingSurface]:
         """All ``Site:GroundTemperature:BuildingSurface`` objects in the document. These temperatures are specifically for those surfaces that have the outside environment of 'Ground'. Documentation about what values these should be is located in the Auxiliary programs document (..."""
     @property
-    def site_ground_temperature_deeps(self) -> IDFCollection[SiteGroundTemperatureDeep]:
+    def site_ground_temperature_deep(self) -> IDFCollection[SiteGroundTemperatureDeep]:
         """All ``Site:GroundTemperature:Deep`` objects in the document. These temperatures are specifically for the ground heat exchangers that would use 'deep' (3-4 m depth) ground temperatures for their heat source. They are not used in other models."""
     @property
-    def site_ground_temperature_fcfactor_methods(self) -> IDFCollection[SiteGroundTemperatureFCfactorMethod]:
+    def site_ground_temperature_fcfactor_method(self) -> IDFCollection[SiteGroundTemperatureFCfactorMethod]:
         """All ``Site:GroundTemperature:FCfactorMethod`` objects in the document. These temperatures are specifically for underground walls and ground floors defined with the C-factor and F-factor methods, and should be close to the monthly average outdoor air temperature delaye..."""
     @property
-    def site_ground_temperature_shallows(self) -> IDFCollection[SiteGroundTemperatureShallow]:
+    def site_ground_temperature_shallow(self) -> IDFCollection[SiteGroundTemperatureShallow]:
         """All ``Site:GroundTemperature:Shallow`` objects in the document. These temperatures are specifically for the Surface Ground Heat Exchanger and should probably be close to the average outdoor air temperature for the location. They are not used in other models."""
     @property
     def site_ground_temperature_undisturbed_finite_differences(
@@ -10825,31 +11011,28 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def site_ground_temperature_undisturbed_xings(self) -> IDFCollection[SiteGroundTemperatureUndisturbedXing]:
         """All ``Site:GroundTemperature:Undisturbed:Xing`` objects in the document. Undisturbed ground temperature object using the Xing 2014 2 harmonic parameter model."""
     @property
-    def site_height_variations(self) -> IDFCollection[SiteHeightVariation]:
+    def site_height_variation(self) -> IDFCollection[SiteHeightVariation]:
         """All ``Site:HeightVariation`` objects in the document. This object is used if the user requires advanced control over height-dependent variations in wind speed and temperature. When this object is not present, the default model for temperature dependen..."""
     @property
     def site_location(self) -> IDFCollection[SiteLocation]:
         """All ``Site:Location`` objects in the document. Specifies the building's location. Only one location is allowed. Weather data file location, if it exists, will override this object."""
     @property
-    def site_locations(self) -> IDFCollection[SiteLocation]:
-        """All ``Site:Location`` objects in the document. Specifies the building's location. Only one location is allowed. Weather data file location, if it exists, will override this object."""
-    @property
     def site_precipitations(self) -> IDFCollection[SitePrecipitation]:
         """All ``Site:Precipitation`` objects in the document. Used to describe the amount of water precipitation at the building site. Precipitation includes both rain and the equivalent water content of snow."""
     @property
-    def site_solar_and_visible_spectrums(self) -> IDFCollection[SiteSolarAndVisibleSpectrum]:
+    def site_solar_and_visible_spectrum(self) -> IDFCollection[SiteSolarAndVisibleSpectrum]:
         """All ``Site:SolarAndVisibleSpectrum`` objects in the document. If this object is omitted, the default solar and visible spectrum data will be used."""
     @property
     def site_spectrum_datas(self) -> IDFCollection[SiteSpectrumData]:
         """All ``Site:SpectrumData`` objects in the document. Spectrum Data Type is followed by up to 107 sets of normal-incidence measured values of [wavelength, spectrum] for wavelengths covering the solar (0.25 to 2.5 microns) or visible spectrum (0.38 to ..."""
     @property
-    def site_variable_locations(self) -> IDFCollection[SiteVariableLocation]:
+    def site_variable_location(self) -> IDFCollection[SiteVariableLocation]:
         """All ``Site:VariableLocation`` objects in the document. Captures the scheduling of a moving/reorienting building, or more likely a vessel"""
     @property
     def site_water_mains_temperatures(self) -> IDFCollection[SiteWaterMainsTemperature]:
         """All ``Site:WaterMainsTemperature`` objects in the document. Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a function of outdoor climate conditions and vary with time of year."""
     @property
-    def site_weather_stations(self) -> IDFCollection[SiteWeatherStation]:
+    def site_weather_station(self) -> IDFCollection[SiteWeatherStation]:
         """All ``Site:WeatherStation`` objects in the document. This object should only be used for non-standard weather data. Standard weather data such as TMY2, IWEC, and ASHRAE design day data are all measured at the default conditions and do not require thi..."""
     @property
     def sizing_parameters(self) -> IDFCollection[SizingParameters]:
@@ -10967,6 +11150,9 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def surface_control_movable_insulations(self) -> IDFCollection[SurfaceControlMovableInsulation]:
         """All ``SurfaceControl:MovableInsulation`` objects in the document. Exterior or Interior Insulation on opaque surfaces"""
     @property
+    def surface_convection_algorithm_inside(self) -> IDFCollection[SurfaceConvectionAlgorithmInside]:
+        """All ``SurfaceConvectionAlgorithm:Inside`` objects in the document. Default indoor surface heat transfer convection algorithm to be used for all zones"""
+    @property
     def surface_convection_algorithm_inside_adaptive_model_selections(
         self,
     ) -> IDFCollection[SurfaceConvectionAlgorithmInsideAdaptiveModelSelections]:
@@ -10977,8 +11163,8 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     ) -> IDFCollection[SurfaceConvectionAlgorithmInsideUserCurve]:
         """All ``SurfaceConvectionAlgorithm:Inside:UserCurve`` objects in the document. Used to describe a custom model equation for surface convection heat transfer coefficient If more than one curve is referenced they are all used and added together."""
     @property
-    def surface_convection_algorithm_insides(self) -> IDFCollection[SurfaceConvectionAlgorithmInside]:
-        """All ``SurfaceConvectionAlgorithm:Inside`` objects in the document. Default indoor surface heat transfer convection algorithm to be used for all zones"""
+    def surface_convection_algorithm_outside(self) -> IDFCollection[SurfaceConvectionAlgorithmOutside]:
+        """All ``SurfaceConvectionAlgorithm:Outside`` objects in the document. Default outside surface heat transfer convection algorithm to be used for all zones"""
     @property
     def surface_convection_algorithm_outside_adaptive_model_selections(
         self,
@@ -10989,9 +11175,6 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
         self,
     ) -> IDFCollection[SurfaceConvectionAlgorithmOutsideUserCurve]:
         """All ``SurfaceConvectionAlgorithm:Outside:UserCurve`` objects in the document. Used to describe a custom model equation for surface convection heat transfer coefficient If more than one curve is referenced they are all used and added together."""
-    @property
-    def surface_convection_algorithm_outsides(self) -> IDFCollection[SurfaceConvectionAlgorithmOutside]:
-        """All ``SurfaceConvectionAlgorithm:Outside`` objects in the document. Default outside surface heat transfer convection algorithm to be used for all zones"""
     @property
     def surface_properties_vapor_coefficients(self) -> IDFCollection[SurfacePropertiesVaporCoefficients]:
         """All ``SurfaceProperties:VaporCoefficients`` objects in the document. The interior and external vapor transfer coefficients. Normally these value are calculated using the heat convection coefficient values. Use this object to used fixed constant values. Units are kg/..."""
@@ -11133,9 +11316,6 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def timestep(self) -> IDFCollection[Timestep]:
         """All ``Timestep`` objects in the document. Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is used in the Zone Heat Balance Model calculation as the driving timestep for hea..."""
     @property
-    def timesteps(self) -> IDFCollection[Timestep]:
-        """All ``Timestep`` objects in the document. Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is used in the Zone Heat Balance Model calculation as the driving timestep for hea..."""
-    @property
     def unitary_system_performance_multispeeds(self) -> IDFCollection[UnitarySystemPerformanceMultispeed]:
         """All ``UnitarySystemPerformance:Multispeed`` objects in the document. The UnitarySystemPerformance object is used to specify the air flow ratio at each operating speed. This object is primarily used for multispeed DX and water coils to allow operation at alternate fl..."""
     @property
@@ -11162,9 +11342,6 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     @property
     def ventilation(self) -> IDFCollection[ZoneVentilationDesignFlowRate]:
         """All ``ZoneVentilation:DesignFlowRate`` objects in the document. Ventilation is specified as a design level which is modified by a schedule fraction, temperature difference and wind speed: Ventilation=Vdesign * Fschedule * (A + B*|(Tzone-Todb)| + C*WindSpd + D *..."""
-    @property
-    def versions(self) -> IDFCollection[Version]:
-        """All ``Version`` objects in the document. Specifies the EnergyPlus version of the IDF file."""
     @property
     def wall_adiabatics(self) -> IDFCollection[WallAdiabatic]:
         """All ``Wall:Adiabatic`` objects in the document. Allows for simplified entry of interior walls."""
@@ -11309,13 +11486,13 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     def zone_air_balance_outdoor_airs(self) -> IDFCollection[ZoneAirBalanceOutdoorAir]:
         """All ``ZoneAirBalance:OutdoorAir`` objects in the document. Provide a combined zone outdoor air flow by including interactions between mechanical ventilation, infiltration and duct leakage. This object will combine outdoor flows from all ZoneInfiltration an..."""
     @property
-    def zone_air_contaminant_balances(self) -> IDFCollection[ZoneAirContaminantBalance]:
+    def zone_air_contaminant_balance(self) -> IDFCollection[ZoneAirContaminantBalance]:
         """All ``ZoneAirContaminantBalance`` objects in the document. Determines which contaminant concentration will be simulates."""
     @property
-    def zone_air_heat_balance_algorithms(self) -> IDFCollection[ZoneAirHeatBalanceAlgorithm]:
+    def zone_air_heat_balance_algorithm(self) -> IDFCollection[ZoneAirHeatBalanceAlgorithm]:
         """All ``ZoneAirHeatBalanceAlgorithm`` objects in the document. Controls the zone/space air heat balance."""
     @property
-    def zone_air_mass_flow_conservations(self) -> IDFCollection[ZoneAirMassFlowConservation]:
+    def zone_air_mass_flow_conservation(self) -> IDFCollection[ZoneAirMassFlowConservation]:
         """All ``ZoneAirMassFlowConservation`` objects in the document. Enforces the zone air mass flow balance by either adjusting zone mixing object flow only, adjusting zone total return flow only, zone mixing and the zone total return flows, or adjusting the zone t..."""
     @property
     def zone_baseboard_outdoor_temperature_controlleds(
@@ -11573,3 +11750,226 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
     @property
     def zones(self) -> IDFCollection[Zone]:
         """All ``Zone`` objects in the document. Defines a thermal zone of the building. Every zone contains one or more Spaces. Space is an optional input. If a Zone has no Space(s) specified in input then a default Space named <Zone Name> will ..."""
+    @property
+    @deprecated(
+        "doc.airflow_network_distribution_duct_sizings is deprecated: a model holds at most one AirflowNetwork:Distribution:DuctSizing, so its accessor is doc.airflow_network_distribution_duct_sizing"
+    )
+    def airflow_network_distribution_duct_sizings(self) -> IDFCollection[AirflowNetworkDistributionDuctSizing]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_simulation_controls is deprecated: a model holds at most one AirflowNetwork:SimulationControl, so its accessor is doc.airflow_network_simulation_control"
+    )
+    def airflow_network_simulation_controls(self) -> IDFCollection[AirflowNetworkSimulationControl]: ...
+    @property
+    @deprecated(
+        "doc.airflow_network_zone_control_pressure_controllers is deprecated: a model holds at most one AirflowNetwork:ZoneControl:PressureController, so its accessor is doc.airflow_network_zone_control_pressure_controller"
+    )
+    def airflow_network_zone_control_pressure_controllers(
+        self,
+    ) -> IDFCollection[AirflowNetworkZoneControlPressureController]: ...
+    @property
+    @deprecated("doc.buildings is deprecated: a model holds at most one Building, so its accessor is doc.building")
+    def buildings(self) -> IDFCollection[Building]: ...
+    @property
+    @deprecated(
+        "doc.compliance_buildings is deprecated: a model holds at most one Compliance:Building, so its accessor is doc.compliance_building"
+    )
+    def compliance_buildings(self) -> IDFCollection[ComplianceBuilding]: ...
+    @property
+    @deprecated(
+        "doc.currency_types is deprecated: a model holds at most one CurrencyType, so its accessor is doc.currency_type"
+    )
+    def currency_types(self) -> IDFCollection[CurrencyType]: ...
+    @property
+    @deprecated(
+        "doc.geometry_transforms is deprecated: a model holds at most one GeometryTransform, so its accessor is doc.geometry_transform"
+    )
+    def geometry_transforms(self) -> IDFCollection[GeometryTransform]: ...
+    @property
+    @deprecated(
+        "doc.heat_balance_algorithms is deprecated: a model holds at most one HeatBalanceAlgorithm, so its accessor is doc.heat_balance_algorithm"
+    )
+    def heat_balance_algorithms(self) -> IDFCollection[HeatBalanceAlgorithm]: ...
+    @property
+    @deprecated(
+        "doc.heat_balance_settings_conduction_finite_differences is deprecated: a model holds at most one HeatBalanceSettings:ConductionFiniteDifference, so its accessor is doc.heat_balance_settings_conduction_finite_difference"
+    )
+    def heat_balance_settings_conduction_finite_differences(
+        self,
+    ) -> IDFCollection[HeatBalanceSettingsConductionFiniteDifference]: ...
+    @property
+    @deprecated(
+        "doc.hvac_system_root_finding_algorithms is deprecated: a model holds at most one HVACSystemRootFindingAlgorithm, so its accessor is doc.hvac_system_root_finding_algorithm"
+    )
+    def hvac_system_root_finding_algorithms(self) -> IDFCollection[HVACSystemRootFindingAlgorithm]: ...
+    @property
+    @deprecated(
+        "doc.hvac_template_plant_chilled_water_loops is deprecated: a model holds at most one HVACTemplate:Plant:ChilledWaterLoop, so its accessor is doc.hvac_template_plant_chilled_water_loop"
+    )
+    def hvac_template_plant_chilled_water_loops(self) -> IDFCollection[HVACTemplatePlantChilledWaterLoop]: ...
+    @property
+    @deprecated(
+        "doc.hvac_template_plant_hot_water_loops is deprecated: a model holds at most one HVACTemplate:Plant:HotWaterLoop, so its accessor is doc.hvac_template_plant_hot_water_loop"
+    )
+    def hvac_template_plant_hot_water_loops(self) -> IDFCollection[HVACTemplatePlantHotWaterLoop]: ...
+    @property
+    @deprecated(
+        "doc.hvac_template_plant_mixed_water_loops is deprecated: a model holds at most one HVACTemplate:Plant:MixedWaterLoop, so its accessor is doc.hvac_template_plant_mixed_water_loop"
+    )
+    def hvac_template_plant_mixed_water_loops(self) -> IDFCollection[HVACTemplatePlantMixedWaterLoop]: ...
+    @property
+    @deprecated(
+        "doc.output_control_illuminance_map_styles is deprecated: a model holds at most one OutputControl:IlluminanceMap:Style, so its accessor is doc.output_control_illuminance_map_style"
+    )
+    def output_control_illuminance_map_styles(self) -> IDFCollection[OutputControlIlluminanceMapStyle]: ...
+    @property
+    @deprecated(
+        "doc.output_control_sizing_styles is deprecated: a model holds at most one OutputControl:Sizing:Style, so its accessor is doc.output_control_sizing_style"
+    )
+    def output_control_sizing_styles(self) -> IDFCollection[OutputControlSizingStyle]: ...
+    @property
+    @deprecated(
+        "doc.output_control_table_styles is deprecated: a model holds at most one OutputControl:Table:Style, so its accessor is doc.output_control_table_style"
+    )
+    def output_control_table_styles(self) -> IDFCollection[OutputControlTableStyle]: ...
+    @property
+    @deprecated(
+        "doc.output_control_timestamps is deprecated: a model holds at most one OutputControl:Timestamp, so its accessor is doc.output_control_timestamp"
+    )
+    def output_control_timestamps(self) -> IDFCollection[OutputControlTimestamp]: ...
+    @property
+    @deprecated(
+        "doc.output_debugging_datas is deprecated: a model holds at most one Output:DebuggingData, so its accessor is doc.output_debugging_data"
+    )
+    def output_debugging_datas(self) -> IDFCollection[OutputDebuggingData]: ...
+    @property
+    @deprecated(
+        "doc.output_energy_management_systems is deprecated: a model holds at most one Output:EnergyManagementSystem, so its accessor is doc.output_energy_management_system"
+    )
+    def output_energy_management_systems(self) -> IDFCollection[OutputEnergyManagementSystem]: ...
+    @property
+    @deprecated(
+        "doc.output_jsons is deprecated: a model holds at most one Output:JSON, so its accessor is doc.output_json"
+    )
+    def output_jsons(self) -> IDFCollection[OutputJSON]: ...
+    @property
+    @deprecated(
+        "doc.output_sqlites is deprecated: a model holds at most one Output:SQLite, so its accessor is doc.output_sqlite"
+    )
+    def output_sqlites(self) -> IDFCollection[OutputSQLite]: ...
+    @property
+    @deprecated(
+        "doc.parametric_file_name_suffixes is deprecated: a model holds at most one Parametric:FileNameSuffix, so its accessor is doc.parametric_file_name_suffix"
+    )
+    def parametric_file_name_suffixes(self) -> IDFCollection[ParametricFileNameSuffix]: ...
+    @property
+    @deprecated(
+        "doc.parametric_logics is deprecated: a model holds at most one Parametric:Logic, so its accessor is doc.parametric_logic"
+    )
+    def parametric_logics(self) -> IDFCollection[ParametricLogic]: ...
+    @property
+    @deprecated(
+        "doc.parametric_run_controls is deprecated: a model holds at most one Parametric:RunControl, so its accessor is doc.parametric_run_control"
+    )
+    def parametric_run_controls(self) -> IDFCollection[ParametricRunControl]: ...
+    @property
+    @deprecated(
+        "doc.run_period_control_daylight_saving_times is deprecated: a model holds at most one RunPeriodControl:DaylightSavingTime, so its accessor is doc.run_period_control_daylight_saving_time"
+    )
+    def run_period_control_daylight_saving_times(self) -> IDFCollection[RunPeriodControlDaylightSavingTime]: ...
+    @property
+    @deprecated(
+        "doc.schedule_file_shadings is deprecated: a model holds at most one Schedule:File:Shading, so its accessor is doc.schedule_file_shading"
+    )
+    def schedule_file_shadings(self) -> IDFCollection[ScheduleFileShading]: ...
+    @property
+    @deprecated(
+        "doc.shadow_calculations is deprecated: a model holds at most one ShadowCalculation, so its accessor is doc.shadow_calculation"
+    )
+    def shadow_calculations(self) -> IDFCollection[ShadowCalculation]: ...
+    @property
+    @deprecated(
+        "doc.simulation_controls is deprecated: a model holds at most one SimulationControl, so its accessor is doc.simulation_control"
+    )
+    def simulation_controls(self) -> IDFCollection[SimulationControl]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_reflectances is deprecated: a model holds at most one Site:GroundReflectance, so its accessor is doc.site_ground_reflectance"
+    )
+    def site_ground_reflectances(self) -> IDFCollection[SiteGroundReflectance]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_building_surfaces is deprecated: a model holds at most one Site:GroundTemperature:BuildingSurface, so its accessor is doc.site_ground_temperature_building_surface"
+    )
+    def site_ground_temperature_building_surfaces(self) -> IDFCollection[SiteGroundTemperatureBuildingSurface]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_deeps is deprecated: a model holds at most one Site:GroundTemperature:Deep, so its accessor is doc.site_ground_temperature_deep"
+    )
+    def site_ground_temperature_deeps(self) -> IDFCollection[SiteGroundTemperatureDeep]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_fcfactor_methods is deprecated: a model holds at most one Site:GroundTemperature:FCfactorMethod, so its accessor is doc.site_ground_temperature_fcfactor_method"
+    )
+    def site_ground_temperature_fcfactor_methods(self) -> IDFCollection[SiteGroundTemperatureFCfactorMethod]: ...
+    @property
+    @deprecated(
+        "doc.site_ground_temperature_shallows is deprecated: a model holds at most one Site:GroundTemperature:Shallow, so its accessor is doc.site_ground_temperature_shallow"
+    )
+    def site_ground_temperature_shallows(self) -> IDFCollection[SiteGroundTemperatureShallow]: ...
+    @property
+    @deprecated(
+        "doc.site_height_variations is deprecated: a model holds at most one Site:HeightVariation, so its accessor is doc.site_height_variation"
+    )
+    def site_height_variations(self) -> IDFCollection[SiteHeightVariation]: ...
+    @property
+    @deprecated(
+        "doc.site_locations is deprecated: a model holds at most one Site:Location, so its accessor is doc.site_location"
+    )
+    def site_locations(self) -> IDFCollection[SiteLocation]: ...
+    @property
+    @deprecated(
+        "doc.site_solar_and_visible_spectrums is deprecated: a model holds at most one Site:SolarAndVisibleSpectrum, so its accessor is doc.site_solar_and_visible_spectrum"
+    )
+    def site_solar_and_visible_spectrums(self) -> IDFCollection[SiteSolarAndVisibleSpectrum]: ...
+    @property
+    @deprecated(
+        "doc.site_variable_locations is deprecated: a model holds at most one Site:VariableLocation, so its accessor is doc.site_variable_location"
+    )
+    def site_variable_locations(self) -> IDFCollection[SiteVariableLocation]: ...
+    @property
+    @deprecated(
+        "doc.site_weather_stations is deprecated: a model holds at most one Site:WeatherStation, so its accessor is doc.site_weather_station"
+    )
+    def site_weather_stations(self) -> IDFCollection[SiteWeatherStation]: ...
+    @property
+    @deprecated(
+        "doc.surface_convection_algorithm_insides is deprecated: a model holds at most one SurfaceConvectionAlgorithm:Inside, so its accessor is doc.surface_convection_algorithm_inside"
+    )
+    def surface_convection_algorithm_insides(self) -> IDFCollection[SurfaceConvectionAlgorithmInside]: ...
+    @property
+    @deprecated(
+        "doc.surface_convection_algorithm_outsides is deprecated: a model holds at most one SurfaceConvectionAlgorithm:Outside, so its accessor is doc.surface_convection_algorithm_outside"
+    )
+    def surface_convection_algorithm_outsides(self) -> IDFCollection[SurfaceConvectionAlgorithmOutside]: ...
+    @property
+    @deprecated("doc.timesteps is deprecated: a model holds at most one Timestep, so its accessor is doc.timestep")
+    def timesteps(self) -> IDFCollection[Timestep]: ...
+    @property
+    @deprecated('doc.versions is deprecated: a model holds at most one Version, so use doc["Version"]')
+    def versions(self) -> IDFCollection[Version]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_contaminant_balances is deprecated: a model holds at most one ZoneAirContaminantBalance, so its accessor is doc.zone_air_contaminant_balance"
+    )
+    def zone_air_contaminant_balances(self) -> IDFCollection[ZoneAirContaminantBalance]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_heat_balance_algorithms is deprecated: a model holds at most one ZoneAirHeatBalanceAlgorithm, so its accessor is doc.zone_air_heat_balance_algorithm"
+    )
+    def zone_air_heat_balance_algorithms(self) -> IDFCollection[ZoneAirHeatBalanceAlgorithm]: ...
+    @property
+    @deprecated(
+        "doc.zone_air_mass_flow_conservations is deprecated: a model holds at most one ZoneAirMassFlowConservation, so its accessor is doc.zone_air_mass_flow_conservation"
+    )
+    def zone_air_mass_flow_conservations(self) -> IDFCollection[ZoneAirMassFlowConservation]: ...
