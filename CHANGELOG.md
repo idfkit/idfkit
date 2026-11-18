@@ -60,11 +60,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     wrapper (`vertices=[...]`) and the deprecated flat extensible spellings (`vertex_x_coordinate_2`)
     were not reported. A name was checked only when every target the code can run on has the type.
     Choice values in `fields={...}` were read as well
-    ([#PR](https://github.com/idfkit/idfkit/pull/PR)).
+    ([#300](https://github.com/idfkit/idfkit/pull/300)).
   - A word passed to a numeric field that also takes a choice (`ceiling_height="tall"`, where the
     field takes a number or `Autocalculate`) was reported as a value that is "neither a number nor
     one of the field's choices (Autocalculate)" instead of as a choice value
-    ([#PR](https://github.com/idfkit/idfkit/pull/PR)).
+    ([#300](https://github.com/idfkit/idfkit/pull/300)).
 - `idfkit.versions.releases_between(since, before)` was added: every supported release from
   `since` (inclusive) to `before` (exclusive), the range `as_version(doc, since=..., before=...)`
   accepts ([ef76f46](https://github.com/idfkit/idfkit/commit/ef76f46)).
@@ -171,7 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   been the one release a line was about, became the earliest of them. Exit codes and `--fail-on`
   were unchanged. Breaking for anything that parsed the text lines, or counted or read `to_version`
   per JSON entry. The release lists of `C003` and `C006` messages were shortened the same way
-  (`(8.9.0 to 26.2.0)`) ([#PR](https://github.com/idfkit/idfkit/pull/PR)).
+  (`(8.9.0 to 26.2.0)`) ([#300](https://github.com/idfkit/idfkit/pull/300)).
 - For type checking only, an undeclared field on a typed object was reported against a type named
   for the mistake: pyright's message for `zone.ceiling_hieght = 3.0` read `parameter "key" of type
   "_NotAFieldOfThisObjectType"` rather than `of type "Never"` (`_NotAFieldOfThisExtensibleGroup`
