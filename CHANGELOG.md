@@ -9,14 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `load_idf()`, `load_epjson()` and `load_idf_with_diagnostics()` took the targets `as_version()`
-  takes, as keywords: `as_type=IDFDocumentV26_1` (or a tuple of release types) and `since=`/`before=`
-  (`since="26.1"`, `since="9.6", before="23.2"`). The document came back typed for that release or
-  range, and the loader raised `TypeError`, naming the file, when the file was of another release.
-  A malformed target (both `as_type=` and a range, a release idfkit does not support, an empty
-  range) was refused before the file was read. The positional `version=` kept its meaning, an
-  override of the release the file is read as. `idfkit check` narrowed a lookup on such a call,
-  or on a name bound once to one, as it narrows one on `as_version()` (LOADERS_REF).
+- `load_idf()`, `load_epjson()` and `load_idf_with_diagnostics()` took `as_type=`, `since=` and
+  `before=`, as `as_version()` does, and returned the document typed for that release or range,
+  raising `TypeError` if the file was of another ([3c5456d](https://github.com/idfkit/idfkit/commit/3c5456d)).
 - `IDFCollection.add(name, **fields)` became the typed way to create an object:
   `doc.zones.add("Office", ceiling_height=3.0)` returned a `Zone`, its fields type-checked for the
   document's release and the schema's defaults and docs shown in signature help and hover
@@ -52,19 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking:** for type checking, `load_idf()`, `load_epjson()` and `load_idf_with_diagnostics()`
-  returned an `AnyIDFDocument` instead of an `IDFDocument`. A model's release is read from its file,
-  so typing it as the latest release was a guess: a 26.1 or 9.4 model loaded without `as_version()`
-  was checked against 26.2's object types, fields and choices, and a 26.1 surface added without a
-  construction type-checked although 26.1 requires one. Through `AnyIDFDocument` only what every
-  release accepts type-checks, so a model whose release was not stated could no longer be checked
-  against the wrong one. Code that annotated a loaded model as `IDFDocument`, or used an object type
-  or field only some releases have (`doc["Space"]`), now reported a type error until the release
-  was stated with the loaders' new `as_type=`, `since=` or `before=` (see Added) or with
-  `as_version()`. Nothing changed at run time. `ParseResult` became generic in its document's
-  type, and `load_idf_with_diagnostics()` returned a `ParseResult[AnyIDFDocument]`. Checking
-  lookups through `AnyIDFDocument` cost pyright about 15% more than through `IDFDocument` (1,600
-  lookups: 9.2 s against 8.0 s) (LOADERS_REF).
+- **Breaking:** for type checking, the loaders returned `AnyIDFDocument` instead of `IDFDocument`,
+  so a model of unstated release was no longer checked as the latest one; state its release with
+  `as_type=` or `since=` when loading, or with `as_version()` ([3c5456d](https://github.com/idfkit/idfkit/commit/3c5456d)).
 
 - **Breaking:** for type checking, a field that every release having it requires with no default
   lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;
