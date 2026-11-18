@@ -728,6 +728,8 @@ def construction_to_svg(
 
     Raises:
         TypeError: If not a Construction IDFObject
+        DanglingReferenceError: If a layer names a material the document does not have.
+        ValueError: If *construction* has layers but is not in a document, so they cannot be resolved.
     """
     # Import here to avoid circular imports
     from ..objects import IDFObject

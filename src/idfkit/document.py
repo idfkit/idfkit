@@ -37,6 +37,7 @@ from .objects import (
     IDFCollection,
     IDFObject,
     is_blank_slot,
+    object_not_found,
     refuse_name_for_nameless_type,
     refuse_unknown_fields_for_add,
 )
@@ -1177,9 +1178,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             'Perimeter_ZN_South'
         """
         # Read here, not through getobject(), so a misspelt type is reported at the caller's line.
-        obj = self._read_collection(obj_type, stacklevel=2).get(old_name)
+        collection = self._read_collection(obj_type, stacklevel=2)
+        obj = collection.get(old_name)
         if not obj:
-            raise KeyError(f"No {obj_type} named '{old_name}'")  # noqa: TRY003
+            raise object_not_found(collection, old_name)
 
         # Setting the name triggers _set_name -> _on_name_change which handles
         # collection index, referencing objects, and graph updates.

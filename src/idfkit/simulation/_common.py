@@ -276,6 +276,34 @@ def admit_weather(
     return None
 
 
+ANNUAL_WITHOUT_RUN_PERIOD_MESSAGE = (
+    "annual=True, but the model has no RunPeriod. EnergyPlus would warn that it is adding one and then "
+    "simulate no environment, reporting success with empty results. Add a run period first, e.g. "
+    'model.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31), '
+    "or run without annual=True."
+)
+
+
+def admit_annual(model: AnyIDFDocument, *, annual: bool) -> None:
+    """Refuse an annual run (``-a``) of a model that has no ``RunPeriod``.
+
+    Given ``-a`` and no run period, EnergyPlus warns that it is adding a full-year run period, then
+    simulates no environment at all (not even the design days) and exits with success, so every
+    result is empty. ``RunPeriod:CustomRange`` (EnergyPlus 8.9) counts as a run period.
+
+    Args:
+        model: The model to be simulated, before version migration.
+        annual: Whether the run is annual (``-a``).
+
+    Raises:
+        SimulationError: If *annual* is true and *model* has no run period.
+    """
+    if annual and "RunPeriod" not in model and "RunPeriod:CustomRange" not in model:
+        from ..exceptions import SimulationError
+
+        raise SimulationError(ANNUAL_WITHOUT_RUN_PERIOD_MESSAGE)
+
+
 def refuse_default_weather(run_dir: Path) -> None:
     """Refuse a run without a weather file whose run directory already holds ``in.epw``.
 

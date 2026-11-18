@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast
 
 from ._compat_object import EppyObjectMixin
 from ._read_required import GROUP_READ_REQUIRED, READ_REQUIRED
-from .exceptions import InvalidFieldError, MissingRequiredFieldError, RefusedEntry, format_refused
+from .exceptions import InvalidFieldError, MissingRequiredFieldError, ObjectNotFoundError, RefusedEntry, format_refused
 from .schema import NO_CHOICE_SPELLINGS, canonical_choice, trailing_underscore_aliases
 
 __all__ = [
@@ -1822,10 +1822,10 @@ class IDFCollection(Generic[_T_co]):
             # fall back to the first item in the ordered list.
             if self._items:
                 return self._items[0]
-            raise KeyError(f"No {self._type} with name '{key}'")  # noqa: TRY003
+            raise object_not_found(self, key)
         result = self._by_name.get(key.upper())
         if result is None:
-            raise KeyError(f"No {self._type} with name '{key}'")  # noqa: TRY003
+            raise object_not_found(self, key)
         return result
 
     def __iter__(self) -> Iterator[_T_co]:
@@ -2028,3 +2028,19 @@ class IDFCollection(Generic[_T_co]):
             ['Floor2_Office']
         """
         return [obj for obj in self._items if predicate(obj)]
+
+
+def object_not_found(collection: IDFCollection[IDFObject], name: str) -> ObjectNotFoundError:
+    """The error for a lookup of *name* in *collection*, suggesting the closest existing names.
+
+    Shared by ``collection[name]``, ``doc.rename()`` and the dotted ``doc.update()``, so a
+    misspelt object name gets the same "did you mean" wherever it is looked up.
+    """
+    # The names are listed lazily, when the message is read: a miss caught as ``KeyError`` (the
+    # try/except membership idiom) must stay O(1) however large the collection is.
+    return ObjectNotFoundError(
+        collection.obj_type,
+        name,
+        lambda: [obj.name for obj in collection if obj.name],
+        object_count=len(collection),
+    )

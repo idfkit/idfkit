@@ -643,6 +643,26 @@ class TestWeatherAdmission:
         assert mock_pre.call_args.kwargs["weather"] is None
         assert result.success
 
+    def test_annual_without_run_period_refused(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        """EnergyPlus would add a run period, simulate nothing and report success, so the run is refused."""
+        with (
+            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            pytest.raises(SimulationError, match="annual=True, but the model has no RunPeriod"),
+        ):
+            simulate(new_document(), weather_file, annual=True, energyplus=mock_config)
+        mock_run.assert_not_called()
+
+    def test_annual_with_run_period_runs(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        model = new_document()
+        model.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
+        with patch("idfkit.simulation.runner.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+            result = simulate(model, weather_file, annual=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        assert result.success
+        assert "-a" in mock_run.call_args.args[0]
+
     def test_weather_refused_before_energyplus_discovery(self) -> None:
         """An invalid weather argument is reported even on a machine without EnergyPlus."""
         with (

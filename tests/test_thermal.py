@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from idfkit import new_document
+from idfkit.exceptions import DanglingReferenceError
 from idfkit.objects import IDFObject
 from idfkit.thermal import (
     FILM_RESISTANCE,
@@ -502,8 +503,8 @@ class TestGlazingConstruction:
 class TestEdgeCases:
     """Tests for edge cases and error handling."""
 
-    def test_construction_with_missing_material_returns_empty_layers(self) -> None:
-        """Test that constructions referencing non-existent materials return empty layers."""
+    def test_construction_with_missing_material_raises(self) -> None:
+        """A layer naming no material raises instead of being left out of the R-value."""
         doc = new_document(version=(24, 1, 0))
         doc.add(
             "Construction",
@@ -512,22 +513,76 @@ class TestEdgeCases:
         )
         construction = doc["Construction"]["MissingMaterial"]
 
-        layers = get_construction_layers(construction)
-        assert layers == []
+        with pytest.raises(
+            DanglingReferenceError, match=r"'MissingMaterial' field 'outside_layer'.*'NonexistentMaterial'"
+        ):
+            get_construction_layers(construction)
+        with pytest.raises(DanglingReferenceError):
+            calculate_r_value(construction)
 
-        r = calculate_r_value(construction)
-        assert r == 0.0
+    def test_misspelt_layer_raises_with_the_closest_material(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add(
+            "Material",
+            "Concrete",
+            roughness="Rough",
+            thickness=0.2,
+            conductivity=1.7,
+            density=2000.0,
+            specific_heat=900.0,
+        )
+        doc.add(
+            "Material",
+            "Insulation",
+            roughness="Rough",
+            thickness=0.1,
+            conductivity=0.04,
+            density=30.0,
+            specific_heat=900.0,
+        )
+        doc.add("Construction", "Wall", outside_layer="Concrete", layer_2="Insulx", validate=False)
+        wall = doc["Construction"]["Wall"]
 
-    def test_construction_without_document(self) -> None:
+        for calculate in (calculate_r_value, calculate_u_value, calculate_shgc):
+            with pytest.raises(DanglingReferenceError, match="Did you mean 'Insulation'") as excinfo:
+                calculate(wall)
+            assert excinfo.value.source is wall
+            assert excinfo.value.field == "layer_2"
+            assert excinfo.value.target == "Insulx"
+            assert excinfo.value.suggestion == "Insulation"
+
+    def test_layer_of_a_type_not_computed_is_left_out(self) -> None:
+        """A shade is a valid layer the calculations do not model: it is skipped, not refused."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("WindowMaterial:SimpleGlazingSystem", "Glass", u_factor=2.0, solar_heat_gain_coefficient=0.4)
+        doc.add(
+            "WindowMaterial:Shade",
+            "Shade",
+            solar_transmittance=0.1,
+            solar_reflectance=0.5,
+            visible_transmittance=0.1,
+            visible_reflectance=0.5,
+            infrared_hemispherical_emissivity=0.9,
+            infrared_transmittance=0.0,
+            thickness=0.003,
+            conductivity=0.1,
+            validate=False,
+        )
+        doc.add("Construction", "ShadedWindow", outside_layer="Shade", layer_2="Glass")
+
+        layers = get_construction_layers(doc["Construction"]["ShadedWindow"])
+
+        assert [layer.name for layer in layers] == ["Glass"]
+
+    def test_construction_without_document_raises(self) -> None:
         obj = IDFObject(
             obj_type="Construction",
             name="Orphan",
             data={"outside_layer": "SomeMaterial"},
         )
 
-        layers = get_construction_layers(obj)
-        # Can't resolve material without document
-        assert layers == []
+        with pytest.raises(ValueError, match="'Orphan' is not in a document"):
+            get_construction_layers(obj)
 
     def test_gas_gap_resistance_invalid_thickness_raises(self) -> None:
         with pytest.raises(ValueError, match="thickness"):

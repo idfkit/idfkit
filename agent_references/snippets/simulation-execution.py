@@ -71,7 +71,9 @@ result = simulate(doc, "weather.epw", design_day=True)
 # Design days only, without a weather file (weather defaults to None)
 result = simulate(doc, design_day=True)
 
-# Full annual run — minutes
+# Full annual run — minutes. annual=True needs a RunPeriod (new_document() adds none)
+if "RunPeriod" not in doc:
+    doc.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
 result = simulate(doc, "weather.epw", annual=True)
 
 # Default (both flags False) — EnergyPlus's default, governed by SimulationControl in the IDF

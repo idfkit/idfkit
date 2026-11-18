@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Literal, overload
 
 from ..exceptions import SimulationError
 from ._common import (
+    admit_annual,
     admit_weather,
     build_command,
     ensure_sql_output,
@@ -139,7 +140,8 @@ def simulate(
         expand_objects: Run ExpandObjects before simulation.  When
             ``True``, also runs the Slab and Basement ground heat-transfer
             preprocessors if the model contains the corresponding objects.
-        annual: Run annual simulation (``-a`` flag).
+        annual: Run annual simulation (``-a`` flag). The model needs a
+            ``RunPeriod``; without one the run is refused (see Raises).
         design_day: Run design-day-only simulation (``-D`` flag).
         output_prefix: Prefix for output files (default "eplus").
         output_suffix: EnergyPlus ``--output-suffix`` style, which names the
@@ -200,7 +202,9 @@ def simulate(
             ``None``, *expand_objects* is ``True`` and the model contains
             Slab or Basement ground heat-transfer objects whose preprocessor
             ``GroundHeatTransfer:Control`` enables; or *weather* is
-            ``None`` and the run directory already contains ``in.epw``.
+            ``None`` and the run directory already contains ``in.epw``. Also
+            raised before EnergyPlus starts when *annual* is ``True`` and the
+            model has no ``RunPeriod``.
         ExpandObjectsError: If a preprocessing step (ExpandObjects, Slab,
             or Basement) fails during automatic preprocessing.
         EnergyPlusNotFoundError: If EnergyPlus cannot be found.
@@ -228,6 +232,7 @@ def simulate(
             expand_objects=expand_objects,
             run_dir=local_output_dir,
         )
+        admit_annual(model, annual=annual)
         config = resolve_config(energyplus)
         logger.debug("EnergyPlus: %s (version %d.%d.%d)", config.executable, *config.version)
 

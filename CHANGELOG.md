@@ -81,6 +81,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `InvalidFieldError` and `UnknownObjectTypeError` named the closest field or object type
   ("Did you mean 'ceiling_height'?"), as attribute access and `idfkit check` already did.
   ([#324](https://github.com/idfkit/idfkit/pull/324))
+- A missing object name in `doc["Zone"]["name"]`, `doc.rename()` and the dotted `doc.update()`
+  raised `ObjectNotFoundError` (a `KeyError` and `IdfKitError`) naming the closest existing names
+  and listing the others, instead of a bare quoted `KeyError`.
+  ([#327](https://github.com/idfkit/idfkit/pull/327))
+- **Breaking:** `idfkit.thermal` functions and `construction_to_svg()` raised `DanglingReferenceError`
+  (with the closest material) for a layer naming no material, instead of leaving it out, and
+  `ValueError` for a layered construction outside a document, instead of 0.0; fix the layer name.
+  ([#327](https://github.com/idfkit/idfkit/pull/327))
 - **Breaking:** for type checking, the loaders returned `AnyIDFDocument` instead of `IDFDocument`,
   so a model of unstated release was no longer checked as the latest one; state its release with
   `as_type=` or `since=` when loading, or with `as_version()` ([#309](https://github.com/idfkit/idfkit/pull/309)).
@@ -159,6 +167,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `simulate(annual=True)` and `async_simulate(annual=True)` raised `SimulationError` for a model
+  with no `RunPeriod`, where EnergyPlus simulated nothing and reported success; `get_timeseries()`
+  raised `ResultLookupError` for such a run instead of returning an empty series.
+  ([#327](https://github.com/idfkit/idfkit/pull/327))
 - `DesignDayManager.from_station(dataset=...)` downloaded the dataset named (`"2009-2023"`), and
   raised `ValueError` listing the station's datasets, instead of ignoring it.
   ([#326](https://github.com/idfkit/idfkit/pull/326))
