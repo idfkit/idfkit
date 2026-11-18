@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class AnyShadowCalculation:
     def __call__(
         self,
@@ -460,6 +462,7 @@ class AnyHeatPumpWaterToWaterEquationFitCooling:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         source_side_inlet_node_name: str,
         source_side_outlet_node_name: str,
         load_side_inlet_node_name: str,
@@ -486,8 +489,7 @@ class AnyEvaporativeFluidCoolerSingleSpeed:
         design_spray_water_flow_rate: float,
         performance_input_method: Literal[
             "StandardDesignCapacity", "UFactorTimesAreaAndDesignWaterFlowRate", "UserSpecifiedDesignCapacity"
-        ]
-        | None = ...,
+        ],
         outdoor_air_inlet_node_name: str | None = ...,
         heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
         standard_design_capacity: float | None = ...,

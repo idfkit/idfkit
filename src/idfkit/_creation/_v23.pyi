@@ -8,9 +8,6 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-class Version_v22_1:
-    def __call__(self, /, *, version_identifier: str | None = "22.1") -> None: ...
-
 class BoilerSteam_v8_9_to_v9_2:
     def __call__(
         self,
@@ -656,38 +653,6 @@ class MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1:
         liquid_transport_coefficient_25: float | None = ...,
     ) -> None: ...
 
-class TableTwoIndependentVariables_v8_9:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        curve_type: Literal["BiQuadratic", "QuadraticLinear"],
-        interpolation_method: Literal[
-            "", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
-        ]
-        | None = "LagrangeInterpolationLinearExtrapolation",
-        minimum_value_of_x: float | None = ...,
-        maximum_value_of_x: float | None = ...,
-        minimum_value_of_y: float | None = ...,
-        maximum_value_of_y: float | None = ...,
-        minimum_table_output: float | None = ...,
-        maximum_table_output: float | None = ...,
-        input_unit_type_for_x: Literal[
-            "", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
-        ]
-        | None = "Dimensionless",
-        input_unit_type_for_y: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"
-        ]
-        | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
-        | None = "Dimensionless",
-        normalization_reference: float | None = ...,
-        external_file_name: str | None = ...,
-        values: list[Any] = ...,
-    ) -> None: ...
-
 class UnitarySystemPerformanceMultispeed_v8_9_to_v22_1:
     def __call__(
         self,
@@ -763,4 +728,36 @@ class PythonPluginOutputVariable_v9_4_to_v23_1:
         ]
         | None = ...,
         end_use_subcategory: str | None = ...,
+    ) -> None: ...
+
+class TableTwoIndependentVariables_v8_9:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        curve_type: Literal["BiQuadratic", "QuadraticLinear"],
+        interpolation_method: Literal[
+            "", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
+        ]
+        | None = "LagrangeInterpolationLinearExtrapolation",
+        minimum_value_of_x: float | None = ...,
+        maximum_value_of_x: float | None = ...,
+        minimum_value_of_y: float | None = ...,
+        maximum_value_of_y: float | None = ...,
+        minimum_table_output: float | None = ...,
+        maximum_table_output: float | None = ...,
+        input_unit_type_for_x: Literal[
+            "", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+        ]
+        | None = "Dimensionless",
+        input_unit_type_for_y: Literal[
+            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"
+        ]
+        | None = "Dimensionless",
+        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        | None = "Dimensionless",
+        normalization_reference: float | None = ...,
+        external_file_name: str | None = ...,
+        values: list[Any] = ...,
     ) -> None: ...

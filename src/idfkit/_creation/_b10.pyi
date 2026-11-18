@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class AnySizingPeriodDesignDay:
     def __call__(
         self,
@@ -96,6 +98,7 @@ class AnySiteGroundTemperatureUndisturbedXing:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         soil_thermal_conductivity: float,
         soil_density: float,
         soil_specific_heat: float,
@@ -341,12 +344,12 @@ class AnySwimmingPoolIndoor:
         surface_name: str,
         average_depth: float,
         activity_factor_schedule_name: str,
+        make_up_water_supply_schedule_name: str,
         cover_schedule_name: str,
         pool_water_inlet_node: str,
         pool_water_outlet_node: str,
         setpoint_temperature_schedule: str,
         maximum_number_of_people: float,
-        make_up_water_supply_schedule_name: str | None = ...,
         cover_evaporation_factor: float | None = 0,
         cover_convection_factor: float | None = 0,
         cover_short_wavelength_radiation_factor: float | None = 0,
@@ -1086,6 +1089,7 @@ class AnyCurveDoubleExponentialDecay:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         coefficient1_c1: float,
         coefficient2_c2: float,
         coefficient3_c3: float,

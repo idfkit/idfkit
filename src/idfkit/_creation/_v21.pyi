@@ -296,19 +296,6 @@ class FuelFactors_v9_3_to_v22_1:
         nuclear_low_level_emission_factor_schedule_name: str | None = ...,
     ) -> None: ...
 
-class ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        actuated_component_unique_name: str,
-        actuated_component_type: str,
-        actuated_component_control_type: str,
-        fmu_variable_name: str,
-        initial_value: float,
-    ) -> None: ...
-
 class MeterCustomDecrement_v9_4_to_v23_1:
     def __call__(
         self,
@@ -653,4 +640,17 @@ class MeterCustom_v9_4_to_v23_1:
         ]
         | None = ...,
         variable_details: list[Any] = ...,
+    ) -> None: ...
+
+class ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        actuated_component_unique_name: str,
+        actuated_component_type: str,
+        actuated_component_control_type: str,
+        fmu_variable_name: str,
+        initial_value: float,
     ) -> None: ...

@@ -255,31 +255,8 @@ class GroundHeatExchangerSlinky_v8_9_to_v22_1:
         maximum_length_of_simulation: float | None = ...,
     ) -> None: ...
 
-class InternalMass_v9_6_to_v24_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        construction_name: str,
-        zone_or_zonelist_name: str,
-        surface_area: float,
-        space_or_spacelist_name: str | None = ...,
-    ) -> None: ...
-
 class OutputTableSummaryReports_v8_9_to_v9_2:
     def __call__(self, /, *, reports: list[Any] = ...) -> None: ...
-
-class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        controller_list_name: str,
-        outdoor_air_equipment_list_name: str,
-        availability_manager_list_name: str | None = ...,
-    ) -> None: ...
 
 class CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1:
     def __call__(
@@ -705,4 +682,27 @@ class OutputJSON_v9_1_to_v25_1:
         output_json: Literal["", "No", "Yes"] | None = "Yes",
         output_cbor: Literal["", "No", "Yes"] | None = "No",
         output_messagepack: Literal["", "No", "Yes"] | None = "No",
+    ) -> None: ...
+
+class InternalMass_v9_6_to_v24_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        construction_name: str,
+        zone_or_zonelist_name: str,
+        surface_area: float,
+        space_or_spacelist_name: str | None = ...,
+    ) -> None: ...
+
+class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        controller_list_name: str,
+        outdoor_air_equipment_list_name: str,
+        availability_manager_list_name: str | None = ...,
     ) -> None: ...

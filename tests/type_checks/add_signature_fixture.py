@@ -26,7 +26,8 @@ from idfkit.objects import IDFObject
 from idfkit.versioned import AnyIDFDocument, IDFDocumentV9_4
 
 if TYPE_CHECKING:
-    from idfkit.document import AnyInternalMass, Building, InternalMass, Material, Zone
+    from idfkit.document import Building, InternalMass, Material, Zone
+    from idfkit.versioned import InternalMass_v9_2_to_v9_5
 
 
 def required_fields(doc: IDFDocument[Any]) -> None:
@@ -80,15 +81,24 @@ def release_specific(latest: IDFDocument[Any], old: IDFDocumentV9_4) -> None:
     old["ZoneControl:ContaminantController"].add("CO2", zone_name="Office")
 
 
-def any_release(doc: AnyIDFDocument) -> None:
-    # Required through AnyIDFDocument only where every release requires it.
-    assert_type(doc["InternalMass"].add("Mass", surface_area=10.0), AnyInternalMass)
-    doc["InternalMass"].add("Mass")  # pyright: ignore[reportCallIssue]  (every release requires the area)
-    doc["ZoneControl:ContaminantController"].add("CO2", zone_name="Office")
+def any_release(doc: AnyIDFDocument, recent: IDFDocumentV9_4) -> None:
+    # Required through AnyIDFDocument where any release requires it, so no release refuses a call
+    # that type-checks: 8.9 to 26.1 require the construction, 26.2 the CO2 schedule.
+    doc["ZoneControl:ContaminantController"].add("CO2", zone_name="Office")  # pyright: ignore[reportCallIssue]  (26.2 requires the schedule)
+    doc["ZoneControl:ContaminantController"].add("CO2", zone_name="Office", carbon_dioxide_setpoint_schedule_name="S")
     doc["BuildingSurface:Detailed"].add(
         "Floor", surface_type="Floor", zone_name="Z", outside_boundary_condition="Ground"
+    )  # pyright: ignore[reportCallIssue]  (8.9 to 26.1 require the construction)
+    doc["BuildingSurface:Detailed"].add(
+        "Floor", surface_type="Floor", construction_name="C", zone_name="Z", outside_boundary_condition="Ground"
     )
-    doc["BuildingSurface:Detailed"].add("Floor", zone_name="Z", outside_boundary_condition="Ground")  # pyright: ignore[reportCallIssue]  (no surface type)
+    # InternalMass's zone field was renamed (zone_name, zone_or_zonelist_name), and every release up
+    # to 24.1 requires it: no call suits every release, so the signature asks to narrow first.
+    doc["InternalMass"].add("Mass", construction_name="C", surface_area=10.0)  # pyright: ignore[reportCallIssue]  (narrow_with_as_version_first)
+    assert_type(
+        recent["InternalMass"].add("Mass", construction_name="C", zone_or_zonelist_name="Z", surface_area=10.0),
+        InternalMass_v9_2_to_v9_5,
+    )
 
 
 def untyped(doc: IDFDocument[Any], obj_type: str) -> None:

@@ -575,9 +575,20 @@ class TestCommittedStubs:
                 "the name is optional in add(), none in the schema",
             ),
             (
-                r"(class AnyInternalMass:.*?)construction_name: str \| None = \.\.\.",
-                r"\1construction_name: str",
-                "(AnyInternalMass): add() requires construction_name, which the schema does not",
+                # Option A: AnyIDFDocument requires what any release requires.
+                r"(class AnyEnergyManagementSystemProgram:.*?)lines: list\[Any\]",
+                r"\1lines: list[Any] = ...",
+                "(AnyEnergyManagementSystemProgram): add() does not require lines",
+            ),
+            (
+                r"(class AnyPeople:.*?)narrow_with_as_version_first: Never,",
+                r"\1",
+                "(AnyPeople): add() can satisfy no release's required fields but does not say so",
+            ),
+            (
+                r"(class WindowMaterialGap:.*?)\) -> None",
+                r"\1gas_or_gas_mixture: str | None = ...) -> None",
+                "WindowMaterial:Gap in 26.2.0 (WindowMaterialGap): add() keywords differ",
             ),
             (
                 r"(class InternalMass_v9_2_to_v9_5:.*?)zone_or_zonelist_name: str,",

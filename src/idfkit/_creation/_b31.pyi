@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class Version:
     def __call__(self, /, *, version_identifier: str | None = ...) -> None: ...
 
@@ -155,6 +157,7 @@ class AnySteamEquipment:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         schedule_name: str,
         design_level_calculation_method: Literal[
             "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
@@ -186,11 +189,12 @@ class AnyZoneInfiltrationFlowCoefficient:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
+        schedule_name: str,
         flow_coefficient: float,
         stack_coefficient: float,
         wind_coefficient: float,
         shelter_factor: float,
-        schedule_name: str | None = ...,
         pressure_exponent: float | None = 0.67,
     ) -> None: ...
 
@@ -326,6 +330,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveSteam:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         inlet_node_name: str,
         outlet_node_name: str,
         maximum_steam_flow_rate: float | Literal["Autosize"],
@@ -579,7 +584,7 @@ class ChillerElectricEIR:
         | None = "ConstantFlow",
         condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None = ...,
         temperature_difference_across_condenser_schedule_name: str | None = ...,
-        condenser_minimum_flow_fraction: float | None = 0.2,
+        condenser_minimum_flow_fraction: float | None = ...,
         thermosiphon_capacity_fraction_curve_name: str | None = ...,
         thermosiphon_minimum_temperature_difference: float | None = 0,
     ) -> None: ...

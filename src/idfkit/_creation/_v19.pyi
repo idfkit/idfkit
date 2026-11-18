@@ -104,29 +104,6 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4:
         heating_power_consumption_coefficient_5: float,
     ) -> None: ...
 
-class ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        design_object: str | None = ...,
-        availability_schedule_name: str | None = ...,
-        zone_name: str | None = ...,
-        surface_name_or_radiant_surface_group_name: str | None = ...,
-        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        maximum_hot_water_flow: float | Literal["Autosize"] | None = ...,
-        heating_water_inlet_node_name: str | None = ...,
-        heating_water_outlet_node_name: str | None = ...,
-        cooling_design_capacity: float | Literal["Autosize"] | None = ...,
-        maximum_cold_water_flow: float | Literal["Autosize"] | None = ...,
-        cooling_water_inlet_node_name: str | None = ...,
-        cooling_water_outlet_node_name: str | None = ...,
-        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
-        circuit_length: float | None = 106.7,
-    ) -> None: ...
-
 class ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2:
     def __call__(
         self,
@@ -367,38 +344,6 @@ class ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1:
 class EnergyManagementSystemTrendVariable_v8_9_to_v22_1:
     def __call__(self, name: str, /, *, ems_variable_name: str, number_of_timesteps_to_be_logged: float) -> None: ...
 
-class TableTwoIndependentVariables_v9_0_to_v9_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        curve_type: Literal["BiQuadratic", "QuadraticLinear"] | None = ...,
-        interpolation_method: Literal[
-            "", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
-        ]
-        | None = "LagrangeInterpolationLinearExtrapolation",
-        minimum_value_of_x: float | None = ...,
-        maximum_value_of_x: float | None = ...,
-        minimum_value_of_y: float | None = ...,
-        maximum_value_of_y: float | None = ...,
-        minimum_table_output: float | None = ...,
-        maximum_table_output: float | None = ...,
-        input_unit_type_for_x: Literal[
-            "", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
-        ]
-        | None = "Dimensionless",
-        input_unit_type_for_y: Literal[
-            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"
-        ]
-        | None = "Dimensionless",
-        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
-        | None = "Dimensionless",
-        normalization_reference: float | None = ...,
-        external_file_name: str | None = ...,
-        values: list[Any] = ...,
-    ) -> None: ...
-
 class AirTerminalSingleDuctVAVReheat_v8_9_to_v9_2:
     def __call__(
         self,
@@ -426,17 +371,6 @@ class AirTerminalSingleDuctVAVReheat_v8_9_to_v9_2:
         maximum_flow_fraction_during_reheat: float | Literal["", "Autosize"] | None = "Autosize",
         maximum_reheat_air_temperature: float | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
-    ) -> None: ...
-
-class ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1:
-    def __call__(
-        self,
-        /,
-        *,
-        schedule_name: str,
-        fmu_variable_name: str,
-        initial_value: float,
-        schedule_type_limits_names: str | None = ...,
     ) -> None: ...
 
 class RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1:
@@ -482,4 +416,70 @@ class PythonPluginVariables_v9_3:
         variable_name_3: str | None = ...,
         variable_name_4: str | None = ...,
         variable_name_5: str | None = ...,
+    ) -> None: ...
+
+class ZoneHVACLowTemperatureRadiantVariableFlow_v9_5_to_v25_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        design_object: str | None = ...,
+        availability_schedule_name: str | None = ...,
+        zone_name: str | None = ...,
+        surface_name_or_radiant_surface_group_name: str | None = ...,
+        hydronic_tubing_length: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        maximum_hot_water_flow: float | Literal["Autosize"] | None = ...,
+        heating_water_inlet_node_name: str | None = ...,
+        heating_water_outlet_node_name: str | None = ...,
+        cooling_design_capacity: float | Literal["Autosize"] | None = ...,
+        maximum_cold_water_flow: float | Literal["Autosize"] | None = ...,
+        cooling_water_inlet_node_name: str | None = ...,
+        cooling_water_outlet_node_name: str | None = ...,
+        number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
+        circuit_length: float | None = 106.7,
+    ) -> None: ...
+
+class TableTwoIndependentVariables_v9_0_to_v9_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        curve_type: Literal["BiQuadratic", "QuadraticLinear"] | None = ...,
+        interpolation_method: Literal[
+            "", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
+        ]
+        | None = "LagrangeInterpolationLinearExtrapolation",
+        minimum_value_of_x: float | None = ...,
+        maximum_value_of_x: float | None = ...,
+        minimum_value_of_y: float | None = ...,
+        maximum_value_of_y: float | None = ...,
+        minimum_table_output: float | None = ...,
+        maximum_table_output: float | None = ...,
+        input_unit_type_for_x: Literal[
+            "", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+        ]
+        | None = "Dimensionless",
+        input_unit_type_for_y: Literal[
+            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"
+        ]
+        | None = "Dimensionless",
+        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        | None = "Dimensionless",
+        normalization_reference: float | None = ...,
+        external_file_name: str | None = ...,
+        values: list[Any] = ...,
+    ) -> None: ...
+
+class ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1:
+    def __call__(
+        self,
+        /,
+        *,
+        schedule_name: str,
+        fmu_variable_name: str,
+        initial_value: float,
+        schedule_type_limits_names: str | None = ...,
     ) -> None: ...

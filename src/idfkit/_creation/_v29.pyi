@@ -76,9 +76,6 @@ class HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4:
         companion_cooling_heat_pump_name: str | None = ...,
     ) -> None: ...
 
-class Version_v9_6:
-    def __call__(self, /, *, version_identifier: str | None = "9.6") -> None: ...
-
 class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4:
     def __call__(
         self,
@@ -379,17 +376,6 @@ class ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1:
         effective_air_leakage_area: float,
         stack_coefficient: float,
         wind_coefficient: float,
-    ) -> None: ...
-
-class AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        outdoor_air_equipment_list_name: str,
-        controller_list_name: str | None = ...,
-        availability_manager_list_name: str | None = ...,
     ) -> None: ...
 
 class ElectricEquipment_v8_9_to_v9_5:
@@ -819,3 +805,14 @@ class CoilHeatingFuel_v8_9_to_v9_2:
 
 class RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4:
     def __call__(self, name: str = "", /, *, gains: list[Any] = ...) -> None: ...
+
+class AirLoopHVACOutdoorAirSystem_v9_2_to_v9_5:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        outdoor_air_equipment_list_name: str,
+        controller_list_name: str | None = ...,
+        availability_manager_list_name: str | None = ...,
+    ) -> None: ...

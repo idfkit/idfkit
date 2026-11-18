@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class ZoneCapacitanceMultiplierResearchSpecial:
     def __call__(
         self,
@@ -53,7 +55,14 @@ class SiteGroundReflectance:
     ) -> None: ...
 
 class AnyMaterialPropertyPhaseChange:
-    def __call__(self, name: str, /, *, temperature_coefficient_for_thermal_conductivity: float | None = 0) -> None: ...
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        narrow_with_as_version_first: Never,
+        temperature_coefficient_for_thermal_conductivity: float | None = 0,
+    ) -> None: ...
 
 class ShadingOverhangProjection:
     def __call__(
@@ -532,6 +541,7 @@ class AnyHeatPumpWaterToWaterEquationFitHeating:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         source_side_inlet_node_name: str,
         source_side_outlet_node_name: str,
         load_side_inlet_node_name: str,

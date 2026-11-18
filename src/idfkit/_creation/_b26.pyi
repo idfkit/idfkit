@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class ShadowCalculation:
     def __call__(
         self,
@@ -374,6 +376,7 @@ class AnyZoneHVACHighTemperatureRadiant:
         *,
         zone_name: str,
         fuel_type: Literal["Electricity", "NaturalGas"],
+        heating_setpoint_temperature_schedule_name: str,
         availability_schedule_name: str | None = ...,
         heating_design_capacity_method: Literal[
             "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
@@ -397,7 +400,6 @@ class AnyZoneHVACHighTemperatureRadiant:
         ]
         | None = "OperativeTemperature",
         heating_throttling_range: float | None = 2,
-        heating_setpoint_temperature_schedule_name: str | None = ...,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
         surface_fractions: list[Any] = ...,
     ) -> None: ...
@@ -438,6 +440,7 @@ class AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         water_to_refrigerant_hx_water_inlet_node_name: str,
         water_to_refrigerant_hx_water_outlet_node_name: str,
         indoor_air_inlet_node_name: str,

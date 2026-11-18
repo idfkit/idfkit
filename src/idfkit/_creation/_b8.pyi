@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class WindowMaterialShade:
     def __call__(
         self,
@@ -114,6 +116,7 @@ class AnyFenestrationSurfaceDetailed:
         /,
         *,
         surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"],
+        construction_name: str,
         building_surface_name: str,
         vertex_1_x_coordinate: float,
         vertex_1_y_coordinate: float,
@@ -124,7 +127,6 @@ class AnyFenestrationSurfaceDetailed:
         vertex_3_x_coordinate: float,
         vertex_3_y_coordinate: float,
         vertex_3_z_coordinate: float,
-        construction_name: str | None = ...,
         outside_boundary_condition_object: str | None = ...,
         view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         frame_and_divider_name: str | None = ...,
@@ -167,6 +169,7 @@ class AnyPeople:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         number_of_people_schedule_name: str,
         activity_level_schedule_name: str,
         number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None = "People",
@@ -203,6 +206,7 @@ class AnyElectricEquipmentITEAirCooled:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         cpu_power_input_function_of_loading_and_air_temperature_curve_name: str,
         design_fan_air_flow_rate_per_power_input: float,
         air_flow_function_of_loading_and_air_temperature_curve_name: str,
@@ -398,6 +402,7 @@ class AnyZoneHVACLowTemperatureRadiantConstantFlow:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,

@@ -466,6 +466,40 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1:
         speed_10_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
     ) -> None: ...
 
+class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        water_inlet_node_name: str,
+        water_outlet_node_name: str,
+        design_air_flow_rate: float | Literal["Autosize"],
+        design_air_flow_rate_fan_power: float | Literal["Autosize"],
+        design_spray_water_flow_rate: float,
+        performance_input_method: Literal[
+            "StandardDesignCapacity", "UFactorTimesAreaAndDesignWaterFlowRate", "UserSpecifiedDesignCapacity"
+        ],
+        outdoor_air_inlet_node_name: str | None = ...,
+        heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
+        standard_design_capacity: float | None = ...,
+        design_air_flow_rate_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
+        design_water_flow_rate: float | Literal["Autosize"] | None = ...,
+        user_specified_design_capacity: float | None = ...,
+        design_entering_water_temperature: float | None = ...,
+        design_entering_air_temperature: float | None = ...,
+        design_entering_air_wet_bulb_temperature: float | None = ...,
+        capacity_control: Literal["", "FanCycling", "FluidBypass"] | None = "FanCycling",
+        sizing_factor: float | None = 1,
+        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
+        evaporation_loss_factor: float | None = ...,
+        drift_loss_percent: float | None = 0.008,
+        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
+        blowdown_concentration_ratio: float | None = 3,
+        blowdown_makeup_water_usage_schedule_name: str | None = ...,
+        supply_water_storage_tank_name: str | None = ...,
+    ) -> None: ...
+
 class ControllerMechanicalVentilation_v9_3_to_v9_4:
     def __call__(
         self,

@@ -94,12 +94,6 @@ class ChillerEngineDriven_v8_9_to_v9_2:
         condenser_heat_recovery_relative_capacity_fraction: float | None = ...,
     ) -> None: ...
 
-class Version_v9_0:
-    def __call__(self, /, *, version_identifier: str | None = "9.0") -> None: ...
-
-class Version_v25_2:
-    def __call__(self, /, *, version_identifier: str | None = ...) -> None: ...
-
 class OutputTableTimeBins_v8_9_to_v22_1:
     def __call__(
         self,
@@ -592,6 +586,38 @@ class ZoneEarthtube_v8_9_to_v23_1:
         temperature_term_flow_coefficient: float | None = 0,
         velocity_term_flow_coefficient: float | None = 0,
         velocity_squared_term_flow_coefficient: float | None = 0,
+    ) -> None: ...
+
+class TableTwoIndependentVariables_v8_9_to_v9_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        curve_type: Literal["BiQuadratic", "QuadraticLinear"],
+        interpolation_method: Literal[
+            "", "EvaluateCurveToLimits", "LagrangeInterpolationLinearExtrapolation", "LinearInterpolationOfTable"
+        ]
+        | None = "LagrangeInterpolationLinearExtrapolation",
+        minimum_value_of_x: float | None = ...,
+        maximum_value_of_x: float | None = ...,
+        minimum_value_of_y: float | None = ...,
+        maximum_value_of_y: float | None = ...,
+        minimum_table_output: float | None = ...,
+        maximum_table_output: float | None = ...,
+        input_unit_type_for_x: Literal[
+            "", "Angle", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow"
+        ]
+        | None = "Dimensionless",
+        input_unit_type_for_y: Literal[
+            "", "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "Wavelength"
+        ]
+        | None = "Dimensionless",
+        output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
+        | None = "Dimensionless",
+        normalization_reference: float | None = ...,
+        external_file_name: str | None = ...,
+        values: list[Any] = ...,
     ) -> None: ...
 
 class ComfortViewFactorAngles_v8_9_to_v9_5:

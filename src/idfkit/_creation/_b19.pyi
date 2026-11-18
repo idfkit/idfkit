@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class AnySurfaceConvectionAlgorithmInside:
     def __call__(
         self,
@@ -45,7 +47,7 @@ class AnySiteWaterMainsTemperature:
         self,
         /,
         *,
-        calculation_method: Literal["Correlation", "Schedule"] | None = ...,
+        calculation_method: Literal["Correlation", "Schedule"],
         temperature_schedule_name: str | None = ...,
         annual_average_outdoor_air_temperature: float | None = ...,
         maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None = ...,
@@ -393,11 +395,12 @@ class AnyZoneBaseboardOutdoorTemperatureControlled:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         schedule_name: str,
-        capacity_at_low_temperature: float | None = ...,
-        low_temperature: float | None = ...,
-        capacity_at_high_temperature: float | None = ...,
-        high_temperature: float | None = ...,
+        capacity_at_low_temperature: float,
+        low_temperature: float,
+        capacity_at_high_temperature: float,
+        high_temperature: float,
         fraction_radiant: float | None = 0,
         end_use_subcategory: str | None = "General",
     ) -> None: ...
@@ -408,7 +411,8 @@ class AnyZoneInfiltrationDesignFlowRate:
         name: str,
         /,
         *,
-        schedule_name: str | None = ...,
+        narrow_with_as_version_first: Never,
+        schedule_name: str,
         design_flow_rate_calculation_method: Literal[
             "", "AirChanges/Hour", "Flow/Area", "Flow/ExteriorArea", "Flow/ExteriorWallArea", "Flow/Zone"
         ]
@@ -427,7 +431,8 @@ class AnyZoneMixing:
         name: str,
         /,
         *,
-        schedule_name: str | None = ...,
+        narrow_with_as_version_first: Never,
+        schedule_name: str,
         design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
@@ -758,8 +763,8 @@ class AnyExternalInterfaceFunctionalMockupUnitExportToSchedule:
         *,
         schedule_name: str,
         fmu_variable_name: str,
+        initial_value: float,
         schedule_type_limits_names: str | None = ...,
-        initial_value: float | None = ...,
     ) -> None: ...
 
 class SetpointManagerScheduledDualSetpoint:

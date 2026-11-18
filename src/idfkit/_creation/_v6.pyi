@@ -184,18 +184,6 @@ class AirflowNetworkDistributionComponentReliefAirFlow_v8_9:
 class InternalMass_v8_9_to_v9_1:
     def __call__(self, name: str, /, *, construction_name: str, zone_name: str, surface_area: float) -> None: ...
 
-class InternalMass_v24_2_to_v26_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        construction_name: str,
-        surface_area: float,
-        zone_or_zonelist_name: str | None = ...,
-        space_or_spacelist_name: str | None = ...,
-    ) -> None: ...
-
 class RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1:
     def __call__(
         self,
@@ -280,3 +268,15 @@ class AirflowNetworkSimulationControl_v9_5_to_v22_1:
 
 class ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5:
     def __call__(self, /, *, zone_or_zonelist_name: str | None = ..., view_factors: list[Any] = ...) -> None: ...
+
+class InternalMass_v24_2_to_v26_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        construction_name: str,
+        surface_area: float,
+        zone_or_zonelist_name: str | None = ...,
+        space_or_spacelist_name: str | None = ...,
+    ) -> None: ...

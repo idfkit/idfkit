@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class AnyBuilding:
     def __call__(
         self,
@@ -258,6 +260,7 @@ class AnyGasEquipment:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         schedule_name: str,
         design_level_calculation_method: Literal[
             "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"
@@ -278,6 +281,7 @@ class AnyDaylightingReferencePoint:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         x_coordinate_of_reference_point: float,
         y_coordinate_of_reference_point: float,
         z_coordinate_of_reference_point: float | None = 0.8,
@@ -325,6 +329,7 @@ class AnyZoneVentilationWindandStackOpenArea:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         opening_area: float | None = 0,
         opening_area_fraction_schedule_name: str | None = ...,
         opening_effectiveness: float | Literal["", "Autocalculate"] | None = "Autocalculate",
@@ -350,7 +355,8 @@ class AnyZoneCrossMixing:
         name: str,
         /,
         *,
-        schedule_name: str | None = ...,
+        narrow_with_as_version_first: Never,
+        schedule_name: str,
         design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,

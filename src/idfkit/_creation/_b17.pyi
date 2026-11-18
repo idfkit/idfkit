@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class AnyConvergenceLimits:
     def __call__(
         self,
@@ -183,10 +185,11 @@ class AnyZoneInfiltrationEffectiveLeakageArea:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
+        schedule_name: str,
         effective_air_leakage_area: float,
         stack_coefficient: float,
         wind_coefficient: float,
-        schedule_name: str | None = ...,
     ) -> None: ...
 
 class ZoneCrossMixing:
@@ -220,6 +223,7 @@ class AnyZoneCoolTowerShower:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         pump_flow_rate_schedule_name: str,
         maximum_water_flow_rate: float,
         effective_tower_height: float,
@@ -327,8 +331,8 @@ class AnyZoneControlContaminantController:
         /,
         *,
         zone_name: str,
+        carbon_dioxide_setpoint_schedule_name: str,
         carbon_dioxide_control_availability_schedule_name: str | None = ...,
-        carbon_dioxide_setpoint_schedule_name: str | None = ...,
         minimum_carbon_dioxide_concentration_schedule_name: str | None = ...,
         maximum_carbon_dioxide_concentration_schedule_name: str | None = ...,
         generic_contaminant_control_availability_schedule_name: str | None = ...,
@@ -361,12 +365,12 @@ class AnyZoneHVACWaterToAirHeatPump:
             "Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"
         ],
         supplemental_heating_coil_name: str,
+        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
         outdoor_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
         outdoor_air_mixer_name: str | None = ...,
         no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None = ...,
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
         outdoor_dry_bulb_temperature_sensor_node_name: str | None = ...,
         fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",

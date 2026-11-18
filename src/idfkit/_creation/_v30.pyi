@@ -13,9 +13,6 @@ class OutputTableMonthly_v8_9_to_v22_1:
         self, name: str, /, *, digits_after_decimal: float | None = 2, variable_details: list[Any] = ...
     ) -> None: ...
 
-class Version_v9_1:
-    def __call__(self, /, *, version_identifier: str | None = "9.1") -> None: ...
-
 class ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1:
     def __call__(
         self, /, *, fmu_file_name: str, fmu_timeout: float | None = 0, fmu_loggingon: float | None = 0
@@ -55,43 +52,6 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1:
         source_side_heat_transfer_resistance2: float | None = ...,
     ) -> None: ...
 
-class BuildingSurfaceDetailed_v25_1_to_v26_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        surface_type: Literal["Ceiling", "Floor", "Roof", "Wall"],
-        construction_name: str,
-        zone_name: str,
-        outside_boundary_condition: Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Space",
-            "Surface",
-            "Zone",
-        ],
-        space_name: str | None = ...,
-        outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[Any] = ...,
-    ) -> None: ...
-
 class SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1:
     def __call__(
         self,
@@ -106,54 +66,6 @@ class SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1:
         soil_surface_temperature_amplitude_2: float,
         phase_shift_of_temperature_amplitude_1: float,
         phase_shift_of_temperature_amplitude_2: float,
-    ) -> None: ...
-
-class PhotovoltaicPerformanceSandia_v22_2_to_v25_2:
-    def __call__(
-        self,
-        name: str = "",
-        /,
-        *,
-        active_area: float | None = 1,
-        number_of_cells_in_series: int | None = 1,
-        number_of_cells_in_parallel: int | None = 1,
-        short_circuit_current: float | None = ...,
-        open_circuit_voltage: float | None = ...,
-        current_at_maximum_power_point: float | None = ...,
-        voltage_at_maximum_power_point: float | None = ...,
-        sandia_database_parameter_aisc: float | None = ...,
-        sandia_database_parameter_aimp: float | None = ...,
-        sandia_database_parameter_c0: float | None = ...,
-        sandia_database_parameter_c1: float | None = ...,
-        sandia_database_parameter_bvoc0: float | None = ...,
-        sandia_database_parameter_mbvoc: float | None = ...,
-        sandia_database_parameter_bvmp0: float | None = ...,
-        sandia_database_parameter_mbvmp: float | None = ...,
-        diode_factor: float | None = ...,
-        sandia_database_parameter_c2: float | None = ...,
-        sandia_database_parameter_c3: float | None = ...,
-        sandia_database_parameter_a0: float | None = ...,
-        sandia_database_parameter_a1: float | None = ...,
-        sandia_database_parameter_a2: float | None = ...,
-        sandia_database_parameter_a3: float | None = ...,
-        sandia_database_parameter_a4: float | None = ...,
-        sandia_database_parameter_b0: float | None = ...,
-        sandia_database_parameter_b1: float | None = ...,
-        sandia_database_parameter_b2: float | None = ...,
-        sandia_database_parameter_b3: float | None = ...,
-        sandia_database_parameter_b4: float | None = ...,
-        sandia_database_parameter_b5: float | None = ...,
-        sandia_database_parameter_delta_tc_: float | None = ...,
-        sandia_database_parameter_fd: float | None = ...,
-        sandia_database_parameter_a: float | None = ...,
-        sandia_database_parameter_b: float | None = ...,
-        sandia_database_parameter_c4: float | None = ...,
-        sandia_database_parameter_c5: float | None = ...,
-        sandia_database_parameter_ix0: float | None = ...,
-        sandia_database_parameter_ixx0: float | None = ...,
-        sandia_database_parameter_c6: float | None = ...,
-        sandia_database_parameter_c7: float | None = ...,
-        sandia_database_parameter_delta_tc: float | None = ...,
     ) -> None: ...
 
 class RunPeriod_v9_6_to_v22_1:
@@ -514,4 +426,89 @@ class OutputTableReportPeriod_v22_2_to_v25_1:
             "AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"
         ]
         | None = ...,
+    ) -> None: ...
+
+class BuildingSurfaceDetailed_v25_1_to_v26_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        surface_type: Literal["Ceiling", "Floor", "Roof", "Wall"],
+        construction_name: str,
+        zone_name: str,
+        outside_boundary_condition: Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Space",
+            "Surface",
+            "Zone",
+        ],
+        space_name: str | None = ...,
+        outside_boundary_condition_object: str | None = ...,
+        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
+        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
+        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
+        vertices: list[Any] = ...,
+    ) -> None: ...
+
+class PhotovoltaicPerformanceSandia_v22_2_to_v25_2:
+    def __call__(
+        self,
+        name: str = "",
+        /,
+        *,
+        active_area: float | None = 1,
+        number_of_cells_in_series: int | None = 1,
+        number_of_cells_in_parallel: int | None = 1,
+        short_circuit_current: float | None = ...,
+        open_circuit_voltage: float | None = ...,
+        current_at_maximum_power_point: float | None = ...,
+        voltage_at_maximum_power_point: float | None = ...,
+        sandia_database_parameter_aisc: float | None = ...,
+        sandia_database_parameter_aimp: float | None = ...,
+        sandia_database_parameter_c0: float | None = ...,
+        sandia_database_parameter_c1: float | None = ...,
+        sandia_database_parameter_bvoc0: float | None = ...,
+        sandia_database_parameter_mbvoc: float | None = ...,
+        sandia_database_parameter_bvmp0: float | None = ...,
+        sandia_database_parameter_mbvmp: float | None = ...,
+        diode_factor: float | None = ...,
+        sandia_database_parameter_c2: float | None = ...,
+        sandia_database_parameter_c3: float | None = ...,
+        sandia_database_parameter_a0: float | None = ...,
+        sandia_database_parameter_a1: float | None = ...,
+        sandia_database_parameter_a2: float | None = ...,
+        sandia_database_parameter_a3: float | None = ...,
+        sandia_database_parameter_a4: float | None = ...,
+        sandia_database_parameter_b0: float | None = ...,
+        sandia_database_parameter_b1: float | None = ...,
+        sandia_database_parameter_b2: float | None = ...,
+        sandia_database_parameter_b3: float | None = ...,
+        sandia_database_parameter_b4: float | None = ...,
+        sandia_database_parameter_b5: float | None = ...,
+        sandia_database_parameter_delta_tc_: float | None = ...,
+        sandia_database_parameter_fd: float | None = ...,
+        sandia_database_parameter_a: float | None = ...,
+        sandia_database_parameter_b: float | None = ...,
+        sandia_database_parameter_c4: float | None = ...,
+        sandia_database_parameter_c5: float | None = ...,
+        sandia_database_parameter_ix0: float | None = ...,
+        sandia_database_parameter_ixx0: float | None = ...,
+        sandia_database_parameter_c6: float | None = ...,
+        sandia_database_parameter_c7: float | None = ...,
+        sandia_database_parameter_delta_tc: float | None = ...,
     ) -> None: ...

@@ -8,8 +8,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-class AnyVersion:
-    def __call__(self, /, *, version_identifier: str | None = ...) -> None: ...
+from typing_extensions import Never
 
 class AnyMaterial:
     def __call__(
@@ -151,7 +150,6 @@ class GroundHeatTransferBasementInsulation:
         *,
         insfull_flag_is_the_wall_fully_insulated_: Literal["FALSE", "TRUE"],
         rext_r_value_of_any_exterior_insulation: float | None = ...,
-        insfull_flag_is_the_wall_fully_insulated: Literal["FALSE", "TRUE"] | None = ...,
     ) -> None: ...
 
 class LightsInstance:
@@ -468,6 +466,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveWater:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         inlet_node_name: str,
         outlet_node_name: str,
         maximum_water_flow_rate: float | Literal["Autosize"],

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class WeatherPropertySkyTemperature:
     def __call__(
         self,
@@ -159,7 +161,8 @@ class AnyZoneVentilationDesignFlowRate:
         name: str,
         /,
         *,
-        schedule_name: str | None = ...,
+        narrow_with_as_version_first: Never,
+        schedule_name: str,
         design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"]
         | None = "Flow/Zone",
         design_flow_rate: float | None = ...,
@@ -191,6 +194,7 @@ class AnyAirflowNetworkDistributionComponentOutdoorAirFlow:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float,
         air_mass_flow_exponent_when_no_outdoor_air_flow: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
@@ -1260,9 +1264,10 @@ class OutputTableMonthly:
 class AnyOutputTableReportPeriod:
     def __call__(
         self,
-        name: str = "",
+        name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         begin_month: int,
         begin_day_of_month: int,
         begin_hour_of_day: int,

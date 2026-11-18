@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class HeatBalanceSettingsConductionFiniteDifference:
     def __call__(
         self,
@@ -33,7 +35,9 @@ class AnyScheduleDayList:
     ) -> None: ...
 
 class AnyScheduleYear:
-    def __call__(self, name: str, /, *, schedule_type_limits_name: str | None = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, narrow_with_as_version_first: Never, schedule_type_limits_name: str | None = ...
+    ) -> None: ...
 
 class WindowMaterialDrapeEquivalentLayer:
     def __call__(

@@ -49,14 +49,13 @@ class IDFDocumentV26_1(
     _v._Accessors_v25_1_to_v26_1,
     _v._Accessors_v25_1_to_v26_2,
     _v._Accessors_v25_2_to_v26_2,
-    _v._Accessors_v26_1,
     _v._Accessors_v26_1_to_v26_2,
     IDFDocumentAllVersions[Strict],
 ):
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 26.1.0."""
 
     @overload
-    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_v.Version_v26_1]: ...
+    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_g.Version]: ...
     @overload
     def __getitem__(self, obj_type: Literal["SimulationControl"], /) -> IDFCollection[_g.SimulationControl]: ...
     @overload

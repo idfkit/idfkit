@@ -59,7 +59,6 @@ class IDFDocumentV24_2(
     _v._Accessors_v24_1_to_v24_2,
     _v._Accessors_v24_1_to_v25_1,
     _v._Accessors_v24_1_to_v26_2,
-    _v._Accessors_v24_2,
     _v._Accessors_v24_2_to_v25_1,
     _v._Accessors_v24_2_to_v25_2,
     _v._Accessors_v24_2_to_v26_1,
@@ -69,7 +68,7 @@ class IDFDocumentV24_2(
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 24.2.0."""
 
     @overload
-    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_v.Version_v24_2]: ...
+    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_g.Version]: ...
     @overload
     def __getitem__(self, obj_type: Literal["SimulationControl"], /) -> IDFCollection[_g.SimulationControl]: ...
     @overload
@@ -1711,7 +1710,7 @@ class IDFDocumentV24_2(
     @overload
     def __getitem__(
         self, obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow"], /
-    ) -> IDFCollection[_v.HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1]: ...
+    ) -> IDFCollection[_g.HeatExchangerDesiccantBalancedFlow]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"], /
@@ -1933,13 +1932,11 @@ class IDFDocumentV24_2(
         self, obj_type: Literal["Chiller:Electric:ASHRAE205"], /
     ) -> IDFCollection[_g.ChillerElectricASHRAE205]: ...
     @overload
-    def __getitem__(
-        self, obj_type: Literal["Chiller:Electric:EIR"], /
-    ) -> IDFCollection[_v.ChillerElectricEIR_v24_2]: ...
+    def __getitem__(self, obj_type: Literal["Chiller:Electric:EIR"], /) -> IDFCollection[_g.ChillerElectricEIR]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["Chiller:Electric:ReformulatedEIR"], /
-    ) -> IDFCollection[_v.ChillerElectricReformulatedEIR_v24_2]: ...
+    ) -> IDFCollection[_g.ChillerElectricReformulatedEIR]: ...
     @overload
     def __getitem__(self, obj_type: Literal["Chiller:Electric"], /) -> IDFCollection[_g.ChillerElectric]: ...
     @overload

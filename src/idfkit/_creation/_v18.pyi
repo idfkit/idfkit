@@ -50,12 +50,6 @@ class CoilCoolingDXSingleSpeed_v8_9_to_v22_1:
         zone_name_for_condenser_placement: str | None = ...,
     ) -> None: ...
 
-class Version_v9_3:
-    def __call__(self, /, *, version_identifier: str | None = "9.3") -> None: ...
-
-class Version_v25_1:
-    def __call__(self, /, *, version_identifier: str | None = ...) -> None: ...
-
 class BuildingSurfaceDetailed_v8_9_to_v9_5:
     def __call__(
         self,
@@ -233,57 +227,6 @@ class Window_v8_9:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
-    ) -> None: ...
-
-class ChillerElectricEIR_v24_2:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        reference_capacity: float | Literal["Autosize"],
-        reference_cop: float,
-        cooling_capacity_function_of_temperature_curve_name: str,
-        electric_input_to_cooling_output_ratio_function_of_temperature_curve_name: str,
-        electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_name: str,
-        chilled_water_inlet_node_name: str,
-        chilled_water_outlet_node_name: str,
-        reference_leaving_chilled_water_temperature: float | None = 6.67,
-        reference_entering_condenser_fluid_temperature: float | None = 29.4,
-        reference_chilled_water_flow_rate: float | Literal["Autosize"] | None = ...,
-        reference_condenser_fluid_flow_rate: float | Literal["Autosize"] | None = ...,
-        minimum_part_load_ratio: float | None = 0.1,
-        maximum_part_load_ratio: float | None = 1,
-        optimum_part_load_ratio: float | None = 1,
-        minimum_unloading_ratio: float | None = 0.2,
-        condenser_inlet_node_name: str | None = ...,
-        condenser_outlet_node_name: str | None = ...,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "WaterCooled",
-        condenser_fan_power_ratio: float | None = 0,
-        fraction_of_compressor_electric_consumption_rejected_by_condenser: float | None = 1,
-        leaving_chilled_water_lower_temperature_limit: float | None = 2,
-        chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
-        heat_recovery_inlet_node_name: str | None = ...,
-        heat_recovery_outlet_node_name: str | None = ...,
-        sizing_factor: float | None = 1,
-        basin_heater_capacity: float | None = 0,
-        basin_heater_setpoint_temperature: float | None = 2,
-        basin_heater_operating_schedule_name: str | None = ...,
-        condenser_heat_recovery_relative_capacity_fraction: float | None = ...,
-        heat_recovery_inlet_high_temperature_limit_schedule_name: str | None = ...,
-        heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
-        end_use_subcategory: str | None = "General",
-        condenser_flow_control: Literal[
-            "", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"
-        ]
-        | None = "ConstantFlow",
-        condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None = ...,
-        temperature_difference_across_condenser_schedule_name: str | None = ...,
-        condenser_minimum_flow_fraction: float | None = ...,
-        thermosiphon_capacity_fraction_curve_name: str | None = ...,
-        thermosiphon_minimum_temperature_difference: float | None = 0,
     ) -> None: ...
 
 class MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1:

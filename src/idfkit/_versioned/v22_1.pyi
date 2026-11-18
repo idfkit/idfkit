@@ -75,7 +75,7 @@ class IDFDocumentV22_1(
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 22.1.0."""
 
     @overload
-    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_v.Version_v22_1]: ...
+    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_g.Version]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["SimulationControl"], /
@@ -85,7 +85,7 @@ class IDFDocumentV22_1(
         self, obj_type: Literal["PerformancePrecisionTradeoffs"], /
     ) -> IDFCollection[_g.PerformancePrecisionTradeoffs]: ...
     @overload
-    def __getitem__(self, obj_type: Literal["Building"], /) -> IDFCollection[_v.Building_v9_3_to_v22_1]: ...
+    def __getitem__(self, obj_type: Literal["Building"], /) -> IDFCollection[_v.Building_v8_9_to_v22_1]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["ShadowCalculation"], /
@@ -1715,7 +1715,7 @@ class IDFDocumentV22_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow"], /
-    ) -> IDFCollection[_v.HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1]: ...
+    ) -> IDFCollection[_g.HeatExchangerDesiccantBalancedFlow]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"], /

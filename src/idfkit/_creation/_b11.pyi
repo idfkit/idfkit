@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class AnySiteLocation:
     def __call__(
         self,
@@ -220,6 +222,7 @@ class AnyOutputIlluminanceMap:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         z_height: float | None = 0,
         x_minimum_coordinate: float | None = 0,
         x_maximum_coordinate: float | None = 1,
@@ -617,23 +620,6 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped:
         part_load_fraction_correlation_curve_name: str | None = ...,
     ) -> None: ...
 
-class AnyHeatExchangerDesiccantBalancedFlow:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        regeneration_air_inlet_node_name: str,
-        regeneration_air_outlet_node_name: str,
-        process_air_inlet_node_name: str,
-        process_air_outlet_node_name: str,
-        heat_exchanger_performance_name: str,
-        availability_schedule_name: str | None = ...,
-        heat_exchanger_performance_object_type: Literal["", "HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"]
-        | None = ...,
-        economizer_lockout: Literal["", "No", "Yes"] | None = ...,
-    ) -> None: ...
-
 class HeatExchangerDesiccantBalancedFlow:
     def __call__(
         self,
@@ -648,7 +634,7 @@ class HeatExchangerDesiccantBalancedFlow:
         availability_schedule_name: str | None = ...,
         heat_exchanger_performance_object_type: Literal["", "HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"]
         | None = ...,
-        economizer_lockout: Literal["", "No", "Yes"] | None = "Yes",
+        economizer_lockout: Literal["", "No", "Yes"] | None = ...,
     ) -> None: ...
 
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed:
@@ -1142,7 +1128,7 @@ class PlantEquipmentOperationOutdoorDryBulbDifference:
     ) -> None: ...
 
 class AnyEnergyManagementSystemProgram:
-    def __call__(self, name: str, /, *, lines: list[Any] = ...) -> None: ...
+    def __call__(self, name: str, /, *, lines: list[Any]) -> None: ...
 
 class ExternalInterfaceFunctionalMockupUnitExportToSchedule:
     def __call__(

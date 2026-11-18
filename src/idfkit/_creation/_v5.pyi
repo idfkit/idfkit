@@ -24,9 +24,6 @@ class ScheduleFile_v8_9_to_v9_1:
         minutes_per_item: float | None = ...,
     ) -> None: ...
 
-class Version_v24_1:
-    def __call__(self, /, *, version_identifier: str | None = ...) -> None: ...
-
 class DaylightingControls_v9_6_to_v22_1:
     def __call__(
         self,

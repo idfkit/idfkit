@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class AnyZoneAirMassFlowConservation:
     def __call__(
         self,
@@ -108,6 +110,7 @@ class AnyOtherEquipment:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         schedule_name: str,
         fuel_type: Literal[
             "",

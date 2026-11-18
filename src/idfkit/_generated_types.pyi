@@ -67,27 +67,17 @@ class _TypedExtensibleGroup(ExtensibleGroup):
 # Typed object classes (one per EnergyPlus object type)
 # =========================================================================
 
-class _VersionCommonFields(TypedDict, total=False):
-    version_identifier: str | None
-
-class AnyVersion(_TypedIDFObject):
-    """``Version`` as every supported EnergyPlus version declares it."""
+class Version(_TypedIDFObject):
+    """Specifies the EnergyPlus version of the IDF file."""
 
     version_identifier: str | None
     """Default: 26.2"""
 
-    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyVersionFields]) -> None: ...  # type: ignore[override]
-    _creation_signature: _c4.AnyVersion
-
-class _AnyVersionFields(_VersionCommonFields, total=False): ...
-
-class Version(AnyVersion):
-    """Specifies the EnergyPlus version of the IDF file."""
-
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_VersionFields]) -> None: ...  # type: ignore[override]
     _creation_signature: _c31.Version
 
-class _VersionFields(_VersionCommonFields, total=False): ...
+class _VersionFields(TypedDict, total=False):
+    version_identifier: str | None
 
 class _SimulationControlCommonFields(TypedDict, total=False):
     do_zone_sizing_calculation: Literal["", "No", "Yes"] | None
@@ -36593,20 +36583,8 @@ class _HeatExchangerAirToAirSensibleAndLatentFields(_HeatExchangerAirToAirSensib
     sensible_effectiveness_of_cooling_air_flow_curve_name: str | None
     latent_effectiveness_of_cooling_air_flow_curve_name: str | None
 
-class _HeatExchangerDesiccantBalancedFlowCommonFields(TypedDict, total=False):
-    availability_schedule_name: str | None
-    regeneration_air_inlet_node_name: str | None
-    regeneration_air_outlet_node_name: str | None
-    process_air_inlet_node_name: str | None
-    process_air_outlet_node_name: str | None
-    heat_exchanger_performance_object_type: (
-        Literal["", "HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"] | None
-    )
-    heat_exchanger_performance_name: str | None
-    economizer_lockout: Literal["", "No", "Yes"] | None
-
-class AnyHeatExchangerDesiccantBalancedFlow(_TypedIDFObject):
-    """``HeatExchanger:Desiccant:BalancedFlow`` as every supported EnergyPlus version declares it."""
+class HeatExchangerDesiccantBalancedFlow(_TypedIDFObject):
+    """This object models a balanced desiccant heat exchanger. The heat exchanger transfers both sensible and latent energy ..."""
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
@@ -36623,21 +36601,21 @@ class AnyHeatExchangerDesiccantBalancedFlow(_TypedIDFObject):
     """Yes means that the heat exchanger will be locked out (off) when the economizer is operating or high humidity control ...; Default: Yes"""
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyHeatExchangerDesiccantBalancedFlowFields]
-    ) -> None: ...  # type: ignore[override]
-    _creation_signature: _c11.AnyHeatExchangerDesiccantBalancedFlow
-
-class _AnyHeatExchangerDesiccantBalancedFlowFields(_HeatExchangerDesiccantBalancedFlowCommonFields, total=False): ...
-
-class HeatExchangerDesiccantBalancedFlow(AnyHeatExchangerDesiccantBalancedFlow):
-    """This object models a balanced desiccant heat exchanger. The heat exchanger transfers both sensible and latent energy ..."""
-
-    def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatExchangerDesiccantBalancedFlowFields]
     ) -> None: ...  # type: ignore[override]
     _creation_signature: _c11.HeatExchangerDesiccantBalancedFlow
 
-class _HeatExchangerDesiccantBalancedFlowFields(_HeatExchangerDesiccantBalancedFlowCommonFields, total=False): ...
+class _HeatExchangerDesiccantBalancedFlowFields(TypedDict, total=False):
+    availability_schedule_name: str | None
+    regeneration_air_inlet_node_name: str | None
+    regeneration_air_outlet_node_name: str | None
+    process_air_inlet_node_name: str | None
+    process_air_outlet_node_name: str | None
+    heat_exchanger_performance_object_type: (
+        Literal["", "HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"] | None
+    )
+    heat_exchanger_performance_name: str | None
+    economizer_lockout: Literal["", "No", "Yes"] | None
 
 class HeatExchangerDesiccantBalancedFlowPerformanceDataType1(_TypedIDFObject):
     """RTO = B1 + B2*RWI + B3*RTI + B4*(RWI/RTI) + B5*PWI + B6*PTI + B7*(PWI/PTI) + B8*RFV RWO = C1 + C2*RWI + C3*RTI + C4*(..."""
@@ -62961,61 +62939,8 @@ class _UtilityCostChargeSimpleFields(TypedDict, total=False):
     )
     cost_per_unit_value_or_variable_name: float | str | None
 
-class _UtilityCostChargeBlockCommonFields(TypedDict, total=False):
-    utility_cost_charge_block_name: str | None
-    tariff_name: str | None
-    source_variable: str | None
-    season: Literal["", "Annual", "Fall", "Spring", "Summer", "Winter"] | None
-    category_variable_name: (
-        Literal[
-            "Adjustment",
-            "Basis",
-            "DemandCharges",
-            "EnergyCharges",
-            "NotIncluded",
-            "ServiceCharges",
-            "Subtotal",
-            "Surcharge",
-            "Taxes",
-            "Total",
-        ]
-        | None
-    )
-    remaining_into_variable: str | None
-    block_size_multiplier_value_or_variable_name: float | str | None
-    block_size_1_value_or_variable_name: float | str | None
-    block_1_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_2_value_or_variable_name: float | str | None
-    block_2_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_3_value_or_variable_name: float | str | None
-    block_3_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_4_value_or_variable_name: float | str | None
-    block_4_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_5_value_or_variable_name: float | str | None
-    block_5_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_6_value_or_variable_name: float | str | None
-    block_6_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_7_value_or_variable_name: float | str | None
-    block_7_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_8_value_or_variable_name: float | str | None
-    block_8_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_9_value_or_variable_name: float | str | None
-    block_9_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_10_value_or_variable_name: float | str | None
-    block_10_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_11_value_or_variable_name: float | str | None
-    block_11_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_12_value_or_variable_name: float | str | None
-    block_12_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_13_value_or_variable_name: float | str | None
-    block_13_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_14_value_or_variable_name: float | str | None
-    block_14_cost_per_unit_value_or_variable_name: float | str | None
-    block_size_15_value_or_variable_name: float | str | None
-    block_15_cost_per_unit_value_or_variable_name: float | str | None
-
-class AnyUtilityCostChargeBlock(_TypedIDFObject):
-    """``UtilityCost:Charge:Block`` as every supported EnergyPlus version declares it."""
+class UtilityCostChargeBlock(_TypedIDFObject):
+    """Used to compute energy and demand charges (or any other charges) that are structured in blocks of charges. Multiple U..."""
 
     utility_cost_charge_block_name: str | None
     """Charge Variable Name This is the name associated with the UtilityCost:Charge:Block object and will appear in the repo..."""
@@ -63107,21 +63032,62 @@ class AnyUtilityCostChargeBlock(_TypedIDFObject):
     """The cost of the block. This field is unusual for the EnergyPlus syntax because it can be either a number or a name of..."""
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyUtilityCostChargeBlockFields]
-    ) -> None: ...  # type: ignore[override]
-    _creation_signature: _c0.AnyUtilityCostChargeBlock
-
-class _AnyUtilityCostChargeBlockFields(_UtilityCostChargeBlockCommonFields, total=False): ...
-
-class UtilityCostChargeBlock(AnyUtilityCostChargeBlock):
-    """Used to compute energy and demand charges (or any other charges) that are structured in blocks of charges. Multiple U..."""
-
-    def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostChargeBlockFields]
     ) -> None: ...  # type: ignore[override]
     _creation_signature: _c15.UtilityCostChargeBlock
 
-class _UtilityCostChargeBlockFields(_UtilityCostChargeBlockCommonFields, total=False): ...
+class _UtilityCostChargeBlockFields(TypedDict, total=False):
+    utility_cost_charge_block_name: str | None
+    tariff_name: str | None
+    source_variable: str | None
+    season: Literal["", "Annual", "Fall", "Spring", "Summer", "Winter"] | None
+    category_variable_name: (
+        Literal[
+            "Adjustment",
+            "Basis",
+            "DemandCharges",
+            "EnergyCharges",
+            "NotIncluded",
+            "ServiceCharges",
+            "Subtotal",
+            "Surcharge",
+            "Taxes",
+            "Total",
+        ]
+        | None
+    )
+    remaining_into_variable: str | None
+    block_size_multiplier_value_or_variable_name: float | str | None
+    block_size_1_value_or_variable_name: float | str | None
+    block_1_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_2_value_or_variable_name: float | str | None
+    block_2_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_3_value_or_variable_name: float | str | None
+    block_3_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_4_value_or_variable_name: float | str | None
+    block_4_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_5_value_or_variable_name: float | str | None
+    block_5_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_6_value_or_variable_name: float | str | None
+    block_6_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_7_value_or_variable_name: float | str | None
+    block_7_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_8_value_or_variable_name: float | str | None
+    block_8_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_9_value_or_variable_name: float | str | None
+    block_9_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_10_value_or_variable_name: float | str | None
+    block_10_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_11_value_or_variable_name: float | str | None
+    block_11_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_12_value_or_variable_name: float | str | None
+    block_12_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_13_value_or_variable_name: float | str | None
+    block_13_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_14_value_or_variable_name: float | str | None
+    block_14_cost_per_unit_value_or_variable_name: float | str | None
+    block_size_15_value_or_variable_name: float | str | None
+    block_15_cost_per_unit_value_or_variable_name: float | str | None
 
 class UtilityCostRatchet(_TypedIDFObject):
     """Allows the modeling of tariffs that include some type of seasonal ratcheting. Ratchets are most common when used with..."""
@@ -66812,6 +66778,7 @@ class _PythonPluginOutputVariableFields(_PythonPluginOutputVariableCommonFields,
 # Any<Class> for the types every version that has them declares alike
 # =========================================================================
 
+AnyVersion: TypeAlias = Version
 AnySurfaceConvectionAlgorithmOutside: TypeAlias = SurfaceConvectionAlgorithmOutside
 AnyHeatBalanceAlgorithm: TypeAlias = HeatBalanceAlgorithm
 AnyHeatBalanceSettingsConductionFiniteDifference: TypeAlias = HeatBalanceSettingsConductionFiniteDifference
@@ -67146,6 +67113,7 @@ AnyHumidifierSteamGas: TypeAlias = HumidifierSteamGas
 AnyDehumidifierDesiccantNoFans: TypeAlias = DehumidifierDesiccantNoFans
 AnyDehumidifierDesiccantSystem: TypeAlias = DehumidifierDesiccantSystem
 AnyHeatExchangerAirToAirFlatPlate: TypeAlias = HeatExchangerAirToAirFlatPlate
+AnyHeatExchangerDesiccantBalancedFlow: TypeAlias = HeatExchangerDesiccantBalancedFlow
 AnyHeatExchangerDesiccantBalancedFlowPerformanceDataType1: TypeAlias = (
     HeatExchangerDesiccantBalancedFlowPerformanceDataType1
 )
@@ -67400,6 +67368,7 @@ AnyComponentCostReference: TypeAlias = ComponentCostReference
 AnyUtilityCostTariff: TypeAlias = UtilityCostTariff
 AnyUtilityCostQualify: TypeAlias = UtilityCostQualify
 AnyUtilityCostChargeSimple: TypeAlias = UtilityCostChargeSimple
+AnyUtilityCostChargeBlock: TypeAlias = UtilityCostChargeBlock
 AnyUtilityCostRatchet: TypeAlias = UtilityCostRatchet
 AnyUtilityCostComputation: TypeAlias = UtilityCostComputation
 AnyParametricSetValueForRun: TypeAlias = ParametricSetValueForRun

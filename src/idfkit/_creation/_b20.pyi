@@ -932,13 +932,13 @@ class AnyHybridModelZone:
         /,
         *,
         zone_name: str,
+        zone_measured_air_temperature_schedule_name: str,
         begin_month: int,
         begin_day_of_month: int,
         end_month: int,
         end_day_of_month: int,
         calculate_zone_internal_thermal_mass: Literal["", "No", "Yes"] | None = "No",
         calculate_zone_air_infiltration_rate: Literal["", "No", "Yes"] | None = "No",
-        zone_measured_air_temperature_schedule_name: str | None = ...,
     ) -> None: ...
 
 class CurveFanPressureRise:

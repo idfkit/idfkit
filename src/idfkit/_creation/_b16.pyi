@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class SiteGroundReflectanceSnowModifier:
     def __call__(
         self,
@@ -31,7 +33,7 @@ class WindowGapSupportPillar:
     def __call__(self, name: str, /, *, spacing: float | None = 0.04, radius: float | None = 0.0004) -> None: ...
 
 class AnyMaterialPropertyVariableThermalConductivity:
-    def __call__(self, name: str, /) -> None: ...
+    def __call__(self, name: str, /, *, narrow_with_as_version_first: Never) -> None: ...
 
 class CeilingAdiabatic:
     def __call__(
@@ -399,6 +401,7 @@ class AnyZoneThermalChimney:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         zone_name: str,
         width_of_the_absorber_wall: float,
         cross_sectional_area_of_air_channel_outlet: float,
@@ -717,6 +720,7 @@ class AnyCoilCoolingWaterToAirHeatPumpParameterEstimation:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         compressor_type: Literal["Reciprocating", "Rotary", "Scroll"],
         design_source_side_flow_rate: float,
         nominal_cooling_coil_capacity: float,
@@ -986,7 +990,7 @@ class DemandManagerAssignmentList:
 class AnyPhotovoltaicPerformanceSandia:
     def __call__(
         self,
-        name: str = "",
+        name: str,
         /,
         *,
         active_area: float | None = 1,

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class HeatBalanceAlgorithm:
     def __call__(
         self,
@@ -41,6 +43,7 @@ class AnyConstructionComplexFenestrationState:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         window_thermal_model: str,
         basis_matrix_name: str,
         solar_optical_complex_front_transmittance_matrix_name: str,
@@ -515,7 +518,6 @@ class GroundHeatTransferSlabBoundConds:
         usrhflag_is_the_ground_surface_h_specified_by_the_user_: Literal["FALSE", "TRUE"],
         tdeepin: float | None = ...,
         userh_user_specified_ground_surface_heat_transfer_coefficient: float | None = ...,
-        usrhflag_is_the_ground_surface_h_specified_by_the_user: Literal["FALSE", "TRUE"] | None = ...,
     ) -> None: ...
 
 class GroundHeatTransferBasementSimParameters:
@@ -599,6 +601,7 @@ class AnyAirflowNetworkDistributionComponentReliefAirFlow:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float,
         air_mass_flow_exponent_when_no_outdoor_air_flow: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
@@ -674,6 +677,7 @@ class AnyZoneHVACLowTemperatureRadiantVariableFlow:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         availability_schedule_name: str | None = ...,
         zone_name: str | None = ...,
         surface_name_or_radiant_surface_group_name: str | None = ...,
@@ -1269,7 +1273,7 @@ class GeneratorPhotovoltaic:
 class AnyPhotovoltaicPerformanceEquivalentOneDiode:
     def __call__(
         self,
-        name: str = "",
+        name: str,
         /,
         *,
         cell_type: Literal["AmorphousSilicon", "CrystallineSilicon"] | None = ...,
@@ -1381,59 +1385,4 @@ class TableLookup:
         external_file_column_number: int | None = ...,
         external_file_starting_row_number: int | None = ...,
         values: list[Any] = ...,
-    ) -> None: ...
-
-class AnyUtilityCostChargeBlock:
-    def __call__(
-        self,
-        /,
-        *,
-        utility_cost_charge_block_name: str,
-        tariff_name: str,
-        source_variable: str,
-        category_variable_name: Literal[
-            "Adjustment",
-            "Basis",
-            "DemandCharges",
-            "EnergyCharges",
-            "NotIncluded",
-            "ServiceCharges",
-            "Subtotal",
-            "Surcharge",
-            "Taxes",
-            "Total",
-        ],
-        season: Literal["", "Annual", "Fall", "Spring", "Summer", "Winter"] | None = ...,
-        remaining_into_variable: str | None = ...,
-        block_size_multiplier_value_or_variable_name: float | str | None = ...,
-        block_size_1_value_or_variable_name: float | str | None = ...,
-        block_1_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_2_value_or_variable_name: float | str | None = ...,
-        block_2_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_3_value_or_variable_name: float | str | None = ...,
-        block_3_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_4_value_or_variable_name: float | str | None = ...,
-        block_4_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_5_value_or_variable_name: float | str | None = ...,
-        block_5_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_6_value_or_variable_name: float | str | None = ...,
-        block_6_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_7_value_or_variable_name: float | str | None = ...,
-        block_7_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_8_value_or_variable_name: float | str | None = ...,
-        block_8_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_9_value_or_variable_name: float | str | None = ...,
-        block_9_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_10_value_or_variable_name: float | str | None = ...,
-        block_10_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_11_value_or_variable_name: float | str | None = ...,
-        block_11_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_12_value_or_variable_name: float | str | None = ...,
-        block_12_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_13_value_or_variable_name: float | str | None = ...,
-        block_13_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_14_value_or_variable_name: float | str | None = ...,
-        block_14_cost_per_unit_value_or_variable_name: float | str | None = ...,
-        block_size_15_value_or_variable_name: float | str | None = ...,
-        block_15_cost_per_unit_value_or_variable_name: float | str | None = ...,
     ) -> None: ...

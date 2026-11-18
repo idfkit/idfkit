@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class SurfaceConvectionAlgorithmOutside:
     def __call__(
         self,
@@ -23,9 +25,8 @@ class AnyWeatherPropertySkyTemperature:
         name: str = "",
         /,
         *,
-        calculation_type: Literal["DifferenceScheduleDewPointValue", "DifferenceScheduleDryBulbValue", "ScheduleValue"]
-        | None = ...,
-        schedule_name: str | None = ...,
+        calculation_type: Literal["DifferenceScheduleDewPointValue", "DifferenceScheduleDryBulbValue", "ScheduleValue"],
+        schedule_name: str,
     ) -> None: ...
 
 class AnyMaterialNoMass:
@@ -489,6 +490,7 @@ class AnyCoilHeatingWaterToAirHeatPumpParameterEstimation:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         compressor_type: Literal["Reciprocating", "Rotary", "Scroll"],
         design_source_side_flow_rate: float,
         gross_rated_heating_capacity: float,
@@ -935,7 +937,7 @@ class AnyDemandManagerThermostats:
 class AnyPhotovoltaicPerformanceSimple:
     def __call__(
         self,
-        name: str = "",
+        name: str,
         /,
         *,
         fraction_of_surface_area_with_active_solar_cells: float,
@@ -1316,7 +1318,7 @@ class UtilityCostChargeBlock:
             "Taxes",
             "Total",
         ],
-        season: Literal["", "Annual", "Fall", "Spring", "Summer", "Winter"] | None = "Annual",
+        season: Literal["", "Annual", "Fall", "Spring", "Summer", "Winter"] | None = ...,
         remaining_into_variable: str | None = ...,
         block_size_multiplier_value_or_variable_name: float | str | None = ...,
         block_size_1_value_or_variable_name: float | str | None = ...,

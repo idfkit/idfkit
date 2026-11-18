@@ -68,7 +68,6 @@ class IDFDocumentV23_1(
     _v._Accessors_v22_2_to_v25_2,
     _v._Accessors_v22_2_to_v26_1,
     _v._Accessors_v22_2_to_v26_2,
-    _v._Accessors_v23_1,
     _v._Accessors_v23_1_to_v25_1,
     _v._Accessors_v23_1_to_v26_1,
     _v._Accessors_v23_1_to_v26_2,
@@ -77,7 +76,7 @@ class IDFDocumentV23_1(
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 23.1.0."""
 
     @overload
-    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_v.Version_v23_1]: ...
+    def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[_g.Version]: ...
     @overload
     def __getitem__(self, obj_type: Literal["SimulationControl"], /) -> IDFCollection[_g.SimulationControl]: ...
     @overload
@@ -1709,7 +1708,7 @@ class IDFDocumentV23_1(
     @overload
     def __getitem__(
         self, obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow"], /
-    ) -> IDFCollection[_v.HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1]: ...
+    ) -> IDFCollection[_g.HeatExchangerDesiccantBalancedFlow]: ...
     @overload
     def __getitem__(
         self, obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"], /

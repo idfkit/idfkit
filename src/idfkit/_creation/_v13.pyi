@@ -39,9 +39,6 @@ class GeneratorInternalCombustionEngine_v8_9_to_v9_2:
         heat_recovery_maximum_temperature: float | None = 80,
     ) -> None: ...
 
-class Version_v22_2:
-    def __call__(self, /, *, version_identifier: str | None = "22.2") -> None: ...
-
 class SizingZone_v22_2_to_v24_1:
     def __call__(
         self,

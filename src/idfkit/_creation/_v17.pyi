@@ -8,9 +8,6 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-class Version_v9_4:
-    def __call__(self, /, *, version_identifier: str | None = "9.4") -> None: ...
-
 class HVACSystemRootFindingAlgorithm_v8_9_to_v22_1:
     def __call__(
         self,
@@ -165,56 +162,6 @@ class HVACTemplateZonePTHP_v8_9:
         baseboard_heating_capacity: float | Literal["", "Autosize"] | None = "Autosize",
     ) -> None: ...
 
-class ChillerElectricReformulatedEIR_v24_2:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        reference_capacity: float | Literal["Autosize"],
-        reference_cop: float,
-        cooling_capacity_function_of_temperature_curve_name: str,
-        electric_input_to_cooling_output_ratio_function_of_temperature_curve_name: str,
-        electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_name: str,
-        chilled_water_inlet_node_name: str,
-        chilled_water_outlet_node_name: str,
-        condenser_inlet_node_name: str,
-        condenser_outlet_node_name: str,
-        reference_leaving_chilled_water_temperature: float | None = 6.67,
-        reference_leaving_condenser_water_temperature: float | None = 35,
-        reference_chilled_water_flow_rate: float | Literal["Autosize"] | None = ...,
-        reference_condenser_water_flow_rate: float | Literal["Autosize"] | None = ...,
-        electric_input_to_cooling_output_ratio_function_of_part_load_ratio_curve_type: Literal[
-            "", "LeavingCondenserWaterTemperature", "Lift"
-        ]
-        | None = "LeavingCondenserWaterTemperature",
-        minimum_part_load_ratio: float | None = 0.1,
-        maximum_part_load_ratio: float | None = 1,
-        optimum_part_load_ratio: float | None = 1,
-        minimum_unloading_ratio: float | None = 0.2,
-        fraction_of_compressor_electric_consumption_rejected_by_condenser: float | None = 1,
-        leaving_chilled_water_lower_temperature_limit: float | None = 2,
-        chiller_flow_mode_type: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"]
-        | None = "NotModulated",
-        design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None = 0,
-        heat_recovery_inlet_node_name: str | None = ...,
-        heat_recovery_outlet_node_name: str | None = ...,
-        sizing_factor: float | None = 1,
-        condenser_heat_recovery_relative_capacity_fraction: float | None = ...,
-        heat_recovery_inlet_high_temperature_limit_schedule_name: str | None = ...,
-        heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
-        end_use_subcategory: str | None = "General",
-        condenser_flow_control: Literal[
-            "", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"
-        ]
-        | None = "ConstantFlow",
-        condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None = ...,
-        temperature_difference_across_condenser_schedule_name: str | None = ...,
-        condenser_minimum_flow_fraction: float | None = ...,
-        thermosiphon_capacity_fraction_curve_name: str | None = ...,
-        thermosiphon_minimum_temperature_difference: float | None = 0,
-    ) -> None: ...
-
 class SteamEquipment_v9_6_to_v23_2:
     def __call__(
         self,
@@ -352,75 +299,6 @@ class WaterHeaterStratified_v8_9_to_v9_2:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
-    ) -> None: ...
-
-class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        water_inlet_node_name: str,
-        water_outlet_node_name: str,
-        design_air_flow_rate: float | Literal["Autosize"],
-        design_air_flow_rate_fan_power: float | Literal["Autosize"],
-        design_spray_water_flow_rate: float,
-        performance_input_method: Literal[
-            "StandardDesignCapacity", "UFactorTimesAreaAndDesignWaterFlowRate", "UserSpecifiedDesignCapacity"
-        ]
-        | None = ...,
-        outdoor_air_inlet_node_name: str | None = ...,
-        heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
-        standard_design_capacity: float | None = ...,
-        design_air_flow_rate_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
-        design_water_flow_rate: float | Literal["Autosize"] | None = ...,
-        user_specified_design_capacity: float | None = ...,
-        design_entering_water_temperature: float | None = ...,
-        design_entering_air_temperature: float | None = ...,
-        design_entering_air_wet_bulb_temperature: float | None = ...,
-        capacity_control: Literal["", "FanCycling", "FluidBypass"] | None = "FanCycling",
-        sizing_factor: float | None = 1,
-        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
-        evaporation_loss_factor: float | None = ...,
-        drift_loss_percent: float | None = 0.008,
-        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
-        blowdown_concentration_ratio: float | None = 3,
-        blowdown_makeup_water_usage_schedule_name: str | None = ...,
-        supply_water_storage_tank_name: str | None = ...,
-    ) -> None: ...
-
-class EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        water_inlet_node_name: str,
-        water_outlet_node_name: str,
-        design_air_flow_rate: float | Literal["Autosize"],
-        design_air_flow_rate_fan_power: float | Literal["Autosize"],
-        design_spray_water_flow_rate: float,
-        performance_input_method: Literal[
-            "StandardDesignCapacity", "UFactorTimesAreaAndDesignWaterFlowRate", "UserSpecifiedDesignCapacity"
-        ],
-        outdoor_air_inlet_node_name: str | None = ...,
-        heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
-        standard_design_capacity: float | None = ...,
-        design_air_flow_rate_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
-        design_water_flow_rate: float | Literal["Autosize"] | None = ...,
-        user_specified_design_capacity: float | None = ...,
-        design_entering_water_temperature: float | None = ...,
-        design_entering_air_temperature: float | None = ...,
-        design_entering_air_wet_bulb_temperature: float | None = ...,
-        capacity_control: Literal["", "FanCycling", "FluidBypass"] | None = "FanCycling",
-        sizing_factor: float | None = 1,
-        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
-        evaporation_loss_factor: float | None = ...,
-        drift_loss_percent: float | None = 0.008,
-        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
-        blowdown_concentration_ratio: float | None = 3,
-        blowdown_makeup_water_usage_schedule_name: str | None = ...,
-        supply_water_storage_tank_name: str | None = ...,
     ) -> None: ...
 
 class AirLoopHVACUnitarySystem_v9_3_to_v22_1:
@@ -701,4 +579,73 @@ class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1:
         timed_empirical_defrost_frequency_curve_name: str | None = ...,
         timed_empirical_defrost_heat_load_penalty_curve_name: str | None = ...,
         timed_empirical_defrost_heat_input_energy_fraction_curve_name: str | None = ...,
+    ) -> None: ...
+
+class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v22_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        water_inlet_node_name: str,
+        water_outlet_node_name: str,
+        design_air_flow_rate: float | Literal["Autosize"],
+        design_air_flow_rate_fan_power: float | Literal["Autosize"],
+        design_spray_water_flow_rate: float,
+        performance_input_method: Literal[
+            "StandardDesignCapacity", "UFactorTimesAreaAndDesignWaterFlowRate", "UserSpecifiedDesignCapacity"
+        ]
+        | None = ...,
+        outdoor_air_inlet_node_name: str | None = ...,
+        heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
+        standard_design_capacity: float | None = ...,
+        design_air_flow_rate_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
+        design_water_flow_rate: float | Literal["Autosize"] | None = ...,
+        user_specified_design_capacity: float | None = ...,
+        design_entering_water_temperature: float | None = ...,
+        design_entering_air_temperature: float | None = ...,
+        design_entering_air_wet_bulb_temperature: float | None = ...,
+        capacity_control: Literal["", "FanCycling", "FluidBypass"] | None = "FanCycling",
+        sizing_factor: float | None = 1,
+        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
+        evaporation_loss_factor: float | None = ...,
+        drift_loss_percent: float | None = 0.008,
+        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
+        blowdown_concentration_ratio: float | None = 3,
+        blowdown_makeup_water_usage_schedule_name: str | None = ...,
+        supply_water_storage_tank_name: str | None = ...,
+    ) -> None: ...
+
+class EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        water_inlet_node_name: str,
+        water_outlet_node_name: str,
+        design_air_flow_rate: float | Literal["Autosize"],
+        design_air_flow_rate_fan_power: float | Literal["Autosize"],
+        design_spray_water_flow_rate: float,
+        performance_input_method: Literal[
+            "StandardDesignCapacity", "UFactorTimesAreaAndDesignWaterFlowRate", "UserSpecifiedDesignCapacity"
+        ],
+        outdoor_air_inlet_node_name: str | None = ...,
+        heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
+        standard_design_capacity: float | None = ...,
+        design_air_flow_rate_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
+        design_water_flow_rate: float | Literal["Autosize"] | None = ...,
+        user_specified_design_capacity: float | None = ...,
+        design_entering_water_temperature: float | None = ...,
+        design_entering_air_temperature: float | None = ...,
+        design_entering_air_wet_bulb_temperature: float | None = ...,
+        capacity_control: Literal["", "FanCycling", "FluidBypass"] | None = "FanCycling",
+        sizing_factor: float | None = 1,
+        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
+        evaporation_loss_factor: float | None = ...,
+        drift_loss_percent: float | None = 0.008,
+        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
+        blowdown_concentration_ratio: float | None = 3,
+        blowdown_makeup_water_usage_schedule_name: str | None = ...,
+        supply_water_storage_tank_name: str | None = ...,
     ) -> None: ...

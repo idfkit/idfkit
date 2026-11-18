@@ -8,22 +8,6 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        inlet_node_name: str,
-        outlet_node_name: str,
-        maximum_steam_flow_rate: float | Literal["Autosize"],
-        design_object: str | None = ...,
-        availability_schedule_name: str | None = ...,
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        degree_of_subcooling: float | None = 5,
-        surface_fractions: list[Any] = ...,
-    ) -> None: ...
-
 class AirTerminalDualDuctVAV_v8_9_to_v9_2:
     def __call__(
         self,
@@ -141,6 +125,28 @@ class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1:
         heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
         initial_heat_recovery_heating_energy_fraction: float | None = 1,
         heat_recovery_heating_energy_time_constant: float | None = 0,
+    ) -> None: ...
+
+class RunPeriod_v9_0_to_v9_5:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        begin_month: float,
+        begin_day_of_month: float,
+        end_month: float,
+        end_day_of_month: float,
+        begin_year: float | None = ...,
+        end_year: float | None = ...,
+        day_of_week_for_start_day: Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"]
+        | None = ...,
+        use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
+        apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
+        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
+        treat_weather_as_actual: Literal["", "No", "Yes"] | None = "No",
     ) -> None: ...
 
 class LifeCycleCostUseAdjustment_v8_9_to_v9_2:
@@ -736,4 +742,20 @@ class PythonPluginSearchPaths_v9_4_to_v9_6:
         add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
         add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None = "Yes",
         py_search_paths: list[Any] = ...,
+    ) -> None: ...
+
+class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        inlet_node_name: str,
+        outlet_node_name: str,
+        maximum_steam_flow_rate: float | Literal["Autosize"],
+        design_object: str | None = ...,
+        availability_schedule_name: str | None = ...,
+        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        degree_of_subcooling: float | None = 5,
+        surface_fractions: list[Any] = ...,
     ) -> None: ...

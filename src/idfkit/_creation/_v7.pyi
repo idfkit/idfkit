@@ -8,9 +8,6 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-class Version_v9_5:
-    def __call__(self, /, *, version_identifier: str | None = "9.5") -> None: ...
-
 class DistrictHeating_v8_9_to_v23_1:
     def __call__(
         self,

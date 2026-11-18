@@ -11,7 +11,7 @@ from typing import Any, Literal
 class AnyRunPeriod:
     def __call__(
         self,
-        name: str = "",
+        name: str,
         /,
         *,
         begin_month: int,
@@ -99,7 +99,6 @@ class WindowMaterialGap:
         pressure: float | None = 101325,
         deflection_state: str | None = ...,
         support_pillar: str | None = ...,
-        gas_or_gas_mixture: str | None = ...,
     ) -> None: ...
 
 class GlazedDoorInterzone:

@@ -8,9 +8,6 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-class Version_v9_2:
-    def __call__(self, /, *, version_identifier: str | None = "9.2") -> None: ...
-
 class BuildingSurfaceDetailed_v9_6_to_v24_2:
     def __call__(
         self,
@@ -176,18 +173,6 @@ class RunPeriod_v8_9:
         number_of_times_runperiod_to_be_repeated: float | None = 1,
         increment_day_of_week_on_repeat: Literal["", "No", "Yes"] | None = "Yes",
         start_year: float | None = ...,
-    ) -> None: ...
-
-class PhotovoltaicPerformanceSimple_v8_9_to_v25_2:
-    def __call__(
-        self,
-        name: str = "",
-        /,
-        *,
-        fraction_of_surface_area_with_active_solar_cells: float,
-        conversion_efficiency_input_mode: Literal["Fixed", "Scheduled"] | None = ...,
-        value_for_cell_efficiency_if_fixed: float | None = ...,
-        efficiency_schedule_name: str | None = ...,
     ) -> None: ...
 
 class Lights_v8_9_to_v9_5:
@@ -444,6 +429,29 @@ class PlantEquipmentList_v8_9_to_v9_0:
         equipment_10_name: str | None = ...,
     ) -> None: ...
 
+class Building_v8_9_to_v22_1:
+    def __call__(
+        self,
+        name: str = "",
+        /,
+        *,
+        north_axis: float | None = 0,
+        terrain: Literal["", "City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
+        loads_convergence_tolerance_value: float | None = 0.04,
+        temperature_convergence_tolerance_value: float | None = 0.4,
+        solar_distribution: Literal[
+            "",
+            "FullExterior",
+            "FullExteriorWithReflections",
+            "FullInteriorAndExterior",
+            "FullInteriorAndExteriorWithReflections",
+            "MinimalShadowing",
+        ]
+        | None = "FullExterior",
+        maximum_number_of_warmup_days: float | None = 25,
+        minimum_number_of_warmup_days: float | None = ...,
+    ) -> None: ...
+
 class FloorDetailed_v8_9_to_v9_5:
     def __call__(
         self,
@@ -674,4 +682,16 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4:
         number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
         changeover_delay_time_period_schedule: str | None = ...,
+    ) -> None: ...
+
+class PhotovoltaicPerformanceSimple_v8_9_to_v25_2:
+    def __call__(
+        self,
+        name: str = "",
+        /,
+        *,
+        fraction_of_surface_area_with_active_solar_cells: float,
+        conversion_efficiency_input_mode: Literal["Fixed", "Scheduled"] | None = ...,
+        value_for_cell_efficiency_if_fixed: float | None = ...,
+        efficiency_schedule_name: str | None = ...,
     ) -> None: ...

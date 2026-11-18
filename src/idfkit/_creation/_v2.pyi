@@ -167,29 +167,6 @@ class OutputDiagnostics_v8_9_to_v9_3:
         | None = ...,
     ) -> None: ...
 
-class Building_v9_3_to_v22_1:
-    def __call__(
-        self,
-        name: str = "",
-        /,
-        *,
-        north_axis: float | None = 0,
-        terrain: Literal["", "City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
-        loads_convergence_tolerance_value: float | None = 0.04,
-        temperature_convergence_tolerance_value: float | None = 0.4,
-        solar_distribution: Literal[
-            "",
-            "FullExterior",
-            "FullExteriorWithReflections",
-            "FullInteriorAndExterior",
-            "FullInteriorAndExteriorWithReflections",
-            "MinimalShadowing",
-        ]
-        | None = "FullExterior",
-        maximum_number_of_warmup_days: float | None = 25,
-        minimum_number_of_warmup_days: float | None = 1,
-    ) -> None: ...
-
 class CentralHeatPumpSystem_v8_9_to_v22_1:
     def __call__(
         self,

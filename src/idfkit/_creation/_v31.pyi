@@ -54,9 +54,6 @@ class FoundationKiva_v8_9_to_v9_1:
         blocks: list[Any] = ...,
     ) -> None: ...
 
-class Version_v24_2:
-    def __call__(self, /, *, version_identifier: str | None = ...) -> None: ...
-
 class WaterHeaterMixed_v8_9_to_v9_2:
     def __call__(
         self,
@@ -137,17 +134,6 @@ class WaterHeaterMixed_v8_9_to_v9_2:
         end_use_subcategory: str | None = "General",
     ) -> None: ...
 
-class AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        reference_temperature: float | None = 20,
-        reference_barometric_pressure: float | None = 101325,
-        reference_humidity_ratio: float | None = 0,
-    ) -> None: ...
-
 class AirflowNetworkDistributionComponentCoil_v24_1_to_v24_2:
     def __call__(
         self,
@@ -190,31 +176,6 @@ class GroundHeatExchangerSurface_v8_9_to_v22_1:
         surface_length: float | None = ...,
         surface_width: float | None = ...,
         lower_surface_environment: Literal["", "Exposed", "Ground"] | None = "Ground",
-    ) -> None: ...
-
-class SwimmingPoolIndoor_v8_9_to_v22_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        surface_name: str,
-        average_depth: float,
-        activity_factor_schedule_name: str,
-        make_up_water_supply_schedule_name: str,
-        cover_schedule_name: str,
-        pool_water_inlet_node: str,
-        pool_water_outlet_node: str,
-        setpoint_temperature_schedule: str,
-        maximum_number_of_people: float,
-        cover_evaporation_factor: float | None = 0,
-        cover_convection_factor: float | None = 0,
-        cover_short_wavelength_radiation_factor: float | None = 0,
-        cover_long_wavelength_radiation_factor: float | None = 0,
-        pool_heating_system_maximum_water_flow_rate: float | None = ...,
-        pool_miscellaneous_equipment_power: float | None = ...,
-        people_schedule: str | None = ...,
-        people_heat_gain_schedule: str | None = ...,
     ) -> None: ...
 
 class MeterCustomDecrement_v8_9_to_v9_2:
@@ -567,4 +528,40 @@ class Space_v9_6_to_v22_1:
         floor_area: float | Literal["", "Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
         tags: list[Any] = ...,
+    ) -> None: ...
+
+class AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        reference_temperature: float | None = 20,
+        reference_barometric_pressure: float | None = 101325,
+        reference_humidity_ratio: float | None = 0,
+    ) -> None: ...
+
+class SwimmingPoolIndoor_v8_9_to_v22_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        surface_name: str,
+        average_depth: float,
+        activity_factor_schedule_name: str,
+        make_up_water_supply_schedule_name: str,
+        cover_schedule_name: str,
+        pool_water_inlet_node: str,
+        pool_water_outlet_node: str,
+        setpoint_temperature_schedule: str,
+        maximum_number_of_people: float,
+        cover_evaporation_factor: float | None = 0,
+        cover_convection_factor: float | None = 0,
+        cover_short_wavelength_radiation_factor: float | None = 0,
+        cover_long_wavelength_radiation_factor: float | None = 0,
+        pool_heating_system_maximum_water_flow_rate: float | None = ...,
+        pool_miscellaneous_equipment_power: float | None = ...,
+        people_schedule: str | None = ...,
+        people_heat_gain_schedule: str | None = ...,
     ) -> None: ...

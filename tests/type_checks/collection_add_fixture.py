@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any
 from typing_extensions import assert_type
 
 from idfkit import IDFDocument
-from idfkit.objects import IDFObject
+from idfkit.objects import IDFCollection, IDFObject
 from idfkit.versioned import AnyIDFDocument, IDFDocumentV9_4
 
 if TYPE_CHECKING:
@@ -84,8 +84,10 @@ def any_release(doc: AnyIDFDocument) -> None:
         heater_thermal_efficiency=0.9,
         ambient_temperature_indicator="Schedule",
     )
-    assert_type(
-        doc["People"].add("Staff", number_of_people_schedule_name="Occ", activity_level_schedule_name="Act"), AnyPeople
+    assert_type(doc["People"], IDFCollection[AnyPeople])
+    # Every release requires People's zone, which 9.6 renamed: no add() suits them all.
+    doc["People"].add(  # pyright: ignore[reportCallIssue]  (narrow_with_as_version_first)
+        "Staff", number_of_people_schedule_name="Occ", activity_level_schedule_name="Act"
     )
     doc["People"].add(
         "Staff",

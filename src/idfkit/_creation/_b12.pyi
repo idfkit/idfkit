@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class SizingPeriodWeatherFileConditionType:
     def __call__(
         self,
@@ -190,6 +192,7 @@ class AnyZoneRefrigerationDoorMixing:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         schedule_name: str,
         door_height: float | None = 3,
         door_area: float | None = 9,
@@ -223,7 +226,7 @@ class AnyAirflowNetworkMultiZoneReferenceCrackConditions:
         name: str,
         /,
         *,
-        reference_temperature: float | None = ...,
+        reference_temperature: float,
         reference_barometric_pressure: float | None = 101325,
         reference_humidity_ratio: float | None = 0,
     ) -> None: ...
@@ -424,6 +427,7 @@ class AnyCoilHeatingWaterToAirHeatPumpEquationFit:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         water_inlet_node_name: str,
         water_outlet_node_name: str,
         air_inlet_node_name: str,

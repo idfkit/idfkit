@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class RunPeriodControlDaylightSavingTime:
     def __call__(self, /, *, start_date: str, end_date: str) -> None: ...
 
@@ -161,6 +163,7 @@ class AnyLights:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         schedule_name: str,
         design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"]
         | None = "LightingLevel",
@@ -183,6 +186,7 @@ class AnyElectricEquipment:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         schedule_name: str,
         design_level_calculation_method: Literal["", "EquipmentLevel", "Watts/Area", "Watts/Person"]
         | None = "EquipmentLevel",
@@ -292,6 +296,7 @@ class AnyDaylightingControls:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         daylighting_method: Literal["", "DElight", "SplitFlux"] | None = "SplitFlux",
         availability_schedule_name: str | None = ...,
         lighting_control_type: Literal["", "Continuous", "ContinuousOff", "Stepped"] | None = "Continuous",
@@ -379,6 +384,8 @@ class AnyZoneHVACTerminalUnitVariableRefrigerantFlow:
         *,
         terminal_unit_air_inlet_node_name: str,
         terminal_unit_air_outlet_node_name: str,
+        supply_air_fan_operating_mode_schedule_name: str,
+        supply_air_fan_object_name: str,
         terminal_unit_availability_schedule: str | None = ...,
         cooling_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_cooling_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
@@ -387,11 +394,9 @@ class AnyZoneHVACTerminalUnitVariableRefrigerantFlow:
         cooling_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
         no_load_outdoor_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        supply_air_fan_operating_mode_schedule_name: str | None = ...,
         supply_air_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
         supply_air_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel"]
         | None = "Fan:ConstantVolume",
-        supply_air_fan_object_name: str | None = ...,
         outside_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None = ...,
         outside_air_mixer_object_name: str | None = ...,
         cooling_coil_object_type: Literal[
@@ -524,6 +529,7 @@ class AnyCoilCoolingWaterToAirHeatPumpEquationFit:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         water_inlet_node_name: str,
         water_outlet_node_name: str,
         air_inlet_node_name: str,
@@ -805,7 +811,7 @@ class AnyExternalInterfaceFunctionalMockupUnitExportToActuator:
         actuated_component_type: str,
         actuated_component_control_type: str,
         fmu_variable_name: str,
-        initial_value: float | None = ...,
+        initial_value: float,
     ) -> None: ...
 
 class AvailabilityManagerScheduled:

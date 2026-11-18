@@ -16,10 +16,12 @@ than repeated:
 * every class's ``update`` keywords are exactly its fields;
 * every class's creation signature, which ``IDFCollection.add`` takes, has the name exactly when
   the type has a Name field (required when the schema requires it) and exactly the ``update``
-  keywords, with the same value types; a keyword has no default exactly when the schema requires
-  the field (then without ``None``), and a default it shows is the schema's. Through
-  ``AnyIDFDocument`` a field is required only where every version requires it, and a default is
-  shown only where every version has it;
+  keywords (but the spelling without ``_`` of a required key ending in ``_``), with the same value
+  types; a keyword has no default exactly when the schema requires the field (then without
+  ``None``), and a default it shows is the schema's. Through ``AnyIDFDocument`` a field is
+  required where any version requires it, a default is shown only where every version has it,
+  and a type some version requires a field of that the class cannot take requires
+  ``narrow_with_as_version_first``, which no call satisfies;
 * a version's document has exactly the version's attribute accessors, each typed with the class
   of its object type in that version;
 * ``AnyIDFDocument`` offers exactly the types every version has, each with exactly the fields
@@ -90,6 +92,9 @@ class _Module:
     signatures: dict[tuple[str, str], _CreationSignature] = dataclasses.field(
         default_factory=dict[tuple[str, str], _CreationSignature]
     )
+    # Classes whose creation signature was found right for an expectation, so another release
+    # that expects the same of the same class is not checked again.
+    creation_checked: set[tuple[str, str]] = dataclasses.field(default_factory=set[tuple[str, str]])
 
 
 @functools.cache
@@ -405,25 +410,37 @@ class _ExpectedCreation:
     required: frozenset[str]
     # Each field with a default every release agrees on, with that default.
     defaults: dict[str, object]
+    # The spellings without the trailing underscore of required keys ending in "_": not offered.
+    hidden: frozenset[str]
+
+
+# The parameter a creation signature requires when no call can satisfy every release it serves.
+_NARROW_FIRST = "narrow_with_as_version_first"
 
 
 def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedCreation:
-    """The name, required fields and defaults of *obj_type* as every one of *schemas* has them.
+    """The name, required fields and defaults *obj_type*'s creation must have to suit all *schemas*.
 
     A field is required when its schema lists it in ``required`` and gives it no default, as the
-    run-time validator refuses an object without it; over several releases, only when every one
-    does. A name is required when every release's schema marks it ``is_required``, taken when the
-    type has a Name field, and refused otherwise.
+    run-time validator refuses an object without it; over several releases, when any one does, so
+    that no release refuses a call that type-checks. A default must be one every release has. The
+    name is required when any release's schema marks it ``is_required``, refused when no release
+    has a Name field, and optional otherwise.
     """
+    from idfkit.schema import trailing_underscore_aliases
+
     kinds: set[str] = set()
-    required: set[str] | None = None
+    required: set[str] = set()
+    hidden: set[str] = set()
     defaults: dict[str, object] | None = None
     for schema in schemas:
         inner: dict[str, Any] = schema.get_inner_schema(obj_type) or {}
         properties: dict[str, dict[str, Any]] = inner.get("properties", {})
         listed: list[str] = inner.get("required", [])
         own = {f for f in listed if "default" not in properties.get(f, {})}
-        required = own if required is None else required & own
+        required |= own
+        aliases = trailing_underscore_aliases(schema.get_field_names(obj_type))
+        hidden |= {alias for alias, key in aliases.items() if alias != key and key in own}
         own_defaults = {f: p["default"] for f, p in properties.items() if "default" in p}
         if defaults is None:
             defaults = own_defaults
@@ -435,8 +452,8 @@ def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedC
             kinds.add("none")
         else:
             kinds.add("required" if name_schema.get("is_required") else "optional")
-    name = kinds.pop() if len(kinds) == 1 else "optional"
-    return _ExpectedCreation(name, frozenset(required or ()), defaults or {})
+    name = "required" if "required" in kinds else "none" if kinds == {"none"} else "optional"
+    return _ExpectedCreation(name, frozenset(required), defaults or {}, frozenset(hidden))
 
 
 def _creation_of(module: _Module, cls: str) -> tuple[str, _CreationSignature | None] | None:
@@ -471,13 +488,40 @@ def _check_creation(
         problems.append(f"{where}: creation signature {annotation} not defined")
         return
     expected = _expected_creation(schemas, obj_type)
+    memo = (cls, repr(expected))
+    if memo in module.creation_checked:
+        return
+    before = len(problems)
+    _check_signature(module, cls, signature, expected, where, problems)
+    if len(problems) == before:
+        module.creation_checked.add(memo)
+
+
+def _check_signature(
+    module: _Module,
+    cls: str,
+    signature: _CreationSignature,
+    expected: _ExpectedCreation,
+    where: str,
+    problems: list[str],
+) -> None:
+    """Check one creation signature of *cls* against what it is *expected* to say."""
     if signature.name != expected.name:
         problems.append(f"{where}: the name is {signature.name} in add(), {expected.name} in the schema")
-    keywords = _update_keywords(module, cls)
-    if set(signature.params) != set(keywords):
+    keywords = {k: v for k, v in _update_keywords(module, cls).items() if k not in expected.hidden}
+    params = dict(signature.params)
+    # A required field the class takes no value for: no call suits every release it serves.
+    settable = {k for k, members in keywords.items() if members != frozenset({"None"})}
+    guard = params.pop(_NARROW_FIRST, None)
+    if expected.required - settable:
+        if guard != ("Never", None):
+            problems.append(f"{where}: add() can satisfy no release's required fields but does not say so")
+    elif guard is not None:
+        problems.append(f"{where}: add() requires {_NARROW_FIRST}, though every required field can be given")
+    if set(params) != set(keywords):
         problems.append(f"{where}: add() keywords differ from the update keywords")
         return
-    for field, (param_type, default) in signature.params.items():
+    for field, (param_type, default) in params.items():
         problem = _param_problem(field, param_type, default, keywords[field], expected)
         if problem is not None:
             problems.append(f"{where}: {problem}")
@@ -527,7 +571,7 @@ def verify(
     document_source: str,
     versioned_sources: Iterable[str],
     versions: tuple[Version, ...],
-    creation_sources: Mapping[str, str] | None = None,
+    creation_sources: Mapping[str, str],
 ) -> list[str]:
     """Report every way the generated stubs misdescribe a supported version; empty when none.
 
@@ -540,14 +584,13 @@ def verify(
             one ``IDFDocument`` is typed for. Passed rather than read from the generator, which may
             be running as ``__main__``, a second copy of its module.
         creation_sources: The modules of ``_creation`` by module name (``_b3``), which hold the
-            creation signatures the classes name; a class's signature is reported missing when
-            its module is not given.
+            creation signatures the classes name.
     """
     sources = list(versioned_sources)
     module = _read(document_source, _read(types_source))
     for source in sources:
         module = _read(source, module)
-    _read_creation(creation_sources or {}, module)
+    _read_creation(creation_sources, module)
     problems: list[str] = []
     for ver in versions:
         _check_version(module, ver, ver == versions[-1], problems)

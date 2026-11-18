@@ -291,13 +291,6 @@ class GroundHeatTransferBasementManualGrid:
         ibase_x_direction_cell_indicator_of_slab_edge_5_20_: float,
         jbase_y_direction_cell_indicator_of_slab_edge_5_20_: float,
         kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_: float,
-        nx_number_of_cells_in_the_x_direction_20: float | None = ...,
-        ny_number_of_cells_in_the_y_direction_20: float | None = ...,
-        nzag_number_of_cells_in_the_z_direction_above_grade_4_always: float | None = ...,
-        nzbg_number_of_cells_in_z_direction_below_grade_10_35: float | None = ...,
-        ibase_x_direction_cell_indicator_of_slab_edge_5_20: float | None = ...,
-        jbase_y_direction_cell_indicator_of_slab_edge_5_20: float | None = ...,
-        kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20: float | None = ...,
     ) -> None: ...
 
 class RoomAirNode:

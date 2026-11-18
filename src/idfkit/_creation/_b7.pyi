@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class WindowsCalculationEngine:
     def __call__(
         self,
@@ -151,7 +153,7 @@ class DuctLossLeakage:
     ) -> None: ...
 
 class AnyZoneControlHumidistat:
-    def __call__(self, name: str, /, *, zone_name: str) -> None: ...
+    def __call__(self, name: str, /, *, narrow_with_as_version_first: Never, zone_name: str) -> None: ...
 
 class ZoneHVACEvaporativeCoolerUnit:
     def __call__(
@@ -315,9 +317,7 @@ class AirLoopHVACUnitaryFurnaceHeatCool:
     ) -> None: ...
 
 class AnyAirLoopHVACOutdoorAirSystem:
-    def __call__(
-        self, name: str, /, *, outdoor_air_equipment_list_name: str, controller_list_name: str | None = ...
-    ) -> None: ...
+    def __call__(self, name: str, /, *, controller_list_name: str, outdoor_air_equipment_list_name: str) -> None: ...
 
 class BranchList:
     def __call__(self, name: str, /, *, branches: list[Any] = ...) -> None: ...

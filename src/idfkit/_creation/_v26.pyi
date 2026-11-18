@@ -49,9 +49,6 @@ class CoilCoolingDXSingleSpeed_v22_2_to_v23_1:
         zone_name_for_condenser_placement: str | None = ...,
     ) -> None: ...
 
-class Version_v23_2:
-    def __call__(self, /, *, version_identifier: str | None = ...) -> None: ...
-
 class ElectricEquipmentITEAirCooled_v9_6_to_v22_1:
     def __call__(
         self,
@@ -619,29 +616,6 @@ class CoilWaterHeatingDesuperheater_v9_2_to_v22_1:
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
-    ) -> None: ...
-
-class Building_v8_9_to_v9_2:
-    def __call__(
-        self,
-        name: str = "",
-        /,
-        *,
-        north_axis: float | None = 0,
-        terrain: Literal["", "City", "Country", "Ocean", "Suburbs", "Urban"] | None = "Suburbs",
-        loads_convergence_tolerance_value: float | None = 0.04,
-        temperature_convergence_tolerance_value: float | None = 0.4,
-        solar_distribution: Literal[
-            "",
-            "FullExterior",
-            "FullExteriorWithReflections",
-            "FullInteriorAndExterior",
-            "FullInteriorAndExteriorWithReflections",
-            "MinimalShadowing",
-        ]
-        | None = "FullExterior",
-        maximum_number_of_warmup_days: float | None = 25,
-        minimum_number_of_warmup_days: float | None = 6,
     ) -> None: ...
 
 class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1:

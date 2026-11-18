@@ -750,7 +750,7 @@ class ChillerElectricReformulatedEIR:
         | None = "ConstantFlow",
         condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None = ...,
         temperature_difference_across_condenser_schedule_name: str | None = ...,
-        condenser_minimum_flow_fraction: float | None = 0.2,
+        condenser_minimum_flow_fraction: float | None = ...,
         thermosiphon_capacity_fraction_curve_name: str | None = ...,
         thermosiphon_minimum_temperature_difference: float | None = 0,
     ) -> None: ...

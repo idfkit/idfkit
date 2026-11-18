@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class PerformancePrecisionTradeoffs:
     def __call__(
         self,
@@ -187,7 +189,9 @@ class ConstructionComplexFenestrationState:
     ) -> None: ...
 
 class AnyInternalMass:
-    def __call__(self, name: str, /, *, surface_area: float, construction_name: str | None = ...) -> None: ...
+    def __call__(
+        self, name: str, /, *, narrow_with_as_version_first: Never, construction_name: str, surface_area: float
+    ) -> None: ...
 
 class ZonePropertyLocalEnvironment:
     def __call__(

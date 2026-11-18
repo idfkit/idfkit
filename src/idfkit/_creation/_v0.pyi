@@ -8,26 +8,6 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-class Version_v23_1:
-    def __call__(self, /, *, version_identifier: str | None = "23.1") -> None: ...
-
-class HeatExchangerDesiccantBalancedFlow_v8_9_to_v25_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        regeneration_air_inlet_node_name: str,
-        regeneration_air_outlet_node_name: str,
-        process_air_inlet_node_name: str,
-        process_air_outlet_node_name: str,
-        heat_exchanger_performance_name: str,
-        availability_schedule_name: str | None = ...,
-        heat_exchanger_performance_object_type: Literal["", "HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"]
-        | None = ...,
-        economizer_lockout: Literal["", "No", "Yes"] | None = "No",
-    ) -> None: ...
-
 class OutputControlTableStyle_v24_1_to_v25_1:
     def __call__(
         self,
@@ -92,8 +72,16 @@ class FenestrationSurfaceDetailed_v9_0_to_v26_1:
         vertex_4_z_coordinate: float | None = ...,
     ) -> None: ...
 
-class EnergyManagementSystemProgram_v8_9:
-    def __call__(self, name: str, /, *, lines: list[Any] = ...) -> None: ...
+class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        controller_list_name: str,
+        outdoor_air_equipment_list_name: str,
+        availability_manager_list_name: str | None = ...,
+    ) -> None: ...
 
 class CoilSystemCoolingDX_v8_9_to_v22_1:
     def __call__(
@@ -119,23 +107,6 @@ class CoilSystemCoolingDX_v8_9_to_v22_1:
         run_on_latent_load: Literal["", "No", "Yes"] | None = "No",
         use_outdoor_air_dx_cooling_coil: Literal["", "No", "Yes"] | None = "No",
         outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None = 2,
-    ) -> None: ...
-
-class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        inlet_node_name: str,
-        outlet_node_name: str,
-        maximum_water_flow_rate: float | Literal["Autosize"],
-        design_object: str | None = ...,
-        availability_schedule_name: str | None = ...,
-        rated_average_water_temperature: float | None = 87.78,
-        rated_water_mass_flow_rate: float | None = 0.063,
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        surface_fractions: list[Any] = ...,
     ) -> None: ...
 
 class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2:
@@ -210,4 +181,24 @@ class CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1:
         speed_8_name: str | None = ...,
         speed_9_name: str | None = ...,
         speed_10_name: str | None = ...,
+    ) -> None: ...
+
+class EnergyManagementSystemProgram_v8_9:
+    def __call__(self, name: str, /, *, lines: list[Any] = ...) -> None: ...
+
+class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        inlet_node_name: str,
+        outlet_node_name: str,
+        maximum_water_flow_rate: float | Literal["Autosize"],
+        design_object: str | None = ...,
+        availability_schedule_name: str | None = ...,
+        rated_average_water_temperature: float | None = 87.78,
+        rated_water_mass_flow_rate: float | None = 0.063,
+        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        surface_fractions: list[Any] = ...,
     ) -> None: ...

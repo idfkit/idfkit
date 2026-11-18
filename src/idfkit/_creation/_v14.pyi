@@ -119,21 +119,6 @@ class LifeCycleCostUseAdjustment_v9_3_to_v23_1:
         multipliers: list[Any] = ...,
     ) -> None: ...
 
-class ZoneControlContaminantController_v8_9_to_v26_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        zone_name: str,
-        carbon_dioxide_control_availability_schedule_name: str | None = ...,
-        carbon_dioxide_setpoint_schedule_name: str | None = ...,
-        minimum_carbon_dioxide_concentration_schedule_name: str | None = ...,
-        maximum_carbon_dioxide_concentration_schedule_name: str | None = ...,
-        generic_contaminant_control_availability_schedule_name: str | None = ...,
-        generic_contaminant_setpoint_schedule_name: str | None = ...,
-    ) -> None: ...
-
 class MeterCustomDecrement_v9_3:
     def __call__(
         self,
@@ -475,4 +460,19 @@ class HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1:
         auxiliary_electric_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
+    ) -> None: ...
+
+class ZoneControlContaminantController_v8_9_to_v26_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        zone_name: str,
+        carbon_dioxide_control_availability_schedule_name: str | None = ...,
+        carbon_dioxide_setpoint_schedule_name: str | None = ...,
+        minimum_carbon_dioxide_concentration_schedule_name: str | None = ...,
+        maximum_carbon_dioxide_concentration_schedule_name: str | None = ...,
+        generic_contaminant_control_availability_schedule_name: str | None = ...,
+        generic_contaminant_setpoint_schedule_name: str | None = ...,
     ) -> None: ...

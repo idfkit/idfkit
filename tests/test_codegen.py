@@ -760,15 +760,14 @@ class TestCreationSignature:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         creation = gen._Creation(  # pyright: ignore[reportPrivateUsage]
             "required",
-            frozenset({"a", "e"}),
+            frozenset({"a"}),
             (("b", '"X"'), ("c", "0.5"), ("d", '"Z"')),
         )
         fields = [
             ("a", "float | None"),
             ("b", 'Literal["X", "Y"] | None'),
             ("c", "float | None"),
-            ("d", 'Literal["X", "Y"] | None'),
-            ("e", "None"),  # required, but nothing but None is safe to write: stays optional
+            ("d", 'Literal["X", "Y"] | None'),  # its default is not one of its values: "..."
         ]
         lines = gen._creation_lines("Cls", fields, creation, "    ", sink)  # pyright: ignore[reportPrivateUsage]
         assert len(lines) == 1
@@ -776,8 +775,33 @@ class TestCreationSignature:
         assert lines[0].endswith(".Cls")
         assert _signature_of(sink, "Cls") == (
             '    def __call__(self, name: str, /, *, a: float, b: Literal["X", "Y"] | None = "X", '
-            'c: float | None = 0.5, d: Literal["X", "Y"] | None = ..., e: None = ...) -> None: ...'
+            'c: float | None = 0.5, d: Literal["X", "Y"] | None = ...) -> None: ...'
         )
+
+    @pytest.mark.parametrize(
+        "fields",
+        [
+            [("a", "float | None")],  # "e" is required but not declared (renamed in some release)
+            [("a", "float | None"), ("e", "None")],  # declared, but only None is safe to write
+        ],
+    )
+    def test_a_required_field_no_value_can_be_given_for_asks_to_narrow(self, fields: list[tuple[str, str]]) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        creation = gen._Creation("none", frozenset({"a", "e"}), ())  # pyright: ignore[reportPrivateUsage]
+        gen._creation_lines("Cls", fields, creation, "    ", sink)  # pyright: ignore[reportPrivateUsage]
+        assert _signature_of(sink, "Cls").startswith(
+            "    def __call__(self, /, *, narrow_with_as_version_first: Never, a: float"
+        )
+
+    def test_the_alias_of_a_required_key_is_not_offered(self) -> None:
+        # The run time takes either spelling of gas_or_gas_mixture_, but not both: offering the
+        # alias beside the required key would type-check a call the run time refuses.
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        lines = _generate_object_class(get_schema(LATEST_VERSION), "WindowMaterial:Gap", sink=sink)
+        assert any(line.strip() == "gas_or_gas_mixture: str | None" for line in lines)  # still an attribute
+        signature = _signature_of(sink, "WindowMaterialGap")
+        assert "gas_or_gas_mixture_: str," in signature
+        assert "gas_or_gas_mixture:" not in signature
 
     def test_nameless_type_without_fields(self) -> None:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
@@ -812,35 +836,69 @@ class TestCreationSignature:
 
 
 class TestCreationAcrossReleases:
-    """Any<Class> requires what every release requires; each release's class requires its own."""
+    """Any<Class> requires what any release requires; each release's class requires its own."""
 
-    def test_any_class_requires_only_what_every_release_requires(self) -> None:
-        # InternalMass: 8.9 requires construction, zone and area; 26.2 only the area.
-        assert gen._shared_creation("InternalMass").required == {"surface_area"}  # pyright: ignore[reportPrivateUsage]
-        latest = gen._creation_info(get_schema(LATEST_VERSION), "InternalMass")  # pyright: ignore[reportPrivateUsage]
-        assert latest.required == {"surface_area"}
-        assert gen._creation_info(get_schema((9, 4, 0)), "InternalMass").required == {  # pyright: ignore[reportPrivateUsage]
-            "construction_name",
-            "zone_or_zonelist_name",
-            "surface_area",
-        }
+    def test_any_class_requires_what_any_release_requires(self) -> None:
+        # EnergyManagementSystem:Program: 8.9 requires no lines, every later release does.
+        versions = gen._versions_with("EnergyManagementSystem:Program")  # pyright: ignore[reportPrivateUsage]
+        creation = gen._creation_for("EnergyManagementSystem:Program", versions)  # pyright: ignore[reportPrivateUsage]
+        assert creation.required == {"lines"}
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        generate_stubs(sink=sink)
+        assert "lines: list[Any])" in _signature_of(sink, "AnyEnergyManagementSystemProgram")
+        # BuildingSurface:Detailed: 8.9 to 26.1 require the construction, 26.2 does not.
+        assert "construction_name: str," in _signature_of(sink, "AnyBuildingSurfaceDetailed")
+        assert "construction_name: str | None = ..." in _signature_of(sink, "BuildingSurfaceDetailed")
+
+    def test_any_class_asks_to_narrow_when_no_call_suits_every_release(self) -> None:
+        # People's zone is required everywhere but renamed in 9.6, so AnyPeople does not declare it.
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        generate_stubs(sink=sink)
+        assert "narrow_with_as_version_first: Never" in _signature_of(sink, "AnyPeople")
+        assert "narrow_with_as_version_first" not in _signature_of(sink, "People")
+        assert "narrow_with_as_version_first" not in _signature_of(sink, "AnyMaterial")
 
     def test_any_class_shows_a_default_only_where_every_release_agrees(self) -> None:
         obj_type = "HeatExchanger:Desiccant:BalancedFlow"
+        versions = gen._versions_with(obj_type)  # pyright: ignore[reportPrivateUsage]
         defaults = {
             dict(gen._creation_info(get_schema(v), obj_type).defaults).get("economizer_lockout")  # pyright: ignore[reportPrivateUsage]
-            for v in gen._versions_with(obj_type)  # pyright: ignore[reportPrivateUsage]
+            for v in versions
         }
         assert len(defaults) > 1
-        assert "economizer_lockout" not in dict(gen._shared_creation(obj_type).defaults)  # pyright: ignore[reportPrivateUsage]
+        assert "economizer_lockout" not in dict(gen._creation_for(obj_type, versions).defaults)  # pyright: ignore[reportPrivateUsage]
 
-    def test_a_release_that_requires_other_fields_gets_its_own_class(self) -> None:
-        # The fields of ZoneControl:ContaminantController are typed alike in every release, but 26.2
-        # alone requires the CO2 schedule, so 26.1 cannot share the latest class.
+    def test_a_default_alone_does_not_make_a_class(self) -> None:
+        # Version's default differs in every release; its fields and required fields do not.
+        class_for, _ = gen._class_assignment()  # pyright: ignore[reportPrivateUsage]
+        assert {class_for["Version", v] for v in gen._versions_with("Version")} == {"_g.Version"}  # pyright: ignore[reportPrivateUsage]
+        assert "AnyVersion: TypeAlias = Version" in generate_stubs()
+
+    def test_a_release_that_requires_other_fields_gets_a_subclass_of_its_range_class(self) -> None:
+        # ZoneControl:ContaminantController's fields are typed alike in every release, but 26.2
+        # alone requires the CO2 schedule: the older releases get a subclass of the latest class.
         class_for, _ = gen._class_assignment()  # pyright: ignore[reportPrivateUsage]
         obj_type = "ZoneControl:ContaminantController"
         assert class_for[obj_type, LATEST_VERSION] == "_g.ZoneControlContaminantController"
-        assert not class_for[obj_type, (26, 1, 0)].startswith("_g.")
+        older = class_for[obj_type, (26, 1, 0)]
+        assert older == "ZoneControlContaminantController_v8_9_to_v26_1"
+        stub = gen.generate_versioned_pyi()
+        assert f"class {older}(_g.ZoneControlContaminantController):" in stub
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            # Classes of ranges that ended before the latest release keep their names: these split
+            # into pieces with other required fields or defaults, and stay their pieces' base.
+            "Building_v8_9_to_v22_1",
+            "RunPeriod_v9_0_to_v9_5",
+            "AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5",
+            "EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1",
+            "TableTwoIndependentVariables_v8_9_to_v9_1",
+        ],
+    )
+    def test_a_range_class_keeps_its_name(self, name: str) -> None:
+        assert f"class {name}(" in gen.generate_versioned_pyi()
 
     def test_the_release_class_signature_requires_its_release_fields(self) -> None:
         sink = gen._CreationModules("_v", "_cv")  # pyright: ignore[reportPrivateUsage]
@@ -849,8 +907,8 @@ class TestCreationAcrossReleases:
         signature = _signature_of(sink, class_for["InternalMass", (9, 4, 0)])
         assert "zone_or_zonelist_name: str," in signature
         assert "construction_name: str," in signature
-        any_sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
-        generate_stubs(sink=any_sink)
-        any_signature = _signature_of(any_sink, "AnyInternalMass")
-        assert "surface_area: float," in any_signature
-        assert "construction_name: str | None = ..." in any_signature
+        latest_sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        generate_stubs(sink=latest_sink)
+        latest = _signature_of(latest_sink, "InternalMass")
+        assert "surface_area: float" in latest
+        assert "construction_name: str | None = ..." in latest

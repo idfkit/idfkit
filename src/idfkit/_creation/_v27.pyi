@@ -144,9 +144,6 @@ class ZoneThermalChimney_v8_9_to_v24_1:
         cross_sectional_areas_of_air_channel_inlet_20: float | None = ...,
     ) -> None: ...
 
-class Version_v8_9:
-    def __call__(self, /, *, version_identifier: str | None = "8.9") -> None: ...
-
 class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1:
     def __call__(
         self,

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class ScheduleYearRules:
     def __call__(
         self,
@@ -33,6 +35,7 @@ class AnyBuildingSurfaceDetailed:
         /,
         *,
         surface_type: Literal["Ceiling", "Floor", "Roof", "Wall"],
+        construction_name: str,
         zone_name: str,
         outside_boundary_condition: Literal[
             "Adiabatic",
@@ -52,7 +55,6 @@ class AnyBuildingSurfaceDetailed:
             "Surface",
             "Zone",
         ],
-        construction_name: str | None = ...,
         outside_boundary_condition_object: str | None = ...,
         sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
         wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
@@ -550,6 +552,7 @@ class AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         rated_water_heating_capacity: float,
         evaporator_air_inlet_node_name: str,
         evaporator_air_outlet_node_name: str,
@@ -922,12 +925,13 @@ class AnyThermalStorageIceDetailed:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         capacity: float,
         inlet_node_name: str,
         outlet_node_name: str,
+        discharging_curve_name: str,
+        charging_curve_name: str,
         availability_schedule_name: str | None = ...,
-        discharging_curve_name: str | None = ...,
-        charging_curve_name: str | None = ...,
         timestep_of_the_curve_data: float | None = ...,
         parasitic_electric_load_during_discharging: float | None = ...,
         parasitic_electric_load_during_charging: float | None = ...,

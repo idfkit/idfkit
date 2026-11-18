@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from typing_extensions import Never
+
 class WindowGapDeflectionState:
     def __call__(
         self,
@@ -260,6 +262,7 @@ class AnyHotWaterEquipment:
         name: str,
         /,
         *,
+        narrow_with_as_version_first: Never,
         schedule_name: str,
         design_level_calculation_method: Literal[
             "", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"

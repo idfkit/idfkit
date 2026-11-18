@@ -8,9 +8,6 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-class Version_v26_1:
-    def __call__(self, /, *, version_identifier: str | None = ...) -> None: ...
-
 class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1:
     def __call__(
         self,
@@ -196,69 +193,6 @@ class WaterHeaterStratified_v9_3_to_v22_1:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
-    ) -> None: ...
-
-class PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2:
-    def __call__(
-        self,
-        name: str = "",
-        /,
-        *,
-        cell_type: Literal["AmorphousSilicon", "CrystallineSilicon"] | None = ...,
-        number_of_cells_in_series: int | None = 36,
-        active_area: float | None = 0.89,
-        transmittance_absorptance_product: float | None = 0.95,
-        semiconductor_bandgap: float | None = 1.12,
-        shunt_resistance: float | None = 1000000,
-        short_circuit_current: float | None = 6.5,
-        open_circuit_voltage: float | None = 21.6,
-        reference_temperature: float | None = 25,
-        reference_insolation: float | None = 1000,
-        module_current_at_maximum_power: float | None = 5.9,
-        module_voltage_at_maximum_power: float | None = 17,
-        temperature_coefficient_of_short_circuit_current: float | None = 0.02,
-        temperature_coefficient_of_open_circuit_voltage: float | None = -0.079,
-        nominal_operating_cell_temperature_test_ambient_temperature: float | None = 20,
-        nominal_operating_cell_temperature_test_cell_temperature: float | None = 40,
-        nominal_operating_cell_temperature_test_insolation: float | None = 800,
-        module_heat_loss_coefficient: float | None = 30,
-        total_heat_capacity: float | None = 50000,
-    ) -> None: ...
-
-class ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        zone_name: str,
-        fuel_type: Literal["Electricity", "NaturalGas"],
-        availability_schedule_name: str | None = ...,
-        heating_design_capacity_method: Literal[
-            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
-        ]
-        | None = "HeatingDesignCapacity",
-        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        heating_design_capacity_per_floor_area: float | None = ...,
-        fraction_of_autosized_heating_design_capacity: float | None = 1,
-        combustion_efficiency: float | None = 0.9,
-        fraction_of_input_converted_to_radiant_energy: float | None = 0.7,
-        fraction_of_input_converted_to_latent_energy: float | None = 0,
-        fraction_of_input_that_is_lost: float | None = 0,
-        temperature_control_type: Literal[
-            "",
-            "MeanAirTemperature",
-            "MeanAirTemperatureSetpoint",
-            "MeanRadiantTemperature",
-            "MeanRadiantTemperatureSetpoint",
-            "OperativeTemperature",
-            "OperativeTemperatureSetpoint",
-        ]
-        | None = "OperativeTemperature",
-        heating_throttling_range: float | None = 2,
-        heating_setpoint_temperature_schedule_name: str | None = ...,
-        fraction_of_radiant_energy_incident_on_people: float | None = ...,
-        surface_fractions: list[Any] = ...,
     ) -> None: ...
 
 class HeaderedPumpsVariableSpeed_v8_9_to_v9_0:
@@ -904,4 +838,67 @@ class IndoorLivingWall_v24_1:
         radiant_fraction_of_led_lights: float | None = 0.6,
         led_intensity_schedule_name: str | None = ...,
         led_nominal_intensity: float | None = ...,
+    ) -> None: ...
+
+class PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2:
+    def __call__(
+        self,
+        name: str = "",
+        /,
+        *,
+        cell_type: Literal["AmorphousSilicon", "CrystallineSilicon"] | None = ...,
+        number_of_cells_in_series: int | None = 36,
+        active_area: float | None = 0.89,
+        transmittance_absorptance_product: float | None = 0.95,
+        semiconductor_bandgap: float | None = 1.12,
+        shunt_resistance: float | None = 1000000,
+        short_circuit_current: float | None = 6.5,
+        open_circuit_voltage: float | None = 21.6,
+        reference_temperature: float | None = 25,
+        reference_insolation: float | None = 1000,
+        module_current_at_maximum_power: float | None = 5.9,
+        module_voltage_at_maximum_power: float | None = 17,
+        temperature_coefficient_of_short_circuit_current: float | None = 0.02,
+        temperature_coefficient_of_open_circuit_voltage: float | None = -0.079,
+        nominal_operating_cell_temperature_test_ambient_temperature: float | None = 20,
+        nominal_operating_cell_temperature_test_cell_temperature: float | None = 40,
+        nominal_operating_cell_temperature_test_insolation: float | None = 800,
+        module_heat_loss_coefficient: float | None = 30,
+        total_heat_capacity: float | None = 50000,
+    ) -> None: ...
+
+class ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        zone_name: str,
+        fuel_type: Literal["Electricity", "NaturalGas"],
+        availability_schedule_name: str | None = ...,
+        heating_design_capacity_method: Literal[
+            "", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"
+        ]
+        | None = "HeatingDesignCapacity",
+        heating_design_capacity: float | Literal["", "Autosize"] | None = "Autosize",
+        heating_design_capacity_per_floor_area: float | None = ...,
+        fraction_of_autosized_heating_design_capacity: float | None = 1,
+        combustion_efficiency: float | None = 0.9,
+        fraction_of_input_converted_to_radiant_energy: float | None = 0.7,
+        fraction_of_input_converted_to_latent_energy: float | None = 0,
+        fraction_of_input_that_is_lost: float | None = 0,
+        temperature_control_type: Literal[
+            "",
+            "MeanAirTemperature",
+            "MeanAirTemperatureSetpoint",
+            "MeanRadiantTemperature",
+            "MeanRadiantTemperatureSetpoint",
+            "OperativeTemperature",
+            "OperativeTemperatureSetpoint",
+        ]
+        | None = "OperativeTemperature",
+        heating_throttling_range: float | None = 2,
+        heating_setpoint_temperature_schedule_name: str | None = ...,
+        fraction_of_radiant_energy_incident_on_people: float | None = ...,
+        surface_fractions: list[Any] = ...,
     ) -> None: ...
