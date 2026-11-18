@@ -694,6 +694,7 @@ class TestCommittedStubs:
                 r"(class Zone:.*?)validate: bool = True,",
                 r"\1",
                 "Zone in 26.2.0 (Zone): add() does not take validate: bool = True",
+                (LATEST_VERSION,),
             ),
             (
                 r"(class AnyPeople:.*?)narrow_with_as_version_first: Never,",
