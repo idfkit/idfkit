@@ -643,7 +643,7 @@ def _group_item_class(
     ]
     lines += [
         f"{indent}    {name}: Required[{value_type}]"
-        if name in required and value_type != "Never"
+        if name in required
         else f"{indent}    {name}: {_or_none(value_type)}"
         for name, value_type in fields
     ]

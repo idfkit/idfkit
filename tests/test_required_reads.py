@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import pickle
 from pathlib import Path
 
 import pytest
@@ -249,3 +250,34 @@ def test_every_listed_group_key_is_required_in_each_release_that_has_it(version:
     for obj_type, (_req, opt) in _group_required(version).items():
         # The run time raises only where every release agrees, so no static view types it optional.
         assert not set(GROUP_READ_REQUIRED.get(obj_type, ())) & opt, (obj_type, version)
+
+
+def test_add_accepts_a_group_without_a_required_key_that_has_a_default() -> None:
+    # surrounding_surface_view_factor is required with a default (0.0) in every release: EnergyPlus
+    # applies the default, the item type leaves it optional, and add() takes the group without it.
+    doc = new_document()
+    surrounding = doc.add(
+        "SurfaceProperty:SurroundingSurfaces",
+        "S",
+        surfaces=[{"surrounding_surface_name": "A", "surrounding_surface_temperature_schedule_name": "T"}],
+    )
+    assert not [e for e in validate_document(doc).errors if e.code == "E001"]
+    assert surrounding.surfaces[0].surrounding_surface_view_factor is None
+    assert "surrounding_surface_view_factor" not in GROUP_READ_REQUIRED.get("SurfaceProperty:SurroundingSurfaces", ())
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        MissingRequiredFieldError("Material", "M", "thickness"),
+        MissingRequiredFieldError("BuildingSurface:Detailed", "W", "vertex_z_coordinate", group=("vertices", 2)),
+    ],
+    ids=["field", "group-key"],
+)
+def test_the_error_survives_pickling(error: MissingRequiredFieldError) -> None:
+    # A worker process's error reaches the parent through pickle, attributes and message intact.
+    copy = pickle.loads(pickle.dumps(error))  # noqa: S301
+    assert type(copy) is MissingRequiredFieldError
+    assert (copy.obj_type, copy.obj_name, copy.field_name) == (error.obj_type, error.obj_name, error.field_name)
+    assert (copy.wrapper_key, copy.group_index) == (error.wrapper_key, error.group_index)
+    assert str(copy) == str(error)

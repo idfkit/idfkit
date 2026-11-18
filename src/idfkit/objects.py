@@ -199,10 +199,21 @@ class ExtensibleGroup:
         """
         if name.startswith("_"):
             raise AttributeError(name)
-        value = self._stored(name)
-        if value is None:
-            self._check_present(name)
-        return value
+        # Inlined _stored(): every typed group read passes through here.
+        if name not in self._inner_names:
+            raise AttributeError(  # noqa: TRY003
+                f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
+            )
+        items = self._owner.data.get(self._wrapper_key)
+        if items and self._group_index <= len(items):
+            value = cast("dict[str, Any]", items[self._group_index - 1]).get(name)
+            if value is not None:
+                return value
+        # Only the miss path pays for the required-key lookup.
+        required = GROUP_READ_REQUIRED.get(self._owner.obj_type)
+        if required is not None and name in required:
+            raise self._missing(name)
+        return None
 
     def _stored(self, name: str) -> Any:
         """The value stored under *name*, a known inner field, or ``None``; never raises for a missing one."""
@@ -215,12 +226,10 @@ class ExtensibleGroup:
             return None
         return cast("dict[str, Any]", items[self._group_index - 1]).get(name)
 
-    def _check_present(self, name: str) -> None:
-        """Raise if *name*, which the group does not hold, is a key every release requires."""
+    def _missing(self, name: str) -> MissingRequiredFieldError:
+        """The error for *name*, a key every release requires, which the group does not hold."""
         owner = self._owner
-        obj_type = owner.obj_type
-        if obj_type in GROUP_READ_REQUIRED and name in GROUP_READ_REQUIRED[obj_type]:
-            raise MissingRequiredFieldError(obj_type, owner.name, name, group=(self._wrapper_key, self._group_index))
+        return MissingRequiredFieldError(owner.obj_type, owner.name, name, group=(self._wrapper_key, self._group_index))
 
     def get(self, name: str, default: Any = None) -> Any:
         """The value of *name*, or *default* when it is unset.
@@ -283,11 +292,9 @@ class ExtensibleGroup:
         dict that contradicts its type.
         """
         snapshot = self._snapshot()
-        obj_type = self._owner.obj_type
-        if obj_type in GROUP_READ_REQUIRED:
-            for name in GROUP_READ_REQUIRED[obj_type]:
-                if name not in snapshot and name in self._inner_names:
-                    self._check_present(name)
+        for name in GROUP_READ_REQUIRED.get(self._owner.obj_type, ()):
+            if name not in snapshot and name in self._inner_names:
+                raise self._missing(name)
         return snapshot
 
     def update(self, *args: Any, **kwargs: Any) -> None:

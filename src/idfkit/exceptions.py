@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from .objects import IDFObject
@@ -283,6 +283,19 @@ class MissingRequiredFieldError(IdfKitError, AttributeError):
                 "missing."
             )
         super().__init__(message)
+
+    def __reduce__(self) -> tuple[Any, ...]:
+        # BaseException pickles only self.args, the message; rebuild from the parts instead, so the
+        # error survives a process boundary (multiprocessing) with its attributes.
+        group = None if self.wrapper_key is None or self.group_index is None else (self.wrapper_key, self.group_index)
+        return (_rebuild_missing_required_field_error, (self.obj_type, self.obj_name, self.field_name, group))
+
+
+def _rebuild_missing_required_field_error(
+    obj_type: str, obj_name: str, field_name: str, group: tuple[str, int] | None
+) -> MissingRequiredFieldError:
+    """Unpickle a :class:`MissingRequiredFieldError` (see its ``__reduce__``)."""
+    return MissingRequiredFieldError(obj_type, obj_name, field_name, group=group)
 
 
 class VersionNotFoundError(IdfKitError):

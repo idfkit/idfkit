@@ -384,8 +384,7 @@ def _missing_group_keys(obj: IDFObject, wrapper: str, required: tuple[str, ...])
             continue
         slot = cast("dict[str, Any]", group)
         for key in required:
-            value = slot.get(key)
-            if value is None or value == "":
+            if is_blank_slot(slot.get(key)):
                 field = f"{wrapper}[{index}].{key}"
                 errors.append(
                     ValidationError(
@@ -964,8 +963,9 @@ class _ObjectRules:
         fields: Compiled rule per known field. A field absent here is an unknown field.
         required: Names the schema marks required.
         contributing: Fields carrying ``reference``, so their value declares a name.
-        group_required: The extensible wrapper key and the keys the schema marks required in each of
-            its groups, or None when the type has no group or its groups require nothing.
+        group_required: The extensible wrapper key and the keys the schema marks required, with no
+            default, in each of its groups, or None when the type has no group or its groups require
+            nothing.
     """
 
     fields: dict[str, _FieldRule]
@@ -1010,13 +1010,20 @@ def _object_rules(schema: EpJSONSchema, obj_type: str) -> _ObjectRules | None:
 def _group_required(
     schema: EpJSONSchema, obj_type: str, properties: dict[str, Any]
 ) -> tuple[str, tuple[str, ...]] | None:
-    """The wrapper key of *obj_type*'s extensible group and the keys each group must give, if any."""
+    """The wrapper key of *obj_type*'s extensible group and the keys each group must give, if any.
+
+    A key the schema requires but gives a default (``surrounding_surface_view_factor``) is left out:
+    EnergyPlus applies the default to a group without it, the group's item type does not require it,
+    and ``add()`` accepts the group as it accepts an object without such a field.
+    """
     pc = schema.get_parsing_cache(obj_type)
     wrapper = pc.ext_wrapper_key if pc is not None else None
     if not wrapper:
         return None
-    required: list[str] = properties.get(wrapper, {}).get("items", {}).get("required", [])
-    return (wrapper, tuple(required)) if required else None
+    items: dict[str, Any] = properties.get(wrapper, {}).get("items", {})
+    keys: dict[str, Any] = items.get("properties", {})
+    required = tuple(key for key in items.get("required", []) if "default" not in keys.get(key, {}))
+    return (wrapper, required) if required else None
 
 
 # Reference lists that no field anywhere in a schema contributes to, keyed by schema version.
