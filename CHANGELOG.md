@@ -90,6 +90,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `SimulationResult.errors` came back empty for runs that had failed with severe errors when the model had
+  `Output:SQLite`, because it could read `eplusSqlite.err` instead of `eplus.err`; `csv` could likewise read
+  `eplusMeter.csv`. The lookup came to find each output by name in every `output_suffix` style
+  ([36f3ed3](https://github.com/idfkit/idfkit/commit/36f3ed3)).
 - `add()` and `load_epjson()` stored a blank value (`""`, epJSON `null`) as set instead of leaving
   the field unset, as the IDF parser did ([#183](https://github.com/idfkit/idfkit/issues/183),
   [#303](https://github.com/idfkit/idfkit/pull/303)).
