@@ -9,22 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `IDFCollection.create(name, **fields)` was added, the typed form of `IDFDocument.add()`:
-  `doc.zones.create("Office", ceiling_height=3.0)` and `doc["Zone"].create(...)` created, validated
-  and indexed the object as `add()` does by default, but the keywords were the type's own fields,
-  checked by pyright and mypy, and the result was the type's class (`Zone`), not `IDFObject`. A
-  misspelled field (`ceiling_hieght=`), a value the field does not accept
+- `IDFCollection.add(name, **fields)` became the typed way to create an object:
+  `doc.zones.add("Office", ceiling_height=3.0)` and `doc["Zone"].add(...)` created, validated and
+  indexed the object as `IDFDocument.add()` does by default, but the keywords were the type's own
+  fields, checked by pyright and mypy, and the result was the type's class (`Zone`), not
+  `IDFObject`. A misspelled field (`ceiling_hieght=`), a value the field does not accept
   (`zone_inside_convection_algorithm="Tarp"`) or a wrong value type was a type error, where
-  `add()` type-checked and failed when it ran. The keywords followed the document's type: 9.4's
-  fields through `IDFDocumentV9_4`, and only those every release accepts through `AnyIDFDocument`.
-  They were read from the class's typed `update()`, so no overload was resolved and a call cost
-  the type checker the same for every object type: 300 calls took 1.8 s, against 1.55 s for 300
-  untyped `add()` calls; typing `add()` itself, with one overload per type, took 24.5 s. `add()`
-  ran as fast as before (8.6 µs a call with validation). Collections came to hold their document;
-  creating through the empty collection read for a type with no objects stored that collection,
-  so it held the new object. A document pickled by an earlier release still created through its
-  collections, except one emptied before it was pickled, which raised `TypeError` naming `add()`
-  ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b)).
+  `doc.add("Zone", ...)` type-checked and failed when it ran. The keywords followed the document's
+  type: 9.4's fields through `IDFDocumentV9_4`, and only those every release accepts through
+  `AnyIDFDocument`. They were read from the class's typed `update()`, so no overload was resolved
+  and a call cost the type checker the same for every object type: 300 calls took 1.8 s, against
+  1.55 s for 300 untyped `doc.add()` calls; typing `doc.add()` itself, with one overload per type,
+  took 24.5 s. `doc.add()` ran as fast as before (8.6 µs a call with validation). Collections came
+  to hold their document; adding through the empty collection read for a type with no objects
+  stored that collection, so it held the new object. A document pickled by an earlier release
+  still added through its collections, except one emptied before it was pickled, which raised
+  `TypeError` naming `IDFDocument.add()`. See Deprecated for the object form `add(obj)` this
+  replaces ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b), [a2154ae](https://github.com/idfkit/idfkit/commit/a2154ae)).
 - `idfkit check` gained `C006`, an error checked by default: an object type passed to `add()` that
   no target release has (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a
   choice value no target release lists for the field
@@ -33,8 +34,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   accept and others do not. Choices were matched case-insensitively, as EnergyPlus matches them,
   and a field that some target accepts as free text was not reported. It was read only in a file
   that imports idfkit, in a call given more than the type name, so `set.add("x")` was not
-  reported; a group filter did not hide it. A run that passed before could fail on it
-  ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b)).
+  reported; a group filter did not hide it. An unknown type was reported only on a receiver known
+  to be a document (`doc = new_document()`, `load_idf(...)`, `as_version(...)`, or a parameter
+  annotated `IDFDocument`, `AnyIDFDocument`, ...), since a collection's `add()` takes a name
+  first; on a collection (`doc["Zone"]`, `doc.zones`, `doc.get_collection("Zone")`, or a name bound
+  to one) the keyword choice values were checked against the collection's type, which `C002` did
+  not do before. A run that passed before could fail on it ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b), [a2154ae](https://github.com/idfkit/idfkit/commit/a2154ae)).
 
 - `idfkit.versions.releases_between(since, before)` was added: every supported release from
   `since` (inclusive) to `before` (exclusive), the range `as_version(doc, since=..., before=...)`
@@ -195,6 +200,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   imported from `idfkit.versioned`, so a file reads only the releases it names. pyright took about
   as long as before on a file using `new_document()` or `AnyIDFDocument` (2.1 to 2.4 s), and less
   on one naming `IDFDocumentV9_4` (2.5 s, from 2.8 to 3.0 s). Each lookup costs time in proportion to its type's place among the overloads, which follow the schema's order, so a file with hundreds of lookups of a type listed late took longer: 300 lookups of `Output:Variable` took 3.8 s, from 1.9 s ([#286](https://github.com/idfkit/idfkit/pull/286)).
+
+### Deprecated
+
+- `IDFCollection.add(obj)`, which filed an existing object in the collection without validating it,
+  linking it to the document or indexing its references, was deprecated: `add()` became the typed
+  way to create an object (see Added). Called with an object, it still filed it, with a
+  `DeprecationWarning`; it will be removed. Use `doc.addidfobject(obj)`, which adds the object to
+  the document. **Breaking**, for type checking only: the object form is a type error. Through
+  `IDFCollection[IDFObject]` it used to accept an object of any type, so a `Material` could be
+  filed in `doc["Zone"]` without an error, as noted under 1.3.0-rc.1 ([bb4d27b](https://github.com/idfkit/idfkit/commit/bb4d27b), [a2154ae](https://github.com/idfkit/idfkit/commit/a2154ae)).
 
 ### Fixed
 
