@@ -36,15 +36,17 @@ if TYPE_CHECKING:
     _P = ParamSpec("_P")
 
     class _Creatable(Protocol[_P]):
-        """An object class whose ``update()`` keywords are typed, as every generated class's are.
+        """An object class with a creation signature, as every generated class has.
 
-        ``IDFCollection.add`` takes its keywords from this signature, so a collection typed
-        ``IDFCollection[Zone]`` accepts exactly ``Zone.update``'s fields and value types. The
-        signature is read from the class the collection is already typed with: no overload is
-        resolved, so a call costs a type checker the same whatever the object type.
+        ``IDFCollection.add`` takes its parameters from this signature, so a collection typed
+        ``IDFCollection[Material]`` takes the name (or none, for a type without a Name field),
+        requires the fields the schema requires, and accepts the other fields with their value
+        types and defaults. The signature is read from the class the collection is already typed
+        with: no overload is resolved, so a call costs a type checker the same whatever the object
+        type. ``IDFObject``'s own accepts any name and fields, for untyped collections.
         """
 
-        def update(self, values: Mapping[str, Any] | None = ..., /, *args: _P.args, **kwargs: _P.kwargs) -> None: ...
+        def _creation_signature(self, /, *args: _P.args, **kwargs: _P.kwargs) -> None: ...
 
     class _ObjectFactory(Protocol):
         """The document a collection creates its objects through (``IDFDocument``)."""
@@ -1091,6 +1093,17 @@ class IDFObject(EppyObjectMixin):
         for key, value in group.values():
             setattr(self, key, value)
 
+    if TYPE_CHECKING:
+
+        def _creation_signature(self, name: str = "", /, **fields: Any) -> None:
+            """What ``IDFCollection.add`` takes to create an object of this class (stub-only).
+
+            Here any name and fields, which the run-time validator checks: the collections a type
+            checker cannot narrow (``doc.get_collection(obj_type)``) hold plain ``IDFObject``s. Each
+            generated class declares its own, from the schema: the name only for a type with a Name
+            field, the required fields without a default, the others with their schema default.
+            """
+
     def _examine(self, key: str, value: Any) -> RefusedEntry | None:
         """Classify one :meth:`update` entry with the tests ``__setattr__`` applies to it."""
         if key[:1] == "_":
@@ -1390,12 +1403,11 @@ class IDFCollection(Generic[_T_co]):
         self._items.append(obj)
         return obj
 
-    # The self type names only what add() reads from the element class, its typed update()
-    # signature; Python has no intersection type to also say the element is an IDFObject, which every
+    # The self type names only what add() reads from the element class, its creation signature;
+    # Python has no intersection type to also say the element is an IDFObject, which every
     # collection's element already is. The bound is checked where it matters, on IDFCollection[X].
     def add(
         self: IDFCollection[_Creatable[_P]],  # pyright: ignore[reportInvalidTypeArguments]
-        name: str = "",
         /,
         *args: _P.args,
         **fields: _P.kwargs,
@@ -1410,6 +1422,15 @@ class IDFCollection(Generic[_T_co]):
         (``zone_inside_convection_algorithm="Tarp"``) is a type error, as it is on assignment.
         Through a document narrowed to a release (``IDFDocumentV9_4``) the fields are that
         release's, and through ``AnyIDFDocument`` only those every release accepts.
+
+        The parameters are those of the object class's creation signature, generated from the
+        schema, so an editor's signature help lists them: the name first, for a type with a Name
+        field; then the fields the schema requires, with no default; then the others with their
+        schema default (``thermal_absorptance: float | None = 0.9``), or ``...`` where it is not a
+        plain number or string. Leaving out a required field (``doc.materials.add("XPS")``) is a
+        type error, as it is a ``ValidationFailedError`` at run time, and so is a name for a type
+        without a Name field (``doc["Output:SQLite"].add("x")``), an ``InvalidFieldError``. A field
+        is required through ``AnyIDFDocument`` only where every release requires it.
 
         The object is always validated, as ``IDFDocument.add`` validates by default; for
         unvalidated bulk loading use ``doc.add(obj_type, ..., validate=False)``. Fields are passed
@@ -1429,8 +1450,8 @@ class IDFCollection(Generic[_T_co]):
         document's collection.
 
         Args:
-            name: The object's name; leave it empty for a type without a Name field
-                (``doc["Output:SQLite"].add(option_type="SimpleAndTabular")``).
+            *args: The object's name, the only positional argument; none for a type without a
+                Name field (``doc["Output:SQLite"].add(option_type="SimpleAndTabular")``).
             **fields: Field values, by their Python field names.
 
         Returns:
@@ -1457,8 +1478,8 @@ class IDFCollection(Generic[_T_co]):
             >>> [zone.name for zone in model["Zone"]]
             ['Office', 'Lab']
         """
-        if isinstance(cast("object", name), IDFObject):
-            return self._append_deprecated(cast("IDFObject", name))
+        if args and isinstance(args[0], IDFObject):
+            return self._append_deprecated(args[0])
         document = self._document
         if document is None:
             msg = (
@@ -1466,9 +1487,10 @@ class IDFCollection(Generic[_T_co]):
                 "collection unpickled from an idfkit release before 1.3); use IDFDocument.add"
             )
             raise TypeError(msg)
-        if args:
-            msg = f"add() takes 1 positional argument (the name) but {len(args) + 1} were given; pass fields by keyword"
+        if len(args) > 1:
+            msg = f"add() takes 1 positional argument (the name) but {len(args)} were given; pass fields by keyword"
             raise TypeError(msg)
+        name = cast("str", args[0]) if args else ""
         obj = document._create_in(self, name, fields)  # pyright: ignore[reportPrivateUsage]
         return cast("_T_co", obj)
 
