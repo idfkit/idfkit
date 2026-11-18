@@ -30,6 +30,7 @@ from importlib.metadata import version as _pkg_version
 from typing import TYPE_CHECKING, Literal, overload
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import TypeVar
 
     from ._compat import EppyDocumentMixin
@@ -199,7 +200,7 @@ def _check_version(version: tuple[int, int, int]) -> None:
 
 @overload
 def load_idf(
-    path: str,
+    path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
     strict_parsing: bool = ...,
@@ -210,7 +211,7 @@ def load_idf(
 
 @overload
 def load_idf(
-    path: str,
+    path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
     strict_parsing: bool = ...,
@@ -220,7 +221,7 @@ def load_idf(
 
 
 def load_idf(
-    path: str,
+    path: Path | str,
     version: tuple[int, int, int] | None = None,
     *,
     strict_parsing: bool = True,
@@ -282,7 +283,7 @@ def load_idf(
 
 
 def load_idf_with_diagnostics(
-    path: str,
+    path: Path | str,
     version: tuple[int, int, int] | None = None,
     *,
     strict: bool = True,
@@ -350,7 +351,7 @@ def load_idf_with_diagnostics(
 
 @overload
 def load_epjson(
-    path: str,
+    path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
     strict: Literal[True] = ...,
@@ -360,7 +361,7 @@ def load_epjson(
 
 @overload
 def load_epjson(
-    path: str,
+    path: Path | str,
     version: tuple[int, int, int] | None = ...,
     *,
     strict: Literal[False],
@@ -369,7 +370,7 @@ def load_epjson(
 
 
 def load_epjson(
-    path: str,
+    path: Path | str,
     version: tuple[int, int, int] | None = None,
     *,
     strict: bool = True,
