@@ -783,13 +783,20 @@ class TestOutputFileNaming:
         from idfkit.simulation.result import _pick_fallback  # pyright: ignore[reportPrivateUsage]
 
         names = ["eplusSqlite.err", "b.err", "a.err"]
-        assert _pick_fallback(names, ".err", table=False) == "a.err"
-        assert _pick_fallback(list(reversed(names)), ".err", table=False) == "a.err"
+        assert _pick_fallback(names, ".err", table=False) == Path("a.err")
+        assert _pick_fallback(list(reversed(names)), ".err", table=False) == Path("a.err")
 
     def test_html_fallback_prefers_table_file(self, tmp_path: Path) -> None:
         (tmp_path / "other.htm").write_text("<html></html>")
         (tmp_path / "runTable.htm").write_text("<html></html>")
         assert _make_result(tmp_path).html_path == tmp_path / "runTable.htm"
+
+    def test_default_style_report_wins_over_a_stale_legacy_one(self, tmp_path: Path) -> None:
+        """A reused output directory may hold a legacy-style report from an earlier ``-s L`` run."""
+        for name in ("eplustbl.htm", "eplusTable.htm"):
+            (tmp_path / name).write_text("<html></html>")
+        result = SimulationResult.from_directory(tmp_path)
+        assert result.html_path == tmp_path / "eplusTable.htm"
 
     def test_missing_local_run_dir_raises(self, tmp_path: Path) -> None:
         """A run directory that does not exist is an error, not an empty result."""

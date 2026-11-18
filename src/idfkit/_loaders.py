@@ -35,6 +35,20 @@ def check_supported_version(version: tuple[int, int, int]) -> None:
         raise UnsupportedVersionError(version, ENERGYPLUS_VERSIONS)
 
 
+def _prepare(
+    as_type: _Target, since: _Bound, before: _Bound, strict: bool, version: tuple[int, int, int] | None
+) -> bool:
+    """Refuse, before any file is read, a target or version no document could meet; return the strictness.
+
+    The strictness is the one *as_type* states, else *strict* (:func:`target_strictness`).
+    """
+    check_target(as_type, since, before)
+    strict = target_strictness(as_type, strict)
+    if version is not None:
+        check_supported_version(version)
+    return strict
+
+
 def _narrow(doc: AnyIDFDocument, path: Path | str, as_type: _Target, since: _Bound, before: _Bound) -> AnyIDFDocument:
     """*doc*, once :func:`~idfkit.versioned.as_version` has checked it is of the release asked for, if any."""
     if as_type is None and since is None and before is None:
@@ -145,10 +159,7 @@ def load_idf(
             save_idf(model, "building_copy.idf")  # byte-identical
             ```
     """
-    check_target(as_type, since, before)
-    strict = target_strictness(as_type, strict)
-    if version is not None:
-        check_supported_version(version)
+    strict = _prepare(as_type, since, before, strict, version)
     doc = parse_idf(
         Path(path),
         version=version,
@@ -237,10 +248,7 @@ def load_idf_with_diagnostics(
     # `idfkit.exceptions.ParseDiagnostic`.
     from .idf_parser import parse_idf_with_diagnostics
 
-    check_target(as_type, since, before)
-    strict = target_strictness(as_type, strict)
-    if version is not None:
-        check_supported_version(version)
+    strict = _prepare(as_type, since, before, strict, version)
     result = parse_idf_with_diagnostics(
         Path(path),
         version=version,
@@ -322,10 +330,7 @@ def load_epjson(
             model = load_epjson("SmallOffice.epJSON", version=(24, 1, 0))
             ```
     """
-    check_target(as_type, since, before)
-    strict = target_strictness(as_type, strict)
-    if version is not None:
-        check_supported_version(version)
+    strict = _prepare(as_type, since, before, strict, version)
     doc = parse_epjson(
         Path(path),
         version=version,

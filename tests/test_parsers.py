@@ -920,3 +920,13 @@ Timestep,
 
         assert _string_is_legal(schema.obj_schema, "plant_loop_volume", "Autocalculate")
         assert not _string_is_legal(schema.obj_schema, "plant_loop_volume", "Timestep")
+
+
+def test_parse_result_is_constructible_through_its_subscripted_alias() -> None:
+    """Python 3.10 cannot build a frozen, slotted generic dataclass through ``ParseResult[X](...)``."""
+    from idfkit import new_document
+    from idfkit.document import IDFDocument
+    from idfkit.idf_parser import ParseResult
+
+    doc = new_document()
+    assert ParseResult[IDFDocument](document=doc, diagnostics=()).document is doc

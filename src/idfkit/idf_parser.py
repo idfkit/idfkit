@@ -235,7 +235,10 @@ def _field_offset(fields_raw: str, index: int) -> int | None:
     return None if index else 0
 
 
-@dataclass(frozen=True, slots=True)
+# No slots=True, as for MigrationReport: on Python 3.10 a frozen dataclass rebuilt with slots cannot
+# be constructed through a subscripted alias (ParseResult[X](...)), because the alias sets
+# __orig_class__ and the generated __setattr__'s super() refers to the class before rebuild.
+@dataclass(frozen=True)
 class ParseResult(Generic[_DocT]):
     """A document, and the recoverable findings from the parse that produced it.
 

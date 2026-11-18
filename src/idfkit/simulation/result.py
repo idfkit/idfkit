@@ -34,6 +34,9 @@ _UNSET: Any = object()
 #: refused jobs leaves nothing behind.
 REFUSED_RUN_DIR = Path(os.devnull) / "idfkit-refused-job"
 
+#: Lower-cased name stems that mark the tabular report.
+_TABLE_STEMS: tuple[str, ...] = ("table", "tbl")
+
 #: Name stems EnergyPlus gives its auxiliary outputs, lower-cased, in every
 #: ``--output-suffix`` style: legacy (``eplustbl.csv``, ``sqlite.err``),
 #: capital (``eplusTable.csv``, ``eplusSqlite.err``) and dash
@@ -50,17 +53,15 @@ _AUXILIARY_STEMS: tuple[str, ...] = (
     "spsz",
     "sqlite",
     "ssz",
-    "table",
-    "tbl",
     "zsz",
+    *_TABLE_STEMS,
 )
 
 #: Infixes EnergyPlus puts before the extension of the tabular report, in the
-#: legacy, capital and dash ``--output-suffix`` styles.
-_TABLE_INFIXES: tuple[str, ...] = ("tbl", "Table", "-table")
-
-#: Lower-cased name stems that mark the tabular report.
-_TABLE_STEMS: tuple[str, ...] = ("table", "tbl")
+#: capital, legacy and dash ``--output-suffix`` styles: the runner's default
+#: ``-s C`` first, as for the main outputs, so a stale report another style left
+#: in a reused output directory is not taken for this run's.
+_TABLE_INFIXES: tuple[str, ...] = ("Table", "tbl", "-table")
 
 
 def _output_names(prefix: str, suffix: str, *, table: bool) -> tuple[str, ...]:
@@ -70,7 +71,7 @@ def _output_names(prefix: str, suffix: str, *, table: bool) -> tuple[str, ...]:
     ``{prefix}{suffix}`` (``eplus.err``). The legacy style ``-s L`` names them
     ``{prefix}out{suffix}`` (``eplusout.err``) and is what EnergyPlus uses
     when run by hand without ``-s``. The tabular report is
-    ``{prefix}tbl``, ``{prefix}Table`` or ``{prefix}-table`` instead.
+    ``{prefix}Table``, ``{prefix}tbl`` or ``{prefix}-table`` instead.
 
     Args:
         prefix: The run's output prefix (``-p``).
@@ -90,7 +91,7 @@ def _stem_endswith(name: str, suffix: str, stems: tuple[str, ...]) -> bool:
     return name[: -len(suffix)].lower().endswith(stems)
 
 
-def _pick_fallback(paths: Iterable[str | Path], suffix: str, *, table: bool) -> str | Path | None:
+def _pick_fallback(paths: Iterable[str | Path], suffix: str, *, table: bool) -> Path | None:
     """Choose the output file among *paths* when no expected name exists.
 
     Only names ending with *suffix* qualify. For a main output, auxiliary
@@ -107,21 +108,16 @@ def _pick_fallback(paths: Iterable[str | Path], suffix: str, *, table: bool) -> 
     Returns:
         The chosen path, or ``None`` if none qualifies.
     """
-    best: tuple[bool, str] | None = None
-    chosen: str | Path | None = None
-    for path in paths:
-        name = Path(path).name
-        if not name.endswith(suffix):
-            continue
-        if table:
-            key = (not _stem_endswith(name, suffix, _TABLE_STEMS), name)
-        elif _stem_endswith(name, suffix, _AUXILIARY_STEMS):
-            continue
-        else:
-            key = (False, name)
-        if best is None or key < best:
-            best, chosen = key, path
-    return chosen
+    candidates = [
+        Path(path)
+        for path in paths
+        if Path(path).name.endswith(suffix) and (table or not _stem_endswith(Path(path).name, suffix, _AUXILIARY_STEMS))
+    ]
+    return min(
+        candidates,
+        key=lambda path: (table and not _stem_endswith(path.name, suffix, _TABLE_STEMS), path.name),
+        default=None,
+    )
 
 
 @dataclass(slots=True)
@@ -453,8 +449,7 @@ class SimulationResult:
             for candidate in candidates:
                 if fs.exists(str(candidate)):
                     return candidate
-            match = _pick_fallback(fs.glob(str(self.run_dir), f"*{suffix}"), suffix, table=table)
-            return None if match is None else Path(match)
+            return _pick_fallback(fs.glob(str(self.run_dir), f"*{suffix}"), suffix, table=table)
 
         # Local path-based lookup
         for candidate in candidates:
@@ -466,8 +461,7 @@ class SimulationResult:
     def _scan_run_dir(self, suffix: str, *, table: bool = False) -> Path | None:
         """Return the local run directory's fallback file for *suffix*, if any."""
         files = (p for p in self.run_dir.iterdir() if p.name.endswith(suffix) and p.is_file())
-        match = _pick_fallback(files, suffix, table=table)
-        return None if match is None else Path(match)
+        return _pick_fallback(files, suffix, table=table)
 
     # ------------------------------------------------------------------
     # Async accessors — non-blocking counterparts to the sync properties
@@ -714,8 +708,7 @@ class SimulationResult:
                 if await async_fs.exists(str(candidate)):
                     return candidate
             matches = await async_fs.glob(str(self.run_dir), f"*{suffix}")
-            match = _pick_fallback(matches, suffix, table=table)
-            return None if match is None else Path(match)
+            return _pick_fallback(matches, suffix, table=table)
 
         return self._find_output_file(suffix, table=table)
 

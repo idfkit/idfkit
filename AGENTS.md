@@ -51,7 +51,7 @@ make test     # every test, in parallel (pytest-xdist), with coverage
 ### Running Tests
 
 ```bash
-# Every test, as CI runs them, in parallel with coverage (about 2 minutes on 4 cores).
+# Every test, as CI runs them, in parallel with coverage (about 3 minutes on 4 cores).
 # Includes the integration tests when EnergyPlus is installed; they are skipped otherwise.
 make test
 
