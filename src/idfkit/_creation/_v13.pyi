@@ -71,6 +71,7 @@ class SizingZone_v22_2_to_v24_1:
         zone_humidification_design_supply_air_humidity_ratio_difference: float | None = 0.005,
         zone_humidistat_dehumidification_set_point_schedule_name: str | None = ...,
         zone_humidistat_humidification_set_point_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Zone`` and add it to the document.
 
@@ -103,6 +104,7 @@ class HeaderedPumpsConstantSpeed_v9_1_to_v22_1:
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeaderedPumps:ConstantSpeed`` and add it to the document.
 
@@ -136,6 +138,7 @@ class PhotovoltaicPerformanceEquivalentOneDiode_v8_9_to_v22_1:
         nominal_operating_cell_temperature_test_insolation: float | None = 800,
         module_heat_loss_coefficient: float | None = 30,
         total_heat_capacity: float | None = 50000,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:EquivalentOne-Diode`` and add it to the document.
 
@@ -193,6 +196,7 @@ class WindowPropertyShadingControl_v8_9:
         | None = "FixedSlatAngle",
         slat_angle_schedule_name: str | None = ...,
         setpoint_2: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowProperty:ShadingControl`` and add it to the document.
 
@@ -213,6 +217,7 @@ class RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1:
             _g.RoomAirTemperaturePatternNondimensionalHeightPairsItem
             | _g.RoomAirTemperaturePatternNondimensionalHeightPairsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:NondimensionalHeight`` and add it to the document.
 
@@ -232,6 +237,7 @@ class ConstructionAirBoundary_v9_2_to_v9_4:
         air_exchange_method: Literal["None", "SimpleMixing"] | None = "None",
         simple_mixing_air_changes_per_hour: float | None = 0.5,
         simple_mixing_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:AirBoundary`` and add it to the document.
 

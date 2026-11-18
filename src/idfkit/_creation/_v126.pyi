@@ -19,6 +19,7 @@ class ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1:
         fmu_file_name: str,
         fmu_timeout: float | None = 0,
         fmu_loggingon: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport`` and add it to the document.
 
@@ -59,6 +60,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1:
         source_side_heat_transfer_coefficient: float | None = ...,
         source_side_heat_transfer_resistance1: float | None = ...,
         source_side_heat_transfer_resistance2: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
 
@@ -81,6 +83,7 @@ class SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1:
         soil_surface_temperature_amplitude_2: float,
         phase_shift_of_temperature_amplitude_1: float,
         phase_shift_of_temperature_amplitude_2: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundTemperature:Undisturbed:Xing`` and add it to the document.
 
@@ -147,6 +150,7 @@ class SizingPeriodDesignDay_v8_9:
         ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_: float | None = 0,
         ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud_: float | None = 0,
         sky_clearness: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SizingPeriod:DesignDay`` and add it to the document.
 
@@ -287,6 +291,7 @@ class CoilCoolingDXVariableSpeed_v23_2_to_v25_1:
         speed_10_total_cooling_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:VariableSpeed`` and add it to the document.
 
@@ -314,6 +319,7 @@ class OutputTableReportPeriod_v22_2_to_v25_1:
         | None = ...,
         begin_year: int | None = ...,
         end_year: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:ReportPeriod`` and add it to the document.
 

@@ -17,6 +17,7 @@ class AnySurfaceConvectionAlgorithmInside:
         /,
         *,
         algorithm: Literal["AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None = "TARP",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Inside`` and add it to the document.
 
@@ -36,6 +37,7 @@ class SiteLocation:
         time_zone: float | None = 0,
         elevation: float | None = 0,
         keep_site_location_information: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:Location`` and add it to the document.
 
@@ -102,6 +104,7 @@ class MaterialPropertyHeatAndMoistureTransferDiffusion:
         water_vapor_diffusion_resistance_factor_24: float | None = ...,
         relative_humidity_fraction_25: float | None = ...,
         water_vapor_diffusion_resistance_factor_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Diffusion`` and add it to the document.
 
@@ -125,6 +128,7 @@ class AnyWallUnderground:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Underground`` and add it to the document.
 
@@ -147,6 +151,7 @@ class AnyWindow:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Window`` and add it to the document.
 
@@ -168,6 +173,7 @@ class GroundHeatTransferBasementInterior:
         hin_downward_combined_convection_and_radiation_heat_transfer_coefficient: float | None = 6.13,
         hin_upward_combined_convection_and_radiation_heat_transfer_coefficient: float | None = 9.26,
         hin_horizontal_combined_convection_and_radiation_heat_transfer_coefficient: float | None = 8.29,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:Interior`` and add it to the document.
 
@@ -187,6 +193,7 @@ class DesignSpecificationAirTerminalSizing:
         fraction_of_design_heating_load: float | None = 1,
         heating_design_supply_air_temperature_difference_ratio: float | None = 1,
         fraction_of_minimum_outdoor_air_flow: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DesignSpecification:AirTerminal:Sizing`` and add it to the document.
 
@@ -228,6 +235,7 @@ class EvaporativeCoolerIndirectResearchSpecial:
         evaporative_operation_minimum_limit_secondary_air_drybulb_temperature: float | None = ...,
         evaporative_operation_maximum_limit_outdoor_wetbulb_temperature: float | None = ...,
         dry_operation_maximum_limit_outdoor_drybulb_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeCooler:Indirect:ResearchSpecial`` and add it to the document.
 
@@ -244,6 +252,7 @@ class EnergyManagementSystemSensor:
         *,
         output_variable_or_output_meter_name: str,
         output_variable_or_output_meter_index_key_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:Sensor`` and add it to the document.
 
@@ -261,6 +270,7 @@ class EnergyManagementSystemActuator:
         actuated_component_unique_name: str,
         actuated_component_type: str,
         actuated_component_control_type: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:Actuator`` and add it to the document.
 
@@ -279,6 +289,7 @@ class AnyExternalInterfaceFunctionalMockupUnitExportToSchedule:
         fmu_variable_name: str,
         initial_value: float,
         schedule_type_limits_names: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitExport:To:Schedule`` and add it to the document.
 
@@ -298,6 +309,7 @@ class FaultModelHumiditySensorOffsetOutdoorAir:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         humidity_sensor_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:HumiditySensorOffset:OutdoorAir`` and add it to the document.
 

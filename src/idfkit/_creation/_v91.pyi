@@ -129,6 +129,7 @@ class SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4:
         convection_coefficient_2: float | None = 0.1,
         convection_coefficient_2_schedule_name: str | None = ...,
         convection_coefficient_2_user_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:ConvectionCoefficients:MultipleSurface`` and add it to the document.
 
@@ -170,6 +171,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4:
         cooling_power_consumption_coefficient_5: float,
         nominal_time_for_condensate_removal_to_begin: float | None = 0,
         ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -205,6 +207,7 @@ class HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4:
         reference_coefficient_of_performance: float | None = 8,
         sizing_factor: float | None = 1,
         companion_heating_heat_pump_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:EquationFit:Cooling`` and add it to the document.
 

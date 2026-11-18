@@ -130,6 +130,7 @@ class AnySurfacePropertyConvectionCoefficientsMultipleSurface:
         convection_coefficient_2: float | None = 0.1,
         convection_coefficient_2_schedule_name: str | None = ...,
         convection_coefficient_2_user_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:ConvectionCoefficients:MultipleSurface`` and add it to the document.
 
@@ -148,6 +149,7 @@ class ExteriorLights:
         design_level: float,
         control_option: Literal["AstronomicalClock", "ScheduleNameOnly"] | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Exterior:Lights`` and add it to the document.
 
@@ -172,6 +174,7 @@ class ZoneHVACEnergyRecoveryVentilator:
         ventilation_rate_per_unit_floor_area: float | None = ...,
         ventilation_rate_per_occupant: float | None = ...,
         availability_manager_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EnergyRecoveryVentilator`` and add it to the document.
 
@@ -181,7 +184,14 @@ class ZoneHVACEnergyRecoveryVentilator:
         """
 
 class NodeList:
-    def __call__(self, name: str, /, *, nodes: Sequence[_g.NodeListNodesItem | _g.NodeListNodesGroup] = ...) -> None:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        nodes: Sequence[_g.NodeListNodesItem | _g.NodeListNodesGroup] = ...,
+        validate: bool = True,
+    ) -> None:
         """Create a new ``NodeList`` and add it to the document.
 
         This object is used in places where lists of nodes may be needed, e.g. ZoneHVAC:EquipmentConnections field Zone Air Inlet Node or NodeList Name
@@ -238,6 +248,7 @@ class HeatPumpAirToWaterFuelFiredHeating:
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
         minimum_unloading_ratio: float | None = 0.25,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:AirToWater:FuelFired:Heating`` and add it to the document.
 
@@ -273,6 +284,7 @@ class FluidCoolerTwoSpeed:
         low_fan_speed_air_flow_rate_sizing_factor: float | None = 0.5,
         low_fan_speed_fan_power_sizing_factor: float | None = 0.16,
         outdoor_air_inlet_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FluidCooler:TwoSpeed`` and add it to the document.
 
@@ -309,6 +321,7 @@ class CurveBiquadratic:
         | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Biquadratic`` and add it to the document.
 

@@ -18,6 +18,7 @@ class AnySiteLocation:
         longitude: float | None = 0,
         time_zone: float | None = 0,
         elevation: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:Location`` and add it to the document.
 
@@ -38,6 +39,7 @@ class CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl:
         indoor_unit_condensing_temperature_function_of_subcooling_curve_name: str,
         availability_schedule: str | None = ...,
         indoor_unit_reference_subcooling: float | None = 5,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:VariableRefrigerantFlow:FluidTemperatureControl`` and add it to the document.
 
@@ -95,6 +97,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed:
         heating_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_3_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` and add it to the document.
 
@@ -138,6 +141,7 @@ class AnyPumpVariableSpeed:
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
         design_minimum_flow_rate_fraction: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pump:VariableSpeed`` and add it to the document.
 
@@ -183,6 +187,7 @@ class PlantEquipmentOperationOutdoorDryBulbDifference:
         dry_bulb_temperature_difference_range_10_lower_limit: float | None = ...,
         dry_bulb_temperature_difference_range_10_upper_limit: float | None = ...,
         range_10_equipment_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:OutdoorDryBulbDifference`` and add it to the document.
 
@@ -201,6 +206,7 @@ class SetpointManagerCondenserEnteringResetIdeal:
         control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_lift: float | None = 11.1,
         maximum_condenser_entering_water_temperature: float | None = 32,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:CondenserEnteringReset:Ideal`` and add it to the document.
 
@@ -224,6 +230,7 @@ class FaultModelFoulingCoil:
         air_side_fouling_factor: float | None = 0,
         outside_coil_surface_area: float | None = ...,
         inside_to_outside_coil_surface_area_ratio: float | None = 0.07,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:Fouling:Coil`` and add it to the document.
 
@@ -243,6 +250,7 @@ class CurveFunctionalPressureDrop:
         length: float | None = ...,
         roughness: float | None = ...,
         fixed_friction_factor: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Functional:PressureDrop`` and add it to the document.
 

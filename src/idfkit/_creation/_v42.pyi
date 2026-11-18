@@ -22,6 +22,7 @@ class DaylightingReferencePoint_v8_9_to_v9_5:
         x_coordinate_of_reference_point: float,
         y_coordinate_of_reference_point: float,
         z_coordinate_of_reference_point: float | None = 0.8,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Daylighting:ReferencePoint`` and add it to the document.
 
@@ -59,6 +60,7 @@ class HeaderedPumpsVariableSpeed_v9_1_to_v22_1:
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeaderedPumps:VariableSpeed`` and add it to the document.
 
@@ -78,6 +80,7 @@ class ZoneHVACEquipmentList_v9_2:
         equipment: Sequence[
             _vd.ZoneHVACEquipmentListEquipmentItem_v9_2 | _vd.ZoneHVACEquipmentListEquipmentGroup_v9_2
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
 
@@ -142,6 +145,7 @@ class WindowShadingControl_v9_2_to_v22_1:
         fenestration_surfaces: Sequence[
             _g.WindowShadingControlFenestrationSurfacesItem | _g.WindowShadingControlFenestrationSurfacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowShadingControl`` and add it to the document.
 

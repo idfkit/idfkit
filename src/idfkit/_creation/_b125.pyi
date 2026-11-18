@@ -37,6 +37,7 @@ class WindowMaterialGlazing:
         window_glass_spectral_and_incident_angle_transmittance_data_set_table_name: str | None = ...,
         window_glass_spectral_and_incident_angle_front_reflectance_data_set_table_name: str | None = ...,
         window_glass_spectral_and_incident_angle_back_reflectance_data_set_table_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Glazing`` and add it to the document.
 
@@ -59,6 +60,7 @@ class SubSurfaceConstructionAssignments:
         skylight_construction_name: str | None = ...,
         tubular_daylight_dome_construction_name: str | None = ...,
         tubular_daylight_diffuser_construction_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SubSurfaceConstructionAssignments`` and add it to the document.
 
@@ -84,6 +86,7 @@ class WallInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Interzone`` and add it to the document.
 
@@ -112,6 +115,7 @@ class GasEquipment:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GasEquipment`` and add it to the document.
 
@@ -136,6 +140,7 @@ class HotWaterEquipmentDefinition:
         fraction_latent: float | None = 0,
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HotWaterEquipment:Definition`` and add it to the document.
 
@@ -155,6 +160,7 @@ class ZoneContaminantSourceAndSinkGenericConstant:
         removal_schedule_name: str,
         design_generation_rate: float | None = ...,
         design_removal_coefficient: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneContaminantSourceAndSink:Generic:Constant`` and add it to the document.
 
@@ -215,6 +221,7 @@ class SpaceHVACZoneEquipmentSplitter:
         spaces: Sequence[
             _g.SpaceHVACZoneEquipmentSplitterSpacesItem | _g.SpaceHVACZoneEquipmentSplitterSpacesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SpaceHVAC:ZoneEquipmentSplitter`` and add it to the document.
 

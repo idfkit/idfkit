@@ -21,6 +21,7 @@ class ScheduleYear:
         *,
         schedule_type_limits_name: str | None = ...,
         schedule_weeks: Sequence[_g.ScheduleYearScheduleWeeksItem | _g.ScheduleYearScheduleWeeksGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Year`` and add it to the document.
 
@@ -69,6 +70,7 @@ class CoilCoolingDXSingleSpeed:
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
         report_ashrae_standard_127_performance_ratings: Literal["No", "Yes"] | None = "No",
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:SingleSpeed`` and add it to the document.
 
@@ -190,6 +192,7 @@ class HeatPumpAirToWater:
         normalized_cooling_capacity_function_of_temperature_curve_name_in_booster_mode: str | None = ...,
         cooling_energy_input_ratio_function_of_temperature_curve_name_in_booster_mode: str | None = ...,
         cooling_energy_input_ratio_function_of_plr_curve_name_in_booster_mode: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:AirToWater`` and add it to the document.
 
@@ -227,6 +230,7 @@ class AnyComponentCostLineItem:
         cost_per_volume_rate: float | None = ...,
         cost_per_energy_per_temperature_difference: float | None = ...,
         quantity: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComponentCost:LineItem`` and add it to the document.
 
@@ -250,6 +254,7 @@ class AnyOutputTableReportPeriod:
         end_hour_of_day: int,
         begin_year: int | None = ...,
         end_year: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:ReportPeriod`` and add it to the document.
 

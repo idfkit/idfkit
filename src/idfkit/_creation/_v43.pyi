@@ -49,6 +49,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1:
         rated_heating_capacity_sizing_ratio: float | None = 1,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
 
@@ -173,6 +174,7 @@ class WaterHeaterStratified_v9_3_to_v22_1:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Stratified`` and add it to the document.
 
@@ -195,6 +197,7 @@ class HybridModelZone_v8_9_to_v9_0:
         end_day_of_month: float,
         calculate_zone_internal_thermal_mass: Literal["No", "Yes"] | None = "No",
         calculate_zone_air_infiltration_rate: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HybridModel:Zone`` and add it to the document.
 
@@ -252,6 +255,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1:
         heating_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_3_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` and add it to the document.
 
@@ -301,6 +305,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3:
         condensation_control_dewpoint_offset: float | None = 1,
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
 
@@ -326,6 +331,7 @@ class IndoorLivingWall_v24_1:
         led_nominal_intensity_: float | None = ...,
         led_nominal_power: float | None = ...,
         radiant_fraction_of_led_lights: float | None = 0.6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``IndoorLivingWall`` and add it to the document.
 
@@ -370,6 +376,7 @@ class ZoneHVACHighTemperatureRadiant_v8_9_to_v25_1:
             _g.ZoneHVACHighTemperatureRadiantSurfaceFractionsItem
             | _g.ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:HighTemperatureRadiant`` and add it to the document.
 

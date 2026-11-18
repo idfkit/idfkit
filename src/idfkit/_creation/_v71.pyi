@@ -47,6 +47,7 @@ class ChillerElectricReformulatedEIR_v8_9_to_v24_1:
         heat_recovery_inlet_high_temperature_limit_schedule_name: str | None = ...,
         heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric:ReformulatedEIR`` and add it to the document.
 
@@ -87,6 +88,7 @@ class GeneratorCombustionTurbine_v8_9_to_v9_2:
         | None = "NaturalGas",
         heat_recovery_maximum_temperature: float | None = 80,
         outdoor_air_inlet_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:CombustionTurbine`` and add it to the document.
 
@@ -115,6 +117,7 @@ class Building_v22_2_to_v26_1:
         | None = "FullExterior",
         maximum_number_of_warmup_days: int | None = 25,
         minimum_number_of_warmup_days: int | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Building`` and add it to the document.
 
@@ -247,6 +250,7 @@ class AirLoopHVACUnitarySystem_v22_2_to_v23_1:
         heat_recovery_water_outlet_node_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitarySystem`` and add it to the document.
 
@@ -282,6 +286,7 @@ class AirflowNetworkSimulationControl_v8_9_to_v9_4:
         ratio_of_building_width_along_short_axis_to_width_along_long_axis: float | None = 1,
         height_dependence_of_external_node_temperature: Literal["No", "Yes"] | None = "No",
         solver: Literal["ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:SimulationControl`` and add it to the document.
 

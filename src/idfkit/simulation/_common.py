@@ -315,7 +315,7 @@ def ensure_sql_output(model: AnyIDFDocument) -> None:
         model: The model to modify in place.
     """
     if "Output:SQLite" not in model:
-        model.add("Output:SQLite", "", option_type="SimpleAndTabular", validate=False)
+        model["Output:SQLite"].add(option_type="SimpleAndTabular", validate=False)
 
 
 def prep_outputs(model: AnyIDFDocument) -> None:
@@ -335,7 +335,7 @@ def prep_outputs(model: AnyIDFDocument) -> None:
     ensure_sql_output(model)
 
     if "Output:Table:SummaryReports" not in model:
-        model.add("Output:Table:SummaryReports", "", reports=[{"report_name": "AllSummary"}], validate=False)
+        model["Output:Table:SummaryReports"].add(reports=[{"report_name": "AllSummary"}], validate=False)
 
     if "Output:VariableDictionary" not in model:
         model.add("Output:VariableDictionary", "", key_field="Regular", validate=False)

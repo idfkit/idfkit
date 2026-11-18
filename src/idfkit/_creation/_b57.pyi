@@ -35,6 +35,7 @@ class Zone:
         ]
         | None = ...,
         part_of_total_floor_area: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Zone`` and add it to the document.
 
@@ -55,6 +56,7 @@ class ZoneEarthtubeParameters:
         earth_tube_dimensionless_boundary_above: float | None = 1,
         earth_tube_dimensionless_boundary_below: float | None = 0.25,
         earth_tube_solution_space_width: float | None = 4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneEarthtube:Parameters`` and add it to the document.
 
@@ -74,6 +76,7 @@ class DesignSpecificationZoneAirDistribution:
         zone_air_distribution_effectiveness_schedule_name: str | None = ...,
         zone_secondary_recirculation_fraction: float | None = 0,
         minimum_zone_ventilation_efficiency: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DesignSpecification:ZoneAirDistribution`` and add it to the document.
 
@@ -131,6 +134,7 @@ class WaterHeaterHeatPumpPumpedCondenser:
         control_sensor_1_height_in_stratified_tank: float | None = ...,
         control_sensor_1_weight: float | None = 1,
         control_sensor_2_height_in_stratified_tank: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:HeatPump:PumpedCondenser`` and add it to the document.
 
@@ -159,6 +163,7 @@ class AirTerminalSingleDuctUserDefined:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:UserDefined`` and add it to the document.
 
@@ -198,6 +203,7 @@ class CurveChillerPartLoadWithLift:
         input_unit_type_for_z: Literal["Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:ChillerPartLoadWithLift`` and add it to the document.
 
@@ -213,6 +219,7 @@ class OutputDiagnostics:
         /,
         *,
         diagnostics: Sequence[_g.OutputDiagnosticsDiagnosticsItem | _g.OutputDiagnosticsDiagnosticsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Diagnostics`` and add it to the document.
 

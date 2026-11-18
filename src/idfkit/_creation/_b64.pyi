@@ -29,6 +29,7 @@ class HeatBalanceAlgorithm:
         surface_temperature_upper_limit: float | None = 200,
         minimum_surface_convection_heat_transfer_coefficient_value: float | None = 0.1,
         maximum_surface_convection_heat_transfer_coefficient_value: float | None = 1000,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatBalanceAlgorithm`` and add it to the document.
 
@@ -60,6 +61,7 @@ class AnyConstructionComplexFenestrationState:
         layer_4_name: str | None = ...,
         gap_4_name: str | None = ...,
         layer_5_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:ComplexFenestrationState`` and add it to the document.
 
@@ -89,6 +91,7 @@ class GroundHeatTransferBasementComBldg:
         november_average_temperature: float | None = 22,
         december_average_temperature: float | None = 22,
         daily_variation_sine_wave_amplitude: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:ComBldg`` and add it to the document.
 
@@ -107,6 +110,7 @@ class AnyAirflowNetworkDistributionComponentReliefAirFlow:
         air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float,
         air_mass_flow_exponent_when_no_outdoor_air_flow: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:ReliefAirFlow`` and add it to the document.
 
@@ -138,6 +142,7 @@ class AnyZoneHVACLowTemperatureRadiantVariableFlow:
         cooling_water_outlet_node_name: str | None = ...,
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` and add it to the document.
 
@@ -163,6 +168,7 @@ class SetpointManagerCondenserEnteringReset:
         minimum_lift: float | None = 11.1,
         maximum_condenser_entering_water_temperature: float | None = 32,
         cooling_tower_design_inlet_air_wet_bulb_temperature: float | None = 25.56,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:CondenserEnteringReset`` and add it to the document.
 
@@ -180,6 +186,7 @@ class RefrigerationTransferLoadList:
         transfer_loads: Sequence[
             _g.RefrigerationTransferLoadListTransferLoadsItem | _g.RefrigerationTransferLoadListTransferLoadsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:TransferLoadList`` and add it to the document.
 
@@ -205,6 +212,7 @@ class AnyDemandManagerVentilation:
         controllers: Sequence[
             _g.DemandManagerVentilationControllersItem | _g.DemandManagerVentilationControllersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:Ventilation`` and add it to the document.
 

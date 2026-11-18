@@ -44,6 +44,7 @@ class BoilerSteam_v8_9_to_v9_2:
         steam_outlet_node_name: str | None = ...,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Boiler:Steam`` and add it to the document.
 
@@ -104,6 +105,7 @@ class HVACTemplateZonePTAC_v8_9:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:PTAC`` and add it to the document.
 
@@ -147,6 +149,7 @@ class PumpVariableSpeed_v8_9_to_v9_0:
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
         design_minimum_flow_rate_fraction: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pump:VariableSpeed`` and add it to the document.
 
@@ -188,6 +191,7 @@ class TableTwoIndependentVariables_v8_9:
             _vd.TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1
             | _vd.TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:TwoIndependentVariables`` and add it to the document.
 

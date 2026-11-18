@@ -18,6 +18,7 @@ class OutputControlIlluminanceMapStyle:
         /,
         *,
         column_separator: Literal["Comma", "Fixed", "Tab"] | None = "Comma",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:IlluminanceMap:Style`` and add it to the document.
 
@@ -55,6 +56,7 @@ class AnyFanSystemModel:
         end_use_subcategory: str | None = "General",
         number_of_speeds: int | None = 1,
         speed_fractions: Sequence[_g.FanSystemModelSpeedFractionsItem | _g.FanSystemModelSpeedFractionsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Fan:SystemModel`` and add it to the document.
 
@@ -99,6 +101,7 @@ class PumpVariableSpeed:
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
         design_minimum_flow_rate_fraction: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pump:VariableSpeed`` and add it to the document.
 
@@ -146,6 +149,7 @@ class ChillerHeaterAbsorptionDoubleEffect:
         chilled_water_temperature_lower_limit: float | None = 2,
         exhaust_source_object_name: str | None = ...,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ChillerHeater:Absorption:DoubleEffect`` and add it to the document.
 
@@ -180,6 +184,7 @@ class GroundHeatExchangerSystem:
             _g.GroundHeatExchangerSystemVerticalWellLocationsItem
             | _g.GroundHeatExchangerSystemVerticalWellLocationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:System`` and add it to the document.
 
@@ -205,6 +210,7 @@ class SetpointManagerOutdoorAirPretreat:
         minimum_setpoint_humidity_ratio: float | None = ...,
         maximum_setpoint_humidity_ratio: float | None = 1,
         reference_setpoint_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:OutdoorAirPretreat`` and add it to the document.
 
@@ -222,6 +228,7 @@ class SetpointManagerReturnAirBypassFlow:
         hvac_air_loop_name: str,
         control_variable: Literal["Flow"] | None = "Flow",
         temperature_setpoint_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:ReturnAirBypassFlow`` and add it to the document.
 
@@ -254,6 +261,7 @@ class AnyLifeCycleCostUseAdjustment:
         multipliers: Sequence[
             _g.LifeCycleCostUseAdjustmentMultipliersItem | _g.LifeCycleCostUseAdjustmentMultipliersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:UseAdjustment`` and add it to the document.
 
@@ -291,6 +299,7 @@ class LifeCycleCostUseAdjustment:
         multipliers: Sequence[
             _g.LifeCycleCostUseAdjustmentMultipliersItem | _g.LifeCycleCostUseAdjustmentMultipliersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:UseAdjustment`` and add it to the document.
 

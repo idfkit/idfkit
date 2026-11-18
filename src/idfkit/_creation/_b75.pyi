@@ -47,6 +47,7 @@ class WallDetailed:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.WallDetailedVerticesItem | _g.WallDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Detailed`` and add it to the document.
 
@@ -71,6 +72,7 @@ class FloorGroundContact:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:GroundContact`` and add it to the document.
 
@@ -80,7 +82,9 @@ class FloorGroundContact:
         """
 
 class GroundHeatTransferSlabZFACE:
-    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, validate: bool = True
+    ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:ZFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) ZFACE: Z Direction cell face coordinates: m
@@ -107,6 +111,7 @@ class RoomAirModelType:
         ]
         | None = "Mixing",
         air_temperature_coupling_strategy: Literal["Direct", "Indirect"] | None = "Direct",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAirModelType`` and add it to the document.
 
@@ -124,6 +129,7 @@ class RoomAirSettingsCrossVentilation:
         zone_name: str,
         gain_distribution_schedule_name: str,
         airflow_region_used_for_thermal_comfort_evaluation: Literal["Jet", "Recirculation"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAirSettings:CrossVentilation`` and add it to the document.
 
@@ -146,6 +152,7 @@ class AnyOutputIlluminanceMap:
         y_minimum_coordinate: float | None = 0,
         y_maximum_coordinate: float | None = 1,
         number_of_y_grid_points: int | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:IlluminanceMap`` and add it to the document.
 
@@ -171,6 +178,7 @@ class CoilCoolingDX:
         condenser_zone_name: str | None = ...,
         condensate_collection_water_storage_tank_name: str | None = ...,
         evaporative_condenser_supply_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX`` and add it to the document.
 
@@ -265,6 +273,7 @@ class AnyCoilHeatingDXVariableSpeed:
         speed_10_heating_capacity_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:VariableSpeed`` and add it to the document.
 
@@ -368,6 +377,7 @@ class CoilHeatingDXVariableSpeed:
         speed_10_total_heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:VariableSpeed`` and add it to the document.
 
@@ -391,6 +401,7 @@ class HeatExchangerDesiccantBalancedFlow:
         heat_exchanger_performance_object_type: Literal["HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"]
         | None = ...,
         economizer_lockout: Literal["No", "Yes"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatExchanger:Desiccant:BalancedFlow`` and add it to the document.
 
@@ -512,6 +523,7 @@ class CentralHeatPumpSystem:
         chiller_heater_modules_performance_component_name_20: str | None = ...,
         chiller_heater_modules_control_schedule_name_20: str | None = ...,
         number_of_chiller_heater_modules_20: int | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CentralHeatPumpSystem`` and add it to the document.
 
@@ -530,6 +542,7 @@ class ExternalInterfaceFunctionalMockupUnitExportToSchedule:
         fmu_variable_name: str,
         schedule_type_limits_names: str | None = ...,
         initial_value: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitExport:To:Schedule`` and add it to the document.
 
@@ -594,6 +607,7 @@ class RefrigerationCase:
         design_evaporator_temperature_or_brine_inlet_temperature: float | None = ...,
         average_refrigerant_charge_inventory: float | None = 0,
         under_case_hvac_return_air_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:Case`` and add it to the document.
 
@@ -613,6 +627,7 @@ class AnyLifeCycleCostNonrecurringCost:
         start_of_costs: Literal["BasePeriod", "ServicePeriod"] | None = "ServicePeriod",
         years_from_start: int | None = ...,
         months_from_start: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:NonrecurringCost`` and add it to the document.
 

@@ -46,6 +46,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1:
         maximum_cycling_rate: float | None = 0,
         latent_capacity_time_constant: float | None = 0,
         fan_delay_time: float | None = 60,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
 
@@ -92,6 +93,7 @@ class ElectricEquipmentITEAirCooled_v22_2_to_v23_2:
         supply_temperature_difference_schedule: str | None = ...,
         return_temperature_difference: float | None = ...,
         return_temperature_difference_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment:ITE:AirCooled`` and add it to the document.
 
@@ -166,6 +168,7 @@ class SizingSystem_v9_6_to_v22_1:
         fraction_of_autosized_heating_design_capacity: float | None = ...,
         central_cooling_capacity_control_method: Literal["Bypass", "OnOff", "VAV", "VT"] | None = "OnOff",
         occupant_diversity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:System`` and add it to the document.
 

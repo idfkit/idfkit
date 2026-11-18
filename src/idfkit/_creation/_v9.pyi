@@ -34,6 +34,7 @@ class BoilerHotWater_v8_9:
         parasitic_electric_load: float | None = ...,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Boiler:HotWater`` and add it to the document.
 
@@ -83,6 +84,7 @@ class ConstructionComplexFenestrationState_v9_6_to_v23_1:
         layer_5_name: str | None = ...,
         layer_5_directional_front_absoptance_matrix_name: str | None = ...,
         layer_5_directional_back_absoptance_matrix_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:ComplexFenestrationState`` and add it to the document.
 
@@ -116,6 +118,7 @@ class CoilHeatingGasMultiStage_v8_9_to_v22_1:
         stage_4_gas_burner_efficiency: float | None = ...,
         stage_4_nominal_capacity: float | Literal["Autosize"] | None = ...,
         stage_4_parasitic_electric_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Gas:MultiStage`` and add it to the document.
 
@@ -153,6 +156,7 @@ class CoilCoolingDXTwoStageWithHumidityControlMode_v8_9_to_v22_1:
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` and add it to the document.
 
@@ -173,6 +177,7 @@ class Space_v22_2_to_v26_1:
         floor_area: float | Literal["Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
         tags: Sequence[_g.SpaceTagsItem | _g.SpaceTagsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Space`` and add it to the document.
 

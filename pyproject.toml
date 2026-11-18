@@ -68,6 +68,9 @@ dev = [
     "tox-uv>=1.11.3",
     "deptry>=0.23.0",
     "pyright>=1.1.389",
+    # Checks tests/type_checks/collection_add_validate_fixture.py (tests/test_collection_add_validate.py):
+    # the generated stubs are written for mypy as well as pyright.
+    "mypy>=1.13",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.0.0",
     "ruff>=0.11.5",

@@ -366,6 +366,7 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections:
         ]
         | None = "GoldsteinNovoselacCeilingDiffuserWindow",
         mixed_regime_window_equation_user_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceConvectionAlgorithm:Inside:AdaptiveModelSelections`` and add it to the document.
 
@@ -385,6 +386,7 @@ class GroundHeatTransferSlabBoundConds:
         usrhflag_is_the_ground_surface_h_specified_by_the_user_: Literal["FALSE", "TRUE"],
         tdeepin: float | None = ...,
         userh_user_specified_ground_surface_heat_transfer_coefficient: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:BoundConds`` and add it to the document.
 
@@ -407,6 +409,7 @@ class RoomAirTemperaturePatternSurfaceMapping:
             _g.RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem
             | _g.RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:SurfaceMapping`` and add it to the document.
 
@@ -416,7 +419,7 @@ class RoomAirTemperaturePatternSurfaceMapping:
         """
 
 class ThermostatSetpointThermalComfortFangerSingleCooling:
-    def __call__(self, name: str, /, *, fanger_thermal_comfort_schedule_name: str) -> None:
+    def __call__(self, name: str, /, *, fanger_thermal_comfort_schedule_name: str, validate: bool = True) -> None:
         """Create a new ``ThermostatSetpoint:ThermalComfort:Fanger:SingleCooling`` and add it to the document.
 
         Used for cooling only thermal comfort control. The PMV setpoint can be scheduled and varied throughout the simulation but only cooling is allowed with this control type.
@@ -444,6 +447,7 @@ class AirLoopHVACUnitaryFurnaceHeatOnly:
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
         fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:Unitary:Furnace:HeatOnly`` and add it to the document.
 
@@ -499,6 +503,7 @@ class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass:
         dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
         plenum_or_mixer_inlet_node_name: str | None = ...,
         minimum_runtime_before_operating_mode_change: float | None = 0.25,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`` and add it to the document.
 
@@ -602,6 +607,7 @@ class AnyAirConditionerVariableRefrigerantFlow:
         heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
         initial_heat_recovery_heating_energy_fraction: float | None = 1,
         heat_recovery_heating_energy_time_constant: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow`` and add it to the document.
 
@@ -624,6 +630,7 @@ class LoadProfilePlant:
         plant_loop_fluid_type: Literal["Steam", "Water"] | None = "Water",
         degree_of_subcooling: float | None = 5,
         degree_of_loop_subcooling: float | None = 20,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LoadProfile:Plant`` and add it to the document.
 
@@ -668,6 +675,7 @@ class PlantEquipmentOperationOutdoorRelativeHumidity:
         relative_humidity_range_10_lower_limit: float | None = ...,
         relative_humidity_range_10_upper_limit: float | None = ...,
         range_10_equipment_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:OutdoorRelativeHumidity`` and add it to the document.
 
@@ -677,7 +685,7 @@ class PlantEquipmentOperationOutdoorRelativeHumidity:
         """
 
 class AvailabilityManagerLowTemperatureTurnOn:
-    def __call__(self, name: str, /, *, sensor_node_name: str, temperature: float) -> None:
+    def __call__(self, name: str, /, *, sensor_node_name: str, temperature: float, validate: bool = True) -> None:
         """Create a new ``AvailabilityManager:LowTemperatureTurnOn`` and add it to the document.
 
         Overrides fan/pump schedules depending on temperature at sensor node.
@@ -698,6 +706,7 @@ class SetpointManagerSingleZoneReheat:
         control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_supply_air_temperature: float | None = -99,
         maximum_supply_air_temperature: float | None = 99,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:SingleZone:Reheat`` and add it to the document.
 
@@ -716,6 +725,7 @@ class SetpointManagerMultiZoneMaximumHumidityAverage:
         setpoint_node_or_nodelist_name: str,
         minimum_setpoint_humidity_ratio: float | None = 0.008,
         maximum_setpoint_humidity_ratio: float | None = 0.015,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:MultiZone:MaximumHumidity:Average`` and add it to the document.
 
@@ -747,6 +757,7 @@ class RefrigerationSystem:
         intercooler_type: Literal["Flash Intercooler", "None", "Shell-and-Coil Intercooler"] | None = "None",
         shell_and_coil_intercooler_effectiveness: float | None = 0.8,
         high_stage_compressor_or_compressorlist_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:System`` and add it to the document.
 
@@ -780,6 +791,7 @@ class AnyPhotovoltaicPerformanceEquivalentOneDiode:
         nominal_operating_cell_temperature_test_insolation: float | None = 800,
         module_heat_loss_coefficient: float | None = 30,
         total_heat_capacity: float | None = 50000,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:EquivalentOne-Diode`` and add it to the document.
 
@@ -813,6 +825,7 @@ class HybridModelZone:
         zone_input_supply_air_mass_flow_rate_schedule_name: str | None = ...,
         zone_input_supply_air_humidity_ratio_schedule_name: str | None = ...,
         zone_input_supply_air_co2_concentration_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HybridModel:Zone`` and add it to the document.
 
@@ -842,6 +855,7 @@ class CurveQuartic:
         | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Quartic`` and add it to the document.
 

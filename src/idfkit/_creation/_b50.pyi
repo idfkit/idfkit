@@ -24,6 +24,7 @@ class WindowMaterialGlazingRefractionExtinctionMethod:
         conductivity: float | None = 0.9,
         dirt_correction_factor_for_solar_and_visible_transmittance: float | None = 1,
         solar_diffusing: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Glazing:RefractionExtinctionMethod`` and add it to the document.
 
@@ -55,6 +56,7 @@ class SwimmingPoolIndoor:
         pool_miscellaneous_equipment_power: float | None = ...,
         people_schedule: str | None = ...,
         people_heat_gain_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SwimmingPool:Indoor`` and add it to the document.
 
@@ -74,6 +76,7 @@ class ZoneInfiltrationEffectiveLeakageArea:
         stack_coefficient: float,
         wind_coefficient: float,
         schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:EffectiveLeakageArea`` and add it to the document.
 
@@ -216,6 +219,7 @@ class AnyZoneHVACOutdoorAirUnitEquipmentList:
         ]
         | None = ...,
         component_8_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:OutdoorAirUnit:EquipmentList`` and add it to the document.
 
@@ -235,6 +239,7 @@ class AirTerminalDualDuctConstantVolume:
         cold_air_inlet_node_name: str,
         maximum_air_flow_rate: float | Literal["Autosize"],
         availability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:DualDuct:ConstantVolume`` and add it to the document.
 
@@ -394,6 +399,7 @@ class AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
 

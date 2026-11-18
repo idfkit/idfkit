@@ -23,6 +23,7 @@ class WindowMaterialGlazingGroupThermochromic:
             _g.WindowMaterialGlazingGroupThermochromicTemperatureDataItem
             | _g.WindowMaterialGlazingGroupThermochromicTemperatureDataGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:GlazingGroup:Thermochromic`` and add it to the document.
 
@@ -32,7 +33,7 @@ class WindowMaterialGlazingGroupThermochromic:
         """
 
 class ConstructionCfactorUndergroundWall:
-    def __call__(self, name: str, /, *, c_factor: float, height: float) -> None:
+    def __call__(self, name: str, /, *, c_factor: float, height: float, validate: bool = True) -> None:
         """Create a new ``Construction:CfactorUndergroundWall`` and add it to the document.
 
         Alternate method of describing underground wall constructions
@@ -50,6 +51,7 @@ class SurfaceControlMovableInsulation:
         surface_name: str,
         material_name: str,
         schedule_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceControl:MovableInsulation`` and add it to the document.
 
@@ -65,6 +67,7 @@ class ComfortViewFactorAngles:
         /,
         *,
         angles: Sequence[_g.ComfortViewFactorAnglesAnglesItem | _g.ComfortViewFactorAnglesAnglesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComfortViewFactorAngles`` and add it to the document.
 
@@ -111,6 +114,7 @@ class ElectricEquipmentITEAirCooled:
         supply_temperature_difference_schedule: str | None = ...,
         return_temperature_difference: float | None = ...,
         return_temperature_difference_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment:ITE:AirCooled`` and add it to the document.
 
@@ -159,6 +163,7 @@ class ZoneControlThermostat:
         | None = ...,
         control_4_name: str | None = ...,
         temperature_difference_between_cutout_and_setpoint: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:Thermostat`` and add it to the document.
 
@@ -168,7 +173,9 @@ class ZoneControlThermostat:
         """
 
 class ThermostatSetpointSingleHeatingOrCooling:
-    def __call__(self, name: str, /, *, setpoint_temperature_schedule_name: str | None = ...) -> None:
+    def __call__(
+        self, name: str, /, *, setpoint_temperature_schedule_name: str | None = ..., validate: bool = True
+    ) -> None:
         """Create a new ``ThermostatSetpoint:SingleHeatingOrCooling`` and add it to the document.
 
         Used for a heating and cooling thermostat with a single setpoint. The setpoint can be scheduled and varied throughout the simulation for both heating and cooling.
@@ -214,6 +221,7 @@ class AnyZoneHVACTerminalUnitVariableRefrigerantFlow:
         rated_heating_capacity_sizing_ratio: float | None = 1,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
 
@@ -243,6 +251,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolReheat:
         convergence_tolerance: float | None = 0.001,
         maximum_reheat_air_temperature: float | None = ...,
         minimum_air_flow_turndown_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat`` and add it to the document.
 
@@ -270,6 +279,7 @@ class AnyCoilHeatingElectricMultiStage:
         stage_3_nominal_capacity: float | Literal["Autosize"] | None = ...,
         stage_4_efficiency: float | None = ...,
         stage_4_nominal_capacity: float | Literal["Autosize"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Electric:MultiStage`` and add it to the document.
 
@@ -296,6 +306,7 @@ class AnyCoilCoolingWaterToAirHeatPumpEquationFit:
         gross_rated_cooling_cop: float,
         nominal_time_for_condensate_removal_to_begin: float | None = 0,
         ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -344,6 +355,7 @@ class CoilWaterHeatingDesuperheater:
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:Desuperheater`` and add it to the document.
 
@@ -361,6 +373,7 @@ class AnyExternalInterfaceFunctionalMockupUnitImport:
         fmu_file_name: str,
         fmu_timeout: float | None = 0,
         fmu_loggingon: int | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport`` and add it to the document.
 
@@ -380,6 +393,7 @@ class FaultModelEnthalpySensorOffsetReturnAir:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         enthalpy_sensor_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:EnthalpySensorOffset:ReturnAir`` and add it to the document.
 
@@ -401,6 +415,7 @@ class FaultModelFoulingCoolingTower:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         reference_ua_reduction_factor: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:Fouling:CoolingTower`` and add it to the document.
 
@@ -462,6 +477,7 @@ class FuelFactors:
         nuclear_high_level_emission_factor_schedule_name: str | None = ...,
         nuclear_low_level_emission_factor: float | None = ...,
         nuclear_low_level_emission_factor_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FuelFactors`` and add it to the document.
 

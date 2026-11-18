@@ -23,6 +23,7 @@ class ZoneAirHeatBalanceAlgorithm:
         | None = "ThirdOrderBackwardDifference",
         do_space_heat_balance_for_sizing: Literal["No", "Yes"] | None = "No",
         do_space_heat_balance_for_simulation: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneAirHeatBalanceAlgorithm`` and add it to the document.
 
@@ -41,6 +42,7 @@ class SiteWeatherStation:
         wind_speed_profile_exponent: float | None = 0.14,
         wind_speed_profile_boundary_layer_thickness: float | None = 270,
         air_temperature_sensor_height_above_ground: float | None = 1.5,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:WeatherStation`` and add it to the document.
 
@@ -58,6 +60,7 @@ class SiteSolarAndVisibleSpectrum:
         spectrum_data_method: Literal["Default", "UserDefined"] | None = "Default",
         solar_spectrum_data_object_name: str | None = ...,
         visible_spectrum_data_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:SolarAndVisibleSpectrum`` and add it to the document.
 
@@ -86,6 +89,7 @@ class WindowThermalModelParams:
         vacuum_pressure_limit: float | None = 13.238,
         initial_temperature: float | None = 25,
         initial_pressure: float | None = 101325,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowThermalModel:Params`` and add it to the document.
 
@@ -200,6 +204,7 @@ class AnySurfacePropertyConvectionCoefficients:
         convection_coefficient_2: float | None = 0.1,
         convection_coefficient_2_schedule_name: str | None = ...,
         convection_coefficient_2_user_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:ConvectionCoefficients`` and add it to the document.
 
@@ -227,6 +232,7 @@ class AnyGasEquipment:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GasEquipment`` and add it to the document.
 
@@ -292,6 +298,7 @@ class AnyHVACTemplateZoneWaterToAirHeatPump:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:WaterToAirHeatPump`` and add it to the document.
 
@@ -324,6 +331,7 @@ class CoilHeatingDesuperheater:
         heat_reclaim_recovery_efficiency: float | None = ...,
         temperature_setpoint_node_name: str | None = ...,
         on_cycle_parasitic_electric_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Desuperheater`` and add it to the document.
 
@@ -339,6 +347,7 @@ class OutdoorAirNodeList:
         /,
         *,
         nodes: Sequence[_g.OutdoorAirNodeListNodesItem | _g.OutdoorAirNodeListNodesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutdoorAir:NodeList`` and add it to the document.
 
@@ -363,6 +372,7 @@ class GroundHeatExchangerVerticalProperties:
         pipe_outer_diameter: float,
         pipe_thickness: float,
         u_tube_distance: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Vertical:Properties`` and add it to the document.
 
@@ -372,7 +382,7 @@ class GroundHeatExchangerVerticalProperties:
         """
 
 class PlantEquipmentOperationUncontrolled:
-    def __call__(self, name: str, /, *, equipment_list_name: str) -> None:
+    def __call__(self, name: str, /, *, equipment_list_name: str, validate: bool = True) -> None:
         """Create a new ``PlantEquipmentOperation:Uncontrolled`` and add it to the document.
 
         Plant equipment operation scheme for uncontrolled operation. Specifies a group of equipment that runs if the loop is active, unless turned off by the loop flow resolver to maintain continuity in the fluid loop.
@@ -436,6 +446,7 @@ class AnyEnergyManagementSystemMeteredOutputVariable:
         ems_program_or_subroutine_name: str | None = ...,
         end_use_subcategory: str | None = ...,
         units: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:MeteredOutputVariable`` and add it to the document.
 
@@ -471,6 +482,7 @@ class RefrigerationWalkIn:
         average_refrigerant_charge_inventory: float | None = 0,
         insulated_floor_u_value: float | None = 0.3154,
         zone_data: Sequence[_g.RefrigerationWalkInZoneDataItem | _g.RefrigerationWalkInZoneDataGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:WalkIn`` and add it to the document.
 

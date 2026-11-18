@@ -27,6 +27,7 @@ class AnyFloorInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Interzone`` and add it to the document.
 
@@ -52,6 +53,7 @@ class ShadingFin:
         right_distance_below_bottom_of_window: float | None = ...,
         right_tilt_angle_from_window_door: float | None = 90,
         right_depth: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Shading:Fin`` and add it to the document.
 
@@ -70,6 +72,7 @@ class AirflowNetworkDistributionLinkage:
         node_2_name: str,
         component_name: str,
         thermal_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Linkage`` and add it to the document.
 
@@ -115,6 +118,7 @@ class PlantEquipmentOperationOutdoorWetBulbDifference:
         wet_bulb_temperature_difference_range_10_lower_limit: float | None = ...,
         wet_bulb_temperature_difference_range_10_upper_limit: float | None = ...,
         range_10_equipment_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:OutdoorWetBulbDifference`` and add it to the document.
 
@@ -139,6 +143,7 @@ class AnyDemandManagerAssignmentList:
         manager_data: Sequence[
             _g.DemandManagerAssignmentListManagerDataItem | _g.DemandManagerAssignmentListManagerDataGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManagerAssignmentList`` and add it to the document.
 
@@ -167,6 +172,7 @@ class UtilityCostVariable:
         october_value: float | None = ...,
         november_value: float | None = ...,
         december_value: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UtilityCost:Variable`` and add it to the document.
 
@@ -221,6 +227,7 @@ class LifeCycleCostUsePriceEscalation:
         escalations: Sequence[
             _g.LifeCycleCostUsePriceEscalationEscalationsItem | _g.LifeCycleCostUsePriceEscalationEscalationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:UsePriceEscalation`` and add it to the document.
 

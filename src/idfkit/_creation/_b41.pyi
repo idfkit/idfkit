@@ -22,6 +22,7 @@ class AnyHVACSystemRootFindingAlgorithm:
         ]
         | None = "RegulaFalsi",
         number_of_iterations_before_algorithm_switch: int | None = 5,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACSystemRootFindingAlgorithm`` and add it to the document.
 
@@ -44,6 +45,7 @@ class SiteGroundTemperatureUndisturbedXing:
         soil_surface_temperature_amplitude_2: float,
         phase_shift_of_temperature_amplitude_1: float,
         phase_shift_of_temperature_amplitude_2: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundTemperature:Undisturbed:Xing`` and add it to the document.
 
@@ -69,6 +71,7 @@ class ElectricEquipment:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment`` and add it to the document.
 
@@ -87,6 +90,7 @@ class AirflowNetworkMultiZoneComponentSimpleOpening:
         minimum_density_difference_for_two_way_flow: float,
         discharge_coefficient: float,
         air_mass_flow_exponent_when_opening_is_closed: float | None = 0.65,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Component:SimpleOpening`` and add it to the document.
 
@@ -118,6 +122,7 @@ class AirTerminalSingleDuctConstantVolumeFourPipeInduction:
         maximum_cold_water_flow_rate: float | Literal["Autosize"] | None = ...,
         minimum_cold_water_flow_rate: float | None = 0,
         cooling_convergence_tolerance: float | None = 0.001,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction`` and add it to the document.
 
@@ -243,6 +248,7 @@ class CoilCoolingDXSingleSpeedThermalStorage:
         storage_tank_plant_connection_heat_transfer_effectiveness: float | None = 0.7,
         storage_tank_minimum_operating_limit_fluid_temperature: float | None = ...,
         storage_tank_maximum_operating_limit_fluid_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:SingleSpeed:ThermalStorage`` and add it to the document.
 
@@ -259,6 +265,7 @@ class Branch:
         *,
         pressure_drop_curve_name: str | None = ...,
         components: Sequence[_g.BranchComponentsItem | _g.BranchComponentsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Branch`` and add it to the document.
 
@@ -315,6 +322,7 @@ class RefrigerationAirChiller:
         temperature_termination_defrost_fraction_to_ice: float | None = ...,
         vertical_location: Literal["Ceiling", "Floor", "Middle"] | None = "Middle",
         average_refrigerant_charge_inventory: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:AirChiller`` and add it to the document.
 
@@ -336,6 +344,7 @@ class OutputControlTableStyle:
         unit_conversion: Literal["InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"]
         | None = "None",
         format_numeric_values: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Table:Style`` and add it to the document.
 
@@ -345,7 +354,7 @@ class OutputControlTableStyle:
         """
 
 class AnyPythonPluginVariables:
-    def __call__(self, name: str, /) -> None:
+    def __call__(self, name: str, /, *, validate: bool = True) -> None:
         """Create a new ``PythonPlugin:Variables`` and add it to the document.
 
         This object defines name identifiers for custom Python Plugin variable data that should be shared among all running Python Plugins.

@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `validate_document` started warning (`W004`) about an `Output:Diagnostics`,
   `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable`
   with no (or only blank) entries, which IDF cannot write ([#279](https://github.com/idfkit/idfkit/pull/279)).
+- The typed `doc.zones.add(...)` / `doc["Zone"].add(...)` took `validate=False`, as `doc.add()` does,
+  to skip validation while type-checking the fields ([#304](https://github.com/idfkit/idfkit/pull/304)).
 
 ### Changed
 

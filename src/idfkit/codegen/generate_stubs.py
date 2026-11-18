@@ -1190,6 +1190,12 @@ def _strip_none(annotation: str) -> str:
 # The parameter a creation signature requires when no call can satisfy every release it serves.
 _NARROW_FIRST = "narrow_with_as_version_first"
 
+# The keyword every creation signature ends with, as IDFDocument.add takes it: validate=False skips
+# value, required-field and range checks (an unknown key is still refused). PEP 612 allows no
+# keyword beside the ParamSpec IDFCollection.add takes the signature through, so each signature
+# declares it. No field of any bundled schema is named so; _creation_lines asserts it stays that way.
+_VALIDATE_PARAM = "validate: bool = True"
+
 
 # A group wrapper's annotation, as _group_items writes it.
 _GROUP_ITEMS = re.compile(r"Sequence\[([\w.]+) \| ([\w.]+)\]")
@@ -1359,7 +1365,11 @@ def _creation_lines(
     the type has one; a type without one takes ``this_type_has_no_name_field`` there instead, typed
     with an alias of ``Never`` so that a name passed by mistake is reported as such. The fields follow, keyword-only: the required ones without a default and with
     ``None`` taken out (leaving one empty is what makes it missing), then the others with their
-    schema default where the annotation admits it, and ``...`` otherwise.
+    schema default where the annotation admits it, and ``...`` otherwise. Last comes
+    ``validate: bool = True``, the switch ``IDFDocument.add`` takes, which ``IDFCollection.add``
+    passes through: PEP 612 lets ``add`` declare no keyword of its own beside the signature it
+    takes. ``validate=False`` relaxes no required field here: it is for loading data already
+    known good, not for leaving fields out, so a call that leaves one out stays a type error.
 
     A required field the class cannot be given a value for (one ``Any<Class>`` does not declare,
     because a release names it differently, or whose only value safe in every release is ``None``),
@@ -1398,9 +1408,12 @@ def _creation_lines(
         default = defaults.get(name)
         shown = default if default is not None and _admits(_split_union(value_type), default) else "..."
         optional.append(f"{name}: {annotation} = {shown}")
-    if required or optional:
-        params.append("*")
-    params += required + optional
+    if any(name.rstrip("_") == "validate" for name, _ in fields):
+        # IDFDocument.add takes validate= for itself too, so such a field could be set by neither.
+        msg = f"{obj_type} has a field named validate, which add() takes as its validation switch"
+        raise ValueError(msg)
+    params.append("*")
+    params += [*required, *optional, _VALIDATE_PARAM]
     doc = _creation_docstring(schema, obj_type, narrow_first=narrow_first)
     # Each class's signature is its own, unrelated to its base's: an override mypy reports as an
     # incompatible assignment (pyright does not), as the generated update and as_dict overrides are.

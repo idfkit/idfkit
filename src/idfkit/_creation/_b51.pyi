@@ -71,6 +71,7 @@ class AnyMaterialPropertyHeatAndMoistureTransferDiffusion:
         water_vapor_diffusion_resistance_factor_24: float | None = ...,
         relative_humidity_fraction_25: float | None = ...,
         water_vapor_diffusion_resistance_factor_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Diffusion`` and add it to the document.
 
@@ -93,6 +94,7 @@ class WindowPropertyAirflowControl:
         airflow_is_scheduled: Literal["No", "Yes"] | None = "No",
         airflow_multiplier_schedule_name: str | None = ...,
         airflow_return_air_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowProperty:AirflowControl`` and add it to the document.
 
@@ -113,6 +115,7 @@ class ShadingOverhang:
         left_extension_from_window_door_width: float | None = ...,
         right_extension_from_window_door_width: float | None = ...,
         depth: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Shading:Overhang`` and add it to the document.
 
@@ -135,6 +138,7 @@ class AnyZoneBaseboardOutdoorTemperatureControlled:
         high_temperature: float,
         fraction_radiant: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneBaseboard:OutdoorTemperatureControlled`` and add it to the document.
 
@@ -155,6 +159,7 @@ class SetpointManagerScheduledDualSetpoint:
         low_setpoint_schedule_name: str,
         setpoint_node_or_nodelist_name: str,
         control_variable: Literal["Temperature"] | None = "Temperature",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:Scheduled:DualSetpoint`` and add it to the document.
 
@@ -183,6 +188,7 @@ class RefrigerationTranscriticalSystem:
         sum_ua_suction_piping_for_low_temperature_loads: float | None = 0,
         low_temperature_suction_piping_zone_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:TranscriticalSystem`` and add it to the document.
 
@@ -219,6 +225,7 @@ class AnyRefrigerationSecondarySystem:
         receiver_separator_zone_name: str | None = ...,
         evaporator_refrigerant_inventory: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:SecondarySystem`` and add it to the document.
 
@@ -241,6 +248,7 @@ class DemandManagerLights:
         limit_step_change: float | None = ...,
         rotation_duration: int | None = ...,
         lights: Sequence[_g.DemandManagerLightsLightsItem | _g.DemandManagerLightsLightsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:Lights`` and add it to the document.
 
@@ -286,6 +294,7 @@ class UtilityCostComputation:
         compute_step_28: str | None = ...,
         compute_step_29: str | None = ...,
         compute_step_30: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UtilityCost:Computation`` and add it to the document.
 
@@ -306,6 +315,7 @@ class PythonPluginSearchPaths:
         py_search_paths: Sequence[
             _g.PythonPluginSearchPathsPySearchPathsItem | _g.PythonPluginSearchPathsPySearchPathsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:SearchPaths`` and add it to the document.
 

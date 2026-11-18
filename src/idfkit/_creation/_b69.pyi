@@ -37,6 +37,7 @@ class GroundHeatTransferBasementMatlProps:
         thermal_conductivity_for_soil: float | None = 1.1,
         thermal_conductivity_for_gravel: float | None = 1.9,
         thermal_conductivity_for_wood: float | None = 0.12,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:MatlProps`` and add it to the document.
 
@@ -58,6 +59,7 @@ class GroundHeatTransferBasementSurfaceProps:
         veght_surface_roughness_no_snow_conditions: float | None = 6,
         veght_surface_roughness_snow_conditions: float | None = 0.25,
         pet_flag_potential_evapotranspiration_on_: Literal["FALSE", "TRUE"] | None = "FALSE",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:SurfaceProps`` and add it to the document.
 
@@ -76,6 +78,7 @@ class AnyDaylightingReferencePoint:
         x_coordinate_of_reference_point: float,
         y_coordinate_of_reference_point: float,
         z_coordinate_of_reference_point: float | None = 0.8,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Daylighting:ReferencePoint`` and add it to the document.
 
@@ -122,6 +125,7 @@ class HVACTemplateZoneUnitary:
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
         design_specification_outdoor_air_object_name: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:Unitary`` and add it to the document.
 
@@ -178,6 +182,7 @@ class HVACTemplatePlantHotWaterLoop:
             "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"
         ]
         | None = "SequentialLoad",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:HotWaterLoop`` and add it to the document.
 
@@ -208,6 +213,7 @@ class AirTerminalSingleDuctMixer:
         mixer_connection_type: Literal["InletSide", "SupplySide"],
         design_specification_outdoor_air_object_name: str | None = ...,
         per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None = "CurrentOccupancy",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:Mixer`` and add it to the document.
 
@@ -227,6 +233,7 @@ class LifeCycleCostNonrecurringCost:
         start_of_costs: Literal["BasePeriod", "ServicePeriod"] | None = "ServicePeriod",
         years_from_start: int | None = ...,
         months_from_start: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:NonrecurringCost`` and add it to the document.
 

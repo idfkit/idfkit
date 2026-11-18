@@ -712,6 +712,12 @@ class TestCommittedStubs:
                 _NO_RELEASE,
             ),
             (
+                r"(class Zone:.*?)validate: bool = True,",
+                r"\1",
+                "Zone in 26.2.0 (Zone): add() does not take validate: bool = True",
+                (LATEST_VERSION,),
+            ),
+            (
                 r"(class AnyPeople:.*?)narrow_with_as_version_first: Never,",
                 r"\1",
                 "(AnyPeople): add() can satisfy no release's required fields or name but does not say so",

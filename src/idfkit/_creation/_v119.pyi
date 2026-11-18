@@ -104,6 +104,7 @@ class CoilHeatingDXVariableSpeed_v8_9_to_v22_1:
         speed_10_heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:VariableSpeed`` and add it to the document.
 
@@ -170,6 +171,7 @@ class MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1:
         liquid_transport_coefficient_24: float | None = ...,
         moisture_content_25: float | None = ...,
         liquid_transport_coefficient_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Redistribution`` and add it to the document.
 
@@ -191,6 +193,7 @@ class UnitarySystemPerformanceMultispeed_v8_9_to_v22_1:
         flow_ratios: Sequence[
             _g.UnitarySystemPerformanceMultispeedFlowRatiosItem | _g.UnitarySystemPerformanceMultispeedFlowRatiosGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UnitarySystemPerformance:Multispeed`` and add it to the document.
 

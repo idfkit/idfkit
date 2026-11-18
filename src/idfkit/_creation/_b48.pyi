@@ -21,6 +21,7 @@ class SiteGroundReflectanceSnowModifier:
         *,
         ground_reflected_solar_modifier: float | None = 1,
         daylighting_ground_reflected_solar_modifier: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundReflectance:SnowModifier`` and add it to the document.
 
@@ -38,6 +39,7 @@ class RoofIrrigation:
         irrigation_model_type: Literal["Schedule", "SmartSchedule"] | None = ...,
         irrigation_rate_schedule_name: str | None = ...,
         irrigation_maximum_saturation_threshold: float | None = 40,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoofIrrigation`` and add it to the document.
 
@@ -47,7 +49,7 @@ class RoofIrrigation:
         """
 
 class AnyMaterialPropertyVariableThermalConductivity:
-    def __call__(self, name: str, /, *, narrow_with_as_version_first: Never) -> None:
+    def __call__(self, name: str, /, *, narrow_with_as_version_first: Never, validate: bool = True) -> None:
         """Create a new ``MaterialProperty:VariableThermalConductivity`` and add it to the document.
 
         Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity function. Name is followed by up to 100 sets of temperature-conductivity pairs. HeatBalanceAlgorithm = CondFD(ConductionFiniteDifference) solution algorithm only. Has no effect with other HeatBalanceAlgorithm solution algorithms
@@ -68,6 +70,7 @@ class SurfacePropertiesVaporCoefficients:
         external_vapor_coefficient_value: float | None = 0,
         constant_internal_vapor_transfer_coefficient: Literal["No", "Yes"] | None = "No",
         internal_vapor_coefficient_value: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperties:VaporCoefficients`` and add it to the document.
 
@@ -87,6 +90,7 @@ class HotWaterEquipmentInstance:
         schedule_name: str,
         multiplier: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HotWaterEquipment:Instance`` and add it to the document.
 
@@ -147,6 +151,7 @@ class AnyZoneThermalChimney:
         cross_sectional_areas_of_air_channel_inlet_19: float | None = ...,
         distance_from_top_of_thermal_chimney_to_inlet_20: float | None = ...,
         cross_sectional_areas_of_air_channel_inlet_20: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneThermalChimney`` and add it to the document.
 
@@ -190,6 +195,7 @@ class AirflowNetworkMultiZoneSurface:
         equivalent_rectangle_method: Literal["BaseSurfaceAspectRatio", "PolygonHeight", "UserDefinedAspectRatio"]
         | None = "PolygonHeight",
         equivalent_rectangle_aspect_ratio: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Surface`` and add it to the document.
 
@@ -254,6 +260,7 @@ class HVACTemplateZoneFanCoil:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
 
@@ -280,6 +287,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater:
             _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Water`` and add it to the document.
 
@@ -317,6 +325,7 @@ class AnyCoilCoolingDXTwoStageWithHumidityControlMode:
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` and add it to the document.
 
@@ -356,6 +365,7 @@ class AnyGroundHeatExchangerSlinky:
         number_of_trenches: int | None = 1,
         horizontal_spacing_between_pipes: float | None = 2,
         maximum_length_of_simulation: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Slinky`` and add it to the document.
 
@@ -380,6 +390,7 @@ class DemandManagerAssignmentList:
         manager_data: Sequence[
             _g.DemandManagerAssignmentListManagerDataItem | _g.DemandManagerAssignmentListManagerDataGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManagerAssignmentList`` and add it to the document.
 
@@ -423,6 +434,7 @@ class GeneratorWindTurbine:
         power_coefficient_c4: float | None = 0,
         power_coefficient_c5: float | None = 5,
         power_coefficient_c6: float | None = 21,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:WindTurbine`` and add it to the document.
 

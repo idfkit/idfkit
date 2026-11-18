@@ -102,6 +102,7 @@ class ZoneThermalChimney_v8_9_to_v24_1:
         distance_from_top_of_thermal_chimney_to_inlet_20: float | None = ...,
         relative_ratios_of_air_flow_rates_passing_through_zone_20: float | None = ...,
         cross_sectional_areas_of_air_channel_inlet_20: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneThermalChimney`` and add it to the document.
 
@@ -168,6 +169,7 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_v8_9_to_v22_1:
         moisture_content_24: float | None = ...,
         relative_humidity_fraction_25: float | None = ...,
         moisture_content_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:SorptionIsotherm`` and add it to the document.
 
@@ -208,6 +210,7 @@ class ZoneVentilationDesignFlowRate_v8_9_to_v22_1:
         maximum_outdoor_temperature: float | None = 100,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_wind_speed: float | None = 40,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneVentilation:DesignFlowRate`` and add it to the document.
 
@@ -233,6 +236,7 @@ class TableLookup_v9_2_to_v22_1:
         external_file_column_number: float | None = ...,
         external_file_starting_row_number: float | None = ...,
         values: Sequence[_g.TableLookupValuesItem | _g.TableLookupValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:Lookup`` and add it to the document.
 

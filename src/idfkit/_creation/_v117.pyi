@@ -50,6 +50,7 @@ class MaterialPropertyPhaseChange_v8_9_to_v24_1:
         enthalpy_15: float | None = ...,
         temperature_16: float | None = ...,
         enthalpy_16: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:PhaseChange`` and add it to the document.
 
@@ -77,6 +78,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1:
         rated_entering_water_temperature: float | None = 20,
         rated_entering_air_dry_bulb_temperature: float | None = 20,
         ratio_of_rated_heating_capacity_to_rated_cooling_capacity: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -121,6 +123,7 @@ class CoilHeatingDXSingleSpeed_v8_9_to_v22_1:
         nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:SingleSpeed`` and add it to the document.
 
@@ -184,6 +187,7 @@ class FuelFactors_v9_3_to_v22_1:
         nuclear_high_level_emission_factor_schedule_name: str | None = ...,
         nuclear_low_level_emission_factor: float | None = ...,
         nuclear_low_level_emission_factor_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FuelFactors`` and add it to the document.
 
@@ -220,6 +224,7 @@ class MeterCustomDecrement_v9_4_to_v23_1:
         variable_details: Sequence[
             _g.MeterCustomDecrementVariableDetailsItem | _g.MeterCustomDecrementVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Meter:CustomDecrement`` and add it to the document.
 
@@ -252,6 +257,7 @@ class CoilHeatingDesuperheater_v22_2_to_v23_1:
         heat_reclaim_recovery_efficiency: float | None = ...,
         temperature_setpoint_node_name: str | None = ...,
         parasitic_electric_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Desuperheater`` and add it to the document.
 
@@ -382,6 +388,7 @@ class AirLoopHVACUnitarySystem_v8_9_to_v9_2:
         heat_recovery_water_outlet_node_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitarySystem`` and add it to the document.
 
@@ -439,6 +446,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1:
         heating_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_3_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` and add it to the document.
 

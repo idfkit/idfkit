@@ -24,6 +24,7 @@ class RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1:
             _g.RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasItem
             | _g.RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:SurfaceMapping`` and add it to the document.
 

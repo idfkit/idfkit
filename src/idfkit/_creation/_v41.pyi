@@ -23,6 +23,7 @@ class OutputTableAnnual_v8_9_to_v22_1:
             _vd.OutputTableAnnualVariableDetailsItem_v8_9_to_v22_1
             | _vd.OutputTableAnnualVariableDetailsGroup_v8_9_to_v22_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:Annual`` and add it to the document.
 
@@ -61,6 +62,7 @@ class GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1:
         soil_moisture_content_percent: float | None = 30,
         soil_moisture_content_percent_at_saturation: float | None = 50,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:HorizontalTrench`` and add it to the document.
 

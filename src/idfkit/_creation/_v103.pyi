@@ -46,6 +46,7 @@ class OtherEquipment_v8_9_to_v9_2:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OtherEquipment`` and add it to the document.
 

@@ -32,6 +32,7 @@ class ChillerConstantCOP_v8_9_to_v24_1:
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:ConstantCOP`` and add it to the document.
 
@@ -51,6 +52,7 @@ class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1:
             _vd.ZonePropertyUserViewFactorsbySurfaceNameViewFactorsItem_v8_9_to_v9_1
             | _vd.ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneProperty:UserViewFactors:bySurfaceName`` and add it to the document.
 
@@ -67,6 +69,7 @@ class OutputTableSummaryReports_v8_9_to_v9_2:
             _vd.OutputTableSummaryReportsReportsItem_v8_9_to_v9_2
             | _vd.OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:SummaryReports`` and add it to the document.
 
@@ -126,6 +129,7 @@ class CoolingTowerVariableSpeedMerkel_v8_9_to_v22_1:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:VariableSpeed:Merkel`` and add it to the document.
 
@@ -270,6 +274,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
 
@@ -287,6 +292,7 @@ class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_1:
         controller_list_name: str,
         outdoor_air_equipment_list_name: str,
         availability_manager_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:OutdoorAirSystem`` and add it to the document.
 

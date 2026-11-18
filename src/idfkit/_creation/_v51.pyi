@@ -19,6 +19,7 @@ class MaterialNoMass_v8_9_to_v26_1:
         thermal_absorptance: float | None = 0.9,
         solar_absorptance: float | None = 0.7,
         visible_absorptance: float | None = 0.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Material:NoMass`` and add it to the document.
 
@@ -51,6 +52,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4:
         heating_power_consumption_coefficient_3: float,
         heating_power_consumption_coefficient_4: float,
         heating_power_consumption_coefficient_5: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -101,6 +103,7 @@ class ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2:
         ]
         | None = "NaturalGas",
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ChillerHeater:Absorption:DirectFired`` and add it to the document.
 
@@ -130,6 +133,7 @@ class ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1:
         stage_2_cooling_temperature_offset: float | None = ...,
         stage_3_cooling_temperature_offset: float | None = ...,
         stage_4_cooling_temperature_offset: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:Thermostat:StagedDualSetpoint`` and add it to the document.
 
@@ -139,7 +143,9 @@ class ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1:
         """
 
 class EnergyManagementSystemTrendVariable_v8_9_to_v22_1:
-    def __call__(self, name: str, /, *, ems_variable_name: str, number_of_timesteps_to_be_logged: float) -> None:
+    def __call__(
+        self, name: str, /, *, ems_variable_name: str, number_of_timesteps_to_be_logged: float, validate: bool = True
+    ) -> None:
         """Create a new ``EnergyManagementSystem:TrendVariable`` and add it to the document.
 
         This object sets up an EMS trend variable from an Erl variable A trend variable logs values across timesteps
@@ -173,6 +179,7 @@ class ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3:
         ]
         | None = "MeanAirTemperature",
         heating_throttling_range: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:Electric`` and add it to the document.
 
