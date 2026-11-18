@@ -195,10 +195,12 @@ def _read_signature(node: ast.ClassDef) -> _CreationSignature | None:
 
 
 # Reading is memoised by source text. A source does not change what it says between calls, and the
-# stubs are about 10 MB: re-reading all of them dominated a call to verify() that differs from the
-# last only in one source, as the mutation tests' calls do. What is cached is never mutated after it
-# is read, so callers share it; merging copies the containers. The bounds hold every committed
-# source plus a few others, so a caller that passes many one-off sources does not grow the cache.
+# stubs are about 10 MB: re-reading them was about half of a call to verify() that differs from the
+# last only in one source, as the mutation tests' calls do. What is cached is shared by every caller
+# and must never be mutated after it is read; merging copies the containers. The bounds are sized for
+# the tests' calls, which pass the 257 creation modules and four other sources (the ``_versioned``
+# modules joined into one), plus a few one-off sources each. ``generate_stubs`` passes the
+# ``_versioned`` modules separately, more sources than ``_read_source`` holds, but calls once.
 @functools.lru_cache(maxsize=512)
 def _read_creation_module(source: str) -> tuple[tuple[str, _CreationSignature], ...]:
     """The creation signatures of one creation module, by class name."""
@@ -463,7 +465,7 @@ def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problem
         retyped = sorted(k for k in set(actual) & set(expected) if actual[k] != expected[k])
         problems.append(f"{where}: missing {missing}, extra {extra}, mistyped {retyped}")
     _check_update(module, cls, keywords, where, problems)
-    _check_creation(module, cls, [_schema_of(ver)], obj_type, where, problems)
+    _check_creation(module, cls, (_schema_of(ver),), obj_type, where, problems)
 
 
 def _schema_of(ver: Version) -> EpJSONSchema:
@@ -486,13 +488,8 @@ class _ExpectedCreation:
     name_conflict: bool = False
 
 
-def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedCreation:
-    """See :func:`_expected_creation_of`, which this caches by its arguments."""
-    return _expected_creation_of(tuple(schemas), obj_type)
-
-
 @functools.cache
-def _expected_creation_of(schemas: tuple[EpJSONSchema, ...], obj_type: str) -> _ExpectedCreation:
+def _expected_creation(schemas: tuple[EpJSONSchema, ...], obj_type: str) -> _ExpectedCreation:
     """The name, required fields and defaults *obj_type*'s creation must have to suit all *schemas*.
 
     A field is required when its schema lists it in ``required`` and gives it no default, as the
@@ -552,7 +549,7 @@ def _update_keywords(module: _Module, cls: str) -> dict[str, frozenset[str]]:
 
 
 def _check_creation(
-    module: _Module, cls: str, schemas: list[EpJSONSchema], obj_type: str, where: str, problems: list[str]
+    module: _Module, cls: str, schemas: tuple[EpJSONSchema, ...], obj_type: str, where: str, problems: list[str]
 ) -> None:
     """Check the creation signature of *cls* against its ``update`` keywords and *schemas*."""
     found = _creation_of(module, cls)
@@ -746,7 +743,14 @@ def verify(
             always run. Leaving a release out only leaves its problems out: the checks of
             different releases do not depend on one another, so every problem reported with
             *releases* given is also reported without it.
+
+    Raises:
+        ValueError: *releases* names a release that is not one of *versions*.
     """
+    versions = tuple(versions)
+    if releases is not None and (unknown := [ver for ver in releases if ver not in versions]):
+        msg = f"releases {unknown} are not among the versions verified"
+        raise ValueError(msg)
     _REQUIRED_READS.clear()
     _REQUIRED_READS.update(_required_reads(versions))
     sources = list(versioned_sources)
@@ -1079,7 +1083,7 @@ def _check_any_entry(
             if not decl[name] <= admitted:
                 problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: does not admit every version's values")
                 break
-    _check_creation(module, cls, having, obj_type, f"AnyIDFDocument[{obj_type!r}] ({cls})", problems)
+    _check_creation(module, cls, tuple(having), obj_type, f"AnyIDFDocument[{obj_type!r}] ({cls})", problems)
 
 
 def _intersection(sets: list[set[str]]) -> set[str]:

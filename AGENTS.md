@@ -69,8 +69,8 @@ ENERGYPLUS_DIR=/usr/local/EnergyPlus-24-2-0 uv run pytest -m integration -v
 ```
 
 Tests that take seconds each (stub generation, the full stub verification) are marked
-`@pytest.mark.slow`. Mark a new test `slow` when it takes seconds and something else in the suite
-or `make check` covers the same ground faster; `make test` and CI still run it. Tests run in
+`@pytest.mark.slow`. Mark a new test `slow` when it takes seconds; `make test-fast` then skips it,
+and `make test` and CI still run it. Tests run in
 parallel worker processes, so a test must not write outside its `tmp_path`: in particular not into
 `src/idfkit/`, which other workers read at the same time.
 

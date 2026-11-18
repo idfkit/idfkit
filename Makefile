@@ -98,7 +98,8 @@ check: check-stubs check-conformance-level check-epw-sentinels check-doc-locatio
 
 # Both run in parallel, one pytest-xdist worker per core. worksteal rather than the default load
 # scheduling because a few tests take seconds (stub generation, the full stub verification): idle
-# workers take queued tests from busy ones instead of waiting behind them, which halves the wall time.
+# workers take queued tests from busy ones instead of waiting behind them. Measured on 4 cores, that
+# cut the run from 120 s to 77 s without coverage and from 212 s to 170 s with it.
 # `make test` runs every test, as CI does: the `slow` ones and, where EnergyPlus is installed, the
 # `integration` ones. `make test-fast` leaves both out, for the edit-and-rerun loop.
 PYTEST_PARALLEL = -n auto --dist worksteal

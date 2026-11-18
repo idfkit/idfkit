@@ -740,6 +740,11 @@ class TestCommittedStubs:
         problems = _verify(sources, ENERGYPLUS_VERSIONS, releases=releases)
         assert any(expected in problem for problem in problems), problems
 
+    def test_a_scope_naming_an_unverified_release_is_refused(self) -> None:
+        # A release outside the verified ones, misspelled or since dropped, would otherwise check nothing.
+        with pytest.raises(ValueError, match=r"\(9, 4, 1\)"):
+            _verify(_committed(), ENERGYPLUS_VERSIONS, releases=((9, 4, 1),))
+
     @pytest.mark.slow
     def test_a_fault_in_the_generators_type_mapping_is_reported(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # The check derives each field's values from the schema itself, so a generator that maps a
