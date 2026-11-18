@@ -30,6 +30,7 @@ class SiteGroundReflectance:
         october_ground_reflectance: float | None = 0.2,
         november_ground_reflectance: float | None = 0.2,
         december_ground_reflectance: float | None = 0.2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundReflectance`` and add it to the document.
 
@@ -50,6 +51,7 @@ class ShadingOverhangProjection:
         left_extension_from_window_door_width: float | None = ...,
         right_extension_from_window_door_width: float | None = ...,
         depth_as_fraction_of_window_door_height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Shading:Overhang:Projection`` and add it to the document.
 
@@ -67,6 +69,7 @@ class SurfacePropertyHeatBalanceSourceTerm:
         surface_name: str,
         inside_face_heat_source_term_schedule_name: str | None = ...,
         outside_face_heat_source_term_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:HeatBalanceSourceTerm`` and add it to the document.
 
@@ -85,6 +88,7 @@ class ZoneContaminantSourceAndSinkGenericDecaySource:
         schedule_name: str,
         initial_emission_rate: float | None = ...,
         delay_time_constant: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneContaminantSourceAndSink:Generic:DecaySource`` and add it to the document.
 
@@ -120,6 +124,7 @@ class AnyAirflowNetworkSimulationControl:
         ratio_of_building_width_along_short_axis_to_width_along_long_axis: float | None = 1,
         height_dependence_of_external_node_temperature: Literal["No", "Yes"] | None = "No",
         solver: Literal["ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:SimulationControl`` and add it to the document.
 
@@ -146,6 +151,7 @@ class AnyHeatPumpWaterToWaterEquationFitHeating:
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
         companion_cooling_heat_pump_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:EquationFit:Heating`` and add it to the document.
 
@@ -187,6 +193,7 @@ class GroundHeatExchangerSlinky:
         number_of_trenches: int | None = 1,
         horizontal_spacing_between_pipes: float | None = 2,
         maximum_length_of_simulation: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Slinky`` and add it to the document.
 
@@ -205,6 +212,7 @@ class ExternalInterfaceActuator:
         actuated_component_type: str,
         actuated_component_control_type: str,
         optional_initial_value: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:Actuator`` and add it to the document.
 
@@ -228,6 +236,7 @@ class GeneratorFuelCellWaterSupply:
         | None = ...,
         water_temperature_reference_node_name: str | None = ...,
         water_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelCell:WaterSupply`` and add it to the document.
 
@@ -249,6 +258,7 @@ class ComponentCostAdjustments:
         permits_bonding_and_insurance: float | None = ...,
         commissioning_fee: float | None = ...,
         regional_adjustment_factor: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComponentCost:Adjustments`` and add it to the document.
 

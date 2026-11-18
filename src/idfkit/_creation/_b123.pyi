@@ -27,6 +27,7 @@ class AnyRunPeriod:
         apply_weekend_holiday_rule: Literal["No", "Yes"] | None = "No",
         use_weather_file_rain_indicators: Literal["No", "Yes"] | None = "Yes",
         use_weather_file_snow_indicators: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``RunPeriod`` and add it to the document.
 
@@ -46,6 +47,7 @@ class WindowMaterialGap:
         pressure: float | None = 101325,
         deflection_state: str | None = ...,
         support_pillar: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Gap`` and add it to the document.
 
@@ -79,6 +81,7 @@ class AnyRoomAirTemperaturePatternTwoGradient:
         lower_temperature_bound: float | None = ...,
         upper_heat_rate_bound: float | None = ...,
         lower_heat_rate_bound: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:TwoGradient`` and add it to the document.
 
@@ -97,6 +100,7 @@ class HVACTemplateThermostat:
         constant_heating_setpoint: float | None = ...,
         cooling_setpoint_schedule_name: str | None = ...,
         constant_cooling_setpoint: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Thermostat`` and add it to the document.
 
@@ -106,7 +110,7 @@ class HVACTemplateThermostat:
         """
 
 class ExternalInterfaceVariable:
-    def __call__(self, name: str, /, *, initial_value: float) -> None:
+    def __call__(self, name: str, /, *, initial_value: float, validate: bool = True) -> None:
         """Create a new ``ExternalInterface:Variable`` and add it to the document.
 
         This input object is similar to EnergyManagementSystem:GlobalVariable. However, at the beginning of each zone time step, its value is set to the value received from the external interface. During the warm-up period and the system sizing, its value is set to the value specified by the field 'initial value.' This object can be used to move data into Erl subroutines.
@@ -405,6 +409,7 @@ class OutputControlSurfaceColorScheme:
         ]
         | None = ...,
         color_for_drawing_element_15: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:SurfaceColorScheme`` and add it to the document.
 

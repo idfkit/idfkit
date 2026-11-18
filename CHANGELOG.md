@@ -41,8 +41,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `validate_document` started warning (`W004`) about an `Output:Diagnostics`,
   `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable`
   with no (or only blank) entries, which IDF cannot write ([#279](https://github.com/idfkit/idfkit/pull/279)).
+- The typed `doc.zones.add(...)` / `doc["Zone"].add(...)` took `validate=False`, as `doc.add()` does,
+  to skip validation while type-checking the fields ([#304](https://github.com/idfkit/idfkit/pull/304)).
 
 ### Changed
+
+- **Breaking:** for type checking, a type a model holds at most one of (`Building`, `Timestep`,
+  `Output:SQLite`, ...) is reached by its singular, `doc.building`, still returning the collection.
+  Replace `doc.output_sqlites` with `doc.output_sqlite`; for `Version`, use `doc["Version"]` ([#308](https://github.com/idfkit/idfkit/pull/308)).
 
 - **Breaking:** for type checking, a field that every release having it requires with no default
   lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;
@@ -83,6 +89,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+- The plural accessor of such a type (`doc.output_sqlites`, `doc.buildings`) was deprecated: it still
+  works with a `DeprecationWarning`, and pyright strict reports it as an error ([#308](https://github.com/idfkit/idfkit/pull/308)).
+
 - **Breaking:** `IDFCollection.add(obj)` was deprecated and became a type error; it still ran,
   with a `DeprecationWarning`, but raised `TypeError` for fields passed beside the object, which it
   used to drop. Use `doc.addidfobject(obj)` ([#296](https://github.com/idfkit/idfkit/pull/296),
@@ -93,6 +102,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The bundled `developing-with-idfkit` reference's ceiling-height examples treated a whole-number
   height such as `3`, stored as an `int`, as missing; they now accept any number
   ([#311](https://github.com/idfkit/idfkit/pull/311)).
+- `SimulationResult.errors` came back empty for runs that had failed with severe errors when the model had
+  `Output:SQLite`, because it could read `eplusSqlite.err` instead of `eplus.err`; `csv` could likewise read
+  `eplusMeter.csv`. The lookup came to find each output by name in every `output_suffix` style
+  ([#314](https://github.com/idfkit/idfkit/pull/314)).
 - `add()` and `load_epjson()` stored a blank value (`""`, epJSON `null`) as set instead of leaving
   the field unset, as the IDF parser did ([#183](https://github.com/idfkit/idfkit/issues/183),
   [#303](https://github.com/idfkit/idfkit/pull/303)).

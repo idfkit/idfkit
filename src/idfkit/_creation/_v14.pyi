@@ -51,6 +51,7 @@ class HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1:
         auxiliary_electric_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:AirToWater:FuelFired:Cooling`` and add it to the document.
 

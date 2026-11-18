@@ -15,7 +15,13 @@ from .. import _generated_types as _g
 
 class AnyScheduleYear:
     def __call__(
-        self, name: str, /, *, narrow_with_as_version_first: Never, schedule_type_limits_name: str | None = ...
+        self,
+        name: str,
+        /,
+        *,
+        narrow_with_as_version_first: Never,
+        schedule_type_limits_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Year`` and add it to the document.
 
@@ -45,6 +51,7 @@ class WindowMaterialDrapeEquivalentLayer:
         back_side_drape_material_infrared_emissivity: float | None = 0.87,
         width_of_pleated_fabric: float | None = 0,
         length_of_pleated_fabric: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Drape:EquivalentLayer`` and add it to the document.
 
@@ -62,6 +69,7 @@ class AirflowNetworkMultiZoneSurfaceCrack:
         air_mass_flow_coefficient_at_reference_conditions: float,
         air_mass_flow_exponent: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Surface:Crack`` and add it to the document.
 
@@ -123,6 +131,7 @@ class HVACTemplateZonePTAC:
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:PTAC`` and add it to the document.
 
@@ -174,6 +183,7 @@ class ZoneControlThermostatThermalComfort:
         ]
         | None = ...,
         thermal_comfort_control_4_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:Thermostat:ThermalComfort`` and add it to the document.
 
@@ -183,7 +193,9 @@ class ZoneControlThermostatThermalComfort:
         """
 
 class ThermostatSetpointSingleCooling:
-    def __call__(self, name: str, /, *, setpoint_temperature_schedule_name: str | None = ...) -> None:
+    def __call__(
+        self, name: str, /, *, setpoint_temperature_schedule_name: str | None = ..., validate: bool = True
+    ) -> None:
         """Create a new ``ThermostatSetpoint:SingleCooling`` and add it to the document.
 
         Used for a cooling only thermostat. The setpoint can be scheduled and varied throughout the simulation but only cooling is allowed.
@@ -239,6 +251,7 @@ class AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed:
         heating_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_3_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
         cooling_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` and add it to the document.
 
@@ -267,6 +280,7 @@ class FaultModelTemperatureSensorOffsetChillerSupplyWater:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         reference_sensor_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:TemperatureSensorOffset:ChillerSupplyWater`` and add it to the document.
 
@@ -285,6 +299,7 @@ class AnyOutputTableMonthly:
         variable_details: Sequence[
             _g.OutputTableMonthlyVariableDetailsItem | _g.OutputTableMonthlyVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:Monthly`` and add it to the document.
 

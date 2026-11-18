@@ -20,6 +20,7 @@ class ShadingSiteDetailed:
         transmittance_schedule_name: str | None = ...,
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.ShadingSiteDetailedVerticesItem | _g.ShadingSiteDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Shading:Site:Detailed`` and add it to the document.
 
@@ -72,6 +73,7 @@ class PeopleDefinition:
             "AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"
         ]
         | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``People:Definition`` and add it to the document.
 
@@ -123,6 +125,7 @@ class AirflowNetworkMultiZoneWindPressureCoefficientValues:
         wind_pressure_coefficient_value_34: float | None = ...,
         wind_pressure_coefficient_value_35: float | None = ...,
         wind_pressure_coefficient_value_36: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:WindPressureCoefficientValues`` and add it to the document.
 
@@ -160,6 +163,7 @@ class HVACTemplatePlantBoiler:
         optimum_part_load_ratio: float | None = 1,
         water_outlet_upper_temperature_limit: float | None = 100,
         template_plant_loop_type: Literal["HotWater", "MixedWater"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:Boiler`` and add it to the document.
 
@@ -183,6 +187,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteamDesign:
         fraction_of_autosized_heating_design_capacity: float | None = 1,
         convergence_tolerance: float | None = 0.001,
         fraction_of_radiant_energy_incident_on_people: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Steam:Design`` and add it to the document.
 
@@ -211,6 +216,7 @@ class AnyCoilHeatingDesuperheater:
         availability_schedule_name: str | None = ...,
         heat_reclaim_recovery_efficiency: float | None = ...,
         temperature_setpoint_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Desuperheater`` and add it to the document.
 
@@ -238,6 +244,7 @@ class EvaporativeCoolerIndirectCelDekPad:
         control_type: str | None = ...,
         water_supply_storage_tank_name: str | None = ...,
         secondary_air_inlet_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeCooler:Indirect:CelDekPad`` and add it to the document.
 
@@ -306,6 +313,7 @@ class EnergyManagementSystemMeteredOutputVariable:
         ems_program_or_subroutine_name: str | None = ...,
         end_use_subcategory: str | None = ...,
         units: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:MeteredOutputVariable`` and add it to the document.
 
@@ -574,6 +582,7 @@ class FluidPropertiesConcentration:
         property_value_248: float | None = ...,
         property_value_249: float | None = ...,
         property_value_250: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FluidProperties:Concentration`` and add it to the document.
 

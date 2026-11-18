@@ -23,6 +23,7 @@ class SurfacePropertyLocalEnvironment_v22_2_to_v23_1:
         surrounding_surfaces_object_name: str | None = ...,
         outdoor_air_node_name: str | None = ...,
         ground_surfaces_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:LocalEnvironment`` and add it to the document.
 
@@ -55,6 +56,7 @@ class ControllerMechanicalVentilation_v8_9_to_v9_2:
             _vd.ControllerMechanicalVentilationZoneSpecificationsItem_v8_9_to_v9_2
             | _vd.ControllerMechanicalVentilationZoneSpecificationsGroup_v8_9_to_v9_2
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Controller:MechanicalVentilation`` and add it to the document.
 
@@ -87,6 +89,7 @@ class ControllerMechanicalVentilation_v9_5:
             _vd.ControllerMechanicalVentilationZoneSpecificationsItem_v9_5
             | _vd.ControllerMechanicalVentilationZoneSpecificationsGroup_v9_5
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Controller:MechanicalVentilation`` and add it to the document.
 
@@ -105,6 +108,7 @@ class Space_v9_6_to_v22_1:
         floor_area: float | Literal["Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
         tags: Sequence[_g.SpaceTagsItem | _g.SpaceTagsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Space`` and add it to the document.
 
@@ -122,6 +126,7 @@ class AirflowNetworkMultiZoneReferenceCrackConditions_v8_9_to_v9_5:
         reference_temperature: float | None = 20,
         reference_barometric_pressure: float | None = 101325,
         reference_humidity_ratio: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:ReferenceCrackConditions`` and add it to the document.
 
@@ -153,6 +158,7 @@ class SwimmingPoolIndoor_v8_9_to_v22_1:
         pool_miscellaneous_equipment_power: float | None = ...,
         people_schedule: str | None = ...,
         people_heat_gain_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SwimmingPool:Indoor`` and add it to the document.
 

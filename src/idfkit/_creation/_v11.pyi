@@ -45,6 +45,7 @@ class CoilWaterHeatingDesuperheater_v22_2_to_v24_2:
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:Desuperheater`` and add it to the document.
 
@@ -80,6 +81,7 @@ class CoilHeatingFuel_v9_4_to_v23_1:
         parasitic_electric_load: float | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
         parasitic_fuel_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Fuel`` and add it to the document.
 
@@ -106,6 +108,7 @@ class CurveDoubleExponentialDecay_v8_9_to_v9_3:
         input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:DoubleExponentialDecay`` and add it to the document.
 

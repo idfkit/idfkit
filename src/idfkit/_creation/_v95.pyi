@@ -89,6 +89,7 @@ class WaterHeaterMixed_v8_9_to_v9_2:
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Mixed`` and add it to the document.
 
@@ -120,6 +121,7 @@ class CoilHeatingDesuperheater_v8_9_to_v22_1:
         heat_reclaim_recovery_efficiency: float | None = ...,
         temperature_setpoint_node_name: str | None = ...,
         parasitic_electric_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Desuperheater`` and add it to the document.
 
@@ -138,6 +140,7 @@ class SurfacePropertyLocalEnvironment_v8_9_to_v22_1:
         external_shading_fraction_schedule_name: str | None = ...,
         surrounding_surfaces_object_name: str | None = ...,
         outdoor_air_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:LocalEnvironment`` and add it to the document.
 
@@ -172,6 +175,7 @@ class CondenserEquipmentList_v8_9_to_v9_0:
         equipment_9_name: str | None = ...,
         equipment_10_object_type: str | None = ...,
         equipment_10_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CondenserEquipmentList`` and add it to the document.
 
@@ -194,6 +198,7 @@ class DemandManagerLights_v8_9_to_v22_1:
         limit_step_change: float | None = ...,
         rotation_duration: float | None = ...,
         lights: Sequence[_g.DemandManagerLightsLightsItem | _g.DemandManagerLightsLightsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:Lights`` and add it to the document.
 

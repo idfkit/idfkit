@@ -168,9 +168,11 @@ async def async_simulate(
         annual: Run annual simulation (``-a`` flag).
         design_day: Run design-day-only simulation (``-D`` flag).
         output_prefix: Prefix for output files (default "eplus").
-        output_suffix: Output file naming suffix: ``"C"`` for combined table
-            files (default), ``"L"`` for legacy separate table files, or
-            ``"D"`` for timestamped separate files.
+        output_suffix: EnergyPlus ``--output-suffix`` style, which names the
+            output files: ``"C"`` (capital, default) gives ``eplus.err`` and
+            ``eplusTable.htm``, ``"L"`` (legacy) gives ``eplusout.err`` and
+            ``eplustbl.htm``, and ``"D"`` (dash) gives ``eplus.err`` and
+            ``eplus-table.htm``.
         readvars: Run ReadVarsESO after simulation (``-r`` flag).
         timeout: Maximum runtime in seconds (default 3600).  Applied only
             to the main EnergyPlus subprocess; preprocessor stages have an

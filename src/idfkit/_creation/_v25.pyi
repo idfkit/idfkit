@@ -20,6 +20,7 @@ class SiteLocation_v8_9_to_v24_1:
         longitude: float | None = 0,
         time_zone: float | None = 0,
         elevation: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:Location`` and add it to the document.
 
@@ -79,6 +80,7 @@ class CoolingTowerTwoSpeed_v8_9_to_v22_1:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:TwoSpeed`` and add it to the document.
 
@@ -97,6 +99,7 @@ class OutputJSON_v9_1_to_v25_1:
         output_json: Literal["No", "Yes"] | None = "Yes",
         output_cbor: Literal["No", "Yes"] | None = "No",
         output_messagepack: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:JSON`` and add it to the document.
 
@@ -115,6 +118,7 @@ class InternalMass_v9_6_to_v24_1:
         zone_or_zonelist_name: str,
         surface_area: float,
         space_or_spacelist_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``InternalMass`` and add it to the document.
 

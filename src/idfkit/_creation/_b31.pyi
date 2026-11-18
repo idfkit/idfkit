@@ -25,6 +25,7 @@ class SiteGroundTemperatureUndisturbedFiniteDifference:
         soil_moisture_content_volume_fraction: float | None = 30,
         soil_moisture_content_volume_fraction_at_saturation: float | None = 50,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundTemperature:Undisturbed:FiniteDifference`` and add it to the document.
 
@@ -49,6 +50,7 @@ class WindowMaterialGasMixture:
         gas_3_fraction: float | None = ...,
         gas_4_type: Literal["Air", "Argon", "Krypton", "Xenon"] | None = ...,
         gas_4_fraction: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:GasMixture`` and add it to the document.
 
@@ -72,6 +74,7 @@ class MaterialPropertyMoisturePenetrationDepthSettings:
         coating_layer_water_vapor_diffusion_resistance_factor: float,
         surface_layer_penetration_depth: float | Literal["Autocalculate"] | None = "Autocalculate",
         deep_layer_penetration_depth: float | Literal["Autocalculate"] | None = "Autocalculate",
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:MoisturePenetrationDepth:Settings`` and add it to the document.
 
@@ -91,6 +94,7 @@ class GroundHeatTransferSlabManualGrid:
         nz_number_of_cells_in_the_z_direction: float,
         ibox_x_direction_cell_indicator_of_slab_edge: float,
         jbox_y_direction_cell_indicator_of_slab_edge: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:ManualGrid`` and add it to the document.
 
@@ -108,6 +112,7 @@ class RoomAirSettingsAirflowNetwork:
         zone_name: str,
         control_point_roomairflownetwork_node_name: str | None = ...,
         nodes: Sequence[_g.RoomAirSettingsAirflowNetworkNodesItem | _g.RoomAirSettingsAirflowNetworkNodesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAirSettings:AirflowNetwork`` and add it to the document.
 
@@ -134,6 +139,7 @@ class AnySteamEquipment:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SteamEquipment`` and add it to the document.
 
@@ -154,6 +160,7 @@ class ZoneContaminantSourceAndSinkGenericCutoffModel:
         schedule_name: str,
         design_generation_rate_coefficient: float | None = ...,
         cutoff_generic_contaminant_at_which_emission_ceases: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneContaminantSourceAndSink:Generic:CutoffModel`` and add it to the document.
 
@@ -180,6 +187,7 @@ class EvaporativeCoolerIndirectWetCoil:
         coil_flow_ratio: float | None = ...,
         control_type: str | None = ...,
         water_supply_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeCooler:Indirect:WetCoil`` and add it to the document.
 
@@ -230,6 +238,7 @@ class AnyPipingSystemUndergroundDomain:
         pipe_circuits: Sequence[
             _g.PipingSystemUndergroundDomainPipeCircuitsItem | _g.PipingSystemUndergroundDomainPipeCircuitsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PipingSystem:Underground:Domain`` and add it to the document.
 
@@ -290,6 +299,7 @@ class AnyChillerEngineDriven:
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
         condenser_heat_recovery_relative_capacity_fraction: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:EngineDriven`` and add it to the document.
 
@@ -323,6 +333,7 @@ class PhotovoltaicPerformanceEquivalentOneDiode:
         nominal_operating_cell_temperature_test_insolation: float | None = 800,
         module_heat_loss_coefficient: float | None = 30,
         total_heat_capacity: float | None = 50000,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:EquivalentOne-Diode`` and add it to the document.
 

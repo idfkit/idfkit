@@ -35,6 +35,7 @@ class WaterHeaterSizing_v8_9_to_v22_1:
         recovery_capacity_perunit: float | None = ...,
         storage_capacity_per_collector_area: float | None = ...,
         height_aspect_ratio: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Sizing`` and add it to the document.
 
@@ -90,6 +91,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3:
         condensation_control_dewpoint_offset: float | None = 1,
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` and add it to the document.
 

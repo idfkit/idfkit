@@ -18,6 +18,7 @@ class DistrictHeating_v8_9_to_v23_1:
         hot_water_outlet_node_name: str,
         nominal_capacity: float | Literal["Autosize"] | None = ...,
         capacity_fraction_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DistrictHeating`` and add it to the document.
 
@@ -160,6 +161,7 @@ class ZoneHVACOutdoorAirUnitEquipmentList_v8_9:
         ]
         | None = ...,
         component_8_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:OutdoorAirUnit:EquipmentList`` and add it to the document.
 
@@ -187,6 +189,7 @@ class SteamEquipment_v8_9_to_v9_5:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SteamEquipment`` and add it to the document.
 
@@ -215,6 +218,7 @@ class ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1:
         temperature_term_coefficient: float | None = 0,
         velocity_term_coefficient: float | None = 0,
         velocity_squared_term_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:DesignFlowRate`` and add it to the document.
 
@@ -251,6 +255,7 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1:
         model_parameter_n: float | None = 0.4,
         coefficient_of_induction_kin: float | Literal["Autocalculate"] | None = "Autocalculate",
         leaving_pipe_inside_diameter: float | None = 0.0145,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:CooledBeam`` and add it to the document.
 
@@ -314,6 +319,7 @@ class WindowPropertyFrameAndDivider_v22_1_to_v26_1:
             "VerticalSlider",
         ]
         | None = "CurtainWall",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowProperty:FrameAndDivider`` and add it to the document.
 

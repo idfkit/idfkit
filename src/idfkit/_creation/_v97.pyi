@@ -41,6 +41,7 @@ class HVACTemplatePlantBoiler_v8_9_to_v9_2:
         optimum_part_load_ratio: float | None = 1,
         water_outlet_upper_temperature_limit: float | None = 100,
         template_plant_loop_type: Literal["HotWater", "MixedWater"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:Boiler`` and add it to the document.
 
@@ -69,6 +70,7 @@ class AirTerminalSingleDuctUserDefined_v8_9_to_v22_1:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:UserDefined`` and add it to the document.
 
@@ -166,6 +168,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
         modes: Sequence[_g.ZoneHVACHybridUnitaryHVACModesItem | _g.ZoneHVACHybridUnitaryHVACModesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:HybridUnitaryHVAC`` and add it to the document.
 
@@ -183,6 +186,7 @@ class OutputTableSummaryReports_v9_4:
         reports: Sequence[
             _vd.OutputTableSummaryReportsReportsItem_v9_4 | _vd.OutputTableSummaryReportsReportsGroup_v9_4
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:SummaryReports`` and add it to the document.
 

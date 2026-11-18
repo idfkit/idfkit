@@ -25,6 +25,7 @@ class Material_v8_9_to_v26_1:
         thermal_absorptance: float | None = 0.9,
         solar_absorptance: float | None = 0.7,
         visible_absorptance: float | None = 0.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Material`` and add it to the document.
 
@@ -47,6 +48,7 @@ class OutputIlluminanceMap_v22_2_to_v24_1:
         y_minimum_coordinate: float | None = 0,
         y_maximum_coordinate: float | None = 1,
         number_of_y_grid_points: int | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:IlluminanceMap`` and add it to the document.
 
@@ -115,6 +117,7 @@ class EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1:
         ems_program_or_subroutine_name: str | None = ...,
         end_use_subcategory: str | None = ...,
         units: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:MeteredOutputVariable`` and add it to the document.
 
@@ -179,6 +182,7 @@ class HeatExchangerFluidToFluid_v8_9_to_v25_2:
         sizing_factor: float | None = 1,
         operation_minimum_temperature_limit: float | None = ...,
         operation_maximum_temperature_limit: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatExchanger:FluidToFluid`` and add it to the document.
 
@@ -206,6 +210,7 @@ class AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1:
             _g.AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsItem
             | _g.AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:DedicatedOutdoorAirSystem`` and add it to the document.
 

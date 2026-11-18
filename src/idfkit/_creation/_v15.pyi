@@ -21,6 +21,7 @@ class OutputControlTableStyle_v8_9_to_v23_2:
         ]
         | None = "Comma",
         unit_conversion: Literal["InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Table:Style`` and add it to the document.
 
@@ -73,6 +74,7 @@ class CoolingTowerSingleSpeed_v9_2_to_v22_1:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:SingleSpeed`` and add it to the document.
 
@@ -89,6 +91,7 @@ class OutputDebuggingData_v8_9_to_v9_3:
         *,
         report_debugging_data: float | None = ...,
         report_during_warmup: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:DebuggingData`` and add it to the document.
 

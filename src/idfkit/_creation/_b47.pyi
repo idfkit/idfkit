@@ -26,6 +26,7 @@ class AnyMaterialPropertyVariableAbsorptance:
         thermal_absorptance_schedule_name: str | None = ...,
         solar_absorptance_function_name: str | None = ...,
         solar_absorptance_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:VariableAbsorptance`` and add it to the document.
 
@@ -34,7 +35,12 @@ class AnyMaterialPropertyVariableAbsorptance:
 
 class SpaceList:
     def __call__(
-        self, name: str, /, *, spaces: Sequence[_g.SpaceListSpacesItem | _g.SpaceListSpacesGroup] = ...
+        self,
+        name: str,
+        /,
+        *,
+        spaces: Sequence[_g.SpaceListSpacesItem | _g.SpaceListSpacesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SpaceList`` and add it to the document.
 
@@ -76,6 +82,7 @@ class ZoneVentilationDesignFlowRate:
         maximum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_wind_speed: float | None = 40,
         density_basis: Literal["Indoor", "Outdoor", "Standard"] | None = "Outdoor",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneVentilation:DesignFlowRate`` and add it to the document.
 
@@ -94,6 +101,7 @@ class ZoneControlHumidistat:
         humidifying_setpoint_schedule_name: str,
         dehumidifying_setpoint_schedule_name: str | None = ...,
         control_variable: Literal["Dewpoint", "RelativeHumidity"] | None = "RelativeHumidity",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:Humidistat`` and add it to the document.
 
@@ -133,6 +141,7 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation:
         source_side_heat_transfer_coefficient: float | None = ...,
         source_side_heat_transfer_resistance1: float | None = ...,
         source_side_heat_transfer_resistance2: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
 
@@ -259,6 +268,7 @@ class AnyAirLoopHVACUnitarySystem:
         heat_recovery_water_outlet_node_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitarySystem`` and add it to the document.
 
@@ -275,6 +285,7 @@ class AirLoopHVACMixer:
         *,
         outlet_node_name: str,
         nodes: Sequence[_g.AirLoopHVACMixerNodesItem | _g.AirLoopHVACMixerNodesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:Mixer`` and add it to the document.
 
@@ -313,6 +324,7 @@ class GeneratorFuelCellAirSupply:
             _g.GeneratorFuelCellAirSupplyConstituentFractionsItem
             | _g.GeneratorFuelCellAirSupplyConstituentFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelCell:AirSupply`` and add it to the document.
 
@@ -341,6 +353,7 @@ class CurveCubic:
         | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Cubic`` and add it to the document.
 
@@ -367,6 +380,7 @@ class CurveDoubleExponentialDecay:
         input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:DoubleExponentialDecay`` and add it to the document.
 

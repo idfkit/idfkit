@@ -20,6 +20,7 @@ class ZoneAirContaminantBalance:
         outdoor_carbon_dioxide_schedule_name: str | None = ...,
         generic_contaminant_concentration: Literal["No", "Yes"] | None = "No",
         outdoor_generic_contaminant_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneAirContaminantBalance`` and add it to the document.
 
@@ -42,6 +43,7 @@ class SurfacePropertyHeatTransferAlgorithmConstruction:
             "MoisturePenetrationDepthConductionTransferFunction",
         ]
         | None = "ConductionTransferFunction",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:HeatTransferAlgorithm:Construction`` and add it to the document.
 
@@ -73,6 +75,7 @@ class PeopleInstance:
         ankle_level_air_velocity_schedule_name: str | None = ...,
         cold_stress_temperature_threshold: float | None = 15.56,
         heat_stress_temperature_threshold: float | None = 30,
+        validate: bool = True,
     ) -> None:
         """Create a new ``People:Instance`` and add it to the document.
 
@@ -105,6 +108,7 @@ class ZoneVentilationWindandStackOpenArea:
         maximum_outdoor_temperature: float | None = 100,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_wind_speed: float | None = 40,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneVentilation:WindandStackOpenArea`` and add it to the document.
 
@@ -126,6 +130,7 @@ class HVACTemplatePlantTowerObjectReference:
         | None = "CoolingTower:SingleSpeed",
         priority: float | None = ...,
         template_plant_loop_type: Literal["ChilledWater", "MixedWater"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:Tower:ObjectReference`` and add it to the document.
 
@@ -159,6 +164,7 @@ class CoilSystemCoolingDX:
         run_on_latent_load: Literal["No", "Yes"] | None = "No",
         use_outdoor_air_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
         outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:DX`` and add it to the document.
 
@@ -197,6 +203,7 @@ class ChillerElectricASHRAE205:
         heat_recovery_inlet_node_name: str | None = ...,
         heat_recovery_outlet_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric:ASHRAE205`` and add it to the document.
 
@@ -247,6 +254,7 @@ class CoolingTowerPerformanceYorkCalc:
         coefficient_25: float,
         coefficient_26: float,
         coefficient_27: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTowerPerformance:YorkCalc`` and add it to the document.
 
@@ -388,6 +396,7 @@ class CondenserEquipmentOperationSchemes:
         | None = ...,
         control_scheme_8_name: str | None = ...,
         control_scheme_8_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CondenserEquipmentOperationSchemes`` and add it to the document.
 
@@ -435,6 +444,7 @@ class GeneratorFuelCellPowerModule:
         dilution_outlet_air_node_name: str | None = ...,
         minimum_operating_point: float | None = ...,
         maximum_operating_point: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelCell:PowerModule`` and add it to the document.
 

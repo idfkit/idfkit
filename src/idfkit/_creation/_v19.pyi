@@ -45,6 +45,7 @@ class BoilerHotWater_v9_3_to_v23_1:
         parasitic_electric_load: float | None = 0,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Boiler:HotWater`` and add it to the document.
 
@@ -74,6 +75,7 @@ class DaylightingControls_v8_9_to_v9_5:
         control_data: Sequence[
             _vd.DaylightingControlsControlDataItem_v8_9_to_v9_5 | _vd.DaylightingControlsControlDataGroup_v8_9_to_v9_5
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Daylighting:Controls`` and add it to the document.
 
@@ -180,6 +182,7 @@ class CoilHeatingDXMultiSpeed_v8_9_to_v9_2:
         speed_4_nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:MultiSpeed`` and add it to the document.
 
@@ -224,6 +227,7 @@ class ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1:
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalAirConditioner`` and add it to the document.
 
@@ -259,6 +263,7 @@ class AirTerminalSingleDuctVAVReheat_v8_9_to_v9_2:
         maximum_flow_fraction_during_reheat: float | Literal["Autosize"] | None = "Autosize",
         maximum_reheat_air_temperature: float | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:Reheat`` and add it to the document.
 
@@ -277,6 +282,7 @@ class RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1:
             _vd.RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v9_3_to_v24_1
             | _vd.RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v9_3_to_v24_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork:HVACEquipment`` and add it to the document.
 
@@ -295,6 +301,7 @@ class ExternalInterfaceFunctionalMockupUnitExportToSchedule_v8_9_to_v25_1:
         fmu_variable_name: str,
         initial_value: float,
         schedule_type_limits_names: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitExport:To:Schedule`` and add it to the document.
 

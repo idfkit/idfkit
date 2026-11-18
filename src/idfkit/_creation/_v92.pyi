@@ -23,6 +23,7 @@ class WallUnderground_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Underground`` and add it to the document.
 
@@ -124,6 +125,7 @@ class CoilHeatingDXVariableSpeed_v22_2_to_v23_1:
         speed_10_heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:VariableSpeed`` and add it to the document.
 

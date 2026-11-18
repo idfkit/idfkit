@@ -42,6 +42,7 @@ class RoofCeilingDetailed_v9_6_to_v24_2:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.RoofCeilingDetailedVerticesItem | _g.RoofCeilingDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoofCeiling:Detailed`` and add it to the document.
 
@@ -61,6 +62,7 @@ class PerformancePrecisionTradeoffs_v9_3:
         override_mode: Literal["Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Normal"]
         | None = "Normal",
         maxzonetempdiff: float | None = 0.3,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
 
@@ -104,6 +106,7 @@ class BuildingSurfaceDetailed_v25_1_to_v26_1:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.BuildingSurfaceDetailedVerticesItem | _g.BuildingSurfaceDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``BuildingSurface:Detailed`` and add it to the document.
 

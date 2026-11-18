@@ -20,6 +20,7 @@ class ZoneRefrigerationDoorMixing_v8_9_to_v24_1:
         door_height: float | None = 3,
         door_area: float | None = 9,
         door_protection_type: Literal["AirCurtain", "None", "StripCurtain"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneRefrigerationDoorMixing`` and add it to the document.
 
@@ -56,6 +57,7 @@ class HeaderedPumpsVariableSpeed_v8_9_to_v9_0:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeaderedPumps:VariableSpeed`` and add it to the document.
 
@@ -98,6 +100,7 @@ class CoilWaterHeatingDesuperheater_v8_9_to_v9_1:
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:Desuperheater`` and add it to the document.
 
@@ -220,6 +223,7 @@ class HVACTemplateSystemUnitarySystem_v8_9_to_v22_1:
         return_fan_delta_pressure: float | None = 300,
         return_fan_motor_efficiency: float | None = 0.9,
         return_fan_motor_in_air_stream_fraction: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:UnitarySystem`` and add it to the document.
 

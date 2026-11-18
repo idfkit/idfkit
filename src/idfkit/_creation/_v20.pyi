@@ -33,6 +33,7 @@ class AvailabilityManagerOptimumStart_v8_9_to_v22_1:
         initial_temperature_gradient_during_heating: float | None = ...,
         constant_start_time: float | None = ...,
         number_of_previous_days: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AvailabilityManager:OptimumStart`` and add it to the document.
 
@@ -56,6 +57,7 @@ class FloorGroundContact_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:GroundContact`` and add it to the document.
 
@@ -88,6 +90,7 @@ class PumpConstantSpeed_v8_9_to_v9_0:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pump:ConstantSpeed`` and add it to the document.
 
@@ -116,6 +119,7 @@ class UtilityCostVariable_v8_9_to_v9_4:
         october_value: float | None = ...,
         november_value: float | None = ...,
         december_value: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UtilityCost:Variable`` and add it to the document.
 
@@ -141,6 +145,7 @@ class DemandManagerThermostats_v8_9_to_v22_1:
         thermostats: Sequence[
             _g.DemandManagerThermostatsThermostatsItem | _g.DemandManagerThermostatsThermostatsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:Thermostats`` and add it to the document.
 
@@ -175,6 +180,7 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1:
         heating_cop_function_of_temperature_curve_name: str | None = ...,
         heating_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:Wrapped`` and add it to the document.
 

@@ -48,6 +48,7 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1:
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         dehumidification_control_type: Literal["CoolReheat", "None"] | None = "None",
         heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` and add it to the document.
 
@@ -118,6 +119,7 @@ class HVACTemplateZonePTHP_v8_9:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:PTHP`` and add it to the document.
 
@@ -158,6 +160,7 @@ class EvaporativeFluidCoolerSingleSpeed_v22_2_to_v25_1:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeFluidCooler:SingleSpeed`` and add it to the document.
 

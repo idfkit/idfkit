@@ -40,6 +40,7 @@ class GeneratorCombustionTurbine_v9_3_to_v9_4:
         | None = "NaturalGas",
         heat_recovery_maximum_temperature: float | None = 80,
         outdoor_air_inlet_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:CombustionTurbine`` and add it to the document.
 
@@ -92,6 +93,7 @@ class ControllerOutdoorAir_v8_9_to_v23_1:
             "BypassWhenOAFlowGreaterThanMinimum", "BypassWhenWithinEconomizerLimits"
         ]
         | None = "BypassWhenWithinEconomizerLimits",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Controller:OutdoorAir`` and add it to the document.
 
@@ -128,6 +130,7 @@ class RefrigerationSecondarySystem_v8_9_to_v22_1:
         receiver_separator_zone_name: str | None = ...,
         evaporator_refrigerant_inventory: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:SecondarySystem`` and add it to the document.
 
@@ -194,6 +197,7 @@ class HVACTemplateSystemVRF_v9_3_to_v22_1:
         | None = "Electricity",
         minimum_outdoor_temperature_in_heat_recovery_mode: float | None = -15,
         maximum_outdoor_temperature_in_heat_recovery_mode: float | None = 45,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:VRF`` and add it to the document.
 

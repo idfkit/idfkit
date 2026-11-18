@@ -42,6 +42,7 @@ class EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3:
             _g.EnergyManagementSystemProgramCallingManagerProgramsItem
             | _g.EnergyManagementSystemProgramCallingManagerProgramsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:ProgramCallingManager`` and add it to the document.
 
@@ -144,6 +145,7 @@ class CoilHeatingDXVariableSpeed_v23_2_to_v25_1:
         speed_10_heating_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:VariableSpeed`` and add it to the document.
 
@@ -175,6 +177,7 @@ class ZoneCrossMixing_v8_9_to_v22_1:
         maximum_source_zone_temperature_schedule_name: str | None = ...,
         minimum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneCrossMixing`` and add it to the document.
 
@@ -202,6 +205,7 @@ class HotWaterEquipment_v8_9_to_v9_5:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HotWaterEquipment`` and add it to the document.
 
@@ -235,6 +239,7 @@ class TableOneIndependentVariable_v8_9:
         values: Sequence[
             _vd.TableOneIndependentVariableValuesItem_v8_9 | _vd.TableOneIndependentVariableValuesGroup_v8_9
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:OneIndependentVariable`` and add it to the document.
 
@@ -256,6 +261,7 @@ class GlazedDoor_v8_9:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GlazedDoor`` and add it to the document.
 

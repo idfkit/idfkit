@@ -98,6 +98,7 @@ class AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2:
         heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
         initial_heat_recovery_heating_energy_fraction: float | None = 1,
         heat_recovery_heating_energy_time_constant: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow`` and add it to the document.
 

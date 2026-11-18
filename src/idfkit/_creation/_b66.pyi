@@ -11,7 +11,9 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class GroundHeatTransferBasementXFACE:
-    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, validate: bool = True
+    ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:XFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) XFACE: X Direction cell face coordinates: m
@@ -30,6 +32,7 @@ class ElectricEquipmentInstance:
         schedule_name: str,
         multiplier: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment:Instance`` and add it to the document.
 
@@ -40,7 +43,14 @@ class ElectricEquipmentInstance:
 
 class AirflowNetworkIntraZoneNode:
     def __call__(
-        self, name: str, /, *, roomair_node_airflownetwork_name: str, zone_name: str, node_height: float | None = 0
+        self,
+        name: str,
+        /,
+        *,
+        roomair_node_airflownetwork_name: str,
+        zone_name: str,
+        node_height: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:IntraZone:Node`` and add it to the document.
 
@@ -186,6 +196,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
 
@@ -232,6 +243,7 @@ class AnyAirLoopHVACUnitaryHeatPumpWaterToAir:
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         dehumidification_control_type: Literal["CoolReheat", "None"] | None = "None",
         heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` and add it to the document.
 
@@ -242,7 +254,13 @@ class AnyAirLoopHVACUnitaryHeatPumpWaterToAir:
 
 class AirLoopHVACOutdoorAirSystem:
     def __call__(
-        self, name: str, /, *, outdoor_air_equipment_list_name: str, controller_list_name: str | None = ...
+        self,
+        name: str,
+        /,
+        *,
+        outdoor_air_equipment_list_name: str,
+        controller_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:OutdoorAirSystem`` and add it to the document.
 
@@ -305,6 +323,7 @@ class ChillerEngineDriven:
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
         condenser_heat_recovery_relative_capacity_fraction: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:EngineDriven`` and add it to the document.
 
@@ -326,6 +345,7 @@ class SetpointManagerReturnTemperatureHotWater:
         maximum_supply_temperature_setpoint: float | None = 82,
         return_temperature_setpoint_constant_value: float | None = 71,
         return_temperature_setpoint_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:ReturnTemperature:HotWater`` and add it to the document.
 

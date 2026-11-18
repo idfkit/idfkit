@@ -51,6 +51,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater:
             _g.ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:CoolingPanel:RadiantConvective:Water`` and add it to the document.
 
@@ -68,6 +69,7 @@ class PipingSystemUndergroundPipeSegment:
         x_position: float,
         y_position: float,
         flow_direction: Literal["DecreasingZ", "IncreasingZ"],
+        validate: bool = True,
     ) -> None:
         """Create a new ``PipingSystem:Underground:PipeSegment`` and add it to the document.
 
@@ -86,6 +88,7 @@ class AnyEnvironmentalImpactFactors:
         total_carbon_equivalent_emission_factor_from_n2o: float | None = 80.7272,
         total_carbon_equivalent_emission_factor_from_ch4: float | None = 6.2727,
         total_carbon_equivalent_emission_factor_from_co2: float | None = 0.2727,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnvironmentalImpactFactors`` and add it to the document.
 
@@ -106,6 +109,7 @@ class EnvironmentalImpactFactors:
         total_carbon_equivalent_emission_factor_from_n2o: float | None = 80.7272,
         total_carbon_equivalent_emission_factor_from_ch4: float | None = 6.2727,
         total_carbon_equivalent_emission_factor_from_co2: float | None = 0.2727,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnvironmentalImpactFactors`` and add it to the document.
 

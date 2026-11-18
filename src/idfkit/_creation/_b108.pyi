@@ -26,6 +26,7 @@ class ShadingSite:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Shading:Site`` and add it to the document.
 
@@ -36,7 +37,14 @@ class ShadingSite:
 
 class ZoneContaminantSourceAndSinkGenericDepositionRateSink:
     def __call__(
-        self, name: str, /, *, zone_name: str, schedule_name: str, deposition_rate: float | None = ...
+        self,
+        name: str,
+        /,
+        *,
+        zone_name: str,
+        schedule_name: str,
+        deposition_rate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneContaminantSourceAndSink:Generic:DepositionRateSink`` and add it to the document.
 
@@ -56,6 +64,7 @@ class AnyZoneRefrigerationDoorMixing:
         door_height: float | None = 3,
         door_area: float | None = 9,
         door_protection_type: Literal["AirCurtain", "None", "StripCurtain"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneRefrigerationDoorMixing`` and add it to the document.
 
@@ -123,6 +132,7 @@ class HVACTemplateZoneVRF:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:VRF`` and add it to the document.
 
@@ -158,6 +168,7 @@ class AirTerminalSingleDuctSeriesPIUReheat:
         heating_control_type: Literal["Modulated", "Staged"] | None = ...,
         design_heating_discharge_air_temperature: float | None = 32.1,
         high_limit_heating_discharge_air_temperature: float | None = 37.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:SeriesPIU:Reheat`` and add it to the document.
 
@@ -208,6 +219,7 @@ class ChillerHeaterAbsorptionDirectFired:
         ]
         | None = "NaturalGas",
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ChillerHeater:Absorption:DirectFired`` and add it to the document.
 
@@ -239,6 +251,7 @@ class AnyGroundHeatExchangerSystem:
             _g.GroundHeatExchangerSystemVerticalWellLocationsItem
             | _g.GroundHeatExchangerSystemVerticalWellLocationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:System`` and add it to the document.
 
@@ -257,6 +270,7 @@ class AvailabilityManagerDifferentialThermostat:
         cold_node_name: str,
         temperature_difference_on_limit: float,
         temperature_difference_off_limit: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AvailabilityManager:DifferentialThermostat`` and add it to the document.
 
@@ -276,6 +290,7 @@ class FaultModelFoulingAirFilter:
         pressure_fraction_schedule_name: str,
         fan_curve_name: str,
         availability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:Fouling:AirFilter`` and add it to the document.
 

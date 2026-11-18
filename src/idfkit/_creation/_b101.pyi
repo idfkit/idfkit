@@ -33,6 +33,7 @@ class AnyBuilding:
         | None = "FullExterior",
         maximum_number_of_warmup_days: int | None = 25,
         minimum_number_of_warmup_days: int | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Building`` and add it to the document.
 
@@ -56,6 +57,7 @@ class AnyWallAdiabatic:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Adiabatic`` and add it to the document.
 
@@ -85,6 +87,7 @@ class ZoneInfiltrationDesignFlowRate:
         velocity_term_coefficient: float | None = 0,
         velocity_squared_term_coefficient: float | None = 0,
         density_basis: Literal["Indoor", "Outdoor", "Standard"] | None = "Outdoor",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:DesignFlowRate`` and add it to the document.
 
@@ -117,6 +120,7 @@ class AnyZoneVentilationWindandStackOpenArea:
         maximum_outdoor_temperature: float | None = 100,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_wind_speed: float | None = 40,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneVentilation:WindandStackOpenArea`` and add it to the document.
 
@@ -144,6 +148,7 @@ class AnyZoneCrossMixing:
         delta_temperature_schedule_name: str | None = ...,
         minimum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneCrossMixing`` and add it to the document.
 
@@ -183,6 +188,7 @@ class AirflowNetworkSimulationControl:
         solver: Literal["ConjugateGradient", "SkylineLU"] | None = "SkylineLU",
         allow_unsupported_zone_equipment: Literal["No", "Yes"] | None = "No",
         do_distribution_duct_sizing_calculation: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:SimulationControl`` and add it to the document.
 
@@ -247,6 +253,7 @@ class HVACTemplateZoneWaterToAirHeatPump:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:WaterToAirHeatPump`` and add it to the document.
 
@@ -285,6 +292,7 @@ class CoilCoolingWaterDetailedGeometry:
         condensate_collection_water_storage_tank_name: str | None = ...,
         design_water_temperature_difference: float | None = ...,
         design_inlet_water_temperature: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:Water:DetailedGeometry`` and add it to the document.
 
@@ -303,6 +311,7 @@ class GroundHeatExchangerVerticalArray:
         number_of_boreholes_in_x_direction: int,
         number_of_boreholes_in_y_direction: int,
         borehole_spacing: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Vertical:Array`` and add it to the document.
 
@@ -310,7 +319,7 @@ class GroundHeatExchangerVerticalArray:
         """
 
 class AnyCondenserEquipmentList:
-    def __call__(self, name: str, /) -> None:
+    def __call__(self, name: str, /, *, validate: bool = True) -> None:
         """Create a new ``CondenserEquipmentList`` and add it to the document.
 
         List condenser equipment in order of operating priority, 1st in list will be used 1st, etc Use only condenser equipment in this list. If no equipment object types and equipment names are specified, then the corresponding PlantEquipmentOperation:* object will assume all available condenser equipment for the loop should be OFF (not operate) within the specified lower/upper limit.
@@ -325,6 +334,7 @@ class EnergyManagementSystemProgram:
         /,
         *,
         lines: Sequence[_g.EnergyManagementSystemProgramLinesItem | _g.EnergyManagementSystemProgramLinesGroup],
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:Program`` and add it to the document.
 
@@ -342,6 +352,7 @@ class RefrigerationCompressorList:
         compressors: Sequence[
             _g.RefrigerationCompressorListCompressorsItem | _g.RefrigerationCompressorListCompressorsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:CompressorList`` and add it to the document.
 
@@ -367,6 +378,7 @@ class DemandManagerThermostats:
         thermostats: Sequence[
             _g.DemandManagerThermostatsThermostatsItem | _g.DemandManagerThermostatsThermostatsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:Thermostats`` and add it to the document.
 
@@ -391,6 +403,7 @@ class OutputSurfacesList:
             "ViewFactorInfo",
         ],
         report_specifications: Literal["IDF"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Surfaces:List`` and add it to the document.
 

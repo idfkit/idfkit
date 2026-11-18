@@ -24,6 +24,7 @@ class SiteWaterMainsTemperature:
         maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None = ...,
         temperature_multiplier: float | None = 1,
         temperature_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:WaterMainsTemperature`` and add it to the document.
 
@@ -41,6 +42,7 @@ class ScheduleDayInterval:
         schedule_type_limits_name: str | None = ...,
         interpolate_to_timestep: Literal["Average", "Linear", "No"] | None = "No",
         data: Sequence[_g.ScheduleDayIntervalDataItem | _g.ScheduleDayIntervalDataGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Day:Interval`` and add it to the document.
 
@@ -59,6 +61,7 @@ class InternalMass:
         construction_name: str | None = ...,
         zone_or_zonelist_name: str | None = ...,
         space_or_spacelist_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``InternalMass`` and add it to the document.
 
@@ -68,7 +71,9 @@ class InternalMass:
         """
 
 class GroundHeatTransferSlabYFACE:
-    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, validate: bool = True
+    ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:YFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) YFACE: Y Direction cell face coordinates: m,
@@ -77,7 +82,7 @@ class GroundHeatTransferSlabYFACE:
         """
 
 class AnyComfortViewFactorAngles:
-    def __call__(self, name: str = "", /) -> None:
+    def __call__(self, name: str = "", /, *, validate: bool = True) -> None:
         """Create a new ``ComfortViewFactorAngles`` and add it to the document.
 
         Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions must sum up to 1.0 All surfaces must be in the same enclosure.
@@ -96,6 +101,7 @@ class GasEquipmentInstance:
         schedule_name: str,
         multiplier: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GasEquipment:Instance`` and add it to the document.
 
@@ -119,6 +125,7 @@ class AnyIndoorLivingWall:
         total_leaf_area: float | None = ...,
         led_nominal_power: float | None = ...,
         radiant_fraction_of_led_lights: float | None = 0.6,
+        validate: bool = True,
     ) -> None:
         """Create a new ``IndoorLivingWall`` and add it to the document.
 
@@ -128,7 +135,7 @@ class AnyIndoorLivingWall:
         """
 
 class AirflowNetworkDistributionComponentConstantPressureDrop:
-    def __call__(self, name: str, /, *, pressure_difference_across_the_component: float) -> None:
+    def __call__(self, name: str, /, *, pressure_difference_across_the_component: float, validate: bool = True) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:ConstantPressureDrop`` and add it to the document.
 
         This object defines the characteristics of a constant pressure drop component (e.g. filter). Each node connected to this object can not be a node of mixer, splitter, a node of air primary loop, or zone equipment loop. It is recommended to connect to a duct component at both ends.
@@ -144,6 +151,7 @@ class ThermostatSetpointThermalComfortFangerDualSetpoint:
         *,
         fanger_thermal_comfort_heating_schedule_name: str,
         fanger_thermal_comfort_cooling_schedule_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermostatSetpoint:ThermalComfort:Fanger:DualSetpoint`` and add it to the document.
 
@@ -167,6 +175,7 @@ class FanConstantVolume:
         motor_efficiency: float | None = 0.9,
         motor_in_airstream_fraction: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Fan:ConstantVolume`` and add it to the document.
 
@@ -188,6 +197,7 @@ class UtilityCostRatchet:
         season_to: Literal["Annual", "Fall", "Spring", "Summer", "Winter"] | None = ...,
         multiplier_value_or_variable_name: float | str | None = ...,
         offset_value_or_variable_name: float | str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UtilityCost:Ratchet`` and add it to the document.
 
@@ -207,6 +217,7 @@ class AnyOutputMeter:
             "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"
         ]
         | None = "Hourly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Meter`` and add it to the document.
 

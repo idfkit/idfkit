@@ -23,6 +23,7 @@ class OutputControlTableStyle_v24_1_to_v25_1:
         | None = "Comma",
         unit_conversion: Literal["InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"]
         | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Table:Style`` and add it to the document.
 
@@ -40,6 +41,7 @@ class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5:
         controller_list_name: str,
         outdoor_air_equipment_list_name: str,
         availability_manager_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:OutdoorAirSystem`` and add it to the document.
 
@@ -72,6 +74,7 @@ class CoilSystemCoolingDX_v8_9_to_v22_1:
         run_on_latent_load: Literal["No", "Yes"] | None = "No",
         use_outdoor_air_dx_cooling_coil: Literal["No", "Yes"] | None = "No",
         outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:DX`` and add it to the document.
 
@@ -97,6 +100,7 @@ class DemandManagerVentilation_v8_9_to_v22_1:
         controllers: Sequence[
             _g.DemandManagerVentilationControllersItem | _g.DemandManagerVentilationControllersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:Ventilation`` and add it to the document.
 
@@ -112,6 +116,7 @@ class EnergyManagementSystemProgram_v8_9:
         /,
         *,
         lines: Sequence[_g.EnergyManagementSystemProgramLinesItem | _g.EnergyManagementSystemProgramLinesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:Program`` and add it to the document.
 
@@ -138,6 +143,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1:
             _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Water`` and add it to the document.
 

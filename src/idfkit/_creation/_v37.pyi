@@ -25,6 +25,7 @@ class ScheduleFile_v8_9_to_v9_1:
         column_separator: Literal["Comma", "Fixed", "Semicolon", "Tab"] | None = "Comma",
         interpolate_to_timestep: Literal["No", "Yes"] | None = "No",
         minutes_per_item: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:File`` and add it to the document.
 
@@ -54,6 +55,7 @@ class DaylightingControls_v9_6_to_v22_1:
         control_data: Sequence[
             _vd.DaylightingControlsControlDataItem_v9_6_to_v22_1 | _vd.DaylightingControlsControlDataGroup_v9_6_to_v22_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Daylighting:Controls`` and add it to the document.
 
@@ -97,6 +99,7 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped_v23_2_to_v25_1:
         heating_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         heating_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` and add it to the document.
 

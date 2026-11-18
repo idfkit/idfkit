@@ -35,6 +35,7 @@ class AnyFoundationKiva:
         footing_material_name: str | None = ...,
         footing_depth: float | None = 0.3,
         blocks: Sequence[_g.FoundationKivaBlocksItem | _g.FoundationKivaBlocksGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Foundation:Kiva`` and add it to the document.
 
@@ -53,6 +54,7 @@ class AnyZonePropertyUserViewFactorsBySurfaceName:
             _g.ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem
             | _g.ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneProperty:UserViewFactors:BySurfaceName`` and add it to the document.
 
@@ -109,6 +111,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow:
         controlling_zone_or_thermostat_location: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
 
@@ -153,6 +156,7 @@ class ZoneHVACHighTemperatureRadiant:
             _g.ZoneHVACHighTemperatureRadiantSurfaceFractionsItem
             | _g.ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:HighTemperatureRadiant`` and add it to the document.
 
@@ -176,6 +180,7 @@ class AnyCoilHeatingWaterToAirHeatPumpEquationFit:
         rated_water_flow_rate: float | Literal["Autosize"],
         gross_rated_heating_capacity: float | Literal["Autosize"],
         gross_rated_heating_cop: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -211,6 +216,7 @@ class CoilSystemIntegratedHeatPumpAirSource:
         minimum_speed_level_for_scdwh_mode: int | None = 1,
         maximum_running_time_before_allowing_electric_resistance_heat_use_during_shdwh_mode: float | None = 360,
         minimum_speed_level_for_shdwh_mode: int | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:IntegratedHeatPump:AirSource`` and add it to the document.
 
@@ -258,6 +264,7 @@ class AnyChillerHeaterAbsorptionDirectFired:
         fuel_higher_heating_value: float | None = 0,
         fuel_type: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None = "NaturalGas",
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ChillerHeater:Absorption:DirectFired`` and add it to the document.
 
@@ -302,6 +309,7 @@ class PlantEquipmentOperationHeatingLoad:
         load_range_10_lower_limit: float | None = ...,
         load_range_10_upper_limit: float | None = ...,
         range_10_equipment_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:HeatingLoad`` and add it to the document.
 
@@ -319,6 +327,7 @@ class ExternalInterfaceFunctionalMockupUnitImport:
         fmu_file_name: str,
         fmu_timeout: float | None = 0,
         fmu_loggingon: int | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitImport`` and add it to the document.
 
@@ -583,6 +592,7 @@ class FluidPropertiesTemperatures:
         temperature_248: float | None = ...,
         temperature_249: float | None = ...,
         temperature_250: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FluidProperties:Temperatures`` and add it to the document.
 

@@ -22,6 +22,7 @@ class AnyZoneAirMassFlowConservation:
         infiltration_balancing_method: Literal["AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"]
         | None = "AddInfiltrationFlow",
         infiltration_balancing_zones: Literal["AllZones", "MixingSourceZonesOnly"] | None = "MixingSourceZonesOnly",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneAirMassFlowConservation`` and add it to the document.
 
@@ -61,6 +62,7 @@ class AnyOtherEquipment:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OtherEquipment`` and add it to the document.
 
@@ -80,6 +82,7 @@ class CoilSystemHeatingDX:
         heating_coil_object_type: Literal["Coil:Heating:DX:SingleSpeed", "Coil:Heating:DX:VariableSpeed"],
         heating_coil_name: str,
         availability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:Heating:DX`` and add it to the document.
 
@@ -112,6 +115,7 @@ class SolarCollectorPerformanceIntegralCollectorStorage:
         emissivity_of_inner_cover: float | None = 0.88,
         absorptance_of_absorber_plate: float | None = 0.96,
         emissivity_of_absorber_plate: float | None = 0.3,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollectorPerformance:IntegralCollectorStorage`` and add it to the document.
 
@@ -140,6 +144,7 @@ class RefrigerationGasCoolerAirCooled:
         gas_cooler_refrigerant_operating_charge_inventory: float | None = 0,
         gas_cooler_receiver_refrigerant_inventory: float | None = 0,
         gas_cooler_outlet_piping_refrigerant_inventory: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:GasCooler:AirCooled`` and add it to the document.
 
@@ -157,6 +162,7 @@ class ElectricLoadCenterGenerators:
         generator_outputs: Sequence[
             _g.ElectricLoadCenterGeneratorsGeneratorOutputsItem | _g.ElectricLoadCenterGeneratorsGeneratorOutputsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Generators`` and add it to the document.
 

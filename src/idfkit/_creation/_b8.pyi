@@ -33,6 +33,7 @@ class WindowMaterialShade:
         left_side_opening_multiplier: float | None = 0.5,
         right_side_opening_multiplier: float | None = 0.5,
         airflow_permeability: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Shade`` and add it to the document.
 
@@ -66,6 +67,7 @@ class MaterialPropertyGlazingSpectralData:
         extensions: Sequence[
             _g.MaterialPropertyGlazingSpectralDataExtensionsItem | _g.MaterialPropertyGlazingSpectralDataExtensionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:GlazingSpectralData`` and add it to the document.
 
@@ -84,6 +86,7 @@ class AnySpace:
         floor_area: float | Literal["Autocalculate"] | None = "Autocalculate",
         space_type: str | None = "General",
         tags: Sequence[_g.SpaceTagsItem | _g.SpaceTagsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Space`` and add it to the document.
 
@@ -101,6 +104,7 @@ class ShadingBuildingDetailed:
         transmittance_schedule_name: str | None = ...,
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.ShadingBuildingDetailedVerticesItem | _g.ShadingBuildingDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Shading:Building:Detailed`` and add it to the document.
 
@@ -146,6 +150,7 @@ class AnyElectricEquipmentITEAirCooled:
         supply_temperature_difference_schedule: str | None = ...,
         return_temperature_difference: float | None = ...,
         return_temperature_difference_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment:ITE:AirCooled`` and add it to the document.
 
@@ -247,6 +252,7 @@ class ZoneThermalChimney:
         distance_from_top_of_thermal_chimney_to_inlet_20: float | None = ...,
         relative_ratios_of_air_flow_rates_passing_through_inlet_20: float | None = ...,
         cross_sectional_areas_of_air_channel_inlet_20: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneThermalChimney`` and add it to the document.
 
@@ -274,6 +280,7 @@ class CoilHeatingElectricMultiStage:
         stage_3_nominal_capacity: float | Literal["Autosize"] | None = ...,
         stage_4_efficiency: float | None = ...,
         stage_4_nominal_capacity: float | Literal["Autosize"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Electric:MultiStage`` and add it to the document.
 
@@ -316,6 +323,7 @@ class AnyCoilWaterHeatingDesuperheater:
         fraction_of_pump_heat_to_water: float | None = 0.2,
         on_cycle_parasitic_electric_load: float | None = 0,
         off_cycle_parasitic_electric_load: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:Desuperheater`` and add it to the document.
 
@@ -368,6 +376,7 @@ class AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass:
         minimum_outlet_air_temperature_during_cooling_operation: float | None = 8,
         maximum_outlet_air_temperature_during_heating_operation: float | None = 50,
         dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`` and add it to the document.
 
@@ -377,7 +386,7 @@ class AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass:
         """
 
 class EnergyManagementSystemCurveOrTableIndexVariable:
-    def __call__(self, name: str, /, *, curve_or_table_object_name: str) -> None:
+    def __call__(self, name: str, /, *, curve_or_table_object_name: str, validate: bool = True) -> None:
         """Create a new ``EnergyManagementSystem:CurveOrTableIndexVariable`` and add it to the document.
 
         Declares EMS variable that identifies a curve or table

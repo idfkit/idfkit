@@ -46,6 +46,7 @@ class AnyWindowMaterialGlazingEquivalentLayer:
         infrared_transmittance_applies_to_front_and_back_: float | None = 0,
         front_side_infrared_emissivity: float | None = 0.84,
         back_side_infrared_emissivity: float | None = 0.84,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Glazing:EquivalentLayer`` and add it to the document.
 
@@ -80,6 +81,7 @@ class AnyFenestrationSurfaceDetailed:
         vertex_4_x_coordinate: float | None = ...,
         vertex_4_y_coordinate: float | None = ...,
         vertex_4_z_coordinate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FenestrationSurface:Detailed`` and add it to the document.
 
@@ -101,6 +103,7 @@ class ComplexFenestrationPropertySolarAbsorbedLayers:
         layer_3_solar_radiation_absorbed_schedule_name: str | None = ...,
         layer_4_solar_radiation_absorbed_schedule_name: str | None = ...,
         layer_5_solar_radiation_absorbed_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComplexFenestrationProperty:SolarAbsorbedLayers`` and add it to the document.
 
@@ -148,6 +151,7 @@ class HVACTemplateZoneDualDuct:
         | None = "SystemSupplyAirTemperature",
         zone_heating_design_supply_air_temperature: float | None = 50,
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:DualDuct`` and add it to the document.
 
@@ -175,6 +179,7 @@ class HVACTemplatePlantChiller:
         optimum_part_load_ratio: float | None = 1,
         minimum_unloading_ratio: float | None = 0.25,
         leaving_chilled_water_lower_temperature_limit: float | None = 5,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:Chiller`` and add it to the document.
 
@@ -212,6 +217,7 @@ class AnyZoneHVACLowTemperatureRadiantConstantFlow:
         cooling_low_control_temperature_schedule_name: str | None = ...,
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
 
@@ -232,6 +238,7 @@ class CoilDXASHRAE205Performance:
         performance_interpolation_method: Literal["Cubic", "Linear"] | None = "Linear",
         rated_total_cooling_capacity: float | Literal["Autosize"] | None = "Autosize",
         rated_steady_state_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:DX:ASHRAE205:Performance`` and add it to the document.
 
@@ -258,6 +265,7 @@ class HumidifierSteamGas:
         water_storage_tank_name: str | None = ...,
         inlet_water_temperature_option: Literal["FixedInletWaterTemperature", "VariableInletWaterTemperature"]
         | None = "FixedInletWaterTemperature",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Humidifier:Steam:Gas`` and add it to the document.
 
@@ -288,6 +296,7 @@ class AnyZoneHVACForcedAirUserDefined:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:ForcedAir:UserDefined`` and add it to the document.
 
@@ -328,6 +337,7 @@ class CurveBicubic:
         | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:Bicubic`` and add it to the document.
 
@@ -356,6 +366,7 @@ class AnyUtilityCostVariable:
         october_value: float | None = ...,
         november_value: float | None = ...,
         december_value: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``UtilityCost:Variable`` and add it to the document.
 
@@ -407,6 +418,7 @@ class AnyLifeCycleCostUsePriceEscalation:
         escalations: Sequence[
             _g.LifeCycleCostUsePriceEscalationEscalationsItem | _g.LifeCycleCostUsePriceEscalationEscalationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:UsePriceEscalation`` and add it to the document.
 

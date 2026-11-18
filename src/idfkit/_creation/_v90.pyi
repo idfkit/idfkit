@@ -50,6 +50,7 @@ class CoilCoolingDXSingleSpeed_v22_2_to_v23_1:
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
         report_ashrae_standard_127_performance_ratings: Literal["No", "Yes"] | None = "No",
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:SingleSpeed`` and add it to the document.
 
@@ -119,6 +120,7 @@ class SizingZone_v24_2_to_v25_1:
         zone_humidistat_dehumidification_set_point_schedule_name: str | None = ...,
         zone_humidistat_humidification_set_point_schedule_name: str | None = ...,
         type_of_space_sum_to_use: Literal["Coincident", "NonCoincident"] | None = "Coincident",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Zone`` and add it to the document.
 
@@ -151,6 +153,7 @@ class GroundHeatExchangerSystem_v9_6_to_v25_1:
             _g.GroundHeatExchangerSystemVerticalWellLocationsItem
             | _g.GroundHeatExchangerSystemVerticalWellLocationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:System`` and add it to the document.
 
@@ -169,6 +172,7 @@ class SiteWaterMainsTemperature_v8_9:
         temperature_schedule_name: str | None = ...,
         annual_average_outdoor_air_temperature: float | None = ...,
         maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:WaterMainsTemperature`` and add it to the document.
 
@@ -188,6 +192,7 @@ class SiteWaterMainsTemperature_v9_0_to_v25_1:
         temperature_schedule_name: str | None = ...,
         annual_average_outdoor_air_temperature: float | None = ...,
         maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:WaterMainsTemperature`` and add it to the document.
 
@@ -207,6 +212,7 @@ class GlobalGeometryRules_v8_9_to_v9_2:
         coordinate_system: str,
         daylighting_reference_point_coordinate_system: Literal["Absolute", "Relative", "World"] | None = "Relative",
         rectangular_surface_coordinate_system: Literal["Absolute", "Relative", "World"] | None = "Relative",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GlobalGeometryRules`` and add it to the document.
 

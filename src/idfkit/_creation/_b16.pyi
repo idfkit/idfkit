@@ -26,6 +26,7 @@ class WindowInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Window:Interzone`` and add it to the document.
 
@@ -43,6 +44,7 @@ class SurfacePropertyIncidentSolarMultiplier:
         surface_name: str,
         incident_solar_multiplier: float | None = 1,
         incident_solar_multiplier_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:IncidentSolarMultiplier`` and add it to the document.
 
@@ -108,6 +110,7 @@ class People:
         ankle_level_air_velocity_schedule_name: str | None = ...,
         cold_stress_temperature_threshold: float | None = 15.56,
         heat_stress_temperature_threshold: float | None = 30,
+        validate: bool = True,
     ) -> None:
         """Create a new ``People`` and add it to the document.
 
@@ -126,6 +129,7 @@ class SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion:
         schedule_name: str,
         mass_transfer_coefficient: float | None = ...,
         henry_adsorption_constant_or_partition_coefficient: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceContaminantSourceAndSink:Generic:BoundaryLayerDiffusion`` and add it to the document.
 
@@ -165,6 +169,7 @@ class ZoneEarthtube:
         velocity_squared_term_flow_coefficient: float | None = 0,
         earth_tube_model_type: Literal["Basic", "Vertical"] | None = "Basic",
         earth_tube_model_parameters: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneEarthtube`` and add it to the document.
 
@@ -206,6 +211,7 @@ class AnyCoilCoolingWaterToAirHeatPumpParameterEstimation:
         source_side_heat_transfer_coefficient: float | None = ...,
         source_side_heat_transfer_resistance1: float | None = ...,
         source_side_heat_transfer_resistance2: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
 
@@ -236,6 +242,7 @@ class AirLoopHVACUnitaryHeatOnly:
         supply_air_fan_operating_mode_schedule_name: str | None = ...,
         maximum_supply_air_temperature: float | Literal["Autosize"] | None = 80,
         fan_placement: Literal["BlowThrough", "DrawThrough"] | None = "BlowThrough",
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitaryHeatOnly`` and add it to the document.
 
@@ -272,6 +279,7 @@ class AnyHeaderedPumpsVariableSpeed:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeaderedPumps:VariableSpeed`` and add it to the document.
 
@@ -309,6 +317,7 @@ class HeaderedPumpsVariableSpeed:
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeaderedPumps:VariableSpeed`` and add it to the document.
 
@@ -344,6 +353,7 @@ class AvailabilityManagerNightCycle:
         cooling_control_zone_or_zone_list_name: str | None = ...,
         heating_control_zone_or_zone_list_name: str | None = ...,
         heating_zone_fans_only_zone_or_zone_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AvailabilityManager:NightCycle`` and add it to the document.
 
@@ -397,6 +407,7 @@ class AnyPhotovoltaicPerformanceSandia:
         sandia_database_parameter_ixx0: float | None = ...,
         sandia_database_parameter_c6: float | None = ...,
         sandia_database_parameter_c7: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:Sandia`` and add it to the document.
 
@@ -428,6 +439,7 @@ class UtilityCostTariff:
         customer_baseline_load_schedule_name: str | None = ...,
         group_name: str | None = ...,
         buy_or_sell: Literal["BuyFromUtility", "NetMetering", "SellToUtility"] | None = "BuyFromUtility",
+        validate: bool = True,
     ) -> None:
         """Create a new ``UtilityCost:Tariff`` and add it to the document.
 
@@ -495,6 +507,7 @@ class AnyLifeCycleCostParameters:
             "StraightLine-40year",
         ]
         | None = "None",
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:Parameters`` and add it to the document.
 
@@ -518,6 +531,7 @@ class OutputJSON:
         ]
         | None = "UseOutputControlTableStyle",
         format_numeric_values_for_tabular_data: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:JSON`` and add it to the document.
 

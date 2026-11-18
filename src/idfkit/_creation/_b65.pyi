@@ -29,6 +29,7 @@ class WeatherPropertySkyTemperature:
         | None = "ClarkAllen",
         schedule_name: str | None = ...,
         use_weather_file_horizontal_ir: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WeatherProperty:SkyTemperature`` and add it to the document.
 
@@ -56,6 +57,7 @@ class WindowMaterialGas:
         specific_heat_coefficient_c: float | None = ...,
         molecular_weight: float | None = ...,
         specific_heat_ratio: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:Gas`` and add it to the document.
 
@@ -75,6 +77,7 @@ class AnyGlobalGeometryRules:
         coordinate_system: Literal["Relative", "World"],
         daylighting_reference_point_coordinate_system: Literal["Relative", "World"] | None = "Relative",
         rectangular_surface_coordinate_system: Literal["Relative", "World"] | None = "Relative",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GlobalGeometryRules`` and add it to the document.
 
@@ -115,6 +118,7 @@ class RoofCeilingDetailed:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.RoofCeilingDetailedVerticesItem | _g.RoofCeilingDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoofCeiling:Detailed`` and add it to the document.
 
@@ -134,6 +138,7 @@ class RoomAirNodeAirflowNetwork:
         roomair_node_airflownetwork_adjacentsurfacelist_name: str | None = ...,
         roomair_node_airflownetwork_internalgains_name: str | None = ...,
         roomair_node_airflownetwork_hvacequipment_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork`` and add it to the document.
 
@@ -156,6 +161,7 @@ class AirflowNetworkDistributionDuctSizing:
         total_pressure_loss_across_supply_branch: float | None = ...,
         total_pressure_loss_across_return_trunk: float | None = ...,
         total_pressure_loss_across_return_branch: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:DuctSizing`` and add it to the document.
 
@@ -179,6 +185,7 @@ class SolarCollectorFlatPlatePhotovoltaicThermal:
         air_inlet_node_name: str | None = ...,
         air_outlet_node_name: str | None = ...,
         design_flow_rate: float | Literal["Autosize"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollector:FlatPlate:PhotovoltaicThermal`` and add it to the document.
 
@@ -344,6 +351,7 @@ class PlantEquipmentOperationSchemes:
         | None = ...,
         control_scheme_8_name: str | None = ...,
         control_scheme_8_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperationSchemes`` and add it to the document.
 
@@ -427,6 +435,7 @@ class AnyPlantComponentUserDefined:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantComponent:UserDefined`` and add it to the document.
 
@@ -445,6 +454,7 @@ class PhotovoltaicPerformanceSimple:
         conversion_efficiency_input_mode: Literal["Fixed", "Scheduled"] | None = ...,
         value_for_cell_efficiency_if_fixed: float | None = ...,
         efficiency_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:Simple`` and add it to the document.
 

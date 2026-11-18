@@ -22,6 +22,7 @@ class LoadProfilePlant_v8_9_to_v23_1:
         load_schedule_name: str,
         peak_flow_rate: float,
         flow_rate_fraction_schedule_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LoadProfile:Plant`` and add it to the document.
 
@@ -51,6 +52,7 @@ class ShadowCalculation_v8_9_to_v9_2:
         shading_zone_groups: Sequence[
             _g.ShadowCalculationShadingZoneGroupsItem | _g.ShadowCalculationShadingZoneGroupsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ShadowCalculation`` and add it to the document.
 
@@ -78,6 +80,7 @@ class CoilUserDefined_v8_9_to_v22_1:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:UserDefined`` and add it to the document.
 
@@ -97,6 +100,7 @@ class OutputSQLite_v24_1_to_v25_1:
             "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"
         ]
         | None = "UseOutputControlTableStyle",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:SQLite`` and add it to the document.
 
@@ -219,6 +223,7 @@ class CentralHeatPumpSystem_v8_9_to_v22_1:
         chiller_heater_modules_performance_component_name_20: str | None = ...,
         chiller_heater_modules_control_schedule_name_20: str | None = ...,
         number_of_chiller_heater_modules_20: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CentralHeatPumpSystem`` and add it to the document.
 

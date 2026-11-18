@@ -55,6 +55,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2:
         supplemental_heating_coil_name: str | None = ...,
         maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None = "Autosize",
         maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` and add it to the document.
 
@@ -74,6 +75,7 @@ class OutputSQLite_v9_5_to_v23_2:
             "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"
         ]
         | None = "UseOutputControlTableStyle",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:SQLite`` and add it to the document.
 
@@ -92,6 +94,7 @@ class InternalMass_v24_2_to_v26_1:
         surface_area: float,
         zone_or_zonelist_name: str | None = ...,
         space_or_spacelist_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``InternalMass`` and add it to the document.
 

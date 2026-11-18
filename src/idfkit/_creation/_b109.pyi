@@ -21,6 +21,7 @@ class ScheduleDayList:
         interpolate_to_timestep: Literal["Average", "Linear", "No"] | None = "No",
         minutes_per_item: int | None = ...,
         extensions: Sequence[_g.ScheduleDayListExtensionsItem | _g.ScheduleDayListExtensionsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Day:List`` and add it to the document.
 
@@ -43,6 +44,7 @@ class MaterialNoMass:
         thermal_absorptance_inside_face: float | None = ...,
         solar_absorptance_inside_face: float | None = ...,
         visible_absorptance_inside_face: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Material:NoMass`` and add it to the document.
 
@@ -66,6 +68,7 @@ class AnyWallExterior:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Exterior`` and add it to the document.
 
@@ -89,6 +92,7 @@ class AnyCeilingAdiabatic:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Ceiling:Adiabatic`` and add it to the document.
 
@@ -133,6 +137,7 @@ class FenestrationSurfaceDetailed:
         vertex_4_x_coordinate: float | None = ...,
         vertex_4_y_coordinate: float | None = ...,
         vertex_4_z_coordinate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FenestrationSurface:Detailed`` and add it to the document.
 
@@ -142,7 +147,7 @@ class FenestrationSurfaceDetailed:
         """
 
 class ThermostatSetpointThermalComfortFangerSingleHeating:
-    def __call__(self, name: str, /, *, fanger_thermal_comfort_schedule_name: str) -> None:
+    def __call__(self, name: str, /, *, fanger_thermal_comfort_schedule_name: str, validate: bool = True) -> None:
         """Create a new ``ThermostatSetpoint:ThermalComfort:Fanger:SingleHeating`` and add it to the document.
 
         Used for heating only thermal comfort control. The PMV setpoint can be scheduled and varied throughout the simulation but only heating is allowed with this control type.
@@ -180,6 +185,7 @@ class AnyGroundHeatExchangerHorizontalTrench:
         soil_moisture_content_percent: float | None = 30,
         soil_moisture_content_percent_at_saturation: float | None = 50,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:HorizontalTrench`` and add it to the document.
 
@@ -199,6 +205,7 @@ class AnyOutputTableAnnual:
         variable_details: Sequence[
             _g.AnyOutputTableAnnualVariableDetailsItem | _g.AnyOutputTableAnnualVariableDetailsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:Annual`` and add it to the document.
 

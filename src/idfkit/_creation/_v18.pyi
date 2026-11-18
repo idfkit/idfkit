@@ -51,6 +51,7 @@ class CoilCoolingDXSingleSpeed_v8_9_to_v22_1:
         sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
         report_ashrae_standard_127_performance_ratings: Literal["No", "Yes"] | None = "No",
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:SingleSpeed`` and add it to the document.
 
@@ -74,6 +75,7 @@ class Window_v8_9:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Window`` and add it to the document.
 
@@ -94,6 +96,7 @@ class GroundHeatExchangerResponseFactors_v8_9_to_v22_1:
         g_functions: Sequence[
             _g.GroundHeatExchangerResponseFactorsGFunctionsItem | _g.GroundHeatExchangerResponseFactorsGFunctionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:ResponseFactors`` and add it to the document.
 
@@ -125,6 +128,7 @@ class WindowMaterialComplexShade_v8_9:
         slat_angle: float | None = 90,
         slat_conductivity: float | None = 160,
         slat_curve: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:ComplexShade`` and add it to the document.
 
@@ -175,6 +179,7 @@ class PipingSystemUndergroundDomain_v8_9_to_v22_1:
         pipe_circuits: Sequence[
             _g.PipingSystemUndergroundDomainPipeCircuitsItem | _g.PipingSystemUndergroundDomainPipeCircuitsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PipingSystem:Underground:Domain`` and add it to the document.
 
@@ -199,6 +204,7 @@ class SizingPlant_v8_9_to_v22_1:
             "GlobalCoolingSizingFactor", "GlobalHeatingSizingFactor", "LoopComponentSizingFactor", "None"
         ]
         | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Plant`` and add it to the document.
 

@@ -752,7 +752,7 @@ def _build_story_surfaces(
         zone_names_this_story.append(zone_name)
 
         # --- Zone ---
-        zone = doc.add("Zone", zone_name, validate=False)
+        zone = doc.zones.add(zone_name, validate=False)
         created.append(zone)
 
         fp = zf.polygon
@@ -780,8 +780,7 @@ def _build_story_surfaces(
                 sun = "SunExposed"
                 wind = "WindExposed"
 
-            wall = doc.add(
-                "BuildingSurface:Detailed",
+            wall = doc["BuildingSurface:Detailed"].add(
                 wall_name,
                 surface_type="Wall",
                 construction_name="",
@@ -818,8 +817,7 @@ def _build_story_surfaces(
             floor_bc = "Surface"
             floor_bc_obj = f"{below_zone} Ceiling"
 
-        floor_srf = doc.add(
-            "BuildingSurface:Detailed",
+        floor_srf = doc["BuildingSurface:Detailed"].add(
             floor_name,
             surface_type="Floor",
             construction_name="",
@@ -852,8 +850,7 @@ def _build_story_surfaces(
             ceil_sun = "NoSun"
             ceil_wind = "NoWind"
 
-        ceil_srf = doc.add(
-            "BuildingSurface:Detailed",
+        ceil_srf = doc["BuildingSurface:Detailed"].add(
             ceil_name,
             surface_type=ceil_type,
             construction_name="",
