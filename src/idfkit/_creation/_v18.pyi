@@ -6,6 +6,7 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Literal
 
 from .. import _generated_types as _g
@@ -55,195 +56,7 @@ class CoilCoolingDXSingleSpeed_v8_9_to_v22_1:
 
         Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), single-speed. Optional inputs for moisture evaporation from wet coil when compressor cycles off with continuous fan operation.
 
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-heating-and-cooling-coils/#coilcoolingdxsinglespeed
-        """
-
-class BuildingSurfaceDetailed_v8_9_to_v9_5:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        surface_type: Literal["Ceiling", "Floor", "Roof", "Wall"],
-        construction_name: str,
-        zone_name: str,
-        outside_boundary_condition: Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ],
-        outside_boundary_condition_object: str | None = ...,
-        sun_exposure: Literal["", "NoSun", "SunExposed"] | None = "SunExposed",
-        wind_exposure: Literal["", "NoWind", "WindExposed"] | None = "WindExposed",
-        view_factor_to_ground: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        number_of_vertices: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        vertices: list[_g.BuildingSurfaceDetailedVerticesItem] = ...,
-    ) -> None:
-        """Create a new ``BuildingSurface:Detailed`` and add it to the document.
-
-        Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#buildingsurfacedetailed
-        """
-
-class SiteGroundDomainBasement_v8_9_to_v22_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        undisturbed_ground_temperature_model_type: Literal[
-            "Site:GroundTemperature:Undisturbed:FiniteDifference",
-            "Site:GroundTemperature:Undisturbed:KusudaAchenbach",
-            "Site:GroundTemperature:Undisturbed:Xing",
-        ],
-        undisturbed_ground_temperature_model_name: str,
-        basement_floor_boundary_condition_model_name: str,
-        basement_wall_boundary_condition_model_name: str,
-        ground_domain_depth: float | None = 10,
-        aspect_ratio: float | None = 1,
-        perimeter_offset: float | None = 5,
-        soil_thermal_conductivity: float | None = 1.5,
-        soil_density: float | None = 2800,
-        soil_specific_heat: float | None = 850,
-        soil_moisture_content_volume_fraction: float | None = 30,
-        soil_moisture_content_volume_fraction_at_saturation: float | None = 50,
-        evapotranspiration_ground_cover_parameter: float | None = 0.4,
-        horizontal_insulation: Literal["", "No", "Yes"] | None = "No",
-        horizontal_insulation_material_name: str | None = ...,
-        horizontal_insulation_extents: Literal["", "Full", "Perimeter"] | None = "Full",
-        perimeter_horizontal_insulation_width: float | None = ...,
-        basement_wall_depth: float | None = ...,
-        vertical_insulation: Literal["", "No", "Yes"] | None = "No",
-        basement_wall_vertical_insulation_material_name: str | None = ...,
-        vertical_insulation_depth: float | None = ...,
-        simulation_timestep: Literal["", "Hourly", "Timestep"] | None = "Hourly",
-        mesh_density_parameter: float | None = 4,
-    ) -> None:
-        """Create a new ``Site:GroundDomain:Basement`` and add it to the document.
-
-        Ground-coupled basement model for simulating basements or other underground zones.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-location-climate-weather-file-access/#sitegrounddomainbasement
-        """
-
-class AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2:
-    def __call__(
-        self,
-        name: str = "",
-        /,
-        *,
-        zone_terminal_unit_list_name: str,
-        availability_schedule_name: str | None = ...,
-        gross_rated_total_cooling_capacity: float | Literal["Autosize"] | None = ...,
-        gross_rated_cooling_cop: float | None = 3.3,
-        minimum_outdoor_temperature_in_cooling_mode: float | None = -6,
-        maximum_outdoor_temperature_in_cooling_mode: float | None = 43,
-        cooling_capacity_ratio_modifier_function_of_low_temperature_curve_name: str | None = ...,
-        cooling_capacity_ratio_boundary_curve_name: str | None = ...,
-        cooling_capacity_ratio_modifier_function_of_high_temperature_curve_name: str | None = ...,
-        cooling_energy_input_ratio_modifier_function_of_low_temperature_curve_name: str | None = ...,
-        cooling_energy_input_ratio_boundary_curve_name: str | None = ...,
-        cooling_energy_input_ratio_modifier_function_of_high_temperature_curve_name: str | None = ...,
-        cooling_energy_input_ratio_modifier_function_of_low_part_load_ratio_curve_name: str | None = ...,
-        cooling_energy_input_ratio_modifier_function_of_high_part_load_ratio_curve_name: str | None = ...,
-        cooling_combination_ratio_correction_factor_curve_name: str | None = ...,
-        cooling_part_load_fraction_correlation_curve_name: str | None = ...,
-        gross_rated_heating_capacity: float | Literal["Autosize"] | None = ...,
-        rated_heating_capacity_sizing_ratio: float | None = 1,
-        gross_rated_heating_cop: float | None = 3.4,
-        minimum_outdoor_temperature_in_heating_mode: float | None = -20,
-        maximum_outdoor_temperature_in_heating_mode: float | None = 16,
-        heating_capacity_ratio_modifier_function_of_low_temperature_curve_name: str | None = ...,
-        heating_capacity_ratio_boundary_curve_name: str | None = ...,
-        heating_capacity_ratio_modifier_function_of_high_temperature_curve_name: str | None = ...,
-        heating_energy_input_ratio_modifier_function_of_low_temperature_curve_name: str | None = ...,
-        heating_energy_input_ratio_boundary_curve_name: str | None = ...,
-        heating_energy_input_ratio_modifier_function_of_high_temperature_curve_name: str | None = ...,
-        heating_performance_curve_outdoor_temperature_type: Literal["", "DryBulbTemperature", "WetBulbTemperature"]
-        | None = "WetBulbTemperature",
-        heating_energy_input_ratio_modifier_function_of_low_part_load_ratio_curve_name: str | None = ...,
-        heating_energy_input_ratio_modifier_function_of_high_part_load_ratio_curve_name: str | None = ...,
-        heating_combination_ratio_correction_factor_curve_name: str | None = ...,
-        heating_part_load_fraction_correlation_curve_name: str | None = ...,
-        minimum_heat_pump_part_load_ratio: float | None = 0.15,
-        zone_name_for_master_thermostat_location: str | None = ...,
-        master_thermostat_priority_control_type: Literal[
-            "", "LoadPriority", "MasterThermostatPriority", "Scheduled", "ThermostatOffsetPriority", "ZonePriority"
-        ]
-        | None = "MasterThermostatPriority",
-        thermostat_priority_schedule_name: str | None = ...,
-        heat_pump_waste_heat_recovery: Literal["", "No", "Yes"] | None = "No",
-        equivalent_piping_length_used_for_piping_correction_factor_in_cooling_mode: float | None = ...,
-        vertical_height_used_for_piping_correction_factor: float | None = ...,
-        piping_correction_factor_for_length_in_cooling_mode_curve_name: str | None = ...,
-        piping_correction_factor_for_height_in_cooling_mode_coefficient: float | None = 0,
-        equivalent_piping_length_used_for_piping_correction_factor_in_heating_mode: float | None = ...,
-        piping_correction_factor_for_length_in_heating_mode_curve_name: str | None = ...,
-        piping_correction_factor_for_height_in_heating_mode_coefficient: float | None = 0,
-        crankcase_heater_power_per_compressor: float | None = 33,
-        number_of_compressors: float | None = 2,
-        ratio_of_compressor_size_to_total_compressor_capacity: float | None = 0.5,
-        maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None = 5,
-        defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None = "Resistive",
-        defrost_control: Literal["", "OnDemand", "Timed"] | None = "Timed",
-        defrost_energy_input_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
-        defrost_time_period_fraction: float | None = 0.058333,
-        resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None = 0,
-        maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None = 5,
-        condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None = "AirCooled",
-        condenser_inlet_node_name: str | None = ...,
-        condenser_outlet_node_name: str | None = ...,
-        water_condenser_volume_flow_rate: float | Literal["Autosize"] | None = ...,
-        evaporative_condenser_effectiveness: float | None = 0.9,
-        evaporative_condenser_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        evaporative_condenser_pump_rated_power_consumption: float | Literal["", "Autosize"] | None = 0,
-        supply_water_storage_tank_name: str | None = ...,
-        basin_heater_capacity: float | None = 0,
-        basin_heater_setpoint_temperature: float | None = 2,
-        basin_heater_operating_schedule_name: str | None = ...,
-        fuel_type: str | None = "Electricity",
-        minimum_outdoor_temperature_in_heat_recovery_mode: float | None = ...,
-        maximum_outdoor_temperature_in_heat_recovery_mode: float | None = ...,
-        heat_recovery_cooling_capacity_modifier_curve_name: str | None = ...,
-        initial_heat_recovery_cooling_capacity_fraction: float | None = 0.5,
-        heat_recovery_cooling_capacity_time_constant: float | None = 0.15,
-        heat_recovery_cooling_energy_modifier_curve_name: str | None = ...,
-        initial_heat_recovery_cooling_energy_fraction: float | None = 1,
-        heat_recovery_cooling_energy_time_constant: float | None = 0,
-        heat_recovery_heating_capacity_modifier_curve_name: str | None = ...,
-        initial_heat_recovery_heating_capacity_fraction: float | None = 1,
-        heat_recovery_heating_capacity_time_constant: float | None = 0.15,
-        heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
-        initial_heat_recovery_heating_energy_fraction: float | None = 1,
-        heat_recovery_heating_energy_time_constant: float | None = 0,
-    ) -> None:
-        """Create a new ``AirConditioner:VariableRefrigerantFlow`` and add it to the document.
-
-        Variable refrigerant flow (VRF) air-to-air heat pump condensing unit (includes one or more electric compressors and outdoor fan). Serves one or more VRF zone terminal units. See ZoneHVAC:TerminalUnit:VariableRefrigerantFlow and ZoneTerminalUnitList.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-variable-refrigerant-flow-equipment/#airconditionervariablerefrigerantflow
         """
 
 class Window_v8_9:
@@ -266,74 +79,7 @@ class Window_v8_9:
 
         Allows for simplified entry of Windows.
 
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
         EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/overview/group-thermal-zone-description-geometry/#window
-        """
-
-class MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1:
-    def __call__(
-        self,
-        /,
-        *,
-        material_name: str,
-        number_of_data_pairs: float,
-        relative_humidity_fraction_1: float,
-        water_vapor_diffusion_resistance_factor_1: float,
-        relative_humidity_fraction_2: float | None = ...,
-        water_vapor_diffusion_resistance_factor_2: float | None = ...,
-        relative_humidity_fraction_3: float | None = ...,
-        water_vapor_diffusion_resistance_factor_3: float | None = ...,
-        relative_humidity_fraction_4: float | None = ...,
-        water_vapor_diffusion_resistance_factor_4: float | None = ...,
-        relative_humidity_fraction_5: float | None = ...,
-        water_vapor_diffusion_resistance_factor_5: float | None = ...,
-        relative_humidity_fraction_6: float | None = ...,
-        water_vapor_diffusion_resistance_factor_6: float | None = ...,
-        relative_humidity_fraction_7: float | None = ...,
-        water_vapor_diffusion_resistance_factor_7: float | None = ...,
-        relative_humidity_fraction_8: float | None = ...,
-        water_vapor_diffusion_resistance_factor_8: float | None = ...,
-        relative_humidity_fraction_9: float | None = ...,
-        water_vapor_diffusion_resistance_factor_9: float | None = ...,
-        relative_humidity_fraction_10: float | None = ...,
-        water_vapor_diffusion_resistance_factor_10: float | None = ...,
-        relative_humidity_fraction_11: float | None = ...,
-        water_vapor_diffusion_resistance_factor_11: float | None = ...,
-        relative_humidity_fraction_12: float | None = ...,
-        water_vapor_diffusion_resistance_factor_12: float | None = ...,
-        relative_humidity_fraction_13: float | None = ...,
-        water_vapor_diffusion_resistance_factor_13: float | None = ...,
-        relative_humidity_fraction_14: float | None = ...,
-        water_vapor_diffusion_resistance_factor_14: float | None = ...,
-        relative_humidity_fraction_15: float | None = ...,
-        water_vapor_diffusion_resistance_factor_15: float | None = ...,
-        relative_humidity_fraction_16: float | None = ...,
-        water_vapor_diffusion_resistance_factor_16: float | None = ...,
-        relative_humidity_fraction_17: float | None = ...,
-        water_vapor_diffusion_resistance_factor_17: float | None = ...,
-        relative_humidity_fraction_18: float | None = ...,
-        water_vapor_diffusion_resistance_factor_18: float | None = ...,
-        relative_humidity_fraction_19: float | None = ...,
-        water_vapor_diffusion_resistance_factor_19: float | None = ...,
-        relative_humidity_fraction_20: float | None = ...,
-        water_vapor_diffusion_resistance_factor_20: float | None = ...,
-        relative_humidity_fraction_21: float | None = ...,
-        water_vapor_diffusion_resistance_factor_21: float | None = ...,
-        relative_humidity_fraction_22: float | None = ...,
-        water_vapor_diffusion_resistance_factor_22: float | None = ...,
-        relative_humidity_fraction_23: float | None = ...,
-        water_vapor_diffusion_resistance_factor_23: float | None = ...,
-        relative_humidity_fraction_24: float | None = ...,
-        water_vapor_diffusion_resistance_factor_24: float | None = ...,
-        relative_humidity_fraction_25: float | None = ...,
-        water_vapor_diffusion_resistance_factor_25: float | None = ...,
-    ) -> None:
-        """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Diffusion`` and add it to the document.
-
-        HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between water vapor diffusion and relative humidity fraction Has no effect with other HeatBalanceAlgorithm solution algorithms
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-surface-construction-elements/#materialpropertyheatandmoisturetransferdiffusion
         """
 
 class GroundHeatExchangerResponseFactors_v8_9_to_v22_1:
@@ -345,103 +91,15 @@ class GroundHeatExchangerResponseFactors_v8_9_to_v22_1:
         ghe_vertical_properties_object_name: str,
         number_of_boreholes: float,
         g_function_reference_ratio: float | None = 0.0005,
-        g_functions: list[_g.GroundHeatExchangerResponseFactorsGFunctionsItem] = ...,
+        g_functions: Sequence[
+            _g.GroundHeatExchangerResponseFactorsGFunctionsItem | _g.GroundHeatExchangerResponseFactorsGFunctionsGroup
+        ] = ...,
     ) -> None:
         """Create a new ``GroundHeatExchanger:ResponseFactors`` and add it to the document.
 
         Response factor definitions from third-party tool, commonly referred to a 'g-functions'
 
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-condenser-equipment/#groundheatexchangerresponsefactors
-        """
-
-class GeneratorMicroTurbine_v9_3_to_v9_4:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        reference_electrical_power_output: float,
-        reference_electrical_efficiency_using_lower_heating_value: float,
-        electrical_power_function_of_temperature_and_elevation_curve_name: str,
-        electrical_efficiency_function_of_temperature_curve_name: str,
-        electrical_efficiency_function_of_part_load_ratio_curve_name: str,
-        minimum_full_load_electrical_power_output: float | None = 0,
-        maximum_full_load_electrical_power_output: float | None = ...,
-        reference_combustion_air_inlet_temperature: float | None = 15,
-        reference_combustion_air_inlet_humidity_ratio: float | None = 0.00638,
-        reference_elevation: float | None = 0,
-        fuel_type: Literal["", "NaturalGas", "Propane"] | None = "NaturalGas",
-        fuel_higher_heating_value: float | None = 50000,
-        fuel_lower_heating_value: float | None = 45450,
-        standby_power: float | None = 0,
-        ancillary_power: float | None = 0,
-        ancillary_power_function_of_fuel_input_curve_name: str | None = ...,
-        heat_recovery_water_inlet_node_name: str | None = ...,
-        heat_recovery_water_outlet_node_name: str | None = ...,
-        reference_thermal_efficiency_using_lower_heat_value: float | None = 0,
-        reference_inlet_water_temperature: float | None = ...,
-        heat_recovery_water_flow_operating_mode: Literal["", "InternalControl", "PlantControl"] | None = "PlantControl",
-        reference_heat_recovery_water_flow_rate: float | None = ...,
-        heat_recovery_water_flow_rate_function_of_temperature_and_power_curve_name: str | None = ...,
-        thermal_efficiency_function_of_temperature_and_elevation_curve_name: str | None = ...,
-        heat_recovery_rate_function_of_part_load_ratio_curve_name: str | None = ...,
-        heat_recovery_rate_function_of_inlet_water_temperature_curve_name: str | None = ...,
-        heat_recovery_rate_function_of_water_flow_rate_curve_name: str | None = ...,
-        minimum_heat_recovery_water_flow_rate: float | None = 0,
-        maximum_heat_recovery_water_flow_rate: float | None = 0,
-        maximum_heat_recovery_water_temperature: float | None = ...,
-        combustion_air_inlet_node_name: str | None = ...,
-        combustion_air_outlet_node_name: str | None = ...,
-        reference_exhaust_air_mass_flow_rate: float | None = ...,
-        exhaust_air_flow_rate_function_of_temperature_curve_name: str | None = ...,
-        exhaust_air_flow_rate_function_of_part_load_ratio_curve_name: str | None = ...,
-        nominal_exhaust_air_outlet_temperature: float | None = ...,
-        exhaust_air_temperature_function_of_temperature_curve_name: str | None = ...,
-        exhaust_air_temperature_function_of_part_load_ratio_curve_name: str | None = ...,
-    ) -> None:
-        """Create a new ``Generator:MicroTurbine`` and add it to the document.
-
-        MicroTurbine generators are small combustion turbines (e.g., 25kW to 500kW). The model calculates electrical power output, fuel use, standby and ancillary power. Energy recovery from exhaust air can be used to heat water.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.4/io-reference/overview/group-electric-load-center-generator/#generatormicroturbine
-        """
-
-class SolarCollectorPerformanceIntegralCollectorStorage_v8_9_to_v22_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        ics_collector_type: Literal["", "RectangularTank"] | None = "RectangularTank",
-        gross_area: float | None = ...,
-        collector_water_volume: float | None = ...,
-        bottom_heat_loss_conductance: float | None = 0.4,
-        side_heat_loss_conductance: float | None = 0.6,
-        aspect_ratio: float | None = 0.8,
-        collector_side_height: float | None = 0.2,
-        thermal_mass_of_absorber_plate: float | None = 0,
-        number_of_covers: float | None = 2,
-        cover_spacing: float | None = 0.05,
-        refractive_index_of_outer_cover: float | None = 1.526,
-        extinction_coefficient_times_thickness_of_outer_cover: float | None = 0.045,
-        emissivity_of_outer_cover: float | None = 0.88,
-        refractive_index_of_inner_cover: float | None = 1.37,
-        extinction_coefficient_times_thickness_of_the_inner_cover: float | None = 0.008,
-        emissivity_of_inner_cover: float | None = 0.88,
-        absorptance_of_absorber_plate: float | None = 0.96,
-        emissivity_of_absorber_plate: float | None = 0.3,
-    ) -> None:
-        """Create a new ``SolarCollectorPerformance:IntegralCollectorStorage`` and add it to the document.
-
-        Thermal and optical performance parameters for a single glazed solar collector with integral storage unit.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-solar-collectors/#solarcollectorperformanceintegralcollectorstorage
         """
 
 class WindowMaterialComplexShade_v8_9:
@@ -472,8 +130,6 @@ class WindowMaterialComplexShade_v8_9:
         """Create a new ``WindowMaterial:ComplexShade`` and add it to the document.
 
         Complex window shading layer thermal properties
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/overview/group-surface-construction-elements/#windowmaterialcomplexshade
         """
@@ -517,13 +173,13 @@ class PipingSystemUndergroundDomain_v8_9_to_v22_1:
         convergence_criterion_for_the_outer_cartesian_domain_iteration_loop: float | None = 0.001,
         maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: float | None = 500,
         evapotranspiration_ground_cover_parameter: float | None = 0.4,
-        pipe_circuits: list[_g.PipingSystemUndergroundDomainPipeCircuitsItem] = ...,
+        pipe_circuits: Sequence[
+            _g.PipingSystemUndergroundDomainPipeCircuitsItem | _g.PipingSystemUndergroundDomainPipeCircuitsGroup
+        ] = ...,
     ) -> None:
         """Create a new ``PipingSystem:Underground:Domain`` and add it to the document.
 
         The ground domain object for underground piping system simulation.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-node-branch-management/#pipingsystemundergrounddomain
         """
@@ -548,70 +204,5 @@ class SizingPlant_v8_9_to_v22_1:
 
         Specifies the input needed to autosize plant loop flow rates and equipment capacities. This information is initially used by components that use water for heating or cooling such as hot or chilled water coils to calculate their maximum water flow rates. These flow rates are then summed for use in calculating the Plant Loop flow rates.
 
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-design-objects/#sizingplant
-        """
-
-class FloorInterzone_v8_9_to_v9_5:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        construction_name: str,
-        zone_name: str,
-        outside_boundary_condition_object: str,
-        azimuth_angle: float | None = ...,
-        tilt_angle: float | None = 180,
-        starting_x_coordinate: float | None = ...,
-        starting_y_coordinate: float | None = ...,
-        starting_z_coordinate: float | None = ...,
-        length: float | None = ...,
-        width: float | None = ...,
-    ) -> None:
-        """Create a new ``Floor:Interzone`` and add it to the document.
-
-        Allows for simplified entry of floors using adjacent zone (interzone) heat transfer - adjacent surface should be a ceiling.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#floorinterzone
-        """
-
-class HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        load_side_inlet_node_name: str,
-        load_side_outlet_node_name: str,
-        source_side_inlet_node_name: str,
-        source_side_outlet_node_name: str,
-        capacity_modifier_function_of_temperature_curve_name: str,
-        electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str,
-        electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str,
-        condenser_type: Literal["", "AirSource", "WaterSource"] | None = "WaterSource",
-        companion_heat_pump_name: str | None = ...,
-        load_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        source_side_reference_flow_rate: float | Literal["", "Autosize"] | None = "Autosize",
-        reference_capacity: float | Literal["", "Autosize"] | None = "Autosize",
-        reference_coefficient_of_performance: float | None = 3,
-        sizing_factor: float | None = 1,
-        control_type: Literal["", "Load", "Setpoint"] | None = "Load",
-        flow_mode: Literal["", "ConstantFlow", "VariableSpeedPumping"] | None = "ConstantFlow",
-        minimum_part_load_ratio: float | None = 0,
-        minimum_source_inlet_temperature: float | None = -100,
-        maximum_source_inlet_temperature: float | None = 100,
-        minimum_supply_water_temperature_curve_name: float | None = ...,
-        maximum_supply_water_temperature_curve_name: float | None = ...,
-    ) -> None:
-        """Create a new ``HeatPump:PlantLoop:EIR:Cooling`` and add it to the document.
-
-        An EIR formulated water to water heat pump model, cooling operation.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-plant-equipment/#heatpumpplantloopeircooling
         """

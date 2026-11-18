@@ -591,13 +591,15 @@ def _group_item_name(group_cls: str) -> str:
 
 
 def _group_items(group_cls: str, prefix: str = "") -> str:
-    """The value of a group's wrapper keyword in ``update`` and ``add``: a list of its groups as dicts.
+    """The value of a group's wrapper keyword in ``update`` and ``add``: a sequence of its groups.
 
-    Each dict is typed by the group's item type (:func:`_group_item_class`), so a misspelled key or
-    a wrong value is a type error. *prefix* qualifies the name (``_g.``) as the module the annotation
-    is written in reaches it.
+    Each is a dict, typed by the group's item type (:func:`_group_item_class`), so a misspelled key
+    or a wrong value is a type error, or a group object (``list(wall.vertices)``), as the run time
+    takes both. A ``Sequence``, not a ``list``: a ``list[<Item>]`` (what ``as_list()`` gives) or a
+    list of groups is one, where an invariant ``list`` of the union would refuse both. *prefix*
+    qualifies the names (``_g.``) as the module the annotation is written in reaches them.
     """
-    return f"list[{prefix}{_group_item_name(group_cls)}]"
+    return f"Sequence[{prefix}{_group_item_name(group_cls)} | {prefix}{group_cls}]"
 
 
 def _group_item_class(group_cls: str, fields: Iterable[tuple[str, str]], indent: str = "") -> list[str]:
@@ -922,15 +924,19 @@ class _Creation:
         defaults: Each field's schema default as Python source (``0.9``, ``"Rough"``), for the
             defaults that are a number or a short plain string; others are shown as ``...``. It is
             the value EnergyPlus applies to a field left empty, not one ``add()`` stores.
-        hidden: The spellings without the trailing underscore of required fields whose key ends in
-            ``_`` (``gas_or_gas_mixture`` for ``gas_or_gas_mixture_``). The run time accepts either
-            spelling but not both, so the signature names only the key it requires.
+        hidden: The spellings without the trailing underscore of fields whose key ends in ``_``
+            (``gas_or_gas_mixture`` for ``gas_or_gas_mixture_``). The run time accepts either
+            spelling but not both, so the signature names only the key, which a type checker can then
+            hold to one.
+        name_conflict: Whether the releases served disagree on the name so that no call suits them
+            all: one requires it, another has no Name field and refuses any.
     """
 
     name: str
     required: frozenset[str]
     defaults: tuple[tuple[str, str], ...]
     hidden: frozenset[str] = frozenset()
+    name_conflict: bool = False
 
     @property
     def key(self) -> tuple[str, frozenset[str]]:
@@ -987,7 +993,7 @@ def _creation_info(schema: EpJSONSchema, obj_type: str) -> _Creation:
             if rendered is not None:
                 defaults.append((field_name, rendered))
     aliases = trailing_underscore_aliases(schema.get_field_names(obj_type))
-    hidden = frozenset(alias for alias, key in aliases.items() if alias != key and key in required)
+    hidden = frozenset(alias for alias, key in aliases.items() if alias != key)
     return _Creation(_name_kind(schema, obj_type), required, tuple(sorted(defaults)), hidden)
 
 
@@ -1002,8 +1008,10 @@ def _creation_for(obj_type: str, versions: Iterable[Version]) -> _Creation:
 
     A field is required where any of the releases requires it, so a call that type-checks is not
     refused for a missing field by any of them; passing a field a release does not require is
-    harmless. A default is shown only where every release has the same one. The name is required
-    where any release requires it, refused where none takes one, and optional otherwise. For the
+    harmless. A default is shown only where every release has the same one. The name is refused
+    where some release has no Name field and none requires one, required where any release requires
+    it, and optional otherwise; where one release requires it and another refuses it, no call suits
+    them all (:attr:`_Creation.name_conflict`). For the
     releases of one :func:`_creation_pieces` piece this is their own creation.
     """
     infos = [_release_creation(ver, obj_type) for ver in versions]
@@ -1013,13 +1021,14 @@ def _creation_for(obj_type: str, versions: Iterable[Version]) -> _Creation:
     common = set(first.defaults).intersection(*(set(info.defaults) for info in infos[1:]))
     defaults = tuple(item for item in first.defaults if item in common)
     kinds = {info.name for info in infos}
-    if "required" in kinds:
-        name = "required"
-    elif kinds == {"none"}:
+    if kinds <= {"none", "optional"} and "none" in kinds:
+        # A call without a name suits both; a name is refused where there is no Name field.
         name = "none"
+    elif "required" in kinds:
+        name = "required"
     else:
         name = "optional"
-    return _Creation(name, required, defaults, hidden)
+    return _Creation(name, required, defaults, hidden, name_conflict=kinds >= {"none", "required"})
 
 
 def _versions_with(obj_type: str) -> list[Version]:
@@ -1058,13 +1067,27 @@ def _class_creation(obj_type: str, run: Iterable[Version]) -> _Creation:
     """The creation signature of the class of range *run*.
 
     The latest class creates as the latest release does (older releases of its range that require
-    other fields have subclasses); an older range's class serves all its releases.
+    other fields have classes of their own, :func:`_piece_classes`); an older range's class serves
+    all its releases.
     """
     run = tuple(run)
     if SUPPORTED.latest in run:
         latest = next(piece for _, piece in _creation_pieces()[obj_type] if SUPPORTED.latest in piece)
         return _creation_for(obj_type, latest)
     return _creation_for(obj_type, run)
+
+
+def _relaxes(sub: _Creation, base: _Creation) -> bool:
+    """Whether a class creating as *sub* may derive from one creating as *base*.
+
+    ``IDFCollection`` is covariant, so a collection of the subclass passes where one of the base is
+    expected, and ``add()`` is then checked against the base's signature: *sub* must accept every
+    call *base* does, requiring no field *base* does not and taking the name as *base* does or
+    leaving optional one *base* requires.
+    """
+    if not sub.required <= base.required or (sub.name_conflict and not base.name_conflict):
+        return False
+    return sub.name == base.name or (base.name, sub.name) == ("required", "optional")
 
 
 def _strip_none(annotation: str) -> str:
@@ -1076,8 +1099,11 @@ def _strip_none(annotation: str) -> str:
 _NARROW_FIRST = "narrow_with_as_version_first"
 
 
+# A group wrapper's annotation, as _group_items writes it.
+_GROUP_ITEMS = re.compile(r"Sequence\[([\w.]+) \| ([\w.]+)\]")
+
 # How many modules the creation signatures of one family of classes are spread over.
-_CREATION_BUCKETS = 32
+_CREATION_BUCKETS = 128
 
 
 @dataclasses.dataclass
@@ -1115,12 +1141,15 @@ class _CreationModules:
     def qualify(self, annotation: str) -> str:
         """*annotation*, written in the classes' stub, as the creation modules reach its names.
 
-        Only a group wrapper's ``list[_<Group>Item | <Group>]`` names classes of the stub; a name
-        already qualified ``_g.`` (``versioned.pyi`` reaching ``_generated_types``) stays.
+        Only a group wrapper's ``Sequence[<Item> | <Group>]`` (:func:`_group_items`) names classes
+        of the stub; a name already qualified ``_g.`` (``versioned.pyi`` reaching
+        ``_generated_types``) stays, and any other annotation is returned as it is.
         """
-        if not annotation.startswith("list[") or annotation == "list[Any]":
+        match = _GROUP_ITEMS.fullmatch(annotation)
+        if match is None:
             return annotation
-        return re.sub(r"(?<![\w.])(_?[A-Z]\w*)", rf"{self.home}.\1", annotation)
+        item, group = (name if "." in name else f"{self.home}.{name}" for name in match.groups())
+        return f"Sequence[{item} | {group}]"
 
     def add(self, cls_name: str, params: str, doc: str) -> str:
         """File the signature (*params*, without parentheses) of *cls_name*, documented with *doc*.
@@ -1144,8 +1173,21 @@ class _CreationModules:
         )
 
     def imports(self) -> list[str]:
-        """The import of every module, for the stub whose classes annotate with them."""
+        """The import of every module, for the stub whose classes annotate with them.
+
+        Emitted before the classes are; :meth:`drop_unused_imports` then takes out those of the
+        modules no class of the stub names.
+        """
         return [f"from ._creation import {self.module}{k} as {self.alias}{k}" for k in range(_CREATION_BUCKETS)]
+
+    def drop_unused_imports(self, parts: list[str]) -> list[str]:
+        """*parts*, a stub's lines, without the imports of modules its classes do not name."""
+        text = "\n".join(parts)
+        return [
+            line
+            for line in parts
+            if not line.startswith("from ._creation import ") or f"{line.rpartition(' as ')[2]}." in text
+        ]
 
     def sources(self) -> dict[str, str]:
         """Each module's source by file name (``_b7.pyi``), every bucket included, empty or not."""
@@ -1164,13 +1206,16 @@ class _CreationModules:
                 "from __future__ import annotations",
                 "",
             ]
+            standard_library = len(header)
+            if re.search(r"\bSequence\[", used):
+                header.append("from collections.abc import Sequence")
             if typing_names:
                 header.append(f"from typing import {', '.join(typing_names)}")
             if re.search(r"\bNever\b", used):
                 # A third-party import, in a block of its own after the standard library's (isort).
                 header.extend(
                     ["", "from typing_extensions import Never"]
-                    if typing_names
+                    if len(header) > standard_library
                     else ["from typing_extensions import Never"]
                 )
             own = [f"from .. import {name} as {alias}" for name, alias in self._stubs() if f"{alias}." in used]
@@ -1180,7 +1225,7 @@ class _CreationModules:
         return out
 
 
-def _creation_docstring(schema: EpJSONSchema, obj_type: str, *, shows_default: bool, narrow_first: bool) -> str:
+def _creation_docstring(schema: EpJSONSchema, obj_type: str, *, narrow_first: bool) -> str:
     """The docstring of *obj_type*'s creation signature in *schema*'s release.
 
     An editor shows it for ``add()`` on a collection of the type, in hover and signature help:
@@ -1189,20 +1234,16 @@ def _creation_docstring(schema: EpJSONSchema, obj_type: str, *, shows_default: b
     memo whole (the class docstring truncates it) and the type's page in the EnergyPlus I/O
     Reference on docs.idfkit.com. Field notes stay on the class's attributes, which hover shows:
     here they would double the size of the ``_creation`` modules, and pyright would not show them
-    beside the parameter, only in the block. *shows_default* adds what a shown default means;
-    *narrow_first* says why the signature requires ``narrow_with_as_version_first``.
+    beside the parameter, only in the block. What a shown default means is said once, on
+    ``IDFCollection.add``, not in each of 1,700 signatures. *narrow_first* says why the signature
+    requires ``narrow_with_as_version_first``.
     """
     lines = [f"Create a new ``{obj_type}`` and add it to the document."]
     memo = schema.get_object_memo(obj_type)
     if memo:
         lines += ["", _sanitize_docstring(" ".join(memo.split())).replace("\\", "\\\\")]
-    notes: list[str] = []
     if narrow_first:
-        notes.append("No call suits every release: narrow the document with ``as_version`` first.")
-    if shows_default:
-        notes.append("A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.")
-    if notes:
-        lines += ["", *notes]
+        lines += ["", "No call suits every release: narrow the document with ``as_version`` first."]
     url = io_reference_url(obj_type, schema.version, schema)
     if url is not None:
         lines += ["", f"EnergyPlus I/O Reference: {url.url}"]
@@ -1228,8 +1269,8 @@ def _creation_lines(
     schema default where the annotation admits it, and ``...`` otherwise.
 
     A required field the class cannot be given a value for (one ``Any<Class>`` does not declare,
-    because a release names it differently, or whose only value safe in every release is ``None``)
-    makes every call wrong for some release. The signature then also requires
+    because a release names it differently, or whose only value safe in every release is ``None``),
+    or a name one release requires and another refuses, makes every call wrong for some release. The signature then also requires
     ``narrow_with_as_version_first: Never``, which no argument satisfies, so the type checker names
     the way out (narrow the document with ``as_version``) instead of accepting a call some release
     refuses.
@@ -1248,7 +1289,8 @@ def _creation_lines(
     optional: list[str] = []
     fields = list(fields)
     settable = {name for name, annotation in fields if _strip_none(annotation) != "None"}
-    if creation.required - settable:
+    narrow_first = bool(creation.required - settable) or creation.name_conflict
+    if narrow_first:
         required.append(f"{_NARROW_FIRST}: Never")
     fields = [(name, sink.qualify(annotation)) for name, annotation in fields]
     for name, annotation in fields:
@@ -1264,12 +1306,7 @@ def _creation_lines(
     if required or optional:
         params.append("*")
     params += required + optional
-    doc = _creation_docstring(
-        schema,
-        obj_type,
-        shows_default=any(not param.endswith(" = ...") and " = " in param for param in optional),
-        narrow_first=bool(creation.required - settable),
-    )
+    doc = _creation_docstring(schema, obj_type, narrow_first=narrow_first)
     return [f"{indent}_creation_signature: {sink.add(cls_name, ', '.join(params), doc)}"]
 
 
@@ -1475,20 +1512,26 @@ class _SharedLayout:
 
 @functools.cache
 def _shared_layout() -> dict[str, _SharedLayout]:
-    """For each type of the latest release that some older version declares differently.
+    """For each type of the latest release that some older version declares or creates differently.
 
-    Such a type gets ``Any<Class>``: the type as every supported version that has it declares it.
+    Such a type gets ``Any<Class>``: the type as every supported version that has it declares it,
+    created as they all accept. A type every version declares alike gets one only where some
+    release requires what the latest does not (a field, or the name), so that ``AnyIDFDocument``'s
+    ``add()`` asks for it.
     The latest class and each older range's class derive from it, so they only declare what is
     theirs, ``AnyIDFDocument`` types the type's collection with it, and code for any release
     annotates a parameter with it.
     """
     runs = _build_type_runs()
-    pieces = _creation_pieces()
     latest_types = set(get_schema(SUPPORTED.latest).object_types)
     layout: dict[str, _SharedLayout] = {}
     for obj_type, type_runs in runs.items():
-        # One class serves every release only if they declare the type alike and create it alike.
-        if obj_type not in latest_types or (len(type_runs) == 1 and len(pieces[obj_type]) == 1):
+        # The latest class serves every release only if they declare the type alike, and a call it
+        # accepts suits them all: no release requires a field (or the name) the latest does not.
+        if obj_type not in latest_types or (
+            len(type_runs) == 1
+            and _relaxes(_creation_for(obj_type, type_runs[0]), _class_creation(obj_type, type_runs[0]))
+        ):
             continue
         schemas = [get_schema(run[0]) for run in type_runs]
         decls = [_field_decls(sc, obj_type) for sc in schemas]
@@ -1574,6 +1617,10 @@ def _generate_merged_group(group: _MergedGroup, owner: str) -> list[str]:
             lines.append(f"    {name}: {read} | None")
         else:
             lines += _property_lines(name, read, write, "    ")
+    # Typed with the item, so as_list() passes back to add() and update() through AnyIDFDocument as
+    # it does through a release's document. The item types what writing accepts, every release's
+    # values; reading one of the few fields whose releases accept different values can give another.
+    lines.append(f"    def as_dict(self) -> {_group_item_name(group.cls_name)}: ...  # type: ignore[override]")
     lines.append("")
     # A dict written into a document of any release holds only what every release accepts.
     lines += _group_item_class(group.cls_name, [(name, write) for name, _, write in group.fields])
@@ -1777,28 +1824,34 @@ def _class_assignment() -> tuple[dict[tuple[str, Version], str], tuple[tuple[str
 
 @functools.cache
 def _piece_classes() -> tuple[tuple[str, tuple[Version, ...], tuple[Version, ...], str, str], ...]:
-    """The subclasses of the releases of a range that create its type differently from its class.
+    """The classes of the releases of a range that create its type differently from its class.
 
     A range's class (:func:`_class_assignment`) declares the fields; when its releases require
     different fields or take the name differently (:func:`_creation_pieces`), each piece but the
-    latest release's gets a subclass with its own creation signature, so each release's ``add()``
-    requires what its validator does while the range's class keeps its name. The latest class
-    creates as the latest release does; an older range's class requires what any of its releases
-    requires.
+    latest release's gets a class with its own creation signature, so each release's ``add()``
+    requires what its validator does while the range's class keeps its name. An older range's class
+    requires what any of its releases requires, so each of its pieces is a subclass of it that
+    requires less. The latest class creates as the latest release does: a piece of its range that
+    requires no more is a subclass of it, and one that requires more (25.1's BuildingSurface:Detailed
+    requires construction_name) derives from ``Any<Class>`` beside it instead, as an older range's
+    class does, since as a subclass it would pass for the latest class and ``add()`` would then be
+    checked against what 26.2 requires.
 
     Returns:
-        ``(obj_type, run, piece, class_name, base)`` for each subclass, ``base`` qualified as
-        ``versioned.pyi`` reaches it.
+        ``(obj_type, run, piece, class_name, base)`` for each, ``base`` qualified as
+        ``versioned.pyi`` reaches it: the range's class, or ``_g.Any<Class>``.
     """
     out: list[tuple[str, tuple[Version, ...], tuple[Version, ...], str, str]] = []
     for obj_type, pieces in _creation_pieces().items():
         for run, piece in pieces:
             if piece == run or SUPPORTED.latest in piece:
                 continue
-            if SUPPORTED.latest in run:
+            if SUPPORTED.latest not in run:
+                base = _to_class_name(obj_type) + _run_suffix(list(run))
+            elif _relaxes(_creation_for(obj_type, piece), _class_creation(obj_type, run)):
                 base = f"_g.{_to_class_name(obj_type)}"
             else:
-                base = _to_class_name(obj_type) + _run_suffix(list(run))
+                base = f"_g.{_any_class_name(obj_type)}"
             out.append((obj_type, run, piece, _to_class_name(obj_type) + _run_suffix(list(piece)), base))
     return tuple(out)
 
@@ -1811,12 +1864,15 @@ def _generate_piece_class(
     base: str,
     sink: _CreationModules,
 ) -> list[str]:
-    """A subclass of a range's class for releases of it that create the type differently.
+    """The class of releases of a range that create the type differently (:func:`_piece_classes`).
 
-    It declares nothing but its creation signature: the fields are the range's, and so are the
-    ``update`` keywords, which the signature names with the range's annotations.
+    A subclass of the range's class declares nothing but its creation signature: the fields are the
+    range's, and so are the ``update`` keywords, which the signature names with the range's
+    annotations. One deriving from ``Any<Class>`` is declared as an older range's class is.
     """
     schema = get_schema(piece[-1])
+    if base == f"_g.{_any_class_name(obj_type)}":
+        return _generate_range_class(obj_type, piece, sink, _creation_for(obj_type, piece))
     span = version_string(piece[0]) if len(piece) == 1 else f"{version_string(piece[0])} to {version_string(piece[-1])}"
     doc = (
         f"``{obj_type}`` as declared in EnergyPlus {span}: the fields of :class:`{base.removeprefix('_g.')}`, "
@@ -1838,6 +1894,37 @@ def _generate_piece_class(
         inherited=entries,
         sink=sink,
         creation=_creation_for(obj_type, piece),
+    )
+
+
+def _generate_range_class(
+    obj_type: str, run: tuple[Version, ...], sink: _CreationModules, creation: _Creation
+) -> list[str]:
+    """The class of the releases *run* of *obj_type*, declared on ``Any<Class>`` (or on its own).
+
+    It declares the fields its releases do not share with every other release, and creates as
+    *creation* says.
+    """
+    schema = get_schema(run[-1])
+    span = version_string(run[0]) if len(run) == 1 else f"{version_string(run[0])} to {version_string(run[-1])}"
+    doc = f"``{obj_type}`` as declared in EnergyPlus {span}."
+    memo = schema.get_object_memo(obj_type)
+    if memo:
+        doc = f"{doc} {_truncate_text(memo)}"
+    shared = _shared_layout().get(obj_type)
+    return _generate_object_class(
+        schema,
+        obj_type,
+        suffix=_run_suffix(list(run)),
+        class_doc=doc,
+        base=f"_g.{_shared_class_name(obj_type)}" if shared else f"_g.{_TYPED_OBJECT_BASE}",
+        group_base=_group_base_for(obj_type, "_g."),
+        skip_fields=shared.identical if shared else frozenset(),
+        omit_group=shared.group if shared else False,
+        fields_base=f"_g.{_common_fields_name(obj_type)}" if shared else "TypedDict",
+        inherited=_common_entries(schema, obj_type, shared, "_g.") if shared else (),
+        sink=sink,
+        creation=creation,
     )
 
 
@@ -1906,7 +1993,6 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
     """
     sink = sink if sink is not None else _CreationModules("_v", "_cv")
     _check_version_tags()
-    layout = _shared_layout()
     _, older_runs = _class_assignment()
     older = [ver for ver in SUPPORTED.versions if ver != SUPPORTED.latest]
 
@@ -1919,7 +2005,7 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         "",
         "from __future__ import annotations",
         "",
-        "from collections.abc import Mapping",
+        "from collections.abc import Mapping, Sequence",
         "from typing import Any, Literal, TypeAlias, TypeVar, overload",
         "",
         "from typing_extensions import TypedDict, Unpack",
@@ -1940,29 +2026,7 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         "",
     ]
     for obj_type, run in older_runs:
-        schema = get_schema(run[-1])
-        span = version_string(run[0]) if len(run) == 1 else f"{version_string(run[0])} to {version_string(run[-1])}"
-        doc = f"``{obj_type}`` as declared in EnergyPlus {span}."
-        memo = schema.get_object_memo(obj_type)
-        if memo:
-            doc = f"{doc} {_truncate_text(memo)}"
-        shared = layout.get(obj_type)
-        parts.extend(
-            _generate_object_class(
-                schema,
-                obj_type,
-                suffix=_run_suffix(list(run)),
-                class_doc=doc,
-                base=f"_g.{_shared_class_name(obj_type)}" if shared else f"_g.{_TYPED_OBJECT_BASE}",
-                group_base=_group_base_for(obj_type, "_g."),
-                skip_fields=shared.identical if shared else frozenset(),
-                omit_group=shared.group if shared else False,
-                fields_base=f"_g.{_common_fields_name(obj_type)}" if shared else "TypedDict",
-                inherited=_common_entries(schema, obj_type, shared, "_g.") if shared else (),
-                sink=sink,
-                creation=_class_creation(obj_type, run),
-            )
-        )
+        parts.extend(_generate_range_class(obj_type, run, sink, _class_creation(obj_type, run)))
         parts.append("")
 
     parts.extend([
@@ -2017,7 +2081,7 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         "def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]]) -> _D: ...",
     ])
     parts.extend(overloads)
-    return "\n".join(parts)
+    return "\n".join(sink.drop_unused_imports(parts))
 
 
 def _versioned_module(ver: Version) -> str:
@@ -2370,7 +2434,7 @@ def _generate_types_module(sink: _CreationModules | None = None) -> str:
     parts.append("")
     parts.append("from __future__ import annotations")
     parts.append("")
-    parts.append("from collections.abc import Mapping")
+    parts.append("from collections.abc import Mapping, Sequence")
     parts.append("from typing import Any, Literal, TypeAlias, TypedDict")
     parts.append("")
     parts.append("from typing_extensions import Never, Unpack")
@@ -2426,7 +2490,7 @@ def _generate_types_module(sink: _CreationModules | None = None) -> str:
     parts.extend(_generate_any_aliases(schema))
     parts.append("")
 
-    return "\n".join(parts)
+    return "\n".join(sink.drop_unused_imports(parts))
 
 
 _ANY_DOCUMENT_DOC = """A document of any supported EnergyPlus version.

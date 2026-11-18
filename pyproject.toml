@@ -146,8 +146,8 @@ exclude = [
 #
 # reportTypedDictNotRequiredAccess is on everywhere. It was suppressed for the package while the
 # document stub was a total=False TypedDict; the document types are no TypedDicts at all now (they
-# index through __getitem__ overloads), so the rule has nothing generated to report and stays on for
-# idfkit's own code.
+# index through __getitem__ overloads). The generated group items are (total=False), and the rule
+# reports reading one of their keys unchecked, which is right: as_dict() leaves out a blank field.
 [[tool.pyright.executionEnvironments]]
 root = "src/idfkit/codegen"
 pythonVersion = "3.11"

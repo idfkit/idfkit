@@ -583,14 +583,14 @@ class TestCommittedStubs:
             ),
             (
                 # Option A: AnyIDFDocument requires what any release requires.
-                r"(class AnyEnergyManagementSystemProgram:.*?)(lines: list\[[\w.]+\])",
-                r"\1\2 = ...",
-                "(AnyEnergyManagementSystemProgram): add() does not require lines",
+                r"(class AnyBuildingSurfaceDetailed:.*?)construction_name: str,",
+                r"\1construction_name: str | None = ...,",
+                "(AnyBuildingSurfaceDetailed): add() does not require construction_name",
             ),
             (
                 r"(class AnyPeople:.*?)narrow_with_as_version_first: Never,",
                 r"\1",
-                "(AnyPeople): add() can satisfy no release's required fields but does not say so",
+                "(AnyPeople): add() can satisfy no release's required fields or name but does not say so",
             ),
             (
                 r"(class WindowMaterialGap:.*?)\) -> None",

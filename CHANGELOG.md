@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   an editor's signature help showed them as the call was typed: `doc.materials.add(` listed the
   name, then `roughness`, `thickness`, `conductivity`, `density` and `specific_heat` with no
   default, then `thermal_absorptance: float | None = 0.9` and the other optional fields with their
-  schema defaults (`...` where a default is not a plain number or string). A shown default is the
+  schema defaults (`...` where the schema gives none, or one that is not a plain number or string). A shown default is the
   value EnergyPlus applies to a field left empty; `add()` stores only the fields passed. Leaving out
   a field the schema requires, or passing `None` for one, was a type error in pyright and mypy, as
   it is a `ValidationFailedError` (E001) at run time, and so was a name for a type without a Name
@@ -41,36 +41,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   can give every release what it requires, because a required field was renamed between releases
   (`People`, `Lights`, `InternalMass`, ...), the signature required
   `narrow_with_as_version_first`, which no argument satisfies: narrow the document with
-  `as_version` first. A required field whose key ends in `_` (`gas_or_gas_mixture_` on
-  `WindowMaterial:Gap`) was offered under that key only, since the run time refuses both
-  spellings together. A field whose key is not a Python name (`100_outdoor_air_in_cooling` on
+  `as_version` first; so it did where one release requires the name and another has no Name field.
+  A field whose key ends in `_` (`gas_or_gas_mixture_` on `WindowMaterial:Gap`) was offered under
+  that key only, since the run time refuses both spellings together. A field whose key is not a Python name (`100_outdoor_air_in_cooling` on
   `Sizing:System`) is not a keyword; set it with `IDFDocument.add()` or after creation. Releases of
-  a version range that require other fields got a subclass of the range's class, so every class
-  name in `idfkit.versioned` stayed, and the deprecated `add(obj)` refused fields passed beside the
-  object, which it used to drop. A collection a type checker cannot narrow
-  (`doc.get_collection(obj_type)`) still accepted any name and fields. Run time was unchanged, and
-  so was type-checking speed: the signatures were kept in modules of their own
-  (`idfkit/_creation`) that a type checker reads only to check an `add()` call
+  a version range that require other fields got a class of their own, so every class name in
+  `idfkit.versioned` stayed (see Changed). At run time, the deprecated `add(obj)` refused fields
+  passed beside the object, which it used to drop. A collection a type checker cannot narrow
+  (`doc.get_collection(obj_type)`) still accepted any name and fields. The signatures were kept in
+  128 modules of their own (`idfkit/_creation`), which pyright reads only to check an `add()` call
+  on one of their classes: a cold check that makes none was unchanged, and one adding 30 different
+  types took about 0.1 s more. mypy reads them all, about 0.7 s more on a cold run
   ([#297](https://github.com/idfkit/idfkit/pull/297)).
 - Every extensible group got an item type, a `TypedDict` of the group's fields
   (`BuildingSurfaceDetailedVerticesItem`), and `add()` and `update()` took a group's wrapper as a
-  list of them (`vertices: list[BuildingSurfaceDetailedVerticesItem]`) where they took `list[Any]`:
-  editors completed the keys of `vertices=[{...}]`, and a misspelled key or a wrong value type was a
-  type error. `ExtensibleList.as_list()` returned the item type for a typed group, so
-  `vertices=wall.vertices.as_list()` still type-checked; a list built ahead of the call is annotated
-  with the item type, as one typed `list[dict[str, float]]` is no longer accepted. Run time was
-  unchanged ([#297](https://github.com/idfkit/idfkit/pull/297)).
+  sequence of them or of the group objects
+  (`vertices: Sequence[BuildingSurfaceDetailedVerticesItem | BuildingSurfaceDetailedVerticesGroup]`)
+  where they took `list[Any]`: editors completed the keys of `vertices=[{...}]`, and a misspelled
+  key or a wrong value type was a type error. `ExtensibleList.as_list()` returned the item type, so
+  `vertices=wall.vertices.as_list()` and `vertices=list(wall.vertices)` still type-checked, through
+  `AnyIDFDocument` too; a list built ahead of the call is annotated with the item type, as one
+  typed `list[dict[str, float]]` is no longer accepted (see Changed). Run time was unchanged
+  ([#297](https://github.com/idfkit/idfkit/pull/297)).
 - Hover and signature help on a typed `add()` (Pylance, pyright) showed the object type's own
   documentation instead of the generic docstring of `IDFCollection.add`:
   `doc["Schedule:Constant"].add(` read "Create a new `Schedule:Constant` and add it to the
-  document", the schema's memo ("Constant hourly value for entire year."), what a shown default
-  means, and a link to the type's EnergyPlus I/O Reference page on docs.idfkit.com, for the
+  document", the schema's memo ("Constant hourly value for entire year.") and a link to the
+  type's EnergyPlus I/O Reference page on docs.idfkit.com, for the
   document's release. Where the signature requires `narrow_with_as_version_first`, it said to
   narrow with `as_version` first. A collection a type checker cannot narrow showed a short generic
   text. The text was kept in the lazily read `idfkit/_creation` modules, so a cold type check
-  that makes no `add()` call was unchanged, and one that does stayed within measurement noise;
-  `help(IDFCollection.add)` and the API reference kept the full docstring
-  ([d451180](https://github.com/idfkit/idfkit/commit/d451180)).
+  that makes no `add()` call was unchanged; `help(IDFCollection.add)` and the API reference kept
+  the full docstring. Editors built on jedi (pylsp, IPython) showed no docstring for `add()`
+  ([#297](https://github.com/idfkit/idfkit/pull/297)).
 - **Breaking:** `idfkit check` gained `C006`, an error checked by default, so a run that passed
   before could fail on it. It reported an object type passed to `add()` that no target release has
   (`doc.add("Zoen", "Office")`, which raises `UnknownObjectTypeError`), or a choice value no target
@@ -187,6 +190,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** for type checking only, a typed extensible group's snapshot was typed by its item
+  type: `ExtensibleList.as_list()` returned `list[BuildingSurfaceDetailedVerticesItem]` where it
+  returned `list[dict[str, Any]]`, and the group's `as_dict()` the item where it returned
+  `dict[str, Any]`. The item is a `TypedDict` whose keys are optional, as a blank field is left out,
+  so code that annotated a snapshot `list[dict[str, Any]]`, or read a key without checking it is
+  there (`points[0]["vertex_x_coordinate"]`, now `reportTypedDictNotRequiredAccess`), failed to
+  type-check. Annotate with the item type and read with `.get()`. A group wrapper no longer took a
+  `list[dict[str, Any]]`, such as `IDFObject.extensible_items()` gives
+  ([#297](https://github.com/idfkit/idfkit/pull/297)).
+- **Breaking:** for type checking only, a document of an older release typed some collections with
+  a class of the releases that create the type alike, where it used the range's class: 25.1's
+  `BuildingSurface:Detailed` held `BuildingSurfaceDetailed_v25_1_to_v26_1`, which requires
+  `construction_name` as 25.1 does. Where those releases require a field the latest release does
+  not (`BuildingSurface:Detailed`, `InternalMass`, `SwimmingPool:Indoor`, the two
+  `ExternalInterface:FunctionalMockupUnitExport:To:*` types), the class derives from `Any<Class>`
+  rather than the latest class, so a 25.1 surface no longer passes for a `BuildingSurfaceDetailed`
+  whose `add()` would not ask for the construction; elsewhere it is a subclass of the range's
+  class, and a `list[...]` annotated with that class no longer matched. Through `AnyIDFDocument`,
+  `SwimmingPool:Indoor` and the two FMU export types were typed with a class of their own, as
+  older releases require a field 26.2 does not ([#297](https://github.com/idfkit/idfkit/pull/297)).
 - For type checking only, an undeclared field on a typed object was reported against a type named
   for the mistake: pyright's message for `zone.ceiling_hieght = 3.0` read `parameter "key" of type
   "_NotAFieldOfThisObjectType"` rather than `of type "Never"` (`_NotAFieldOfThisExtensibleGroup`

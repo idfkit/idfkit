@@ -6,165 +6,10 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Literal
 
-from .. import _generated_types as _g
 from .. import versioned as _vd
-
-class FanSystemModel_v8_9_to_v9_3:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        air_inlet_node_name: str,
-        air_outlet_node_name: str,
-        design_maximum_air_flow_rate: float | Literal["Autosize"],
-        design_pressure_rise: float,
-        availability_schedule_name: str | None = ...,
-        speed_control_method: Literal["", "Continuous", "Discrete"] | None = "Discrete",
-        electric_power_minimum_flow_rate_fraction: float | None = 0.2,
-        motor_efficiency: float | None = 0.9,
-        motor_in_air_stream_fraction: float | None = 1,
-        design_electric_power_consumption: float | Literal["Autosize"] | None = ...,
-        design_power_sizing_method: Literal["", "PowerPerFlow", "PowerPerFlowPerPressure", "TotalEfficiencyAndPressure"]
-        | None = "PowerPerFlowPerPressure",
-        electric_power_per_unit_flow_rate: float | None = ...,
-        electric_power_per_unit_flow_rate_per_unit_pressure: float | None = 1.66667,
-        fan_total_efficiency: float | None = 0.7,
-        electric_power_function_of_flow_fraction_curve_name: str | None = ...,
-        night_ventilation_mode_pressure_rise: float | None = ...,
-        night_ventilation_mode_flow_fraction: float | None = ...,
-        motor_loss_zone_name: str | None = ...,
-        motor_loss_radiative_fraction: float | None = ...,
-        end_use_subcategory: str | None = "General",
-        number_of_speeds: float | None = 1,
-        speed_fractions: list[_g.FanSystemModelSpeedFractionsItem] = ...,
-    ) -> None:
-        """Create a new ``Fan:SystemModel`` and add it to the document.
-
-        Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-speed applications. Performance at different flow rates, or speed levels, is determined using separate performance curve or table or prescribed power fractions at discrete speed levels for two-speed or multi-speed fans.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-fans/#fansystemmodel
-        """
-
-class MaterialPropertyHeatAndMoistureTransferThermalConductivity_v8_9_to_v22_1:
-    def __call__(
-        self,
-        /,
-        *,
-        material_name: str,
-        number_of_thermal_coordinates: float,
-        moisture_content_1: float,
-        thermal_conductivity_1: float,
-        moisture_content_2: float | None = ...,
-        thermal_conductivity_2: float | None = ...,
-        moisture_content_3: float | None = ...,
-        thermal_conductivity_3: float | None = ...,
-        moisture_content_4: float | None = ...,
-        thermal_conductivity_4: float | None = ...,
-        moisture_content_5: float | None = ...,
-        thermal_conductivity_5: float | None = ...,
-        moisture_content_6: float | None = ...,
-        thermal_conductivity_6: float | None = ...,
-        moisture_content_7: float | None = ...,
-        thermal_conductivity_7: float | None = ...,
-        moisture_content_8: float | None = ...,
-        thermal_conductivity_8: float | None = ...,
-        moisture_content_9: float | None = ...,
-        thermal_conductivity_9: float | None = ...,
-        moisture_content_10: float | None = ...,
-        thermal_conductivity_10: float | None = ...,
-        moisture_content_11: float | None = ...,
-        thermal_conductivity_11: float | None = ...,
-        moisture_content_12: float | None = ...,
-        thermal_conductivity_12: float | None = ...,
-        moisture_content_13: float | None = ...,
-        thermal_conductivity_13: float | None = ...,
-        moisture_content_14: float | None = ...,
-        thermal_conductivity_14: float | None = ...,
-        moisture_content_15: float | None = ...,
-        thermal_conductivity_15: float | None = ...,
-        moisture_content_16: float | None = ...,
-        thermal_conductivity_16: float | None = ...,
-        moisture_content_17: float | None = ...,
-        thermal_conductivity_17: float | None = ...,
-        moisture_content_18: float | None = ...,
-        thermal_conductivity_18: float | None = ...,
-        moisture_content_19: float | None = ...,
-        thermal_conductivity_19: float | None = ...,
-        moisture_content_20: float | None = ...,
-        thermal_conductivity_20: float | None = ...,
-        moisture_content_21: float | None = ...,
-        thermal_conductivity_21: float | None = ...,
-        moisture_content_22: float | None = ...,
-        thermal_conductivity_22: float | None = ...,
-        moisture_content_23: float | None = ...,
-        thermal_conductivity_23: float | None = ...,
-        moisture_content_24: float | None = ...,
-        thermal_conductivity_24: float | None = ...,
-        moisture_content_25: float | None = ...,
-        thermal_conductivity_25: float | None = ...,
-    ) -> None:
-        """Create a new ``MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity`` and add it to the document.
-
-        HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between thermal conductivity and moisture content Has no effect with other HeatBalanceAlgorithm solution algorithms
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-surface-construction-elements/#materialpropertyheatandmoisturetransferthermalconductivity
-        """
-
-class EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        water_inlet_node_name: str,
-        water_outlet_node_name: str,
-        high_fan_speed_air_flow_rate: float | Literal["Autosize"],
-        high_fan_speed_fan_power: float | Literal["Autosize"],
-        low_fan_speed_air_flow_rate: float | Literal["Autocalculate"],
-        low_fan_speed_fan_power: float | Literal["Autocalculate"],
-        design_spray_water_flow_rate: float,
-        performance_input_method: Literal[
-            "StandardDesignCapacity", "UFactorTimesAreaAndDesignWaterFlowRate", "UserSpecifiedDesignCapacity"
-        ],
-        low_fan_speed_air_flow_rate_sizing_factor: float | None = 0.5,
-        low_fan_speed_fan_power_sizing_factor: float | None = 0.16,
-        outdoor_air_inlet_node_name: str | None = ...,
-        heat_rejection_capacity_and_nominal_capacity_sizing_ratio: float | None = 1.25,
-        high_speed_standard_design_capacity: float | None = ...,
-        low_speed_standard_design_capacity: float | Literal["Autocalculate"] | None = ...,
-        low_speed_standard_capacity_sizing_factor: float | None = 0.5,
-        high_fan_speed_u_factor_times_area_value: float | Literal["Autosize"] | None = ...,
-        low_fan_speed_u_factor_times_area_value: float | Literal["Autocalculate"] | None = ...,
-        low_fan_speed_u_factor_times_area_sizing_factor: float | None = 0.6,
-        design_water_flow_rate: float | Literal["Autosize"] | None = ...,
-        high_speed_user_specified_design_capacity: float | None = ...,
-        low_speed_user_specified_design_capacity: float | Literal["Autocalculate"] | None = ...,
-        low_speed_user_specified_design_capacity_sizing_factor: float | None = 0.5,
-        design_entering_water_temperature: float | None = ...,
-        design_entering_air_temperature: float | None = ...,
-        design_entering_air_wet_bulb_temperature: float | None = ...,
-        high_speed_sizing_factor: float | None = 1,
-        evaporation_loss_mode: Literal["", "LossFactor", "SaturatedExit"] | None = "SaturatedExit",
-        evaporation_loss_factor: float | None = ...,
-        drift_loss_percent: float | None = 0.008,
-        blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None = "ConcentrationRatio",
-        blowdown_concentration_ratio: float | None = 3,
-        blowdown_makeup_water_usage_schedule_name: str | None = ...,
-        supply_water_storage_tank_name: str | None = ...,
-    ) -> None:
-        """Create a new ``EvaporativeFluidCooler:TwoSpeed`` and add it to the document.
-
-        This model is based on Merkel's theory, which is also the basis for the cooling tower model in EnergyPlus. The Evaporative fluid cooler is modeled as a counter flow heat exchanger.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-condenser-equipment/#evaporativefluidcoolertwospeed
-        """
 
 class AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1:
     def __call__(
@@ -213,180 +58,7 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1:
 
         Unitary heat pump system, heating and cooling, single-speed with constant volume supply fan (continuous or cycling), direct expansion (DX) cooling coil, DX heating coil (water-to-air heat pump), and supplemental heating coil (gas, electric, hot water, or steam).
 
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
         EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-unitary-equipment/#airloophvacunitaryheatpumpwatertoair
-        """
-
-class People_v22_2_to_v23_2:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        zone_or_zonelist_or_space_or_spacelist_name: str,
-        number_of_people_schedule_name: str,
-        activity_level_schedule_name: str,
-        number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None = "People",
-        number_of_people: float | None = ...,
-        people_per_floor_area: float | None = ...,
-        floor_area_per_person: float | None = ...,
-        fraction_radiant: float | None = 0.3,
-        sensible_heat_fraction: float | Literal["", "Autocalculate"] | None = "Autocalculate",
-        carbon_dioxide_generation_rate: float | None = ...,
-        enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None = "No",
-        mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged"]
-        | None = "ZoneAveraged",
-        surface_name_angle_factor_list_name: str | None = ...,
-        work_efficiency_schedule_name: str | None = ...,
-        clothing_insulation_calculation_method: Literal[
-            "", "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"
-        ]
-        | None = "ClothingInsulationSchedule",
-        clothing_insulation_calculation_method_schedule_name: str | None = ...,
-        clothing_insulation_schedule_name: str | None = ...,
-        air_velocity_schedule_name: str | None = ...,
-        thermal_comfort_model_1_type: Literal[
-            "AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"
-        ]
-        | None = ...,
-        thermal_comfort_model_2_type: Literal[
-            "AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"
-        ]
-        | None = ...,
-        thermal_comfort_model_3_type: Literal[
-            "AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"
-        ]
-        | None = ...,
-        thermal_comfort_model_4_type: Literal[
-            "AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"
-        ]
-        | None = ...,
-        thermal_comfort_model_5_type: Literal[
-            "AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"
-        ]
-        | None = ...,
-        thermal_comfort_model_6_type: Literal[
-            "AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"
-        ]
-        | None = ...,
-        thermal_comfort_model_7_type: Literal[
-            "AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"
-        ]
-        | None = ...,
-        ankle_level_air_velocity_schedule_name: str | None = ...,
-        cold_stress_temperature_threshold: float | None = 15.56,
-        heat_stress_temperature_threshold: float | None = 30,
-    ) -> None:
-        """Create a new ``People`` and add it to the document.
-
-        Sets internal gains and contaminant rates for occupants in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/overview/group-internal-gains-people-lights-other/#people
-        """
-
-class OutputIlluminanceMap_v8_9_to_v22_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        zone_name: str,
-        z_height: float | None = 0,
-        x_minimum_coordinate: float | None = 0,
-        x_maximum_coordinate: float | None = 1,
-        number_of_x_grid_points: float | None = 2,
-        y_minimum_coordinate: float | None = 0,
-        y_maximum_coordinate: float | None = 1,
-        number_of_y_grid_points: float | None = 2,
-    ) -> None:
-        """Create a new ``Output:IlluminanceMap`` and add it to the document.
-
-        reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point CoordinateSystem field
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-daylighting/#outputilluminancemap
-        """
-
-class AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        air_inlet_node_name: str,
-        air_outlet_node_name: str,
-        cooling_supply_air_flow_rate: float | Literal["Autosize"],
-        heating_supply_air_flow_rate: float | Literal["Autosize"],
-        controlling_zone_or_thermostat_location: str,
-        supply_air_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff"],
-        supply_air_fan_name: str,
-        heating_coil_object_type: Literal[
-            "Coil:Heating:DX:SingleSpeed", "Coil:Heating:DX:VariableSpeed", "CoilSystem:IntegratedHeatPump:AirSource"
-        ],
-        heating_coil_name: str,
-        cooling_coil_object_type: Literal[
-            "Coil:Cooling:DX:SingleSpeed",
-            "Coil:Cooling:DX:VariableSpeed",
-            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
-            "CoilSystem:IntegratedHeatPump:AirSource",
-        ],
-        cooling_coil_name: str,
-        supplemental_heating_coil_object_type: Literal[
-            "Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"
-        ],
-        supplemental_heating_coil_name: str,
-        maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"],
-        availability_schedule_name: str | None = ...,
-        no_load_supply_air_flow_rate: float | Literal["Autosize"] | None = ...,
-        maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None = 21,
-        fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None = "BlowThrough",
-        supply_air_fan_operating_mode_schedule_name: str | None = ...,
-        dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None = "None",
-    ) -> None:
-        """Create a new ``AirLoopHVAC:UnitaryHeatPump:AirToAir`` and add it to the document.
-
-        Unitary heat pump system, heating and cooling, single-speed with supply fan, direct expansion (DX) cooling coil, DX heating coil (air-to-air heat pump), and supplemental heating coil (gas, electric, hot water, or steam).
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-unitary-equipment/#airloophvacunitaryheatpumpairtoair
-        """
-
-class Lights_v9_6_to_v23_2:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        zone_or_zonelist_or_space_or_spacelist_name: str,
-        schedule_name: str,
-        design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"]
-        | None = "LightingLevel",
-        lighting_level: float | None = ...,
-        watts_per_zone_floor_area: float | None = ...,
-        watts_per_person: float | None = ...,
-        return_air_fraction: float | None = 0,
-        fraction_radiant: float | None = 0,
-        fraction_visible: float | None = 0,
-        fraction_replaceable: float | None = 1,
-        end_use_subcategory: str | None = "General",
-        return_air_fraction_calculated_from_plenum_temperature: Literal["", "No", "Yes"] | None = "No",
-        return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None = 0,
-        return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None = 0,
-        return_air_heat_gain_node_name: str | None = ...,
-        exhaust_air_heat_gain_node_name: str | None = ...,
-    ) -> None:
-        """Create a new ``Lights`` and add it to the document.
-
-        Sets internal gains for lights in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is specified then this definition applies to all applicable spaces, and each instance will be named with the Space Name plus this Object Name.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.2/io-reference/energyplus-economics/cost-estimating/#lights
         """
 
 class EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2:
@@ -457,37 +129,6 @@ class EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2:
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemmeteredoutputvariable
         """
 
-class AirTerminalSingleDuctVAVReheatVariableSpeedFan_v8_9_to_v9_2:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        maximum_cooling_air_flow_rate: float | Literal["Autosize"],
-        maximum_heating_air_flow_rate: float | Literal["Autosize"],
-        zone_minimum_air_flow_fraction: float,
-        fan_object_type: Literal["Fan:SystemModel", "Fan:VariableVolume"],
-        fan_name: str,
-        heating_coil_object_type: Literal[
-            "Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"
-        ],
-        heating_coil_name: str,
-        availability_schedule_name: str | None = ...,
-        air_inlet_node_name: str | None = ...,
-        air_outlet_node_name: str | None = ...,
-        maximum_hot_water_or_steam_flow_rate: float | Literal["Autosize"] | None = ...,
-        minimum_hot_water_or_steam_flow_rate: float | None = 0,
-        heating_convergence_tolerance: float | None = 0.001,
-    ) -> None:
-        """Create a new ``AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan`` and add it to the document.
-
-        Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam) and variable-speed fan. These units are usually employed in underfloor air distribution (UFAD) systems where the air is supplied at low static pressure through an underfloor plenum. The fan is used to control the flow of conditioned air that enters the space.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-air-distribution-equipment/#airterminalsingleductvavreheatvariablespeedfan
-        """
-
 class ZoneHVACEquipmentList_v9_1:
     def __call__(
         self,
@@ -496,37 +137,15 @@ class ZoneHVACEquipmentList_v9_1:
         *,
         load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"]
         | None = "SequentialLoad",
-        equipment: list[_vd.ZoneHVACEquipmentListEquipmentItem_v9_1] = ...,
+        equipment: Sequence[
+            _vd.ZoneHVACEquipmentListEquipmentItem_v9_1 | _vd.ZoneHVACEquipmentListEquipmentGroup_v9_1
+        ] = ...,
     ) -> None:
         """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
 
         List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit or AirTerminal:SingleDuct:Uncontrolled object must be listed in this statement if there is a forced air system serving the zone from the air loop. Equipment is simulated in the order specified by Zone Equipment Cooling Sequence and Zone Equipment Heating or No-Load Sequence, depending on the thermostat request. For equipment of similar type, assign sequence 1 to the first system intended to serve that type of load. For situations where one or more equipment types has limited capacity or limited control, order the sequence so that the most controllable piece of equipment runs last. For example, with a dedicated outdoor air system (DOAS), the air terminal for the DOAS should be assigned Heating Sequence = 1 and Cooling Sequence = 1. Any other equipment should be assigned sequence 2 or higher so that it will see the net load after the DOAS air is added to the zone.
 
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-zone-equipment/#zonehvacequipmentlist
-        """
-
-class DemandManagerAssignmentList_v8_9_to_v22_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        meter_name: str,
-        demand_limit_safety_fraction: float,
-        demand_window_length: float,
-        demand_manager_priority: Literal["All", "Sequential"],
-        demand_limit_schedule_name: str | None = ...,
-        billing_period_schedule_name: str | None = ...,
-        peak_period_schedule_name: str | None = ...,
-        manager_data: list[_g.DemandManagerAssignmentListManagerDataItem] = ...,
-    ) -> None:
-        """Create a new ``DemandManagerAssignmentList`` and add it to the document.
-
-        a list of meters that can be reported are available after a run on the meter dictionary file (.mdd) if the Output:VariableDictionary has been requested.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-demand-limiting-controls/#demandmanagerassignmentlist
         """
 
 class PlantComponentUserDefined_v8_9_to_v22_1:
@@ -612,45 +231,6 @@ class PlantComponentUserDefined_v8_9_to_v22_1:
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-user-defined-hvac-and-plant-component/#plantcomponentuserdefined
         """
 
-class CoilHeatingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        compressor_type: Literal["Reciprocating", "Rotary", "Scroll"],
-        design_source_side_flow_rate: float,
-        gross_rated_heating_capacity: float,
-        high_pressure_cutoff: float,
-        low_pressure_cutoff: float,
-        water_inlet_node_name: str,
-        water_outlet_node_name: str,
-        air_inlet_node_name: str,
-        air_outlet_node_name: str,
-        load_side_total_heat_transfer_coefficient: float,
-        superheat_temperature_at_the_evaporator_outlet: float,
-        compressor_power_losses: float,
-        compressor_efficiency: float,
-        refrigerant_type: str | None = "R22",
-        compressor_piston_displacement: float | None = ...,
-        compressor_suction_discharge_pressure_drop: float | None = ...,
-        compressor_clearance_factor: float | None = ...,
-        refrigerant_volume_flow_rate: float | None = ...,
-        volume_ratio: float | None = ...,
-        leak_rate_coefficient: float | None = ...,
-        source_side_heat_transfer_coefficient: float | None = ...,
-        source_side_heat_transfer_resistance1: float | None = ...,
-        source_side_heat_transfer_resistance2: float | None = ...,
-    ) -> None:
-        """Create a new ``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` and add it to the document.
-
-        Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, parameter estimation model. Parameter estimation model is a deterministic model that requires a consistent set of parameters to describe the operating conditions of the heat pump components.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-heating-and-cooling-coils/#coilheatingwatertoairheatpumpparameterestimation
-        """
-
 class PythonPluginSearchPaths_v9_3:
     def __call__(
         self,
@@ -669,50 +249,7 @@ class PythonPluginSearchPaths_v9_3:
 
         Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file is automatically added so that the Python interpreter can find the packaged up pyenergyplus Python package. By default, the current working directory and input file directory are also added to the search path. However, this object allows modifying this behavior. With this object, searching these directories can be disabled, and users can add supplemental search paths that point to libraries of plugin scripts.
 
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-python-plugins/#pythonpluginsearchpaths
-        """
-
-class PythonPluginTrendVariable_v9_3_to_v22_1:
-    def __call__(
-        self, name: str, /, *, name_of_a_python_plugin_variable: str, number_of_timesteps_to_be_logged: float
-    ) -> None:
-        """Create a new ``PythonPlugin:TrendVariable`` and add it to the document.
-
-        This object sets up a Python plugin trend variable from an Python plugin variable A trend variable logs values across timesteps
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-python-plugins/#pythonplugintrendvariable
-        """
-
-class RunPeriod_v9_2_to_v9_5:
-    def __call__(
-        self,
-        name: str,
-        /,
-        *,
-        begin_month: float,
-        begin_day_of_month: float,
-        end_month: float,
-        end_day_of_month: float,
-        begin_year: float | None = ...,
-        end_year: float | None = ...,
-        day_of_week_for_start_day: Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"]
-        | None = ...,
-        use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None = "Yes",
-        apply_weekend_holiday_rule: Literal["", "No", "Yes"] | None = "No",
-        use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None = "Yes",
-        treat_weather_as_actual: Literal["", "No", "Yes"] | None = "No",
-    ) -> None:
-        """Create a new ``RunPeriod`` and add it to the document.
-
-        Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not overlap.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
-
-        EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-location-climate-weather-file-access/#runperiod
         """
 
 class ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1:
@@ -748,8 +285,6 @@ class ZoneHVACLowTemperatureRadiantConstantFlow_v9_5_to_v25_1:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` and add it to the document.
 
         Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floor). Controlled by varying the hot or chilled water temperature circulating through the unit.
-
-        A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-radiative-convective-units/#zonehvaclowtemperatureradiantconstantflow
         """

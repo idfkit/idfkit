@@ -871,7 +871,6 @@ class TestCreationDocstring:
         assert _docstring_of(sink, "ScheduleConstant") == (
             "Create a new ``Schedule:Constant`` and add it to the document.\n\n"
             "Constant hourly value for entire year.\n\n"
-            "A default shown is what EnergyPlus applies to a field left empty; only fields passed are stored.\n\n"
             "EnergyPlus I/O Reference: "
             "https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduleconstant"
         )
@@ -883,11 +882,16 @@ class TestCreationDocstring:
         _generate_object_class(_LATEST, "Material:NoMass", sink=sink)
         assert " ".join(memo.split()) in _docstring_of(sink, "MaterialNoMass")
 
-    def test_says_what_a_default_means_only_where_one_is_shown(self) -> None:
+    def test_a_name_one_release_requires_and_another_refuses_is_a_conflict(self) -> None:
+        # Output:Table:ReportPeriod has no Name field before 25.2 and requires one from it on.
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
-        creation = gen._Creation("required", frozenset(), ())  # pyright: ignore[reportPrivateUsage]
-        gen._creation_lines("Cls", [("a", "float | None")], creation, "    ", sink, _LATEST, "Zone")  # pyright: ignore[reportPrivateUsage]
-        assert "A default shown" not in _docstring_of(sink, "Cls")
+        versions = gen._versions_with("Output:Table:ReportPeriod")  # pyright: ignore[reportPrivateUsage]
+        creation = gen._creation_for("Output:Table:ReportPeriod", versions)  # pyright: ignore[reportPrivateUsage]
+        assert creation.name_conflict
+        gen._creation_lines(
+            "Cls", [("a", "float | None")], creation, "    ", sink, _LATEST, "Output:Table:ReportPeriod"
+        )  # pyright: ignore[reportPrivateUsage]
+        assert "narrow_with_as_version_first: Never" in _signature_of(sink, "Cls")
 
     def test_says_to_narrow_where_no_call_suits_every_release(self) -> None:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
@@ -907,7 +911,7 @@ class TestCreationDocstring:
         schema.version = LATEST_VERSION
         schema.get_object_memo.return_value = 'A "quoted" C:\\path memo'
         schema.get_group.return_value = None
-        doc = gen._creation_docstring(schema, "Not:AType", shows_default=False, narrow_first=False)  # pyright: ignore[reportPrivateUsage]
+        doc = gen._creation_docstring(schema, "Not:AType", narrow_first=False)  # pyright: ignore[reportPrivateUsage]
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         sink.add("Cls", "self, /", doc)
         assert (
@@ -919,15 +923,33 @@ class TestCreationDocstring:
 class TestCreationAcrossReleases:
     """Any<Class> requires what any release requires; each release's class requires its own."""
 
+    def test_no_subclass_requires_more_than_its_base(self) -> None:
+        # IDFCollection is covariant: a subclass's collection passes for its base's, whose add()
+        # would then accept a call the subclass's releases refuse.
+        runs = gen._build_type_runs()  # pyright: ignore[reportPrivateUsage]
+        for obj_type, run, piece, cls_name, base in gen._piece_classes():  # pyright: ignore[reportPrivateUsage]
+            sub = gen._creation_for(obj_type, piece)  # pyright: ignore[reportPrivateUsage]
+            if base.startswith("_g.Any"):
+                assert not gen._relaxes(sub, gen._class_creation(obj_type, run)), cls_name  # pyright: ignore[reportPrivateUsage]
+                assert obj_type in gen._shared_layout(), cls_name  # pyright: ignore[reportPrivateUsage]
+            else:
+                assert gen._relaxes(sub, gen._class_creation(obj_type, run)), cls_name  # pyright: ignore[reportPrivateUsage]
+        stricter = {cls for _, _, _, cls, base in gen._piece_classes() if base.startswith("_g.Any")}  # pyright: ignore[reportPrivateUsage]
+        assert "BuildingSurfaceDetailed_v25_1_to_v26_1" in stricter
+        assert runs
+
     def test_any_class_requires_what_any_release_requires(self) -> None:
         # EnergyManagementSystem:Program: 8.9 requires no lines, every later release does.
         versions = gen._versions_with("EnergyManagementSystem:Program")  # pyright: ignore[reportPrivateUsage]
         creation = gen._creation_for("EnergyManagementSystem:Program", versions)  # pyright: ignore[reportPrivateUsage]
         assert creation.required == {"lines"}
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
-        generate_stubs(sink=sink)
-        assert "lines: list[_g.EnergyManagementSystemProgramLinesItem])" in _signature_of(
-            sink, "AnyEnergyManagementSystemProgram"
+        stub = generate_stubs(sink=sink)
+        # 26.2 requires them too, so the latest class serves every release: Any<Class> is an alias.
+        assert "AnyEnergyManagementSystemProgram: TypeAlias = EnergyManagementSystemProgram" in stub
+        assert (
+            "lines: Sequence[_g.EnergyManagementSystemProgramLinesItem | _g.EnergyManagementSystemProgramLinesGroup])"
+            in _signature_of(sink, "EnergyManagementSystemProgram")
         )
         # BuildingSurface:Detailed: 8.9 to 26.1 require the construction, 26.2 does not.
         assert "construction_name: str," in _signature_of(sink, "AnyBuildingSurfaceDetailed")
@@ -972,8 +994,7 @@ class TestCreationAcrossReleases:
         "name",
         [
             # Classes of ranges that ended before the latest release keep their names: these split
-            # into pieces with other required fields or defaults, and stay their pieces' base.
-            "Building_v8_9_to_v22_1",
+            # into pieces with other required fields or name, and stay their pieces' base.
             "RunPeriod_v9_0_to_v9_5",
             "AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5",
             "EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1",
@@ -1003,9 +1024,9 @@ class TestExtensibleGroupItems:
     def test_item_name(self) -> None:
         assert gen._group_item_name("BuildingSurfaceDetailedVerticesGroup") == "BuildingSurfaceDetailedVerticesItem"  # pyright: ignore[reportPrivateUsage]
         assert (
-            gen._group_item_name("ScheduleWeekCompactDataGroup_v8_9_to_v9_4")
+            gen._group_item_name("ScheduleWeekCompactDataGroup_v8_9_to_v9_4")  # pyright: ignore[reportPrivateUsage]
             == "ScheduleWeekCompactDataItem_v8_9_to_v9_4"
-        )  # pyright: ignore[reportPrivateUsage]
+        )
 
     def test_group_class_comes_with_its_item_and_a_typed_as_dict(self) -> None:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
@@ -1013,9 +1034,15 @@ class TestExtensibleGroupItems:
         assert "class BuildingSurfaceDetailedVerticesItem(TypedDict, total=False):" in text
         assert "    vertex_x_coordinate: float | None" in text
         assert "    def as_dict(self) -> BuildingSurfaceDetailedVerticesItem: ..." in text
-        assert "    vertices: list[BuildingSurfaceDetailedVerticesItem]" in text  # the update keyword
+        # The update keyword: dicts or groups, in any sequence.
+        assert (
+            "    vertices: Sequence[BuildingSurfaceDetailedVerticesItem | BuildingSurfaceDetailedVerticesGroup]" in text
+        )
         signature = _signature_of(sink, "BuildingSurfaceDetailed")
-        assert "vertices: list[_g.BuildingSurfaceDetailedVerticesItem] = ..." in signature
+        assert (
+            "vertices: Sequence[_g.BuildingSurfaceDetailedVerticesItem | _g.BuildingSurfaceDetailedVerticesGroup] = ..."
+            in signature
+        )
 
     def test_creation_modules_import_the_stub_their_items_live_in(self) -> None:
         sink = gen._CreationModules("_v", "_cv")  # pyright: ignore[reportPrivateUsage]

@@ -22,6 +22,7 @@ import pytest
 import idfkit
 from idfkit import new_document
 from idfkit.codegen.verify_stubs import (
+    _NARROW_FIRST,  # pyright: ignore[reportPrivateUsage]
     _collection_class,  # pyright: ignore[reportPrivateUsage]
     _creation_of,  # pyright: ignore[reportPrivateUsage]
     _getitem_entries,  # pyright: ignore[reportPrivateUsage]
@@ -36,7 +37,6 @@ from idfkit.validation import ValidationError
 from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
 
 _PACKAGE = Path(idfkit.__file__).resolve().parent
-_NARROW_FIRST = "narrow_with_as_version_first"
 
 
 @functools.cache

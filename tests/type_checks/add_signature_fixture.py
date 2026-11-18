@@ -6,7 +6,7 @@ requires one) and none for a type without; then the fields the schema requires, 
 not ``None``; then the other fields with their schema defaults. So leaving out a required field is a
 type error, as it is a ``ValidationFailedError`` at run time (``tests/test_add_signature.py`` checks
 the two agree). The required fields are the release's: through ``IDFDocumentV9_4`` 9.4's, through
-``AnyIDFDocument`` only those every release requires, and through an untyped collection none.
+``AnyIDFDocument`` every field any release requires, and through an untyped collection none.
 
 Each seeded error below carries a ``pyright: ignore`` naming the rule it must trigger, and this file
 turns on ``reportUnnecessaryTypeIgnoreComment``: if a seeded error stops being reported, the ignore
@@ -22,11 +22,18 @@ from typing import TYPE_CHECKING, Any
 from typing_extensions import assert_type
 
 from idfkit import IDFDocument
-from idfkit.objects import IDFObject
-from idfkit.versioned import AnyIDFDocument, IDFDocumentV9_4
+from idfkit.objects import IDFCollection, IDFObject
+from idfkit.versioned import AnyIDFDocument, IDFDocumentV9_4, IDFDocumentV25_1
 
 if TYPE_CHECKING:
-    from idfkit.document import Building, BuildingSurfaceDetailedVerticesItem, InternalMass, Material, Zone
+    from idfkit.document import (
+        Building,
+        BuildingSurfaceDetailed,
+        BuildingSurfaceDetailedVerticesItem,
+        InternalMass,
+        Material,
+        Zone,
+    )
     from idfkit.versioned import InternalMass_v9_2_to_v9_5
 
 
@@ -136,3 +143,23 @@ def extensible_groups(doc: IDFDocument[Any], old: IDFDocumentV9_4) -> None:
         data=[{"daytype_list": "AllDays", "schedule_day_name": "On"}],
     )
     old["Schedule:Week:Compact"].add("Week", data=[{"daytype_list": "AllDays", "schedule_day_name": "On"}])
+    # A list of the group objects themselves is taken too, as the run time takes it.
+    wall.update(vertices=list(wall.vertices))
+    wall.update(vertices=list(reversed(list(wall.vertices))))
+
+
+def merged_groups(doc: AnyIDFDocument) -> None:
+    # Through AnyIDFDocument a group every release declares differently is merged; its as_list() is
+    # typed by its item too, so a copy passes back.
+    for equipment_list in doc["ZoneHVAC:EquipmentList"]:
+        equipment_list.update(equipment=equipment_list.equipment.as_list())
+
+
+def add_floor(surfaces: IDFCollection[BuildingSurfaceDetailed]) -> None:
+    surfaces.add("Floor", surface_type="Floor", zone_name="Z", outside_boundary_condition="Ground")
+
+
+def stricter_release(doc: IDFDocumentV25_1) -> None:
+    # 25.1 requires construction_name, which 26.2 does not: its surfaces are not the latest class's,
+    # so a helper typed with the latest class cannot add one without it.
+    add_floor(doc["BuildingSurface:Detailed"])  # pyright: ignore[reportArgumentType]

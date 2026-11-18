@@ -64,6 +64,8 @@ class _Class:
     getitem: list[tuple[str | None, str, str]] = dataclasses.field(default_factory=list[tuple[str | None, str, str]])
     # The annotation of ``_creation_signature`` (``_c3.Material``), when the class declares one.
     creation: str | None = None
+    # What ``as_dict()`` returns, for a group class that types its snapshot.
+    snapshot: str | None = None
 
 
 @dataclasses.dataclass(frozen=True)
@@ -147,6 +149,8 @@ def _read_class(node: ast.ClassDef) -> _Class:
             continue
         elif (overload := _getitem_overload(item)) is not None:
             cls.getitem.append(overload)
+        elif item.name == "as_dict" and item.returns is not None:
+            cls.snapshot = _norm(ast.unparse(item.returns))
         elif item.returns is not None and any(ast.unparse(d) == "property" for d in item.decorator_list):
             cls.properties[item.name] = _norm(ast.unparse(item.returns))
         elif (
@@ -395,6 +399,7 @@ def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problem
             item = _item_name(group_cls)
             if item not in module.classes or _members_of(_fields(module, item)) != inner:
                 problems.append(f"{where}: {item} does not hold the version's inner fields")
+            _check_snapshot(module, group_cls, where, problems)
             keywords[wrapper] = frozenset({_group_items(group_cls)})
     if actual != expected:
         missing = sorted(set(expected) - set(actual))
@@ -419,8 +424,10 @@ class _ExpectedCreation:
     required: frozenset[str]
     # Each field with a default every release agrees on, with that default.
     defaults: dict[str, object]
-    # The spellings without the trailing underscore of required keys ending in "_": not offered.
+    # The spellings without the trailing underscore of keys ending in "_": not offered.
     hidden: frozenset[str]
+    # One release requires the name and another refuses it: no call suits them all.
+    name_conflict: bool = False
 
 
 # The parameter a creation signature requires when no call can satisfy every release it serves.
@@ -434,7 +441,8 @@ def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedC
     run-time validator refuses an object without it; over several releases, when any one does, so
     that no release refuses a call that type-checks. A default must be one every release has. The
     name is required when any release's schema marks it ``is_required``, refused when no release
-    has a Name field, and optional otherwise.
+    has a Name field, refused too when the others take an optional one, and optional otherwise; one
+    release requiring it and another refusing it is a conflict no call resolves.
     """
     from idfkit.schema import trailing_underscore_aliases
 
@@ -449,7 +457,7 @@ def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedC
         own = {f for f in listed if "default" not in properties.get(f, {})}
         required |= own
         aliases = trailing_underscore_aliases(schema.get_field_names(obj_type))
-        hidden |= {alias for alias, key in aliases.items() if alias != key and key in own}
+        hidden |= {alias for alias, key in aliases.items() if alias != key}
         own_defaults = {f: p["default"] for f, p in properties.items() if "default" in p}
         if defaults is None:
             defaults = own_defaults
@@ -461,8 +469,9 @@ def _expected_creation(schemas: list[EpJSONSchema], obj_type: str) -> _ExpectedC
             kinds.add("none")
         else:
             kinds.add("required" if name_schema.get("is_required") else "optional")
-    name = "required" if "required" in kinds else "none" if kinds == {"none"} else "optional"
-    return _ExpectedCreation(name, frozenset(required), defaults or {}, frozenset(hidden))
+    name = "required" if "required" in kinds else "none" if "none" in kinds else "optional"
+    conflict = {"none", "required"} <= kinds
+    return _ExpectedCreation(name, frozenset(required), defaults or {}, frozenset(hidden), conflict)
 
 
 def _creation_of(module: _Module, cls: str) -> tuple[str, _CreationSignature | None] | None:
@@ -523,9 +532,9 @@ def _check_signature(
     # A required field the class takes no value for: no call suits every release it serves.
     settable = {k for k, members in keywords.items() if members != frozenset({"None"})}
     guard = params.pop(_NARROW_FIRST, None)
-    if expected.required - settable:
+    if expected.required - settable or expected.name_conflict:
         if guard != ("Never", None):
-            problems.append(f"{where}: add() can satisfy no release's required fields but does not say so")
+            problems.append(f"{where}: add() can satisfy no release's required fields or name but does not say so")
     elif guard is not None:
         problems.append(f"{where}: add() requires {_NARROW_FIRST}, though every required field can be given")
     if set(params) != set(keywords):
@@ -573,14 +582,33 @@ def _param_problem(
 
 
 def _item_name(group_cls: str) -> str:
-    """``BuildingSurfaceDetailedVerticesItem``: the ``TypedDict`` of one group of *group_cls*."""
-    head, _, tail = group_cls.rpartition("Group")
-    return f"{head}Item{tail}"
+    """``BuildingSurfaceDetailedVerticesItem``: the ``TypedDict`` of one group of *group_cls*.
+
+    A naming convention, not something the schema says, so it is the generator's, as
+    :func:`_to_class_name` is.
+    """
+    from idfkit.codegen.generate_stubs import _group_item_name  # pyright: ignore[reportPrivateUsage]
+
+    return _group_item_name(group_cls)
 
 
 def _group_items(group_cls: str) -> str:
-    """What a group's wrapper keyword takes: a list of dicts typed by the group's item type."""
-    return _norm(f"list[{_item_name(group_cls)}]")
+    """What a group's wrapper keyword takes: a sequence of dicts typed by the item type, or of groups."""
+    return _norm(f"Sequence[{_item_name(group_cls)} | {group_cls}]")
+
+
+def _check_snapshot(module: _Module, group_cls: str, where: str, problems: list[str]) -> None:
+    """Check *group_cls*'s ``as_dict()`` gives its item type, so ``as_list()`` passes back to ``add()``."""
+    snapshot = next(
+        (
+            module.classes[c].snapshot
+            for c in reversed(_linearise(module, group_cls))
+            if c in module.classes and module.classes[c].snapshot
+        ),
+        None,
+    )
+    if snapshot != _item_name(group_cls):
+        problems.append(f"{where}: {group_cls}.as_dict() does not give {_item_name(group_cls)}")
 
 
 def _check_update(
@@ -840,6 +868,7 @@ def _check_any_group(
     writable_fields = {name: setters.get(name, read) for name, read in _fields(module, group_cls).items()}
     if item not in module.classes or _members_of(_fields(module, item)) != _members_of(writable_fields):
         problems.append(f"{item}: its keys are not the writable fields of {group_cls}")
+    _check_snapshot(module, group_cls, group_cls, problems)
 
 
 def _check_version(module: _Module, ver: Version, is_latest: bool, problems: list[str]) -> None:
@@ -896,6 +925,15 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
         problems.append(f"AnyIDFDocument: types are not those every version has: missing {missing}, extra {extra}")
     for obj_type, annotation in entries.items():
         _check_any_entry(module, obj_type, annotation, schemas, type_sets, problems)
+    # A type some version lacks is not an entry, but its Any<Class> is public, for annotations
+    # (IDFCollection[AnySpace]): checked the same way, against the versions that have it.
+    from idfkit.codegen.generate_stubs import _to_class_name  # pyright: ignore[reportPrivateUsage]
+
+    latest_types = type_sets[-1]
+    for obj_type in sorted(latest_types - common):
+        any_cls = f"Any{_to_class_name(obj_type)}"
+        if module.aliases.get(any_cls, any_cls) in module.classes:
+            _check_any_entry(module, obj_type, f"IDFCollection[{any_cls}]", schemas, type_sets, problems)
 
 
 def _check_any_entry(

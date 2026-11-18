@@ -78,8 +78,10 @@ REASON_REQUIRED_KINDS = frozenset({"divergent", "excluded"})
 
 # Files that carry no library surface of their own. `_generated_types.pyi` is one register entry
 # ("generated object types"), not a thousand of them, so its classes are not indexed as names.
+# `_creation` holds a creation-signature class under each of those names (stub only), skipped for
+# the same reason: indexed, it would answer for a register name such as `OutputVariable`.
 INDEX_SKIP_NAMES = frozenset({"_generated_types.pyi"})
-INDEX_SKIP_DIRS = frozenset({"schemas", "data", ".agents", "__pycache__"})
+INDEX_SKIP_DIRS = frozenset({"schemas", "data", ".agents", "__pycache__", "_creation"})
 
 
 # ---------------------------------------------------------------------------

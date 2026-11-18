@@ -12,7 +12,7 @@ import warnings
 from collections.abc import Callable, Container, Iterator, Mapping, Sequence
 from copy import deepcopy
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError, RefusedEntry, format_refused
@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 if TYPE_CHECKING:
-    from typing import ParamSpec, Protocol
+    from typing import ParamSpec
 
     from .document import AnyIDFDocument
     from .schema import ParsingCache
@@ -48,20 +48,23 @@ if TYPE_CHECKING:
 
         def _creation_signature(self, /, *args: _P.args, **kwargs: _P.kwargs) -> None: ...
 
-    _ItemT = TypeVar("_ItemT")
-    _Item_co = TypeVar("_Item_co", covariant=True)
-
-    class _Snapshot(Protocol[_Item_co]):
-        """A group class whose ``as_dict()`` is typed, as every generated group class's is."""
-
-        def as_dict(self) -> _Item_co: ...
-
     class _ObjectFactory(Protocol):
         """The document a collection creates its objects through (``IDFDocument``)."""
 
         def _create_in(self, collection: IDFCollection[Any], name: str, fields: dict[str, Any]) -> IDFObject: ...
 
         def _holds(self, collection: IDFCollection[Any]) -> bool: ...
+
+
+_ItemT = TypeVar("_ItemT")
+_Item_co = TypeVar("_Item_co", covariant=True)
+
+
+# Defined at run time, as ExtensibleList.as_list names it: typing.get_type_hints resolves it.
+class _Snapshot(Protocol[_Item_co]):
+    """A group class whose ``as_dict()`` is typed, as every generated group class's is."""
+
+    def as_dict(self) -> _Item_co: ...
 
 
 # Field name conversion patterns
@@ -1468,8 +1471,10 @@ class IDFCollection(Generic[_T_co]):
     # the creation signature it takes the parameters from only when the method has none of its own
     # (FunctionType.applyParamSpecValue), so an editor's hover and signature help show the object
     # type's, generated from the schema ("Create a new ``Schedule:Constant``...", its memo and its
-    # docs page), rather than this generic one. The cost: type checkers do not check the body under
-    # ``else``, which tests/test_add_signature.py and the doctests run instead.
+    # docs page), rather than this generic one. Type checkers skip the body under ``else``, so it only
+    # delegates to _add, which they check. Editors built on jedi (pylsp, IPython) read the declaration
+    # under TYPE_CHECKING whatever the order, so they show no docstring for add(): the price of
+    # pyright's per-type one.
     if TYPE_CHECKING:
 
         def add(
@@ -1501,8 +1506,8 @@ class IDFCollection(Generic[_T_co]):
             The parameters are those of the object class's creation signature, generated from the
             schema, so an editor's signature help lists them: the name first, for a type with a Name
             field; then the fields the schema requires, with no default; then the others with their
-            schema default (``thermal_absorptance: float | None = 0.9``), or ``...`` where it is not a
-            plain number or string. A shown default is the value EnergyPlus applies to a field left
+            schema default (``thermal_absorptance: float | None = 0.9``), or ``...`` where the schema
+            gives none (or one that is not a plain number or string). A shown default is the value EnergyPlus applies to a field left
             empty: ``add()`` stores only the fields passed. Leaving out a required field
             (``doc.materials.add("XPS")``) is a type error, as it is a ``ValidationFailedError`` at run
             time, and so is a name for a type without a Name field (``doc["Output:SQLite"].add("x")``),
@@ -1560,37 +1565,41 @@ class IDFCollection(Generic[_T_co]):
                 >>> [zone.name for zone in model["Zone"]]
                 ['Office', 'Lab']
             """
-            if args and isinstance(args[0], IDFObject):
-                if len(args) > 1 or fields:
-                    # It files the object as it is: fields beside it would be dropped without a word.
-                    msg = "add(obj) takes the object alone; set its fields on the object, or create one with add(name, **fields)"
-                    raise TypeError(msg)
-                return self._append_deprecated(args[0])
-            legacy = fields.get("obj") if not args and len(fields) == 1 else None
-            if isinstance(legacy, IDFObject):
-                # add(obj=...), the keyword spelling of the deprecated form.
-                return self._append_deprecated(legacy)
-            if "name" in fields:
-                msg = f"add() takes the object's name positionally: add({fields['name']!r}, ...), not add(name=...)"
+            return self._add(args, fields)
+
+    def _add(self, args: tuple[object, ...], fields: dict[str, Any]) -> Any:
+        """The run-time body of :meth:`add`, here so that type checkers check it (see the note there)."""
+        first = args[0] if args else None
+        if isinstance(first, IDFObject):
+            if len(args) > 1 or fields:
+                # It files the object as it is: fields beside it would be dropped without a word.
+                msg = "add(obj) takes the object alone; set its fields on the object, or create one with add(name, **fields)"
                 raise TypeError(msg)
-            document = self._document
-            if isinstance(document, _FromOlderPickle):
-                # Unpickled from a release before collections held their document; its objects do.
-                items = cast("list[IDFObject]", self._items)
-                document = cast("_ObjectFactory | None", items[0]._document) if items else None  # pyright: ignore[reportPrivateUsage]
-                self._document = document
-            if document is None:
-                msg = (
-                    f"IDFCollection({self._type}) belongs to no document (constructed directly, or an empty "
-                    "collection unpickled from an idfkit release before 1.3); use IDFDocument.add"
-                )
-                raise TypeError(msg)
-            if len(args) > 1:
-                msg = f"add() takes 1 positional argument (the name) but {len(args)} were given; pass fields by keyword"
-                raise TypeError(msg)
-            name = cast("str", args[0]) if args else ""
-            obj = document._create_in(self, name, fields)  # pyright: ignore[reportPrivateUsage]
-            return cast("_T_co", obj)
+            return self._append_deprecated(first)
+        legacy = fields.get("obj") if not args and len(fields) == 1 else None
+        if isinstance(legacy, IDFObject):
+            # add(obj=...), the keyword spelling of the deprecated form.
+            return self._append_deprecated(legacy)
+        if "name" in fields:
+            msg = f"add() takes the object's name positionally: add({fields['name']!r}, ...), not add(name=...)"
+            raise TypeError(msg)
+        document = self._document
+        if isinstance(document, _FromOlderPickle):
+            # Unpickled from a release before collections held their document; its objects do.
+            items = cast("list[IDFObject]", self._items)
+            document = cast("_ObjectFactory | None", items[0]._document) if items else None  # pyright: ignore[reportPrivateUsage]
+            self._document = document
+        if document is None:
+            msg = (
+                f"IDFCollection({self._type}) belongs to no document (constructed directly, or an empty "
+                "collection unpickled from an idfkit release before 1.3); use IDFDocument.add"
+            )
+            raise TypeError(msg)
+        if len(args) > 1:
+            msg = f"add() takes 1 positional argument (the name) but {len(args)} were given; pass fields by keyword"
+            raise TypeError(msg)
+        name = cast("str", first) if args else ""
+        return document._create_in(self, name, fields)  # pyright: ignore[reportPrivateUsage]
 
     def _append_deprecated(self, obj: IDFObject) -> Any:
         """The deprecated ``add(obj)``: file an existing object as ``add`` used to, with a warning."""
@@ -1599,7 +1608,7 @@ class IDFCollection(Generic[_T_co]):
             "it or adding it to the document. Use doc.addidfobject(obj) to add an existing object, or "
             "collection.add(name, **fields) to create one.",
             DeprecationWarning,
-            stacklevel=3,
+            stacklevel=4,  # _append_deprecated <- _add <- add <- the caller
         )
         return cast("IDFCollection[IDFObject]", self)._append(obj)
 
