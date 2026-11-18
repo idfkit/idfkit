@@ -71,6 +71,7 @@ class SizingPeriodDesignDay:
         maximum_number_warmup_days: int | None = ...,
         begin_environment_reset_mode: Literal["FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"]
         | None = "FullResetAtBeginEnvironment",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SizingPeriod:DesignDay`` and add it to the document.
 
@@ -94,6 +95,7 @@ class AnyFloorAdiabatic:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Adiabatic`` and add it to the document.
 
@@ -103,7 +105,9 @@ class AnyFloorAdiabatic:
         """
 
 class GroundHeatTransferBasementZFACE:
-    def __call__(self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /) -> None:
+    def __call__(
+        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, validate: bool = True
+    ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:ZFACE`` and add it to the document.
 
         This is only needed when using manual gridding (not recommended) ZFACE: Z Direction cell face coordinates: m
@@ -140,6 +144,7 @@ class AnyCoilCoolingWaterDetailedGeometry:
         number_of_tubes_per_row: float | Literal["Autosize"] | None = "Autosize",
         condensate_collection_water_storage_tank_name: str | None = ...,
         design_water_temperature_difference: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:Water:DetailedGeometry`` and add it to the document.
 
@@ -160,6 +165,7 @@ class CoilHeatingElectric:
         efficiency: float | None = 1,
         nominal_capacity: float | Literal["Autosize"] | None = ...,
         temperature_setpoint_node_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Electric`` and add it to the document.
 
@@ -216,6 +222,7 @@ class ChillerElectricReformulatedEIR:
         condenser_minimum_flow_fraction: float | None = ...,
         thermosiphon_capacity_fraction_curve_name: str | None = ...,
         thermosiphon_minimum_temperature_difference: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric:ReformulatedEIR`` and add it to the document.
 
@@ -234,6 +241,7 @@ class AnyGroundHeatExchangerVerticalArray:
         number_of_boreholes_in_x_direction: int,
         number_of_boreholes_in_y_direction: int,
         borehole_spacing: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Vertical:Array`` and add it to the document.
 

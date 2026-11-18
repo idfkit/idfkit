@@ -18,6 +18,7 @@ class WindowsCalculationEngine:
         /,
         *,
         windows_engine: Literal["BuiltInWindowsModel", "ExternalWindowsModel"] | None = "BuiltInWindowsModel",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowsCalculationEngine`` and add it to the document.
 
@@ -42,6 +43,7 @@ class WallUnderground:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Underground`` and add it to the document.
 
@@ -60,6 +62,7 @@ class AirflowNetworkMultiZoneComponentHorizontalOpening:
         discharge_coefficient: float,
         air_mass_flow_exponent_when_opening_is_closed: float | None = 0.65,
         sloping_plane_angle: float | None = 90,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Component:HorizontalOpening`` and add it to the document.
 
@@ -85,6 +88,7 @@ class SetpointManagerOutdoorAirReset:
         outdoor_low_temperature_2: float | None = ...,
         setpoint_at_outdoor_high_temperature_2: float | None = ...,
         outdoor_high_temperature_2: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:OutdoorAirReset`` and add it to the document.
 
@@ -109,6 +113,7 @@ class GeneratorPVWatts:
         azimuth_angle: float | None = 180,
         surface_name: str | None = ...,
         ground_coverage_ratio: float | None = 0.4,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:PVWatts`` and add it to the document.
 
@@ -134,6 +139,7 @@ class AnyTableLookup:
         external_file_column_number: int | None = ...,
         external_file_starting_row_number: int | None = ...,
         values: Sequence[_g.TableLookupValuesItem | _g.TableLookupValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:Lookup`` and add it to the document.
 

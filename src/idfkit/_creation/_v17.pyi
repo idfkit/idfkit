@@ -124,6 +124,7 @@ class WaterHeaterStratified_v8_9_to_v9_2:
         ]
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Stratified`` and add it to the document.
 
@@ -255,6 +256,7 @@ class AirLoopHVACUnitarySystem_v9_3_to_v22_1:
         heat_recovery_water_outlet_node_name: str | None = ...,
         design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None = ...,
         design_specification_multispeed_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:UnitarySystem`` and add it to the document.
 
@@ -295,6 +297,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1:
         width_factor_for_opening_factor_4: float | None = 0,
         height_factor_for_opening_factor_4: float | None = 0,
         start_height_factor_for_opening_factor_4: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Component:DetailedOpening`` and add it to the document.
 

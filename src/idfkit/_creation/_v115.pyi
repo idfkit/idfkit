@@ -54,6 +54,7 @@ class ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1:
         availability_manager_list_name: str | None = ...,
         heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
 
@@ -73,6 +74,7 @@ class PythonPluginVariables_v9_3:
         variable_name_3: str | None = ...,
         variable_name_4: str | None = ...,
         variable_name_5: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:Variables`` and add it to the document.
 
@@ -114,6 +116,7 @@ class TableTwoIndependentVariables_v9_0_to_v9_1:
             _vd.TableTwoIndependentVariablesValuesItem_v8_9_to_v9_1
             | _vd.TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Table:TwoIndependentVariables`` and add it to the document.
 

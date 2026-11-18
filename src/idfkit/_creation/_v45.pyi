@@ -25,6 +25,7 @@ class ElectricEquipment_v9_6_to_v23_2:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment`` and add it to the document.
 
@@ -52,6 +53,7 @@ class CoilHeatingFuel_v9_3:
         parasitic_electric_load: float | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
         parasitic_fuel_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Fuel`` and add it to the document.
 
@@ -108,6 +110,7 @@ class HeatPumpAirToWaterFuelFiredHeating_v23_1_to_v25_1:
         auxiliary_electric_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None = ...,
         standby_electric_power: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:AirToWater:FuelFired:Heating`` and add it to the document.
 

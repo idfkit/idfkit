@@ -29,6 +29,7 @@ class AnyWindowMaterialGasMixture:
         gas_3_fraction: float | None = ...,
         gas_4_type: Literal["Air", "Argon", "Krypton", "Xenon"] | None = ...,
         gas_4_fraction: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WindowMaterial:GasMixture`` and add it to the document.
 
@@ -49,6 +50,7 @@ class AnyConstructionPropertyInternalHeatSource:
         tube_spacing: float,
         construction_name: str | None = ...,
         two_dimensional_temperature_calculation_position: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ConstructionProperty:InternalHeatSource`` and add it to the document.
 
@@ -73,6 +75,7 @@ class WallExterior:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Exterior`` and add it to the document.
 
@@ -89,6 +92,7 @@ class GroundHeatTransferBasementEquivSlab:
         *,
         apratio_the_area_to_perimeter_ratio_for_this_slab: float,
         equivsizing_flag: Literal["FALSE", "TRUE"],
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:EquivSlab`` and add it to the document.
 
@@ -106,6 +110,7 @@ class RoomAirTemperaturePatternUserDefined:
         zone_name: str,
         pattern_control_schedule_name: str,
         availability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:UserDefined`` and add it to the document.
 
@@ -131,6 +136,7 @@ class GasEquipmentDefinition:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GasEquipment:Definition`` and add it to the document.
 
@@ -156,6 +162,7 @@ class ElectricEquipmentITEAirCooledInstance:
         cpu_end_use_subcategory: str | None = "ITE-CPU",
         fan_end_use_subcategory: str | None = "ITE-Fans",
         electric_power_supply_end_use_subcategory: str | None = "ITE-UPS",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment:ITE:AirCooled:Instance`` and add it to the document.
 
@@ -185,6 +192,7 @@ class AirflowNetworkMultiZoneZone:
         single_sided_wind_pressure_coefficient_algorithm: Literal["Advanced", "Standard"] | None = "Standard",
         facade_width: float | None = 10,
         occupant_ventilation_control_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Zone`` and add it to the document.
 
@@ -202,6 +210,7 @@ class SpaceHVACZoneReturnMixer:
         zone_name: str,
         zone_return_air_node_name: str,
         spaces: Sequence[_g.SpaceHVACZoneReturnMixerSpacesItem | _g.SpaceHVACZoneReturnMixerSpacesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SpaceHVAC:ZoneReturnMixer`` and add it to the document.
 
@@ -224,6 +233,7 @@ class AnyCoilSystemCoolingDXHeatExchangerAssisted:
         heat_exchanger_name: str,
         cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"],
         cooling_coil_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:Cooling:DX:HeatExchangerAssisted`` and add it to the document.
 
@@ -333,6 +343,7 @@ class AirConditionerVariableRefrigerantFlow:
         heat_recovery_heating_energy_modifier_curve_name: str | None = ...,
         initial_heat_recovery_heating_energy_fraction: float | None = 1,
         heat_recovery_heating_energy_time_constant: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirConditioner:VariableRefrigerantFlow`` and add it to the document.
 
@@ -359,6 +370,7 @@ class AnyHeatPumpWaterToWaterEquationFitCooling:
         reference_coefficient_of_performance: float | None = 8,
         sizing_factor: float | None = 1,
         companion_heating_heat_pump_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:EquationFit:Cooling`` and add it to the document.
 
@@ -382,6 +394,7 @@ class ZoneHVACRefrigerationChillerSet:
         chillers: Sequence[
             _g.ZoneHVACRefrigerationChillerSetChillersItem | _g.ZoneHVACRefrigerationChillerSetChillersGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:RefrigerationChillerSet`` and add it to the document.
 
@@ -405,6 +418,7 @@ class GeneratorFuelCell:
         electrical_storage_name: str,
         inverter_name: str,
         stack_cooler_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelCell`` and add it to the document.
 
@@ -421,6 +435,7 @@ class OutputDebuggingData:
         *,
         report_debugging_data: Literal["No", "Yes"] | None = "No",
         report_during_warmup: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:DebuggingData`` and add it to the document.
 

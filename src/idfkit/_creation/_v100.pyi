@@ -31,6 +31,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1:
         rated_entering_air_wet_bulb_temperature: float | None = 19,
         nominal_time_for_condensate_removal_to_begin: float | None = 0,
         ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -175,6 +176,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
 
@@ -209,6 +211,7 @@ class PlantEquipmentList_v8_9_to_v9_0:
         equipment_9_name: str | None = ...,
         equipment_10_object_type: str | None = ...,
         equipment_10_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentList`` and add it to the document.
 
@@ -232,6 +235,7 @@ class AirTerminalSingleDuctVAVNoReheat_v8_9_to_v9_2:
         fixed_minimum_air_flow_rate: float | Literal["Autosize"] | None = "Autosize",
         minimum_air_flow_fraction_schedule_name: str | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:NoReheat`` and add it to the document.
 

@@ -27,6 +27,7 @@ class SteamEquipment_v9_6_to_v23_2:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SteamEquipment`` and add it to the document.
 
@@ -73,6 +74,7 @@ class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1:
         timed_empirical_defrost_frequency_curve_name: str | None = ...,
         timed_empirical_defrost_heat_load_penalty_curve_name: str | None = ...,
         timed_empirical_defrost_heat_input_energy_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:PlantLoop:EIR:Heating`` and add it to the document.
 

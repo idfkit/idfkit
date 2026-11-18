@@ -21,6 +21,7 @@ class ThermalStorageIceSimple_v8_9_to_v25_1:
         capacity: float,
         inlet_node_name: str,
         outlet_node_name: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:Ice:Simple`` and add it to the document.
 
@@ -72,6 +73,7 @@ class ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2:
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalHeatPump`` and add it to the document.
 
@@ -97,6 +99,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1:
             _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Steam`` and add it to the document.
 

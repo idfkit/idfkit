@@ -35,6 +35,7 @@ class ShadowCalculation:
         shading_zone_groups: Sequence[
             _g.ShadowCalculationShadingZoneGroupsItem | _g.ShadowCalculationShadingZoneGroupsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ShadowCalculation`` and add it to the document.
 
@@ -68,6 +69,7 @@ class MaterialRoofVegetation:
         residual_volumetric_moisture_content_of_the_soil_layer: float | None = 0.01,
         initial_volumetric_moisture_content_of_the_soil_layer: float | None = 0.1,
         moisture_diffusion_calculation_method: Literal["Advanced", "Simple"] | None = "Advanced",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Material:RoofVegetation`` and add it to the document.
 
@@ -86,6 +88,7 @@ class MaterialPropertyVariableThermalConductivity:
             _g.MaterialPropertyVariableThermalConductivityValuesItem
             | _g.MaterialPropertyVariableThermalConductivityValuesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:VariableThermalConductivity`` and add it to the document.
 
@@ -126,6 +129,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening:
         width_factor_for_opening_factor_4: float | None = 0,
         height_factor_for_opening_factor_4: float | None = 0,
         start_height_factor_for_opening_factor_4: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:MultiZone:Component:DetailedOpening`` and add it to the document.
 
@@ -181,6 +185,7 @@ class HVACTemplateZoneVAV:
         zone_heating_design_supply_air_temperature_difference: float | None = 30,
         design_specification_outdoor_air_object_name_for_sizing: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:VAV`` and add it to the document.
 
@@ -216,6 +221,7 @@ class CoilHeatingFuel:
         on_cycle_parasitic_electric_load: float | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
         off_cycle_parasitic_fuel_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Fuel`` and add it to the document.
 
@@ -235,6 +241,7 @@ class SolarCollectorPerformancePhotovoltaicThermalSimple:
         value_for_thermal_conversion_efficiency_if_fixed: float | None = ...,
         thermal_conversion_efficiency_schedule_name: str | None = ...,
         front_surface_emittance: float | None = 0.84,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SolarCollectorPerformance:PhotovoltaicThermal:Simple`` and add it to the document.
 
@@ -271,6 +278,7 @@ class RefrigerationSecondarySystem:
         receiver_separator_zone_name: str | None = ...,
         evaporator_refrigerant_inventory: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Refrigeration:SecondarySystem`` and add it to the document.
 

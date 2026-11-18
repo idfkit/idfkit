@@ -30,6 +30,7 @@ class HotWaterEquipment:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HotWaterEquipment`` and add it to the document.
 
@@ -53,6 +54,7 @@ class DaylightingDeviceTubular:
         transition_lengths: Sequence[
             _g.DaylightingDeviceTubularTransitionLengthsItem | _g.DaylightingDeviceTubularTransitionLengthsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DaylightingDevice:Tubular`` and add it to the document.
 
@@ -106,6 +108,7 @@ class HVACTemplateZoneIdealLoadsAirSystem:
         heat_recovery_type: Literal["Enthalpy", "None", "Sensible"] | None = "None",
         sensible_heat_recovery_effectiveness: float | None = 0.7,
         latent_heat_recovery_effectiveness: float | None = 0.65,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:IdealLoadsAirSystem`` and add it to the document.
 
@@ -134,6 +137,7 @@ class AnyAirTerminalSingleDuctVAVHeatAndCoolReheat:
         minimum_hot_water_or_steam_flow_rate: float | None = 0,
         convergence_tolerance: float | None = 0.001,
         maximum_reheat_air_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat`` and add it to the document.
 
@@ -170,6 +174,7 @@ class AnyAirTerminalSingleDuctConstantVolumeCooledBeam:
         model_parameter_n: float | None = 0.4,
         coefficient_of_induction_kin: float | Literal["Autocalculate"] | None = "Autocalculate",
         leaving_pipe_inside_diameter: float | None = 0.0145,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ConstantVolume:CooledBeam`` and add it to the document.
 
@@ -203,6 +208,7 @@ class AnyCoilSystemIntegratedHeatPumpAirSource:
         minimum_speed_level_for_scdwh_mode: int | None = 1,
         maximum_running_time_before_allowing_electric_resistance_heat_use_during_shdwh_mode: float | None = 360,
         minimum_speed_level_for_shdwh_mode: int | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoilSystem:IntegratedHeatPump:AirSource`` and add it to the document.
 
@@ -263,6 +269,7 @@ class ThermalStorageHotWaterStratified:
         node_8_additional_loss_coefficient: float | None = 0,
         node_9_additional_loss_coefficient: float | None = 0,
         node_10_additional_loss_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:HotWater:Stratified`` and add it to the document.
 
@@ -284,6 +291,7 @@ class WaterUseEquipment:
         zone_name: str | None = ...,
         sensible_fraction_schedule_name: str | None = ...,
         latent_fraction_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterUse:Equipment`` and add it to the document.
 

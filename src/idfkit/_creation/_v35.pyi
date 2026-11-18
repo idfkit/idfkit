@@ -26,6 +26,7 @@ class FloorAdiabatic_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:Adiabatic`` and add it to the document.
 
@@ -54,6 +55,7 @@ class ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2:
         temperature_term_coefficient: float | None = 0,
         velocity_term_coefficient: float | None = 0,
         velocity_squared_term_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneInfiltration:DesignFlowRate`` and add it to the document.
 
@@ -190,6 +192,7 @@ class CoilCoolingDXVariableSpeed_v22_2_to_v23_1:
         speed_10_total_cooling_capacity_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None = ...,
         speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:VariableSpeed`` and add it to the document.
 
@@ -238,6 +241,7 @@ class ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1:
         | None = "LeavingCondenser",
         heating_mode_cooling_capacity_optimum_part_load_ratio: float | None = 1,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ChillerHeaterPerformance:Electric:EIR`` and add it to the document.
 
@@ -273,6 +277,7 @@ class LifeCycleCostUsePriceEscalation_v8_9_to_v9_2:
         escalations: Sequence[
             _g.LifeCycleCostUsePriceEscalationEscalationsItem | _g.LifeCycleCostUsePriceEscalationEscalationsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:UsePriceEscalation`` and add it to the document.
 
@@ -308,6 +313,7 @@ class ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1:
         fraction_of_cell_capacity_removed_at_the_end_of_nominal_zone: float | None = 0.976875,
         charge_rate_at_which_voltage_vs_capacity_curve_was_generated: float | None = 1,
         battery_cell_internal_electrical_resistance: float | None = 0.09,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Storage:LiIonNMCBattery`` and add it to the document.
 

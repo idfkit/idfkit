@@ -69,6 +69,7 @@ class MaterialPropertyHeatAndMoistureTransferRedistribution:
         liquid_transport_coefficient_24: float | None = ...,
         moisture_content_25: float | None = ...,
         liquid_transport_coefficient_25: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``MaterialProperty:HeatAndMoistureTransfer:Redistribution`` and add it to the document.
 
@@ -88,6 +89,7 @@ class ShadingPropertyReflectance:
         diffuse_visible_reflectance_of_unglazed_part_of_shading_surface: float | None = 0.2,
         fraction_of_shading_surface_that_is_glazed: float | None = 0,
         glazing_construction_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ShadingProperty:Reflectance`` and add it to the document.
 
@@ -114,6 +116,7 @@ class AnyHVACTemplatePlantBoiler:
         optimum_part_load_ratio: float | None = 1,
         water_outlet_upper_temperature_limit: float | None = 100,
         template_plant_loop_type: Literal["HotWater", "MixedWater"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:Boiler`` and add it to the document.
 
@@ -130,6 +133,7 @@ class AirLoopHVACZoneSplitter:
         *,
         inlet_node_name: str,
         nodes: Sequence[_g.AirLoopHVACZoneSplitterNodesItem | _g.AirLoopHVACZoneSplitterNodesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:ZoneSplitter`` and add it to the document.
 
@@ -146,6 +150,7 @@ class AirLoopHVACSplitter:
         *,
         inlet_node_name: str,
         nodes: Sequence[_g.AirLoopHVACSplitterNodesItem | _g.AirLoopHVACSplitterNodesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:Splitter`` and add it to the document.
 
@@ -164,6 +169,7 @@ class DistrictHeatingSteam:
         steam_outlet_node_name: str,
         nominal_capacity: float | Literal["Autosize"] | None = ...,
         capacity_fraction_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DistrictHeating:Steam`` and add it to the document.
 
@@ -223,6 +229,7 @@ class CoolingTowerTwoSpeed:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:TwoSpeed`` and add it to the document.
 
@@ -254,6 +261,7 @@ class PlantEquipmentOperationChillerHeaterChangeover:
         boiler_setpoint_temperature_offset: float | None = 0.5,
         primary_heating_plant_setpoint_at_backup_outdoor_low_temperature: float | None = ...,
         backup_outdoor_low_temperature: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:ChillerHeaterChangeover`` and add it to the document.
 
@@ -279,6 +287,7 @@ class LifeCycleCostRecurringCosts:
         repeat_period_years: int | None = 1,
         repeat_period_months: int | None = 0,
         annual_escalation_rate: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:RecurringCosts`` and add it to the document.
 

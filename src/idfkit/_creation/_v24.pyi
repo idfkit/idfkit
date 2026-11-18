@@ -20,6 +20,7 @@ class AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2:
         design_specification_outdoor_air_object_name: str | None = ...,
         per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None = "CurrentOccupancy",
         design_specification_air_terminal_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:Uncontrolled`` and add it to the document.
 
@@ -120,6 +121,7 @@ class CoilHeatingDXMultiSpeed_v22_2_to_v23_1:
         speed_4_nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:MultiSpeed`` and add it to the document.
 
@@ -189,6 +191,7 @@ class SizingPeriodDesignDay_v9_3_to_v22_1:
         maximum_number_warmup_days: float | None = ...,
         begin_environment_reset_mode: Literal["FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"]
         | None = "FullResetAtBeginEnvironment",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SizingPeriod:DesignDay`` and add it to the document.
 

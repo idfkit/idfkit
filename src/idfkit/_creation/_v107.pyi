@@ -22,6 +22,7 @@ class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1:
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
         temperature_gradient: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:ConstantGradient`` and add it to the document.
 
@@ -181,6 +182,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
 
@@ -227,6 +229,7 @@ class OutputControlFiles_v24_2_to_v25_1:
         output_screen: Literal["No", "Yes"] | None = "Yes",
         output_extshd: Literal["No", "Yes"] | None = "Yes",
         output_tarcog: Literal["No", "Yes"] | None = "Yes",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OutputControl:Files`` and add it to the document.
 
@@ -260,6 +263,7 @@ class PhotovoltaicPerformanceEquivalentOneDiode_v22_2_to_v25_2:
         nominal_operating_cell_temperature_test_insolation: float | None = 800,
         module_heat_loss_coefficient: float | None = 30,
         total_heat_capacity: float | None = 50000,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PhotovoltaicPerformance:EquivalentOne-Diode`` and add it to the document.
 
@@ -311,6 +315,7 @@ class ZoneHVACWaterToAirHeatPump_v9_2_to_v23_1:
         availability_manager_list_name: str | None = ...,
         heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
 

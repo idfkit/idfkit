@@ -22,6 +22,7 @@ class HeatBalanceSettingsConductionFiniteDifference:
         space_discretization_constant: float | None = 3,
         relaxation_factor: float | None = 1,
         inside_face_surface_temperature_convergence_criteria: float | None = 0.002,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatBalanceSettings:ConductionFiniteDifference`` and add it to the document.
 
@@ -40,6 +41,7 @@ class AnyScheduleDayList:
         interpolate_to_timestep: Literal["Average", "Linear", "No"] | None = "No",
         minutes_per_item: int | None = ...,
         extensions: Sequence[_g.ScheduleDayListExtensionsItem | _g.ScheduleDayListExtensionsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Schedule:Day:List`` and add it to the document.
 
@@ -57,6 +59,7 @@ class GeometryTransform:
         current_aspect_ratio: float,
         new_aspect_ratio: float,
         plane_of_transform: Literal["XY"] | None = "XY",
+        validate: bool = True,
     ) -> None:
         """Create a new ``GeometryTransform`` and add it to the document.
 
@@ -76,6 +79,7 @@ class SurfacePropertyLocalEnvironment:
         surrounding_surfaces_object_name: str | None = ...,
         outdoor_air_node_name: str | None = ...,
         ground_surfaces_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:LocalEnvironment`` and add it to the document.
 
@@ -142,6 +146,7 @@ class HVACTemplateSystemVRF:
         | None = "Electricity",
         minimum_outdoor_temperature_in_heat_recovery_mode: float | None = -15,
         maximum_outdoor_temperature_in_heat_recovery_mode: float | None = 45,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:VRF`` and add it to the document.
 
@@ -166,6 +171,7 @@ class SizingPlant:
             "GlobalCoolingSizingFactor", "GlobalHeatingSizingFactor", "LoopComponentSizingFactor", "None"
         ]
         | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Plant`` and add it to the document.
 
@@ -215,6 +221,7 @@ class EvaporativeFluidCoolerTwoSpeed:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeFluidCooler:TwoSpeed`` and add it to the document.
 
@@ -233,6 +240,7 @@ class SetpointManagerMultiZoneHumidityMinimum:
         setpoint_node_or_nodelist_name: str,
         minimum_setpoint_humidity_ratio: float | None = 0.005,
         maximum_setpoint_humidity_ratio: float | None = 0.012,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:MultiZone:Humidity:Minimum`` and add it to the document.
 
@@ -249,6 +257,7 @@ class FluidPropertiesName:
         *,
         fluid_name: str,
         fluid_type: Literal["Glycol", "Refrigerant"],
+        validate: bool = True,
     ) -> None:
         """Create a new ``FluidProperties:Name`` and add it to the document.
 
@@ -264,6 +273,7 @@ class OutputSchedules:
         /,
         *,
         key_field: Literal["Hourly", "Timestep"],
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Schedules`` and add it to the document.
 

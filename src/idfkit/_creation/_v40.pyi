@@ -20,6 +20,7 @@ class GroundHeatExchangerVerticalArray_v8_9_to_v22_1:
         number_of_boreholes_in_x_direction: float,
         number_of_boreholes_in_y_direction: float,
         borehole_spacing: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Vertical:Array`` and add it to the document.
 
@@ -41,6 +42,7 @@ class CeilingAdiabatic_v8_9_to_v9_5:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Ceiling:Adiabatic`` and add it to the document.
 
@@ -103,6 +105,7 @@ class ChillerEngineDriven_v8_9_to_v9_2:
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
         condenser_heat_recovery_relative_capacity_fraction: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:EngineDriven`` and add it to the document.
 
@@ -131,6 +134,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1:
         rated_entering_water_temperature: float | None = 20,
         rated_entering_air_dry_bulb_temperature: float | None = 20,
         ratio_of_rated_heating_capacity_to_rated_cooling_capacity: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:WaterToAirHeatPump:EquationFit`` and add it to the document.
 
@@ -164,6 +168,7 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped_v8_9_to_v23_1:
         heating_cop_function_of_temperature_curve_name: str | None = ...,
         heating_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         part_load_fraction_correlation_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:Wrapped`` and add it to the document.
 
@@ -179,6 +184,7 @@ class PerformancePrecisionTradeoffs_v9_2:
         /,
         *,
         use_coil_direct_solutions: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
 

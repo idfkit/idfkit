@@ -28,6 +28,7 @@ class Construction:
         layer_8: str | None = ...,
         layer_9: str | None = ...,
         layer_10: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction`` and add it to the document.
 
@@ -51,6 +52,7 @@ class AnyRoof:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Roof`` and add it to the document.
 
@@ -77,6 +79,7 @@ class AnyHotWaterEquipment:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HotWaterEquipment`` and add it to the document.
 
@@ -100,6 +103,7 @@ class SpaceHVACEquipmentConnections:
         space_return_air_node_or_nodelist_name: str | None = ...,
         space_return_air_node_1_flow_rate_fraction_schedule_name: str | None = ...,
         space_return_air_node_1_flow_rate_basis_node_or_nodelist_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SpaceHVAC:EquipmentConnections`` and add it to the document.
 
@@ -159,6 +163,7 @@ class AnyCoolingTowerTwoSpeed:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:TwoSpeed`` and add it to the document.
 
@@ -258,6 +263,7 @@ class WaterHeaterMixed:
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Mixed`` and add it to the document.
 
@@ -285,6 +291,7 @@ class CoilUserDefined:
         supply_inlet_water_storage_tank_name: str | None = ...,
         collection_outlet_water_storage_tank_name: str | None = ...,
         ambient_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:UserDefined`` and add it to the document.
 
@@ -319,6 +326,7 @@ class GeneratorFuelCellStackCooler:
         stack_air_cooler_fan_coefficient_f0: float | None = ...,
         stack_air_cooler_fan_coefficient_f1: float | None = ...,
         stack_air_cooler_fan_coefficient_f2: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelCell:StackCooler`` and add it to the document.
 

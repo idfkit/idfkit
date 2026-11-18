@@ -44,6 +44,7 @@ class WallDetailed_v9_6_to_v24_2:
         view_factor_to_ground: float | Literal["Autocalculate"] | None = "Autocalculate",
         number_of_vertices: float | Literal["Autocalculate"] | None = "Autocalculate",
         vertices: Sequence[_g.WallDetailedVerticesItem | _g.WallDetailedVerticesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Wall:Detailed`` and add it to the document.
 
@@ -81,6 +82,7 @@ class CoilCoolingDXTwoStageWithHumidityControlMode_v22_2_to_v23_1:
         basin_heater_capacity: float | None = 0,
         basin_heater_setpoint_temperature: float | None = 2,
         basin_heater_operating_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` and add it to the document.
 

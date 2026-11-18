@@ -33,6 +33,7 @@ class SurfacePropertyExteriorNaturalVentedCavity:
             _g.SurfacePropertyExteriorNaturalVentedCavitySurfaceItem
             | _g.SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:ExteriorNaturalVentedCavity`` and add it to the document.
 
@@ -52,6 +53,7 @@ class GroundHeatTransferSlabAutoGrid:
         slabdepth_thickness_of_slab_on_grade: float | None = 0.1,
         clearance_distance_from_edge_of_slab_to_domain_edge: float | None = 15,
         zclearance_distance_from_bottom_of_slab_to_domain_bottom: float | None = 15,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Slab:AutoGrid`` and add it to the document.
 
@@ -68,6 +70,7 @@ class GroundHeatTransferBasementInsulation:
         *,
         insfull_flag_is_the_wall_fully_insulated_: Literal["FALSE", "TRUE"],
         rext_r_value_of_any_exterior_insulation: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatTransfer:Basement:Insulation`` and add it to the document.
 
@@ -132,6 +135,7 @@ class DesignSpecificationZoneHVACSizing:
         heating_design_capacity: float | Literal["Autosize"] | None = ...,
         heating_design_capacity_per_floor_area: float | None = ...,
         fraction_of_autosized_heating_design_capacity: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DesignSpecification:ZoneHVAC:Sizing`` and add it to the document.
 
@@ -159,6 +163,7 @@ class ZoneHVACDehumidifierDX:
         maximum_dry_bulb_temperature_for_dehumidifier_operation: float | None = 35,
         off_cycle_parasitic_electric_load: float | None = 0,
         condensate_collection_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Dehumidifier:DX`` and add it to the document.
 
@@ -189,6 +194,7 @@ class AirLoopHVACControllerList:
         controller_7_name: str | None = ...,
         controller_8_object_type: Literal["Controller:OutdoorAir", "Controller:WaterCoil"] | None = ...,
         controller_8_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:ControllerList`` and add it to the document.
 
@@ -220,6 +226,7 @@ class AnyPipingSystemUndergroundPipeCircuit:
             _g.PipingSystemUndergroundPipeCircuitPipeSegmentsItem
             | _g.PipingSystemUndergroundPipeCircuitPipeSegmentsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PipingSystem:Underground:PipeCircuit`` and add it to the document.
 
@@ -237,6 +244,7 @@ class ThermalStorageSizing:
         on_peak_period_start_time: float,
         on_peak_period_end_time: float,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:Sizing`` and add it to the document.
 
@@ -254,6 +262,7 @@ class EnergyManagementSystemGlobalVariable:
         variables: Sequence[
             _g.EnergyManagementSystemGlobalVariableVariablesItem | _g.EnergyManagementSystemGlobalVariableVariablesGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EnergyManagementSystem:GlobalVariable`` and add it to the document.
 
@@ -286,6 +295,7 @@ class AvailabilityManagerHybridVentilation:
         zoneventilation_object_name: str | None = ...,
         minimum_hvac_operation_time: float | None = 0,
         minimum_ventilation_time: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AvailabilityManager:HybridVentilation`` and add it to the document.
 

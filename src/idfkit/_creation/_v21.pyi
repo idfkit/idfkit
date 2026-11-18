@@ -23,6 +23,7 @@ class SimulationControl_v8_9_to_v22_1:
         run_simulation_for_weather_file_run_periods: Literal["No", "Yes"] | None = "Yes",
         do_hvac_sizing_simulation_for_sizing_periods: Literal["No", "Yes"] | None = "No",
         maximum_number_of_hvac_sizing_simulation_passes: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SimulationControl`` and add it to the document.
 
@@ -49,6 +50,7 @@ class AirflowNetworkDistributionNode_v8_9_to_v25_1:
         ]
         | None = "Other",
         node_height: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Node`` and add it to the document.
 
@@ -92,6 +94,7 @@ class CoilHeatingDXSingleSpeed_v22_2_to_v23_1:
         nominal_sensible_heat_ratio_of_secondary_coil: float | None = ...,
         sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None = ...,
         sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:DX:SingleSpeed`` and add it to the document.
 
@@ -111,6 +114,7 @@ class ExternalInterfaceFunctionalMockupUnitExportToActuator_v8_9_to_v25_1:
         actuated_component_control_type: str,
         fmu_variable_name: str,
         initial_value: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ExternalInterface:FunctionalMockupUnitExport:To:Actuator`` and add it to the document.
 

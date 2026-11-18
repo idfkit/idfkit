@@ -48,6 +48,7 @@ class People_v8_9_to_v9_4:
         | None = ...,
         thermal_comfort_model_5_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"]
         | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``People`` and add it to the document.
 
@@ -79,6 +80,7 @@ class HeaderedPumpsConstantSpeed_v8_9_to_v9_0:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeaderedPumps:ConstantSpeed`` and add it to the document.
 
@@ -126,6 +128,7 @@ class ChillerElectricEIR_v8_9_to_v24_1:
         heat_recovery_inlet_high_temperature_limit_schedule_name: str | None = ...,
         heat_recovery_leaving_temperature_setpoint_node_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:Electric:EIR`` and add it to the document.
 
@@ -157,6 +160,7 @@ class ZoneMixing_v8_9_to_v22_1:
         maximum_source_zone_temperature_schedule_name: str | None = ...,
         minimum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneMixing`` and add it to the document.
 
@@ -194,6 +198,7 @@ class ZoneEarthtube_v8_9_to_v23_1:
         temperature_term_flow_coefficient: float | None = 0,
         velocity_term_flow_coefficient: float | None = 0,
         velocity_squared_term_flow_coefficient: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneEarthtube`` and add it to the document.
 
@@ -249,6 +254,7 @@ class ComfortViewFactorAngles_v8_9_to_v9_5:
         angle_factor_19: float | None = ...,
         surface_20_name: str | None = ...,
         angle_factor_20: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ComfortViewFactorAngles`` and add it to the document.
 

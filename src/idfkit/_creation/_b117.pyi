@@ -27,6 +27,7 @@ class AnyShadowCalculation:
         shading_zone_groups: Sequence[
             _g.ShadowCalculationShadingZoneGroupsItem | _g.ShadowCalculationShadingZoneGroupsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ShadowCalculation`` and add it to the document.
 
@@ -72,6 +73,7 @@ class OtherEquipment:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OtherEquipment`` and add it to the document.
 
@@ -90,6 +92,7 @@ class AirLoopHVACSupplyPlenum:
         zone_node_name: str,
         inlet_node_name: str,
         nodes: Sequence[_g.AirLoopHVACSupplyPlenumNodesItem | _g.AirLoopHVACSupplyPlenumNodesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirLoopHVAC:SupplyPlenum`` and add it to the document.
 
@@ -108,6 +111,7 @@ class SetpointManagerSingleZoneOneStageCooling:
         setpoint_node_or_nodelist_name: str,
         cooling_stage_on_supply_air_setpoint_temperature: float | None = -99,
         cooling_stage_off_supply_air_setpoint_temperature: float | None = 99,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:SingleZone:OneStageCooling`` and add it to the document.
 
@@ -133,6 +137,7 @@ class GeneratorFuelCellAuxiliaryHeater:
         minimum_heating_capacity_in_watts: float | None = ...,
         maximum_heating_capacity_in_kmol_per_second: float | None = ...,
         minimum_heating_capacity_in_kmol_per_second: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Generator:FuelCell:AuxiliaryHeater`` and add it to the document.
 

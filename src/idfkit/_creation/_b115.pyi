@@ -21,6 +21,7 @@ class SiteVariableLocation:
         building_location_latitude_schedule: str | None = ...,
         building_location_longitude_schedule: str | None = ...,
         building_location_orientation_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:VariableLocation`` and add it to the document.
 
@@ -44,6 +45,7 @@ class AnyFloorGroundContact:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Floor:GroundContact`` and add it to the document.
 
@@ -69,6 +71,7 @@ class AnyZoneMixing:
         delta_temperature_schedule_name: str | None = ...,
         minimum_outdoor_temperature_schedule_name: str | None = ...,
         maximum_outdoor_temperature_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneMixing`` and add it to the document.
 
@@ -105,6 +108,7 @@ class ZoneHVACWindowAirConditioner:
         cooling_convergence_tolerance: float | None = 0.001,
         availability_manager_list_name: str | None = ...,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:WindowAirConditioner`` and add it to the document.
 
@@ -138,6 +142,7 @@ class WaterHeaterSizing:
         recovery_capacity_perunit: float | None = ...,
         storage_capacity_per_collector_area: float | None = ...,
         height_aspect_ratio: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Sizing`` and add it to the document.
 
@@ -159,6 +164,7 @@ class SetpointManagerSingleZoneCooling:
         control_variable: Literal["Temperature"] | None = "Temperature",
         minimum_supply_air_temperature: float | None = -99,
         maximum_supply_air_temperature: float | None = 99,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:SingleZone:Cooling`` and add it to the document.
 
@@ -181,6 +187,7 @@ class SetpointManagerMixedAir:
         cooling_coil_inlet_node_name: str | None = ...,
         cooling_coil_outlet_node_name: str | None = ...,
         minimum_temperature_at_cooling_coil_outlet_node: float | None = 7.2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``SetpointManager:MixedAir`` and add it to the document.
 
@@ -226,6 +233,7 @@ class CurveQuadLinear:
             "Dimensionless", "Distance", "MassFlow", "Power", "Temperature", "VolumetricFlow", "VolumetricFlowPerPower"
         ]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:QuadLinear`` and add it to the document.
 
@@ -242,6 +250,7 @@ class OutputVariableDictionary:
         *,
         key_field: Literal["IDF", "regular"] | None = "regular",
         sort_option: Literal["Name", "Unsorted"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:VariableDictionary`` and add it to the document.
 

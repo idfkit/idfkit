@@ -23,6 +23,7 @@ class AirflowNetworkDistributionComponentOutdoorAirFlow:
         air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float,
         air_mass_flow_exponent_when_no_outdoor_air_flow: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:OutdoorAirFlow`` and add it to the document.
 
@@ -70,6 +71,7 @@ class AnyZoneHVACIdealLoadsAirSystem:
         sensible_heat_recovery_effectiveness: float | None = 0.7,
         latent_heat_recovery_effectiveness: float | None = 0.65,
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:IdealLoadsAirSystem`` and add it to the document.
 
@@ -95,6 +97,7 @@ class AnyZoneHVACBaseboardRadiantConvectiveSteam:
             _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem
             | _g.ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Steam`` and add it to the document.
 
@@ -153,6 +156,7 @@ class CoilCoolingDXTwoSpeed:
         low_speed_sensible_heat_ratio_function_of_temperature_curve_name: str | None = ...,
         low_speed_sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None = ...,
         zone_name_for_condenser_placement: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:DX:TwoSpeed`` and add it to the document.
 
@@ -198,6 +202,7 @@ class AnyCoolingTowerVariableSpeed:
         cell_maximum_water_flow_rate_fraction: float | None = 2.5,
         sizing_factor: float | None = 1,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``CoolingTower:VariableSpeed`` and add it to the document.
 
@@ -216,6 +221,7 @@ class FaultModelThermostatOffset:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         reference_thermostat_offset: float | None = 2,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:ThermostatOffset`` and add it to the document.
 
@@ -233,6 +239,7 @@ class AnyMatrixTwoDimension:
         number_of_rows: int,
         number_of_columns: int,
         values: Sequence[_g.MatrixTwoDimensionValuesItem | _g.MatrixTwoDimensionValuesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Matrix:TwoDimension`` and add it to the document.
 

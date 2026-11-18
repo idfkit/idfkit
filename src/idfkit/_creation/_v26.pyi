@@ -53,6 +53,7 @@ class SizingZone_v8_9_to_v22_1:
         | None = "NeutralSupplyAir",
         dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
         dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Sizing:Zone`` and add it to the document.
 
@@ -98,6 +99,7 @@ class OtherEquipment_v9_3_to_v9_5:
         fraction_lost: float | None = 0,
         carbon_dioxide_generation_rate: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``OtherEquipment`` and add it to the document.
 
@@ -197,6 +199,7 @@ class WaterHeaterMixed_v9_3_to_v23_1:
         | None = "IndirectHeatPrimarySetpoint",
         indirect_alternate_setpoint_temperature_schedule_name: str | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``WaterHeater:Mixed`` and add it to the document.
 
@@ -294,6 +297,7 @@ class ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2:
         mode_0_outdoor_air_fraction: float | None = 0,
         mode_0_supply_air_mass_flow_rate_ratio: float | None = 0,
         modes: Sequence[_g.ZoneHVACHybridUnitaryHVACModesItem | _g.ZoneHVACHybridUnitaryHVACModesGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:HybridUnitaryHVAC`` and add it to the document.
 

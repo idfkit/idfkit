@@ -28,6 +28,7 @@ class SiteGroundTemperatureShallow:
         october_surface_ground_temperature: float | None = 13,
         november_surface_ground_temperature: float | None = 13,
         december_surface_ground_temperature: float | None = 13,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Site:GroundTemperature:Shallow`` and add it to the document.
 
@@ -53,6 +54,7 @@ class ConstructionWindowEquivalentLayer:
         layer_9: str | None = ...,
         layer_10: str | None = ...,
         layer_11: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Construction:WindowEquivalentLayer`` and add it to the document.
 
@@ -62,7 +64,7 @@ class ConstructionWindowEquivalentLayer:
         """
 
 class ConstructionWindowDataFile:
-    def __call__(self, name: str, /, *, file_name: str | None = ...) -> None:
+    def __call__(self, name: str, /, *, file_name: str | None = ..., validate: bool = True) -> None:
         """Create a new ``Construction:WindowDataFile`` and add it to the document.
 
         Initiates search of the Window data file for a window called Name.
@@ -137,6 +139,7 @@ class HVACTemplateSystemUnitary:
         return_fan_delta_pressure: float | None = 500,
         return_fan_motor_efficiency: float | None = 0.9,
         return_fan_motor_in_air_stream_fraction: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:System:Unitary`` and add it to the document.
 
@@ -300,6 +303,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit:
         speed_10_energy_input_ratio_function_of_water_flow_fraction_curve_name: str | None = ...,
         speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None = ...,
         speed_10_waste_heat_function_of_temperature_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` and add it to the document.
 
@@ -309,7 +313,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit:
         """
 
 class PipeAdiabatic:
-    def __call__(self, name: str, /, *, inlet_node_name: str, outlet_node_name: str) -> None:
+    def __call__(self, name: str, /, *, inlet_node_name: str, outlet_node_name: str, validate: bool = True) -> None:
         """Create a new ``Pipe:Adiabatic`` and add it to the document.
 
         Passes Inlet Node state variables to Outlet Node state variables
@@ -332,6 +336,7 @@ class PipeIndoor:
         ambient_air_velocity_schedule_name: str | None = ...,
         pipe_inside_diameter: float | None = ...,
         pipe_length: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Pipe:Indoor`` and add it to the document.
 
@@ -350,6 +355,7 @@ class AnyOutputJSON:
         output_json: Literal["No", "Yes"] | None = "Yes",
         output_cbor: Literal["No", "Yes"] | None = "No",
         output_messagepack: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:JSON`` and add it to the document.
 
@@ -367,6 +373,7 @@ class PythonPluginInstance:
         python_module_name: str,
         plugin_class_name: str,
         run_during_warmup_days: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``PythonPlugin:Instance`` and add it to the document.
 

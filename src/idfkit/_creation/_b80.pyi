@@ -11,7 +11,9 @@ from typing import Literal
 from .. import _generated_types as _g
 
 class WindowGapSupportPillar:
-    def __call__(self, name: str, /, *, spacing: float | None = 0.04, radius: float | None = 0.0004) -> None:
+    def __call__(
+        self, name: str, /, *, spacing: float | None = 0.04, radius: float | None = 0.0004, validate: bool = True
+    ) -> None:
         """Create a new ``WindowGap:SupportPillar`` and add it to the document.
 
         used to define pillar geometry for support pillars
@@ -35,6 +37,7 @@ class CeilingAdiabatic:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Ceiling:Adiabatic`` and add it to the document.
 
@@ -57,6 +60,7 @@ class SurfacePropertyHeatTransferAlgorithm:
             "MoisturePenetrationDepthConductionTransferFunction",
         ]
         | None = "ConductionTransferFunction",
+        validate: bool = True,
     ) -> None:
         """Create a new ``SurfaceProperty:HeatTransferAlgorithm`` and add it to the document.
 
@@ -92,6 +96,7 @@ class AnyElectricLoadCenterStorageLiIonNMCBattery:
         fraction_of_cell_capacity_removed_at_the_end_of_nominal_zone: float | None = 0.976875,
         charge_rate_at_which_voltage_vs_capacity_curve_was_generated: float | None = 1,
         battery_cell_internal_electrical_resistance: float | None = 0.09,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricLoadCenter:Storage:LiIonNMCBattery`` and add it to the document.
 

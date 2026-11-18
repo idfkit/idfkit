@@ -24,6 +24,7 @@ class ZoneControlContaminantController:
         maximum_carbon_dioxide_concentration_schedule_name: str | None = ...,
         generic_contaminant_control_availability_schedule_name: str | None = ...,
         generic_contaminant_setpoint_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneControl:ContaminantController`` and add it to the document.
 
@@ -58,6 +59,7 @@ class AnyZoneHVACLowTemperatureRadiantElectric:
         ]
         | None = "MeanAirTemperature",
         heating_throttling_range: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:Electric`` and add it to the document.
 
@@ -93,6 +95,7 @@ class AnyAirTerminalSingleDuctVAVReheat:
         maximum_flow_fraction_during_reheat: float | Literal["Autosize"] | None = "Autosize",
         maximum_reheat_air_temperature: float | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:VAV:Reheat`` and add it to the document.
 
@@ -124,6 +127,7 @@ class FanVariableVolume:
         fan_power_coefficient_4: float | None = ...,
         fan_power_coefficient_5: float | None = ...,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Fan:VariableVolume`` and add it to the document.
 
@@ -157,6 +161,7 @@ class CoilHeatingGasMultiStage:
         stage_4_gas_burner_efficiency: float | None = ...,
         stage_4_nominal_capacity: float | Literal["Autosize"] | None = ...,
         stage_4_on_cycle_parasitic_electric_load: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:Heating:Gas:MultiStage`` and add it to the document.
 
@@ -179,6 +184,7 @@ class ControllerWaterCoil:
         controller_convergence_tolerance: float | Literal["Autosize"] | None = "Autosize",
         maximum_actuated_flow: float | Literal["Autosize"] | None = ...,
         minimum_actuated_flow: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Controller:WaterCoil`` and add it to the document.
 
@@ -204,6 +210,7 @@ class GroundHeatExchangerVerticalSizingRectangle:
         maximum_borehole_vertical_length: float | None = 135,
         minimum_exiting_fluid_temperature_for_sizing: float | None = 5,
         maximum_exiting_fluid_temperature_for_sizing: float | None = 35,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Vertical:Sizing:Rectangle`` and add it to the document.
 
@@ -228,6 +235,7 @@ class GroundHeatExchangerPond:
         ground_thermal_conductivity: float,
         number_of_tubing_circuits: int,
         length_of_each_tubing_circuit: float,
+        validate: bool = True,
     ) -> None:
         """Create a new ``GroundHeatExchanger:Pond`` and add it to the document.
 
@@ -252,6 +260,7 @@ class AnyDemandManagerElectricEquipment:
         equipment: Sequence[
             _g.DemandManagerElectricEquipmentEquipmentItem | _g.DemandManagerElectricEquipmentEquipmentGroup
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``DemandManager:ElectricEquipment`` and add it to the document.
 
@@ -277,6 +286,7 @@ class CurveExponentialSkewNormal:
         input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:ExponentialSkewNormal`` and add it to the document.
 
@@ -301,6 +311,7 @@ class CurveExponentialDecay:
         input_unit_type_for_x: Literal["Dimensionless"] | None = "Dimensionless",
         output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"]
         | None = "Dimensionless",
+        validate: bool = True,
     ) -> None:
         """Create a new ``Curve:ExponentialDecay`` and add it to the document.
 
@@ -318,6 +329,7 @@ class FluidPropertiesGlycolConcentration:
         glycol_type: Literal["EthyleneGlycol", "PropyleneGlycol", "UserDefinedGlycolType"],
         user_defined_glycol_name: str | None = ...,
         glycol_concentration: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FluidProperties:GlycolConcentration`` and add it to the document.
 

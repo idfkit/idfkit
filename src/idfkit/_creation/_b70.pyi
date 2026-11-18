@@ -15,7 +15,13 @@ from .. import _generated_types as _g
 
 class RunPeriodControlDaylightSavingTime:
     def __call__(
-        self, this_type_has_no_name_field: _g._PassFieldsAsKeywords = ..., /, *, start_date: str, end_date: str
+        self,
+        this_type_has_no_name_field: _g._PassFieldsAsKeywords = ...,
+        /,
+        *,
+        start_date: str,
+        end_date: str,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RunPeriodControl:DaylightSavingTime`` and add it to the document.
 
@@ -25,7 +31,14 @@ class RunPeriodControlDaylightSavingTime:
         """
 
 class ZoneList:
-    def __call__(self, name: str, /, *, zones: Sequence[_g.ZoneListZonesItem | _g.ZoneListZonesGroup] = ...) -> None:
+    def __call__(
+        self,
+        name: str,
+        /,
+        *,
+        zones: Sequence[_g.ZoneListZonesItem | _g.ZoneListZonesGroup] = ...,
+        validate: bool = True,
+    ) -> None:
         """Create a new ``ZoneList`` and add it to the document.
 
         Defines a list of thermal zones which can be referenced as a group. The ZoneList name may be used elsewhere in the input to apply a parameter to all zones in the list. ZoneLists can be used effectively with the following objects: People, Lights, ElectricEquipment, GasEquipment, HotWaterEquipment, ZoneInfiltration:DesignFlowRate, ZoneVentilation:DesignFlowRate, Sizing:Zone, ZoneControl:Thermostat, and others.
@@ -49,6 +62,7 @@ class AnyElectricEquipment:
         fraction_radiant: float | None = 0,
         fraction_lost: float | None = 0,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ElectricEquipment`` and add it to the document.
 
@@ -74,6 +88,7 @@ class HVACTemplatePlantTower:
         priority: str | None = ...,
         sizing_factor: float | None = 1,
         template_plant_loop_type: Literal["ChilledWater", "MixedWater"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Plant:Tower`` and add it to the document.
 
@@ -112,6 +127,7 @@ class AirTerminalSingleDuctParallelPIUReheat:
         high_limit_heating_discharge_air_temperature: float | None = 37.7,
         backdraft_damper_leakage_fraction_curve_name: str | None = ...,
         backdraft_damper_leakage_zone_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirTerminal:SingleDuct:ParallelPIU:Reheat`` and add it to the document.
 
@@ -149,6 +165,7 @@ class FanSystemModel:
         end_use_subcategory: str | None = "General",
         number_of_speeds: int | None = 1,
         speed_fractions: Sequence[_g.FanSystemModelSpeedFractionsItem | _g.FanSystemModelSpeedFractionsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Fan:SystemModel`` and add it to the document.
 
@@ -182,6 +199,7 @@ class ThermalStorageIceDetailed:
         freezing_temperature_of_storage_medium: float | None = 0,
         thaw_process_indicator: Literal["InsideMelt", "OutsideMelt"] | None = "OutsideMelt",
         thermal_storage_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ThermalStorage:Ice:Detailed`` and add it to the document.
 
@@ -191,7 +209,7 @@ class ThermalStorageIceDetailed:
         """
 
 class AnyPlantEquipmentList:
-    def __call__(self, name: str, /) -> None:
+    def __call__(self, name: str, /, *, validate: bool = True) -> None:
         """Create a new ``PlantEquipmentList`` and add it to the document.
 
         List plant equipment in order of operating priority, 1st in list will be used 1st, etc Use only plant equipment in this list. If no equipment object types and equipment names are specified, then the corresponding PlantEquipmentOperation:* object will assume all available plant equipment for the loop should be OFF (not operate) within the specified lower/upper limit.
@@ -201,7 +219,14 @@ class AnyPlantEquipmentList:
 
 class AvailabilityManagerLowTemperatureTurnOff:
     def __call__(
-        self, name: str, /, *, sensor_node_name: str, temperature: float, applicability_schedule_name: str | None = ...
+        self,
+        name: str,
+        /,
+        *,
+        sensor_node_name: str,
+        temperature: float,
+        applicability_schedule_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AvailabilityManager:LowTemperatureTurnOff`` and add it to the document.
 
@@ -217,6 +242,7 @@ class OutputTableSummaryReports:
         /,
         *,
         reports: Sequence[_g.OutputTableSummaryReportsReportsItem | _g.OutputTableSummaryReportsReportsGroup] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Output:Table:SummaryReports`` and add it to the document.
 

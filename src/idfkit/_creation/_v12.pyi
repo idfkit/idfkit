@@ -63,6 +63,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4:
         number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None = "OnePerSurface",
         circuit_length: float | None = 106.7,
         changeover_delay_time_period_schedule: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` and add it to the document.
 
@@ -90,6 +91,7 @@ class HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2:
         reference_capacity: float | Literal["Autosize"] | None = "Autosize",
         reference_coefficient_of_performance: float | None = 7.5,
         sizing_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeatPump:WaterToWater:EIR:Cooling`` and add it to the document.
 
@@ -139,6 +141,7 @@ class ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1:
         availability_manager_list_name: str | None = ...,
         heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None = "Cycling",
         design_specification_zonehvac_sizing_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:WaterToAirHeatPump`` and add it to the document.
 

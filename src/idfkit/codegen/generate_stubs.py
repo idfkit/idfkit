@@ -24,10 +24,11 @@ import re
 import sys
 import textwrap
 import zlib
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Hashable, Iterable, Iterator, Mapping
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any, NamedTuple, TypeAlias, TypeVar
 
+from idfkit._accessors import deprecated_plural_message
 from idfkit.docs import io_reference_url
 from idfkit.schema import EpJSONSchema, get_schema, trailing_underscore_aliases
 from idfkit.versions import ENERGYPLUS_VERSIONS, version_string
@@ -889,12 +890,15 @@ def _generate_attr_properties(
     python_to_idf: dict[str, str],
     schema: EpJSONSchema,
     indent: str = "    ",
+    deprecated: dict[str, tuple[str, str | None]] | None = None,
 ) -> list[str]:
     """Generate typed ``@property`` accessors for IDFDocument.
 
     These are the names the attribute resolver accepts as canonical: one
-    ``snake_case`` plural per object type, plus the shorthands in
-    ``_PYTHON_TO_IDF``.
+    ``snake_case`` name per object type (the singular for a type a model holds at
+    most one of, the plural for every other), plus the shorthands in
+    ``_PYTHON_TO_IDF``. Each name in *deprecated*, the plural such a type had before
+    singular names existed, is declared too, marked ``@deprecated``.
     Skips every name that is a real member of ``IDFDocument``. That is the same
     set the attribute resolver treats as reserved, so the stub and the runtime
     cannot disagree about which of the two a name reaches.
@@ -921,6 +925,24 @@ def _generate_attr_properties(
             decorators=("@property",),
             indent=indent,
         )
+    for py_name, (idf_type, replacement) in (deprecated or {}).items():
+        message = deprecated_plural_message(py_name, idf_type, replacement)
+        _emit_method(
+            lines,
+            f"def {py_name}(self) -> IDFCollection[{_to_class_name(idf_type)}]",
+            None,
+            decorators=("@property", f"@deprecated({message!r})"),
+            indent=indent,
+        )
+    return lines
+
+
+def _accessor_lines(name: str, accessor: _Accessor, indent: str = "    ") -> list[str]:
+    """The stub lines of one accessor property: ``@deprecated`` too, when it is a deprecated plural."""
+    lines = [f"{indent}@property"]
+    if accessor.deprecated is not None:
+        lines.append(f"{indent}@deprecated({accessor.deprecated!r})")
+    lines.append(f"{indent}def {name}(self) -> IDFCollection[{accessor.cls}]: ...")
     return lines
 
 
@@ -1168,6 +1190,12 @@ def _strip_none(annotation: str) -> str:
 # The parameter a creation signature requires when no call can satisfy every release it serves.
 _NARROW_FIRST = "narrow_with_as_version_first"
 
+# The keyword every creation signature ends with, as IDFDocument.add takes it: validate=False skips
+# value, required-field and range checks (an unknown key is still refused). PEP 612 allows no
+# keyword beside the ParamSpec IDFCollection.add takes the signature through, so each signature
+# declares it. No field of any bundled schema is named so; _creation_lines asserts it stays that way.
+_VALIDATE_PARAM = "validate: bool = True"
+
 
 # A group wrapper's annotation, as _group_items writes it.
 _GROUP_ITEMS = re.compile(r"Sequence\[([\w.]+) \| ([\w.]+)\]")
@@ -1337,7 +1365,11 @@ def _creation_lines(
     the type has one; a type without one takes ``this_type_has_no_name_field`` there instead, typed
     with an alias of ``Never`` so that a name passed by mistake is reported as such. The fields follow, keyword-only: the required ones without a default and with
     ``None`` taken out (leaving one empty is what makes it missing), then the others with their
-    schema default where the annotation admits it, and ``...`` otherwise.
+    schema default where the annotation admits it, and ``...`` otherwise. Last comes
+    ``validate: bool = True``, the switch ``IDFDocument.add`` takes, which ``IDFCollection.add``
+    passes through: PEP 612 lets ``add`` declare no keyword of its own beside the signature it
+    takes. ``validate=False`` relaxes no required field here: it is for loading data already
+    known good, not for leaving fields out, so a call that leaves one out stays a type error.
 
     A required field the class cannot be given a value for (one ``Any<Class>`` does not declare,
     because a release names it differently, or whose only value safe in every release is ``None``),
@@ -1376,9 +1408,12 @@ def _creation_lines(
         default = defaults.get(name)
         shown = default if default is not None and _admits(_split_union(value_type), default) else "..."
         optional.append(f"{name}: {annotation} = {shown}")
-    if required or optional:
-        params.append("*")
-    params += required + optional
+    if any(name.rstrip("_") == "validate" for name, _ in fields):
+        # IDFDocument.add takes validate= for itself too, so such a field could be set by neither.
+        msg = f"{obj_type} has a field named validate, which add() takes as its validation switch"
+        raise ValueError(msg)
+    params.append("*")
+    params += [*required, *optional, _VALIDATE_PARAM]
     doc = _creation_docstring(schema, obj_type, narrow_first=narrow_first)
     # Each class's signature is its own, unrelated to its base's: an override mypy reports as an
     # incompatible assignment (pyright does not), as the generated update and as_dict overrides are.
@@ -1848,6 +1883,14 @@ def _common_object_types() -> list[str]:
 
 
 Span = tuple[Version, Version]
+_V = TypeVar("_V", bound=Hashable)
+
+
+class _Accessor(NamedTuple):
+    """One typed accessor property: its collection's class, and its ``@deprecated`` message if it has one."""
+
+    cls: str
+    deprecated: str | None = None
 
 
 def _span_name(prefix: str, span: Span) -> str:
@@ -1858,15 +1901,15 @@ def _span_name(prefix: str, span: Span) -> str:
     return f"{prefix}_v{_version_tag(first)}_to_v{_version_tag(last)}"
 
 
-def _group_by_span(per_version: dict[Version, dict[str, str]]) -> dict[Span, dict[str, str]]:
+def _group_by_span(per_version: dict[Version, dict[str, _V]]) -> dict[Span, dict[str, _V]]:
     """File every ``(key, value)`` pair under each maximal run of consecutive versions holding it.
 
     This is the endpoint encoding: a pair that holds from 8.9 to 9.4 is written once, under
     ``(8.9, 9.4)``, rather than once per version. A pair that stops and starts again is filed
     under each run, so the result is right whether or not every range is contiguous.
     """
-    spans: dict[Span, dict[str, str]] = {}
-    started: dict[tuple[str, str], Version] = {}
+    spans: dict[Span, dict[str, _V]] = {}
+    started: dict[tuple[str, _V], Version] = {}
     previous: Version | None = None
     for ver in SUPPORTED.versions:
         pairs = set(per_version.get(ver, {}).items())
@@ -2035,11 +2078,15 @@ def _update_entries(schema: EpJSONSchema, obj_type: str, run: tuple[Version, ...
     return entries
 
 
-def _accessors(ver: Version) -> dict[str, str]:
-    """The typed attribute accessors of a document of *ver*: name -> object type."""
+def _all_accessors(ver: Version) -> dict[str, tuple[str, str | None]]:
+    """Every accessor of a document of *ver*, deprecated ones too: name -> (object type, message or ``None``)."""
     from idfkit.document import _build_resolver  # pyright: ignore[reportPrivateUsage]
 
-    return _build_resolver(get_schema(ver)).accessors()
+    resolver = _build_resolver(get_schema(ver))
+    out: dict[str, tuple[str, str | None]] = {name: (t, None) for name, t in resolver.accessors().items()}
+    for name, (obj_type, replacement) in resolver.deprecated_accessors().items():
+        out[name] = (obj_type, deprecated_plural_message(name, obj_type, replacement))
+    return dict(sorted(out.items()))
 
 
 def _document_class_name(ver: Version) -> str:
@@ -2094,7 +2141,7 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         "from collections.abc import Mapping, Sequence",
         "from typing import Any, Literal, TypeAlias, TypeVar, overload",
         "",
-        "from typing_extensions import TypedDict, Unpack",
+        "from typing_extensions import TypedDict, Unpack, deprecated",
         "",
         "from . import _generated_types as _g",
         *sink.imports(),
@@ -2137,9 +2184,8 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         if span[0] == SUPPORTED.latest:
             continue  # only the latest release holds it, and IDFDocument declares its own accessors
         parts.append(f"class {_span_name('_Accessors', span)}:")
-        for name, cls in entries.items():
-            parts.append("    @property")
-            parts.append(f"    def {name}(self) -> IDFCollection[{cls}]: ...")
+        for name, accessor in entries.items():
+            parts.extend(_accessor_lines(name, accessor))
         parts.append("")
 
     parts.append(f"{_document_class_name(SUPPORTED.latest)} = IDFDocument")
@@ -2176,11 +2222,12 @@ def _versioned_module(ver: Version) -> str:
 
 
 @functools.cache
-def _accessor_spans() -> dict[Span, dict[str, str]]:
-    """Every version's typed attribute accessors, name -> class, filed under the range holding each."""
+def _accessor_spans() -> dict[Span, dict[str, _Accessor]]:
+    """Every version's typed attribute accessors, deprecated ones too, filed under the range holding each."""
     class_for, _ = _class_assignment()
     return _group_by_span({
-        ver: {name: class_for[(t, ver)] for name, t in _accessors(ver).items()} for ver in SUPPORTED.versions
+        ver: {name: _Accessor(class_for[(t, ver)], message) for name, (t, message) in _all_accessors(ver).items()}
+        for ver in SUPPORTED.versions
     })
 
 
@@ -2603,23 +2650,29 @@ only that release has.
 """
 
 
-def _any_accessor_types() -> dict[str, str]:
-    """Each ``AnyIDFDocument`` accessor, a name that reaches the same type in every version, and its class."""
-    per_version = [_accessors(ver) for ver in SUPPORTED.versions]
+def _any_accessor_types() -> dict[str, _Accessor]:
+    """Each ``AnyIDFDocument`` accessor and its class: a name every version gives the same meaning.
+
+    A name is declared where every version resolves it to the same type and either every version
+    holds it as its accessor or every version holds it as the same deprecated plural. A type unique
+    in one release and not in another is named in the singular in the one and the plural in the
+    other, so neither name is the accessor of every release: it is left out, and reached through
+    ``doc["Type"]``, which every release types, or through ``as_version``.
+    """
+    per_version = [_all_accessors(ver) for ver in SUPPORTED.versions]
     common = set(_common_object_types())
     return {
-        name: _shared_class_name(obj_type)
-        for name, obj_type in per_version[-1].items()
-        if obj_type in common and all(accessors.get(name) == obj_type for accessors in per_version)
+        name: _Accessor(_shared_class_name(obj_type), message)
+        for name, (obj_type, message) in per_version[-1].items()
+        if obj_type in common and all(accessors.get(name) == (obj_type, message) for accessors in per_version)
     }
 
 
 def _generate_any_accessors() -> list[str]:
     """Typed accessors of ``AnyIDFDocument``: names that reach the same type in every version."""
     lines: list[str] = []
-    for name, cls in _any_accessor_types().items():
-        lines.append("    @property")
-        lines.append(f"    def {name}(self) -> IDFCollection[{cls}]: ...")
+    for name, accessor in _any_accessor_types().items():
+        lines.extend(_accessor_lines(name, accessor))
     return lines
 
 
@@ -2667,7 +2720,7 @@ def _generate_document_module() -> str:
     lines.append("from pathlib import Path")
     lines.append("from typing import Any, Generic, Literal, TypeAlias, TypeVar, overload")
     lines.append("")
-    lines.append("from typing_extensions import Self")
+    lines.append("from typing_extensions import Self, deprecated")
     lines.append("")
     lines.append("from ._accessors import AccessorResolver")
     lines.append("from ._compat import EppyDocumentMixin")
@@ -2856,7 +2909,12 @@ def _generate_document_module() -> str:
     lines.append("")
 
     # Attribute accessor properties, one per object type plus the shorthands, with memo docstrings
-    lines.extend(_generate_attr_properties(_build_resolver(schema).accessors(), schema, indent="    "))
+    resolver = _build_resolver(schema)
+    lines.extend(
+        _generate_attr_properties(
+            resolver.accessors(), schema, indent="    ", deprecated=resolver.deprecated_accessors()
+        )
+    )
     lines.append("")
 
     return "\n".join(lines)

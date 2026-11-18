@@ -17,6 +17,7 @@ class AnyPerformancePrecisionTradeoffs:
         /,
         *,
         use_coil_direct_solutions: Literal["No", "Yes"] | None = "No",
+        validate: bool = True,
     ) -> None:
         """Create a new ``PerformancePrecisionTradeoffs`` and add it to the document.
 
@@ -41,6 +42,7 @@ class Roof:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         width: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Roof`` and add it to the document.
 
@@ -63,6 +65,7 @@ class DoorInterzone:
         starting_z_coordinate: float | None = ...,
         length: float | None = ...,
         height: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Door:Interzone`` and add it to the document.
 
@@ -121,6 +124,7 @@ class AnyHVACTemplateZoneFanCoil:
         baseboard_heating_type: Literal["Electric", "HotWater", "None"] | None = "None",
         baseboard_heating_availability_schedule_name: str | None = ...,
         baseboard_heating_capacity: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:FanCoil`` and add it to the document.
 
@@ -167,6 +171,7 @@ class ZoneHVACPackagedTerminalAirConditioner:
         capacity_control_method: Literal["None", "SingleZoneVAV"] | None = "None",
         minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None = "Autosize",
         maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None = "Autosize",
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:PackagedTerminalAirConditioner`` and add it to the document.
 
@@ -189,6 +194,7 @@ class ZoneHVACEquipmentConnections:
         zone_return_air_node_or_nodelist_name: str | None = ...,
         zone_return_air_node_1_flow_rate_fraction_schedule_name: str | None = ...,
         zone_return_air_node_1_flow_rate_basis_node_or_nodelist_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``ZoneHVAC:EquipmentConnections`` and add it to the document.
 
@@ -233,6 +239,7 @@ class PlantEquipmentOperationCoolingLoad:
         load_range_10_lower_limit: float | None = ...,
         load_range_10_upper_limit: float | None = ...,
         range_10_equipment_list_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:CoolingLoad`` and add it to the document.
 
@@ -264,6 +271,7 @@ class FaultModelTemperatureSensorOffsetCoilSupplyAir:
         severity_schedule_name: str | None = ...,
         water_coil_controller_name: str | None = ...,
         reference_sensor_offset: float | None = 0,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:TemperatureSensorOffset:CoilSupplyAir`` and add it to the document.
 
@@ -283,6 +291,7 @@ class FaultModelFoulingBoiler:
         availability_schedule_name: str | None = ...,
         severity_schedule_name: str | None = ...,
         fouling_factor: float | None = 1,
+        validate: bool = True,
     ) -> None:
         """Create a new ``FaultModel:Fouling:Boiler`` and add it to the document.
 

@@ -200,6 +200,7 @@ class PlantEquipmentOperationThermalEnergyStorage_v8_9_to_v22_1:
         component_10_setpoint_node_name: str | None = ...,
         component_10_flow_rate: float | Literal["Autosize"] | None = ...,
         component_10_operation_type: Literal["Cooling", "Dual", "Heating"] | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``PlantEquipmentOperation:ThermalEnergyStorage`` and add it to the document.
 
@@ -355,6 +356,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1:
         speed_10_cop_function_of_temperature_curve_name: str | None = ...,
         speed_10_cop_function_of_air_flow_fraction_curve_name: str | None = ...,
         speed_10_cop_function_of_water_flow_fraction_curve_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` and add it to the document.
 
@@ -395,6 +397,7 @@ class EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1:
         blowdown_concentration_ratio: float | None = 3,
         blowdown_makeup_water_usage_schedule_name: str | None = ...,
         supply_water_storage_tank_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``EvaporativeFluidCooler:SingleSpeed`` and add it to the document.
 
@@ -414,6 +417,7 @@ class LifeCycleCostNonrecurringCost_v8_9_to_v22_1:
         start_of_costs: Literal["BasePeriod", "ServicePeriod"] | None = "ServicePeriod",
         years_from_start: float | None = ...,
         months_from_start: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``LifeCycleCost:NonrecurringCost`` and add it to the document.
 
@@ -432,6 +436,7 @@ class RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2:
             _vd.RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsItem_v8_9_to_v9_2
             | _vd.RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v8_9_to_v9_2
         ] = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork:HVACEquipment`` and add it to the document.
 

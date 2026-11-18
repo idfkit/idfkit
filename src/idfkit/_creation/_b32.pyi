@@ -22,6 +22,7 @@ class RoomAirTemperaturePatternConstantGradient:
         return_air_offset: float | None = ...,
         exhaust_air_offset: float | None = ...,
         temperature_gradient: float | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``RoomAir:TemperaturePattern:ConstantGradient`` and add it to the document.
 
@@ -40,6 +41,7 @@ class AirflowNetworkDistributionComponentReliefAirFlow:
         air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float,
         air_mass_flow_exponent_when_no_outdoor_air_flow: float | None = 0.65,
         reference_crack_conditions: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``AirflowNetwork:Distribution:Component:ReliefAirFlow`` and add it to the document.
 
@@ -94,6 +96,7 @@ class HVACTemplateZoneVAVFanPowered:
         zone_piu_fan_schedule_name: str | None = ...,
         design_specification_outdoor_air_object_name: str | None = ...,
         design_specification_zone_air_distribution_object_name: str | None = ...,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HVACTemplate:Zone:VAV:FanPowered`` and add it to the document.
 
@@ -125,6 +128,7 @@ class AnyHeaderedPumpsConstantSpeed:
         | None = "PowerPerFlowPerPressure",
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeaderedPumps:ConstantSpeed`` and add it to the document.
 
@@ -157,6 +161,7 @@ class HeaderedPumpsConstantSpeed:
         design_electric_power_per_unit_flow_rate: float | None = 348701.1,
         design_shaft_power_per_unit_flow_rate_per_unit_head: float | None = 1.282051282,
         end_use_subcategory: str | None = "General",
+        validate: bool = True,
     ) -> None:
         """Create a new ``HeaderedPumps:ConstantSpeed`` and add it to the document.
 
@@ -232,6 +237,7 @@ class AnyChillerCombustionTurbine:
         basin_heater_operating_schedule_name: str | None = ...,
         condenser_heat_recovery_relative_capacity_fraction: float | None = ...,
         turbine_engine_efficiency: float | None = 0.35,
+        validate: bool = True,
     ) -> None:
         """Create a new ``Chiller:CombustionTurbine`` and add it to the document.
 
