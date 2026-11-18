@@ -132,8 +132,14 @@ def _object_types_by_folded_name() -> dict[str, str]:
     return {name.casefold(): name for name in ALL_OBJECT_TYPES}
 
 
+@functools.lru_cache(maxsize=256)
 def _closest_object_type(obj_type: str) -> str | None:
-    """The bundled object type closest to *obj_type*, or ``None`` if none is close."""
+    """The bundled object type closest to *obj_type*, or ``None`` if none is close.
+
+    Cached because it runs on every miss, before ``warnings.warn`` can tell whether the warning
+    will be shown (``warn`` formats the message before it consults the filters), and a long name
+    costs difflib milliseconds: a loop probing one misspelt name pays that once.
+    """
     by_folded = _object_types_by_folded_name()
     close = difflib.get_close_matches(obj_type.casefold(), by_folded.keys(), n=1, cutoff=0.6)
     return by_folded[close[0]] if close else None
@@ -397,11 +403,15 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     def _read_collection(self, obj_type: str, *, stacklevel: int) -> IDFCollection[IDFObject]:
         """Look *obj_type* up for a caller that named it, warning if no bundled release has it.
 
-        The public name-keyed reads ([__getitem__][idfkit.document.IDFDocument.__getitem__],
-        [get_collection][idfkit.document.IDFDocument.get_collection] and the eppy ones) come here
-        on a miss. *stacklevel* is counted as :func:`warnings.warn` counts it, from the public
-        method that called this one, so ``2`` points the warning at that method's caller.
+        Every public name-keyed read ([__getitem__][idfkit.document.IDFDocument.__getitem__],
+        [get_collection][idfkit.document.IDFDocument.get_collection] and the eppy ones) comes
+        here; ``__getitem__`` only after its own one-dict-hit hot path has missed. *stacklevel* is
+        counted as :func:`warnings.warn` counts it, from the public method that called this one,
+        so ``2`` points the warning at that method's caller.
         """
+        collection = self._collections.get(obj_type)
+        if collection is not None:
+            return collection
         collection = self._lookup_collection(obj_type)
         if not collection:
             _warn_if_unknown_object_type(obj_type, stacklevel=stacklevel + 1)
@@ -479,9 +489,6 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         [UnknownObjectTypeWarning][idfkit.exceptions.UnknownObjectTypeWarning],
         as ``model[obj_type]`` does.
         """
-        collection = self._collections.get(obj_type)
-        if collection is not None:
-            return collection
         return self._read_collection(obj_type, stacklevel=2)
 
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]:

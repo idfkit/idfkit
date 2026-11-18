@@ -249,13 +249,31 @@ class TestUnknownNameWarning:
         assert issubclass(UnknownObjectTypeWarning, UserWarning)
         assert not issubclass(UnknownObjectTypeWarning, DeprecationWarning)
 
-    def test_the_generated_set_is_every_bundled_releases_types(self) -> None:
+    def test_a_case_only_respelling_suggests_the_newest_spelling(self, doc: IDFDocument) -> None:
+        # 8.9 spells it ``bySurfaceName``; every release since 9.6 ``BySurfaceName``.
+        with pytest.warns(UnknownObjectTypeWarning, match="Did you mean 'ZoneProperty:UserViewFactors:BySurfaceName'"):
+            _ = doc["ZoneProperty:UserViewFactors:BySurfaceNam"]
+
+    def test_the_warning_round_trips_through_pickle(self) -> None:
+        import pickle
+
+        warning = UnknownObjectTypeWarning("Zoen", "Zone")
+        restored = pickle.loads(pickle.dumps(warning))  # noqa: S301  # our own object, just pickled
+        assert (restored.obj_type, restored.suggestion, str(restored)) == ("Zoen", "Zone", str(warning))
+        rebuilt = type(warning)(*warning.args)  # as pytest-xdist rebuilds a worker's warning
+        assert str(rebuilt) == str(warning)
+
+    @pytest.mark.slow
+    def test_the_generated_table_is_every_bundled_releases_types(self) -> None:
         from idfkit._object_types import ALL_OBJECT_TYPES
         from idfkit.schema import get_schema
         from idfkit.versions import ENERGYPLUS_VERSIONS
 
-        expected = {t for ver in ENERGYPLUS_VERSIONS for t in get_schema(ver).object_types}
-        assert expected == ALL_OBJECT_TYPES
+        expected = {t.casefold() for ver in ENERGYPLUS_VERSIONS for t in get_schema(ver).object_types}
+        assert {t.casefold() for t in ALL_OBJECT_TYPES} == expected
+        assert len(ALL_OBJECT_TYPES) == len(expected)
+        latest = get_schema(ENERGYPLUS_VERSIONS[-1]).object_types
+        assert set(latest) <= set(ALL_OBJECT_TYPES)
 
 
 class TestSchemalessDocument:

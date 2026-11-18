@@ -2,12 +2,14 @@
 
 Read by ``IDFDocument.__getitem__`` to tell a misspelt type name, which no release has and
 which it warns about, from a real type the document's own release lacks, which it does not.
-Answering that from a constant spares loading every bundled schema.
+Answering that from a constant spares loading every bundled schema. A type spelt differently
+only in case across releases is listed once, in the newest release's spelling.
 """
 
 from __future__ import annotations
 
-ALL_OBJECT_TYPES: frozenset[str] = frozenset({
+# A tuple of string literals is a constant of the compiled module: importing it builds no set.
+ALL_OBJECT_TYPES: tuple[str, ...] = (
     "AirConditioner:VariableRefrigerantFlow",
     "AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl",
     "AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR",
@@ -894,10 +896,9 @@ ALL_OBJECT_TYPES: frozenset[str] = frozenset({
     "ZoneMixing",
     "ZoneProperty:LocalEnvironment",
     "ZoneProperty:UserViewFactors:BySurfaceName",
-    "ZoneProperty:UserViewFactors:bySurfaceName",
     "ZoneRefrigerationDoorMixing",
     "ZoneTerminalUnitList",
     "ZoneThermalChimney",
     "ZoneVentilation:DesignFlowRate",
     "ZoneVentilation:WindandStackOpenArea",
-})
+)

@@ -44,9 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `doc["Zoen"]`, `get_collection(...)` and the eppy lookups warned `UnknownObjectTypeWarning`, naming the
-  closest type, for a type name in no bundled release, instead of silently returning an empty collection;
-  suites with `filterwarnings = error` now fail on such reads. ([#310](https://github.com/idfkit/idfkit/pull/310))
+- `doc["Zoen"]`, `get_collection(...)` and the eppy lookups warned `idfkit.exceptions.UnknownObjectTypeWarning`,
+  naming the closest type, for a type name in no bundled release, instead of silently returning an empty
+  collection; suites run with `filterwarnings = error` failed on such reads. ([#310](https://github.com/idfkit/idfkit/pull/310))
 
 - **Breaking:** for type checking, a field that every release having it requires with no default
   lost its `| None` (`material.thickness` became a `float`), so assigning `None` became an error;

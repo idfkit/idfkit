@@ -175,12 +175,17 @@ class UnknownObjectTypeWarning(UserWarning):
     """
 
     def __init__(self, obj_type: str, suggestion: str | None = None) -> None:
+        # ``args`` holds the constructor's arguments, not the message, so ``cls(*args)`` rebuilds
+        # the warning as pickle, ``copy`` and pytest-xdist's warning transport all do.
+        super().__init__(obj_type, suggestion)
         self.obj_type = obj_type
         self.suggestion = suggestion
-        msg = f"Object type '{obj_type}' is in no bundled EnergyPlus release; the collection is empty"
-        if suggestion is not None:
-            msg += f". Did you mean '{suggestion}'?"
-        super().__init__(msg)
+
+    def __str__(self) -> str:
+        msg = f"Object type '{self.obj_type}' is in no bundled EnergyPlus release; the collection is empty"
+        if self.suggestion is not None:
+            msg += f". Did you mean '{self.suggestion}'?"
+        return msg
 
 
 @dataclass(frozen=True, slots=True)
