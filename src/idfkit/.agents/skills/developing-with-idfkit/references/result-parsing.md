@@ -32,15 +32,15 @@ rows = result.sql.get_tabular_data(report_name="AnnualBuildingUtilityPerformance
 | Accessor | Returns | Lazy? |
 |---|---|---|
 | `result.errors` | `ErrorReport` (always available) | Eager (parsed on construction). |
-| `result.sql` | `SQLResult | None` | Lazy — opens the SQLite file on first access. |
-| `result.csv` | `CSVResult | None` | Lazy. |
-| `result.eso` / `result.mtr` | `ESOResult | None` | Lazy — dictionary parsed on access, variable data on `get_column`. |
-| `result.html` | `HTMLResult | None` | Lazy. |
-| `result.variables` | `OutputVariableIndex | None` | Lazy — parses `.rdd`/`.mdd`. |
+| `result.sql` | `SQLResult` | Lazy — opens the SQLite file on first access. |
+| `result.csv` | `CSVResult` | Lazy. |
+| `result.eso` / `result.mtr` | `ESOResult` | Lazy — dictionary parsed on access, variable data on `get_column`. |
+| `result.html` | `HTMLResult` | Lazy. |
+| `result.variables` | `OutputVariableIndex` | Lazy — parses `.rdd`/`.mdd`. |
 | `result.sql_path` / `.err_path` / `.eso_path` / `.mtr_path` / `.csv_path` / `.html_path` / `.rdd_path` / `.mdd_path` | `Path | None` | Direct file paths. |
 | `result.migration_report` | `MigrationReport | None` | Set if `auto_migrate=True`. |
 
-All `None` returns mean "the file doesn't exist" — EnergyPlus may not produce CSV/HTML unless you asked for them in the IDF (`Output:Variable`, `Output:Table:SummaryReports`).
+The parsed accessors (and their `async_*` counterparts) never return `None`. When the file doesn't exist they raise `OutputNotFoundError` (a `FileNotFoundError`), whose message names the output object to add (`Output:SQLite`, `Output:VariableDictionary`, `readvars=True` for CSV, ...) or, for a failed run, points to `raise_for_status()` and the `.err` file. To test for a file without raising, check its path: `result.csv_path is None`. EnergyPlus may not produce CSV/HTML unless you asked for them in the IDF (`Output:Variable`, `Output:Table:SummaryReports`).
 
 ## Errors (always check first)
 
@@ -172,8 +172,8 @@ The EnergyPlus SQLite schema is documented at [bigladdersoftware.com/epx/docs/](
 
 ```python
 # Only available if you called simulate(..., readvars=True)
-csv = result.csv
-if csv:
+if result.csv_path is not None:  # result.csv raises OutputNotFoundError when there is no .csv
+    csv = result.csv
     csv.timestamps  # tuple[str, ...]
     for col in csv.columns:  # each CSVColumn has parsed metadata
         print(col.variable_name, col.key_value, col.units)
@@ -188,8 +188,8 @@ Prefer SQL — CSV is one shot per `Output:Variable`, while SQL is queryable.
 ## HTML tabular
 
 ```python
-html = result.html
-if html:
+if result.html_path is not None:
+    html = result.html
     for table in html.tables:
         print(table.report_name, table.title)
     # header is the column-header row; rows are the data rows below it.
@@ -209,8 +209,8 @@ The `.eso` (Standard Output) and `.mtr` (Meter) files are EnergyPlus's native ti
 # ESO time series — use when the model has no Output:SQLite, or to pull a few
 # variables out of a large .eso fast. The reader parses the dictionary eagerly
 # but the data lazily.
-eso = result.eso  # ESOResult | None
-if eso:
+if result.eso_path is not None:
+    eso = result.eso  # ESOResult
     # Lazy: a single scan that float-parses ONLY this variable. Like sql.get_timeseries,
     # it raises ResultLookupError (a KeyError) on a typo, with the closest names, and when
     # several keys or frequencies match: pass key_value= / frequency= then.
@@ -237,8 +237,8 @@ if eso:
     all_columns = eso.columns  # tuple[ESOColumn, ...] — every variable
 
 # Meter files (.mtr) use the same reader:
-mtr = result.mtr
-if mtr:
+if result.mtr_path is not None:
+    mtr = result.mtr
     meter = mtr.get_column("Electricity:Facility")  # meters have no key value
 ```
 
@@ -251,8 +251,8 @@ The reader is **lazy by design**: constructing it parses only the data dictionar
 If you want to know what variables you *could* report before adding `Output:Variable` objects, parse the RDD/MDD files. These list every variable EnergyPlus knows how to emit for the current model:
 
 ```python
-idx = result.variables
-if idx:
+if result.rdd_path is not None:  # written only with Output:VariableDictionary
+    idx = result.variables
     for v in idx.variables:
         if "Cooling" in v.name:
             print(v.name, v.key, v.frequency)
@@ -321,10 +321,9 @@ from idfkit.simulation.plotting import (
     plot_comfort_hours,
 )
 
-if result.sql:
-    plot_temperature_profile(result.sql, zones=["Office"])
-    plot_energy_balance(result.sql)
-    plot_comfort_hours(result.sql, zones=["Office"])
+plot_temperature_profile(result.sql, zones=["Office"])
+plot_energy_balance(result.sql)
+plot_comfort_hours(result.sql, zones=["Office"])
 ```
 
 Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `idfkit[plotly]`). Pick with `get_default_backend(...)` or pass `backend=` explicitly.
@@ -333,19 +332,20 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
 
 ## Common mistakes
 
-!!! failure "accessing `result.sql` without a None check"
+!!! failure "guarding a parsed output with a None check"
 
     ```python
-    df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
-    # AttributeError if SQL output was disabled
+    if result.sql:                             # never None: raises OutputNotFoundError when there is no .sql
+        df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
     ```
 
-!!! success "check or trust the runner's auto-injection"
+!!! success "trust the runner's auto-injection, or test the path"
 
     ```python
-    # simulate() injects Output:SQLite if missing — result.sql is almost always present.
-    # But guard anyway when reading legacy results from disk:
-    if result.sql:
+    # simulate() injects Output:SQLite, so result.sql is there for every run it made.
+    # For a run read from disk, test the path; result.sql itself raises OutputNotFoundError,
+    # naming the output object to add, when there is no .sql file.
+    if result.sql_path is not None:
         df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
     ```
 

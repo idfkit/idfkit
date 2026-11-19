@@ -162,7 +162,7 @@ for job, result in zip(jobs, batch):
 
 Stopping a batch: Ctrl-C, or any exception raised in the calling thread (a `progress` callback that raises, to abort on the first `success=False`), cancels the queued jobs and kills the running EnergyPlus processes (and any ExpandObjects/Slab/Basement preprocessor or `auto_migrate` transition step) before it propagates. Cancelling an `async_simulate()` or `async_simulate_batch()` task (`asyncio.wait_for`, a dropped web request) kills its EnergyPlus and preprocessor processes too. Leaving `async for ... in async_simulate_batch_stream(...)` early cancels the rest once the generator is closed; wrap it in `contextlib.aclosing(...)` to close it at the `break` rather than when it is garbage-collected.
 
-A job that fails never raises out of the batch: its result has `success=False` and the reason in `result.stderr`. A job for which `simulate()` raised (refused before EnergyPlus ran, for example `weather=None` on a job that is not design-day-only, or EnergyPlus not found) has the reason in `result.refusal`: its repr reads `SimulationResult(refused: '...')`, its `errors` hold one fatal `refused: ...` message, `raise_for_status()` raises `SimulationError("Simulation refused: ...")`, and no output file is read from its `run_dir`. A job that raised after EnergyPlus wrote to its `output_dir` (a timeout) is not a refusal: its `errors` read that run's `.err`. One that named no `output_dir` gets `run_dir == REFUSED_RUN_DIR`, a placeholder that is never created. With `fs=`, every job needs an `output_dir`: `simulate_batch` and `async_simulate_batch` raise `ValueError` before any job runs otherwise.
+A job that fails never raises out of the batch: its result has `success=False` and the reason in `result.stderr`. A job for which `simulate()` raised (refused before EnergyPlus ran, for example `weather=None` on a job that is not design-day-only, or EnergyPlus not found) has the reason in `result.refusal`: its repr reads `SimulationResult(refused: '...')`, its `errors` hold one fatal `refused: ...` message, `raise_for_status()` raises `SimulationError("Simulation refused: ...")`, and no output file is read from its `run_dir` (`result.sql` and the other parsed outputs raise `OutputNotFoundError` giving the reason). A job that raised after EnergyPlus wrote to its `output_dir` (a timeout) is not a refusal: its `errors` read that run's `.err`. One that named no `output_dir` gets `run_dir == REFUSED_RUN_DIR`, a placeholder that is never created. With `fs=`, every job needs an `output_dir`: `simulate_batch` and `async_simulate_batch` raise `ValueError` before any job runs otherwise.
 
 ## Caching
 
@@ -243,19 +243,20 @@ With `fs=`, EnergyPlus runs in a local temp directory that is deleted once its o
     result = simulate(doc, "weather.epw", auto_migrate=True)
     ```
 
-!!! failure "assuming `result.sql` always exists"
+!!! failure "reading `result.sql` before checking the run"
 
     ```python
     result = simulate(doc, "weather.epw")
-    ts = result.sql.get_timeseries(...)       # AttributeError if SQLite output was disabled
+    ts = result.sql.get_timeseries(...)       # OutputNotFoundError (or a partial database) if EnergyPlus failed
     ```
 
-!!! success "let the runner ensure SQLite output is on"
+!!! success "let the runner ensure SQLite output is on, and stop on a failed run"
 
     ```python
-    # simulate() auto-injects Output:SQLite if missing — just access result.sql safely:
-    if result.sql:
-        ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
+    # simulate() auto-injects Output:SQLite if missing, so result.sql is there once the run succeeded.
+    # Without a .sql it raises OutputNotFoundError, naming the output to add or pointing to the .err file.
+    result = simulate(doc, "weather.epw").raise_for_status()
+    ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
     ```
 
 !!! failure "re-running the same simulation across iterations"

@@ -175,9 +175,10 @@ result = simulate(doc, "weather.epw", auto_migrate=True)
 
 
 # --8<-- [start:mistake-sql-good]
-# simulate() auto-injects Output:SQLite if missing — just access result.sql safely:
-if result.sql:
-    ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
+# simulate() auto-injects Output:SQLite if missing, so result.sql is there once the run succeeded.
+# Without a .sql it raises OutputNotFoundError, naming the output to add or pointing to the .err file.
+result = simulate(doc, "weather.epw").raise_for_status()
+ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
 # --8<-- [end:mistake-sql-good]
 
 

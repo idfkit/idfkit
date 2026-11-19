@@ -180,12 +180,11 @@ reportUnusedExpression = false
 reportUnusedFunction = false
 reportPossiblyUnboundVariable = false
 reportReturnType = false
-# Happy-path doc style: examples assume optional accessors are present (e.g.
-# result.sql.get_timeseries). Attribute TYPOS on the non-None type are still caught by
-# reportAttributeAccessIssue; only the "could be None" noise is silenced. reportAssignmentType is
-# off because placeholder reassignment (declare doc: IDFDocument, then doc = load_idf(...))
-# provokes false positives.
-reportOptionalMemberAccess = false
+# reportOptionalMemberAccess stays ON (strict default): the result accessors (result.sql, ...)
+# are non-Optional and raise OutputNotFoundError instead, so an example that dereferences an
+# Optional value without narrowing it is a real mistake. reportAssignmentType is off because
+# placeholder reassignment (declare doc: IDFDocument, then doc = load_idf(...)) provokes false
+# positives.
 reportAssignmentType = false
 # Reference sections legitimately show "here's the importable API" overview blocks whose symbols
 # aren't all exercised. Nonexistent import symbols are still caught by reportAttributeAccessIssue
@@ -194,7 +193,7 @@ reportUnusedImport = false
 # Drift-catching rules deliberately left ON (strict default):
 #   reportAttributeAccessIssue, reportCallIssue, reportArgumentType,
 #   reportFunctionMemberAccess, reportIndexIssue, reportOptionalSubscript,
-#   reportOperatorIssue.
+#   reportOptionalMemberAccess, reportOperatorIssue.
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "src/idfkit"]

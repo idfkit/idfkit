@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pickle
 import shutil
 import sqlite3
 from pathlib import Path
@@ -9,7 +10,7 @@ from pathlib import Path
 import pytest
 from conftest import InMemoryAsyncFileSystem, InMemoryFileSystem
 
-from idfkit.exceptions import SimulationError
+from idfkit.exceptions import OutputNotFoundError, SimulationError
 from idfkit.simulation.outputs import OutputVariableIndex
 from idfkit.simulation.parsers.csv import CSVResult
 from idfkit.simulation.parsers.html import HTMLResult
@@ -120,12 +121,12 @@ class TestSqlProperty:
         sql2 = result.sql
         assert sql1 is sql2
 
-    def test_none_when_no_file(self, tmp_path: Path) -> None:
-        assert _make_result(tmp_path).sql is None
+    def test_raises_when_no_file(self, tmp_path: Path) -> None:
+        with pytest.raises(OutputNotFoundError):
+            _ = _make_result(tmp_path).sql
 
     def test_can_query(self, result: SimulationResult) -> None:
         sql = result.sql
-        assert sql is not None
         ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
         assert len(ts.values) == 1
         assert ts.values[0] == -5.0
@@ -141,7 +142,6 @@ class TestClose:
             run_dir=result_dir, success=True, exit_code=0, stdout="", stderr="", runtime_seconds=0.0
         )
         sql = result.sql
-        assert sql is not None
         _ = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")  # force a real read
 
         result.close()
@@ -156,7 +156,7 @@ class TestClose:
         assert not result_dir.exists()
 
     def test_close_is_idempotent(self, result: SimulationResult) -> None:
-        assert result.sql is not None
+        _ = result.sql  # open the connection
         result.close()
         result.close()  # must not raise
 
@@ -169,16 +169,13 @@ class TestClose:
             run_dir=result_dir, success=True, exit_code=0, stdout="", stderr="", runtime_seconds=0.0
         ) as result:
             sql = result.sql
-            assert sql is not None
         with pytest.raises(sqlite3.ProgrammingError):
             sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
 
     def test_sql_reopens_after_close(self, result: SimulationResult) -> None:
         first = result.sql
-        assert first is not None
         result.close()
         second = result.sql
-        assert second is not None
         assert second is not first  # a fresh connection
 
     def test_sqlresult_del_closes_connection(self, result_dir: Path) -> None:
@@ -202,12 +199,12 @@ class TestVariablesProperty:
 
     def test_variables_loaded(self, result: SimulationResult) -> None:
         variables = result.variables
-        assert variables is not None
         assert len(variables.variables) == 7
         assert len(variables.meters) == 5
 
-    def test_none_when_no_file(self, tmp_path: Path) -> None:
-        assert _make_result(tmp_path).variables is None
+    def test_raises_when_no_file(self, tmp_path: Path) -> None:
+        with pytest.raises(OutputNotFoundError):
+            _ = _make_result(tmp_path).variables
 
 
 class TestCsvProperty:
@@ -224,11 +221,11 @@ class TestCsvProperty:
 
     def test_columns_loaded(self, result: SimulationResult) -> None:
         csv = result.csv
-        assert csv is not None
         assert len(csv.columns) == 2
 
-    def test_none_when_no_file(self, tmp_path: Path) -> None:
-        assert _make_result(tmp_path).csv is None
+    def test_raises_when_no_file(self, tmp_path: Path) -> None:
+        with pytest.raises(OutputNotFoundError):
+            _ = _make_result(tmp_path).csv
 
 
 class TestFromDirectory:
@@ -236,9 +233,9 @@ class TestFromDirectory:
 
     def test_lazy_properties_work(self, result_dir: Path) -> None:
         result = SimulationResult.from_directory(result_dir)
-        assert result.sql is not None
-        assert result.variables is not None
-        assert result.csv is not None
+        assert isinstance(result.sql, SQLResult)
+        assert isinstance(result.variables, OutputVariableIndex)
+        assert isinstance(result.csv, CSVResult)
 
 
 # ---------------------------------------------------------------------------
@@ -284,7 +281,6 @@ class TestFsIntegration:
         fs, run_dir = mem_fs
         result = SimulationResult.from_directory(run_dir, fs=fs)
         csv = result.csv
-        assert csv is not None
         assert isinstance(csv, CSVResult)
         assert len(csv.columns) == 2
 
@@ -292,7 +288,6 @@ class TestFsIntegration:
         fs, run_dir = mem_fs
         result = SimulationResult.from_directory(run_dir, fs=fs)
         variables = result.variables
-        assert variables is not None
         assert isinstance(variables, OutputVariableIndex)
         assert len(variables.variables) == 7
         assert len(variables.meters) == 5
@@ -301,7 +296,6 @@ class TestFsIntegration:
         fs, run_dir = mem_fs
         result = SimulationResult.from_directory(run_dir, fs=fs)
         sql = result.sql
-        assert sql is not None
         assert isinstance(sql, SQLResult)
         ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
         assert len(ts.values) == 1
@@ -423,15 +417,16 @@ _MINIMAL_HTML = """\
 class TestHtmlProperty:
     """Tests for SimulationResult.html."""
 
-    def test_none_when_no_file(self, tmp_path: Path) -> None:
-        assert _make_result(tmp_path).html is None
+    def test_raises_when_no_file(self, tmp_path: Path) -> None:
+        with pytest.raises(OutputNotFoundError):
+            _ = _make_result(tmp_path).html
 
-    def test_cached_none(self, tmp_path: Path) -> None:
+    def test_missing_file_is_not_cached(self, tmp_path: Path) -> None:
         result = _make_result(tmp_path)
-        h1 = result.html
-        h2 = result.html
-        assert h1 is h2
-        assert h1 is None
+        with pytest.raises(OutputNotFoundError):
+            _ = result.html
+        (tmp_path / "eplusout.htm").write_text(_MINIMAL_HTML, encoding="latin-1")
+        assert isinstance(result.html, HTMLResult)
 
     def test_returns_html_result_from_file(self, tmp_path: Path) -> None:
         (tmp_path / "eplusout.htm").write_text(_MINIMAL_HTML, encoding="latin-1")
@@ -510,14 +505,9 @@ class TestAsyncAccessors:
         report = await _make_result(result_dir).async_errors()
         assert report.raw_text != ""
 
-    async def test_async_sql_none_when_no_file(self, tmp_path: Path) -> None:
-        assert await _make_result(tmp_path).async_sql() is None
-
-    async def test_async_sql_cached_none(self, tmp_path: Path) -> None:
-        result = _make_result(tmp_path)
-        s1 = await result.async_sql()
-        s2 = await result.async_sql()
-        assert s1 is s2
+    async def test_async_sql_raises_when_no_file(self, tmp_path: Path) -> None:
+        with pytest.raises(OutputNotFoundError):
+            await _make_result(tmp_path).async_sql()
 
     async def test_async_sql_with_async_fs(self, async_fs_setup: tuple[InMemoryAsyncFileSystem, str]) -> None:
         async_fs, run_dir = async_fs_setup
@@ -538,14 +528,9 @@ class TestAsyncAccessors:
     async def test_async_sql_local_file(self, result_dir: Path) -> None:
         assert isinstance(await _make_result(result_dir).async_sql(), SQLResult)
 
-    async def test_async_variables_none_when_no_file(self, tmp_path: Path) -> None:
-        assert await _make_result(tmp_path).async_variables() is None
-
-    async def test_async_variables_cached_none(self, tmp_path: Path) -> None:
-        result = _make_result(tmp_path)
-        v1 = await result.async_variables()
-        v2 = await result.async_variables()
-        assert v1 is v2
+    async def test_async_variables_raises_when_no_file(self, tmp_path: Path) -> None:
+        with pytest.raises(OutputNotFoundError):
+            await _make_result(tmp_path).async_variables()
 
     async def test_async_variables_with_async_fs(self, async_fs_setup: tuple[InMemoryAsyncFileSystem, str]) -> None:
         async_fs, run_dir = async_fs_setup
@@ -566,14 +551,9 @@ class TestAsyncAccessors:
     async def test_async_variables_local_file(self, result_dir: Path) -> None:
         assert isinstance(await _make_result(result_dir).async_variables(), OutputVariableIndex)
 
-    async def test_async_csv_none_when_no_file(self, tmp_path: Path) -> None:
-        assert await _make_result(tmp_path).async_csv() is None
-
-    async def test_async_csv_cached_none(self, tmp_path: Path) -> None:
-        result = _make_result(tmp_path)
-        c1 = await result.async_csv()
-        c2 = await result.async_csv()
-        assert c1 is c2
+    async def test_async_csv_raises_when_no_file(self, tmp_path: Path) -> None:
+        with pytest.raises(OutputNotFoundError):
+            await _make_result(tmp_path).async_csv()
 
     async def test_async_csv_with_async_fs(self, async_fs_setup: tuple[InMemoryAsyncFileSystem, str]) -> None:
         async_fs, run_dir = async_fs_setup
@@ -592,14 +572,9 @@ class TestAsyncAccessors:
     async def test_async_csv_local_file(self, result_dir: Path) -> None:
         assert isinstance(await _make_result(result_dir).async_csv(), CSVResult)
 
-    async def test_async_html_none_when_no_file(self, tmp_path: Path) -> None:
-        assert await _make_result(tmp_path).async_html() is None
-
-    async def test_async_html_cached_none(self, tmp_path: Path) -> None:
-        result = _make_result(tmp_path)
-        h1 = await result.async_html()
-        h2 = await result.async_html()
-        assert h1 is h2
+    async def test_async_html_raises_when_no_file(self, tmp_path: Path) -> None:
+        with pytest.raises(OutputNotFoundError):
+            await _make_result(tmp_path).async_html()
 
     async def test_async_html_with_async_fs(self, async_fs_setup: tuple[InMemoryAsyncFileSystem, str]) -> None:
         async_fs, run_dir = async_fs_setup
@@ -899,3 +874,96 @@ class TestRaiseForStatus:
 
     def test_repr_leaves_out_output_streams(self, tmp_path: Path) -> None:
         assert "lots of output" not in repr(_failed_result(tmp_path))
+
+
+class TestMissingOutput:
+    """A parsed-output accessor raises an actionable ``OutputNotFoundError`` when its file is missing."""
+
+    @pytest.mark.parametrize(
+        ("accessor", "remedy", "path_property"),
+        [
+            ("sql", "Output:SQLite", "sql_path"),
+            ("eso", "Output:Variable", "eso_path"),
+            ("mtr", "Output:Meter", "mtr_path"),
+            ("csv", "readvars=True", "csv_path"),
+            ("html", "OutputControl:Table:Style", "html_path"),
+            ("variables", "Output:VariableDictionary", "rdd_path"),
+        ],
+    )
+    def test_successful_run_names_output_object(
+        self, tmp_path: Path, accessor: str, remedy: str, path_property: str
+    ) -> None:
+        result = _make_result(tmp_path)
+        assert getattr(result, path_property) is None
+        with pytest.raises(OutputNotFoundError) as excinfo:
+            getattr(result, accessor)
+        text = str(excinfo.value)
+        assert remedy in text
+        assert f"result.{path_property} is None" in text
+        assert str(tmp_path) in text
+        assert excinfo.value.output == accessor
+        assert excinfo.value.run_dir == tmp_path
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("accessor", ["sql", "eso", "mtr", "csv", "html", "variables"])
+    async def test_async_counterparts_raise_the_same(self, tmp_path: Path, accessor: str) -> None:
+        result = _make_result(tmp_path)
+        with pytest.raises(OutputNotFoundError) as sync_info:
+            getattr(result, accessor)
+        with pytest.raises(OutputNotFoundError) as async_info:
+            await getattr(result, f"async_{accessor}")()
+        assert str(async_info.value) == str(sync_info.value)
+
+    def test_failed_run_points_to_err_file(self, tmp_path: Path) -> None:
+        shutil.copy(FIXTURES / "sample_fatal.err", tmp_path / "eplus.err")
+        with pytest.raises(OutputNotFoundError) as excinfo:
+            _ = _failed_result(tmp_path).sql
+        text = str(excinfo.value)
+        assert "the simulation failed" in text
+        assert "raise_for_status()" in text
+        assert str(tmp_path / "eplus.err") in text
+        assert "Output:SQLite" not in text
+
+    @pytest.mark.asyncio
+    async def test_failed_run_async_with_async_fs(self) -> None:
+        async_fs = InMemoryAsyncFileSystem()
+        await async_fs.write_text("run/eplus.err", "   ** Fatal  ** boom\n")
+        result = SimulationResult(
+            run_dir=Path("run"),
+            success=False,
+            exit_code=1,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.0,
+            async_fs=async_fs,
+        )
+        with pytest.raises(OutputNotFoundError, match="the simulation failed") as excinfo:
+            await result.async_sql()
+        assert "eplus.err" in str(excinfo.value)
+
+    def test_refused_job_gives_reason(self, tmp_path: Path) -> None:
+        result = SimulationResult(
+            run_dir=tmp_path,
+            success=False,
+            exit_code=None,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.0,
+            refusal="A weather file is required",
+        )
+        with pytest.raises(OutputNotFoundError, match="refused before EnergyPlus ran") as excinfo:
+            _ = result.csv
+        assert "A weather file is required" in str(excinfo.value)
+
+    def test_is_file_not_found_error(self, tmp_path: Path) -> None:
+        with pytest.raises(FileNotFoundError):
+            _ = _make_result(tmp_path).eso
+
+    def test_pickles(self, tmp_path: Path) -> None:
+        with pytest.raises(OutputNotFoundError) as excinfo:
+            _ = _make_result(tmp_path).mtr
+        clone = pickle.loads(pickle.dumps(excinfo.value))  # noqa: S301
+        assert isinstance(clone, OutputNotFoundError)
+        assert str(clone) == str(excinfo.value)
+        assert clone.output == "mtr"
+        assert clone.run_dir == tmp_path

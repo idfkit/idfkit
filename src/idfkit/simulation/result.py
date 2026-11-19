@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
-from ..exceptions import SimulationError
+from ..exceptions import OutputNotFoundError, SimulationError
 from .parsers.err import ErrorMessage, ErrorReport
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from .parsers.html import HTMLResult
     from .parsers.sql import SQLResult
 
-# Sentinel for "not yet computed" (distinct from None = "computed, no file found")
+# Sentinel for "not yet parsed". A missing output file is not cached: its accessor raises each time.
 _UNSET: Any = object()
 
 #: ``run_dir`` of the result for a batch job that failed before EnergyPlus ran
@@ -34,6 +34,55 @@ _UNSET: Any = object()
 #: never be created, and the output accessors never look inside it: a batch of
 #: refused jobs leaves nothing behind.
 REFUSED_RUN_DIR = Path(os.devnull) / "idfkit-refused-job"
+
+
+@dataclass(frozen=True)
+class _OutputHint:
+    """What a parsed-output accessor reads, and how to make EnergyPlus write it."""
+
+    file: str
+    path_property: str
+    remedy: str
+
+
+#: The parsed-output accessors of `SimulationResult`, by name.
+_OUTPUT_HINTS: dict[str, _OutputHint] = {
+    "sql": _OutputHint(
+        ".sql file",
+        "sql_path",
+        "add an Output:SQLite object (Option Type SimpleAndTabular) to the model, as simulate() does, "
+        "and check that no OutputControl:Files object turns SQLite output off",
+    ),
+    "eso": _OutputHint(
+        ".eso file",
+        "eso_path",
+        "add Output:Variable or Output:Meter objects to the model, "
+        "and check that no OutputControl:Files object turns ESO output off",
+    ),
+    "mtr": _OutputHint(
+        ".mtr file",
+        "mtr_path",
+        "add Output:Meter or Output:Meter:MeterFileOnly objects to the model, "
+        "and check that no OutputControl:Files object turns MTR output off",
+    ),
+    "csv": _OutputHint(
+        ".csv file",
+        "csv_path",
+        "run with readvars=True so ReadVarsESO converts the .eso, "
+        "or add an OutputControl:Files object with Output CSV set to Yes",
+    ),
+    "html": _OutputHint(
+        "HTML table report",
+        "html_path",
+        "add Output:Table:SummaryReports (e.g. AllSummary) and an OutputControl:Table:Style "
+        "whose Column Separator writes HTML (e.g. HTML or CommaAndHTML)",
+    ),
+    "variables": _OutputHint(
+        ".rdd file",
+        "rdd_path",
+        "add an Output:VariableDictionary object (Key Field Regular) to the model; it writes the .rdd and .mdd files",
+    ),
+}
 
 
 def _refusal_report(refusal: str) -> ErrorReport:
@@ -155,6 +204,12 @@ def _pick_fallback(paths: Iterable[str | Path], suffix: str, *, table: bool) -> 
 class SimulationResult:
     """Result of an EnergyPlus simulation run.
 
+    The parsed-output accessors (``sql``, ``csv``, ``eso``, ``mtr``, ``html``, ``variables`` and
+    their ``async_*`` counterparts) never return ``None``: when the run produced no such file they
+    raise [OutputNotFoundError][idfkit.exceptions.OutputNotFoundError], whose message says which
+    output object to add. Test for a file without raising with its path property, e.g.
+    ``result.sql_path is None``.
+
     Attributes:
         run_dir: Directory containing all simulation output.
         success: Whether the simulation exited successfully.
@@ -241,7 +296,7 @@ class SimulationResult:
         than once; the cached connection is reopened on next access if needed.
         """
         cached = object.__getattribute__(self, "_cached_sql")
-        if cached is not _UNSET and cached is not None:
+        if cached is not _UNSET:
             cached.close()
         object.__setattr__(self, "_cached_sql", _UNSET)
 
@@ -299,6 +354,38 @@ class SimulationResult:
         stderr = None if report.error_count else self.stderr or None
         return SimulationError(msg, exit_code=self.exit_code, stderr=stderr, result=self)
 
+    def _missing_output(self, output: str) -> OutputNotFoundError:
+        """The error a parsed-output accessor raises when its file is missing."""
+        err_path = self.err_path if not self.success and self.refusal is None else None
+        return self._output_error(output, err_path)
+
+    async def _async_missing_output(self, output: str) -> OutputNotFoundError:
+        """Async counterpart to `_missing_output`: looks the ``.err`` file up without blocking."""
+        failed = not self.success and self.refusal is None
+        err_path = await self._async_find_output_file(".err") if failed else None
+        return self._output_error(output, err_path)
+
+    def _output_error(self, output: str, err_path: Path | None) -> OutputNotFoundError:
+        """Build the actionable `OutputNotFoundError` for *output* (an accessor name)."""
+        hint = _OUTPUT_HINTS[output]
+        if self.refusal is not None:
+            msg = (
+                f"No {hint.file}: this job was refused before EnergyPlus ran ({self.refusal}). "
+                "result.raise_for_status() raises with the reason."
+            )
+        elif not self.success:
+            msg = (
+                f"No {hint.file} in {self.run_dir}: the simulation failed. "
+                "Call result.raise_for_status() or read result.errors"
+            )
+            msg += f" (full error report: {err_path})." if err_path is not None else "."
+        else:
+            msg = (
+                f"No {hint.file} in {self.run_dir}. To get one, {hint.remedy}. "
+                f"To test for it without raising, check result.{hint.path_property} is None."
+            )
+        return OutputNotFoundError(msg, output=output, run_dir=self.run_dir)
+
     @property
     def errors(self) -> ErrorReport:
         """Parsed error report from the .err file (lazily cached).
@@ -323,20 +410,23 @@ class SimulationResult:
         return report
 
     @property
-    def sql(self) -> SQLResult | None:
+    def sql(self) -> SQLResult:
         """Parsed SQL output database (lazily cached).
 
         Returns:
-            An SQLResult for querying time-series and tabular data,
-            or None if no .sql file was produced.
+            An SQLResult for querying time-series and tabular data.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .sql file. The message names the output
+                object to add, or how to read why the run failed. Check ``sql_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_sql")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         path = self.sql_path
         if path is None:
-            object.__setattr__(self, "_cached_sql", None)
-            return None
+            raise self._missing_output("sql")
         from .parsers.sql import SQLResult as _SQLResult
 
         if self.fs is not None:
@@ -351,20 +441,24 @@ class SimulationResult:
         return result
 
     @property
-    def variables(self) -> OutputVariableIndex | None:
+    def variables(self) -> OutputVariableIndex:
         """Output variable/meter index from .rdd/.mdd files (lazily cached).
 
         Returns:
             An OutputVariableIndex for searching and injecting output
-            variables, or None if no .rdd file was produced.
+            variables.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .rdd file. The message names the output
+                object to add, or how to read why the run failed. Check ``rdd_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_variables")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         rdd = self.rdd_path
         if rdd is None:
-            object.__setattr__(self, "_cached_variables", None)
-            return None
+            raise self._missing_output("variables")
 
         if self.fs is not None:
             from .parsers.rdd import parse_mdd, parse_rdd
@@ -384,20 +478,23 @@ class SimulationResult:
         return result
 
     @property
-    def csv(self) -> CSVResult | None:
+    def csv(self) -> CSVResult:
         """Parsed CSV output (lazily cached).
 
         Returns:
-            A CSVResult with extracted column metadata and values,
-            or None if no .csv file was produced.
+            A CSVResult with extracted column metadata and values.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .csv file. The message names the output
+                object to add, or how to read why the run failed. Check ``csv_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_csv")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         path = self.csv_path
         if path is None:
-            object.__setattr__(self, "_cached_csv", None)
-            return None
+            raise self._missing_output("csv")
         from .parsers.csv import CSVResult as _CSVResult
 
         if self.fs is not None:
@@ -409,20 +506,23 @@ class SimulationResult:
         return result
 
     @property
-    def html(self) -> HTMLResult | None:
+    def html(self) -> HTMLResult:
         """Parsed HTML tabular output (lazily cached).
 
         Returns:
-            An HTMLResult with extracted tables and titles,
-            or None if no HTML file was produced.
+            An HTMLResult with extracted tables and titles.
+
+        Raises:
+            OutputNotFoundError: If the run produced no HTML table report. The message names the output
+                object to add, or how to read why the run failed. Check ``html_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_html")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         path = self.html_path
         if path is None:
-            object.__setattr__(self, "_cached_html", None)
-            return None
+            raise self._missing_output("html")
         from .parsers.html import HTMLResult as _HTMLResult
 
         if self.fs is not None:
@@ -442,42 +542,48 @@ class SimulationResult:
         return _ESOResult.from_file(path)
 
     @property
-    def eso(self) -> ESOResult | None:
+    def eso(self) -> ESOResult:
         """Parsed ESO time-series output (lazily cached).
 
         Returns:
-            An ESOResult for extracting variable time series, or None if no
-            .eso file was produced.
+            An ESOResult for extracting variable time series.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .eso file. The message names the output
+                object to add, or how to read why the run failed. Check ``eso_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_eso")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         path = self.eso_path
         if path is None:
-            object.__setattr__(self, "_cached_eso", None)
-            return None
+            raise self._missing_output("eso")
         result = self._load_eso_sync(path)
         object.__setattr__(self, "_cached_eso", result)
         return result
 
     @property
-    def mtr(self) -> ESOResult | None:
+    def mtr(self) -> ESOResult:
         """Parsed MTR meter time-series output (lazily cached).
 
         The .mtr meter file uses the same format as .eso, so it is parsed by the
         same reader.
 
         Returns:
-            An ESOResult for extracting meter time series, or None if no .mtr
-            file was produced.
+            An ESOResult for extracting meter time series.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .mtr file. The message names the output
+                object to add, or how to read why the run failed. Check ``mtr_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_mtr")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         path = self.mtr_path
         if path is None:
-            object.__setattr__(self, "_cached_mtr", None)
-            return None
+            raise self._missing_output("mtr")
         result = self._load_eso_sync(path)
         object.__setattr__(self, "_cached_mtr", result)
         return result
@@ -610,23 +716,26 @@ class SimulationResult:
         object.__setattr__(self, "_cached_errors", report)
         return report
 
-    async def async_sql(self) -> SQLResult | None:
+    async def async_sql(self) -> SQLResult:
         """Parsed SQL output database (async, lazily cached).
 
         Non-blocking counterpart to [sql][idfkit.simulation.result.SimulationResult.sql] that uses
         [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
-            An SQLResult for querying time-series and tabular data,
-            or None if no .sql file was produced.
+            An SQLResult for querying time-series and tabular data.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .sql file. The message names the output
+                object to add, or how to read why the run failed. Check ``sql_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_sql")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         path = await self._async_find_output_file(".sql")
         if path is None:
-            object.__setattr__(self, "_cached_sql", None)
-            return None
+            raise await self._async_missing_output("sql")
         from .parsers.sql import SQLResult as _SQLResult
 
         if self.async_fs is not None:
@@ -644,7 +753,7 @@ class SimulationResult:
         object.__setattr__(self, "_cached_sql", result)
         return result
 
-    async def async_variables(self) -> OutputVariableIndex | None:
+    async def async_variables(self) -> OutputVariableIndex:
         """Output variable/meter index (async, lazily cached).
 
         Non-blocking counterpart to [variables][idfkit.simulation.result.SimulationResult.variables] that uses
@@ -652,15 +761,19 @@ class SimulationResult:
 
         Returns:
             An OutputVariableIndex for searching and injecting output
-            variables, or None if no .rdd file was produced.
+            variables.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .rdd file. The message names the output
+                object to add, or how to read why the run failed. Check ``rdd_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_variables")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         rdd = await self._async_find_output_file(".rdd")
         if rdd is None:
-            object.__setattr__(self, "_cached_variables", None)
-            return None
+            raise await self._async_missing_output("variables")
 
         if self.async_fs is not None:
             from .parsers.rdd import parse_mdd, parse_rdd
@@ -689,23 +802,26 @@ class SimulationResult:
         object.__setattr__(self, "_cached_variables", result)
         return result
 
-    async def async_csv(self) -> CSVResult | None:
+    async def async_csv(self) -> CSVResult:
         """Parsed CSV output (async, lazily cached).
 
         Non-blocking counterpart to [csv][idfkit.simulation.result.SimulationResult.csv] that uses
         [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
-            A CSVResult with extracted column metadata and values,
-            or None if no .csv file was produced.
+            A CSVResult with extracted column metadata and values.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .csv file. The message names the output
+                object to add, or how to read why the run failed. Check ``csv_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_csv")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         path = await self._async_find_output_file(".csv")
         if path is None:
-            object.__setattr__(self, "_cached_csv", None)
-            return None
+            raise await self._async_missing_output("csv")
         from .parsers.csv import CSVResult as _CSVResult
 
         if self.async_fs is not None:
@@ -719,15 +835,19 @@ class SimulationResult:
         object.__setattr__(self, "_cached_csv", result)
         return result
 
-    async def async_html(self) -> HTMLResult | None:
+    async def async_html(self) -> HTMLResult:
         """Parsed HTML tabular output (async, lazily cached).
 
         Non-blocking counterpart to [html][idfkit.simulation.result.SimulationResult.html] that uses
         [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
-            An HTMLResult with extracted tables and titles,
-            or None if no HTML file was produced.
+            An HTMLResult with extracted tables and titles.
+
+        Raises:
+            OutputNotFoundError: If the run produced no HTML table report. The message names the output
+                object to add, or how to read why the run failed. Check ``html_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_html")
         if cached is not _UNSET:
@@ -736,8 +856,7 @@ class SimulationResult:
             ".html", table=True
         )
         if path is None:
-            object.__setattr__(self, "_cached_html", None)
-            return None
+            raise await self._async_missing_output("html")
         from .parsers.html import HTMLResult as _HTMLResult
 
         if self.async_fs is not None:
@@ -761,42 +880,50 @@ class SimulationResult:
             return _ESOResult.from_bytes(self.fs.read_bytes(str(path)))
         return _ESOResult.from_file(path)
 
-    async def async_eso(self) -> ESOResult | None:
+    async def async_eso(self) -> ESOResult:
         """Parsed ESO time-series output (async, lazily cached).
 
         Non-blocking counterpart to [eso][idfkit.simulation.result.SimulationResult.eso] that uses
         [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
-            An ESOResult, or None if no .eso file was produced.
+            An ESOResult for extracting variable time series.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .eso file. The message names the output
+                object to add, or how to read why the run failed. Check ``eso_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_eso")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         path = await self._async_find_output_file(".eso")
         if path is None:
-            object.__setattr__(self, "_cached_eso", None)
-            return None
+            raise await self._async_missing_output("eso")
         result = await self._load_eso_async(path)
         object.__setattr__(self, "_cached_eso", result)
         return result
 
-    async def async_mtr(self) -> ESOResult | None:
+    async def async_mtr(self) -> ESOResult:
         """Parsed MTR meter time-series output (async, lazily cached).
 
         Non-blocking counterpart to [mtr][idfkit.simulation.result.SimulationResult.mtr] that uses
         [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
-            An ESOResult, or None if no .mtr file was produced.
+            An ESOResult for extracting meter time series.
+
+        Raises:
+            OutputNotFoundError: If the run produced no .mtr file. The message names the output
+                object to add, or how to read why the run failed. Check ``mtr_path is None``
+                to test for the file without raising.
         """
         cached = object.__getattribute__(self, "_cached_mtr")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         path = await self._async_find_output_file(".mtr")
         if path is None:
-            object.__setattr__(self, "_cached_mtr", None)
-            return None
+            raise await self._async_missing_output("mtr")
         result = await self._load_eso_async(path)
         object.__setattr__(self, "_cached_mtr", result)
         return result

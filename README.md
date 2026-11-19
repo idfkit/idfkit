@@ -166,9 +166,13 @@ ts = result.sql.get_timeseries(
 print(f"Max temp: {max(ts.values):.1f}°C")
 ```
 
-> **Note:** `result.sql` requires EnergyPlus to produce SQLite output (the
-> default). See the [Simulation Guide](https://developers.idfkit.com/simulation/)
-> for details on output configuration.
+> **Note:** `simulate()` adds an `Output:SQLite` object when the model has none, so
+> `result.sql` is written by a successful run unless an `OutputControl:Files` object
+> turns SQLite off. The parsed outputs (`result.sql`, `.csv`, `.eso`,
+> `.html`, ...) are never `None`: a missing file raises `OutputNotFoundError` naming
+> the output object to add. Test for a file with its path (`result.csv_path is None`).
+> See the [Simulation Guide](https://developers.idfkit.com/simulation/) for details
+> on output configuration.
 
 ## Weather
 

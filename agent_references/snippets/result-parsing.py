@@ -129,8 +129,8 @@ rows = result.sql.query(
 
 # --8<-- [start:csv]
 # Only available if you called simulate(..., readvars=True)
-csv = result.csv
-if csv:
+if result.csv_path is not None:  # result.csv raises OutputNotFoundError when there is no .csv
+    csv = result.csv
     csv.timestamps  # tuple[str, ...]
     for col in csv.columns:  # each CSVColumn has parsed metadata
         print(col.variable_name, col.key_value, col.units)
@@ -142,8 +142,8 @@ if csv:
 
 
 # --8<-- [start:html]
-html = result.html
-if html:
+if result.html_path is not None:
+    html = result.html
     for table in html.tables:
         print(table.report_name, table.title)
     # header is the column-header row; rows are the data rows below it.
@@ -158,8 +158,8 @@ if html:
 # ESO time series — use when the model has no Output:SQLite, or to pull a few
 # variables out of a large .eso fast. The reader parses the dictionary eagerly
 # but the data lazily.
-eso = result.eso  # ESOResult | None
-if eso:
+if result.eso_path is not None:
+    eso = result.eso  # ESOResult
     # Lazy: a single scan that float-parses ONLY this variable. Like sql.get_timeseries,
     # it raises ResultLookupError (a KeyError) on a typo, with the closest names, and when
     # several keys or frequencies match: pass key_value= / frequency= then.
@@ -186,15 +186,15 @@ if eso:
     all_columns = eso.columns  # tuple[ESOColumn, ...] — every variable
 
 # Meter files (.mtr) use the same reader:
-mtr = result.mtr
-if mtr:
+if result.mtr_path is not None:
+    mtr = result.mtr
     meter = mtr.get_column("Electricity:Facility")  # meters have no key value
 # --8<-- [end:eso]
 
 
 # --8<-- [start:output-discovery]
-idx = result.variables
-if idx:
+if result.rdd_path is not None:  # written only with Output:VariableDictionary
+    idx = result.variables
     for v in idx.variables:
         if "Cooling" in v.name:
             print(v.name, v.key, v.frequency)
@@ -251,17 +251,17 @@ from idfkit.simulation.plotting import (
     plot_comfort_hours,
 )
 
-if result.sql:
-    plot_temperature_profile(result.sql, zones=["Office"])
-    plot_energy_balance(result.sql)
-    plot_comfort_hours(result.sql, zones=["Office"])
+plot_temperature_profile(result.sql, zones=["Office"])
+plot_energy_balance(result.sql)
+plot_comfort_hours(result.sql, zones=["Office"])
 # --8<-- [end:plotting]
 
 
 # --8<-- [start:mistake-sql-good]
-# simulate() injects Output:SQLite if missing — result.sql is almost always present.
-# But guard anyway when reading legacy results from disk:
-if result.sql:
+# simulate() injects Output:SQLite, so result.sql is there for every run it made.
+# For a run read from disk, test the path; result.sql itself raises OutputNotFoundError,
+# naming the output object to add, when there is no .sql file.
+if result.sql_path is not None:
     df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
 # --8<-- [end:mistake-sql-good]
 

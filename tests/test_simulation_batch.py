@@ -10,7 +10,7 @@ import pytest
 from conftest import REFUSAL_R2, InMemoryFileSystem, design_day_model, runnable_model
 
 from idfkit import LATEST_VERSION
-from idfkit.exceptions import SimulationError
+from idfkit.exceptions import OutputNotFoundError, SimulationError
 from idfkit.simulation.batch import REFUSED_RUN_DIR, BatchResult, SimulationJob, simulate_batch
 from idfkit.simulation.cache import SimulationCache
 from idfkit.simulation.config import EnergyPlusConfig
@@ -495,4 +495,6 @@ class TestSimulateBatchWithoutWeather:
         )
         assert result.err_path is None
         assert result.errors.fatal_count == 0
-        assert result.sql is None
+        assert result.sql_path is None
+        with pytest.raises(OutputNotFoundError):
+            _ = result.sql
