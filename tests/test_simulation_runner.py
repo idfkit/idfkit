@@ -796,17 +796,18 @@ class TestSimulateCacheCoversExternalFiles:
         csv = run_dir / "data" / "hourly.csv"
         model = _schedule_file_model("data/hourly.csv")
 
-        def run() -> Path:
-            return simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache).run_dir
+        def run() -> bool:
+            result = simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache)
+            assert result.run_dir == run_dir.resolve()
+            return result.cached
 
         csv.write_text("0.5\n")
-        first = run()
-        assert first == run_dir.resolve()
-        assert run().parent == tmp_path / "cache"  # unchanged CSV: hit
+        assert not run()
+        assert run()  # unchanged CSV: hit
         csv.write_text("1.0\n")
-        assert run() == run_dir.resolve()  # changed CSV: miss
+        assert not run()  # changed CSV: miss
         csv.write_text("0.5\n")
-        assert run().parent == tmp_path / "cache"  # restored CSV: hit on the first entry
+        assert run()  # restored CSV: hit on the first entry
         assert mock_run.call_count == 2
 
     @patch("idfkit.simulation.runner.subprocess.run")
@@ -870,6 +871,57 @@ class TestSimulateCacheCoversExternalFiles:
         assert mock_run.call_count == 2
 
 
+class TestSimulateCacheHitLocalOutputDir:
+    """A local hit is copied into ``output_dir`` like a fresh run, and says it was cached."""
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_hit_is_copied_into_output_dir(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        from idfkit.simulation.cache import CACHE_META_FILE, SimulationCache
+
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        model = new_document()
+
+        first = simulate(model, weather_file, energyplus=mock_config, output_dir=tmp_path / "a", cache=cache)
+        assert not first.cached
+        second = simulate(model, weather_file, energyplus=mock_config, output_dir=tmp_path / "b", cache=cache)
+        assert mock_run.call_count == 1
+        assert second.cached
+        assert "cached=True" in repr(second)
+        assert second.run_dir == (tmp_path / "b").resolve()
+        names_a = {p.name for p in first.run_dir.iterdir()}
+        names_b = {p.name for p in second.run_dir.iterdir()}
+        assert names_b == names_a
+        assert CACHE_META_FILE not in names_b
+
+        # Writing into the hit's run_dir leaves the cache entry intact.
+        (second.run_dir / "model.idf").write_text("scribbled")
+        third = simulate(model, weather_file, energyplus=mock_config, output_dir=tmp_path / "c", cache=cache)
+        assert third.cached
+        assert (third.run_dir / "model.idf").read_text() != "scribbled"
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_hit_without_output_dir_reads_the_entry_in_place(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """Without output_dir a hit copies nothing, so repeated hits do not fill the temp directory."""
+        from idfkit.simulation.cache import SimulationCache
+
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        model = new_document()
+
+        simulate(model, weather_file, energyplus=mock_config, cache=cache)
+        with patch("idfkit.simulation._common.shutil.copytree") as copytree:
+            hit = simulate(model, weather_file, energyplus=mock_config, cache=cache)
+        copytree.assert_not_called()
+        assert hit.cached
+        assert (tmp_path / "cache").resolve() in hit.run_dir.resolve().parents
+        assert (hit.run_dir / "model.idf").is_file()
+
+
 class TestSimulateCacheWithFileSystem:
     """``cache=`` and ``fs=`` together: a miss is stored locally and a hit is uploaded to ``output_dir``."""
 
@@ -893,6 +945,8 @@ class TestSimulateCacheWithFileSystem:
         second = simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="runs/b")
         assert mock_run.call_count == 1  # hit
         assert second.success
+        assert second.cached
+        assert not first.cached
         assert second.run_dir == Path("runs/b")
         assert second.fs is fs
         names_a = {k.removeprefix("runs/a/") for k in fs._files if k.startswith("runs/a/")}

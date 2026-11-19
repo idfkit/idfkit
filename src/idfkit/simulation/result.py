@@ -181,6 +181,14 @@ class SimulationResult:
             ``output_dir`` (a timeout), whose result reads that run's outputs. A refused result reads
             no files from ``run_dir``; its ``errors`` hold one fatal message
             with this reason.
+        cached: ``True`` when the result came from a
+            [SimulationCache][idfkit.simulation.cache.SimulationCache] hit
+            instead of a fresh EnergyPlus run. With an ``output_dir`` the
+            hit's files are copied there, so writing into ``run_dir`` never
+            touches the cache entry; without one, ``run_dir`` is the cache
+            entry itself and must be treated as read-only.
+            ``runtime_seconds`` and ``exit_code`` are those of the run that
+            filled the entry, and ``stdout``/``stderr`` are empty.
     """
 
     run_dir: Path
@@ -195,6 +203,7 @@ class SimulationResult:
     migration_report: MigrationReport | None = field(default=None, repr=False)
     output_suffix: Literal["C", "L", "D"] | None = field(default=None, repr=False)
     refusal: str | None = None
+    cached: bool = False
     _cached_errors: Any = field(default=_UNSET, init=False, repr=False)
     _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
@@ -213,7 +222,8 @@ class SimulationResult:
             return f"SimulationResult(refused: {self.refusal!r}, run_dir={self.run_dir!r})"
         return (
             f"SimulationResult(run_dir={self.run_dir!r}, success={self.success!r}, exit_code={self.exit_code!r}, "
-            f"runtime_seconds={self.runtime_seconds!r}, output_prefix={self.output_prefix!r})"
+            f"runtime_seconds={self.runtime_seconds!r}, output_prefix={self.output_prefix!r}"
+            + (", cached=True)" if self.cached else ")")
         )
 
     def close(self) -> None:

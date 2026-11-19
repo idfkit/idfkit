@@ -100,13 +100,15 @@ The cache key is the SHA-256 of the model, the weather file, the run flags, and 
 
 A model with a `PythonPlugin:Instance`, or with an `ExternalInterface` in `PtolemyServer` or `FunctionalMockupUnitExport` mode, has inputs no key can cover. `simulate` never caches it and logs a warning saying why.
 
+A hit is copied into `output_dir`, exactly where a fresh run would have written, so writing into `result.run_dir` never touches the cache. Without `output_dir` nothing is copied: `result.run_dir` is the cache entry itself, so treat it as read-only (pass `output_dir` if you need to write next to the outputs). `result.cached` is `True` for a hit; its `runtime_seconds` and `exit_code` are those of the run that filled the entry, and `stdout`/`stderr` are empty. Count `result.cached` to report a hit rate.
+
 ## Progress events
 
 ```python
 --8<-- "agent_references/snippets/simulation-execution.py:progress"
 ```
 
-Events carry `phase` (warmup/run/postprocessing), `percent` (where known), the EnergyPlus message, and the timestamp.
+Each `SimulationProgress` carries `phase` (`"initializing"`, `"warmup"`, `"simulating"`, `"postprocessing"`, then `"complete"` once EnergyPlus reports success; `"preprocessing"` is in the type but not emitted today), `percent` (0-100 within the current environment, `None` during warmup), `message` (the EnergyPlus line), `environment`, `sim_day` / `sim_total_days`, and `job_index` / `job_label` in a batch. Recent EnergyPlus releases (26.1, for one) do not print a period's end date, so `simulate` reads each environment's length from the model's `RunPeriod` and `SizingPeriod:*` objects to compute `percent`; `percent` restarts at 0 for each design day and run period.
 
 ## Remote storage (S3)
 

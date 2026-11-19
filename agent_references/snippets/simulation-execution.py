@@ -127,6 +127,7 @@ from idfkit.simulation import SimulationCache
 cache = SimulationCache(cache_dir=".sim_cache")
 result = simulate(doc, "weather.epw", cache=cache)  # first call runs
 result = simulate(doc, "weather.epw", cache=cache)  # second call cache-hits, milliseconds
+print(result.cached)  # True: a hit; no output_dir, so run_dir is the read-only cache entry
 # --8<-- [end:caching]
 
 

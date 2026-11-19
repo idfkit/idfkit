@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ValidationError.obj` held the object an issue was found on, and objects of types without a Name
   field printed by their first field (`HVACTemplate:Zone:IdealLoadsAirSystem(zone_name='B')`).
   ([#332](https://github.com/idfkit/idfkit/pull/332))
+- `SimulationResult.cached` told a cache hit from a fresh run, and `environment_days(model)` with
+  `ProgressParser(environment_days=...)` gave a hand-built parser `percent` on EnergyPlus 26.1.
+  ([#336](https://github.com/idfkit/idfkit/pull/336))
 - `SimulationResult.raise_for_status()` (and `async_raise_for_status()`) raised `SimulationError` for a
   failed run, quoting the fatal and first severe messages and the `.err` path; `ErrorReport.summary()`
   quoted those messages too. ([#328](https://github.com/idfkit/idfkit/pull/328))
@@ -255,6 +258,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#330](https://github.com/idfkit/idfkit/pull/330))
 - `Schedule:Compact` keywords written without a colon (`Through 12/31`, `Until 24:00`) were read.
   ([#329](https://github.com/idfkit/idfkit/pull/329))
+- `simulate()` and `async_simulate()` copied a cache hit into `output_dir`, as a fresh run fills it;
+  a hit had ignored `output_dir` and returned the cache entry as `run_dir`.
+  ([#336](https://github.com/idfkit/idfkit/pull/336))
+- Progress events carried `percent` on EnergyPlus releases that omit the period's end date (26.1),
+  and the `"complete"` phase fired, so `on_progress="tqdm"` no longer sat at 0%.
+  ([#336](https://github.com/idfkit/idfkit/pull/336))
+- `plot_energy_balance()` no longer added the `Water` column (m3) into the energy bars, and labelled
+  the axis with the report's unit (kBtu for IP reports) instead of always GJ.
+  ([#336](https://github.com/idfkit/idfkit/pull/336))
 - `simulate(fs=LocalFileSystem(), output_dir=...)` and its async counterpart failed after the run
   when `output_dir` did not exist; local file systems created parent directories, as S3 needs none.
   ([#335](https://github.com/idfkit/idfkit/pull/335))

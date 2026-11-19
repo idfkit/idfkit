@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import textwrap
 from pathlib import Path
+from typing import Literal
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from idfkit import LATEST_VERSION, new_document
+from idfkit import LATEST_VERSION, IDFDocument, new_document
 from idfkit.exceptions import SimulationError
 from idfkit.simulation.async_runner import async_simulate
 from idfkit.simulation.batch import SimulationJob, simulate_batch
@@ -18,6 +19,7 @@ from idfkit.simulation.progress import (
     SimulationProgress,
     _date_to_day_of_year,
     _day_span,
+    environment_days,
 )
 from idfkit.simulation.runner import simulate
 
@@ -97,6 +99,33 @@ MULTI_ENV_STDOUT = textwrap.dedent("""\
     Writing tabular output file results using comma format.
     EnergyPlus Completed Successfully.
 """)
+
+
+# EnergyPlus 9.x+ prints no date range on the start line and reports completion on stderr.
+NO_RANGE_STDOUT = textwrap.dedent("""\
+    EnergyPlus, Version 26.1.0-6f2e40d102
+    Initializing New Environment Parameters
+    Warming up {1}
+    Starting Simulation at 01/01/2013 for RUN PERIOD 1
+    Continuing Simulation at 07/02/2013 for RUN PERIOD 1
+    Continuing Simulation at 12/27/2013 for RUN PERIOD 1
+    Writing tabular output file results using HTML format.
+""")
+NO_RANGE_STDERR = "EnergyPlus Completed Successfully.\n"
+
+
+def _annual_model() -> IDFDocument[Literal[True]]:
+    model = new_document()
+    model.add(
+        "RunPeriod",
+        "Run Period 1",
+        begin_month=1,
+        begin_day_of_month=1,
+        end_month=12,
+        end_day_of_month=31,
+        validate=False,
+    )
+    return model
 
 
 # ---------------------------------------------------------------------------
@@ -271,6 +300,23 @@ class TestProgressParser:
         assert event.phase == "complete"
         assert event.percent == 100.0
 
+    def test_completed_emitted_once(self) -> None:
+        parser = ProgressParser()
+        assert parser.parse_line("EnergyPlus Completed Successfully.") is not None
+        assert parser.parse_line("EnergyPlus Completed Successfully.") is None
+
+    def test_environment_days_supply_total_without_date_range(self) -> None:
+        """EnergyPlus 26.1 prints no from/to range; the known period length still gives a percent."""
+        parser = ProgressParser({"Run  Period 1": 365})
+        start = parser.parse_line("Starting Simulation at 01/01/2013 for RUN PERIOD 1")
+        assert start is not None
+        assert start.sim_total_days == 365
+        assert start.percent == 0.0
+        mid = parser.parse_line("Continuing Simulation at 07/02/2013 for RUN PERIOD 1")
+        assert mid is not None
+        assert mid.percent is not None
+        assert abs(mid.percent - 182 / 365 * 100) < 1e-9
+
     def test_full_annual_stdout_parse(self) -> None:
         """Parse a full annual simulation stdout and check event sequence."""
         parser = ProgressParser()
@@ -416,6 +462,30 @@ class TestProgressParser:
 # ---------------------------------------------------------------------------
 
 
+class TestEnvironmentDays:
+    """environment_days() reads each environment's length from the model."""
+
+    def test_run_periods_and_design_days(self) -> None:
+        model = new_document()
+        model.add(
+            "RunPeriod", "Summer", begin_month=6, begin_day_of_month=1, end_month=8, end_day_of_month=31, validate=False
+        )
+        model.add(
+            "RunPeriod",
+            "Winter",
+            begin_month=12,
+            begin_day_of_month=1,
+            end_month=2,
+            end_day_of_month=28,
+            validate=False,
+        )
+        model.add("SizingPeriod:DesignDay", "Chicago  Htg 99%", validate=False)
+        assert environment_days(model) == {"SUMMER": 92, "WINTER": 90, "CHICAGO HTG 99%": 1}
+
+    def test_empty_model(self) -> None:
+        assert environment_days(new_document()) == {}
+
+
 class TestSimulationProgress:
     """Tests for SimulationProgress dataclass."""
 
@@ -504,6 +574,46 @@ class TestSimulateWithProgress:
         assert "simulating" in phases
         assert "postprocessing" in phases
         assert "complete" in phases
+
+    @patch("idfkit.simulation.runner.subprocess.Popen")
+    def test_percent_and_complete_without_date_range(
+        self, mock_popen: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """The model's RunPeriod supplies the total, and stderr's completion line ends the run."""
+        proc = MagicMock()
+        proc.stdout = iter(line + "\n" for line in NO_RANGE_STDOUT.splitlines())
+        proc.stderr = iter([NO_RANGE_STDERR])
+        proc.wait.return_value = 0
+        proc.returncode = 0
+        mock_popen.return_value = proc
+
+        events: list[SimulationProgress] = []
+        simulate(_annual_model(), weather_file, energyplus=mock_config, on_progress=events.append)
+
+        simulating = [e for e in events if e.phase == "simulating"]
+        assert [e.sim_total_days for e in simulating] == [365, 365, 365]
+        assert all(e.percent is not None for e in simulating)
+        assert events[-1].phase == "complete"
+        assert events[-1].percent == 100.0
+
+    @patch("idfkit.simulation.runner.subprocess.Popen")
+    def test_callback_error_on_stderr_event_is_wrapped(
+        self, mock_popen: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """A callback raising on the stderr 'complete' event fails like one raising on a stdout event."""
+        proc = MagicMock()
+        proc.stdout = iter(line + "\n" for line in NO_RANGE_STDOUT.splitlines())
+        proc.stderr = iter([NO_RANGE_STDERR])
+        proc.wait.return_value = 0
+        proc.returncode = 0
+        mock_popen.return_value = proc
+
+        def reject_complete(event: SimulationProgress) -> None:
+            if event.phase == "complete":
+                raise RuntimeError("no 100%")  # noqa: TRY003
+
+        with pytest.raises(SimulationError, match="no 100%"):
+            simulate(_annual_model(), weather_file, energyplus=mock_config, on_progress=reject_complete)
 
     @patch("idfkit.simulation.runner.subprocess.run")
     def test_no_progress_uses_subprocess_run(
@@ -597,6 +707,37 @@ class TestAsyncSimulateWithProgress:
         assert len(events) == 2
         assert events[0].phase == "warmup"
         assert events[1].phase == "complete"
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_percent_and_complete_without_date_range(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process_with_stdout(
+            [(line + "\n").encode() for line in NO_RANGE_STDOUT.splitlines()], stderr=NO_RANGE_STDERR.encode()
+        )
+        events: list[SimulationProgress] = []
+        await async_simulate(_annual_model(), weather_file, energyplus=mock_config, on_progress=events.append)
+
+        simulating = [e for e in events if e.phase == "simulating"]
+        assert [e.sim_total_days for e in simulating] == [365, 365, 365]
+        assert events[-1].phase == "complete"
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_callback_error_on_stderr_event_is_wrapped(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process_with_stdout(
+            [(line + "\n").encode() for line in NO_RANGE_STDOUT.splitlines()], stderr=NO_RANGE_STDERR.encode()
+        )
+
+        def reject_complete(event: SimulationProgress) -> None:
+            if event.phase == "complete":
+                raise RuntimeError("no 100%")  # noqa: TRY003
+
+        with pytest.raises(SimulationError, match="no 100%"):
+            await async_simulate(_annual_model(), weather_file, energyplus=mock_config, on_progress=reject_complete)
 
     @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")

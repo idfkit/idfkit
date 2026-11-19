@@ -253,7 +253,10 @@ class SimulationCache:
 
         Returns:
             A [SimulationResult][idfkit.simulation.result.SimulationResult] if a cache hit exists, otherwise
-            ``None``.
+            ``None``. Its ``cached`` is ``True`` and its ``run_dir`` is the
+            cache entry itself: treat that directory as read-only.
+            [simulate][idfkit.simulation.runner.simulate] copies a hit into its
+            ``output_dir``, when it has one, before returning it.
         """
         entry_dir = self._cache_dir / key.hex_digest
         meta_path = entry_dir / self._META_FILE
@@ -276,6 +279,7 @@ class SimulationCache:
                 runtime_seconds=meta["runtime_seconds"],
                 output_prefix=meta["output_prefix"],
                 output_suffix=meta.get("output_suffix"),
+                cached=True,
             )
         except (json.JSONDecodeError, KeyError, OSError):
             # Corrupted or incomplete cache entry — remove it so that

@@ -47,10 +47,11 @@ from ._common import (
     maybe_preprocess,
     prepare_run_directory,
     resolve_config,
+    restore_cached_result,
     upload_results,
 )
 from .cache import CACHE_META_FILE, runner_cache_key
-from .progress import ProgressParser, SimulationProgress
+from .progress import ProgressParser, SimulationProgress, environment_days
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
 
@@ -191,6 +192,9 @@ async def async_simulate(
             ``Schedule:File`` CSV staged into *output_dir*, for example).  A
             model with a ``PythonPlugin:Instance`` or a co-simulation
             ``ExternalInterface`` is never cached; a warning is logged.
+            A hit is copied into *output_dir* like a fresh run; without one,
+            its ``run_dir`` is the read-only cache entry. Either way the
+            result has ``cached=True``.
         fs: Optional file system backend for storing results on remote
             storage (e.g., S3).  Both sync [FileSystem][idfkit.simulation.fs.FileSystem]
             and async [AsyncFileSystem][idfkit.simulation.fs.AsyncFileSystem] are accepted.
@@ -295,7 +299,8 @@ async def async_simulate(
                 if fs is not None:
                     # A hit still has to land at output_dir on the remote backend, like a fresh run.
                     return await _publish(cached, Path(str(output_dir)), fs)
-                return cached
+                # Copy the hit into output_dir, as a fresh run would fill it (no copy without one).
+                return await asyncio.to_thread(restore_cached_result, cached, local_output_dir)
 
         ensure_sql_output(sim_model)
 
@@ -336,7 +341,8 @@ async def async_simulate(
         start = time.monotonic()
 
         if progress_cb is not None:
-            stdout, stderr, returncode = await _run_with_progress(cmd, run_dir, timeout, progress_cb)
+            parser = ProgressParser(environment_days(sim_model))
+            stdout, stderr, returncode = await _run_with_progress(cmd, run_dir, timeout, progress_cb, parser)
         else:
             stdout, stderr, returncode = await _run_simple(cmd, run_dir, timeout)
     finally:
@@ -389,6 +395,7 @@ async def _publish(local: SimulationResult, remote_dir: Path, fs: FileSystem | A
         async_fs=async_fs,
         migration_report=local.migration_report,
         output_suffix=local.output_suffix,
+        cached=local.cached,
     )
 
 
@@ -440,12 +447,12 @@ async def _run_with_progress(
     run_dir: Path,
     timeout: float,
     on_progress: Callable[[SimulationProgress], Any],
+    parser: ProgressParser,
 ) -> tuple[str, str, int]:
     """Run EnergyPlus with async line-by-line stdout streaming for progress."""
     proc = await _start_process(cmd, run_dir)
 
     stdout_lines: list[str] = []
-    parser = ProgressParser()
     is_async_cb = inspect.iscoroutinefunction(on_progress)
 
     async def _read_stdout() -> None:
@@ -473,7 +480,36 @@ async def _run_with_progress(
     stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
     returncode = proc.returncode if proc.returncode is not None else -1
 
+    # EnergyPlus reports "EnergyPlus Completed Successfully" on stderr.
+    await _emit_stderr_progress(parser, stderr, on_progress, is_async_cb=is_async_cb)
+
     return stdout, stderr, returncode
+
+
+async def _emit_stderr_progress(
+    parser: ProgressParser,
+    stderr: str,
+    on_progress: Callable[[SimulationProgress], Any],
+    *,
+    is_async_cb: bool,
+) -> None:
+    """Pass the progress events *parser* finds in *stderr* to *on_progress*.
+
+    A callback error is wrapped in [SimulationError][idfkit.exceptions.SimulationError],
+    as it is for a stdout event, whichever stream the line came from.
+    """
+    try:
+        for line in stderr.splitlines():
+            event = parser.parse_line(line)
+            if event is None:
+                continue
+            if is_async_cb:
+                await on_progress(event)
+            else:
+                on_progress(event)
+    except Exception as exc:
+        msg = f"Failed during EnergyPlus execution: {exc}"
+        raise SimulationError(msg, exit_code=None, stderr=stderr or None) from exc
 
 
 async def _start_process(
