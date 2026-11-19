@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, cast
 from .document import AnyIDFDocument, IDFDocument
 from .exceptions import IDFParseError, ParseDiagnostic, VersionNotFoundError, closest_name
 from .objects import IDFObject, drop_blank_group_slots, is_blank_slot
-from .schema import canonicalize_choices
+from .schema import canonicalize_choices, get_schema_manager
 
 logger = logging.getLogger(__name__)
 
@@ -266,6 +266,7 @@ class EpJSONParser:
         """
         # Values are normalized below while each object is built, so objects are filed as they are.
         addidfobject = doc._adopt  # pyright: ignore[reportPrivateUsage]
+        unknown_fields: list[ParseDiagnostic] = []
 
         for obj_type, objects in data.items():
             if not isinstance(objects, dict):
@@ -311,6 +312,11 @@ class EpJSONParser:
                 obj_data = {key: value for key, value in fields_dict.items() if not is_blank_slot(value)}
                 if normalize_choices and pc is not None:
                     canonicalize_choices(obj_data, pc)
+                if has_name and pc is not None and "name" in obj_data:
+                    self._drop_body_name(obj_type, obj_name, obj_data)
+                unknown_fields.extend(
+                    self._unknown_fields(obj_type, obj_name, obj_data, pc, strict_parsing=strict_parsing)
+                )
 
                 obj = IDFObject(
                     obj_type=obj_type,
@@ -326,6 +332,70 @@ class EpJSONParser:
                 )
 
                 addidfobject(obj)
+
+        _raise_unknown_fields(unknown_fields)
+
+    def _drop_body_name(self, obj_type: str, obj_name: str, obj_data: dict[str, Any]) -> None:
+        """Drop a ``name`` key repeated inside a named object's body.
+
+        The object's key is its name; some writers repeat it in the body as well. EnergyPlus reads
+        the key, so a body name that differs from it is logged and dropped too.
+        """
+        body_name = obj_data.pop("name")
+        if not isinstance(body_name, str) or body_name.upper() != obj_name.upper():
+            logger.warning(
+                "%s '%s' in %s repeats a different name, %r, in its body; the key is the name",
+                obj_type,
+                obj_name,
+                self._filepath,
+                body_name,
+            )
+
+    def _unknown_fields(
+        self, obj_type: str, obj_name: str, obj_data: dict[str, Any], pc: ParsingCache | None, *, strict_parsing: bool
+    ) -> list[ParseDiagnostic]:
+        """The keys of *obj_data* that no release ever had as fields of *obj_type*, one diagnostic each.
+
+        EnergyPlus ignores a key that is not a field, so a misspelt field's value is silently
+        lost and the field takes its default. With *strict_parsing* those are returned, to be
+        raised; without, each is logged and kept, as before. A field an earlier release had, and
+        this one removed, is logged and kept either way: EnergyPlus's own example files carry
+        some, and EnergyPlus runs them.
+        """
+        if pc is None:
+            return []
+        unknown = [key for key in obj_data if key not in pc.known_keys]
+        if not unknown:
+            return []
+        candidates = (*pc.known_keys, *pc.ext_field_names)
+        diagnostics: list[ParseDiagnostic] = []
+        for key in unknown:
+            if key in get_schema_manager().field_names_in_any_release(obj_type):
+                logger.warning(
+                    "Field '%s' of %s '%s' in %s is not in this release's schema; EnergyPlus ignores it",
+                    key,
+                    obj_type,
+                    obj_name,
+                    self._filepath,
+                )
+                continue
+            message = f"Unknown field '{key}' for {obj_type}"
+            suggestion = closest_name(key, candidates)
+            if suggestion is not None:
+                message += f". Did you mean '{suggestion}'?"
+            if not strict_parsing:
+                logger.warning("%s in %s [name: %s]; kept as is", message, self._filepath, obj_name)
+                continue
+            diagnostics.append(
+                ParseDiagnostic(
+                    message=message,
+                    filepath=str(self._filepath),
+                    obj_type=obj_type,
+                    obj_name=obj_name,
+                    code="InvalidField",
+                )
+            )
+        return diagnostics
 
     def _unknown_type(
         self, obj_type: str, objects: dict[str, Any], schema: EpJSONSchema, *, strict_parsing: bool
@@ -347,6 +417,13 @@ class EpJSONParser:
         )
         summary = "Failed to parse epJSON"
         raise IDFParseError(summary, diagnostics=[diagnostic])
+
+
+def _raise_unknown_fields(diagnostics: list[ParseDiagnostic]) -> None:
+    """Raise one [IDFParseError][idfkit.exceptions.IDFParseError] carrying every unknown-field diagnostic, if any."""
+    if diagnostics:
+        summary = "Failed to parse epJSON"
+        raise IDFParseError(summary, diagnostics=diagnostics)
 
 
 def load_epjson(filepath: Path | str) -> dict[str, Any]:

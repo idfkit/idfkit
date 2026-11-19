@@ -176,6 +176,38 @@ class TestReferenceGraphRenameTarget:
         assert obj_b in refs
         assert not graph.is_referenced("Z1")
 
+    def test_rename_target_moves_only_given_edges(self) -> None:
+        graph = ReferenceGraph()
+        people = IDFObject(obj_type="People", name="P1")
+        graph.register(people, "zone_name", "Office")
+        graph.register(people, "schedule_name", "Office")
+        graph.rename_target("Office", "Open Office", {(people, "zone_name", None)})
+        assert graph.get_referencing_with_fields("Open Office") == {(people, "zone_name")}
+        assert graph.get_referencing_with_fields("Office") == {(people, "schedule_name")}
+        assert sorted(graph.get_references_with_fields(people)) == [
+            ("OFFICE", "schedule_name"),
+            ("OPEN OFFICE", "zone_name"),
+        ]
+
+    def test_iter_references_yields_every_edge(self) -> None:
+        graph = ReferenceGraph()
+        people = IDFObject(obj_type="People", name="P1")
+        graph.register(people, "zone_name", "Office")
+        graph.register(people, "schedule_name", "Occ")
+        assert sorted(graph.iter_references(), key=lambda e: e[1]) == [
+            (people, "schedule_name", "OCC"),
+            (people, "zone_name", "OFFICE"),
+        ]
+
+    def test_unregister_keeps_references_to_the_name(self) -> None:
+        """Other objects still name what the removed object was called; their edges stay."""
+        graph = ReferenceGraph()
+        zone = IDFObject(obj_type="Zone", name="Z1")
+        people = IDFObject(obj_type="People", name="P1")
+        graph.register(people, "zone_name", "Z1")
+        graph.unregister(zone)
+        assert graph.get_referencing("Z1") == {people}
+
     def test_rename_target_noop_same_name(self) -> None:
         graph = ReferenceGraph()
         obj = IDFObject(obj_type="People", name="P1")

@@ -23,13 +23,14 @@ EnergyPlus models are graphs of cross-references: a `BuildingSurface:Detailed.zo
 | `doc["Type"].referencing(name_or_obj)` | The objects of one type that point at a name (or object's name), typed as that type. |
 | `doc.get_zone_surfaces(zone_name)` | Only the heat-transfer surfaces whose own `zone_name` is that zone (`BuildingSurface:Detailed`, `Wall:Exterior`, `Floor:Detailed`, ...). Not loads, equipment, fenestration, `InternalMass`, or another zone's surface that uses this zone as its outside boundary. |
 | `doc.get_references(obj)` | All names referenced by `obj`'s fields. |
-| `doc.rename(obj_type, old, new)` | Rename an object and cascade through every reference. |
+| `doc.rename(obj_type, old, new)` | Rename an object and cascade through every reference to it. A same-named object of another type keeps its references. |
 | `obj.name = "new"` | Equivalent to `doc.rename(obj.obj_type, obj.name, "new")`. |
 | `doc.references` | The underlying `ReferenceGraph` — use for advanced queries below. |
 | `ReferenceGraph.get_referencing_with_fields(name)` | `set[(IDFObject, field_name)]` — same as above, with the originating field. |
 | `ReferenceGraph.get_references_with_fields(obj)` | `set[(field_name, referenced_name)]` — what this object references and from which field. |
 | `ReferenceGraph.is_referenced(name)` | Is anything pointing at this name? |
 | `ReferenceGraph.get_dangling_references(valid_names)` | Iterator of `(obj, field, name)` for references to names not in the valid set. |
+| `ReferenceGraph.iter_references()` | Iterator of `(obj, field, name)` for every reference, the name uppercased. |
 | `ReferenceGraph.stats()` | `{registered_objects, distinct_targets, total_edges}` — sanity-check the graph. |
 
 ## How the graph stays in sync
@@ -40,7 +41,7 @@ idfkit registers references at three points:
 2. **On `add` / `addidfobject`** — `doc.add("People", ..., zone_or_zonelist_or_space_or_spacelist_name="Office")` registers the edge.
 3. **On field mutation** — setting `obj.zone_or_zonelist_or_space_or_spacelist_name = "Office"` swaps the edge atomically.
 
-`doc.removeidfobject(obj)` (or `doc[obj_type].remove(obj)`, which does the same) unregisters every edge originating from `obj`. `obj.name = "new"` triggers `notify_name_change`, which rewrites every edge that pointed at `obj` to point at the new name and rewrites every field carrying the old name.
+`doc.removeidfobject(obj)` (or `doc[obj_type].remove(obj)`, which does the same) unregisters every edge originating from `obj`; edges pointing at its name stay, since those objects still name it. `obj.name = "new"` triggers `notify_name_change`, which rewrites the fields that point at `obj` and moves their edges to the new name.
 
 The graph is keyed off **reference lists** declared in the EpJSON schema (e.g. `ZoneNames`, `ScheduleNames`, `BranchNames`). idfkit consults the schema to know which fields participate, so you never need to register edges manually.
 
@@ -80,6 +81,12 @@ The canonical pattern. Set `obj.name` (or call `doc.rename`) and every reference
 
 Renaming an object that nothing references is also fine — it just updates the collection key.
 
+Names are unique per type, not per model: a single-layer `Construction` is often named like its `Material`, and a `Zone` and a `Schedule` can both be `Office`. A rename rewrites only the fields whose `object_list` the renamed type's name belongs to (or a related type EnergyPlus also accepts there, such as a window in a `SurfaceNames` field), and the fields pointing into a list that a following field re-declares the name into (an `HVACTemplate:Zone:*`'s `zone_name` fills the template system's control-zone list). Renaming the Material leaves every surface's `construction_name` on the Construction:
+
+```python
+--8<-- "agent_references/snippets/reference-tracking.py:rename-shared-name"
+```
+
 ## Finding what an object references
 
 ```python
@@ -94,7 +101,7 @@ After a bulk edit, scan for references that no longer resolve:
 --8<-- "agent_references/snippets/reference-tracking.py:dangling"
 ```
 
-For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E009` errors. See [schema-and-validation.md](schema-and-validation.md).
+For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E009` errors, and also a name that exists but is the wrong type for its field (a schedule field naming a Zone), which `get_dangling_references` cannot see. See [schema-and-validation.md](schema-and-validation.md).
 
 ## Common mistakes
 

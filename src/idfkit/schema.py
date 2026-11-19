@@ -216,6 +216,66 @@ class ParsingCache:
     field_aliases: Mapping[str, str] = field(default_factory=dict[str, str])
 
 
+def type_family(obj_type: str) -> str:
+    """The family of an object type: its name up to the first colon, uppercased.
+
+    ``AirflowNetwork:MultiZone:Surface:Crack`` and ``AirflowNetwork:Distribution:Linkage`` are both
+    ``AIRFLOWNETWORK``; ``Material`` and ``Construction`` are different families.
+    """
+    return obj_type.split(":", 1)[0].upper()
+
+
+def _item_object_lists(array_schema: dict[str, Any]) -> set[str]:
+    """The ``object_list`` entries of the fields inside an array property's item schema."""
+    found: set[str] = set()
+    items: Any = array_schema.get("items")
+    if not isinstance(items, dict):
+        return found
+    item_props: Any = cast("dict[str, Any]", items).get("properties")
+    if not isinstance(item_props, dict):
+        return found
+    for item_schema in cast("dict[str, Any]", item_props).values():
+        if isinstance(item_schema, dict):
+            found.update(cast("dict[str, Any]", item_schema).get("object_list") or ())
+    return found
+
+
+@dataclass(frozen=True, slots=True)
+class ReferenceKin:
+    """The object types a reference field's ``object_list`` is akin to.
+
+    A field's ``object_list`` is sometimes narrower than what EnergyPlus accepts: it looks the
+    name up among a wider set of related objects. ``SurfaceProperty:LocalEnvironment`` asks for
+    ``SurfaceNames`` and EnergyPlus accepts a window there; ``AirflowNetwork:IntraZone:Linkage``
+    asks for ``AirflowNetworkComponentNames`` and the shipped example files give it a crack.
+    An object outside the lists is still akin when its name belongs to a reference list some type in
+    the lists also belongs to (a window and a wall are both in ``AllHeatTranSurfNames``), or when
+    its type is of the same [type_family][idfkit.schema.type_family] as one of them. A Material
+    in a construction field, or a Zone in a schedule field, is neither.
+
+    Two kinds of related type are never akin, because EnergyPlus looks them up elsewhere. A
+    grouping type, whose repeated fields list the accepted objects, is not one of them: a
+    ``ZoneList`` in a field that asks for ``ZoneNames``. Nor is a part the accepted types are
+    built from, directly or through other parts, when its name shares no list with them: a
+    ``Schedule:Day:Hourly`` or ``Schedule:Week:Daily`` in a field that asks for ``ScheduleNames``.
+
+    Attributes:
+        lists: Every reference list the names of the field's accepted types belong to.
+        families: The [type_family][idfkit.schema.type_family] of each accepted type.
+        excluded: The uppercased related types that are never akin: groupings and parts.
+    """
+
+    lists: frozenset[str]
+    families: frozenset[str]
+    excluded: frozenset[str] = frozenset()
+
+    def admits(self, obj_type: str, name_lists: Iterable[str]) -> bool:
+        """Whether an object of *obj_type*, whose name is in *name_lists*, is akin to the field."""
+        if obj_type.upper() in self.excluded:
+            return False
+        return type_family(obj_type) in self.families or not self.lists.isdisjoint(name_lists)
+
+
 def _resolve_field_type(
     field_name: str,
     props: dict[str, Any],
@@ -278,8 +338,12 @@ class EpJSONSchema:
     __slots__ = (
         "__weakref__",
         "_accessor_resolver",
+        "_grouped_lists",
+        "_kin_cache",
+        "_name_reference_lists",
         "_object_lists",
         "_parsing_cache",
+        "_pointed_lists",
         "_properties",
         "_raw",
         "_reference_lists",
@@ -292,6 +356,10 @@ class EpJSONSchema:
     _properties: dict[str, Any]
     _reference_lists: dict[str, list[str]]
     _object_lists: dict[str, set[str]]
+    _name_reference_lists: dict[str, frozenset[str]]
+    _pointed_lists: dict[str, frozenset[str]]
+    _grouped_lists: dict[str, frozenset[str]]
+    _kin_cache: dict[frozenset[str], ReferenceKin]
     _parsing_cache: dict[str, ParsingCache]
     _upper_to_canonical: dict[str, str]
     _accessor_resolver: AccessorResolver | None
@@ -310,6 +378,11 @@ class EpJSONSchema:
         # Build reference indexes
         self._reference_lists: dict[str, list[str]] = {}
         self._object_lists: dict[str, set[str]] = {}
+        self._name_reference_lists: dict[str, frozenset[str]] = {}
+        # Type -> the lists its fields point into; and the lists its extensible groups point into.
+        self._pointed_lists: dict[str, frozenset[str]] = {}
+        self._grouped_lists: dict[str, frozenset[str]] = {}
+        self._kin_cache: dict[frozenset[str], ReferenceKin] = {}
         self._parsing_cache: dict[str, ParsingCache] = {}
         self._build_reference_indexes()
 
@@ -338,9 +411,10 @@ class EpJSONSchema:
             name: getattr(self, name)
             for klass in reversed(type(self).__mro__)
             for name in klass.__dict__.get("__slots__", ())
-            if name not in ("__weakref__", "_parsing_cache", "_accessor_resolver")
+            if name not in ("__weakref__", "_parsing_cache", "_accessor_resolver", "_kin_cache")
         }
         state["_parsing_cache"] = {}
+        state["_kin_cache"] = {}
         state["_accessor_resolver"] = None
         return (_rebuild_schema, (type(self), state))
 
@@ -359,6 +433,7 @@ class EpJSONSchema:
             # Check if this object provides names for any reference lists
             name_info = obj_schema.get("name", {})
             if "reference" in name_info:
+                self._name_reference_lists[obj_type] = frozenset(name_info["reference"])
                 for ref_list in name_info["reference"]:
                     if ref_list not in self._reference_lists:
                         self._reference_lists[ref_list] = []
@@ -368,14 +443,27 @@ class EpJSONSchema:
             pattern_props: dict[str, Any] = obj_schema.get("patternProperties", {})
             default_dict: dict[str, Any] = {}
             inner: dict[str, Any] = next(iter(pattern_props.values()), default_dict) if pattern_props else default_dict
-            props: dict[str, Any] = inner.get("properties", {})
-            for field_name, field_schema in props.items():
-                field_schema_dict: dict[str, Any] = field_schema
-                if "object_list" in field_schema_dict:
-                    for obj_list in field_schema_dict["object_list"]:
-                        if obj_list not in self._object_lists:
-                            self._object_lists[obj_list] = set()
-                        self._object_lists[obj_list].add(f"{obj_type}.{field_name}")
+            self._index_reference_fields(obj_type, inner.get("properties", {}))
+
+    def _index_reference_fields(self, obj_type: str, props: dict[str, Any]) -> None:
+        """Index the lists *obj_type*'s fields, and its extensible groups' fields, point into."""
+        pointed: set[str] = set()
+        grouped: set[str] = set()
+        for field_name, field_schema in props.items():
+            field_schema_dict: dict[str, Any] = field_schema
+            if "object_list" in field_schema_dict:
+                pointed.update(field_schema_dict["object_list"])
+                for obj_list in field_schema_dict["object_list"]:
+                    if obj_list not in self._object_lists:
+                        self._object_lists[obj_list] = set()
+                    self._object_lists[obj_list].add(f"{obj_type}.{field_name}")
+            elif field_schema_dict.get("type") == "array":
+                grouped.update(_item_object_lists(field_schema_dict))
+        pointed |= grouped
+        if pointed:
+            self._pointed_lists[obj_type] = frozenset(pointed)
+        if grouped:
+            self._grouped_lists[obj_type] = frozenset(grouped)
 
     def get_object_schema(self, obj_type: str) -> dict[str, Any] | None:
         """Get the full schema for an object type.
@@ -510,6 +598,134 @@ class EpJSONSchema:
         if field_schema:
             return field_schema.get("object_list")
         return None
+
+    def get_reference_field_object_list(self, obj_type: str, field_name: str) -> list[str] | None:
+        """Get the object_list(s) of a reference field, looking inside extensible groups too.
+
+        [get_field_object_list][idfkit.schema.EpJSONSchema.get_field_object_list] reads the
+        top-level properties only; a reference field inside an extensible group (a
+        ``Construction:...`` layer, a ``ZoneList`` member) is described under the group's item
+        schema instead.
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> schema.get_reference_field_object_list("ZoneList", "zone_name")
+            ['ZoneNames']
+        """
+        lists = self.get_field_object_list(obj_type, field_name)
+        if lists is not None:
+            return lists
+        pc = self.get_parsing_cache(obj_type)
+        if pc is None:
+            return None
+        inner = pc.ext_inner_props.get(field_name)
+        return inner.get("object_list") if inner is not None else None
+
+    def get_reference_field_contributed_lists(self, obj_type: str, field_name: str) -> list[str]:
+        """The reference lists a field carrying ``reference`` declares its value into.
+
+        Most names are declared by an object's Name field, but some fields both point at an object
+        and re-declare its name into another list: an ``HVACTemplate:Zone:ConstantVolume``'s
+        ``zone_name`` puts the zone into ``HVACTemplateConstantVolumeZones``. Looks inside
+        extensible groups too.
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> schema.get_reference_field_contributed_lists("HVACTemplate:Zone:ConstantVolume", "zone_name")
+            ['HVACTemplateConstantVolumeZones']
+            >>> schema.get_reference_field_contributed_lists("People", "zone_or_zonelist_or_space_or_spacelist_name")
+            []
+        """
+        spec = self.get_field_schema(obj_type, field_name)
+        if spec is None:
+            pc = self.get_parsing_cache(obj_type)
+            spec = pc.ext_inner_props.get(field_name) if pc is not None else None
+        if spec is None:
+            return []
+        return list(spec.get("reference") or [])
+
+    def get_name_reference_lists(self, obj_type: str) -> frozenset[str]:
+        """The reference lists an object type's name is a member of.
+
+        A reference field accepts a name only from the lists in its ``object_list``, so these are
+        the fields that can point at an object of *obj_type*.
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> "ConstructionNames" in schema.get_name_reference_lists("Construction")
+            True
+            >>> "ConstructionNames" in schema.get_name_reference_lists("Material")
+            False
+        """
+        canonical = self.resolve_type_name(obj_type) or obj_type
+        return self._name_reference_lists.get(canonical, frozenset())
+
+    def get_reference_kin(self, object_list: Iterable[str]) -> ReferenceKin:
+        """The [ReferenceKin][idfkit.schema.ReferenceKin] of a field's ``object_list``.
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> kin = schema.get_reference_kin(["SurfaceNames"])
+            >>> kin.admits("FenestrationSurface:Detailed", schema.get_name_reference_lists("FenestrationSurface:Detailed"))
+            True
+            >>> schedule_kin = schema.get_reference_kin(["ScheduleNames"])
+            >>> schedule_kin.admits("Zone", schema.get_name_reference_lists("Zone"))
+            False
+            >>> schedule_kin.admits("Schedule:Day:Hourly", schema.get_name_reference_lists("Schedule:Day:Hourly"))
+            False
+            >>> zone_kin = schema.get_reference_kin(["ZoneNames"])
+            >>> zone_kin.admits("ZoneList", schema.get_name_reference_lists("ZoneList"))
+            False
+        """
+        accepted = frozenset(object_list)
+        cached = self._kin_cache.get(accepted)
+        if cached is not None:
+            return cached
+        lists: set[str] = set()
+        families: set[str] = set()
+        providers: set[str] = set()
+        for ref_list in accepted:
+            for provider in self.get_types_providing_reference(ref_list):
+                providers.add(provider)
+                lists |= self._name_reference_lists.get(provider, frozenset())
+                families.add(type_family(provider))
+        excluded: set[str] = set()
+        # Groupings: types whose repeated fields list the accepted objects (ZoneList for ZoneNames).
+        for obj_type, grouped in self._grouped_lists.items():
+            if obj_type not in providers and not grouped.isdisjoint(accepted):
+                excluded.add(obj_type.upper())
+        excluded |= self._part_types(providers, lists, accepted)
+        kin = ReferenceKin(frozenset(lists), frozenset(families), frozenset(excluded))
+        self._kin_cache[accepted] = kin
+        return kin
+
+    def _part_types(self, providers: set[str], lists: set[str], accepted: frozenset[str]) -> set[str]:
+        """The uppercased types the *providers* are built from, directly or through other parts.
+
+        Only parts whose names share none of *lists* (Schedule:Year -> week -> day schedules);
+        a list the providers' own names are in is not followed.
+        """
+        parts: set[str] = set()
+        seen = set(providers)
+        frontier = list(providers)
+        while frontier:
+            part_lists = {
+                ref_list
+                for obj_type in frontier
+                for ref_list in self._pointed_lists.get(obj_type, frozenset())
+                if ref_list not in lists and ref_list not in accepted
+            }
+            found = {part for ref_list in part_lists for part in self.get_types_providing_reference(ref_list)}
+            frontier = sorted(found - seen)
+            seen |= found
+            parts.update(
+                part.upper() for part in frontier if self._name_reference_lists.get(part, frozenset()).isdisjoint(lists)
+            )
+        return parts
 
     def is_reference_field(self, obj_type: str, field_name: str) -> bool:
         """Check if a field is a reference to another object."""
@@ -856,6 +1072,9 @@ class SchemaManager:
         self._bundled_dir = bundled_schema_dir
         self._cache_dir = cache_dir
         self._cache: dict[tuple[int, int, int], EpJSONSchema] = {}
+        # Upper-cased object type -> every field key it has had in any supported release; built
+        # on first use by `field_names_in_any_release`.
+        self._release_fields: dict[str, frozenset[str]] | None = None
         self._init_locks()
 
     def _init_locks(self) -> None:
@@ -881,6 +1100,7 @@ class SchemaManager:
     def __setstate__(self, state: dict[str, Any]) -> None:
         """Restore with locks of its own; state pickled by idfkit 1.2.0 has none to drop."""
         self.__dict__.update(state)
+        self.__dict__.setdefault("_release_fields", None)
         self._init_locks()
 
     @property
@@ -1108,6 +1328,31 @@ class SchemaManager:
             patch = int(match.group(3)) if match.group(3) else 0
             return (major, minor, patch)
         return None
+
+    def field_names_in_any_release(self, obj_type: str) -> frozenset[str]:
+        """Every field key *obj_type* has had in any supported EnergyPlus release.
+
+        Tells a field a release removed (``availability_manager_list_name`` on
+        ``AirLoopHVAC:OutdoorAirSystem``, still in EnergyPlus's own example files) from one no
+        release ever had, which is a typo. The first call reads every schema file it can find,
+        about a second and a half, without keeping them; the index it builds is kept.
+        """
+        index = self._release_fields
+        if index is None:
+            fields: dict[str, set[str]] = {}
+            for version in ENERGYPLUS_VERSIONS:
+                path = self._find_schema_file(version)
+                if path is None:
+                    continue
+                properties: dict[str, Any] = load_schema_json(path).get("properties", {})
+                no_fields: dict[str, Any] = {}
+                for type_name, spec in properties.items():
+                    pattern: dict[str, Any] = spec.get("patternProperties") or {}
+                    inner: dict[str, Any] = next(iter(pattern.values()), no_fields)
+                    fields.setdefault(type_name.upper(), set()).update(inner.get("properties", {}))
+            index = {type_name: frozenset(names) for type_name, names in fields.items()}
+            self._release_fields = index
+        return index.get(obj_type.upper(), frozenset())
 
     def owns(self, schema: EpJSONSchema) -> bool:
         """Whether *schema* is the instance this manager currently hands out for its version.

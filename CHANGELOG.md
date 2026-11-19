@@ -61,9 +61,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `load_epjson()` raised `IDFParseError` for a field no EnergyPlus release has, such as
+  `ceiling_hieght`, naming the closest field; pass `strict_parsing=False` to keep such keys.
+  ([#331](https://github.com/idfkit/idfkit/pull/331))
 - **Breaking:** `load_epjson()` and `parse_epjson()` raised `IDFParseError` for an unknown object
   type, as `load_idf()` does, instead of loading it, and suggested the closest type; pass
   `strict_parsing=False` to skip such types. ([#330](https://github.com/idfkit/idfkit/pull/330))
+- Removing an object kept the references pointing at its name: `get_referencing()` and
+  `is_referenced()` reported the objects that still name it, and a later rename of a same-named object
+  of another type reached them. ([#331](https://github.com/idfkit/idfkit/pull/331))
 - **Breaking:** `set_default_constructions()` left windows and glass doors unset unless given
   `window_construction=`, since EnergyPlus refuses the opaque construction it had assigned them.
   ([#330](https://github.com/idfkit/idfkit/pull/330))
@@ -196,6 +202,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- Renaming an object no longer rewrote references to a same-named object of another type, such as
+  surfaces naming a Construction called like its renamed Material.
+  ([#331](https://github.com/idfkit/idfkit/pull/331))
+- `validate_document()` reported `E009` for a reference to an object of the wrong type, such as a
+  schedule field naming a Zone or a day schedule, or a zone field naming a ZoneList.
+  ([#331](https://github.com/idfkit/idfkit/pull/331))
 - `validate_document()` reported a window whose construction has only opaque layers (`E013`),
   which EnergyPlus stops on. ([#330](https://github.com/idfkit/idfkit/pull/330))
 - A failed migration step no longer repeated its versions and process output in the error message.

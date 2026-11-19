@@ -1222,7 +1222,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         # 2. Update referencing objects' _data directly (bypass _set_field to avoid recursion).
         #    An edge carrying a group index points inside an extensible group, so the value to
         #    rewrite is in the wrapper array rather than at the top level of _data.
-        referencing = self._references.get_referencing_edges(old_name)
+        #    Only fields that can point at this object's type follow it: a Material and a
+        #    Construction may share a name, and a surface's construction field must keep naming
+        #    the Construction when the Material is renamed.
+        referencing = self._rename_edges(obj_type, old_name)
         for ref_obj, field_name, group_index in referencing:
             slot = self._rename_slot(ref_obj, field_name, group_index)
             if slot is None:
@@ -1233,7 +1236,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 object.__setattr__(ref_obj, "_source_text", None)
 
         # 3. Update graph indexes
-        self._references.rename_target(old_name, new_name)
+        self._references.rename_target(old_name, new_name, referencing)
 
         # 4. Invalidate schedules cache if needed
         if obj_type.upper().startswith("SCHEDULE"):
@@ -1246,6 +1249,74 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             new_name,
             len(referencing),
         )
+
+    def _rename_edges(self, obj_type: str, old_name: str) -> set[tuple[IDFObject, str, int | None]]:
+        """The reference edges to *old_name* that point at the renamed object of *obj_type*.
+
+        Two objects of different types may share a name: a single-layer Construction is often named
+        like its Material. A field accepts names from the reference lists in its ``object_list``,
+        and follows the rename when *obj_type*'s name is in one of them. A field whose lists are
+        merely akin to *obj_type* (see [ReferenceKin][idfkit.schema.ReferenceKin]) follows it too,
+        unless another object of that name is in the field's lists. Any other field points at a
+        different object and is left alone. Without a schema every edge to the name follows.
+        """
+        edges = self._references.get_referencing_edges(old_name)
+        schema = self._schema
+        if schema is None or not edges:
+            return edges
+        provided = set(schema.get_name_reference_lists(obj_type))
+        while True:
+            kept, follows = self._edges_following(schema, edges, obj_type, old_name, provided)
+            # A field that follows the rename and also carries ``reference`` re-declares the name
+            # into further lists (an HVACTemplate zone's zone_name fills the template's zone list),
+            # and fields pointing into those lists name the same object, so they follow too.
+            contributed: set[str] = set()
+            for key in follows:
+                contributed.update(schema.get_reference_field_contributed_lists(*key))
+            if contributed <= provided:
+                return kept
+            provided |= contributed
+
+    def _edges_following(
+        self,
+        schema: EpJSONSchema,
+        edges: set[tuple[IDFObject, str, int | None]],
+        obj_type: str,
+        old_name: str,
+        provided: set[str],
+    ) -> tuple[set[tuple[IDFObject, str, int | None]], set[tuple[str, str]]]:
+        """The edges whose field takes a name from *provided*, or is akin to *obj_type*, and those fields."""
+        # Reference lists given by other objects that carry the same name, read on first need.
+        others: set[str] | None = None
+        follows: dict[tuple[str, str], bool] = {}
+        kept: set[tuple[IDFObject, str, int | None]] = set()
+        for edge in edges:
+            ref_obj, field_name, _ = edge
+            key = (ref_obj.obj_type, field_name)
+            ok = follows.get(key)
+            if ok is None:
+                lists = schema.get_reference_field_object_list(ref_obj.obj_type, field_name)
+                if lists is None or not provided.isdisjoint(lists):
+                    ok = True
+                else:
+                    if others is None:
+                        others = self._name_reference_lists_of(old_name, besides=obj_type)
+                    ok = others.isdisjoint(lists) and schema.get_reference_kin(lists).admits(obj_type, provided)
+                follows[key] = ok
+            if ok:
+                kept.add(edge)
+        return kept, {key for key, ok in follows.items() if ok}
+
+    def _name_reference_lists_of(self, name: str, *, besides: str) -> set[str]:
+        """The reference lists the objects named *name*, other than those of type *besides*, are in."""
+        schema = self._schema
+        lists: set[str] = set()
+        if schema is None:
+            return lists
+        for other_type, collection in self._collections.items():
+            if other_type != besides and name in collection:
+                lists |= schema.get_name_reference_lists(other_type)
+        return lists
 
     def _rename_slot(self, ref_obj: IDFObject, field_name: str, group_index: int | None) -> dict[str, Any] | None:
         """Return the dict holding *field_name* for a reference edge, or None if it is gone."""

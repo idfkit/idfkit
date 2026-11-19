@@ -142,7 +142,12 @@ class ReferenceGraph:
                 del self._referenced_by[name_upper]
 
     def unregister(self, obj: IDFObject) -> None:
-        """Remove all reference tracking for an object."""
+        """Remove the references *obj* makes.
+
+        References TO *obj*'s name stay: the objects holding them still name it, possibly another
+        object of a different type that shares the name, and they resolve again once an object of
+        that name is added back.
+        """
         if obj in self._references:
             # Remove from referenced_by
             for name_upper, field_name, group_index in self._references[obj]:
@@ -151,11 +156,6 @@ class ReferenceGraph:
                     if not self._referenced_by[name_upper]:
                         del self._referenced_by[name_upper]
             del self._references[obj]
-
-        # Also remove any references TO this object
-        obj_name_upper = obj.name.upper() if obj.name else ""
-        if obj_name_upper in self._referenced_by:
-            del self._referenced_by[obj_name_upper]
 
     def get_referencing(self, name: str) -> set[IDFObject]:
         """
@@ -274,7 +274,23 @@ class ReferenceGraph:
                 if name_upper not in valid_upper:
                     yield (obj, field_name, name_upper)
 
-    def rename_target(self, old_name: str, new_name: str) -> None:
+    def iter_references(self) -> Iterator[tuple[IDFObject, str, str]]:
+        """Yield every reference in the graph.
+
+        Yields:
+            Tuples of (source_object, field_name, referenced_name), the name uppercased. A
+            field inside an extensible group yields once per group that names something.
+        """
+        for obj, refs in self._references.items():
+            for name_upper, field_name, _group_index in refs:
+                yield (obj, field_name, name_upper)
+
+    def rename_target(
+        self,
+        old_name: str,
+        new_name: str,
+        edges: set[tuple[IDFObject, str, int | None]] | None = None,
+    ) -> None:
         """
         Update indexes when a referenced target is renamed.
 
@@ -284,15 +300,29 @@ class ReferenceGraph:
         Args:
             old_name: The old target name
             new_name: The new target name
+            edges: The (object, field_name, group_index) edges that follow the rename. ``None``
+                moves every edge pointing at *old_name*. A subset leaves the other edges on
+                *old_name*: two objects of different types may share a name, and a field that
+                points at the other type keeps pointing at it.
         """
         old_upper = old_name.upper()
         new_upper = new_name.upper()
         if old_upper == new_upper:
             return
 
-        referrers = self._referenced_by.pop(old_upper, set())
-        if not referrers:
+        current = self._referenced_by.get(old_upper)
+        if not current:
             return
+        if edges is None:
+            referrers = current
+            del self._referenced_by[old_upper]
+        else:
+            referrers = current & edges
+            if not referrers:
+                return
+            current -= referrers
+            if not current:
+                del self._referenced_by[old_upper]
 
         # Update _references for each referring object
         for obj, field_name, group_index in referrers:
