@@ -778,6 +778,64 @@ class TestSQLResultGetTabularValueErrors:
             sql.get_tabular_value("AnnualBuildingUtilityPerformanceSummary", "End Uses", "Heating", "Gas")
 
 
+class TestSQLResultGetTabularDataErrors:
+    """get_tabular_data() raises for a filter that matches nothing, rather than returning []."""
+
+    def test_misspelt_report_suggests_the_report(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError) as exc_info:
+            sql.get_tabular_data(report_name="AnnualBuildingUtilityPerformanceSumary")
+        assert exc_info.value.suggestions == ("AnnualBuildingUtilityPerformanceSummary",)
+        assert "Did you mean 'AnnualBuildingUtilityPerformanceSummary'?" in str(exc_info.value)
+
+    def test_misspelt_table_in_a_report_suggests_the_table(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError) as exc_info:
+            sql.get_tabular_data(report_name="AnnualBuildingUtilityPerformanceSummary", table_name="End Use")
+        assert str(exc_info.value) == (
+            "No tabular table 'End Use' in report 'AnnualBuildingUtilityPerformanceSummary'. "
+            "Did you mean 'End Uses'? Available: End Uses."
+        )
+
+    def test_filters_that_each_exist_but_not_together_name_the_first_that_fails(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError, match="No tabular table 'Opaque Exterior'"):
+            sql.get_tabular_data(report_name="AnnualBuildingUtilityPerformanceSummary", table_name="Opaque Exterior")
+
+    def test_no_filter_still_returns_every_row(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            assert len(sql.get_tabular_data()) == 3
+
+
+class TestSQLResultNoTabularReports:
+    """A database without tabular reports says how to have EnergyPlus write them."""
+
+    @pytest.fixture
+    def empty_tabular_db(self, tmp_path: Path) -> Path:
+        db_path = tmp_path / "no_tables.sql"
+        conn = sqlite3.connect(str(db_path))
+        conn.execute(
+            "CREATE TABLE TabularDataWithStrings ("
+            "  TabularDataIndex INTEGER PRIMARY KEY,"
+            "  ReportName TEXT, ReportForString TEXT,"
+            "  TableName TEXT, RowName TEXT, ColumnName TEXT,"
+            "  Units TEXT, Value TEXT)"
+        )
+        conn.commit()
+        conn.close()
+        return db_path
+
+    def test_get_tabular_data_names_summary_reports(self, empty_tabular_db: Path) -> None:
+        with SQLResult(empty_tabular_db) as sql:
+            assert sql.get_tabular_data() == []
+            assert sql.list_reports() == []
+            with pytest.raises(ResultLookupError, match=r"Output:Table:SummaryReports") as exc_info:
+                sql.get_tabular_data(report_name="AnnualBuildingUtilityPerformanceSummary")
+        assert "AllSummary" in str(exc_info.value)
+        assert "SimpleAndTabular" in str(exc_info.value)
+
+    def test_get_tabular_value_names_summary_reports(self, empty_tabular_db: Path) -> None:
+        with SQLResult(empty_tabular_db) as sql, pytest.raises(ResultLookupError, match="no tabular reports"):
+            sql.get_tabular_value("AnnualBuildingUtilityPerformanceSummary", "End Uses", "Heating", "Electricity")
+
+
 class TestSQLResultListVariables:
     """Tests for list_variables()."""
 

@@ -7,7 +7,11 @@ epJSON schema) and provides utilities for version manipulation.
 
 from __future__ import annotations
 
-from typing import Final
+import functools
+from typing import TYPE_CHECKING, Final
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 # All EnergyPlus versions since v8.9.0 that publish an epJSON schema.
 # Each entry is a (major, minor, patch) tuple.
@@ -109,6 +113,133 @@ def version_string(version: tuple[int, int, int]) -> str:
         '9.6.0'
     """
     return f"{version[0]}.{version[1]}.{version[2]}"
+
+
+def format_releases(releases: Iterable[tuple[int, int, int]]) -> str:
+    """*releases*, oldest first, with each run of three or more consecutive supported releases as a range.
+
+    Consecutive means adjacent in :data:`ENERGYPLUS_VERSIONS`, not in the list given, so a range
+    never covers a release that was not checked: ``8.9.0 to 9.5.0`` names seven releases, and
+    ``8.9.0, 9.5.0`` the two of a run of targets that skipped the ones between.
+
+    Examples:
+        >>> format_releases([(9, 6, 0), (9, 5, 0), (9, 4, 0), (24, 1, 0)])
+        '9.4.0 to 9.6.0, 24.1.0'
+    """
+    order: dict[tuple[int, int, int], int] = {v: i for i, v in enumerate(ENERGYPLUS_VERSIONS)}
+    ordered = sorted(set(releases))
+    runs: list[list[tuple[int, int, int]]] = []
+    for v in ordered:
+        if runs and v in order and runs[-1][-1] in order and order[v] == order[runs[-1][-1]] + 1:
+            runs[-1].append(v)
+        else:
+            runs.append([v])
+    parts: list[str] = []
+    for run in runs:
+        if len(run) >= 3:
+            parts.append(f"{version_string(run[0])} to {version_string(run[-1])}")
+        else:
+            parts.extend(version_string(v) for v in run)
+    return ", ".join(parts)
+
+
+def _adjacent(earlier: tuple[int, int, int], later: tuple[int, int, int]) -> bool:
+    """Whether *later* is the supported release right after *earlier*."""
+    try:
+        return ENERGYPLUS_VERSIONS.index(later) == ENERGYPLUS_VERSIONS.index(earlier) + 1
+    except ValueError:
+        return False
+
+
+def describe_presence(present: Iterable[tuple[int, int, int]], absent: Iterable[tuple[int, int, int]]) -> str:
+    """Which releases have something, as briefly as is still exact; both arguments must be non-empty.
+
+    ``added in 9.6.0`` when every release lacking it comes before every release having it and the
+    two meet, ``removed in 23.1.0`` for the reverse, and otherwise ``exists in`` the releases that
+    have it.
+
+    Examples:
+        >>> describe_presence([(26, 1, 0), (26, 2, 0)], [(25, 2, 0)])
+        'added in 26.1.0'
+        >>> describe_presence([(9, 5, 0)], [(9, 6, 0), (22, 1, 0)])
+        'removed in 9.6.0'
+    """
+    has = sorted(present)
+    lacks = sorted(absent)
+    if lacks[-1] < has[0] and _adjacent(lacks[-1], has[0]):
+        return f"added in {version_string(has[0])}"
+    if lacks[0] > has[-1] and _adjacent(has[-1], lacks[0]):
+        return f"removed in {version_string(lacks[0])}"
+    return f"exists in {format_releases(has)}"
+
+
+def object_type_releases(obj_type: str) -> tuple[tuple[int, int, int], ...]:
+    """The bundled releases that have *obj_type*, matched case-insensitively, oldest first.
+
+    Empty when no bundled release has it. Answered from a generated table, without loading a schema.
+
+    Examples:
+        >>> object_type_releases("Lights:Definition")
+        ((26, 2, 0),)
+        >>> object_type_releases("Zoen")
+        ()
+    """
+    from ._object_types import PARTIAL_OBJECT_TYPES
+
+    folded = obj_type.casefold()
+    runs = PARTIAL_OBJECT_TYPES.get(folded)
+    if runs is None:
+        return ENERGYPLUS_VERSIONS if folded in _folded_object_types() else ()
+    order: dict[tuple[int, int, int], int] = {v: i for i, v in enumerate(ENERGYPLUS_VERSIONS)}
+    return tuple(v for first, last in runs for v in ENERGYPLUS_VERSIONS[order[first] : order[last] + 1])
+
+
+@functools.cache
+def _folded_object_types() -> dict[str, str]:
+    """Every bundled object type, keyed by its case-folded name, built once."""
+    from ._object_types import ALL_OBJECT_TYPES
+
+    return {t.casefold(): t for t in ALL_OBJECT_TYPES}
+
+
+def not_in_release_message(obj_type: str, version: tuple[int, int, int]) -> str | None:
+    """Why *obj_type* is missing from *version*, when another bundled release has it, else None.
+
+    Names the releases that have the type and, where a later release has it, how to get there:
+    migrate a model, or create one at that release. The wording names no document, since a schema
+    lookup (``describe_object_type``) raises it too.
+
+    Examples:
+        >>> msg = not_in_release_message("Lights:Definition", (26, 1, 0))
+        >>> msg.splitlines()[0] if msg else None
+        "'Lights:Definition' is not an object type of EnergyPlus 26.1.0: it was added in 26.2.0."
+        >>> not_in_release_message("Zone", (26, 1, 0)) is None
+        True
+    """
+    present = object_type_releases(obj_type)
+    if not present or version in present or version not in ENERGYPLUS_VERSIONS:
+        return None
+    spelling = _folded_object_types().get(obj_type.casefold(), obj_type)
+    absent = [v for v in ENERGYPLUS_VERSIONS if v not in present]
+    presence = describe_presence(present, absent)
+    msg = (
+        f"{spelling!r} is not an object type of EnergyPlus {version_string(version)}: "
+        f"it {presence if presence.startswith('exists') else 'was ' + presence}."
+    )
+    # The rest of the message goes on its own line, so the first states the fact.
+    later = [v for v in present if v > version]
+    if later:
+        target = later[-1]
+        create = (
+            "new_document()"
+            if target == LATEST_VERSION
+            else f"new_document(IDFDocumentV{target[0]}_{target[1]}) (from idfkit.versioned)"
+        )
+        msg += (
+            f"\n  To use it, migrate a model to that release (idfkit.migrate(doc, {target!r})) "
+            f"or create one there with {create}."
+        )
+    return msg
 
 
 def version_dirname(version: tuple[int, int, int]) -> str:

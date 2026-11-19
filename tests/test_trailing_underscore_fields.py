@@ -21,6 +21,7 @@ from idfkit._read_required import READ_REQUIRED
 from idfkit.exceptions import InvalidFieldError, MissingRequiredFieldError, RangeError
 from idfkit.objects import to_python_name
 from idfkit.schema import get_schema, trailing_underscore_aliases
+from idfkit.validation import field_value_error
 from idfkit.versions import ENERGYPLUS_VERSIONS
 
 _STEM = "cond_flag_is_the_basement_conditioned"
@@ -48,6 +49,17 @@ def _add(doc: IDFDocument[Any], obj_type: str, fields: dict[str, Any] | None = N
     return doc.add(obj_type, name, fields, validate=False)
 
 
+def _two_values(obj: IDFObject, version: tuple[int, int, int], key: str) -> tuple[Any, Any]:
+    """Two distinct values *key* accepts: assignment in a strict document checks the value too."""
+    schema = get_schema(version)
+    spec = schema.get_field_schema(obj.obj_type, key) or {}
+    choices = [c for branch in (spec, *spec.get("anyOf", ())) for c in branch.get("enum", ()) if c != ""]
+    candidates = [*choices, "A", "B", 1, 2, 1.5, 0.5]
+    accepted = [c for c in candidates if field_value_error(obj, key, c, schema) is None]
+    assert len(accepted) >= 2, (obj.obj_type, key)
+    return accepted[0], accepted[1]
+
+
 def _report_period(doc: IDFDocument[Any]) -> IDFObject:
     # Nameless in 22.2 to 25.1: its IDD "Name," field is name_, so add() refuses an object name.
     return doc.add("Output:Table:ReportPeriod", validate=False)
@@ -69,16 +81,18 @@ def test_alias_map_covers_both_spellings_but_never_name() -> None:
 @pytest.mark.parametrize(("version", "obj_type", "key"), _FIELDS, ids=_IDS)
 def test_assignment_accepts_trailing_underscore_field(version: tuple[int, int, int], obj_type: str, key: str) -> None:
     obj = _add(new_document(version), obj_type)
-    setattr(obj, key, "X")
-    assert getattr(obj, key) == "X"
-    assert obj.data[key] == "X"
+    value, _ = _two_values(obj, version, key)
+    setattr(obj, key, value)
+    assert getattr(obj, key) == value
+    assert obj.data[key] == value
 
 
 @pytest.mark.parametrize(("version", "obj_type", "key"), _FIELDS, ids=_IDS)
 def test_update_accepts_trailing_underscore_field(version: tuple[int, int, int], obj_type: str, key: str) -> None:
     obj = _add(new_document(version), obj_type)
-    obj.update({key: "X"})
-    assert obj.data[key] == "X"
+    value, _ = _two_values(obj, version, key)
+    obj.update({key: value})
+    assert obj.data[key] == value
 
 
 @pytest.mark.parametrize(("version", "obj_type", "key"), _FIELDS, ids=_IDS)
@@ -105,10 +119,10 @@ def test_report_period_name_underscore_is_a_field_not_the_object_name() -> None:
     """Up to 25.1 ``Output:Table:ReportPeriod`` has no Name field; ``name_`` is its first field."""
     doc = new_document((24, 1, 0))
     obj = doc.add("Output:Table:ReportPeriod", validate=False)
-    obj.update(name_="Summer", report_name_="AllSummary")
+    obj.update(name_="Summer", report_name_="AllResilienceSummaries")
     assert obj.name == ""
     assert obj.data["name_"] == "Summer"
-    assert obj.data["report_name_"] == "AllSummary"
+    assert obj.data["report_name_"] == "AllResilienceSummaries"
 
 
 def test_a_misspelling_is_still_unknown() -> None:
@@ -132,8 +146,9 @@ def test_eppy_dotted_update_accepts_trailing_underscore_field(
 ) -> None:
     doc: Any = new_document(version)
     obj = _add(doc, obj_type)
-    doc.update({f"{obj_type}.{obj.name}.{key}": "X"})
-    assert obj.data == {key: "X"}
+    value, _ = _two_values(obj, version, key)
+    doc.update({f"{obj_type}.{obj.name}.{key}": value})
+    assert obj.data == {key: value}
 
 
 # The spelling without the underscore reaches the field; ``name`` never does (see the name tests).
@@ -145,12 +160,13 @@ _STEM_IDS = [f"{t}.{k[:-1]}" for _, t, k in _STEM_FIELDS]
 def test_stripped_spelling_resolves_to_the_schema_key(version: tuple[int, int, int], obj_type: str, key: str) -> None:
     stem = key[:-1]
     obj = _add(new_document(version), obj_type)
-    setattr(obj, stem, "A")
-    assert obj.data == {key: "A"}
-    assert getattr(obj, stem) == "A"
-    assert getattr(obj, key) == "A"
-    obj.update({stem: "B"})
-    assert obj.data == {key: "B"}
+    a, b = _two_values(obj, version, key)
+    setattr(obj, stem, a)
+    assert obj.data == {key: a}
+    assert getattr(obj, stem) == a
+    assert getattr(obj, key) == a
+    obj.update({stem: b})
+    assert obj.data == {key: b}
 
 
 @pytest.mark.parametrize(("version", "obj_type", "key"), _STEM_FIELDS, ids=_STEM_IDS)
@@ -284,8 +300,10 @@ def test_getreferingobjs_filters_by_a_trailing_underscore_field(field: str) -> N
 
 
 def test_checkrange_applies_the_schema_range() -> None:
-    dd = new_document((24, 1, 0)).add("SizingPeriod:DesignDay", "DD", validate=False)
-    dd.ashrae_clear_sky_optical_depth_for_beam_irradiance_taub = 5.0
+    # Out of range, so assignment would refuse it: add() without validation stores it as a file would.
+    dd = new_document((24, 1, 0)).add(
+        "SizingPeriod:DesignDay", "DD", ashrae_clear_sky_optical_depth_for_beam_irradiance_taub=5.0, validate=False
+    )
     assert dd.getrange("ashrae_clear_sky_optical_depth_for_beam_irradiance_taub")["maximum"] == 1.2
     with pytest.raises(RangeError):
         dd.checkrange("ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_")

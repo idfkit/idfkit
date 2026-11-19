@@ -92,7 +92,7 @@ EnergyPlus does not index `ReportData` by variable, so every `get_timeseries` ca
 
 Printing a series is safe: the repr of a `TimeSeriesResult` (and of an `ESOColumn`, `CSVColumn` or `CSVResult`) is a one-line summary, e.g. `TimeSeriesResult('Zone Air Temperature', 'SPACE1-1', units='C', frequency='Hourly', 8760 points, 2017-01-01 01:00 .. 2018-01-01 00:00, min 12.1, max 26.3)`. Read `.timestamps` and `.values` for the data.
 
-Every lookup failure raises `ResultLookupError`, a `KeyError` subclass whose message names the closest variable, key or report spelling ("Did you mean ...?") and the keys reported. A variable missing from the database usually means you didn't add an `Output:Variable` for it in the IDF — see [Output variable discovery](#output-variable-discovery). `get_tabular_value` raises it too, naming the first of report, `report_for`, table, row and column that matches nothing. `get_timeseries` also raises it when EnergyPlus simulated no environment at all (`sql.list_environments() == []`), rather than returning an empty series.
+Every lookup failure raises `ResultLookupError`, a `KeyError` subclass whose message names the closest variable, key or report spelling ("Did you mean ...?") and the keys reported. A variable missing from the database usually means you didn't add an `Output:Variable` for it in the IDF — see [Output variable discovery](#output-variable-discovery). `get_tabular_value` and `get_tabular_data` raise it too, naming the first of report, `report_for`, table, row and column that matches nothing (`get_tabular_data` called with no filter returns every row instead). When the database holds no tabular report at all, the message says so: EnergyPlus writes them only for a model with `Output:Table:SummaryReports` (`doc.add("Output:Table:SummaryReports", reports=[{"report_name": "AllSummary"}])`, or `prep_outputs(doc)`), and `list_reports()` is then `[]`. `get_timeseries` also raises it when EnergyPlus simulated no environment at all (`sql.list_environments() == []`), rather than returning an empty series.
 
 ```python
 from idfkit.exceptions import ResultLookupError
@@ -318,7 +318,7 @@ if result.sql:
 
 Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `idfkit[plotly]`). Pick with `get_default_backend(...)` or pass `backend=` explicitly.
 
-`plot_energy_balance` sums each end use's energy columns only (the `Water` volume column is left out) and labels the axis with the report's unit: `GJ` for SI, `kBtu` for IP. A report mixing kWh and kBtu is converted to the unit most cells use.
+`plot_energy_balance` sums each end use's energy columns only (the `Water` volume column is left out) and labels the axis with the report's unit: `GJ` for SI, `kBtu` for IP. A report mixing kWh and kBtu is converted to the unit most cells use. A database without that report (no `Output:Table:SummaryReports`, or `Output:SQLite` not `SimpleAndTabular`) raises `ResultLookupError` saying how to add it, rather than drawing an empty chart.
 
 ## Common mistakes
 

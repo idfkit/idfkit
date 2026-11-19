@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from idfkit import IDFCollection, IDFDocument, IDFObject
+from idfkit.exceptions import ValidationFailedError
 
 doc: IDFDocument = ...  # type: ignore[assignment]
 zone: IDFObject = ...  # type: ignore[assignment]
@@ -50,7 +51,7 @@ material = doc.add(
 # result is the type's class (Zone, Material, ...), not a plain IDFObject. Signature help shows the
 # required fields with no default and the others with the schema's default.
 office_zone = doc.zones.add("Office", x_origin=0.0, ceiling_height=3.0)
-office_zone.multiplier = 2  # typed: an int, checked on assignment
+office_zone.multiplier = 2  # typed as an int; a strict document also refuses 0 (below its minimum) at run time
 
 insulation = doc["Material"].add(
     "XPS_25mm",
@@ -123,6 +124,10 @@ if building is not None:
 zone = doc["Zone"]["Office"]
 zone.ceiling_height = 3.5  # plain field
 zone.direction_of_relative_north = 90.0
+try:
+    zone.multiplier = -3  # below its minimum of 1: refused, as add() refuses it
+except ValidationFailedError as exc:
+    print(exc)  # ... Zone:'Office'.multiplier: Value -3 is below minimum 1
 # --8<-- [end:modify]
 
 

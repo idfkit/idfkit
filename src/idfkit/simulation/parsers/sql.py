@@ -193,6 +193,13 @@ _DataRow: TypeAlias = tuple[int, int, int, int, int, float, int | None]
 # Series per ReportData query, under SQLite's oldest bound-parameter limit (999).
 _MAX_PARAMS = 900
 
+_NO_TABULAR_REPORTS = (
+    "The database holds no tabular reports. EnergyPlus writes them only when the model has "
+    "Output:Table:SummaryReports and its Output:SQLite option is SimpleAndTabular: add "
+    'doc.add("Output:Table:SummaryReports", reports=[{"report_name": "AllSummary"}]) '
+    "(idfkit.simulation.prep_outputs(doc) adds it) and run the simulation again."
+)
+
 
 def _series_args(spec: SeriesSpec) -> tuple[str, str, str | None]:
     """The ``(name, key, frequency)`` a series spec names, with ``get_timeseries``'s defaults."""
@@ -492,7 +499,14 @@ class SQLResult:
             report_for: Optional filter by report scope (e.g. ``"Entire Facility"``).
 
         Returns:
-            List of TabularRow entries matching the filters.
+            List of TabularRow entries matching the filters. With no filter, every row, or an
+            empty list when the database holds no tabular reports.
+
+        Raises:
+            ResultLookupError: A ``KeyError`` subclass, if filters are given and no row matches:
+                it names the first filter that matches nothing (in the order report, report_for,
+                table, row, column) with the closest spellings, or, when the database holds no
+                tabular report at all, says how to have EnergyPlus write them.
         """
         query = (
             "SELECT ReportName, ReportForString, TableName, RowName, "
@@ -524,7 +538,7 @@ class SQLResult:
         cur = self._conn.cursor()
         cur.execute(query, params)
 
-        return [
+        rows = [
             TabularRow(
                 report_name=row[0],
                 report_for=row[1],
@@ -536,6 +550,19 @@ class SQLResult:
             )
             for row in cur.fetchall()
         ]
+        if not rows and conditions:
+            # A filter that matches nothing is a misspelling far more often than an empty report.
+            given = {
+                "ReportName": ("report", report_name),
+                "ReportForString": ("report_for", report_for),
+                "TableName": ("table", table_name),
+                "RowName": ("row", row_name),
+                "ColumnName": ("column", column_name),
+            }
+            self._raise_tabular_not_found({
+                column: (label, value) for column, (label, value) in given.items() if value is not None
+            })
+        return rows
 
     def get_tabular_value(
         self,
@@ -565,6 +592,7 @@ class SQLResult:
                 first argument that matches nothing, with the closest spellings) or
                 if several rows match.
         """
+        # Raises, naming the argument that matches nothing, when no row matches.
         rows = self.get_tabular_data(
             report_name=report_name,
             table_name=table_name,
@@ -572,14 +600,6 @@ class SQLResult:
             column_name=column_name,
             report_for=report_for,
         )
-        if len(rows) == 0:
-            self._raise_tabular_not_found({
-                "ReportName": ("report", report_name),
-                "ReportForString": ("report_for", report_for),
-                "TableName": ("table", table_name),
-                "RowName": ("row", row_name),
-                "ColumnName": ("column", column_name),
-            })
         if len(rows) > 1:
             msg = (
                 f"Multiple rows found ({len(rows)}): report='{report_name}', table='{table_name}', "
@@ -595,6 +615,9 @@ class SQLResult:
             ResultLookupError: Always.
         """
         cur = self._conn.cursor()
+        cur.execute("SELECT 1 FROM TabularDataWithStrings LIMIT 1")
+        if cur.fetchone() is None:
+            raise ResultLookupError(_NO_TABULAR_REPORTS, available=[])
         conditions: list[str] = []
         params: list[str] = []
         scope = ""
@@ -660,7 +683,10 @@ class SQLResult:
         """List all available tabular report names.
 
         Returns:
-            Sorted list of unique report names.
+            Sorted list of unique report names. Empty when the database holds no tabular
+            report: EnergyPlus writes them only for a model with ``Output:Table:SummaryReports``
+            (``idfkit.simulation.prep_outputs`` adds one) and an ``Output:SQLite`` whose option is
+            ``SimpleAndTabular``.
         """
         cur = self._conn.cursor()
         cur.execute("SELECT DISTINCT ReportName FROM TabularDataWithStrings ORDER BY ReportName")

@@ -77,6 +77,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** in a strict document (the default), assigning a field or calling `update()` checked
+  the value as `add()` does and raised `ValidationFailedError` for a wrong type, unlisted choice or
+  out-of-range number; open with `strict=False` to store such values.
+  ([#341](https://github.com/idfkit/idfkit/pull/341))
+- **Breaking:** `SQLResult.get_tabular_data()` (and so `plot_energy_balance()`) raised
+  `ResultLookupError` with the closest spellings when a filter matched nothing, or said to add
+  `Output:Table:SummaryReports` when the database had no tabular reports, instead of returning `[]`;
+  catch `ResultLookupError` where `[]` meant "not found".
+  ([#341](https://github.com/idfkit/idfkit/pull/341))
+- An object type another bundled release has (`Space` on 9.4, `Lights:Definition` on 26.1) was
+  reported as missing from the document's release, with the release that added or removed it and how
+  to reach one, instead of `Unknown object type` or a bare `AttributeError`.
+  ([#341](https://github.com/idfkit/idfkit/pull/341))
 - **Breaking:** `IDFDocument`'s stub dropped its catch-all `__getattr__`, so a misspelled accessor
   (`doc.zonez`) became a pyright/mypy error; raw spellings (`doc.zone`, `doc.Site_Location`) still
   resolved at run time but were untyped errors too: use `doc.zones` or `doc["Site:Location"]`.

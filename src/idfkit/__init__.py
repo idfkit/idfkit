@@ -254,7 +254,8 @@ def new_document(
             create the model at its release: ``new_document(version=idfkit.simulation.find_energyplus().version)``.
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
+            of returning ``None``, and assigning a value the schema refuses raises
+            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
         normalize_choices: When ``True`` (the default), a choice value passed to ``add()``
             or assigned to a field is stored in the spelling its schema declares:
             ``roughness="ROUGH"`` reads back ``"Rough"``. ``False`` stores it as given.
