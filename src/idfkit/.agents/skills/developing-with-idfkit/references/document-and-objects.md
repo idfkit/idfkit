@@ -59,11 +59,10 @@ save_idf(doc, "out.idf")
 
 ## Adding objects
 
-`doc.add()` is the canonical constructor. Pass field values as keyword arguments using Python snake_case names (`x_origin`, not `"X Origin"`):
+`doc.add(obj_type, ...)` is the canonical constructor, and the type's collection (`doc.materials.add(...)`, `doc["Material"].add(...)`) is its typed form, used in the examples here (see [Typed creation through the collection](#typed-creation-through-the-collection)). Pass field values as keyword arguments using Python snake_case names (`x_origin`, not `"X Origin"`):
 
 ```python
-material = doc.add(
-    "Material",
+material = doc.materials.add(
     "XPS_50mm",
     roughness="Rough",
     thickness=0.05,
@@ -376,7 +375,7 @@ def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
     empty model of any release, and the body below is type-checked.
     """
     if "Output:SQLite" not in doc:
-        doc.add("Output:SQLite", option_type="SimpleAndTabular")
+        doc["Output:SQLite"].add(option_type="SimpleAndTabular")
 
 
 def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:
@@ -543,8 +542,7 @@ See [reference-tracking.md](reference-tracking.md) for the full reference-graph 
 Some object types have repeated field groups — vertices on a surface, branches on a `BranchList`, layers in a `Construction`. idfkit exposes them as `ExtensibleList` accessors:
 
 ```python
-surface = doc.add(
-    "BuildingSurface:Detailed",
+surface = doc.building_surfaces.add(
     "South Wall",
     surface_type="Wall",
     construction_name="ExtWall",
@@ -606,7 +604,7 @@ for obj in doc.all_objects:
         empty model of any release, and the body below is type-checked.
         """
         if "Output:SQLite" not in doc:
-            doc.add("Output:SQLite", option_type="SimpleAndTabular")
+            doc["Output:SQLite"].add(option_type="SimpleAndTabular")
 
 
     def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:

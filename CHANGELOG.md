@@ -95,6 +95,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The bundled `developing-with-idfkit` reference created objects through typed collections
+  (`doc.zones.add(...)`), and its splitter, mixer and fan examples passed the required fields they
+  had left out. ([#355](https://github.com/idfkit/idfkit/pull/355))
 - **Breaking:** leaving a `with simulate(...) as result:` block deleted the temporary run directory
   idfkit made when no `output_dir` was given; pass `output_dir` to keep the files.
   `SimulationResult.cleanup()`, `async with` and `BatchResult.cleanup()` did the same, never

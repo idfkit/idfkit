@@ -203,7 +203,7 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
 !!! success "give it at least one group"
 
     ```python
-    doc.add("Output:Table:SummaryReports", reports=[{"report_name": "AllSummary"}])
+    doc.output_table_summary_reports.add(reports=[{"report_name": "AllSummary"}])
     save_idf(doc, "out.idf")  # Output:Table:SummaryReports, AllSummary;
     ```
 

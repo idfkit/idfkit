@@ -191,7 +191,7 @@ ccw_drawn = counter_clockwise_footprint([(0, 0), (0, 30), (50, 30), (50, 0)])  #
 # --8<-- [start:mistake-hvac-good]
 create_block(doc, "Office", footprint_rectangle(50, 30), floor_to_floor=3.5, num_stories=3)
 for zone in doc["Zone"]:
-    doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name=zone.name, template_thermostat_name="OfficeThermostat")
+    doc.hvac_template_zone_ideal_loads_air_systems.add(zone_name=zone.name, template_thermostat_name="OfficeThermostat")
 # --8<-- [end:mistake-hvac-good]
 
 

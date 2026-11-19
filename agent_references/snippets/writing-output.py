@@ -92,6 +92,6 @@ save_idf(doc, "out.idf", output_type="compressed", preserve_formatting=False)
 
 
 # --8<-- [start:mistake-empty-good]
-doc.add("Output:Table:SummaryReports", reports=[{"report_name": "AllSummary"}])
+doc.output_table_summary_reports.add(reports=[{"report_name": "AllSummary"}])
 save_idf(doc, "out.idf")  # Output:Table:SummaryReports, AllSummary;
 # --8<-- [end:mistake-empty-good]
