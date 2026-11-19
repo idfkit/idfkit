@@ -262,11 +262,11 @@ class TestIDFObject:
             data={"x_origin": 5.0},
             field_order=["x_origin", "y_origin"],
         )
-        assert obj.fieldnames == ["Name", "x_origin", "y_origin"]
+        assert obj.fieldnames == ["key", "Name", "X_Origin", "Y_Origin"]
 
     def test_fieldnames_without_field_order(self) -> None:
         obj = IDFObject(obj_type="Zone", name="MyZone", data={"x_origin": 5.0})
-        assert obj.fieldnames == ["Name", "x_origin"]
+        assert obj.fieldnames == ["key", "Name", "X_Origin"]
 
     def test_fieldvalues_with_field_order(self) -> None:
         obj = IDFObject(
@@ -275,11 +275,11 @@ class TestIDFObject:
             data={"x_origin": 5.0, "y_origin": 10.0},
             field_order=["x_origin", "y_origin"],
         )
-        assert obj.fieldvalues == ["MyZone", 5.0, 10.0]
+        assert obj.fieldvalues == ["Zone", "MyZone", 5.0, 10.0]
 
     def test_fieldvalues_without_field_order(self) -> None:
         obj = IDFObject(obj_type="Zone", name="MyZone", data={"x_origin": 5.0})
-        assert obj.fieldvalues == ["MyZone", 5.0]
+        assert obj.fieldvalues == ["Zone", "MyZone", 5.0]
 
     def test_schema_dict_property(self) -> None:
         schema = {"some": "schema"}

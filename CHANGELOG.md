@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Surfaces with vertices read eppy's `area`, `azimuth`, `tilt`, `height`, `width` and `coords`, and
+  eppy's field spellings such as `Vertex_1_Xcoordinate` were accepted. `InvalidFieldError` gained a
+  `hint` that points eppy-only attributes to their idfkit replacement.
+  ([#344](https://github.com/idfkit/idfkit/pull/344))
 - `counter_clockwise_footprint()`, exported from `idfkit`, returned a footprint in the
   counter-clockwise order `create_block()` expects, reversing a clockwise one.
   ([#332](https://github.com/idfkit/idfkit/pull/332))
@@ -108,6 +112,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with neither a `RunPeriod` nor a sizing period (as `new_document()` makes), naming the fix, where
   EnergyPlus reported success with no results; a non-document model raised `TypeError`.
   ([#340](https://github.com/idfkit/idfkit/pull/340))
+- **Breaking:** eppy-compatible `fieldvalues`/`fieldnames` took eppy's layout: type key first, then
+  Name, eppy's spellings (`Outside_Layer`), extensible groups flattened and trailing blanks trimmed.
+  Indexes shift by one, and `fieldnames` are no longer `obj.data` keys: read `obj.field_order` for those.
+  ([#344](https://github.com/idfkit/idfkit/pull/344))
 - `newidfobject()` accepted eppy's field spellings (`Specific_Heat=`) and no longer validated on
   creation, so eppy's create-blank-then-fill idiom works; pass `validate=True` to check at once.
   ([#343](https://github.com/idfkit/idfkit/pull/343))

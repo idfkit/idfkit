@@ -14,7 +14,8 @@ from copy import deepcopy
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast, overload
 
-from ._compat_object import EppyObjectMixin
+from ._compat_object import EPPY_SURFACE_ATTRIBUTES, EppyObjectMixin
+from ._eppy_names import eppy_field_aliases, resolve_eppy_key
 from ._read_required import GROUP_READ_REQUIRED, READ_REQUIRED
 from .exceptions import (
     InvalidFieldError,
@@ -803,6 +804,43 @@ class IDFObject(EppyObjectMixin):
             fixed = cast("list[str]", (self._schema or {}).get("legacy_idd", {}).get("fields", ()))
         return parse_extensible_index(python_key, self._extensibles, fixed)
 
+    def _eppy_aliases(self) -> Mapping[str, str]:
+        """eppy's spellings of this type's fields to their keys (``ParsingCache.eppy_aliases``)."""
+        doc = self._document
+        schema = doc.schema if doc is not None else None
+        pc = schema.get_parsing_cache(self._type) if schema is not None else None
+        if pc is not None:
+            return pc.eppy_aliases
+        return eppy_field_aliases(self._schema)
+
+    def _eppy_key(self, python_key: str) -> str | None:
+        """The key eppy's spelling *python_key* (``vertex_1_xcoordinate``) names, or ``None``.
+
+        See :func:`~idfkit._eppy_names.resolve_eppy_key`; a numbered extensible field resolves to its
+        flat spelling, which the legacy flat-extensible path then routes to its group.
+        """
+        return resolve_eppy_key(python_key, self._eppy_aliases(), self._extensibles)
+
+    def _resolve_key(self, key: str) -> str:
+        """:meth:`_field_key`, then eppy's punctuation-free spelling of a field (``Vertex_1_Xcoordinate``)."""
+        python_key = self._field_key(key)
+        if python_key in self._data:
+            return python_key
+        return self._eppy_key(python_key) or python_key
+
+    def _unknown_field_hint(self, key: str) -> str | None:
+        """The pointer an unknown-field error carries: the idfkit way to an eppy-only attribute, else the groups."""
+        eppy_hint = self._eppy_attribute_hint(key)
+        if eppy_hint is not None:
+            return eppy_hint
+        wrapper_key = self._wrapper_key
+        if wrapper_key is None or not self._ext_inner_names:
+            return None
+        # A wrapper key that is also an attribute of every object (Schedule:Compact's ``data``) is
+        # reached by item access only.
+        view = f"obj[{wrapper_key!r}]" if hasattr(IDFObject, wrapper_key) else f"obj.{wrapper_key}"
+        return f"Reach a group's fields as {view}[0].{self._ext_inner_names[0]}"
+
     def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
         """Check whether *python_key* is a valid field name for this object.
 
@@ -883,8 +921,8 @@ class IDFObject(EppyObjectMixin):
         if key_lower in data:
             return data[key_lower]
 
-        # Try python name conversion
-        python_key = self._field_key(key)
+        # Try python name conversion, then eppy's punctuation-free spelling (Vertex_1_Xcoordinate)
+        python_key = self._resolve_key(key)
         if python_key in data:
             return data[python_key]
 
@@ -908,6 +946,12 @@ class IDFObject(EppyObjectMixin):
                         )
                         return items_typed[group_idx - 1].get(base)
 
+        # Eppy-compat: a surface's geometry (surf.area, surf.coords, ...), never a field of its type.
+        if key in EPPY_SURFACE_ATTRIBUTES and python_key not in (self._field_order or ()):
+            found, value = self._eppy_surface_attr(key)
+            if found:
+                return value
+
         # Field not found — check strict mode
         doc = self._document
         if doc is not None and getattr(doc, "_strict", False):
@@ -921,6 +965,7 @@ class IDFObject(EppyObjectMixin):
                     available_fields=list(field_order),
                     version=ver,
                     extensible_fields=extensibles,
+                    hint=self._unknown_field_hint(key),
                 )
 
         # A field every release requires reads as its value type: absent, it is an error rather
@@ -962,8 +1007,8 @@ class IDFObject(EppyObjectMixin):
             view = ExtensibleList[ExtensibleGroup](self, wrapper_key, self._ext_inner_names)
             view.replace(cast("list[Any]", value))
             return
-        # Normalize key to python style
-        python_key = self._field_key(key)
+        # Normalize key to python style, eppy's punctuation-free spelling included
+        python_key = self._resolve_key(key)
 
         # Eppy-compat: legacy flat extensible field write
         # (surface.vertex_3_x_coordinate = 5.0). Routes to the canonical
@@ -998,6 +1043,7 @@ class IDFObject(EppyObjectMixin):
                     available_fields=list(field_order),
                     version=ver,
                     extensible_fields=self._extensibles,
+                    hint=self._unknown_field_hint(key),
                 )
             self._refuse_invalid_values([(python_key, value)])
         self._set_field(python_key, value)
@@ -1360,7 +1406,7 @@ class IDFObject(EppyObjectMixin):
         group: dict[str, tuple[str, Any]] = {}
         for source in (values if values is not None else {}, kwargs):
             for key, value in source.items():
-                group[key if key[:1] == "_" else self._field_key(key)] = (key, value)
+                group[key if key[:1] == "_" else self._resolve_key(key)] = (key, value)
         refused = [entry for key, value in group.values() if (entry := self._examine(key, value)) is not None]
         if refused:
             self._refuse(refused)
@@ -1389,7 +1435,7 @@ class IDFObject(EppyObjectMixin):
         """Classify one :meth:`update` entry with the tests ``__setattr__`` applies to it."""
         if key[:1] == "_":
             return RefusedEntry(key, "unknown", "private attribute, not a field")
-        python_key = self._field_key(key)
+        python_key = self._resolve_key(key)
         if key.lower() == "name" or python_key == "name":
             return RefusedEntry(key, "name", "use rename() to change an object's name")
         wrapper_key = self._wrapper_key

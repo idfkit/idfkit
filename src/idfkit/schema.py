@@ -19,6 +19,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Final, cast
 
+from ._eppy_names import eppy_field_aliases
 from ._forksafe import ForkSafeLock
 from .exceptions import SchemaNotFoundError
 from .versions import (
@@ -215,6 +216,9 @@ class ParsingCache:
     ext_choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
     #: Trailing-underscore field spellings to their keys (see :func:`trailing_underscore_aliases`).
     field_aliases: Mapping[str, str] = field(default_factory=dict[str, str])
+    #: eppy's spellings of fields whose IDD name has punctuation inside a word, to their keys
+    #: (``vertex_1_xcoordinate`` -> ``vertex_1_x_coordinate``; see :func:`~idfkit._eppy_names.eppy_field_aliases`).
+    eppy_aliases: Mapping[str, str] = field(default_factory=dict[str, str])
 
 
 def type_family(obj_type: str) -> str:
@@ -869,6 +873,7 @@ class EpJSONSchema:
             choice_spellings=_spelling_tables(props),
             ext_choice_spellings=_spelling_tables(ext_inner_props),
             field_aliases=trailing_underscore_aliases(all_fields_list),
+            eppy_aliases=eppy_field_aliases(obj_schema),
         )
 
     def get_types_providing_reference(self, ref_list: str) -> list[str]:

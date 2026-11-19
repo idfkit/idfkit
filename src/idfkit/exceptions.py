@@ -480,9 +480,13 @@ class InvalidFieldError(IdfKitError, AttributeError):
         refused: Sequence[RefusedEntry] | None = None,
         operation: Literal["update", "add"] = "update",
         message: str | None = None,
+        hint: str | None = None,
     ) -> None:
         self.obj_type = obj_type
         self.field_name = field_name
+        #: A pointer to where the name the caller meant lives, when it is known: how to reach an
+        #: extensible group, or the idfkit replacement for an eppy-only attribute.
+        self.hint = hint
         self.available_fields = available_fields
         self.version = version
         self.extensible_fields = extensible_fields
@@ -508,6 +512,8 @@ class InvalidFieldError(IdfKitError, AttributeError):
             sorted_ext = sorted(extensible_fields)
             group = ", ".join(sorted_ext)
             msg += f"\n  (extensible: additional groups of ({group}) are allowed)"
+        if hint:
+            msg += f"\n  {hint}"
         if version:
             from .docs import io_reference_url
 
