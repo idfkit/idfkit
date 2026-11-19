@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import pickle
 import platform
 from pathlib import Path
 from unittest.mock import patch
@@ -134,8 +135,47 @@ class TestFindEnergyPlus:
 
     def test_version_filter_mismatch(self, tmp_path: Path) -> None:
         install_dir = self._setup_install(tmp_path)
-        with pytest.raises(EnergyPlusNotFoundError):
+        with pytest.raises(EnergyPlusNotFoundError, match=r"No EnergyPlus 23\.2\.0 found; found 24\.1\.0 at ") as info:
             find_energyplus(path=install_dir, version=(23, 2, 0))
+        assert info.value.requested_version == (23, 2, 0)
+        assert info.value.found == [((24, 1, 0), str(install_dir.resolve()))]
+        # 24.1.0 is newer than 23.2.0, so a model can be migrated to it.
+        assert "auto_migrate=True" in str(info.value)
+
+    def test_discovered_other_version_is_named(self, tmp_path: Path) -> None:
+        """An install at another version is reported with its version and path, not as 'not found'."""
+        install_dir = self._setup_install(tmp_path)
+        with (
+            patch("idfkit.simulation.config._discovery_candidates", return_value=[install_dir.resolve()]),
+            pytest.raises(EnergyPlusNotFoundError) as info,
+        ):
+            find_energyplus(version="25.1")
+        msg = str(info.value)
+        assert f"No EnergyPlus 25.1.0 found; found 24.1.0 at {install_dir.resolve()}" in msg
+        assert "Could not find an EnergyPlus installation" not in msg
+        assert "Drop version=" in msg
+        # Nothing installed is newer than 25.1.0, so migration is not offered.
+        assert "auto_migrate" not in msg
+
+    def test_searched_locations_are_not_repeated(self, tmp_path: Path) -> None:
+        """A path reached by two discovery routes is tried and listed once."""
+        missing = (tmp_path / "missing").resolve()
+        with (
+            patch("idfkit.simulation.config._discovery_candidates", return_value=[missing, missing]),
+            pytest.raises(EnergyPlusNotFoundError) as info,
+        ):
+            find_energyplus(version=(24, 1, 0))
+        assert info.value.searched_locations == [str(missing)]
+        assert "Could not find an EnergyPlus installation of version 24.1.0" in str(info.value)
+
+    def test_not_found_error_survives_pickling(self) -> None:
+        """The message and attributes cross a process boundary intact (multiprocessing)."""
+        err = EnergyPlusNotFoundError(["/a"], requested_version=(24, 1, 0), found=[((26, 1, 0), "/b")])
+        back = pickle.loads(pickle.dumps(err))  # noqa: S301
+        assert str(back) == str(err)
+        assert back.searched_locations == ["/a"]
+        assert back.requested_version == (24, 1, 0)
+        assert back.found == [((26, 1, 0), "/b")]
 
 
 # ---------------------------------------------------------------------------
@@ -236,8 +276,8 @@ class TestExtractVersionFromIDD:
         assert result is None
 
 
-class TestTryCandidate:
-    """Tests for _try_candidate() helper."""
+class TestLoadCandidate:
+    """Tests for _load_candidate() helper."""
 
     def _setup_install(self, tmp_path: Path, dirname: str = "EnergyPlusV24-1-0") -> Path:
         install_dir = tmp_path / dirname
@@ -248,19 +288,20 @@ class TestTryCandidate:
         (install_dir / "Energy+.idd").write_text("!IDD_Version 24.1.0\n")
         return install_dir
 
-    def test_version_mismatch_returns_none(self, tmp_path: Path) -> None:
-        """_try_candidate returns None when version doesn't match."""
-        from idfkit.simulation.config import _try_candidate  # pyright: ignore[reportPrivateUsage]
+    def test_returns_config_whatever_its_version(self, tmp_path: Path) -> None:
+        """_load_candidate returns the install it finds; find_energyplus does the version check."""
+        from idfkit.simulation.config import _load_candidate  # pyright: ignore[reportPrivateUsage]
 
         install_dir = self._setup_install(tmp_path)
-        result = _try_candidate(install_dir, (23, 2, 0))
-        assert result is None
+        result = _load_candidate(install_dir)
+        assert result is not None
+        assert result.version == (24, 1, 0)
 
     def test_invalid_path_returns_none(self, tmp_path: Path) -> None:
-        """_try_candidate returns None when path doesn't contain EnergyPlus."""
-        from idfkit.simulation.config import _try_candidate  # pyright: ignore[reportPrivateUsage]
+        """_load_candidate returns None when path doesn't contain EnergyPlus."""
+        from idfkit.simulation.config import _load_candidate  # pyright: ignore[reportPrivateUsage]
 
-        result = _try_candidate(tmp_path / "nonexistent", None)
+        result = _load_candidate(tmp_path / "nonexistent")
         assert result is None
 
 

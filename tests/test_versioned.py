@@ -21,7 +21,6 @@ from idfkit._document_types import release_of
 from idfkit.codegen import generate_stubs as gen
 from idfkit.codegen.verify_stubs import Version, verify
 from idfkit.document import AnyIDFDocument, IDFDocument
-from idfkit.exceptions import UnsupportedVersionError
 from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
 
 _PACKAGE = Path(versioned.__file__).resolve().parent
@@ -212,8 +211,8 @@ class TestNewDocument:
         with pytest.raises(TypeError, match="not a document type"):
             new_document(list[Literal[False]])  # pyright: ignore[reportArgumentType, reportCallIssue]
 
-    def test_a_version_that_is_not_a_tuple_is_still_an_unsupported_version(self) -> None:
-        with pytest.raises(UnsupportedVersionError):
+    def test_a_version_string_names_the_tuple_to_pass(self) -> None:
+        with pytest.raises(TypeError, match=r"e\.g\. \(24, 1, 0\); got '24\.1\.0'"):
             new_document("24.1.0")  # pyright: ignore[reportArgumentType, reportCallIssue]
 
     def test_annotations_resolve_at_run_time(self) -> None:

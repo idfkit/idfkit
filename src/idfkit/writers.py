@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
+from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, Literal, cast
 
@@ -103,6 +104,34 @@ def _resolve_version_identifier(doc: AnyIDFDocument[bool]) -> str:
                 return vi.strip()
     v = doc.version
     return f"{v[0]}.{v[1]}"
+
+
+_EPJSON_SUFFIXES: Final = frozenset({".epjson", ".json"})
+_IDF_SUFFIXES: Final = frozenset({".idf", ".imf"})
+
+
+def _check_document(doc: object, func: str) -> None:
+    """Raise TypeError naming the call shape when *func* got something other than a document first."""
+    # Local, because document imports this module.
+    from .document import IDFDocument
+
+    if isinstance(doc, IDFDocument):
+        return
+    msg = f"{func}(doc, ...): first argument must be a document, got {type(doc).__name__} {doc!r}"
+    if isinstance(doc, (str, PathLike)):
+        msg += "; the document comes first and the path second"
+    raise TypeError(msg)
+
+
+def _check_save_path(path: Path, func: str, wrong_suffixes: frozenset[str], other_func: str) -> None:
+    """Refuse a path whose suffix names the other format: EnergyPlus picks its reader by the suffix."""
+    if path.suffix.lower() in wrong_suffixes:
+        written = "IDF" if func == "save_idf" else "epJSON"
+        msg = (
+            f"{func}() writes {written} text, but {path.name} has a {path.suffix} suffix, which EnergyPlus reads"
+            f" as the other format; use {other_func}(doc, {str(path)!r}), or give a path with the right suffix"
+        )
+        raise ValueError(msg)
 
 
 def write_idf(
@@ -280,6 +309,11 @@ def save_idf(
         ordering: Object ordering, as for
             [write_idf][idfkit.writers.write_idf].
 
+    Raises:
+        TypeError: If *doc* is not a document, as when the arguments are swapped.
+        ValueError: If *path* ends in ``.epJSON`` or ``.json``, which EnergyPlus reads as epJSON:
+            use [save_epjson][idfkit.writers.save_epjson] for those.
+
     Examples:
         Write to disk for EnergyPlus simulation:
 
@@ -295,6 +329,9 @@ def save_idf(
             save_idf(model, "building_copy.idf")  # byte-identical
             ```
     """
+    _check_document(doc, "save_idf")
+    path = Path(path)
+    _check_save_path(path, "save_idf", _EPJSON_SUFFIXES, "save_epjson")
     content = write_idf(
         doc,
         output_type,
@@ -304,7 +341,6 @@ def save_idf(
         ordering=ordering,
         version_first=version_first,
     )
-    path = Path(path)
     with open(path, "w", encoding=encoding) as f:
         f.write(content)
     logger.info("Wrote IDF (%d objects) to %s", len(doc), path)
@@ -394,6 +430,11 @@ def save_epjson(
         preserve_formatting: Lossless output control, as for
             [write_epjson][idfkit.writers.write_epjson].
 
+    Raises:
+        TypeError: If *doc* is not a document, as when the arguments are swapped.
+        ValueError: If *path* ends in ``.idf`` or ``.imf``, which EnergyPlus reads as IDF:
+            use [save_idf][idfkit.writers.save_idf] for those.
+
     Examples:
         Write to disk:
 
@@ -401,8 +442,10 @@ def save_epjson(
             save_epjson(model, "in.epJSON")
             ```
     """
-    content = write_epjson(doc, indent, preserve_formatting=preserve_formatting)
+    _check_document(doc, "save_epjson")
     path = Path(path)
+    _check_save_path(path, "save_epjson", _IDF_SUFFIXES, "save_idf")
+    content = write_epjson(doc, indent, preserve_formatting=preserve_formatting)
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
     logger.info("Wrote epJSON (%d objects) to %s", len(doc), path)

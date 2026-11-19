@@ -69,7 +69,7 @@ print(config.executable, config.version)
 
 Discovery checks `$ENERGYPLUS_DIR`, `$PATH`, and standard install locations (`/usr/local/EnergyPlus-*`, `/Applications/EnergyPlus-*`, `C:\EnergyPlusV*`, plus `/opt/eplus` for Claude Code web sessions). Pass the result to `simulate(..., energyplus=config)` to skip rediscovery on every call.
 
-If EnergyPlus is missing, `EnergyPlusNotFoundError` is raised.
+If EnergyPlus is missing, `EnergyPlusNotFoundError` is raised. With `version=`, an install at another version is named in the message and on `.found` as `(version, install_dir)` pairs: drop `version=`, install that release, or migrate the model to an installed one (`simulate(..., auto_migrate=True)`).
 
 ## Version handling
 

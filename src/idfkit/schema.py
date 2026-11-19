@@ -24,6 +24,7 @@ from .exceptions import SchemaNotFoundError
 from .versions import (
     ENERGYPLUS_VERSIONS,
     find_closest_version,
+    reject_version_string,
     version_dirname,
 )
 
@@ -1128,10 +1129,12 @@ class SchemaManager:
 
         Raises:
             SchemaNotFoundError: If schema cannot be found
+            TypeError: If *version* is a string such as ``"24.1.0"`` rather than a tuple
         """
         cached = self._cache.get(version)
         if cached is not None:
             return cached
+        reject_version_string(version)
 
         # Without this, threads that miss at the same time each load and build their own copy, and
         # each walks away with a different instance: the one-schema-per-version invariant breaks,

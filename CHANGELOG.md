@@ -239,6 +239,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `find_energyplus(version=...)` named the installs it found at other versions, and how to proceed, instead of
+  reporting no EnergyPlus at all; searched paths were listed once each.
+  ([#339](https://github.com/idfkit/idfkit/pull/339))
+- **Breaking:** `new_document()`, `get_schema()`, `load_idf(version=)`, `is_supported_version()` and
+  `find_closest_version()` raised `TypeError` naming the tuple for a version string such as `"26.1"`, instead
+  of `UnsupportedVersionError`, a garbled error or `False`; pass a `(major, minor, patch)` tuple.
+  ([#339](https://github.com/idfkit/idfkit/pull/339))
+- **Breaking:** `load_idf()` on epJSON and `load_epjson()` on IDF raised the new `FileFormatError` (a
+  `ValueError`), naming the other loader; `load_epjson()` no longer raised `json.JSONDecodeError` for IDF text.
+  ([#339](https://github.com/idfkit/idfkit/pull/339))
+- **Breaking:** `save_idf()` (and `doc.save()`) raised `ValueError` for a `.epJSON`/`.json` path, and
+  `save_epjson()` for `.idf`, instead of writing the wrong format; write epJSON with `save_epjson()`.
+  Swapped arguments raised `TypeError`. ([#339](https://github.com/idfkit/idfkit/pull/339))
 - `write_idf()` padded `HVACTemplate:*` and `GroundHeatTransfer:*` objects to their schema `min_fields`
   with blank fields, so templates built in code expand instead of stopping `ExpandObjects`.
   ([#333](https://github.com/idfkit/idfkit/pull/333))

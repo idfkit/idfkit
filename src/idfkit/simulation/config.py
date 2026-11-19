@@ -214,27 +214,41 @@ def find_energyplus(
         EnergyPlusNotFoundError: If no matching installation is found.
     """
     target_version = normalize_version(version) if version is not None else None
-    searched: list[str] = []
 
     # 1. Explicit path
     if path is not None:
         p = Path(path).resolve()
-        searched.append(str(p))
         config = EnergyPlusConfig.from_path(p)
         if target_version is not None and config.version != target_version:
-            raise EnergyPlusNotFoundError(searched)
+            raise EnergyPlusNotFoundError(
+                [str(p)], requested_version=target_version, found=[(config.version, str(config.install_dir))]
+            )
         return config
 
     # 2-4. Try candidates from env var, PATH, and platform dirs
+    searched: list[str] = []
+    found: dict[Path, EnergyPlusConfig] = {}
     for candidate in _discovery_candidates():
+        if str(candidate) in searched:
+            continue
         searched.append(str(candidate))
         logger.debug("Trying candidate %s", candidate)
-        result = _try_candidate(candidate, target_version)
-        if result is not None:
-            logger.info("Found EnergyPlus %d.%d.%d at %s", *result.version, result.install_dir)
-            return result
+        config = _load_candidate(candidate)
+        if config is None:
+            continue
+        if target_version is None or config.version == target_version:
+            logger.info("Found EnergyPlus %d.%d.%d at %s", *config.version, config.install_dir)
+            return config
+        logger.debug(
+            "Skipping EnergyPlus %d.%d.%d at %s: not the version asked for", *config.version, config.install_dir
+        )
+        found.setdefault(config.install_dir, config)
 
-    raise EnergyPlusNotFoundError(searched)
+    raise EnergyPlusNotFoundError(
+        searched,
+        requested_version=target_version,
+        found=[(c.version, str(c.install_dir)) for c in found.values()],
+    )
 
 
 def _discovery_candidates() -> list[Path]:
@@ -260,23 +274,12 @@ def _discovery_candidates() -> list[Path]:
     return candidates
 
 
-def _try_candidate(candidate: Path, target_version: tuple[int, int, int] | None) -> EnergyPlusConfig | None:
-    """Try to create a config from a candidate path.
-
-    Args:
-        candidate: Path to try.
-        target_version: Required version, or None for any.
-
-    Returns:
-        Config if valid and version matches, else None.
-    """
+def _load_candidate(candidate: Path) -> EnergyPlusConfig | None:
+    """The installation at *candidate*, whatever its version, or None if there is none."""
     try:
-        config = EnergyPlusConfig.from_path(candidate)
+        return EnergyPlusConfig.from_path(candidate)
     except EnergyPlusNotFoundError:
         return None
-    if target_version is None or config.version == target_version:
-        return config
-    return None
 
 
 # ---------------------------------------------------------------------------
