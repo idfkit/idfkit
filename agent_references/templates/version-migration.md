@@ -66,6 +66,8 @@ EnergyPlus ships one `Transition-VX-to-VY` binary per version step. idfkit plans
 
 A seven-step chain (22.1 → 22.2 → 23.1 → 23.2 → 24.1 → 24.2 → 25.1 → 25.2) is normal — each step is a separate binary invocation.
 
+Each step also renames output variables and meters (`Output:Variable`, `Output:Meter`, EMS sensors) from the `Report Variables <from> to <to>.csv` table next to the binary, so `Other Equipment FuelOil#1 Rate` becomes `Other Equipment FuelOilNo1 Rate` on 9.3 → 9.4. When an install lacks that table the binary skips the renames and still succeeds; idfkit logs a warning on the `idfkit.migration` logger, and the step's `stdout` says `... not found`.
+
 ## What `MigrationReport` contains
 
 ```python

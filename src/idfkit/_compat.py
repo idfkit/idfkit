@@ -527,6 +527,12 @@ class EppyDocumentMixin:
         Raises:
             ValueError: If no filepath is set and none is provided.
 
+        Warns:
+            FormattingLossWarning: The document was loaded without
+                ``preserve_formatting=True`` and the file it overwrites, the one it
+                was read from, has ``!`` comments, which are dropped (the objects are
+                re-sorted too). Load with ``preserve_formatting=True`` to keep them.
+
         Examples:
             Save a modified model back to its original IDF file:
 

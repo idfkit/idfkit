@@ -189,16 +189,25 @@ _CST_TYPE_NAME_RE = re.compile(r"^(?:![^\n]*\n)*([^;!,\n]*),", re.MULTILINE)
 
 
 def _coerce_value_fast(field_type: str | None, value: str) -> Any:
-    """Coerce a field value using a pre-resolved type string."""
+    """Coerce a field value using a pre-resolved type string.
+
+    ``nan``, ``inf`` and ``infinity`` are left as text, as any other word is: ``float()`` reads them,
+    but EnergyPlus does not, and neither format can write them back as a number.
+    """
     if field_type == "number":
         try:
-            return float(value)
+            number = float(value)
         except ValueError:
             return value
+        # `x - x` is 0.0 for every finite float and NaN for NaN and both infinities. Cheaper than a
+        # call to math.isfinite on the parser's hottest line.
+        return number if number - number == 0.0 else value
     if field_type == "integer":
         try:
             number = float(value)
         except ValueError:
+            return value
+        if number - number != 0.0:
             return value
         # A fractional value is kept as written rather than truncated, so validation can report it.
         return int(number) if number.is_integer() else number

@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast
 
 from ._compat_object import EPPY_SURFACE_ATTRIBUTES, EppyObjectMixin
 from ._eppy_names import eppy_field_aliases, resolve_eppy_key
+from ._finite import NON_FINITE_DETAIL, is_non_finite, non_finite_fields, non_finite_message
 from ._read_required import GROUP_READ_REQUIRED, READ_REQUIRED
 from .exceptions import (
     InvalidFieldError,
@@ -349,6 +350,9 @@ class ExtensibleGroup:
                 raise AttributeError(  # noqa: TRY003
                     f"{k!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
                 )
+        for k, v in merged.items():
+            if is_non_finite(v):
+                raise self._owner._non_finite_error(f"{self._wrapper_key}[{self._group_index - 1}].{k}", v)  # pyright: ignore[reportPrivateUsage]
         slot = self._slot()
         for name, value in self._owner._canonical_slots(merged).items():  # pyright: ignore[reportPrivateUsage]
             assign_slot(slot, name, value)
@@ -440,12 +444,21 @@ class ExtensibleList(Generic[GroupT_co]):
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def _coerce_item(
-        self, item: Any, kwargs: dict[str, Any], tables: Mapping[str, ChoiceSpellings] | None = None
+        self,
+        item: Any,
+        kwargs: dict[str, Any],
+        tables: Mapping[str, ChoiceSpellings] | None = None,
+        *,
+        position: int,
     ) -> dict[str, Any]:
         """A new dict for one group: blank slots dropped, choices in their schema's spelling.
 
         *tables* are the owner's extensible choice tables, when the caller resolved them once for
-        several groups.
+        several groups. *position* is the index the group will have, which names a refused slot
+        as ``wrapper[i].slot``.
+
+        Raises:
+            InvalidFieldError: A slot holds NaN or infinity.
         """
         if item is not None and kwargs:
             raise TypeError("pass either a dict/group OR keyword arguments, not both")  # noqa: TRY003
@@ -457,6 +470,9 @@ class ExtensibleList(Generic[GroupT_co]):
             group = without_blank_slots(kwargs)
         else:
             raise TypeError(f"expected dict, ExtensibleGroup, or kwargs; got {type(item).__name__}")  # noqa: TRY003
+        for slot, value in group.items():
+            if is_non_finite(value):
+                raise self._owner._non_finite_error(f"{self._wrapper_key}[{position}].{slot}", value)  # pyright: ignore[reportPrivateUsage]
         return self._owner._canonical_slots(group, tables, fresh=True)  # pyright: ignore[reportPrivateUsage]
 
     def _validate_inner(self, item: dict[str, Any]) -> None:
@@ -469,7 +485,7 @@ class ExtensibleList(Generic[GroupT_co]):
 
     def append(self, item: Any = None, /, **kwargs: Any) -> GroupT_co:
         """Append a new group. Accepts a dict, another :class:`ExtensibleGroup`, or kwargs."""
-        merged = self._coerce_item(item, kwargs)
+        merged = self._coerce_item(item, kwargs, position=len(self))
         self._validate_inner(merged)
         items = self._items_for_write()
         items.append(merged)
@@ -478,13 +494,13 @@ class ExtensibleList(Generic[GroupT_co]):
 
     def insert(self, index: int, item: Any = None, /, **kwargs: Any) -> GroupT_co:
         """Insert a new group at *index*. Existing groups at and after *index* shift up."""
-        merged = self._coerce_item(item, kwargs)
-        self._validate_inner(merged)
-        items = self._items_for_write()
-        n = len(items)
+        n = len(self)
         if index < 0:
             index = max(0, n + index)
         index = min(index, n)
+        merged = self._coerce_item(item, kwargs, position=index)
+        self._validate_inner(merged)
+        items = self._items_for_write()
         items.insert(index, merged)
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
         return cast(
@@ -517,11 +533,12 @@ class ExtensibleList(Generic[GroupT_co]):
     def _coerce_all(self, items: list[Any]) -> list[dict[str, Any]]:
         """Coerce and validate every group of a whole-list replacement, writing nothing.
 
-        Raises ``TypeError`` for an item that is not a dict or group and ``ValueError`` for an
-        unknown inner field, so a caller can reject the list before any write.
+        Raises ``TypeError`` for an item that is not a dict or group, ``ValueError`` for an
+        unknown inner field and ``InvalidFieldError`` for a NaN or infinite slot, so a caller can
+        reject the list before any write.
         """
         tables = self._owner._choice_tables(extensible=True)  # pyright: ignore[reportPrivateUsage]
-        coerced = [self._coerce_item(it, {}, tables) for it in items]
+        coerced = [self._coerce_item(it, {}, tables, position=i) for i, it in enumerate(items)]
         for it in coerced:
             self._validate_inner(it)
         return coerced
@@ -1065,7 +1082,15 @@ class IDFObject(EppyObjectMixin):
         return [error for key, value in entries if (error := field_value_error(self, key, value, schema)) is not None]
 
     def _refuse_invalid_values(self, entries: Iterable[tuple[str, Any]]) -> None:
-        """Raise :class:`ValidationFailedError` if a strict document's schema refuses any of *entries*."""
+        """Raise :class:`ValidationFailedError` if a strict document's schema refuses any of *entries*.
+
+        NaN and infinity are refused first, with the :class:`InvalidFieldError` every document raises
+        for them, so a range check never reports one as merely out of range.
+        """
+        entries = list(entries)
+        for key, value in entries:
+            if is_non_finite(value):
+                raise self._non_finite_error(key, value)
         errors = self._value_errors(entries)
         if errors:
             raise ValidationFailedError(errors)
@@ -1243,8 +1268,14 @@ class IDFObject(EppyObjectMixin):
         return pc.ext_choice_spellings if extensible else pc.choice_spellings
 
     def _canonical_slot_value(self, name: str, value: Any) -> Any:
-        """*value* for the extensible slot *name*, in its schema's spelling when it is a choice."""
+        """*value* for the extensible slot *name*, in its schema's spelling when it is a choice.
+
+        Raises:
+            InvalidFieldError: *value* is NaN or infinity, which no field takes.
+        """
         if not isinstance(value, str):
+            if is_non_finite(value):
+                raise self._non_finite_error(name, value)
             return value
         return canonical_choice(self._choice_tables(extensible=True).get(name), value)
 
@@ -1267,6 +1298,11 @@ class IDFObject(EppyObjectMixin):
             return cast("dict[str, Any]", slots) if fresh else dict(slots)
         return {name: canonical_choice(tables.get(name), value) for name, value in slots.items()}
 
+    def _non_finite_error(self, field_name: str, value: float) -> InvalidFieldError:
+        """The error for writing NaN or infinity into *field_name*, before anything is stored."""
+        where = f"{self._type} {self._name!r}" if self._name else self._type
+        return InvalidFieldError(self._type, field_name, message=non_finite_message(where, field_name, value))
+
     def _set_field(self, python_key: str, value: Any) -> None:
         """Centralized data-field write with reference graph notification.
 
@@ -1288,6 +1324,8 @@ class IDFObject(EppyObjectMixin):
         """
         if isinstance(value, str):
             value = canonical_choice(self._choice_tables(extensible=False).get(python_key), value)
+        elif is_non_finite(value):
+            raise self._non_finite_error(python_key, value)
         data = self._data
         blank = is_blank_slot(value)
         if python_key in data:
@@ -1440,14 +1478,7 @@ class IDFObject(EppyObjectMixin):
             return RefusedEntry(key, "name", "use rename() to change an object's name")
         wrapper_key = self._wrapper_key
         if wrapper_key is not None and (key == wrapper_key or python_key == wrapper_key):
-            if not isinstance(value, list):
-                return RefusedEntry(key, "wrapper-value", f"expected a list, got {type(value).__name__}")
-            view = ExtensibleList[ExtensibleGroup](self, wrapper_key, self._ext_inner_names)
-            try:
-                view._coerce_all(cast("list[Any]", value))  # pyright: ignore[reportPrivateUsage]
-            except (TypeError, ValueError) as exc:
-                return RefusedEntry(key, "wrapper-value", str(exc))
-            return None
+            return self._examine_wrapper(key, wrapper_key, value)
         if self._extensibles and wrapper_key is not None:
             base, group_idx = self._flat_extensible(python_key)
             if base is not None:
@@ -1455,6 +1486,22 @@ class IDFObject(EppyObjectMixin):
         field_order = self._field_order
         if field_order is not None and not self._is_known_field(python_key, field_order):
             return RefusedEntry(key, "unknown", f"not a field of {self._type}")
+        # Last, so a key that is not a field is refused as that, whatever its value.
+        if is_non_finite(value):
+            return RefusedEntry(key, "non-finite", NON_FINITE_DETAIL)
+        return None
+
+    def _examine_wrapper(self, key: str, wrapper_key: str, value: Any) -> RefusedEntry | None:
+        """Classify an :meth:`update` entry for the extensible wrapper: its whole list of groups."""
+        if not isinstance(value, list):
+            return RefusedEntry(key, "wrapper-value", f"expected a list, got {type(value).__name__}")
+        view = ExtensibleList[ExtensibleGroup](self, wrapper_key, self._ext_inner_names)
+        try:
+            view._coerce_all(cast("list[Any]", value))  # pyright: ignore[reportPrivateUsage]
+        except InvalidFieldError as exc:
+            return RefusedEntry(exc.field_name, "non-finite", NON_FINITE_DETAIL)
+        except (TypeError, ValueError) as exc:
+            return RefusedEntry(key, "wrapper-value", str(exc))
         return None
 
     def _refuse(self, refused: list[RefusedEntry], operation: Literal["update", "add"] = "update") -> None:
@@ -1618,7 +1665,7 @@ def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache) -> None:
             python_key = to_python_name(key)
             if key.lower() == "name" or python_key == "name":
                 refused.append(RefusedEntry(key, "name", "pass the object's name as add()'s name argument"))
-            elif (entry := obj._examine(key, value)) is not None:  # pyright: ignore[reportPrivateUsage]
+            elif (entry := obj._examine(key, value)) is not None and entry.reason != "non-finite":  # pyright: ignore[reportPrivateUsage]
                 refused.append(entry)
             elif python_key != key:
                 # update() resolves display spellings such as "X Origin"; add() stores keys as given.
@@ -1631,6 +1678,11 @@ def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache) -> None:
         )
         if not plain and (entry := obj._examine(wrapper_key, groups)) is not None:  # pyright: ignore[reportPrivateUsage]
             refused.append(entry)
+    # A key refused above is refused once, for the problem to fix first.
+    seen = {entry.name for entry in refused}
+    refused.extend(
+        RefusedEntry(key, "non-finite", NON_FINITE_DETAIL) for key, _ in non_finite_fields(data) if key not in seen
+    )
     if refused:
         obj._refuse(refused, "add")  # pyright: ignore[reportPrivateUsage]
 

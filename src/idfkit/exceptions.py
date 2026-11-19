@@ -385,6 +385,32 @@ class ResultLookupError(IdfKitError, KeyError):
         return self.message
 
 
+class FormattingLossWarning(UserWarning):
+    """Warned when ``save_idf()`` or ``save()`` overwrites a commented IDF file it cannot reproduce.
+
+    A document read by ``load_idf()`` without ``preserve_formatting=True`` keeps no copy of the
+    file's comments or layout, so writing it back over that file drops every ``!`` comment and
+    re-sorts the objects. Load with ``preserve_formatting=True`` to keep them and change only the
+    objects you edit, or save to another path. Silence it like any warning:
+
+        warnings.filterwarnings("ignore", category=FormattingLossWarning)
+    """
+
+    def __init__(self, path: str, comment_lines: int) -> None:
+        # ``args`` holds the constructor's arguments, so ``cls(*args)`` rebuilds the warning.
+        super().__init__(path, comment_lines)
+        self.path = path
+        self.comment_lines = comment_lines
+
+    def __str__(self) -> str:
+        lines = "line" if self.comment_lines == 1 else "lines"
+        return (
+            f"Overwriting {self.path}, which has {self.comment_lines} comment {lines}, from a document "
+            "loaded without preserve_formatting=True: the comments are dropped and the objects re-sorted. "
+            "Load it with load_idf(path, preserve_formatting=True) to keep them, or save to another path."
+        )
+
+
 class UnknownObjectTypeWarning(UserWarning):
     """Warned when a document is read by an object type name no bundled EnergyPlus release has.
 
@@ -415,13 +441,14 @@ class RefusedEntry:
     """One entry of an ``IDFObject.update`` group, or ``IDFDocument.add`` call, that will not be applied.
 
     ``reason`` is ``"unknown"`` (not a field of the type), ``"name"`` (renaming has its own
-    operation), ``"legacy-flat"`` (an eppy-style flat extensible name) or ``"wrapper-value"``
-    (the extensible wrapper key given a value single assignment rejects: not a list, or a list
-    with an item that is not a dict or group, or a group with an unknown field).
+    operation), ``"legacy-flat"`` (an eppy-style flat extensible name), ``"non-finite"`` (a NaN
+    or infinite value, which no field takes) or ``"wrapper-value"`` (the extensible wrapper key
+    given a value single assignment rejects: not a list, or a list with an item that is not a
+    dict or group, or a group with an unknown field).
     """
 
     name: str
-    reason: Literal["unknown", "name", "legacy-flat", "wrapper-value"]
+    reason: Literal["unknown", "name", "legacy-flat", "non-finite", "wrapper-value"]
     detail: str
 
 

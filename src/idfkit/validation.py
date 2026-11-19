@@ -8,10 +8,12 @@ eager validation during parsing.
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
 
+from ._finite import NON_FINITE_DETAIL, non_finite_fields
 from ._surface_types import is_fenestration_door
 from .exceptions import closest_names
 from .objects import IDFObject, is_blank_slot
@@ -705,6 +707,9 @@ def _validate_object(  # noqa: C901
             continue
         if value is None or value == "":
             continue
+        if check_types and (non_finite := _non_finite_error(obj, field_name, value)) is not None:
+            errors.extend(non_finite)
+            continue
 
         # Most fields constrain nothing but their type, and most values already have it;
         # most of the rest are choice fields answered by one lookup in the folded enum.
@@ -954,6 +959,37 @@ def _branch_constraint_failure(
         return _first_bound_failure(obj, field_name, value, branch.bounds)
 
     return None
+
+
+def _non_finite_error(obj: IDFObject, field_name: str, value: Any) -> list[ValidationError] | None:
+    """``E003`` for each NaN or infinity in *value*, a field's value or its extensible groups.
+
+    ``None`` (not an empty list) when there is none, which is the answer for any value that is not
+    a float or a list, so the per-field cost is two type checks. A NaN satisfies ``number`` and
+    every bound compares false against it, so the type and range checks would pass it.
+    """
+    if isinstance(value, float):
+        if math.isfinite(value):
+            return None
+        found = [(field_name, value)]
+    elif isinstance(value, list):
+        found = list(non_finite_fields({field_name: value}))
+        if not found:
+            return None
+    else:
+        return None
+    return [
+        ValidationError(
+            severity=Severity.ERROR,
+            obj_type=obj.obj_type,
+            obj_name=obj.name,
+            obj=obj,
+            field=name,
+            message=f"Expected a finite number, got {bad!r}; {NON_FINITE_DETAIL}",
+            code="E003",
+        )
+        for name, bad in found
+    ]
 
 
 def _is_numeric(value: Any) -> bool:

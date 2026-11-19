@@ -21,6 +21,8 @@ from .schema import canonicalize_choices, get_schema_manager
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from .schema import EpJSONSchema, ParsingCache
 
 
@@ -182,7 +184,7 @@ class EpJSONParser:
         try:
             with open(self._filepath, encoding="utf-8") as f:
                 raw_text = f.read()
-            data: dict[str, Any] = json.loads(raw_text)
+            data: dict[str, Any] = json.loads(raw_text, parse_constant=_constant_refuser(self._filepath))
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
             # IDF text starts with a comment or an object type, never with '{'. An IDF file is often
             # latin-1 (save_idf's default) and so not UTF-8 at all: look at the bytes, not the text.
@@ -437,6 +439,23 @@ def _raise_unknown_fields(diagnostics: list[ParseDiagnostic]) -> None:
         raise IDFParseError(summary, diagnostics=diagnostics)
 
 
+def _constant_refuser(filepath: Path) -> Callable[[str], Any]:
+    """A ``parse_constant`` hook refusing ``NaN``, ``Infinity`` and ``-Infinity`` in *filepath*.
+
+    ``json`` reads them, but JSON does not have them and EnergyPlus's epJSON reader stops on them
+    with a parse error, so a file holding one would load here and fail there.
+    """
+
+    def refuse(constant: str) -> Any:
+        msg = (
+            f"{filepath}: {constant} is not valid JSON and EnergyPlus refuses it. "
+            "Replace it with a number (or remove the field) and load the file again."
+        )
+        raise ValueError(msg)
+
+    return refuse
+
+
 def load_epjson(filepath: Path | str) -> dict[str, Any]:
     """
     Load raw epJSON data without parsing into document.
@@ -456,7 +475,7 @@ def load_epjson(filepath: Path | str) -> dict[str, Any]:
     """
     filepath = Path(filepath)
     with open(filepath, encoding="utf-8") as f:
-        return json.load(f)
+        return json.load(f, parse_constant=_constant_refuser(filepath))
 
 
 def get_epjson_version(filepath: Path | str) -> tuple[int, int, int]:
@@ -486,7 +505,7 @@ def get_epjson_version(filepath: Path | str) -> tuple[int, int, int]:
 
     with open(filepath, encoding="utf-8") as f:
         # Parse just enough to get version
-        data = json.load(f)
+        data = json.load(f, parse_constant=_constant_refuser(filepath))
 
     version_obj = data.get("Version")
     if version_obj:

@@ -11,7 +11,12 @@ import pytest
 
 from idfkit.exceptions import MigrationError
 from idfkit.migration.async_subprocess_backend import AsyncSubprocessMigrator
-from idfkit.migration.subprocess_backend import SubprocessMigrator, binary_candidates
+from idfkit.migration.subprocess_backend import (
+    SubprocessMigrator,
+    binary_candidates,
+    stage_transition_files,
+    warn_on_missing_companions,
+)
 
 _EXE_SUFFIX = ".exe" if platform.system() == "Windows" else ""
 
@@ -36,6 +41,41 @@ class TestBinaryCandidates:
         names = binary_candidates((24, 1, 0), (24, 2, 0))
         assert len(set(names)) == len(names)
         assert names == [_binary("Transition-V24-1-0-to-V24-2-0")]
+
+
+class TestStageTransitionFiles:
+    def test_stages_idds_and_report_variable_tables(self, tmp_path: Path) -> None:
+        """The binaries read the rename CSVs from CWD; without them every variable rename is skipped."""
+        updater = tmp_path / "IDFVersionUpdater"
+        updater.mkdir()
+        for name in ("V9-3-0-Energy+.idd", "V9-4-0-Energy+.idd", "Report Variables 9-3-0 to 9-4-0.csv", "Rules.md"):
+            (updater / name).write_text("x", encoding="latin-1")
+        work = tmp_path / "work"
+        work.mkdir()
+
+        stage_transition_files(updater, work)
+        stage_transition_files(updater, work)  # idempotent
+
+        staged = sorted(p.name for p in work.iterdir())
+        assert staged == ["Report Variables 9-3-0 to 9-4-0.csv", "V9-3-0-Energy+.idd", "V9-4-0-Energy+.idd"]
+        assert (work / "Report Variables 9-3-0 to 9-4-0.csv").resolve() == (
+            updater / "Report Variables 9-3-0 to 9-4-0.csv"
+        ).resolve()
+
+
+class TestWarnOnMissingCompanions:
+    def test_warns_on_missing_rename_table(self, caplog: pytest.LogCaptureFixture) -> None:
+        stdout = "Processing IDF\n Report Variable Name file=Report Variables 9-3-0 to 9-4-0.csv not found.\n"
+        with caplog.at_level("WARNING", logger="idfkit.migration.subprocess_backend"):
+            warn_on_missing_companions(stdout, (9, 3, 0), (9, 4, 0))
+        assert "9.3.0 -> 9.4.0" in caplog.text
+        assert "Report Variables 9-3-0 to 9-4-0.csv not found" in caplog.text
+
+    def test_silent_on_clean_output(self, caplog: pytest.LogCaptureFixture) -> None:
+        with caplog.at_level("WARNING", logger="idfkit.migration.subprocess_backend"):
+            warn_on_missing_companions("Conversion completed\n", (9, 3, 0), (9, 4, 0))
+            warn_on_missing_companions(None, (9, 3, 0), (9, 4, 0))
+        assert caplog.text == ""
 
 
 class TestSubprocessMigrator:
@@ -219,3 +259,78 @@ class TestAsyncSubprocessMigratorCwd:
         assert captured_cwd[0] == str(work), (
             f"Expected cwd={work}, got cwd={captured_cwd[0]}. The async subprocess must run in the isolated work_dir."
         )
+
+
+_MISSING_TABLE_STDOUT = " Report Variable Name file=Report Variables 24-1-0 to 24-2-0.csv not found.\n"
+
+
+def _stage_updater_with_companions(updater_dir: Path) -> None:
+    binary = updater_dir / _binary("Transition-V24-1-0-to-V24-2-0")
+    binary.touch()
+    binary.chmod(0o755)
+    for name in ("V24-1-0-Energy+.idd", "Report Variables 24-1-0 to 24-2-0.csv"):
+        (updater_dir / name).write_text("x", encoding="latin-1")
+
+
+class TestStepsStageCompanionsAndWarn:
+    """Each backend's step stages the rename tables before the binary runs and warns from its stdout."""
+
+    @pytest.fixture
+    def updater_dir(self, tmp_path: Path) -> Path:
+        d = tmp_path / "IDFVersionUpdater"
+        d.mkdir()
+        _stage_updater_with_companions(d)
+        return d
+
+    @patch("idfkit.migration.subprocess_backend.run_process")
+    def test_sync_step(
+        self, mock_run: MagicMock, tmp_path: Path, updater_dir: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        work = tmp_path / "work"
+        seen: list[str] = []
+
+        def _fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
+            seen.extend(sorted(p.name for p in work.iterdir()))
+            Path(cmd[1]).write_text("Version,24.2;\n", encoding="latin-1")
+            proc = MagicMock()
+            proc.returncode = 0
+            proc.stdout = _MISSING_TABLE_STDOUT
+            proc.stderr = ""
+            return proc
+
+        mock_run.side_effect = _fake_run
+        with caplog.at_level("WARNING", logger="idfkit.migration.subprocess_backend"):
+            SubprocessMigrator(version_updater_dir=updater_dir).migrate_step(
+                "Version,24.1;\n", (24, 1, 0), (24, 2, 0), work_dir=work
+            )
+
+        assert "Report Variables 24-1-0 to 24-2-0.csv" in seen
+        assert "V24-1-0-Energy+.idd" in seen
+        assert "24.1.0 -> 24.2.0" in caplog.text
+
+    @pytest.mark.asyncio
+    async def test_async_step(self, tmp_path: Path, updater_dir: Path, caplog: pytest.LogCaptureFixture) -> None:
+        work = tmp_path / "work"
+        seen: list[str] = []
+
+        async def _fake_exec(*args: object, **kwargs: object) -> MagicMock:
+            seen.extend(sorted(p.name for p in work.iterdir()))
+            (work / "in.idf").write_text("Version,24.2;\n", encoding="latin-1")
+            proc = AsyncMock()
+            proc.communicate.return_value = (_MISSING_TABLE_STDOUT.encode(), b"")
+            proc.returncode = 0
+            proc.kill = MagicMock()
+            proc.wait = AsyncMock()
+            return proc
+
+        with (
+            patch("idfkit.migration.async_subprocess_backend.asyncio.create_subprocess_exec", side_effect=_fake_exec),
+            caplog.at_level("WARNING", logger="idfkit.migration.subprocess_backend"),
+        ):
+            await AsyncSubprocessMigrator(version_updater_dir=updater_dir).migrate_step(
+                "Version,24.1;\n", (24, 1, 0), (24, 2, 0), work_dir=work
+            )
+
+        assert "Report Variables 24-1-0 to 24-2-0.csv" in seen
+        assert "V24-1-0-Energy+.idd" in seen
+        assert "24.1.0 -> 24.2.0" in caplog.text

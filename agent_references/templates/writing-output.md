@@ -58,6 +58,8 @@ epJSON formatting is controlled by `indent`, as `json.dumps` takes it (default 2
 
 IDF has no quoting: `,` and `;` end a value and `!` starts a comment. `write_idf`/`save_idf` raise `ValueError` naming the object and field when a name or value holds one, such as `doc.add("Zone", "Office, North")` or an epJSON zone named `A,B`, rather than writing a file that no longer reads back. Rename the object, or save as epJSON, which can hold them.
 
+Neither format can hold NaN or infinity. `write_idf`/`save_idf` and `write_epjson`/`save_epjson` raise `ValueError` naming the object and field (`Material 'Brick' field 'thickness' is nan`), rather than writing `nan` into an IDF or `NaN` into an epJSON file, which EnergyPlus refuses or misreads far from the cause. Assignment and `add()` already refuse them, so this catches only a value written straight into `obj.data`.
+
 ## Lossless round-trips (IDF only)
 
 To preserve every byte of whitespace, comments, and object ordering for objects you didn't touch, pair `load_idf(..., preserve_formatting=True)` with `save_idf(...)`:
@@ -116,7 +118,10 @@ If you generate many output files in a loop, reuse the document where you can an
     ```python
     doc = load_idf("building.idf")             # no CST
     save_idf(doc, "out.idf")                   # reformatted, NOT byte-identical
+    doc.save()                                 # over building.idf: its ! comments are gone
     ```
+
+    Saving such a document over the commented file it was read from (`doc.save()`, or `save_idf` to the same path) warns with `FormattingLossWarning`: the comments are dropped and the objects re-sorted. Passing `preserve_formatting=` to `save_idf` says you chose, and does not warn.
 
 !!! success "pair load + save"
 
