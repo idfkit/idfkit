@@ -190,3 +190,30 @@ class TestEdgeCases:
         assert result.columns[0].values == (1.5,)
         # ColB has no value in the short row — should be padded with 0.0
         assert result.columns[1].values == (0.0,)
+
+
+class TestEnvironmentsJoined:
+    """A CSV has no environment markers, so a series spans every environment (documented behaviour)."""
+
+    def test_design_day_and_run_period_rows_form_one_series(self) -> None:
+        # ReadVarsESO output for a run with one summer design day (07/21) and a
+        # run period starting 01/01: nothing in the file separates the two.
+        text = (
+            "Date/Time,Environment:Site Outdoor Air Drybulb Temperature [C](Hourly)\n"
+            " 07/21  01:00:00,30.0\n"
+            " 07/21  02:00:00,31.0\n"
+            " 01/01  01:00:00,-5.0\n"
+            " 01/01  02:00:00,-6.0\n"
+        )
+        result = CSVResult.from_string(text)
+        col = result.get_column("Site Outdoor Air Drybulb Temperature")
+        assert col.values == (30.0, 31.0, -5.0, -6.0)
+        assert result.timestamps == ("07/21  01:00:00", "07/21  02:00:00", "01/01  01:00:00", "01/01  02:00:00")
+
+    def test_docstrings_point_to_single_environment_readers(self) -> None:
+        for raw in (CSVResult.__doc__, CSVResult.get_column.__doc__):
+            assert raw is not None
+            doc = " ".join(raw.replace("*", "").split())
+            assert "every environment" in doc
+            assert "environment_index" in doc
+            assert "run period" in doc

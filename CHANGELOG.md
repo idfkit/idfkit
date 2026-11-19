@@ -282,6 +282,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#296](https://github.com/idfkit/idfkit/pull/296), [#302](https://github.com/idfkit/idfkit/pull/302)).
 - The `as_version` docs gained a warning that a tuple of release types must name the latest release
   by its own type (`IDFDocumentV26_2`), not `IDFDocument` ([#282](https://github.com/idfkit/idfkit/pull/282)).
+- The `CSVResult` docs stated that a CSV series joins every environment (design days and run
+  period), since the file has no environment markers, and pointed to `result.sql` or
+  `result.eso` (`environment_index=`) for a single environment.
+  ([#349](https://github.com/idfkit/idfkit/pull/349))
 
 ### Deprecated
 

@@ -29,7 +29,8 @@ class CSVColumn:
         variable_name: Parsed variable name.
         key_value: Parsed key value (e.g. ``"Environment"``).
         units: Parsed units string.
-        values: The numeric values for this column.
+        values: The numeric values for this column, across every environment
+            in the file (design days, then run periods), in run order.
         frequency: Parsed reporting frequency (e.g. ``"Hourly"``); empty when
             the header carries none.
     """
@@ -49,6 +50,16 @@ class CSVColumn:
 @dataclass(frozen=True, slots=True, repr=False)
 class CSVResult:
     """Parsed EnergyPlus CSV output file.
+
+    The CSV file that ReadVarsESO writes carries no environment markers, so
+    every series spans **every** environment the run simulated, joined in run
+    order: the sizing design days first, then the weather run period(s). A
+    day-of-year index or an annual sum over a column therefore counts the
+    design days too. To read a single environment, use
+    [SQLResult.get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries]
+    (``result.sql``), which reads the run period by default, or
+    [ESOResult.get_column][idfkit.simulation.parsers.eso.ESOResult.get_column]
+    (``result.eso``), which takes ``environment_index=``.
 
     Attributes:
         timestamps: The timestamp strings from the Date/Time column.
@@ -147,6 +158,13 @@ class CSVResult:
         does: when a variable is reported for several keys (one per zone, say) or
         at several frequencies, name the one you want, and the error lists them.
 
+        Unlike the SQL and ESO readers, it cannot select an environment: the CSV
+        file has no explicit environment markers and this parser does not split
+        environments, so the column holds every environment the run simulated
+        (design days and run period) joined end to end. For one environment, read
+        ``result.sql`` (run period by default) or
+        ``result.eso.get_column(..., environment_index=...)``.
+
         Args:
             variable_name: The variable name to search for (case-insensitive).
                 A meter is found by its full name (``"Electricity:Facility"``),
@@ -158,7 +176,9 @@ class CSVResult:
 
         Returns:
             The matching CSVColumn. Its values span every environment in the
-            file, in run order (design days, then run periods).
+            file, in run order (design days, then run periods). The parser
+            does not split them; only the Date/Time column, where the date
+            jumps back at each new environment, hints at the boundaries.
 
         Raises:
             ResultLookupError: A ``KeyError`` subclass, if the variable, key or
