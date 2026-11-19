@@ -522,28 +522,49 @@ def _score_name_tokens(name_lower: str, name_query: list[str], n_tokens: int) ->
 
     A token of ``_MIN_PREFIX_TOKEN_LEN`` characters or more matches as a
     prefix of a name token; a shorter one must equal a whole name token.
-    All tokens matching scores 0.6-0.9 by coverage of the name; some of
-    them matching scores up to 0.3, as a share of all *n_tokens* query
-    tokens, where each qualifier the caller removed from *name_query*
-    counts as matched.
+    All tokens matching scores 0.75-0.9 by coverage of the name when the
+    first query token matches the name's first token ("London, GBR" on
+    London Heathrow), and 0.6-0.7 when the name only contains the tokens
+    later on (Derry Londonderry).  The leading band sits above every
+    non-leading match, substring ones included (see ``_score_substring``).  Some of them matching scores up to 0.3,
+    as a share of all *n_tokens* query tokens, where each qualifier the
+    caller removed from *name_query* counts as matched.
     """
     if not name_query:
         return 0.0
-    name_tokens = set(name_lower.split())
+    name_token_list = name_lower.split()
+    name_tokens = set(name_token_list)
 
-    def in_name(qt: str) -> bool:
+    def matches(qt: str, tokens: set[str]) -> bool:
         if len(qt) < _MIN_PREFIX_TOKEN_LEN:
-            return qt in name_tokens
-        return any(t.startswith(qt) for t in name_tokens)
+            return qt in tokens
+        return any(t.startswith(qt) for t in tokens)
 
-    matching = sum(1 for qt in name_query if in_name(qt))
+    matching = sum(1 for qt in name_query if matches(qt, name_tokens))
     if matching == len(name_query):
-        coverage = sum(len(qt) for qt in name_query) / max(len(name_lower), 1)
-        return 0.6 + 0.3 * min(coverage, 1.0)
+        coverage = min(sum(len(qt) for qt in name_query) / max(len(name_lower), 1), 1.0)
+        leading = bool(name_token_list) and matches(name_query[0], {name_token_list[0]})
+        return 0.75 + 0.15 * coverage if leading else 0.6 + 0.1 * coverage
     if matching == 0:
         return 0.0
     qualifiers = n_tokens - len(name_query)
     return 0.3 * (matching + qualifiers) / n_tokens
+
+
+def _score_substring(query: str, text: str, coverage_text: str) -> float:
+    """Score *query* found as a substring of *text*, by its coverage of *coverage_text*.
+
+    A match at the start of *text* scores 0.9-0.99, so "london" ranks
+    London City above East London; the ceiling stays below the 1.0 of an
+    exact WMO match.  One further in scores 0.7-0.75: below every leading
+    match, token ones included, so "Auckland, AUK" ranks Auckland Intl AP
+    (leading tokens) above Whenuapai RNZAF Auckland (whose display name
+    contains the whole query later on), yet above a non-leading token match.
+    """
+    coverage = len(query) / max(len(coverage_text), 1)
+    if text.startswith(query):
+        return 0.9 + 0.09 * coverage
+    return 0.7 + 0.05 * coverage
 
 
 def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> tuple[float, str]:
@@ -552,7 +573,8 @@ def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> tu
     *query* is the folded query (see ``_fold``) and *tokens* its
     ``_tokenize_query`` split. A token equal to the station's state or
     country code is read as a location qualifier ("Boulder, CO") and is
-    not required to match the station name.
+    not required to match the station name.  A name that starts with the
+    query outranks one that contains it later on.
 
     Returns ``(score, match_field)`` where score is 0.0-1.0.
     """
@@ -563,15 +585,13 @@ def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> tu
     if query.isdigit() and query == station.wmo:
         return 1.0, "wmo"
 
-    # Signal 2: Full query is a substring of the display name
+    # Signal 2: Full query is a substring of the display name; leading matches rank first
     if query in display_lower:
-        coverage = len(query) / max(len(display_lower), 1)
-        return 0.85 + 0.1 * coverage, "name"
+        return _score_substring(query, display_lower, display_lower), "name"
 
     # Signal 3: Full query is a substring of the city name (dots -> spaces)
     if query in name_lower:
-        coverage = len(query) / max(len(name_lower), 1)
-        return 0.85 + 0.1 * coverage, "name"
+        return _score_substring(query, name_lower, name_lower), "name"
 
     qualifiers = {station.state.lower(), station.country.lower()} - {""}
     name_query = [qt for qt in tokens if qt not in qualifiers]
@@ -914,7 +934,11 @@ class StationIndex:
         external NLP dependencies).  The query is split on whitespace,
         commas, semicolons, dots and hyphens, and a token equal to a station's state or
         country code qualifies the match rather than having to appear in
-        the name, so "Boulder, CO" ranks Boulder, Colorado first.  Canonical EPW
+        the name, so "Boulder, CO" ranks Boulder, Colorado first.  A station
+        whose name starts with the query ranks above one that only contains it
+        later on, so "London" lists London City and London Gatwick before East
+        London, South Africa; add a qualifier ("London, GBR") or pass *country*
+        to narrow further.  An exact WMO number scores 1.0.  Canonical EPW
         filenames (e.g.
         ``"USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023"``) are
         detected automatically and resolved via

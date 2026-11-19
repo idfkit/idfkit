@@ -51,6 +51,17 @@ for variant in hits[0].variants:
 # --8<-- [end:search-name]
 
 
+# --8<-- [start:search-qualified]
+index = StationIndex.load()
+# Names starting with the query rank first: London City, Luton, Gatwick... before East London (ZAF).
+# Add a country or state code to the query, or pass country=, to narrow further.
+qualified = index.search("London, GBR")
+print(qualified[0].station.display_name)  # "London City AP, ENG, GBR"
+in_country = index.search("London", country="GBR")
+print(in_country[0].station.display_name)  # "London City AP, ENG, GBR"
+# --8<-- [end:search-qualified]
+
+
 # --8<-- [start:search-address]
 from idfkit.weather import StationIndex, geocode
 

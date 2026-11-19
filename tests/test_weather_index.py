@@ -718,7 +718,8 @@ class TestScoreStation:
         """
         station = _fixture_stations()[0]
         score, field = _score_station(station, "ohare intl", ["ohare", "intl"])
-        assert score > 0.85
+        # Found after the name's first word, so it scores in the non-leading band.
+        assert 0.7 < score < 0.75
         assert field == "name"
 
     def test_all_tokens_prefix_match(self) -> None:
@@ -726,12 +727,12 @@ class TestScoreStation:
 
         Station: New.York.J.F.Kennedy.Intl.AP -> name_lower = "new york j f kennedy intl ap" (28 chars)
         tokens: ["new", "ken"] -> total token length = 6
-        coverage = 6/28; score = 0.6 + 0.3 * (6/28)
+        coverage = 6/28; "new" matches the name's first token, so score = 0.75 + 0.15 * (6/28)
         """
         station = _fixture_stations()[2]  # New.York.J.F.Kennedy.Intl.AP
         # Tokens: "new", "ken" — "new" prefixes "new", "ken" prefixes "kennedy"
         score, field = _score_station(station, "new ken", ["new", "ken"])
-        assert score == pytest.approx(0.6 + 0.3 * 6 / 28)
+        assert score == pytest.approx(0.75 + 0.15 * 6 / 28)
         assert field == "name"
 
     def test_partial_token_overlap(self) -> None:
@@ -796,7 +797,8 @@ class TestSearch:
         results = idx.search("ohare")
         assert len(results) >= 1
         assert results[0].station.city == "Chicago.Ohare.Intl.AP"
-        assert results[0].score > 0.8
+        # "ohare" follows "chicago" in the name, so it scores in the non-leading substring band.
+        assert results[0].score > 0.7
 
     def test_multi_token(self) -> None:
         idx = StationIndex.from_stations(_fixture_stations())
@@ -860,9 +862,10 @@ class TestSearchTokenization:
     """Punctuation, diacritics and location qualifiers in queries (idfkit/idfkit#248)."""
 
     @staticmethod
-    def _index() -> StationIndex:
+    def _index(*extra: tuple[str, str, str, str]) -> StationIndex:
         base = _fixture_stations()[0]
         rows = [
+            *extra,
             ("USA", "CO", "Boulder.Muni.AP", "724699"),
             ("USA", "CO", "Nederland-Univ.Colorado.Boulder.Mountain.Research.Stn", "720533"),
             ("USA", "MS", "Columbus-Golden.Triangle.Rgnl.AP", "723307"),
@@ -940,6 +943,85 @@ class TestSearchTokenization:
         boulder = next(r for r in idx.search("Boulder Denver, CO") if r.station.city == "Boulder.Muni.AP")
         # "boulder" and the qualifier "co" match; "denver" does not.
         assert boulder.score == pytest.approx(0.2)
+
+
+def _station(base: WeatherStation, country: str, state: str, city: str, wmo: str) -> WeatherStation:
+    """*base* moved to another station, with a URL of its own so search keeps it apart."""
+    url = f"https://climate.onebuilding.org/{country}_{state}_{city}.{wmo}_TMYx.zip"
+    return replace(base, country=country, state=state, city=city, wmo=wmo, url=url)
+
+
+class TestSearchLeadingMatch:
+    """A name that starts with the query outranks one that contains it later on."""
+
+    @staticmethod
+    def _index(*extra: tuple[str, str, str, str]) -> StationIndex:
+        base = _fixture_stations()[0]
+        rows = [
+            *extra,
+            ("ZAF", "EC", "East.London.AP", "688580"),
+            ("RUS", "MAG", "Jack.London.Lake", "251290"),
+            ("GBR", "NIR", "Derry.Londonderry.AP", "039800"),
+            ("GBR", "ENG", "London.City.AP", "037683"),
+            ("GBR", "ENG", "London-Gatwick.AP", "037760"),
+            ("GBR", "ENG", "London-Heathrow.Intl.AP", "037720"),
+            ("CAN", "ON", "London.Intl.AP.CS", "715234"),
+        ]
+        return StationIndex.from_stations([
+            _station(base, country, state, city, wmo) for country, state, city, wmo in rows
+        ])
+
+    def test_leading_substring_outranks_later_substring(self) -> None:
+        results = self._index().search("london")
+        leading = [r.station.city.startswith("London") for r in results]
+        # Every London-first name ranks above East London and Jack London Lake.
+        assert leading == sorted(leading, reverse=True)
+        assert results[0].station.city == "London.City.AP"
+        assert {r.station.city for r in results[-3:]} == {
+            "East.London.AP",
+            "Jack.London.Lake",
+            "Derry.Londonderry.AP",
+        }
+
+    def test_leading_scores_stay_below_exact_wmo(self) -> None:
+        idx = self._index()
+        assert all(r.score < 1.0 for r in idx.search("london"))
+        wmo = idx.search("037720")
+        assert wmo[0].score == 1.0
+        assert wmo[0].match_field == "wmo"
+
+    def test_exact_name_ranks_first_among_leading_matches(self) -> None:
+        base = _fixture_stations()[0]
+        idx = StationIndex.from_stations([
+            _station(base, "USA", "CA", "San.Francisco.Intl.AP", "724940"),
+            _station(base, "PHL", "CNV", "San.Francisco", "984420"),
+            _station(base, "USA", "CA", "Fairfield-San.Francisco.Bay.Reserve", "745160"),
+        ])
+        assert [r.station.wmo for r in idx.search("san francisco")] == ["984420", "724940", "745160"]
+
+    def test_country_qualifier_keeps_leading_preference(self) -> None:
+        results = self._index().search("London, GBR")
+        cities = [r.station.city for r in results if r.score >= 0.6]
+        # Only British stations match in full; Derry Londonderry contains the token later on,
+        # so it trails every London-first station.
+        assert cities == ["London.City.AP", "London-Gatwick.AP", "London-Heathrow.Intl.AP", "Derry.Londonderry.AP"]
+
+    def test_state_qualifier_ranks_leading_tokens_above_later_substring(self) -> None:
+        """A display name containing the whole qualified query later on still trails leading names.
+
+        'greater london, eng, gbr' contains "london, eng" as a substring, while the London-first
+        stations only match it token by token.
+        """
+        results = self._index(("GBR", "ENG", "Greater.London", "999999")).search("London, ENG")
+        cities = [r.station.city for r in results if r.score >= 0.6]
+        assert cities[:3] == ["London.City.AP", "London-Gatwick.AP", "London-Heathrow.Intl.AP"]
+        assert "Greater.London" in cities[3:]
+
+    def test_country_argument_filters_leading_matches(self) -> None:
+        results = self._index().search("London", country="GBR")
+        assert all(r.station.country == "GBR" for r in results)
+        assert results[0].station.city == "London.City.AP"
+        assert results[-1].station.city == "Derry.Londonderry.AP"
 
 
 class TestGetByFilename:

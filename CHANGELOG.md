@@ -103,6 +103,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TabularRow.value` (from `get_tabular_data()`) and `get_tabular_value()` returned the cell text without
   the whitespace EnergyPlus pads it with, and `""` instead of `None` for a NULL cell.
   ([#347](https://github.com/idfkit/idfkit/pull/347))
+- `StationIndex.search()` ranked stations whose name starts with the query above those that contain it
+  later on, so `"london"` lists London City and Gatwick before East London, South Africa. Name-match
+  scores changed value; exact WMO matches still score 1.0.
+  ([#353](https://github.com/idfkit/idfkit/pull/353))
 - Every public module declared `__all__`, so `from idfkit.geometry import *` and autocompletion offered
   the module's API instead of its imports and internals (`Any`, `cast`, `math`, `logger`).
   ([#352](https://github.com/idfkit/idfkit/pull/352))
