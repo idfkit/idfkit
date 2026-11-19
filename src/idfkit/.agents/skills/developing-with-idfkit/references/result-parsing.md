@@ -167,9 +167,14 @@ html = result.html
 if html:
     for table in html.tables:
         print(table.report_name, table.title)
+    # header is the column-header row; rows are the data rows below it.
+    site = html.tablebyname("Site and Source Energy")
+    if site:
+        print(site.header)  # ['', 'Total Energy [GJ]', ...]
+        print(site.to_dict()["Total Site Energy"]["Total Energy [GJ]"])
 ```
 
-The HTML parser is mostly useful for surfacing reports that aren't in SQLite (rare in modern EnergyPlus).
+The HTML parser is mostly useful for surfacing reports that aren't in SQLite (rare in modern EnergyPlus). EnergyPlus writes column headers as `<td>`, so a table's first row becomes `header` and `rows` holds only data; `to_dict()` keys each row by its first cell.
 
 ## ESO / MTR time series
 

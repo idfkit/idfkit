@@ -90,7 +90,7 @@ Prefer SQL — CSV is one shot per `Output:Variable`, while SQL is queryable.
 --8<-- "agent_references/snippets/result-parsing.py:html"
 ```
 
-The HTML parser is mostly useful for surfacing reports that aren't in SQLite (rare in modern EnergyPlus).
+The HTML parser is mostly useful for surfacing reports that aren't in SQLite (rare in modern EnergyPlus). EnergyPlus writes column headers as `<td>`, so a table's first row becomes `header` and `rows` holds only data; `to_dict()` keys each row by its first cell.
 
 ## ESO / MTR time series
 

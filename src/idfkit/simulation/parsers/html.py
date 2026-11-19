@@ -22,8 +22,10 @@ class HTMLTable:
     Attributes:
         title: The bold title preceding the table (e.g.
             ``"Site and Source Energy"``).
-        header: Column headers (first ``<tr>`` with ``<th>`` cells).
-        rows: Data rows as lists of strings.
+        header: Column headers: the first ``<tr>`` with ``<th>`` cells or,
+            when the table has none (EnergyPlus writes its headers as
+            ``<td>``), the table's first row.
+        rows: Data rows as lists of strings, without the header row.
         report_name: The top-level report name (e.g.
             ``"Annual Building Utility Performance Summary"``).
         for_string: The ``"For:"`` qualifier (e.g. ``"Entire Facility"``).
@@ -218,6 +220,10 @@ class _EnergyPlusHTMLParser(HTMLParser):
             self._end_bold()
 
     def _end_table(self) -> None:
+        if not self._current_header and self._current_rows:
+            # EnergyPlus writes column headers as <td>, not <th>: with no
+            # <th> row, the first row of the table is its header.
+            self._current_header = self._current_rows.pop(0)
         if self._current_header or self._current_rows:
             table = HTMLTable(
                 title=self._last_title.strip(),

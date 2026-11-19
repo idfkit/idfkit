@@ -168,16 +168,24 @@ class LocalFileSystem:
         return Path(path).read_bytes()
 
     def write_bytes(self, path: str | Path, data: bytes) -> None:
-        """Write raw bytes to a file."""
-        Path(path).write_bytes(data)
+        """Write raw bytes to a file, creating missing parent directories.
+
+        Parents are created so a local run behaves like S3, where writing a
+        key needs no directory to exist first.
+        """
+        target = Path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
 
     def read_text(self, path: str | Path, encoding: str = "utf-8") -> str:
         """Read a file as text."""
         return Path(path).read_text(encoding=encoding)
 
     def write_text(self, path: str | Path, text: str, encoding: str = "utf-8") -> None:
-        """Write text to a file."""
-        Path(path).write_text(text, encoding=encoding)
+        """Write text to a file, creating missing parent directories."""
+        target = Path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text, encoding=encoding)
 
     def exists(self, path: str | Path) -> bool:
         """Check whether a file exists."""
@@ -188,7 +196,8 @@ class LocalFileSystem:
         Path(path).mkdir(parents=True, exist_ok=exist_ok)
 
     def copy(self, src: str | Path, dst: str | Path) -> None:
-        """Copy a file from *src* to *dst*."""
+        """Copy a file from *src* to *dst*, creating missing parent directories of *dst*."""
+        Path(dst).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(str(src), str(dst))
 
     def glob(self, path: str | Path, pattern: str) -> list[str]:

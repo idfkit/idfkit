@@ -319,7 +319,38 @@ class TestAsyncSimulateBatch:
         assert list(temp_root.iterdir()) == []
         assert all(r.run_dir == REFUSED_RUN_DIR for r in result)
         assert not REFUSED_RUN_DIR.exists()
-        assert (await result[0].async_errors()).fatal_count == 0
+        report = await result[0].async_errors()
+        assert [m.message for m in report.fatal] == [f"refused: {result[0].refusal}"]
+
+    @pytest.mark.asyncio
+    async def test_timeout_after_energyplus_ran_reads_its_err(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """A job that timed out after EnergyPlus wrote its .err is a failed run, not a refusal."""
+        out_dir = tmp_path / "out"
+        out_dir.mkdir()
+
+        async def run_then_time_out(**_: object) -> None:
+            (out_dir / "eplusout.err").write_text("   ** Severe  ** from this run\n")
+            msg = "Simulation timed out after 5 seconds"
+            raise SimulationError(msg)
+
+        with patch("idfkit.simulation.async_batch.async_simulate", side_effect=run_then_time_out):
+            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+            r = (await async_simulate_batch(jobs, energyplus=mock_config))[0]
+        assert r.refusal is None
+        report = await r.async_errors()
+        assert report.severe_count == 1
+
+    @pytest.mark.asyncio
+    async def test_fs_without_output_dir_raises_up_front(self, mock_config: EnergyPlusConfig) -> None:
+        """fs= with a job lacking output_dir is refused before any job runs."""
+        jobs = [SimulationJob(model=new_document(), design_day=True)]
+        with pytest.raises(ValueError, match=r"output_dir is required.*missing on: #0"):
+            await async_simulate_batch(jobs, energyplus=mock_config, fs=InMemoryFileSystem())
+        with pytest.raises(ValueError, match=r"output_dir is required"):
+            async for _ in async_simulate_batch_stream(jobs, energyplus=mock_config, fs=InMemoryFileSystem()):
+                pass
 
     @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")

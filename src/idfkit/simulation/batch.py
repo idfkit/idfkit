@@ -43,7 +43,7 @@ class SimulationJob:
             (``design_day=True`` and ``annual=False``); see
             [simulate][idfkit.simulation.runner.simulate] for the models that
             still require a weather file. A refused job is reported as a
-            failed result whose ``stderr`` carries the reason.
+            failed result whose ``refusal`` carries the reason.
         label: Human-readable label for progress reporting.
         output_dir: Directory for output files (default: auto temp dir).
         expand_objects: Run ExpandObjects before simulation.
@@ -221,13 +221,15 @@ def simulate_batch(
         A [BatchResult][idfkit.simulation.batch.BatchResult] with results in the same order as *jobs*.
 
     Raises:
-        ValueError: If *jobs* is empty.
+        ValueError: If *jobs* is empty, or *fs* is given and a job has no
+            ``output_dir``.
         TypeError: If *progress* cannot be called with the four keyword
             arguments above.
     """
     if not jobs:
         msg = "jobs must not be empty"
         raise ValueError(msg)
+    check_jobs_for_fs(jobs, fs)
     if progress is not None:
         _check_progress_callback(progress)
 
@@ -329,6 +331,7 @@ def _run_job(
     if on_progress is not None:
         job_cb = _make_job_progress_callback(on_progress, idx, job.label)
 
+    before = err_snapshot(job, fs)
     try:
         return simulate(
             model=job.model,
@@ -353,20 +356,89 @@ def _run_job(
         # Catch all exceptions (SimulationError, ExpandObjectsError,
         # EnergyPlusNotFoundError, etc.) so that a single job failure
         # never crashes the entire batch.
-        return failed_job_result(job, exc)
+        return failed_job_result(job, exc, ran=err_snapshot(job, fs) != before)
 
 
-def failed_job_result(job: SimulationJob, exc: Exception) -> SimulationResult:
-    """Build the failed result for a job whose simulation raised *exc*."""
+#: The ``.err`` files of a job's local ``output_dir``, by name, with what identifies each version of one.
+ErrSnapshot = dict[str, tuple[int, int, int]]
+
+
+def err_snapshot(job: SimulationJob, fs: object | None) -> ErrSnapshot | None:
+    """The ``.err`` files in *job*'s local ``output_dir``, to tell whether EnergyPlus wrote one there.
+
+    Taken before and after a job that raised: EnergyPlus writes its ``.err`` as soon as it starts, so
+    a changed snapshot means the exception came after EnergyPlus ran in ``output_dir`` (a timeout, a
+    crash), and its outputs are this run's. ``None`` when the job runs elsewhere: in a temporary
+    directory (no ``output_dir``) or locally before an upload to *fs*.
+    """
+    if fs is not None or job.output_dir is None:
+        return None
+    snapshot: ErrSnapshot = {}
+    try:
+        for path in Path(job.output_dir).glob("*.err"):
+            st = path.stat()
+            snapshot[path.name] = (st.st_mtime_ns, st.st_ino, st.st_size)
+    except OSError:
+        return None
+    return snapshot
+
+
+def _exception_reason(exc: Exception) -> str:
+    """The message of *exc* without the exit code and stderr tail a SimulationError appends to it."""
+    reason = str(exc)
+    stderr = getattr(exc, "stderr", None)
+    if isinstance(stderr, str) and stderr:
+        tail = f"\nstderr: {stderr.strip()[:500]}"
+        if reason.endswith(tail):
+            reason = reason[: -len(tail)]
+    exit_code = getattr(exc, "exit_code", None)
+    if isinstance(exit_code, int):
+        head, sep, rest = reason.partition("\n")
+        marker = f" (exit code {exit_code})"
+        if head.endswith(marker):
+            reason = head[: -len(marker)] + sep + rest
+    return reason or type(exc).__name__
+
+
+def failed_job_result(job: SimulationJob, exc: Exception, *, ran: bool = False) -> SimulationResult:
+    """Build the failed result for a job whose simulation raised *exc*.
+
+    Args:
+        job: The job that failed.
+        exc: What ``simulate`` raised for it.
+        ran: Whether EnergyPlus had already written its outputs to the job's ``output_dir``
+            (a timeout or a crash mid-run). Such a result reads those outputs like any failed
+            run; otherwise the job was refused and its result carries ``refusal``.
+    """
+    stderr = getattr(exc, "stderr", None)
     return SimulationResult(
         run_dir=Path(job.output_dir) if job.output_dir is not None else REFUSED_RUN_DIR,
         success=False,
         exit_code=getattr(exc, "exit_code", None),
         stdout="",
-        stderr=getattr(exc, "stderr", None) or str(exc),
+        stderr=stderr if isinstance(stderr, str) and stderr else str(exc),
         runtime_seconds=0.0,
         output_prefix=job.output_prefix,
+        refusal=None if ran and job.output_dir is not None else _exception_reason(exc),
     )
+
+
+def check_jobs_for_fs(jobs: Sequence[SimulationJob], fs: object | None) -> None:
+    """Refuse a batch whose file system backend has no ``output_dir`` to write to.
+
+    Checked before any job runs: ``simulate`` would refuse each such job the
+    same way, turning one configuration error into a failed result per job.
+
+    Raises:
+        ValueError: If *fs* is given and a job has no ``output_dir``.
+    """
+    if fs is None:
+        return
+    missing = [job.label or f"#{i}" for i, job in enumerate(jobs) if job.output_dir is None]
+    if missing:
+        shown = ", ".join(missing[:5]) + (f" and {len(missing) - 5} more" if len(missing) > 5 else "")
+        msg = f"output_dir is required on every job when using a file system backend; missing on: {shown}"
+        raise ValueError(msg)
 
 
 def _make_job_progress_callback(

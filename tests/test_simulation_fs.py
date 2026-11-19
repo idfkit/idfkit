@@ -11,6 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from conftest import InMemoryAsyncFileSystem, InMemoryFileSystem
 
+from idfkit.simulation._common import async_upload_results, upload_results
 from idfkit.simulation.fs import (
     AsyncFileSystem,
     AsyncLocalFileSystem,
@@ -76,6 +77,23 @@ class TestLocalFileSystem:
     @pytest.fixture
     def fs(self) -> LocalFileSystem:
         return LocalFileSystem()
+
+    def test_writes_create_missing_parent_directories(self, fs: LocalFileSystem, tmp_path: Path) -> None:
+        """Writing into a directory that does not exist yet creates it, as S3 needs none."""
+        fs.write_bytes(tmp_path / "a" / "b" / "data.bin", b"x")
+        fs.write_text(tmp_path / "c" / "notes.txt", "hi")
+        fs.copy(tmp_path / "c" / "notes.txt", tmp_path / "d" / "e" / "copy.txt")
+        assert (tmp_path / "a" / "b" / "data.bin").read_bytes() == b"x"
+        assert (tmp_path / "d" / "e" / "copy.txt").read_text() == "hi"
+
+    def test_upload_results_into_new_directory(self, fs: LocalFileSystem, tmp_path: Path) -> None:
+        """upload_results publishes a run into a remote directory that does not exist yet."""
+        local = tmp_path / "local"
+        local.mkdir()
+        (local / "eplusout.err").write_text("ok")
+        remote = tmp_path / "remote" / "run-1"
+        upload_results(local, remote, fs)
+        assert (remote / "eplusout.err").read_text() == "ok"
 
     def test_write_and_read_bytes(self, fs: LocalFileSystem, tmp_path: Path) -> None:
         p = tmp_path / "data.bin"
@@ -327,6 +345,16 @@ class TestAsyncLocalFileSystem:
     @pytest.fixture
     def fs(self) -> AsyncLocalFileSystem:
         return AsyncLocalFileSystem()
+
+    @pytest.mark.asyncio
+    async def test_upload_results_into_new_directory(self, fs: AsyncLocalFileSystem, tmp_path: Path) -> None:
+        """async_upload_results publishes a run into a remote directory that does not exist yet."""
+        local = tmp_path / "local"
+        local.mkdir()
+        (local / "eplusout.err").write_text("ok")
+        remote = tmp_path / "remote" / "run-1"
+        await async_upload_results(local, remote, fs)
+        assert (remote / "eplusout.err").read_text() == "ok"
 
     @pytest.mark.asyncio
     async def test_write_and_read_bytes(self, fs: AsyncLocalFileSystem, tmp_path: Path) -> None:
