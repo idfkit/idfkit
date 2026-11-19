@@ -145,7 +145,7 @@ ZoneHVAC:IdealLoadsAirSystem,
   ,
   ;
 """
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run(expanded_idf_content)):
+        with patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run(expanded_idf_content)):
             expanded = expand_objects(model_with_hvac_template, energyplus=mock_config)
 
         assert "ZoneHVAC:IdealLoadsAirSystem" in expanded
@@ -159,7 +159,7 @@ ZoneHVAC:IdealLoadsAirSystem,
     ) -> None:
         """The result is not tied to the deleted run directory, nor to the source's path."""
         model_with_hvac_template.filepath = tmp_path / "source.idf"
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run()):
+        with patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run()):
             expanded = expand_objects(model_with_hvac_template, energyplus=mock_config)
 
         assert expanded.filepath is None
@@ -192,7 +192,7 @@ ZoneHVAC:IdealLoadsAirSystem,
         proc.stderr = "some error"
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", return_value=proc),
+            patch("idfkit.simulation.expand.run_process", return_value=proc),
             pytest.raises(ExpandObjectsError, match=r"did not produce expanded\.idf") as exc_info,
         ):
             expand_objects(model_with_hvac_template, energyplus=mock_config)
@@ -221,7 +221,7 @@ ZoneHVAC:IdealLoadsAirSystem,
             "  Not a problem;                                           !- message line\n"
         )
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run(expanded)),
+            patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run(expanded)),
             pytest.raises(ExpandObjectsError, match="fatal error") as exc_info,
         ):
             expand_objects(model_with_hvac_template, energyplus=mock_config)
@@ -242,7 +242,7 @@ ZoneHVAC:IdealLoadsAirSystem,
             "  Warning,                                                 !- Error Severity\n"
             "  No heating coil.;                                        !- message line\n"
         )
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run(expanded)):
+        with patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run(expanded)):
             result = expand_objects(model_with_hvac_template, energyplus=mock_config)
         assert "Office" in result["Zone"]
 
@@ -251,7 +251,7 @@ ZoneHVAC:IdealLoadsAirSystem,
 
         with (
             patch(
-                "idfkit.simulation.expand.subprocess.run",
+                "idfkit.simulation.expand.run_process",
                 side_effect=subprocess.TimeoutExpired(cmd="ExpandObjects", timeout=1),
             ),
             pytest.raises(ExpandObjectsError, match="timed out") as exc_info,
@@ -262,7 +262,7 @@ ZoneHVAC:IdealLoadsAirSystem,
 
     def test_os_error_raises(self, model_with_hvac_template: IDFDocument, mock_config: EnergyPlusConfig) -> None:
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=OSError("Permission denied")),
+            patch("idfkit.simulation.expand.run_process", side_effect=OSError("Permission denied")),
             pytest.raises(ExpandObjectsError, match="Failed to start ExpandObjects") as exc_info,
         ):
             expand_objects(model_with_hvac_template, energyplus=mock_config)
@@ -275,13 +275,13 @@ ZoneHVAC:IdealLoadsAirSystem,
     ) -> None:
         with (
             patch("idfkit.simulation.expand.find_energyplus", return_value=mock_config) as mock_find,
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run()),
+            patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run()),
         ):
             expand_objects(model_with_hvac_template)
         mock_find.assert_called_once()
 
     def test_document_expand_method(self, model_with_hvac_template: IDFDocument, mock_config: EnergyPlusConfig) -> None:
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run()):
+        with patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run()):
             expanded = model_with_hvac_template.expand(energyplus=mock_config)
         assert isinstance(expanded, IDFDocument)
         assert "Zone" in expanded
@@ -291,7 +291,7 @@ ZoneHVAC:IdealLoadsAirSystem,
     ) -> None:
         original_types = set(model_with_hvac_template.keys())
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run()):
+        with patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run()):
             expand_objects(model_with_hvac_template, energyplus=mock_config)
 
         assert set(model_with_hvac_template.keys()) == original_types
@@ -311,7 +311,7 @@ ZoneHVAC:IdealLoadsAirSystem,
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             expand_objects(model_with_hvac_template, energyplus=mock_config)
 
         assert len(idd_found) == 1
@@ -322,7 +322,7 @@ ZoneHVAC:IdealLoadsAirSystem,
         doc = new_document(version=(24, 1, 0), strict=False)
         doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", "", {"zone_name": "Office"}, validate=False)
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run()):
+        with patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run()):
             expanded = expand_objects(doc, energyplus=mock_config)
 
         assert expanded.strict is False
@@ -331,7 +331,7 @@ ZoneHVAC:IdealLoadsAirSystem,
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Office", {"x_origin": 0.0})
 
-        with patch("idfkit.simulation.expand.subprocess.run") as mock_run:
+        with patch("idfkit.simulation.expand.run_process") as mock_run:
             result = expand_objects(doc)
 
         mock_run.assert_not_called()
@@ -614,7 +614,7 @@ class TestSlabFatalMessage:
             return result
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            patch("idfkit.simulation.expand.run_process", side_effect=fake_run),
             pytest.raises(ExpandObjectsError, match="fatal error") as exc_info,
         ):
             run_slab_preprocessor(doc, energyplus=mock_config)
@@ -647,7 +647,7 @@ class TestBasementFatalMessage:
             return result
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            patch("idfkit.simulation.expand.run_process", side_effect=fake_run),
             pytest.raises(ExpandObjectsError, match="fatal error") as exc_info,
         ):
             run_basement_preprocessor(doc, energyplus=mock_config)
@@ -690,7 +690,7 @@ class TestGroundPreprocessorExpandObjectsFatal:
         calls: list[str] = []
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=self._fake_run("GHTIn.idf", calls)),
+            patch("idfkit.simulation.expand.run_process", side_effect=self._fake_run("GHTIn.idf", calls)),
             pytest.raises(ExpandObjectsError, match="Could not find air handler AHU-9") as exc_info,
         ):
             run_slab_preprocessor(doc, energyplus=mock_config)
@@ -704,7 +704,7 @@ class TestGroundPreprocessorExpandObjectsFatal:
         calls: list[str] = []
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=self._fake_run("BasementGHTIn.idf", calls)),
+            patch("idfkit.simulation.expand.run_process", side_effect=self._fake_run("BasementGHTIn.idf", calls)),
             pytest.raises(ExpandObjectsError, match="Could not find air handler AHU-9") as exc_info,
         ):
             run_basement_preprocessor(doc, energyplus=mock_config)
@@ -722,7 +722,7 @@ class TestRunSlabPreprocessor:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Office", {"x_origin": 0.0})
 
-        with patch("idfkit.simulation.expand.subprocess.run") as mock_run:
+        with patch("idfkit.simulation.expand.run_process") as mock_run:
             result = run_slab_preprocessor(doc)
 
         mock_run.assert_not_called()
@@ -757,7 +757,7 @@ class TestRunSlabPreprocessor:
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             expanded = run_slab_preprocessor(doc, energyplus=mock_config)
 
         assert calls == ["ExpandObjects", "Slab"]
@@ -769,7 +769,7 @@ class TestRunSlabPreprocessor:
         doc.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run()),
+            patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run()),
             pytest.raises(ExpandObjectsError, match=r"did not produce GHTIn\.idf") as exc_info,
         ):
             run_slab_preprocessor(doc, energyplus=mock_config)
@@ -799,7 +799,7 @@ class TestRunSlabPreprocessor:
             return result
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            patch("idfkit.simulation.expand.run_process", side_effect=fake_run),
             pytest.raises(ExpandObjectsError, match="Slab preprocessor not found") as exc_info,
         ):
             run_slab_preprocessor(doc, energyplus=config)
@@ -832,7 +832,7 @@ class TestRunSlabPreprocessor:
             return result
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            patch("idfkit.simulation.expand.run_process", side_effect=fake_run),
             patch("idfkit.simulation.expand.shutil.copy2", side_effect=track_copy),
         ):
             run_slab_preprocessor(doc, energyplus=mock_config)
@@ -870,7 +870,7 @@ class TestRunSlabPreprocessor:
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             run_slab_preprocessor(doc, energyplus=mock_config, weather=epw)
 
         assert len(epw_checks) == 1
@@ -899,7 +899,7 @@ class TestRunSlabPreprocessor:
             return result
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            patch("idfkit.simulation.expand.run_process", side_effect=fake_run),
             pytest.raises(ExpandObjectsError, match="crashed with exit code 139") as exc_info,
         ):
             run_slab_preprocessor(doc, energyplus=mock_config)
@@ -928,7 +928,7 @@ class TestRunSlabPreprocessor:
             return result
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            patch("idfkit.simulation.expand.run_process", side_effect=fake_run),
             pytest.raises(ExpandObjectsError, match="empty output file") as exc_info,
         ):
             run_slab_preprocessor(doc, energyplus=mock_config)
@@ -945,7 +945,7 @@ class TestRunBasementPreprocessor:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Office", {"x_origin": 0.0})
 
-        with patch("idfkit.simulation.expand.subprocess.run") as mock_run:
+        with patch("idfkit.simulation.expand.run_process") as mock_run:
             result = run_basement_preprocessor(doc)
 
         mock_run.assert_not_called()
@@ -978,7 +978,7 @@ class TestRunBasementPreprocessor:
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             expanded = run_basement_preprocessor(doc, energyplus=mock_config)
 
         assert calls == ["ExpandObjects", "Basement"]
@@ -990,7 +990,7 @@ class TestRunBasementPreprocessor:
         doc.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run()),
+            patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run()),
             pytest.raises(ExpandObjectsError, match=r"did not produce BasementGHTIn\.idf") as exc_info,
         ):
             run_basement_preprocessor(doc, energyplus=mock_config)
@@ -1025,7 +1025,7 @@ class TestRunBasementPreprocessor:
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             expanded = run_basement_preprocessor(doc, energyplus=mock_config, weather=epw)
 
         assert len(epw_checks) == 1
@@ -1061,7 +1061,7 @@ class TestRunBasementPreprocessor:
             return result
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            patch("idfkit.simulation.expand.run_process", side_effect=fake_run),
             pytest.raises(ExpandObjectsError, match="crashed with exit code 134") as exc_info,
         ):
             run_basement_preprocessor(doc, energyplus=mock_config)
@@ -1090,7 +1090,7 @@ class TestRunBasementPreprocessor:
             return result
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            patch("idfkit.simulation.expand.run_process", side_effect=fake_run),
             pytest.raises(ExpandObjectsError, match="empty output file") as exc_info,
         ):
             run_basement_preprocessor(doc, energyplus=mock_config)
@@ -1120,7 +1120,7 @@ class TestRunBasementPreprocessor:
             return result
 
         with (
-            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            patch("idfkit.simulation.expand.run_process", side_effect=fake_run),
             pytest.raises(ExpandObjectsError, match="Basement preprocessor not found") as exc_info,
         ):
             run_basement_preprocessor(doc, energyplus=config)
@@ -1163,7 +1163,7 @@ class TestRunPreprocessing:
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             expanded = run_preprocessing(doc, energyplus=mock_config, weather=epw, timeout=120.0)
 
         assert calls == ["ExpandObjects", "Slab"]
@@ -1198,7 +1198,7 @@ class TestRunPreprocessing:
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             expanded = run_preprocessing(doc, energyplus=mock_config, weather=epw, timeout=120.0)
 
         assert calls == ["ExpandObjects", "Basement"]
@@ -1240,7 +1240,7 @@ class TestRunPreprocessing:
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             run_preprocessing(doc, energyplus=mock_config, weather=epw, timeout=120.0)
 
         assert calls == ["ExpandObjects", "Slab", "Basement"]
@@ -1251,7 +1251,7 @@ class TestRunPreprocessing:
         doc.add("GroundHeatTransfer:Control", "", {"run_slab_preprocessor": "No"}, validate=False)
         expanded = "Version, 24.1;\n\nOutput:PreprocessorMessage, ExpandObjects, Fatal, Slab not run;\n"
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run(expanded)):
+        with patch("idfkit.simulation.expand.run_process", side_effect=_fake_expand_run(expanded)):
             result = run_preprocessing(doc, energyplus=mock_config)
 
         assert len(result["Output:PreprocessorMessage"]) == 1
@@ -1281,7 +1281,7 @@ class TestRunPreprocessing:
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             run_preprocessing(doc, energyplus=mock_config, weather=epw, timeout=120.0)
 
         assert calls == ["ExpandObjects"]
@@ -1309,7 +1309,7 @@ class TestRunPreprocessing:
             result.stderr = ""
             return result
 
-        with patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run):
+        with patch("idfkit.simulation.expand.run_process", side_effect=fake_run):
             run_preprocessing(doc, energyplus=mock_config, weather=epw, timeout=120.0)
 
         assert calls == ["ExpandObjects"]

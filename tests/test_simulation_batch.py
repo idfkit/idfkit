@@ -171,7 +171,7 @@ class TestSimulateBatch:
         with pytest.raises(ValueError, match="jobs must not be empty"):
             simulate_batch([])
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_single_job(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         model = new_document()
@@ -181,7 +181,7 @@ class TestSimulateBatch:
         assert result[0].success
         assert result.all_succeeded
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_multiple_jobs(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(3)]
@@ -189,7 +189,7 @@ class TestSimulateBatch:
         assert len(result) == 3
         assert result.all_succeeded
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_preserves_order(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """Results should be in the same order as input jobs."""
         call_count = 0
@@ -207,7 +207,7 @@ class TestSimulateBatch:
         assert result[1].stdout == "run-2"
         assert result[2].stdout == "run-3"
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_failed_job_does_not_cancel_others(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -226,7 +226,7 @@ class TestSimulateBatch:
         assert len(result.succeeded) == 2
         assert len(result.failed) == 1
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_progress_callback(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         progress_calls: list[dict[str, object]] = []
@@ -246,7 +246,7 @@ class TestSimulateBatch:
         # All succeeded
         assert all(c["success"] is True for c in progress_calls)
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_progress_callback_with_wrong_signature_refused_before_running(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -257,7 +257,7 @@ class TestSimulateBatch:
             simulate_batch(jobs, energyplus=mock_config, progress=prog)  # type: ignore[arg-type]
         mock_run.assert_not_called()
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_cache_integration(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -277,7 +277,7 @@ class TestSimulateBatch:
         assert result2[0].success
         assert mock_run.call_count == 1  # no additional call
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_cache_follows_staged_file_content(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -299,7 +299,7 @@ class TestSimulateBatch:
         simulate_batch([job], energyplus=mock_config, cache=cache)
         assert mock_run.call_count == 2
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_total_runtime_populated(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -308,7 +308,7 @@ class TestSimulateBatch:
         result = simulate_batch([job], energyplus=mock_config)
         assert result.total_runtime_seconds >= 0
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_batch_passes_fs_to_simulate(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -438,7 +438,7 @@ class TestSimulateBatch:
 class TestSimulateBatchWithoutWeather:
     """Batches that mix jobs with and without a weather file."""
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_mixed_batch(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         jobs = [
@@ -450,7 +450,7 @@ class TestSimulateBatchWithoutWeather:
         commands = [c[0][0] for c in mock_run.call_args_list]
         assert sorted("-w" in cmd for cmd in commands) == [False, True]
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_annual_job_without_weather_fails_alone(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:

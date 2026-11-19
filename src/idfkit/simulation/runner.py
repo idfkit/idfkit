@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 from ..exceptions import SimulationError
+from ._cancel import run_process, tracked
 from ._common import (
     admit_annual,
     admit_design_day,
@@ -435,14 +436,7 @@ def _run_simple(
 ) -> tuple[str, str, int]:
     """Run EnergyPlus without progress tracking (original code path)."""
     try:
-        proc = subprocess.run(  # noqa: S603
-            cmd,
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=str(run_dir),
-        )
+        proc = run_process(cmd, cwd=run_dir, timeout=timeout)
     except subprocess.TimeoutExpired as exc:
         msg = f"Simulation timed out after {timeout} seconds"
         raise SimulationError(
@@ -500,25 +494,10 @@ def _run_with_progress(
     stderr_thread.start()
 
     stdout_lines: list[str] = []
-    timed_out = False
 
     try:
-        assert proc.stdout is not None  # noqa: S101
-        for line in proc.stdout:
-            stdout_lines.append(line)
-            event = parser.parse_line(line)
-            if event is not None:
-                on_progress(event)
-
-            # Check timeout
-            if time.monotonic() - start > timeout:
-                proc.kill()
-                proc.wait()
-                timed_out = True
-                break
-
-        if not timed_out:
-            proc.wait()
+        with tracked(proc):
+            timed_out = _stream_stdout(proc, stdout_lines, parser, on_progress, deadline=start + timeout)
     except Exception as exc:
         proc.kill()
         proc.wait()
@@ -530,6 +509,11 @@ def _run_with_progress(
             exit_code=None,
             stderr=stderr or None,
         ) from exc
+    except BaseException:
+        # KeyboardInterrupt and the like: do not leave EnergyPlus running behind them.
+        proc.kill()
+        proc.wait()
+        raise
     finally:
         # Always join the stderr thread so it doesn't leak.
         stderr_thread.join(timeout=5.0)
@@ -547,6 +531,32 @@ def _run_with_progress(
     returncode = proc.returncode if proc.returncode is not None else -1
 
     return stdout, stderr, returncode
+
+
+def _stream_stdout(
+    proc: subprocess.Popen[str],
+    stdout_lines: list[str],
+    parser: ProgressParser,
+    on_progress: Callable[[SimulationProgress], Any],
+    *,
+    deadline: float,
+) -> bool:
+    """Collect *proc*'s stdout into *stdout_lines*, passing progress events on, until it exits.
+
+    Returns ``True`` if *proc* was killed for running past *deadline* (a [time.monotonic][] value).
+    """
+    assert proc.stdout is not None  # noqa: S101
+    for line in proc.stdout:
+        stdout_lines.append(line)
+        event = parser.parse_line(line)
+        if event is not None:
+            on_progress(event)
+        if time.monotonic() > deadline:
+            proc.kill()
+            proc.wait()
+            return True
+    proc.wait()
+    return False
 
 
 def _emit_progress(parser: ProgressParser, lines: list[str], on_progress: Callable[[SimulationProgress], Any]) -> None:

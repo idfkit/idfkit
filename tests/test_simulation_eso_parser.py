@@ -93,6 +93,17 @@ class TestGetColumn:
         assert col.environment_index == 2  # the run period
         assert len(col.values) == 48  # two days, hourly
 
+    def test_repr_summarizes_instead_of_listing_the_data(self, eso: ESOResult) -> None:
+        col = eso.get_column(_OAT)
+        assert col is not None
+        text = repr(col)
+        assert text.startswith(
+            f"ESOColumn({_OAT!r}, 'Environment', units='C', frequency='Hourly', environment_index=2, "
+        )
+        assert "48 points" in text
+        assert "datetime" not in text
+        assert len(text) < 250
+
     def test_values(self, eso: ESOResult) -> None:
         col = eso.get_column(_OAT, "Environment")
         assert col is not None

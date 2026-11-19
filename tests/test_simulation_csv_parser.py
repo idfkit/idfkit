@@ -155,6 +155,18 @@ class TestFrozen:
             result.columns[0].header = "changed"  # type: ignore[misc]
 
 
+class TestRepr:
+    """A repr summarizes the data instead of listing it."""
+
+    def test_csv_result_repr(self) -> None:
+        result = CSVResult.from_file(FIXTURES / "sample.csv")
+        assert repr(result).startswith(f"CSVResult({len(result.timestamps)} rows, {len(result.columns)} columns, ")
+
+    def test_csv_column_repr(self) -> None:
+        column = CSVResult.from_file(FIXTURES / "sample.csv").columns[0]
+        assert repr(column).startswith(f"CSVColumn({column.header!r}, {len(column.values)} points")
+
+
 class TestEdgeCases:
     """Tests for edge cases not covered by the main tests."""
 

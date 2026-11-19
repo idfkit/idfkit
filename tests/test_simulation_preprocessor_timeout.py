@@ -122,7 +122,7 @@ class TestSimulateForwarding:
 
         with (
             patch("idfkit.simulation.expand.run_preprocessing", return_value=preprocessed) as mock_pp,
-            patch("idfkit.simulation.runner.subprocess.run", return_value=sim_proc),
+            patch("idfkit.simulation.runner.run_process", return_value=sim_proc),
         ):
             simulate(slab_model, weather_file, energyplus=mock_config, preprocessor_timeout=300.0)
 
@@ -142,7 +142,7 @@ class TestSimulateForwarding:
 
         with (
             patch("idfkit.simulation.expand.run_preprocessing", return_value=preprocessed) as mock_pp,
-            patch("idfkit.simulation.runner.subprocess.run", return_value=sim_proc),
+            patch("idfkit.simulation.runner.run_process", return_value=sim_proc),
         ):
             simulate(slab_model, weather_file, energyplus=mock_config)
 
@@ -162,7 +162,7 @@ class TestSimulateForwarding:
 
         with (
             patch("idfkit.simulation.expand.run_preprocessing", return_value=preprocessed) as mock_pp,
-            patch("idfkit.simulation.runner.subprocess.run", return_value=sim_proc),
+            patch("idfkit.simulation.runner.run_process", return_value=sim_proc),
         ):
             simulate(slab_model, weather_file, energyplus=mock_config)
 
@@ -212,7 +212,7 @@ class TestBatchForwarding:
 
         with (
             patch("idfkit.simulation.expand.run_preprocessing", return_value=preprocessed) as mock_pp,
-            patch("idfkit.simulation.runner.subprocess.run", return_value=sim_proc),
+            patch("idfkit.simulation.runner.run_process", return_value=sim_proc),
         ):
             simulate_batch([job], energyplus=mock_config, max_workers=1)
 

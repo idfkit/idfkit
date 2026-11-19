@@ -35,9 +35,10 @@ import tempfile
 import time
 from collections.abc import Callable, Coroutine
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeGuard, cast, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, TypeVar, cast, overload
 
 from ..exceptions import SimulationError
+from ._cancel import ProcessGroup
 from ._common import (
     admit_annual,
     admit_design_day,
@@ -65,6 +66,8 @@ if TYPE_CHECKING:
     from .fs import AsyncFileSystem, FileSystem
 
 logger = logging.getLogger(__name__)
+
+_T = TypeVar("_T")
 
 
 def _is_async_fs(fs: FileSystem | AsyncFileSystem) -> TypeGuard[AsyncFileSystem]:
@@ -363,8 +366,8 @@ async def _simulate_local(
         ensure_sql_output(sim_model)
 
         # Preprocessing may invoke subprocesses synchronously — delegate to a
-        # thread so we don't block the event loop.
-        sim_model, ep_expand = await asyncio.to_thread(
+        # thread so we don't block the event loop, and kill them if this coroutine is cancelled.
+        sim_model, ep_expand = await _to_thread_killable(
             maybe_preprocess,
             # The copy, not the caller's model: this runs on a worker thread, which must not read a
             # model another coroutine may be editing meanwhile.
@@ -463,42 +466,62 @@ async def _run_simple(
     run_dir: Path,
     timeout: float,
 ) -> tuple[str, str, int]:
-    """Run EnergyPlus without progress tracking."""
+    """Run EnergyPlus without progress tracking.
+
+    The process is killed and reaped on timeout and on cancellation, so a
+    cancelled caller (``asyncio.wait_for``, a dropped request) leaves no
+    EnergyPlus behind.
+    """
+    proc = await _start_process(cmd, run_dir)
     try:
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdin=asyncio.subprocess.DEVNULL,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            cwd=str(run_dir),
-        )
-        try:
-            stdout_bytes, stderr_bytes = await asyncio.wait_for(
-                proc.communicate(),
-                timeout=timeout,
-            )
-        except asyncio.TimeoutError:
-            proc.kill()
-            await proc.wait()
-            msg = f"Simulation timed out after {timeout} seconds"
-            raise SimulationError(
-                msg,
-                exit_code=None,
-                stderr=None,
-            ) from None
-    except OSError as exc:
-        msg = f"Failed to start EnergyPlus: {exc}"
-        raise SimulationError(
-            msg,
-            exit_code=None,
-            stderr=None,
-        ) from exc
+        stdout_bytes, stderr_bytes = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+    except asyncio.TimeoutError:
+        await _kill(proc)
+        msg = f"Simulation timed out after {timeout} seconds"
+        raise SimulationError(msg, exit_code=None, stderr=None) from None
+    except BaseException:
+        # Cancelled (or interrupted): kill, reap, propagate.
+        await _kill(proc)
+        raise
 
     stdout = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
     stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
     returncode = proc.returncode if proc.returncode is not None else -1
 
     return stdout, stderr, returncode
+
+
+async def _to_thread_killable(func: Callable[..., _T], /, *args: Any) -> _T:
+    """Run *func* in a worker thread as [asyncio.to_thread][] does, killing its subprocesses on cancellation.
+
+    A worker thread cannot be interrupted, so the subprocesses it starts through
+    [run_process][idfkit.simulation._cancel.run_process] join a
+    [ProcessGroup][idfkit.simulation._cancel.ProcessGroup] that is cancelled when the
+    awaiting task is. The thread is then awaited, so it has finished when this re-raises.
+    """
+    group = ProcessGroup()
+
+    def call() -> _T:
+        with group.bind():
+            return func(*args)
+
+    task = asyncio.ensure_future(asyncio.to_thread(call))
+    try:
+        return await asyncio.shield(task)
+    except BaseException:
+        if not task.done():
+            group.cancel()
+            # The thread's outcome (its killed subprocess fails it) is moot: the cancellation wins.
+            with contextlib.suppress(BaseException):
+                await asyncio.shield(task)
+        raise
+
+
+async def _kill(proc: asyncio.subprocess.Process) -> None:
+    """Kill *proc* and wait for it to exit, even if the awaiting task is cancelled again meanwhile."""
+    with contextlib.suppress(ProcessLookupError):  # it has already exited
+        proc.kill()
+    await asyncio.shield(proc.wait())
 
 
 async def _run_with_progress(
@@ -609,23 +632,20 @@ async def _gather_with_timeout(
             timeout=timeout,
         )
     except asyncio.TimeoutError:
-        proc.kill()
-        await proc.wait()
+        await _kill(proc)
         await _cancel_tasks(stdout_task, stderr_task)
         stderr_str = _decode_stderr(_get_stderr_result(stderr_task))
         msg = f"Simulation timed out after {timeout} seconds"
         raise SimulationError(msg, exit_code=None, stderr=stderr_str) from None
     except asyncio.CancelledError:
         # External cancellation — kill, clean up, propagate.
-        proc.kill()
-        await proc.wait()
+        await _kill(proc)
         await _cancel_tasks(stdout_task, stderr_task)
         raise
     except Exception as exc:
         # Callback error — kill, capture stderr, wrap in SimulationError
         # to match sync runner behaviour.
-        proc.kill()
-        await proc.wait()
+        await _kill(proc)
         await _cancel_tasks(stdout_task, stderr_task)
         stderr_str = _decode_stderr(_get_stderr_result(stderr_task))
         msg = f"Failed during EnergyPlus execution: {exc}"
