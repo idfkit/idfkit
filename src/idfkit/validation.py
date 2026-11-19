@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
 
+from ._surface_types import is_fenestration_door
 from .exceptions import closest_names
 from .objects import is_blank_slot
 
@@ -114,7 +115,8 @@ def validate_document(  # noqa: C901
     Args:
         doc: The document to validate
         schema: Schema to validate against (uses doc's schema if not provided)
-        check_references: Check reference integrity
+        check_references: Check reference integrity, and that each window or glass door names a
+            window construction rather than an opaque one (``E013``)
         check_required: Check required fields, and report a group-only object such as
             ``OutdoorAir:NodeList`` that has no entries (``W004``)
         check_types: Check field types
@@ -226,6 +228,7 @@ def validate_document(  # noqa: C901
 
     # Check reference integrity
     if check_references:
+        errors.extend(_validate_window_constructions(doc, types_to_check))
         ref_errors = _validate_references(doc, schema)
         for err in ref_errors:
             if err.severity == Severity.ERROR:
@@ -283,6 +286,88 @@ def _validate_schedules(doc: AnyIDFDocument, types_to_check: list[str], *, check
                 if finding is not None:
                     findings.append(finding)
     return findings
+
+
+#: Fenestration types whose construction EnergyPlus requires to be a window construction (``E013``).
+#: A ``FenestrationSurface:Detailed`` is one unless its surface type is ``Door``.
+_GLAZED_FENESTRATION_TYPES = (
+    "FenestrationSurface:Detailed",
+    "Window",
+    "GlazedDoor",
+    "Window:Interzone",
+    "GlazedDoor:Interzone",
+)
+
+#: Material types EnergyPlus treats as opaque layers. A construction of these alone is opaque;
+#: any ``WindowMaterial:*`` layer makes it a window construction.
+_OPAQUE_MATERIAL_TYPES = (
+    "Material",
+    "Material:NoMass",
+    "Material:AirGap",
+    "Material:InfraredTransparent",
+    "Material:RoofVegetation",
+)
+
+
+def _construction_layers(construction: IDFObject) -> list[str]:
+    """The layer names of a ``Construction``, outside first, upper-cased as collections index them."""
+    names = [construction.data.get("outside_layer")]
+    names.extend(construction.data.get(f"layer_{i}") for i in range(2, 11))
+    return [name.upper() for name in names if isinstance(name, str) and name]
+
+
+def _opaque_construction_names(doc: AnyIDFDocument) -> set[str]:
+    """The upper-cased names of each ``Construction`` whose every layer is an opaque material."""
+    opaque: set[str] = set()
+    window: set[str] = set()
+    for material_type, materials in doc.collections.items():
+        if material_type in _OPAQUE_MATERIAL_TYPES:
+            opaque.update(obj.name.upper() for obj in materials)
+        elif material_type.startswith("WindowMaterial:"):
+            window.update(obj.name.upper() for obj in materials)
+    only_opaque = opaque - window
+    names: set[str] = set()
+    for construction in doc.collections.get("Construction", ()):
+        layers = _construction_layers(construction)
+        if layers and all(layer in only_opaque for layer in layers):
+            names.add(construction.name.upper())
+    return names
+
+
+def _needs_window_construction(obj: IDFObject) -> bool:
+    """Whether *obj* is glazed fenestration: anything but a ``FenestrationSurface:Detailed`` door."""
+    return not is_fenestration_door(obj)
+
+
+def _validate_window_constructions(doc: AnyIDFDocument, types_to_check: list[str]) -> list[ValidationError]:
+    """``E013`` for a window or glass door whose ``Construction`` has only opaque layers.
+
+    Each field is valid and the reference resolves, but EnergyPlus stops in ``GetSurfaceData``
+    ("has an opaque surface construction"). Only a construction whose every layer names an opaque
+    material is reported: a missing layer is ``E009``'s, and other construction types are not read.
+    """
+    fenestration = [t for t in _GLAZED_FENESTRATION_TYPES if t in types_to_check and t in doc.collections]
+    if not fenestration or "Construction" not in doc.collections:
+        return []
+    opaque = _opaque_construction_names(doc)
+    return [
+        ValidationError(
+            severity=Severity.ERROR,
+            obj_type=obj.obj_type,
+            obj_name=obj.name,
+            field="construction_name",
+            message=(
+                f"Construction '{obj.data['construction_name']}' has only opaque layers, but a window needs a "
+                "window construction (a WindowMaterial layer); EnergyPlus stops on this surface"
+            ),
+            code="E013",
+        )
+        for obj_type in fenestration
+        for obj in doc.collections[obj_type]
+        if isinstance(obj.data.get("construction_name"), str)
+        and str(obj.data["construction_name"]).upper() in opaque
+        and _needs_window_construction(obj)
+    ]
 
 
 def _as_number(value: Any) -> float | None:

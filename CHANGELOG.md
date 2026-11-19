@@ -61,6 +61,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `load_epjson()` and `parse_epjson()` raised `IDFParseError` for an unknown object
+  type, as `load_idf()` does, instead of loading it, and suggested the closest type; pass
+  `strict_parsing=False` to skip such types. ([#330](https://github.com/idfkit/idfkit/pull/330))
+- **Breaking:** `set_default_constructions()` left windows and glass doors unset unless given
+  `window_construction=`, since EnergyPlus refuses the opaque construction it had assigned them.
+  ([#330](https://github.com/idfkit/idfkit/pull/330))
+- `idfkit migrate` targeted the installed EnergyPlus by default instead of the newest bundled
+  schema, and a chain the installation has no transition binary for failed before running any step.
+  ([#330](https://github.com/idfkit/idfkit/pull/330))
 - **Breaking:** `calculate_zone_floor_area()` and the other zone helpers, and the model views'
   `zones=`, raised `ObjectNotFoundError` (a `KeyError`) for an unknown zone instead of returning `0.0`
   or an empty figure, and `zones=` raised `TypeError` for a bare string; catch `KeyError` and pass
@@ -187,6 +196,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `validate_document()` reported a window whose construction has only opaque layers (`E013`),
+  which EnergyPlus stops on. ([#330](https://github.com/idfkit/idfkit/pull/330))
+- A failed migration step no longer repeated its versions and process output in the error message.
+  ([#330](https://github.com/idfkit/idfkit/pull/330))
 - `Schedule:Compact` keywords written without a colon (`Through 12/31`, `Until 24:00`) were read.
   ([#329](https://github.com/idfkit/idfkit/pull/329))
 - `doc[obj_type].remove(obj)` removed the object from the document as `removeidfobject()` does;

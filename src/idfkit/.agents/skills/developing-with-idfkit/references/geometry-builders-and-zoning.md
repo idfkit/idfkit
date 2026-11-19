@@ -166,8 +166,10 @@ if bb is not None:
 # Scale all surfaces uniformly (e.g. for unit conversion or sensitivity studies)
 scale_building(doc, factor=1.1)  # 10% larger
 
-# Quickly assign a default construction to surfaces that lack one
-set_default_constructions(doc, construction_name="Default Construction")
+# Quickly assign placeholder constructions to surfaces that lack one. Windows need a window
+# construction (EnergyPlus stops on an opaque one), so they are left unset unless one is named.
+# Neither construction is created: add both, or validate_document() reports E009.
+set_default_constructions(doc, construction_name="Default Construction", window_construction="Default Glazing")
 ```
 
 ## Horizontal adjacencies

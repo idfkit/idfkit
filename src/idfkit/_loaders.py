@@ -267,6 +267,7 @@ def load_epjson(
     as_type: _Target = None,
     since: _Bound = None,
     before: _Bound = None,
+    strict_parsing: bool = True,
     strict: bool = True,
     preserve_formatting: bool = False,
     normalize_choices: bool = True,
@@ -284,6 +285,10 @@ def load_epjson(
             :func:`load_idf`.
         since: The first release of a range the file must be in, as for :func:`load_idf`.
         before: The release that range stops before, as for :func:`load_idf`.
+        strict_parsing: When ``True`` (the default), an object type the schema does not
+            have raises :class:`~idfkit.exceptions.IDFParseError`, as :func:`load_idf` does,
+            and the message suggests the closest type; EnergyPlus refuses such a file. ``False``
+            skips it with a logged warning.
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
             of returning ``None``.
@@ -304,6 +309,7 @@ def load_epjson(
         ``since=``/``before=`` range when one is given.
 
     Raises:
+        IDFParseError: For an object type the schema does not have, with *strict_parsing*.
         TypeError: As :func:`load_idf` raises it.
         ValueError: As :func:`load_idf` raises it.
 
@@ -335,6 +341,7 @@ def load_epjson(
         Path(path),
         version=version,
         strict=strict,
+        strict_parsing=strict_parsing,
         preserve_formatting=preserve_formatting,
         normalize_choices=normalize_choices,
     )
