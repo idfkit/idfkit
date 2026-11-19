@@ -35,6 +35,7 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
     filepath: Path | None
     _count_at_read: int | None
     _source_encoding: str | None
+    _source_newline: str | None
 
     @property
     def version(self) -> tuple[int, int, int]:

@@ -197,6 +197,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         "_schedules_cache",
         "_schema",
         "_source_encoding",
+        "_source_newline",
         "_spans",
         "_strict",
         "_version",
@@ -217,6 +218,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     #: ``None`` for a document not read from an IDF file. Read with ``getattr``: a document pickled
     #: before the slot existed has no value in it.
     _source_encoding: str | None
+    #: The line ending of the IDF file the document was read from, ``"\r\n"`` or ``"\n"``, which
+    #: ``save_idf`` writes back; ``None`` for a document not read from an IDF file. Read with
+    #: ``getattr``, as ``_source_encoding`` is.
+    _source_newline: str | None
     """How many objects the document held when a preserving read finished.
 
     ``None`` unless the document was parsed with ``preserve_formatting=True``.
@@ -270,6 +275,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._raw_text: str | None = None
         self._count_at_read: int | None = None
         self._source_encoding: str | None = None
+        self._source_newline: str | None = None
 
     @property
     def strict(self) -> bool:
@@ -1824,6 +1830,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             normalize_choices=self.normalize_choices,
         )
         new_doc._source_encoding = getattr(self, "_source_encoding", None)
+        new_doc._source_newline = getattr(self, "_source_newline", None)
 
         # Keyed by the object: IDFObject hashes by identity, and the tree below needs
         # to find each original's twin.

@@ -1117,6 +1117,71 @@ Timestep,
 
         assert parse_idf(path) is not None
 
+    def test_a_typo_in_a_number_loads_as_read_and_is_reported(self, tmp_path: Path) -> None:
+        """``0.1O`` loads as the str ``"0.1O"`` in both modes; the finding says where it is."""
+        path = self._write(tmp_path, "Version,24.1;\nMaterial,Brick,Rough,0.1O,0.9,1920,790;\n")
+
+        assert parse_idf(path)["Material"]["Brick"].thickness == "0.1O"
+        assert parse_idf(path, strict_parsing=False)["Material"]["Brick"].thickness == "0.1O"
+        (diagnostic,) = load_idf_with_diagnostics(str(path)).diagnostics
+        assert (diagnostic.code, diagnostic.line, diagnostic.column) == ("InvalidField", 2, 22)
+        assert diagnostic.message == "Field 'thickness' expects a number, got '0.1O'"
+
+    def test_validation_reports_the_value_a_strict_load_kept(self, tmp_path: Path) -> None:
+        from idfkit.validation import validate_document
+
+        doc = parse_idf(self._write(tmp_path, "Version,24.1;\nMaterial,Brick,Rough,0.1O,0.9,1920,790;\n"))
+
+        result = validate_document(doc)
+
+        assert [e.field for e in result.errors if e.obj_type == "Material"] == ["thickness"]
+
+    def test_a_field_that_also_takes_a_sentinel_still_reports_text(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, "Version,24.1;\nZone,Z,0,0,0,0,1,1,abc;\n")
+
+        (diagnostic,) = load_idf_with_diagnostics(str(path)).diagnostics
+
+        assert diagnostic.message == "Field 'ceiling_height' expects a number, got 'abc'"
+
+    def test_an_extensible_value_is_not_a_finding(self, tmp_path: Path) -> None:
+        """Only fixed fields are diagnosed on load, as in the TypeScript library: the example-file sweep
+        holds the two to the same per-release counts. The value still loads as read, in strict mode too.
+        """
+        path = self._write(tmp_path, "Version,24.1;\nShading:Site:Detailed,S,,4,0,0,0,1,0,0,1,1,0,0,1.O,0;\n")
+
+        assert load_idf_with_diagnostics(str(path)).diagnostics == ()
+        doc = parse_idf(path)
+        assert doc["Shading:Site:Detailed"]["S"].vertices[3]["vertex_y_coordinate"] == "1.O"
+
+    def test_internal_reparses_keep_a_leniently_loaded_value(self, tmp_path: Path) -> None:
+        """expand(), migrate() and DesignDayManager re-parse a file idfkit wrote from the user's document."""
+        from idfkit.migration._reparse import parse_migrated_idf
+        from idfkit.simulation.expand import _parse_expanded
+        from idfkit.weather.designday import DesignDayManager
+        from idfkit.writers import save_idf
+
+        source = self._write(tmp_path, "Version,24.1;\nMaterial,Brick,Rough,0.1O,0.9,1920,790;\n")
+        doc = parse_idf(source, strict_parsing=False)
+        run_dir = tmp_path / "run"
+        run_dir.mkdir()
+        save_idf(doc, run_dir / "expanded.idf")
+
+        expanded = _parse_expanded(run_dir, doc)
+        migrated = parse_migrated_idf(run_dir / "expanded.idf", version=(24, 1, 0), strict=True)
+        DesignDayManager(run_dir / "expanded.idf", version=(24, 1, 0))
+
+        assert expanded["Material"]["Brick"].thickness == "0.1O"
+        assert migrated["Material"]["Brick"].thickness == "0.1O"
+
+    def test_a_parametric_expression_is_reported_and_loads_as_read(self, tmp_path: Path) -> None:
+        """``=$name`` is not a number until ParametricPreprocessor runs, so it is a finding, and not fatal."""
+        path = self._write(tmp_path, "Version,24.1;\nMaterial,M,Rough,=$insDepth * 2,0.9,1920,790;\n")
+
+        (diagnostic,) = load_idf_with_diagnostics(str(path)).diagnostics
+
+        assert diagnostic.message == "Field 'thickness' expects a number, got '=$insDepth * 2'"
+        assert parse_idf(path)["Material"]["M"].thickness == "=$insDepth * 2"
+
     def test_a_sizing_sentinel_is_not_a_finding(self, tmp_path: Path) -> None:
         """The check that keeps this diagnostic worth reading.
 

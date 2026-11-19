@@ -3023,6 +3023,7 @@ def _generate_document_module() -> str:
     lines.append("    _count_at_read: int | None")
     # Set by the IDF parser and read by save_idf, as _count_at_read is.
     lines.append("    _source_encoding: str | None")
+    lines.append("    _source_newline: str | None")
     lines.append("")
 
     def emit(

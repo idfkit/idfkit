@@ -53,7 +53,9 @@ class CSTNode:
         second copy of every object in the file to look at its last few characters.
         """
         end = len(self.text)
-        while end and self.text[end - 1] == "\n":
+        # A CRLF file's separator is ``\r\n\r\n``: stopping at the ``\r`` left it in the body, so a
+        # rewritten object lost its blank line and wrote a bare ``\n`` after it.
+        while end and self.text[end - 1] in "\r\n":
             end -= 1
         return end
 
