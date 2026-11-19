@@ -29,10 +29,11 @@ from __future__ import annotations
 
 import re
 from array import array
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 from ...exceptions import ResultLookupError
 from ._lookup import for_key, listing, resolve_series
@@ -192,6 +193,10 @@ class ESOColumn:
             ylabel=f"{var.variable_name} ({var.units})" if var.units else var.variable_name,
             label=var.key_value or var.variable_name,
         )
+
+
+#: One series to read: an ``ESOVariable``, a variable name, or ``(name, key)`` / ``(name, key, frequency)``.
+ESOSeriesSpec: TypeAlias = ESOVariable | str | tuple[str, str] | tuple[str, str, str | None]
 
 
 def _parse_dictionary(data: bytes) -> tuple[str, dict[int, ESOVariable], int]:
@@ -431,7 +436,52 @@ class ESOResult:
                 reported keys), if several keys or frequencies match, or if the
                 variable has no data (in *environment_index*, when given).
         """
-        var = resolve_series(
+        var = self._resolve(variable_name, key_value, frequency)
+        return self._pick_environment(var, key_value, self._scan_variable(var.report_id), environment_index)
+
+    def get_columns(
+        self,
+        series: Iterable[ESOSeriesSpec],
+        environment_index: int | None = None,
+    ) -> list[ESOColumn]:
+        """Extract several variables' time series in one scan of the file.
+
+        Each [get_column][idfkit.simulation.parsers.eso.ESOResult.get_column]
+        call scans the whole data section, so a loop over many variables reads
+        the file once per variable. This reads every requested series in a
+        single pass (series already read are served from the cache).
+
+        Args:
+            series: The series to read, each an ``ESOVariable`` (as
+                ``variables`` lists them), a variable name, or a
+                ``(name, key)`` or ``(name, key, frequency)`` tuple, resolved
+                as ``get_column`` resolves its arguments.
+            environment_index: Which environment to return for every series,
+                as in ``get_column``; defaults to the last one in the file.
+
+        Returns:
+            One [ESOColumn][idfkit.simulation.parsers.eso.ESOColumn] per item
+            of *series*, in the same order.
+
+        Raises:
+            ResultLookupError: If any series does not resolve to exactly one
+                reported series or has no data, as in ``get_column``.
+        """
+        resolved: list[tuple[ESOVariable, str | None]] = []
+        for spec in series:
+            if isinstance(spec, ESOVariable):
+                resolved.append((self._resolve(spec.variable_name, spec.key_value, spec.frequency), spec.key_value))
+            elif isinstance(spec, str):
+                resolved.append((self._resolve(spec, None, None), None))
+            else:
+                key = spec[1]
+                resolved.append((self._resolve(spec[0], key, spec[2] if len(spec) == 3 else None), key))
+        scanned = self._scan_variables([var.report_id for var, _ in resolved])
+        return [self._pick_environment(var, key, scanned[var.report_id], environment_index) for var, key in resolved]
+
+    def _resolve(self, variable_name: str, key_value: str | None, frequency: str | None) -> ESOVariable:
+        """The one declared variable *variable_name*, *key_value* and *frequency* name."""
+        return resolve_series(
             self.variables,
             variable_name,
             key_value,
@@ -441,7 +491,12 @@ class ESOResult:
             frequency_of=lambda v: v.frequency,
             not_found_hint=" Request it with an Output:Variable (or Output:Meter) object.",
         )
-        cols = self._scan_variable(var.report_id)
+
+    @staticmethod
+    def _pick_environment(
+        var: ESOVariable, key_value: str | None, cols: tuple[ESOColumn, ...], environment_index: int | None
+    ) -> ESOColumn:
+        """The column of *cols* in *environment_index* (the last one when ``None``)."""
         if not cols:
             msg = f"Variable '{var.variable_name}'{for_key(key_value)} has no data in this file."
             raise ResultLookupError(msg)
@@ -519,10 +574,12 @@ class ESOResult:
                     # to a stable sentinel if a value precedes any marker.
                     timestamps.append(current_ts if current_ts is not None else datetime(REFERENCE_YEAR, 1, 1))
                 elif startswith(env_prefix, start):
+                    # Parsed before the flush, so a garbled marker cannot store the open column twice.
+                    environment = _parse_environment(env_index + 1, data[start:end].split(b","))
                     if values:
                         columns.append(ESOColumn(var, env_index, tuple(timestamps[: len(values)]), tuple(values)))
                     env_index += 1
-                    environments.append(_parse_environment(env_index, data[start:end].split(b",")))
+                    environments.append(environment)
                     timestamps = []
                     values = array("d")
                     current_ts = None
@@ -540,6 +597,90 @@ class ESOResult:
         result = tuple(columns)
         self._scan_cache[report_id] = result
         return result
+
+    def _scan_variables(self, report_ids: Sequence[int]) -> dict[int, tuple[ESOColumn, ...]]:  # noqa: C901
+        """Single scan that float-parses the records of every id in *report_ids* not yet cached."""
+        pending = [rid for rid in dict.fromkeys(report_ids) if rid not in self._scan_cache]
+        if len(pending) == 1:
+            self._scan_variable(pending[0])  # the prefix-test scan is faster for one id
+        elif pending:
+            by_id = self._by_id
+            marker_of = {rid: _FREQ_TO_MARKER.get(by_id[rid].frequency, _TIMESTEP_MARKER) for rid in pending}
+            # Leading id bytes -> id, for the wanted variables and the markers their timestamps come from.
+            wanted = {str(rid).encode("latin-1"): rid for rid in pending}
+            markers = {str(m).encode("latin-1"): m for m in {_ENV_MARKER, *marker_of.values()}}
+            data = self._data
+            find = data.find
+            n = len(data)
+            sentinel = datetime(REFERENCE_YEAR, 1, 1)
+
+            columns: dict[int, list[ESOColumn]] = {rid: [] for rid in pending}
+            environments: list[ESOEnvironment] = []
+            env_index = -1
+            current_ts: dict[int, datetime] = {}
+            timestamps: dict[int, list[datetime]] = {rid: [] for rid in pending}
+            values: dict[int, array[float]] = {rid: array("d") for rid in pending}
+
+            def _flush() -> None:
+                for rid in pending:
+                    if values[rid]:
+                        columns[rid].append(
+                            ESOColumn(by_id[rid], env_index, tuple(timestamps[rid]), tuple(values[rid]))
+                        )
+
+            # Each id stops at its first record that will not parse, as _scan_variable stops for it alone, so a
+            # garbled value of one series never truncates another. A garbled timestamp marker stops the ids
+            # that read it; a garbled environment marker stops them all.
+            start = self._data_start
+            while start < n:
+                end = find(b"\n", start)
+                if end == -1:
+                    end = n
+                comma = find(b",", start, end)
+                if comma != -1:
+                    head = data[start:comma]
+                    rid = wanted.get(head)
+                    if rid is not None:
+                        value_end = find(b",", comma + 1, end)
+                        if value_end == -1:
+                            value_end = end
+                        try:
+                            value = float(data[comma + 1 : value_end])
+                        except ValueError:
+                            del wanted[head]
+                        else:
+                            values[rid].append(value)
+                            timestamps[rid].append(current_ts.get(marker_of[rid], sentinel))
+                    else:
+                        marker = markers.get(head)
+                        if marker == _ENV_MARKER:
+                            try:
+                                environment = _parse_environment(env_index + 1, data[start:end].split(b","))
+                            except (ValueError, IndexError):
+                                break  # the closing _flush() keeps what was read
+                            _flush()
+                            env_index += 1
+                            environments.append(environment)
+                            timestamps = {r: [] for r in pending}
+                            values = {r: array("d") for r in pending}
+                            current_ts = {}
+                        elif marker is not None:
+                            try:
+                                current_ts[marker] = _marker_timestamp(marker, data[start:end].split(b","))
+                            except (ValueError, IndexError):
+                                for key, r in list(wanted.items()):
+                                    if marker_of[r] == marker:
+                                        del wanted[key]
+                if not wanted:
+                    break
+                start = end + 1
+            _flush()
+
+            if self._env_cache is None and environments:
+                self._env_cache = tuple(environments)
+            for rid in pending:
+                self._scan_cache[rid] = tuple(columns[rid])
+        return {rid: self._scan_cache[rid] for rid in report_ids}
 
     def _scan_environments(self) -> tuple[ESOEnvironment, ...]:
         """Cheap scan that enumerates only the ``1,...`` environment markers."""

@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import contextlib
 import sqlite3
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, NoReturn
+from typing import TYPE_CHECKING, Any, Literal, NoReturn, TypeAlias
 
 from ...exceptions import ResultLookupError, closest_names
 from ._lookup import did_you_mean, listing, resolve_series
@@ -177,6 +177,27 @@ _ENVIRONMENT_TYPES: dict[str, frozenset[int]] = {
 _ENVIRONMENT_TYPES["all"] = _ENVIRONMENT_TYPES["annual"] | _ENVIRONMENT_TYPES["sizing"]
 
 
+#: One series to read: a ``VariableInfo``, a variable name, or ``(name, key)`` / ``(name, key, frequency)``.
+SeriesSpec: TypeAlias = VariableInfo | str | tuple[str, str] | tuple[str, str, str | None]
+
+# One ReportData row: Year, Month, Day, Hour, Minute, Value, EnvironmentType.
+_DataRow: TypeAlias = tuple[int, int, int, int, int, float, int | None]
+
+# Series per ReportData query, under SQLite's oldest bound-parameter limit (999).
+_MAX_PARAMS = 900
+
+
+def _series_args(spec: SeriesSpec) -> tuple[str, str, str | None]:
+    """The ``(name, key, frequency)`` a series spec names, with ``get_timeseries``'s defaults."""
+    if isinstance(spec, VariableInfo):
+        return spec.name, spec.key_value, spec.frequency
+    if isinstance(spec, str):
+        return spec, "*", None
+    if len(spec) == 2:
+        return spec[0], spec[1], None
+    return spec[0], spec[1], spec[2]
+
+
 def _environment_types(
     rows: Sequence[tuple[object, ...]], name: str, environment: Environment | None
 ) -> frozenset[int] | None:
@@ -305,47 +326,98 @@ class SQLResult:
                 run of a model with no ``RunPeriod``, say).
             ValueError: If *environment* is not a recognized value.
         """
+        return self.get_timeseries_many([(variable_name, key_value, frequency)], environment)[0]
+
+    def get_timeseries_many(
+        self,
+        series: Iterable[SeriesSpec],
+        environment: Environment | None = None,
+    ) -> list[TimeSeriesResult]:
+        """Retrieve several time series in one read of the database.
+
+        EnergyPlus does not index ``ReportData`` by variable, so each
+        [get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries]
+        call scans the whole table. This reads every requested series in a
+        single scan, which is much faster than a loop when reading more than
+        one or two series from a large file.
+
+        Args:
+            series: The series to read, each a ``VariableInfo`` (as
+                [list_variables][idfkit.simulation.parsers.sql.SQLResult.list_variables]
+                returns), a variable name, or a ``(name, key)`` or
+                ``(name, key, frequency)`` tuple, resolved as
+                ``get_timeseries`` resolves its arguments.
+            environment: Which simulation environments to read, as in
+                ``get_timeseries``; it applies to every series.
+
+        Returns:
+            One [TimeSeriesResult][idfkit.simulation.parsers.sql.TimeSeriesResult]
+            per item of *series*, in the same order.
+
+        Raises:
+            ResultLookupError: If any series does not resolve to exactly one
+                reported series or has no data for *environment*, as in
+                ``get_timeseries``.
+            ValueError: If *environment* is not a recognized value.
+        """
         if environment is not None and environment not in _ENVIRONMENT_TYPES:
             msg = f"environment must be 'annual', 'sizing', 'all', or None, got {environment!r}"
             raise ValueError(msg)
-        rdd_index, name, key_val, units, raw_freq = self._find_variable(variable_name, key_value, frequency)
-        freq: str = FREQUENCY_MAP.get(raw_freq, raw_freq) if raw_freq else "Unknown"
+        resolved = [self._find_variable(*_series_args(spec)) for spec in series]
+        rows_by_index = self._read_report_data(sorted({r[0] for r in resolved}))
+        has_environments: bool | None = None
+        results: list[TimeSeriesResult] = []
+        for rdd_index, name, key_val, units, raw_freq in resolved:
+            rows = rows_by_index[rdd_index]
+            if not rows:
+                if has_environments is None:
+                    has_environments = bool(self.list_environments())
+                if not has_environments:
+                    raise ResultLookupError(self._no_environment_message(name))
+            wanted = _environment_types(rows, name, environment)
+            timestamps: list[datetime] = []
+            values: list[float] = []
+            for year, month, day, hour, minute, value, env_type in rows:
+                if wanted is not None and env_type not in wanted:
+                    continue
+                ref_year = year if year and year > 0 else REFERENCE_YEAR
+                timestamps.append(make_timestamp(ref_year, month, day, hour, minute))
+                values.append(float(value))
+            results.append(
+                TimeSeriesResult(
+                    variable_name=name,
+                    key_value=key_val,
+                    units=units,
+                    frequency=FREQUENCY_MAP.get(raw_freq, raw_freq) if raw_freq else "Unknown",
+                    timestamps=tuple(timestamps),
+                    values=tuple(values),
+                )
+            )
+        return results
+
+    def _read_report_data(self, indexes: Sequence[int]) -> dict[int, list[_DataRow]]:
+        """Read the non-warmup ``ReportData`` rows of *indexes*, each with its environment type, in time order."""
+        rows_by_index: dict[int, list[_DataRow]] = {index: [] for index in indexes}
         cur = self._conn.cursor()
-
-        # Retrieve time-series data with each row's environment type, filtering
-        # out warmup periods. COALESCE handles EnergyPlus versions where
-        # WarmupFlag is NULL; the LEFT JOIN keeps rows with no environment.
-        cur.execute(
-            "SELECT t.Year, t.Month, t.Day, t.Hour, t.Minute, rd.Value, ep.EnvironmentType "
-            "FROM ReportData rd "
-            "JOIN Time t ON rd.TimeIndex = t.TimeIndex "
-            "LEFT JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex "
-            "WHERE rd.ReportDataDictionaryIndex = ? AND COALESCE(t.WarmupFlag, 0) = 0 "
-            "ORDER BY t.TimeIndex",
-            (rdd_index,),
-        )
-        rows: list[tuple[int, int, int, int, int, float, int | None]] = cur.fetchall()
-        if not rows and not self.list_environments():
-            raise ResultLookupError(self._no_environment_message(name))
-        wanted = _environment_types(rows, name, environment)
-
-        timestamps: list[datetime] = []
-        values: list[float] = []
-        for year, month, day, hour, minute, value, env_type in rows:
-            if wanted is not None and env_type not in wanted:
-                continue
-            ref_year = year if year and year > 0 else REFERENCE_YEAR
-            timestamps.append(make_timestamp(ref_year, month, day, hour, minute))
-            values.append(float(value))
-
-        return TimeSeriesResult(
-            variable_name=name,
-            key_value=key_val,
-            units=units,
-            frequency=freq,
-            timestamps=tuple(timestamps),
-            values=tuple(values),
-        )
+        # Each statement scans ReportData once; chunks keep under SQLite's bound-parameter limit.
+        for start in range(0, len(indexes), _MAX_PARAMS):
+            chunk = indexes[start : start + _MAX_PARAMS]
+            placeholders = ",".join("?" * len(chunk))
+            # COALESCE handles EnergyPlus versions where WarmupFlag is NULL; the
+            # LEFT JOIN keeps rows with no environment.
+            cur.execute(
+                "SELECT rd.ReportDataDictionaryIndex, t.Year, t.Month, t.Day, t.Hour, t.Minute, rd.Value, "  # noqa: S608
+                "ep.EnvironmentType "
+                "FROM ReportData rd "
+                "JOIN Time t ON rd.TimeIndex = t.TimeIndex "
+                "LEFT JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex "
+                f"WHERE rd.ReportDataDictionaryIndex IN ({placeholders}) AND COALESCE(t.WarmupFlag, 0) = 0 "
+                "ORDER BY t.TimeIndex",
+                chunk,
+            )
+            for row in cur:
+                rows_by_index[row[0]].append(row[1:])
+        return rows_by_index
 
     @staticmethod
     def _no_environment_message(name: str) -> str:

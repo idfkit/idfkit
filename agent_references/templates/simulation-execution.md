@@ -102,6 +102,8 @@ A model with a `PythonPlugin:Instance`, or with an `ExternalInterface` in `Ptole
 
 A hit is copied into `output_dir`, exactly where a fresh run would have written, so writing into `result.run_dir` never touches the cache. Without `output_dir` nothing is copied: `result.run_dir` is the cache entry itself, so treat it as read-only (pass `output_dir` if you need to write next to the outputs). `result.cached` is `True` for a hit; its `runtime_seconds` and `exit_code` are those of the run that filled the entry, and `stdout`/`stderr` are empty. Count `result.cached` to report a hit rate.
 
+An entry holds the run's outputs (tens of MB for an annual run) but not the weather file, whose content is already in the key. The cache never shrinks by itself: pass `max_bytes=` to evict the least recently used entries after each store, or call `cache.prune(max_bytes=..., max_age=...)` (seconds since last use) yourself; `cache.size_bytes()` reports the total. A result whose `run_dir` is an evicted entry stops working: a hit read without an `output_dir` returns the entry itself, and a later store in the same batch can evict it, so give runs whose results you keep an `output_dir` (the hit is copied there).
+
 ## Progress events
 
 ```python
@@ -117,6 +119,8 @@ Each `SimulationProgress` carries `phase` (`"initializing"`, `"warmup"`, `"simul
 ```
 
 The weather file must be local — remote weather is not auto-downloaded. Pre-stage with `WeatherDownloader` (see [weather-data.md](weather-data.md)).
+
+With `fs=`, EnergyPlus runs in a local temp directory that is deleted once its outputs are uploaded (the copy of the weather file is not uploaded). Reading `result.sql` then downloads the `.sql` once into a temp file, removed by `result.close()`.
 
 `cache=` combines with `fs=`: the cache stays local, a miss is cached from the local run directory, and a hit uploads the cached outputs to `output_dir`, so the remote folder exists after every call.
 

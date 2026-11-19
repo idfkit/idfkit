@@ -350,9 +350,44 @@ class TestSimulate:
         assert result.success
         assert result.fs is fs
         assert result.run_dir == Path("remote/output")
-        # Verify files were uploaded — at minimum in.idf and weather should be there
         uploaded = [k for k in fs._files if k.startswith("remote/output/")]
-        assert len(uploaded) > 0
+        assert "remote/output/model.idf" in uploaded
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_fs_run_skips_weather_and_deletes_local_dir(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """The input weather file is not uploaded, and the local run directory is gone afterwards."""
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        fs = InMemoryFileSystem()
+        simulate(new_document(), weather_file, energyplus=mock_config, output_dir="remote/output", fs=fs)
+        local_dir = Path(mock_run.call_args.kwargs["cwd"])
+        assert not local_dir.exists()
+        assert f"remote/output/{weather_file.name}" not in fs._files
+        assert "remote/output/model.idf" in fs._files
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_fs_run_skips_symlinked_weather(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """A symlinked weather file is copied under its target's name, which the upload still skips."""
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        link = tmp_path / "link.epw"
+        link.symlink_to(weather_file)
+        fs = InMemoryFileSystem()
+        simulate(new_document(), link, energyplus=mock_config, output_dir="remote/output", fs=fs)
+        assert not [k for k in fs._files if k.endswith(".epw")]
+        assert "remote/output/model.idf" in fs._files
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_fs_run_deletes_local_dir_on_timeout(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_run.side_effect = subprocess.TimeoutExpired(cmd=["energyplus"], timeout=10)
+        fs = InMemoryFileSystem()
+        with pytest.raises(SimulationError, match="timed out"):
+            simulate(new_document(), weather_file, energyplus=mock_config, output_dir="remote/output", fs=fs)
+        assert not Path(mock_run.call_args.kwargs["cwd"]).exists()
 
 
 # ---------------------------------------------------------------------------
@@ -954,6 +989,23 @@ class TestSimulateCacheWithFileSystem:
         assert names_b
         assert names_b == names_a
         assert CACHE_META_FILE not in names_b
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_hit_uploads_from_entry_without_local_copy(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        from idfkit.simulation.cache import SimulationCache
+
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        fs = InMemoryFileSystem()
+        model = new_document()
+        simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="runs/a")
+        with patch("idfkit.simulation.runner.restore_cached_result", side_effect=AssertionError("local copy")):
+            hit = simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="runs/b")
+        assert hit.cached
+        assert "runs/b/model.idf" in fs._files
+        assert not [k for k in fs._files if k.endswith(".epw")]
 
     def test_put_failure_is_logged(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
         from idfkit.simulation.cache import CacheKey, SimulationCache

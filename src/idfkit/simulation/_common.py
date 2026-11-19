@@ -453,6 +453,27 @@ def maybe_preprocess(
     return sim_model, True  # Let EnergyPlus handle ExpandObjects via -x
 
 
+def publish_exclude(weather_path: Path | None) -> frozenset[str]:
+    """Names in a local run directory that an upload to a file system leaves out.
+
+    The run's copy of the weather file is an input the caller already has, and
+    the cache's metadata file is not a simulation output.
+
+    Args:
+        weather_path: The weather file as [admit_weather][idfkit.simulation._common.admit_weather]
+            resolved it (the name the run directory holds it under), or ``None``.
+
+    Returns:
+        The file names [upload_results][idfkit.simulation._common.upload_results] skips.
+    """
+    from .cache import CACHE_META_FILE
+
+    names = {CACHE_META_FILE}
+    if weather_path is not None:
+        names.add(weather_path.name)
+    return frozenset(names)
+
+
 def upload_results(local_dir: Path, remote_dir: Path, fs: FileSystem, *, exclude: frozenset[str] = frozenset()) -> None:
     """Upload all output files from a local directory to a remote file system.
 
@@ -498,18 +519,22 @@ async def async_upload_results(
         await asyncio.gather(*tasks)
 
 
-def restore_cached_result(entry: SimulationResult, output_dir: str | Path | None) -> SimulationResult:
+def restore_cached_result(
+    entry: SimulationResult, output_dir: str | Path | None, weather_path: Path | None = None
+) -> SimulationResult:
     """Copy a cache hit's files into *output_dir* and return a result that reads the copy.
 
     The copy lands in *output_dir* (created when missing), where a fresh run
-    would have written. Without an *output_dir* nothing is copied: *entry* is
-    returned as is, so a hit costs no disk and its ``run_dir`` is the cache
-    entry itself, to be treated as read-only.
+    would have written, with the weather file, which the cache entry does not
+    hold, copied in as a fresh run copies it. Without an *output_dir* nothing
+    is copied: *entry* is returned as is, so a hit costs no disk and its
+    ``run_dir`` is the cache entry itself, to be treated as read-only.
 
     Args:
         entry: The result [SimulationCache.get][idfkit.simulation.cache.SimulationCache.get]
             returned, whose ``run_dir`` is the cache entry.
         output_dir: The run's requested local output directory, or ``None``.
+        weather_path: The run's weather file, or ``None`` for a run without one.
 
     Returns:
         A result with ``cached=True`` whose ``run_dir`` holds the copied files,
@@ -523,6 +548,8 @@ def restore_cached_result(entry: SimulationResult, output_dir: str | Path | None
     run_dir = Path(output_dir).resolve()
     run_dir.mkdir(parents=True, exist_ok=True)
     shutil.copytree(entry.run_dir, run_dir, dirs_exist_ok=True, ignore=shutil.ignore_patterns(CACHE_META_FILE))
+    if weather_path is not None:
+        prepare_run_directory(run_dir, weather_path)
     return _Result(
         run_dir=run_dir,
         success=entry.success,

@@ -74,9 +74,21 @@ ts.values  # tuple[float, ...]
 
 # Pandas (requires idfkit[dataframes])
 df = ts.to_dataframe()
+
+# Several series: ONE scan of ReportData instead of one per get_timeseries call.
+# Each item is a VariableInfo, a name, (name, key) or (name, key, frequency).
+zone_temps = result.sql.get_timeseries_many([
+    v for v in result.sql.list_variables() if v.name == "Zone Mean Air Temperature"
+])
+oat, office = result.sql.get_timeseries_many([
+    "Site Outdoor Air Drybulb Temperature",
+    ("Zone Mean Air Temperature", "Office", "Hourly"),
+])
 ```
 
 `get_timeseries` matches the variable name, key value and frequency case-insensitively. It must resolve to exactly one reported series, so the default `key_value="*"` works only for a variable reported for a single key (site `Environment` variables, a meter): for a per-zone variable it raises, listing the keys, rather than returning one zone at random. Pass `frequency` when the variable is reported at several (e.g. `"Hourly"` and `"Monthly"`); the error lists them. By default (`environment=None`) it reads the weather-file run period, falling back to the design days only when the run has no run period, so an annual run never mixes 48 design-day hours into its 8760. Pass `"sizing"` for the design days or `"all"` for both in run order; asking for an environment the variable has no data in raises `ResultLookupError`.
+
+EnergyPlus does not index `ReportData` by variable, so every `get_timeseries` call scans the whole table (over a million rows for a one-zone annual run, much more for a large model). To read more than one or two series, use `sql.get_timeseries_many(series, environment=None)`: it resolves each item as `get_timeseries` would and reads them all in one scan, returning the results in order. `eso.get_columns(series, environment_index=None)` does the same for `.eso`/`.mtr` files.
 
 Every lookup failure raises `ResultLookupError`, a `KeyError` subclass whose message names the closest variable, key or report spelling ("Did you mean ...?") and the keys reported. A variable missing from the database usually means you didn't add an `Output:Variable` for it in the IDF — see [Output variable discovery](#output-variable-discovery). `get_tabular_value` raises it too, naming the first of report, `report_for`, table, row and column that matches nothing. `get_timeseries` also raises it when EnergyPlus simulated no environment at all (`sql.list_environments() == []`), rather than returning an empty series.
 
@@ -204,6 +216,9 @@ if eso:
     design_day_col = eso.get_column("Zone Mean Air Temperature", "Office", environment_index=htg)
     # And back the other way — a column tells you its environment:
     env = eso.environments[design_day_col.environment_index]
+
+    # Several variables in ONE scan (get_column scans the file once per call):
+    temp, oat_col = eso.get_columns([("Zone Mean Air Temperature", "Office"), "Site Outdoor Air Drybulb Temperature"])
 
     # Eager full parse:
     all_columns = eso.columns  # tuple[ESOColumn, ...] — every variable

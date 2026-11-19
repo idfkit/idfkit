@@ -11,6 +11,7 @@ from __future__ import annotations
 import dataclasses
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -136,6 +137,68 @@ class TestGetColumn:
     def test_to_dataframe_raises_lookup_error(self, eso: ESOResult) -> None:
         with pytest.raises(KeyError):
             eso.to_dataframe("No Such Variable")
+
+
+class TestGetColumns:
+    """get_columns() reads several series in one scan, with get_column's results."""
+
+    def test_matches_get_column_in_order(self) -> None:
+        specs: list[str | tuple[str, str] | tuple[str, str, str | None]] = [
+            ("Zone Mean Air Temperature", "ZONE ONE"),
+            _OAT,
+            ("Other Equipment Total Heating Energy", "TEST 352A", None),
+        ]
+        many = ESOResult.from_file(SAMPLE_ESO).get_columns(specs)
+        one = ESOResult.from_file(SAMPLE_ESO)
+        assert many == [
+            one.get_column("Zone Mean Air Temperature", "ZONE ONE"),
+            one.get_column(_OAT),
+            one.get_column("Other Equipment Total Heating Energy", "TEST 352A"),
+        ]
+
+    def test_every_variable_and_environment(self) -> None:
+        many_eso = ESOResult.from_file(SAMPLE_ESO)
+        one = ESOResult.from_file(SAMPLE_ESO)
+        variables = [v for v in one.variables if one._scan_variable(v.report_id)]
+        assert many_eso.get_columns(variables, environment_index=0) == [
+            one.get_column(v.variable_name, v.key_value, v.frequency, environment_index=0) for v in variables
+        ]
+        assert many_eso.environments == one.environments
+
+    def test_one_scan(self, eso: ESOResult) -> None:
+        # Several ids take the single multi-id scan, never one per-variable scan each.
+        with patch.object(ESOResult, "_scan_variable", side_effect=AssertionError("per-variable scan")):
+            assert len(eso.get_columns(eso.variables[:5])) == 5
+
+    def test_truncated_file_matches_get_column(self) -> None:
+        many = ESOResult.from_file(SAMPLE_TRUNCATED)
+        one = ESOResult.from_file(SAMPLE_TRUNCATED)
+        names = [(v.variable_name, v.key_value, v.frequency) for v in one.variables[:4]]
+        assert many.get_columns(names) == [one.get_column(*n) for n in names]
+
+    def test_garbled_value_stops_only_its_series(self, tmp_path: Path) -> None:
+        # A value that will not parse (Windows builds can write -nan(ind)) stops that series alone.
+        lines = SAMPLE_ESO.read_bytes().split(b"\n")
+        sky_cover = [i for i, line in enumerate(lines) if line.startswith(b"8,") and i > 20]
+        lines[sky_cover[len(sky_cover) // 2]] = b"8,-nan(ind)"
+        garbled = tmp_path / "garbled.eso"
+        garbled.write_bytes(b"\n".join(lines))
+        many = ESOResult.from_file(garbled)
+        one = ESOResult.from_file(garbled)
+        ids = [7, 8] + [v.report_id for v in one.variables if v.variable_name == "Zone Mean Air Temperature"]
+        many._scan_variables(ids)
+        # Every environment of every series, against one targeted scan each.
+        assert [many._scan_cache[rid] for rid in ids] == [one._scan_variable(rid) for rid in ids]
+        assert len(many._scan_cache[8]) < len(many._scan_cache[7]) == 3
+        # The other series read in full, as from the intact file.
+        intact = ESOResult.from_file(SAMPLE_ESO).get_column(_OAT)
+        assert ESOResult.from_file(garbled).get_columns([_OAT, "Site Total Sky Cover"])[0] == intact
+
+    def test_lookup_errors_as_get_column(self, eso: ESOResult) -> None:
+        with pytest.raises(ResultLookupError, match="has no key 'NotAKey'"):
+            eso.get_columns([_OAT, (_OAT, "NotAKey")])
+        with pytest.raises(ResultLookupError, match="no data in environment 99"):
+            eso.get_columns([_OAT], environment_index=99)
 
 
 class TestEager:

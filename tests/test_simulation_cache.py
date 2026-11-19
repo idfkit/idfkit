@@ -374,3 +374,96 @@ class TestGetPut:
         if cache.cache_dir.is_dir():
             for child in cache.cache_dir.iterdir():
                 assert not child.name.startswith(".tmp_"), f"Leaked temp dir: {child}"
+
+
+# ---------------------------------------------------------------------------
+# Size: no weather copy, eviction and prune
+# ---------------------------------------------------------------------------
+
+
+def _store(cache: SimulationCache, tmp_path: Path, name: str, size: int) -> CacheKey:
+    """Store a successful result whose run directory holds *size* bytes of output plus a weather file."""
+    run_dir = tmp_path / f"run_{name}"
+    run_dir.mkdir()
+    (run_dir / "eplus.sql").write_bytes(b"x" * size)
+    (run_dir / "weather.epw").write_bytes(b"w" * 1000)
+    key = CacheKey(hex_digest=name)
+    result = SimulationResult(run_dir=run_dir, success=True, exit_code=0, stdout="", stderr="", runtime_seconds=1.0)
+    cache.put(key, result)
+    return key
+
+
+def _age(cache: SimulationCache, key: CacheKey, seconds_ago: float) -> None:
+    """Mark *key*'s entry as last used *seconds_ago*."""
+    meta = cache.cache_dir / key.hex_digest / "_cache_meta.json"
+    when = meta.stat().st_mtime - seconds_ago
+    os.utime(meta, (when, when))
+
+
+class TestCacheSize:
+    """Entries leave the weather file out, and the cache can be bounded."""
+
+    def test_entry_leaves_out_weather_file(self, tmp_path: Path) -> None:
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        key = _store(cache, tmp_path, "a", 10)
+        names = {p.name for p in (cache.cache_dir / key.hex_digest).iterdir()}
+        assert "weather.epw" not in names
+        assert "eplus.sql" in names
+
+    def test_size_bytes(self, tmp_path: Path) -> None:
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        assert cache.size_bytes() == 0
+        _store(cache, tmp_path, "a", 5000)
+        assert 5000 < cache.size_bytes() < 6000
+
+    def test_prune_max_bytes_evicts_least_recently_used(self, tmp_path: Path) -> None:
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        a = _store(cache, tmp_path, "a", 5000)
+        b = _store(cache, tmp_path, "b", 5000)
+        c = _store(cache, tmp_path, "c", 5000)
+        _age(cache, a, 300)
+        _age(cache, b, 200)
+        _age(cache, c, 100)
+        assert cache.get(a) is not None  # a hit makes a the most recently used
+        assert cache.prune(max_bytes=12000) == 1
+        assert cache.contains(a)
+        assert not cache.contains(b)
+        assert cache.contains(c)
+
+    def test_prune_max_age(self, tmp_path: Path) -> None:
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        old = _store(cache, tmp_path, "old", 10)
+        new = _store(cache, tmp_path, "new", 10)
+        _age(cache, old, 3600)
+        assert cache.prune(max_age=600) == 1
+        assert not cache.contains(old)
+        assert cache.contains(new)
+
+    def test_prune_without_bounds_removes_nothing(self, tmp_path: Path) -> None:
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        _store(cache, tmp_path, "a", 10)
+        assert cache.prune() == 0
+        assert SimulationCache(cache_dir=tmp_path / "missing").prune(max_bytes=0) == 0
+
+    def test_max_bytes_bounds_the_cache_on_put(self, tmp_path: Path) -> None:
+        cache = SimulationCache(cache_dir=tmp_path / "cache", max_bytes=12000)
+        a = _store(cache, tmp_path, "a", 5000)
+        b = _store(cache, tmp_path, "b", 5000)
+        _age(cache, a, 200)
+        _age(cache, b, 100)
+        c = _store(cache, tmp_path, "c", 5000)
+        assert cache.size_bytes() <= 12000
+        assert not cache.contains(a)
+        assert cache.contains(b)
+        assert cache.contains(c)
+
+    def test_negative_max_bytes_refused(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="max_bytes"):
+            SimulationCache(cache_dir=tmp_path, max_bytes=-1)
+
+    def test_prune_refuses_negative_bounds(self, tmp_path: Path) -> None:
+        cache = SimulationCache(cache_dir=tmp_path)
+        with pytest.raises(ValueError, match="max_bytes"):
+            cache.prune(max_bytes=-1)
+        with pytest.raises(ValueError, match="max_age"):
+            cache.prune(max_age=-5)

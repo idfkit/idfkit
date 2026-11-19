@@ -282,6 +282,48 @@ class TestSQLResultTimeSeries:
         assert ts.frequency == "Hourly"
 
 
+class TestSQLResultTimeSeriesMany:
+    """get_timeseries_many() reads several series in one query, with get_timeseries's results."""
+
+    def test_matches_get_timeseries_in_order(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            specs = [
+                ("Zone Mean Air Temperature", "THERMAL ZONE 1"),
+                "Site Outdoor Air Drybulb Temperature",
+                ("Site Outdoor Air Drybulb Temperature", "*", "Hourly"),
+            ]
+            many = sql.get_timeseries_many(specs)
+            assert many == [
+                sql.get_timeseries("Zone Mean Air Temperature", "THERMAL ZONE 1"),
+                sql.get_timeseries("Site Outdoor Air Drybulb Temperature"),
+                sql.get_timeseries("Site Outdoor Air Drybulb Temperature", frequency="Hourly"),
+            ]
+
+    def test_accepts_list_variables_entries(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            variables = sql.list_variables()
+            many = sql.get_timeseries_many(variables, environment="all")
+            assert many == [sql.get_timeseries(v.name, v.key_value, v.frequency, "all") for v in variables]
+
+    def test_one_report_data_scan(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            statements: list[str] = []
+            sql._conn.set_trace_callback(statements.append)
+            sql.get_timeseries_many(sql.list_variables())
+            assert sum("FROM ReportData rd" in s for s in statements) == 1
+
+    def test_empty(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            assert sql.get_timeseries_many([]) == []
+
+    def test_lookup_errors_as_get_timeseries(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            with pytest.raises(KeyError, match="'Nonexistent Variable' is not in this run"):
+                sql.get_timeseries_many(["Site Outdoor Air Drybulb Temperature", "Nonexistent Variable"])
+            with pytest.raises(ValueError, match="environment must be"):
+                sql.get_timeseries_many([], environment="bogus")  # type: ignore[arg-type]
+
+
 def _add_multi_key_outputs(db_path: Path) -> None:
     """Add a variable reported for three zones and a meter reported at two frequencies."""
     conn = sqlite3.connect(str(db_path))
