@@ -26,7 +26,7 @@ from ._common import (
     resolve_version_mismatch,
     upload_results,
 )
-from .cache import runner_cache_key
+from .cache import CACHE_META_FILE, runner_cache_key
 from .progress import ProgressParser, SimulationProgress
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
@@ -171,7 +171,10 @@ def simulate(
             storage (e.g., S3). When provided, ``output_dir`` is required
             and specifies the remote destination path. EnergyPlus runs
             locally in a temp directory; results are then uploaded to
-            ``output_dir`` via *fs* after execution.
+            ``output_dir`` via *fs* after execution.  Combined with
+            *cache*, a miss is cached from the local run directory and a
+            hit uploads the cached outputs to ``output_dir``, so the remote
+            folder exists either way.
 
             !!! note
                 The ``fs`` parameter handles **output storage only**.
@@ -272,6 +275,9 @@ def simulate(
             if cached is not None:
                 logger.debug("Cache hit for key %s", cache_key.hex_digest[:12])
                 cached.migration_report = migration_report
+                if fs is not None:
+                    # A hit still has to land at output_dir on the remote backend, like a fresh run.
+                    return _publish(cached, Path(str(output_dir)), fs)
                 return cached
             logger.debug("Cache miss for key %s", cache_key.hex_digest[:12])
 
@@ -325,36 +331,40 @@ def simulate(
     else:
         logger.info("Simulation completed successfully in %.1fs", elapsed)
 
-    if fs is not None:
-        remote_dir = Path(str(output_dir))
-        upload_results(run_dir, remote_dir, fs)
-        result = SimulationResult(
-            run_dir=remote_dir,
-            success=returncode == 0,
-            exit_code=returncode,
-            stdout=stdout,
-            stderr=stderr,
-            runtime_seconds=elapsed,
-            output_prefix=output_prefix,
-            fs=fs,
-            migration_report=migration_report,
-            output_suffix=output_suffix,
-        )
-    else:
-        result = SimulationResult(
-            run_dir=run_dir,
-            success=returncode == 0,
-            exit_code=returncode,
-            stdout=stdout,
-            stderr=stderr,
-            runtime_seconds=elapsed,
-            output_prefix=output_prefix,
-            migration_report=migration_report,
-            output_suffix=output_suffix,
-        )
+    result = SimulationResult(
+        run_dir=run_dir,
+        success=returncode == 0,
+        exit_code=returncode,
+        stdout=stdout,
+        stderr=stderr,
+        runtime_seconds=elapsed,
+        output_prefix=output_prefix,
+        migration_report=migration_report,
+        output_suffix=output_suffix,
+    )
+    # Store from the local run directory: with fs= the result's run_dir is a remote path.
     if cache is not None and cache_key is not None and result.success:
         cache.put(cache_key, result)
+    if fs is not None:
+        return _publish(result, Path(str(output_dir)), fs)
     return result
+
+
+def _publish(local: SimulationResult, remote_dir: Path, fs: FileSystem) -> SimulationResult:
+    """Upload a local result's files to *remote_dir* on *fs* and return a result that reads them there."""
+    upload_results(local.run_dir, remote_dir, fs, exclude=frozenset({CACHE_META_FILE}))
+    return SimulationResult(
+        run_dir=remote_dir,
+        success=local.success,
+        exit_code=local.exit_code,
+        stdout=local.stdout,
+        stderr=local.stderr,
+        runtime_seconds=local.runtime_seconds,
+        output_prefix=local.output_prefix,
+        fs=fs,
+        migration_report=local.migration_report,
+        output_suffix=local.output_suffix,
+    )
 
 
 def _run_simple(

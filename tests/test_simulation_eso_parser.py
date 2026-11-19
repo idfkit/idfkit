@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 
+from idfkit.exceptions import ResultLookupError
 from idfkit.simulation.parsers.eso import ESOColumn, ESOEnvironment, ESOResult, ESOVariable
 
 FIXTURES = Path(__file__).parent / "fixtures" / "simulation"
@@ -112,14 +113,29 @@ class TestGetColumn:
         assert col.environment_index == 0
         assert len(col.values) == 24  # a one-day design day
 
-    def test_wrong_key_returns_none(self, eso: ESOResult) -> None:
-        assert eso.get_column(_OAT, "NotAKey") is None
+    def test_wrong_key_raises(self, eso: ESOResult) -> None:
+        with pytest.raises(ResultLookupError, match="has no key 'NotAKey'"):
+            eso.get_column(_OAT, "NotAKey")
 
-    def test_unknown_variable_returns_none(self, eso: ESOResult) -> None:
-        assert eso.get_column("No Such Variable") is None
+    def test_unknown_variable_suggests_closest(self, eso: ESOResult) -> None:
+        with pytest.raises(ResultLookupError, match="Did you mean 'Zone Mean Air Temperature'") as exc:
+            eso.get_column("Zone Mean Air Temprature")
+        assert exc.value.suggestions[0] == "Zone Mean Air Temperature"
 
-    def test_unknown_environment_index_returns_none(self, eso: ESOResult) -> None:
-        assert eso.get_column(_OAT, "Environment", environment_index=99) is None
+    def test_unknown_environment_index_raises(self, eso: ESOResult) -> None:
+        with pytest.raises(ResultLookupError, match="no data in environment 99") as exc:
+            eso.get_column(_OAT, "Environment", environment_index=99)
+        assert exc.value.available == ("0", "1", "2")
+
+    def test_several_keys_refused(self, eso: ESOResult) -> None:
+        name = "Other Equipment Total Heating Energy"
+        with pytest.raises(ResultLookupError, match=r"2 keys \(TEST 352A, TEST 352 MINUS\); pass key_value="):
+            eso.get_column(name)
+        assert eso.get_column(name, "test 352 minus").variable.key_value == "TEST 352 MINUS"
+
+    def test_to_dataframe_raises_lookup_error(self, eso: ESOResult) -> None:
+        with pytest.raises(KeyError):
+            eso.to_dataframe("No Such Variable")
 
 
 class TestEager:

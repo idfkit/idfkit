@@ -294,7 +294,7 @@ async def _async_run_job(
 
     try:
         return await async_simulate(
-            model=job.model,  # type: ignore[arg-type]
+            model=job.model,
             weather=job.weather,
             output_dir=job.output_dir,
             energyplus=energyplus,

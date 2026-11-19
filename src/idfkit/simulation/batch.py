@@ -8,6 +8,7 @@ which releases the GIL.
 
 from __future__ import annotations
 
+import inspect
 import logging
 import os
 import time
@@ -15,7 +16,7 @@ from collections.abc import Callable, Iterator, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, overload
+from typing import TYPE_CHECKING, Literal, Protocol, overload
 
 from .progress import SimulationProgress
 from .progress_bars import resolve_on_progress
@@ -23,6 +24,7 @@ from .result import REFUSED_RUN_DIR, SimulationResult
 from .runner import simulate
 
 if TYPE_CHECKING:
+    from ..document import AnyIDFDocument
     from .cache import SimulationCache
     from .config import EnergyPlusConfig
     from .fs import FileSystem
@@ -57,13 +59,20 @@ class SimulationJob:
             run automatically.  ``None`` consults the
             ``IDFKIT_PREPROCESSOR_TIMEOUT`` environment variable, falling
             back to 120 s.
-        extra_args: Additional command-line arguments.
+        extra_args: Additional command-line arguments. Any sequence of
+            strings is accepted, as ``simulate(extra_args=...)`` takes, and
+            stored as a tuple.
         auto_migrate: Forward-migrate a copy of the model to the installed
             EnergyPlus version before the run, as
             ``simulate(..., auto_migrate=True)`` does.
+
+    Raises:
+        TypeError: If *model* is a path rather than a loaded document (load it
+            with [load_idf][idfkit.load_idf] first), or *extra_args* is a
+            single string rather than a sequence of them.
     """
 
-    model: object  # IDFDocument — use object to avoid import at class level
+    model: AnyIDFDocument
     weather: str | Path | None = None
     label: str = ""
     output_dir: str | Path | None = None
@@ -75,8 +84,37 @@ class SimulationJob:
     readvars: bool = False
     timeout: float = 3600.0
     preprocessor_timeout: float | None = None
-    extra_args: tuple[str, ...] | None = None
+    extra_args: Sequence[str] | None = None
     auto_migrate: bool = False
+
+    def __post_init__(self) -> None:
+        model: object = self.model
+        if isinstance(model, (str, os.PathLike)):
+            msg = (
+                f"SimulationJob(model=...) takes a loaded document, not the path {str(model)!r}; "
+                "load it with load_idf() or load_epjson() first."
+            )
+            raise TypeError(msg)
+        extra_args: object = self.extra_args
+        if isinstance(extra_args, str):
+            msg = f"extra_args takes a sequence of arguments, not the string {extra_args!r}; pass [{extra_args!r}]."
+            raise TypeError(msg)
+        if self.extra_args is not None and not isinstance(self.extra_args, tuple):
+            # Frozen: store an immutable copy, so the job stays hashable and a caller's list edits do not leak in.
+            object.__setattr__(self, "extra_args", tuple(self.extra_args))
+
+
+class BatchProgressCallback(Protocol):
+    """The ``progress=`` callback of [simulate_batch][idfkit.simulation.batch.simulate_batch].
+
+    Called once per finished job, with keyword arguments only, so a callback
+    must accept all four by name (``def progress(*, completed, total, label,
+    success)``, or ``**kwargs``).
+    """
+
+    def __call__(self, *, completed: int, total: int, label: str, success: bool) -> None:
+        """Report that *completed* of *total* jobs have finished, the last being *label*."""
+        ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,7 +180,7 @@ def simulate_batch(
     energyplus: EnergyPlusConfig | None = None,
     max_workers: int | None = None,
     cache: SimulationCache | None = None,
-    progress: Callable[..., None] | None = None,
+    progress: BatchProgressCallback | None = None,
     fs: FileSystem | None = None,
     on_progress: Callable[[SimulationProgress], None] | None = None,
 ) -> BatchResult:
@@ -164,7 +202,10 @@ def simulate_batch(
             the key covers and which models are never cached.
         progress: Optional callback invoked after each job completes.
             Called as ``progress(completed=N, total=M, label=label,
-            success=bool)``.
+            success=bool)``; see
+            [BatchProgressCallback][idfkit.simulation.batch.BatchProgressCallback].
+            A callback that cannot take those keywords is refused before any
+            job runs.
         fs: Optional file system backend passed through to each
             [simulate][idfkit.simulation.runner.simulate] call.
         on_progress: Optional callback invoked with
@@ -181,10 +222,14 @@ def simulate_batch(
 
     Raises:
         ValueError: If *jobs* is empty.
+        TypeError: If *progress* cannot be called with the four keyword
+            arguments above.
     """
     if not jobs:
         msg = "jobs must not be empty"
         raise ValueError(msg)
+    if progress is not None:
+        _check_progress_callback(progress)
 
     if on_progress == "tqdm":
         msg = (
@@ -250,6 +295,26 @@ def simulate_batch(
     return batch_result
 
 
+def _check_progress_callback(progress: BatchProgressCallback) -> None:
+    """Refuse a *progress* callback that cannot take the keywords it will be called with.
+
+    Checked up front: otherwise the mismatch surfaces only after the first job has run, as a
+    ``TypeError`` that discards the results of every job in the batch.
+    """
+    try:
+        signature = inspect.signature(progress)
+    except (TypeError, ValueError):  # a builtin or C callable without a signature: nothing to check
+        return
+    try:
+        signature.bind(completed=0, total=0, label="", success=True)
+    except TypeError as exc:
+        msg = (
+            f"simulate_batch(progress=...) is called as progress(completed=, total=, label=, success=); "
+            f"{getattr(progress, '__qualname__', repr(progress))}{signature} cannot take that ({exc})."
+        )
+        raise TypeError(msg) from exc
+
+
 def _run_job(
     idx: int,
     job: SimulationJob,
@@ -266,7 +331,7 @@ def _run_job(
 
     try:
         return simulate(
-            model=job.model,  # type: ignore[arg-type]
+            model=job.model,
             weather=job.weather,
             output_dir=job.output_dir,
             energyplus=energyplus,

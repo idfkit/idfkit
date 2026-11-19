@@ -33,7 +33,7 @@ import logging
 import time
 from collections.abc import Callable, Coroutine
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, cast, overload
 
 from ..exceptions import SimulationError
 from ._common import (
@@ -49,7 +49,7 @@ from ._common import (
     resolve_config,
     upload_results,
 )
-from .cache import runner_cache_key
+from .cache import CACHE_META_FILE, runner_cache_key
 from .progress import ProgressParser, SimulationProgress
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
@@ -63,7 +63,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _is_async_fs(fs: object) -> bool:
+def _is_async_fs(fs: FileSystem | AsyncFileSystem) -> TypeGuard[AsyncFileSystem]:
     """Check whether *fs* is an async file system."""
     return inspect.iscoroutinefunction(getattr(fs, "write_bytes", None))
 
@@ -197,7 +197,9 @@ async def async_simulate(
             When an ``AsyncFileSystem`` is provided, uploads and result reads
             are truly non-blocking.  A sync ``FileSystem`` is automatically
             wrapped in [asyncio.to_thread][] to avoid blocking the event
-            loop.
+            loop.  Combined with *cache*, a miss is cached from the local
+            run directory and a hit uploads the cached outputs to
+            ``output_dir``, so the remote folder exists either way.
         on_progress: Optional callback invoked with a
             [SimulationProgress][idfkit.simulation.progress.SimulationProgress] event
             each time EnergyPlus emits a progress line.  Both synchronous
@@ -290,6 +292,9 @@ async def async_simulate(
             cached = cache.get(cache_key)
             if cached is not None:
                 cached.migration_report = migration_report
+                if fs is not None:
+                    # A hit still has to land at output_dir on the remote backend, like a fresh run.
+                    return await _publish(cached, Path(str(output_dir)), fs)
                 return cached
 
         ensure_sql_output(sim_model)
@@ -342,51 +347,49 @@ async def async_simulate(
 
     logger.info("Async simulation finished (exit_code=%d) in %.1fs", returncode, elapsed)
 
-    if fs is not None:
-        remote_dir = Path(str(output_dir))
-        if _is_async_fs(fs):
-            await async_upload_results(run_dir, remote_dir, fs)  # type: ignore[arg-type]
-            result = SimulationResult(
-                run_dir=remote_dir,
-                success=returncode == 0,
-                exit_code=returncode,
-                stdout=stdout,
-                stderr=stderr,
-                runtime_seconds=elapsed,
-                output_prefix=output_prefix,
-                async_fs=fs,  # type: ignore[arg-type]
-                migration_report=migration_report,
-                output_suffix=output_suffix,
-            )
-        else:
-            await asyncio.to_thread(upload_results, run_dir, remote_dir, fs)  # type: ignore[arg-type]
-            result = SimulationResult(
-                run_dir=remote_dir,
-                success=returncode == 0,
-                exit_code=returncode,
-                stdout=stdout,
-                stderr=stderr,
-                runtime_seconds=elapsed,
-                output_prefix=output_prefix,
-                fs=fs,  # type: ignore[arg-type]
-                migration_report=migration_report,
-                output_suffix=output_suffix,
-            )
-    else:
-        result = SimulationResult(
-            run_dir=run_dir,
-            success=returncode == 0,
-            exit_code=returncode,
-            stdout=stdout,
-            stderr=stderr,
-            runtime_seconds=elapsed,
-            output_prefix=output_prefix,
-            migration_report=migration_report,
-            output_suffix=output_suffix,
-        )
+    result = SimulationResult(
+        run_dir=run_dir,
+        success=returncode == 0,
+        exit_code=returncode,
+        stdout=stdout,
+        stderr=stderr,
+        runtime_seconds=elapsed,
+        output_prefix=output_prefix,
+        migration_report=migration_report,
+        output_suffix=output_suffix,
+    )
+    # Store from the local run directory: with fs= the result's run_dir is a remote path.
     if cache is not None and cache_key is not None and result.success:
         cache.put(cache_key, result)
+    if fs is not None:
+        return await _publish(result, Path(str(output_dir)), fs)
     return result
+
+
+async def _publish(local: SimulationResult, remote_dir: Path, fs: FileSystem | AsyncFileSystem) -> SimulationResult:
+    """Upload a local result's files to *remote_dir* on *fs* and return a result that reads them there."""
+    exclude = frozenset({CACHE_META_FILE})
+    if _is_async_fs(fs):
+        await async_upload_results(local.run_dir, remote_dir, fs, exclude=exclude)
+        async_fs: AsyncFileSystem | None = fs
+        sync_fs: FileSystem | None = None
+    else:
+        sync_fs = cast("FileSystem", fs)
+        await asyncio.to_thread(upload_results, local.run_dir, remote_dir, sync_fs, exclude=exclude)
+        async_fs = None
+    return SimulationResult(
+        run_dir=remote_dir,
+        success=local.success,
+        exit_code=local.exit_code,
+        stdout=local.stdout,
+        stderr=local.stderr,
+        runtime_seconds=local.runtime_seconds,
+        output_prefix=local.output_prefix,
+        fs=sync_fs,
+        async_fs=async_fs,
+        migration_report=local.migration_report,
+        output_suffix=local.output_suffix,
+    )
 
 
 async def _run_simple(

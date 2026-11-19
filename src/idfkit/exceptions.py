@@ -327,8 +327,10 @@ class ObjectNotFoundError(IdfKitError, KeyError):
 class ResultLookupError(IdfKitError, KeyError):
     """Raised when a simulation-result lookup finds no output, or several where it needs one.
 
-    Raised by [SQLResult.get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries]
-    and [SQLResult.get_tabular_value][idfkit.simulation.parsers.sql.SQLResult.get_tabular_value].
+    Raised by [SQLResult.get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries],
+    [SQLResult.get_tabular_value][idfkit.simulation.parsers.sql.SQLResult.get_tabular_value],
+    [ESOResult.get_column][idfkit.simulation.parsers.eso.ESOResult.get_column] and
+    [CSVResult.get_column][idfkit.simulation.parsers.csv.CSVResult.get_column].
     Inherits from ``KeyError`` so code catching ``KeyError`` keeps working; unlike a plain
     ``KeyError``, ``str()`` gives the message as written, not its ``repr()``.
 

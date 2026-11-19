@@ -868,3 +868,49 @@ class TestSimulateCacheCoversExternalFiles:
         simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache)
         simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache)
         assert mock_run.call_count == 2
+
+
+class TestSimulateCacheWithFileSystem:
+    """``cache=`` and ``fs=`` together: a miss is stored locally and a hit is uploaded to ``output_dir``."""
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_miss_stores_then_hit_uploads(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        from idfkit.simulation.cache import CACHE_META_FILE, SimulationCache
+
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        fs = InMemoryFileSystem()
+        model = new_document()
+
+        first = simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="runs/a")
+        assert first.run_dir == Path("runs/a")
+        assert first.fs is fs
+        # The miss was stored from the local staging directory, not the remote path.
+        assert len([p for p in (tmp_path / "cache").iterdir() if not p.name.startswith(".")]) == 1
+
+        second = simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="runs/b")
+        assert mock_run.call_count == 1  # hit
+        assert second.success
+        assert second.run_dir == Path("runs/b")
+        assert second.fs is fs
+        names_a = {k.removeprefix("runs/a/") for k in fs._files if k.startswith("runs/a/")}
+        names_b = {k.removeprefix("runs/b/") for k in fs._files if k.startswith("runs/b/")}
+        assert names_b
+        assert names_b == names_a
+        assert CACHE_META_FILE not in names_b
+
+    def test_put_failure_is_logged(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        from idfkit.simulation.cache import CacheKey, SimulationCache
+        from idfkit.simulation.result import SimulationResult
+
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        result = SimulationResult(
+            run_dir=tmp_path / "missing", success=True, exit_code=0, stdout="", stderr="", runtime_seconds=1.0
+        )
+        key = CacheKey(hex_digest="ab" * 32)
+        with caplog.at_level(logging.WARNING, logger="idfkit.simulation.cache"):
+            cache.put(key, result)
+        assert not cache.contains(key)
+        assert "Could not cache result" in caplog.text

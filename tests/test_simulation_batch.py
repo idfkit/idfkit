@@ -93,6 +93,21 @@ class TestSimulationJob:
         job = SimulationJob(new_document(), "w.epw")
         assert job.weather == "w.epw"
 
+    def test_extra_args_list_stored_as_tuple(self) -> None:
+        args = ["--convert"]
+        job = SimulationJob(model=new_document(), extra_args=args)
+        args.append("--later")
+        assert job.extra_args == ("--convert",)
+
+    def test_extra_args_string_refused(self) -> None:
+        with pytest.raises(TypeError, match="pass \\['--convert'\\]"):
+            SimulationJob(model=new_document(), extra_args="--convert")  # type: ignore[arg-type]
+
+    @pytest.mark.parametrize("model", ["building.idf", Path("building.idf")])
+    def test_path_model_refused(self, model: object) -> None:
+        with pytest.raises(TypeError, match="load it with load_idf"):
+            SimulationJob(model=model, weather="w.epw")  # type: ignore[arg-type]
+
 
 # ---------------------------------------------------------------------------
 # BatchResult
@@ -229,6 +244,17 @@ class TestSimulateBatch:
         assert completed_values == [1, 2]
         # All succeeded
         assert all(c["success"] is True for c in progress_calls)
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_progress_callback_with_wrong_signature_refused_before_running(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        def prog(completed: int, total: int) -> None: ...
+
+        jobs = [SimulationJob(model=new_document(), weather=weather_file)]
+        with pytest.raises(TypeError, match="cannot take that"):
+            simulate_batch(jobs, energyplus=mock_config, progress=prog)  # type: ignore[arg-type]
+        mock_run.assert_not_called()
 
     @patch("idfkit.simulation.runner.subprocess.run")
     def test_cache_integration(

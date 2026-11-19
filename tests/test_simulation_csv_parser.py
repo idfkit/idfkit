@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from idfkit.exceptions import ResultLookupError
 from idfkit.simulation.parsers.csv import CSVResult
 
 FIXTURES = Path(__file__).parent / "fixtures" / "simulation"
@@ -87,13 +88,57 @@ class TestGetColumn:
 
     def test_find_by_name_wrong_key(self) -> None:
         result = CSVResult.from_file(FIXTURES / "sample.csv")
-        col = result.get_column("Zone Mean Air Temperature", "NONEXISTENT")
-        assert col is None
+        with pytest.raises(ResultLookupError, match="has no key 'NONEXISTENT'") as exc:
+            result.get_column("Zone Mean Air Temperature", "NONEXISTENT")
+        assert exc.value.available == ("THERMAL ZONE 1",)
 
-    def test_not_found(self) -> None:
+    def test_not_found_suggests_closest(self) -> None:
         result = CSVResult.from_file(FIXTURES / "sample.csv")
-        col = result.get_column("Nonexistent Variable")
-        assert col is None
+        with pytest.raises(ResultLookupError, match="Did you mean 'Zone Mean Air Temperature'") as exc:
+            result.get_column("Zone Mean Air Temprature")
+        assert exc.value.suggestions == ("Zone Mean Air Temperature",)
+
+    def test_several_keys_refused(self) -> None:
+        text = (
+            "Date/Time,ZONE A:Zone Mean Air Temperature [C](Hourly),ZONE B:Zone Mean Air Temperature [C](Hourly)\n"
+            " 01/01  01:00:00,20.0,22.0\n"
+        )
+        result = CSVResult.from_string(text)
+        with pytest.raises(ResultLookupError, match=r"2 keys \(ZONE A, ZONE B\); pass key_value=") as exc:
+            result.get_column("Zone Mean Air Temperature")
+        assert exc.value.available == ("ZONE A", "ZONE B")
+        assert result.get_column("Zone Mean Air Temperature", "zone b").values == (22.0,)
+
+    def test_several_frequencies_refused(self) -> None:
+        text = "Date/Time,Env:Var [C](Hourly),Env:Var [C](Daily)\n 01/01  01:00:00,1.0,2.0\n"
+        result = CSVResult.from_string(text)
+        with pytest.raises(ResultLookupError, match="pass frequency="):
+            result.get_column("Var")
+        col = result.get_column("Var", frequency="daily")
+        assert col.frequency == "Daily"
+        assert col.values == (2.0,)
+
+    def test_meter_by_full_name(self) -> None:
+        text = (
+            "Date/Time,Electricity:Facility [J](Hourly),NaturalGas:Facility [J](Hourly),"
+            "InteriorLights:Electricity:Zone:SPACE1-1 [J](Hourly)\n"
+            " 01/01  01:00:00,1.0,2.0,3.0\n"
+        )
+        result = CSVResult.from_string(text)
+        col = result.get_column("Electricity:Facility")
+        assert col.values == (1.0,)
+        assert col.units == "J"
+        assert result.get_column("naturalgas:facility", frequency="Hourly").values == (2.0,)
+        assert result.get_column("InteriorLights:Electricity:Zone:SPACE1-1").values == (3.0,)
+
+    def test_meter_typo_suggests_full_name(self) -> None:
+        text = "Date/Time,Electricity:Facility [J](Hourly)\n 01/01  01:00:00,1.0\n"
+        result = CSVResult.from_string(text)
+        with pytest.raises(ResultLookupError, match="Did you mean 'Electricity:Facility'") as exc:
+            result.get_column("Electricity:Facilty")
+        assert exc.value.suggestions == ("Electricity:Facility",)
+        with pytest.raises(ResultLookupError, match="reported with no key"):
+            result.get_column("Electricity:Facility", "Building")
 
 
 class TestFrozen:

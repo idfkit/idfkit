@@ -152,7 +152,9 @@ for job, result in zip(jobs, batch):
 
 `async_simulate_batch` and `async_simulate_batch_stream` give you async/streaming variants. `simulate_batch` runs jobs concurrently on a thread pool (use `max_workers` to cap parallelism); each job is an EnergyPlus subprocess, so threads are all the parallelism it needs and documents never cross a process boundary.
 
-`SimulationJob` takes the per-run `simulate()` options, `auto_migrate=True` among them, so a batch of older models can be migrated per job. Migration costs seconds per release step, and every variant of a parametric sweep is different content, so for variants of one older seed migrate the seed once with `migrate()` and build the jobs from the migrated model (see "Speed: migrate once, then batch" in [version-migration.md](version-migration.md)). Identical content (one model across many weather files) is migrated once and reused.
+`SimulationJob` takes the per-run `simulate()` options, `auto_migrate=True` among them, so a batch of older models can be migrated per job. `model=` is a loaded document (a path raises `TypeError`; load it first), and `extra_args=` takes a list or tuple, as `simulate()` does. Migration costs seconds per release step, and every variant of a parametric sweep is different content, so for variants of one older seed migrate the seed once with `migrate()` and build the jobs from the migrated model (see "Speed: migrate once, then batch" in [version-migration.md](version-migration.md)). Identical content (one model across many weather files) is migrated once and reused.
+
+`simulate_batch(progress=...)` calls the callback with keywords only, `progress(completed=, total=, label=, success=)`; it is typed as `BatchProgressCallback`, and a callback that cannot take all four is refused before any job runs.
 
 A job that fails never raises out of the batch: its result has `success=False` and the reason in `result.stderr`. A job refused before EnergyPlus ran (for example `weather=None` on a job that is not design-day-only) and that named no `output_dir` gets `run_dir == REFUSED_RUN_DIR`, a placeholder that is never created; its `errors` report is empty, so read `stderr` for the reason.
 
@@ -206,6 +208,8 @@ result = simulate(
 ```
 
 The weather file must be local — remote weather is not auto-downloaded. Pre-stage with `WeatherDownloader` (see [weather-data.md](weather-data.md)).
+
+`cache=` combines with `fs=`: the cache stays local, a miss is cached from the local run directory, and a hit uploads the cached outputs to `output_dir`, so the remote folder exists after every call.
 
 ## Common mistakes
 
