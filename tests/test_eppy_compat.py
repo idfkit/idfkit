@@ -1240,3 +1240,60 @@ class TestRun:
         with patch("idfkit.simulation.simulate") as mock_simulate:
             doc.run(epw, annual=True)
         mock_simulate.assert_called_once_with(doc, epw, annual=True)
+
+
+# ---------------------------------------------------------------------------
+# newidfobject: eppy spellings and deferred validation
+# ---------------------------------------------------------------------------
+
+
+class TestNewIdfObjectEppySemantics:
+    def test_eppy_field_spellings(self) -> None:
+        doc = new_document()
+        mat = doc.newidfobject(
+            "MATERIAL",
+            Name="Ins",
+            Roughness="Rough",
+            Thickness=0.1,
+            Conductivity=0.04,
+            Density=30,
+            Specific_Heat=1400,
+        )
+        assert mat.name == "Ins"
+        assert mat.roughness == "Rough"
+        assert mat.specific_heat == 1400
+        assert doc.getobject("Material", "Ins") is mat
+
+    def test_create_blank_then_fill(self) -> None:
+        doc = new_document()
+        mat = doc.newidfobject("MATERIAL")
+        mat.Name = "Board"
+        mat.Thickness = 0.0127
+        assert doc.getobject("Material", "Board") is mat
+        assert mat.thickness == 0.0127
+
+    def test_validate_true_checks_at_once(self) -> None:
+        from idfkit.exceptions import ValidationFailedError
+
+        doc = new_document()
+        with pytest.raises(ValidationFailedError):
+            doc.newidfobject("Material", Name="Bare", validate=True)
+        assert len(doc["Material"]) == 0
+
+    def test_unknown_field_is_still_refused(self) -> None:
+        from idfkit.exceptions import InvalidFieldError
+
+        doc = new_document()
+        with pytest.raises(InvalidFieldError, match="bogus_field"):
+            doc.newidfobject("Zone", Name="Z", Bogus_Field=1)
+
+    def test_two_spellings_of_one_field(self) -> None:
+        doc = new_document()
+        with pytest.raises(TypeError, match="x_origin"):
+            doc.newidfobject("Zone", Name="Z", X_Origin=1, x_origin=2)
+
+    def test_python_spellings_still_work(self) -> None:
+        doc = new_document()
+        zone = doc.newidfobject("Zone", name="Z", x_origin=5.0, Ceiling_Height=3.0)
+        assert zone.x_origin == 5.0
+        assert zone.ceiling_height == 3.0

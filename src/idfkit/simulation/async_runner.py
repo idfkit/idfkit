@@ -392,9 +392,10 @@ async def _simulate_local(
         run_dir = prepare_run_directory(local_output_dir, weather_path)
         idf_path = run_dir / "model.idf"
 
+        from .._idf_encoding import source_encoding
         from ..writers import save_idf
 
-        save_idf(sim_model, idf_path)
+        save_idf(sim_model, idf_path, encoding=source_encoding(sim_model, bom=False))
 
         cmd = build_command(
             config=config,

@@ -105,7 +105,15 @@ class EppyDocumentMixin:
         @property
         def collections(self) -> dict[str, IDFCollection[IDFObject]]: ...
         def __getitem__(self, key: str) -> IDFCollection[IDFObject]: ...
-        def add(self, obj_type: str, name: str = "", **kwargs: Any) -> IDFObject: ...
+        def add(
+            self,
+            obj_type: str,
+            name: str = "",
+            fields: dict[str, Any] | None = None,
+            *,
+            validate: bool = True,
+            **kwargs: Any,
+        ) -> IDFObject: ...
         def removeidfobject(self, obj: IDFObject) -> None: ...
         def _add(
             self,
@@ -212,13 +220,19 @@ class EppyDocumentMixin:
 
     # -- Object creation / mutation ------------------------------------------
 
-    def newidfobject(self, obj_type: str, **kwargs: Any) -> IDFObject:
+    def newidfobject(self, obj_type: str, *, validate: bool = False, **kwargs: Any) -> IDFObject:
         """Create a new object (eppy compatibility).
 
-        Provided for migration convenience.  The ``Name`` kwarg becomes
-        the object name if provided.  Without it the object is created
-        nameless, as in eppy, to be named afterwards (``obj.Name = ...``);
-        other fields are validated as [add][idfkit.document.IDFDocument.add] does.
+        Provided for migration convenience, with eppy's semantics:
+
+        - Field keywords take eppy's spelling as well as idfkit's: ``Specific_Heat=1400`` sets
+          ``specific_heat``, as attribute assignment and [update][idfkit.document.IDFDocument.update]
+          accept it. The ``Name`` keyword (any case) becomes the object's name. Without it the
+          object is created nameless, as in eppy, to be named afterwards (``obj.Name = ...``).
+        - The object is not validated when created, so the eppy idiom of creating a blank object
+          and filling its fields one by one works. Pass ``validate=True`` to check it at once, as
+          [add][idfkit.document.IDFDocument.add] does, or call ``doc.validate()`` once it is filled.
+          A keyword that is not a field of the type is refused either way.
 
         !!! tip
             Prefer [add][idfkit.document.IDFDocument.add] for new code:
@@ -226,12 +240,51 @@ class EppyDocumentMixin:
                 ```python
                 zone = doc.add("Zone", "Office", x_origin=0.0)
                 ```
+
+        Args:
+            obj_type: Object type, in any case (``"MATERIAL"`` or ``"Material"``).
+            validate: Validate the object against the schema before adding it (default ``False``).
+            **kwargs: Field values, by eppy or idfkit field name.
+
+        Raises:
+            TypeError: If two keywords name the same field (``Thickness=`` and ``thickness=``).
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> ins = model.newidfobject("MATERIAL", Name="Ins", Roughness="Rough", Thickness=0.1,
+            ...     Conductivity=0.04, Density=30, Specific_Heat=1400)
+            >>> ins.specific_heat
+            1400
+            >>> blank = model.newidfobject("MATERIAL")
+            >>> blank.Name = "Board"
+            >>> blank.Thickness = 0.0127
+            >>> model.getobject("Material", "Board").thickness
+            0.0127
         """
-        name = kwargs.pop("Name", kwargs.pop("name", None))
-        if name is None:
+        from .objects import to_python_name
+
+        name = ""
+        named = False
+        fields: dict[str, Any] = {}
+        spelled: dict[str, str] = {}
+        for key, value in kwargs.items():
+            # A key already in idfkit's spelling is kept, so add() resolves it as it resolves any key:
+            # to_python_name would turn ReportPeriod's `name_` field into the object's name.
+            field = key if key.islower() and " " not in key else to_python_name(key)
+            if field in spelled:
+                msg = f"newidfobject() got {spelled[field]!r} and {key!r}, which name the same field {field!r}"
+                raise TypeError(msg)
+            spelled[field] = key
+            if field == "name":
+                name = value
+                named = True
+            else:
+                fields[field] = value
+        if not named:
             # eppy's idiom creates the object first and names it afterwards.
-            return self._add(obj_type, "", kwargs, True, None, name_optional=True)
-        return self.add(obj_type, name, **kwargs)
+            return self._add(obj_type, "", fields, validate, None, name_optional=True)
+        return self.add(obj_type, name, fields, validate=validate)
 
     def addidfobject(self, obj: IDFObject) -> IDFObject:
         """Add an existing IDFObject to the document (eppy compatibility).
@@ -448,7 +501,7 @@ class EppyDocumentMixin:
     def save(
         self,
         filepath: str | Path | None = None,
-        encoding: str = "latin-1",
+        encoding: str | None = None,
         output_type: OutputType = "standard",
     ) -> None:
         """Save the document to its current filepath (eppy compatibility).
@@ -461,7 +514,8 @@ class EppyDocumentMixin:
         Args:
             filepath: Explicit path override.  If ``None``, uses
                 ``self.filepath``.
-            encoding: Output encoding (default ``latin-1``).
+            encoding: Output encoding. ``None`` (the default) writes the encoding the file was
+                read in, as [save_idf][idfkit.writers.save_idf] does.
             output_type: IDF formatting mode — ``"standard"`` (with field
                 comments), ``"nocomment"``, or ``"compressed"`` (single-line).
 
@@ -495,7 +549,7 @@ class EppyDocumentMixin:
     def saveas(
         self,
         filepath: str | Path,
-        encoding: str = "latin-1",
+        encoding: str | None = None,
         output_type: OutputType = "standard",
     ) -> None:
         """Save to a new path and update ``self.filepath`` (eppy compatibility).
@@ -530,7 +584,7 @@ class EppyDocumentMixin:
     def savecopy(
         self,
         filepath: str | Path,
-        encoding: str = "latin-1",
+        encoding: str | None = None,
         output_type: OutputType = "standard",
     ) -> None:
         """Save a copy without changing ``self.filepath`` (eppy compatibility).

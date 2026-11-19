@@ -11,6 +11,7 @@ Features:
 
 from __future__ import annotations
 
+import codecs
 import logging
 import mmap
 import re
@@ -59,6 +60,63 @@ _COMMENT_PATTERN = re.compile(rb"!.*$", re.MULTILINE)
 
 # epJSON is a JSON object, so its first non-space byte is '{'; IDF text never starts with one.
 _EPJSON_START = re.compile(rb"(?:\xef\xbb\xbf)?\s*\{")
+
+_UTF8_BOM = b"\xef\xbb\xbf"
+
+
+def _search_version(content: bytes) -> re.Match[bytes] | None:
+    """The first ``Version`` object in *content*, ignoring any that sits inside a ``!`` comment.
+
+    A comment such as ``! Upgraded from Version,9.0;`` must not choose the schema: the document's
+    version comes from the real object, and a schema of another release would read its fields at
+    the wrong positions.
+    """
+    # Most files state their version once, outside any comment: accept the first match whose line
+    # has no `!` before it, which costs no copy of the file. IDF has no quoting, so a `!` always
+    # opens a comment.
+    pos = 0
+    while (match := _VERSION_PATTERN.search(content, pos)) is not None:
+        line_start = content.rfind(b"\n", 0, match.start()) + 1
+        if b"!" not in content[line_start : match.start()]:
+            return match
+        pos = match.end()
+    # Every match was commented out, or a comment splits the object (`Version, !- id` then `24.1;`
+    # on the next line): search the text without its comments.
+    return _VERSION_PATTERN.search(_COMMENT_PATTERN.sub(b"", content))
+
+
+def _is_utf8(name: str) -> bool:
+    """Whether the codec *name* is UTF-8, with or without the byte-order mark."""
+    return codecs.lookup(name).name in ("utf-8", "utf-8-sig")
+
+
+def _resolve_encoding(content: bytes, requested: str | None) -> tuple[bytes, str, str]:
+    """The text of an IDF file, the codec to decode it with, and the codec to write it back with.
+
+    With no *requested* codec, the file is read as UTF-8 when its bytes are valid UTF-8 and hold
+    more than ASCII, and as latin-1 otherwise, which is what EnergyPlus writes. A leading UTF-8
+    byte-order mark is dropped from the text and remembered in the write codec (``utf-8-sig``), so
+    a lossless round trip writes it back. A *requested* codec is used as given, except that a UTF-8
+    one (``utf-8`` or ``utf-8-sig``) drops a mark the file has and writes one back only then.
+    """
+    has_bom = content.startswith(_UTF8_BOM)
+    if requested is None:
+        if has_bom:
+            return content[len(_UTF8_BOM) :], "utf-8", "utf-8-sig"
+        if content.isascii():
+            return content, "latin-1", "latin-1"
+        try:
+            content.decode("utf-8")
+        except UnicodeDecodeError:
+            return content, "latin-1", "latin-1"
+        return content, "utf-8", "utf-8"
+    if _is_utf8(requested):
+        # The mark is written back only when the file had one, whichever UTF-8 codec was named.
+        if has_bom:
+            return content[len(_UTF8_BOM) :], "utf-8", "utf-8-sig"
+        return content, "utf-8", "utf-8"
+    return content, requested, requested
+
 
 # Pattern to match IDF objects: "ObjectType, field1, field2, ..., fieldN;"
 # Handles multi-line objects and comments
@@ -299,7 +357,7 @@ def parse_idf(
     filepath: Path | str,
     schema: EpJSONSchema | None = None,
     version: tuple[int, int, int] | None = None,
-    encoding: str = "latin-1",
+    encoding: str | None = None,
     strict_parsing: bool = True,
     strict: bool = True,
     *,
@@ -313,7 +371,10 @@ def parse_idf(
         filepath: Path to the IDF file
         schema: Optional EpJSONSchema for field ordering and type coercion
         version: Optional version override (auto-detected if not provided)
-        encoding: File encoding (default: latin-1 for compatibility)
+        encoding: File encoding. ``None`` (the default) reads the file as UTF-8 when its bytes
+            are valid UTF-8, and as latin-1 otherwise. A leading UTF-8 byte-order mark is dropped.
+            The document remembers the encoding, and :func:`~idfkit.writers.save_idf` writes it
+            back unless told otherwise.
         strict_parsing: If True, fail fast on malformed objects (default: True)
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
@@ -375,7 +436,7 @@ def parse_idf_with_diagnostics(
     filepath: Path | str,
     schema: EpJSONSchema | None = None,
     version: tuple[int, int, int] | None = None,
-    encoding: str = "latin-1",
+    encoding: str | None = None,
     *,
     strict: bool = True,
     preserve_formatting: bool = False,
@@ -393,7 +454,7 @@ def parse_idf_with_diagnostics(
     Every logging announcement fires exactly as it does today. A caller with a handler installed
     sees no change (FR-014); this is a second way to reach the same findings, not a replacement.
 
-    `normalize_choices` is the flag of :func:`parse_idf`.
+    `encoding` and `normalize_choices` are the parameters of :func:`parse_idf`.
     """
     filepath = Path(filepath)
 
@@ -420,13 +481,17 @@ class IDFParser:
         "_encoding",
         "_filepath",
         "_normalize_choices",
+        "_requested_encoding",
         "_schema",
         "_strict_parsing",
     )
 
     _filepath: Path
     _schema: EpJSONSchema | None
+    #: The codec the parse in progress decodes with: the requested one, else the detected one.
     _encoding: str
+    #: The codec the caller asked for, or ``None`` to detect it from each file's bytes.
+    _requested_encoding: str | None
     _content: bytes | None
     _strict_parsing: bool
     _diagnostics: list[ParseDiagnostic]
@@ -437,12 +502,13 @@ class IDFParser:
         self,
         filepath: Path,
         schema: EpJSONSchema | None = None,
-        encoding: str = "latin-1",
+        encoding: str | None = None,
         strict_parsing: bool = True,
     ):
         self._filepath = filepath
         self._schema = schema
-        self._encoding = encoding
+        self._requested_encoding = encoding
+        self._encoding = encoding or "latin-1"
         self._strict_parsing = strict_parsing
         self._normalize_choices = True
         self._content: bytes | None = None
@@ -519,7 +585,7 @@ class IDFParser:
         logger.debug("Parsing IDF file %s", self._filepath)
 
         # Load content (with mmap for large files)
-        content = self._load_content()
+        content, self._encoding, source_encoding = _resolve_encoding(self._load_content(), self._requested_encoding)
         if _EPJSON_START.match(content):
             raise FileFormatError(str(self._filepath), "epjson")
 
@@ -543,6 +609,7 @@ class IDFParser:
             strict=strict,
             normalize_choices=normalize_choices,
         )
+        doc._source_encoding = source_encoding
 
         # Parse objects
         self._parse_objects(content, doc, schema)
@@ -551,6 +618,7 @@ class IDFParser:
         if preserve_formatting:
             original_text = content.decode(self._encoding)
             cst = _build_idf_cst(original_text)
+            cst.encoding = source_encoding
             if _link_cst_to_objects(cst, doc, self._diagnostics, str(self._filepath)):
                 doc._cst = cst  # pyright: ignore[reportAttributeAccessIssue]
                 doc._raw_text = original_text  # pyright: ignore[reportAttributeAccessIssue]
@@ -591,7 +659,7 @@ class IDFParser:
         # saves nothing here and costs correctness: nothing in the format puts
         # the Version object near the top, and three of the example files
         # shipped with EnergyPlus 26.1.0 carry it past the first 10 KB.
-        match = _VERSION_PATTERN.search(content)
+        match = _search_version(content)
         if match:
             major = int(match.group(1))
             minor = int(match.group(2))
@@ -1094,7 +1162,7 @@ class IDFParser:
 
 def iter_idf_objects(
     filepath: Path | str,
-    encoding: str = "latin-1",
+    encoding: str | None = None,
 ) -> Iterator[tuple[str, str, list[str]]]:
     """
     Iterate over objects in an IDF file without loading into document.
@@ -1103,6 +1171,7 @@ def iter_idf_objects(
         Tuples of (object_type, name, [field_values])
 
     This is useful for quick scanning or filtering without full parsing.
+    ``encoding`` is read as :func:`parse_idf` reads it: ``None`` detects UTF-8 or latin-1.
 
     Note:
         Type names are returned exactly as they appear in the IDF file
@@ -1137,6 +1206,7 @@ def iter_idf_objects(
 
     with open(filepath, "rb") as f:
         content = f.read()
+    content, encoding, _ = _resolve_encoding(content, encoding)
 
     # Strip comments before matching to prevent phantom objects
     content = _COMMENT_PATTERN.sub(b"", content)
@@ -1197,11 +1267,12 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
 
     with open(filepath, "rb") as f:
         head = f.read(_VERSION_SCAN_BYTES)
-        match = _VERSION_PATTERN.search(head)
+        # A comment's `!` precedes its text, so the window holds it whenever it holds the text.
+        match = _search_version(head)
         if match is None:
             # The scan window may have split the Version object, so re-search
             # the whole file rather than only the remainder.
-            match = _VERSION_PATTERN.search(head + f.read())
+            match = _search_version(head + f.read())
 
     if match:
         major = int(match.group(1))

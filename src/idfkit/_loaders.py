@@ -74,6 +74,7 @@ def load_idf(
     strict: bool = True,
     preserve_formatting: bool = False,
     normalize_choices: bool = True,
+    encoding: str | None = None,
 ) -> AnyIDFDocument:
     """
     Load an IDF file and return its document.
@@ -114,6 +115,9 @@ def load_idf(
             case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
             a choice field's ``Literal`` type then does not hold; see
             :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
+        encoding: The file's text encoding. ``None`` (the default) reads it as UTF-8 when its
+            bytes are valid UTF-8 and as latin-1 otherwise, dropping a UTF-8 byte-order mark.
+            :func:`save_idf` writes the document back in the same encoding.
 
     Returns:
         The parsed document: an ``AnyIDFDocument``, or typed as ``as_type=`` or the
@@ -164,6 +168,7 @@ def load_idf(
     doc = parse_idf(
         Path(path),
         version=version,
+        encoding=encoding,
         strict_parsing=strict_parsing,
         strict=strict,
         preserve_formatting=preserve_formatting,
@@ -182,6 +187,7 @@ def load_idf_with_diagnostics(
     strict: bool = True,
     preserve_formatting: bool = False,
     normalize_choices: bool = True,
+    encoding: str | None = None,
 ) -> ParseResult[AnyIDFDocument]:
     """
     Load an IDF file, keeping the findings that did not stop the parse.
@@ -221,6 +227,7 @@ def load_idf_with_diagnostics(
             case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
             a choice field's ``Literal`` type then does not hold; see
             :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
+        encoding: The file's text encoding, as for :func:`load_idf`.
 
     Returns:
         A :class:`~idfkit.idf_parser.ParseResult`: the document, and the recoverable findings.
@@ -254,6 +261,7 @@ def load_idf_with_diagnostics(
     result = parse_idf_with_diagnostics(
         Path(path),
         version=version,
+        encoding=encoding,
         strict=strict,
         preserve_formatting=preserve_formatting,
         normalize_choices=normalize_choices,

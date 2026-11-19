@@ -53,6 +53,7 @@ save_idf(doc, "out.idf")
 | `len(doc)` | Total object count. |
 | `obj_type in doc` | Does the model hold at least one object of this type? Not whether its release has the type, so a type checker does not narrow the document on it (see [What `"Space" in doc` tells a type checker](#what-space-in-doc-tells-a-type-checker)). |
 | `doc.get(...)`, `doc.pop(...)`, `doc.setdefault(...)` | Do not exist: a document is not a `dict`. `doc.update({...})` is the eppy batch update (`"Zone.Office.x_origin"` keys). |
+| `doc.newidfobject("MATERIAL", Name="Ins", Specific_Heat=1400)` | The eppy port path: takes eppy's capitalised field names and does **not** validate (eppy's create-blank-then-fill idiom works); pass `validate=True`, or call `doc.validate()` once filled. Prefer `add()` in new code. |
 
 ## Adding objects
 

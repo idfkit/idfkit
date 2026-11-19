@@ -24,7 +24,7 @@ print(len(doc), "objects")
 
 | Symbol | Purpose |
 |---|---|
-| `load_idf(path, version=None, *, as_type=None, since=None, before=None, strict=True, strict_parsing=True, preserve_formatting=False)` | Parse a `.idf` file. Typed `AnyIDFDocument`, or for the release `as_type=` (or the range `since=`/`before=`) names, checked once the file is read. |
+| `load_idf(path, version=None, *, as_type=None, since=None, before=None, strict=True, strict_parsing=True, preserve_formatting=False, encoding=None)` | Parse a `.idf` file. Typed `AnyIDFDocument`, or for the release `as_type=` (or the range `since=`/`before=`) names, checked once the file is read. |
 | `load_epjson(path, version=None, *, as_type=None, since=None, before=None, strict=True, strict_parsing=True, preserve_formatting=False)` | Parse an `.epJSON` file, typed the same way. |
 | `load_idf_with_diagnostics(path, ...)` | `load_idf` that also returns the recoverable parse findings, as a `ParseResult`; takes the same `as_type=`, `since=`, `before=`. |
 | `parse_idf(path, ...)` | Lower-level callable used by `load_idf`. |
@@ -84,7 +84,9 @@ if zone.ceiling_height is None:
 
 ## Version handling
 
-Every document is tied to a specific EnergyPlus version. The parser reads the `Version` object and picks the matching bundled schema (8.9 through 26.2 — see `idfkit.ENERGYPLUS_VERSIONS`).
+Every document is tied to a specific EnergyPlus version. The parser reads the `Version` object and picks the matching bundled schema (8.9 through 26.2 — see `idfkit.ENERGYPLUS_VERSIONS`). A `Version,9.0;` inside a `!` comment is ignored, by `load_idf` and by `get_idf_version` alike.
+
+An IDF file is read as UTF-8 when its bytes are valid UTF-8, and as latin-1 otherwise; a UTF-8 byte-order mark is dropped. `load_idf(..., encoding="cp1252")` names the encoding instead. `save_idf` writes the model back in the encoding it was read in (see [writing-output.md](writing-output.md#encoding)).
 
 ```python
 from idfkit import get_idf_version
