@@ -7,9 +7,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from conftest import REFUSAL_R2, InMemoryFileSystem, design_day_model
+from conftest import REFUSAL_R2, InMemoryFileSystem, design_day_model, runnable_model
 
-from idfkit import LATEST_VERSION, new_document
+from idfkit import LATEST_VERSION
 from idfkit.exceptions import SimulationError
 from idfkit.simulation.batch import REFUSED_RUN_DIR, BatchResult, SimulationJob, simulate_batch
 from idfkit.simulation.cache import SimulationCache
@@ -54,13 +54,13 @@ class TestSimulationJob:
     """Tests for SimulationJob dataclass."""
 
     def test_frozen(self) -> None:
-        model = new_document()
+        model = runnable_model()
         job = SimulationJob(model=model, weather="test.epw")
         with pytest.raises(AttributeError):
             job.label = "changed"  # type: ignore[misc]
 
     def test_defaults(self) -> None:
-        model = new_document()
+        model = runnable_model()
         job = SimulationJob(model=model, weather="test.epw")
         assert job.label == ""
         assert job.output_dir is None
@@ -75,7 +75,7 @@ class TestSimulationJob:
         assert job.auto_migrate is False
 
     def test_custom_fields(self) -> None:
-        model = new_document()
+        model = runnable_model()
         job = SimulationJob(
             model=model,
             weather="/path/to/w.epw",
@@ -88,21 +88,21 @@ class TestSimulationJob:
         assert job.extra_args == ("--custom",)
 
     def test_weather_defaults_to_none(self) -> None:
-        assert SimulationJob(model=new_document()).weather is None
+        assert SimulationJob(model=runnable_model()).weather is None
 
     def test_positional_weather(self) -> None:
-        job = SimulationJob(new_document(), "w.epw")
+        job = SimulationJob(runnable_model(), "w.epw")
         assert job.weather == "w.epw"
 
     def test_extra_args_list_stored_as_tuple(self) -> None:
         args = ["--convert"]
-        job = SimulationJob(model=new_document(), extra_args=args)
+        job = SimulationJob(model=runnable_model(), extra_args=args)
         args.append("--later")
         assert job.extra_args == ("--convert",)
 
     def test_extra_args_string_refused(self) -> None:
         with pytest.raises(TypeError, match="pass \\['--convert'\\]"):
-            SimulationJob(model=new_document(), extra_args="--convert")  # type: ignore[arg-type]
+            SimulationJob(model=runnable_model(), extra_args="--convert")  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("model", ["building.idf", Path("building.idf")])
     def test_path_model_refused(self, model: object) -> None:
@@ -174,7 +174,7 @@ class TestSimulateBatch:
     @patch("idfkit.simulation.runner.run_process")
     def test_single_job(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        model = new_document()
+        model = runnable_model()
         job = SimulationJob(model=model, weather=weather_file, label="single")
         result = simulate_batch([job], energyplus=mock_config)
         assert len(result) == 1
@@ -184,7 +184,7 @@ class TestSimulateBatch:
     @patch("idfkit.simulation.runner.run_process")
     def test_multiple_jobs(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(3)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(3)]
         result = simulate_batch(jobs, energyplus=mock_config)
         assert len(result) == 3
         assert result.all_succeeded
@@ -200,7 +200,7 @@ class TestSimulateBatch:
             return MagicMock(returncode=0, stdout=f"run-{call_count}", stderr="")
 
         mock_run.side_effect = side_effect
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(3)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(3)]
         result = simulate_batch(jobs, energyplus=mock_config, max_workers=1)
         # With max_workers=1 the order is deterministic
         assert result[0].stdout == "run-1"
@@ -219,7 +219,7 @@ class TestSimulateBatch:
         ]
         mock_run.side_effect = returns
 
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(3)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(3)]
         result = simulate_batch(jobs, energyplus=mock_config, max_workers=1)
         assert len(result) == 3
         assert not result.all_succeeded
@@ -234,7 +234,7 @@ class TestSimulateBatch:
         def on_progress(**kwargs: object) -> None:
             progress_calls.append(kwargs)
 
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(2)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(2)]
         simulate_batch(jobs, energyplus=mock_config, progress=on_progress, max_workers=1)
 
         assert len(progress_calls) == 2
@@ -252,7 +252,7 @@ class TestSimulateBatch:
     ) -> None:
         def prog(completed: int, total: int) -> None: ...
 
-        jobs = [SimulationJob(model=new_document(), weather=weather_file)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file)]
         with pytest.raises(TypeError, match="cannot take that"):
             simulate_batch(jobs, energyplus=mock_config, progress=prog)  # type: ignore[arg-type]
         mock_run.assert_not_called()
@@ -264,7 +264,7 @@ class TestSimulateBatch:
         """Cache should be passed through to simulate()."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         cache = SimulationCache(cache_dir=tmp_path / "cache")
-        model = new_document()
+        model = runnable_model()
         job = SimulationJob(model=model, weather=weather_file, label="cached")
 
         # First run — miss, then store
@@ -287,7 +287,7 @@ class TestSimulateBatch:
         run_dir = tmp_path / "run"
         run_dir.mkdir()
         csv = run_dir / "hourly.csv"
-        model = new_document()
+        model = runnable_model()
         model.add("Schedule:File", "Staged", file_name="hourly.csv", column_number=1, validate=False)
         job = SimulationJob(model=model, weather=weather_file, output_dir=run_dir)
 
@@ -304,7 +304,7 @@ class TestSimulateBatch:
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        job = SimulationJob(model=new_document(), weather=weather_file)
+        job = SimulationJob(model=runnable_model(), weather=weather_file)
         result = simulate_batch([job], energyplus=mock_config)
         assert result.total_runtime_seconds >= 0
 
@@ -315,7 +315,7 @@ class TestSimulateBatch:
         """When fs is passed to simulate_batch, results should carry the fs."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         fs = InMemoryFileSystem()
-        job = SimulationJob(model=new_document(), weather=weather_file, output_dir="remote/batch/0")
+        job = SimulationJob(model=runnable_model(), weather=weather_file, output_dir="remote/batch/0")
         result = simulate_batch([job], energyplus=mock_config, fs=fs, max_workers=1)
         assert result[0].success
         assert result[0].fs is fs
@@ -327,7 +327,7 @@ class TestSimulateBatch:
         with patch("idfkit.simulation.batch.simulate", side_effect=OSError("boom")):
             out_dir = tmp_path / "out"
             out_dir.mkdir()
-            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+            jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=str(out_dir))]
             result = simulate_batch(jobs, energyplus=mock_config)
         assert not result[0].success
         assert result[0].run_dir == out_dir
@@ -340,7 +340,7 @@ class TestSimulateBatch:
         out_dir.mkdir()
         (out_dir / "eplusout.err").write_text("   ** Severe  ** stale from an earlier run\n")
         with patch("idfkit.simulation.batch.simulate", side_effect=OSError("boom")):
-            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+            jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=str(out_dir))]
             r = simulate_batch(jobs, energyplus=mock_config)[0]
         assert r.refusal == "boom"
         assert r.err_path is None
@@ -361,7 +361,7 @@ class TestSimulateBatch:
             raise SimulationError(msg, stderr="partial stderr")
 
         with patch("idfkit.simulation.batch.simulate", side_effect=run_then_time_out):
-            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+            jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=str(out_dir))]
             r = simulate_batch(jobs, energyplus=mock_config)[0]
         assert r.refusal is None
         assert r.err_path == out_dir / "eplusout.err"
@@ -374,7 +374,7 @@ class TestSimulateBatch:
         """A SimulationError's stderr appears once in raise_for_status(), not in the refusal reason."""
         exc = SimulationError("Simulation timed out after 5 seconds", exit_code=3, stderr="line1 from eplus\nline2")
         with patch("idfkit.simulation.batch.simulate", side_effect=exc):
-            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(tmp_path / "out"))]
+            jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=str(tmp_path / "out"))]
             r = simulate_batch(jobs, energyplus=mock_config)[0]
         assert r.refusal == "Simulation timed out after 5 seconds"
         assert repr(r).startswith("SimulationResult(refused: 'Simulation timed out after 5 seconds', run_dir=")
@@ -385,7 +385,7 @@ class TestSimulateBatch:
 
     def test_refused_result_repr_summary_and_raise(self, mock_config: EnergyPlusConfig) -> None:
         """A refused job says so in its repr, its error summary and raise_for_status()."""
-        r = simulate_batch([SimulationJob(model=new_document(), weather="/no/such.epw")], energyplus=mock_config)[0]
+        r = simulate_batch([SimulationJob(model=runnable_model(), weather="/no/such.epw")], energyplus=mock_config)[0]
         assert r.refusal is not None
         assert "Weather file not found" in r.refusal
         assert repr(r).startswith(f"SimulationResult(refused: {r.refusal!r}")
@@ -397,8 +397,8 @@ class TestSimulateBatch:
     def test_fs_without_output_dir_raises_up_front(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """fs= with a job lacking output_dir is a configuration error, raised before any job runs."""
         jobs = [
-            SimulationJob(model=new_document(), weather=weather_file, output_dir="remote/0"),
-            SimulationJob(model=new_document(), weather=weather_file, label="no-dir"),
+            SimulationJob(model=runnable_model(), weather=weather_file, output_dir="remote/0"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="no-dir"),
         ]
         with (
             patch("idfkit.simulation.batch.simulate") as mock_simulate,
@@ -410,8 +410,8 @@ class TestSimulateBatch:
     def test_auto_migrate_is_forwarded_to_simulate(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         with patch("idfkit.simulation.batch.simulate", side_effect=RuntimeError("stop")) as mock_simulate:
             jobs = [
-                SimulationJob(model=new_document(), weather=weather_file, auto_migrate=True),
-                SimulationJob(model=new_document(), weather=weather_file),
+                SimulationJob(model=runnable_model(), weather=weather_file, auto_migrate=True),
+                SimulationJob(model=runnable_model(), weather=weather_file),
             ]
             simulate_batch(jobs, energyplus=mock_config, max_workers=1)
         flags = sorted(call.kwargs["auto_migrate"] for call in mock_simulate.call_args_list)
@@ -429,7 +429,7 @@ class TestSimulateBatch:
             patch("idfkit.simulation.batch.resolve_on_progress", return_value=(None, _cleanup)),
             patch("idfkit.simulation.batch.simulate", side_effect=RuntimeError("boom")),
         ):
-            jobs = [SimulationJob(model=new_document(), weather=weather_file)]
+            jobs = [SimulationJob(model=runnable_model(), weather=weather_file)]
             simulate_batch(jobs, energyplus=mock_config)
 
         assert cleanup_called
@@ -442,7 +442,7 @@ class TestSimulateBatchWithoutWeather:
     def test_mixed_batch(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         jobs = [
-            SimulationJob(model=new_document(), weather=weather_file, label="with-weather"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="with-weather"),
             SimulationJob(model=design_day_model(), design_day=True, label="design-day"),
         ]
         result = simulate_batch(jobs, energyplus=mock_config, max_workers=1)
@@ -456,9 +456,9 @@ class TestSimulateBatchWithoutWeather:
     ) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         jobs = [
-            SimulationJob(model=new_document(), weather=weather_file, label="with-weather"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="with-weather"),
             SimulationJob(model=design_day_model(), design_day=True, label="design-day"),
-            SimulationJob(model=new_document(), annual=True, label="annual"),
+            SimulationJob(model=runnable_model(), annual=True, label="annual"),
         ]
         result = simulate_batch(jobs, energyplus=mock_config)
         assert result[0].success
@@ -474,7 +474,7 @@ class TestSimulateBatchWithoutWeather:
         temp_root = tmp_path / "tmp"
         temp_root.mkdir()
         monkeypatch.setattr(tempfile, "tempdir", str(temp_root))
-        jobs = [SimulationJob(model=new_document(), annual=True, label=f"annual-{i}") for i in range(3)]
+        jobs = [SimulationJob(model=runnable_model(), annual=True, label=f"annual-{i}") for i in range(3)]
         result = simulate_batch(jobs, energyplus=mock_config)
         assert not any(r.success for r in result)
         assert list(temp_root.iterdir()) == []

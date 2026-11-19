@@ -17,8 +17,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from conftest import runnable_model
 
-from idfkit import LATEST_VERSION, new_document
+from idfkit import LATEST_VERSION
 from idfkit.exceptions import MigrationError
 from idfkit.migration.subprocess_backend import SubprocessMigrator
 from idfkit.simulation._cancel import ProcessGroup, run_process
@@ -126,7 +127,7 @@ class TestSimulateBatchInterrupted:
         self, tmp_path: Path, sleepy_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         run_dirs = [tmp_path / "fast0", *(tmp_path / f"slow{i}" for i in range(1, 8))]
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=d) for d in run_dirs]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=d) for d in run_dirs]
 
         def stop(*, completed: int, total: int, label: str, success: bool) -> None:
             raise _Stop
@@ -144,7 +145,7 @@ class TestSimulateBatchInterrupted:
         self, tmp_path: Path, sleepy_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         run_dirs = [tmp_path / "fast0", tmp_path / "slow1", tmp_path / "slow2"]
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=d) for d in run_dirs]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=d) for d in run_dirs]
 
         def stop(*, completed: int, total: int, label: str, success: bool) -> None:
             raise _Stop
@@ -163,7 +164,7 @@ class TestAsyncCancellation:
         run_dir = tmp_path / "slow"
         task = asyncio.create_task(
             async_simulate(
-                new_document(),
+                runnable_model(),
                 weather_file,
                 energyplus=sleepy_config,
                 output_dir=run_dir,
@@ -181,7 +182,7 @@ class TestAsyncCancellation:
         self, tmp_path: Path, sleepy_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         run_dirs = [tmp_path / "fast0", tmp_path / "slow1", tmp_path / "slow2"]
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=d) for d in run_dirs]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=d) for d in run_dirs]
         async with contextlib.aclosing(async_simulate_batch_stream(jobs, energyplus=sleepy_config)) as stream:
             async for _event in stream:
                 break
@@ -244,7 +245,7 @@ class TestAsyncPreprocessCancelled:
 
         monkeypatch.setattr("idfkit.simulation.async_runner.maybe_preprocess", slow_preprocess)
         task = asyncio.create_task(
-            async_simulate(new_document(), weather_file, energyplus=sleepy_config, output_dir=tmp_path / "slow")
+            async_simulate(runnable_model(), weather_file, energyplus=sleepy_config, output_dir=tmp_path / "slow")
         )
         pid = await _wait_for_pid(pre_dir)
         start = time.monotonic()

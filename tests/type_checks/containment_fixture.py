@@ -134,9 +134,7 @@ def mapping_methods(doc: AnyIDFDocument, latest: IDFDocument, legacy: IDFDocumen
     doc.popitem()  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
     doc.clear()  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
     legacy.get("Zone")  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
-    # IDFDocument answers any other attribute with its untyped raw-spelling fallback, a collection,
-    # so calling one is the error.
-    latest.get("Space")  # pyright: ignore[reportCallIssue]  (no get)
+    latest.get("Space")  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]  (no get)
     print(doc | {})  # pyright: ignore[reportOperatorIssue, reportUnknownArgumentType]  (no |)
     del latest["Zone"]  # pyright: ignore[reportIndexIssue]  (no __delitem__)
     match doc:

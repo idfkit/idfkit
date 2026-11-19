@@ -49,7 +49,7 @@ def test_noop_migration_returns_success(energyplus: EnergyPlusConfig) -> None:
     report = migrate(model, target_version=model.version, energyplus=energyplus)
     assert report.success is True
     assert report.steps == ()
-    assert report.migrated_model is None
+    assert report.migrated_model.version == model.version
 
 
 def test_migrate_pinned_fixture_to_installed_version(

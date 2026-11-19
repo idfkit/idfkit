@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
 from . import cache as migration_cache
-from ._reparse import parse_migrated_idf
+from ._reparse import parse_migrated_idf, unmigrated_copy
 from ._typing import StrictT
 from .chain import check_chain_binaries, normalize_target, plan_migration_chain, resolve_source_version
 from .diff import document_diff, verify_migration_output
@@ -125,9 +125,10 @@ def migrate(
 
     Returns:
         A [MigrationReport][idfkit.migration.report.MigrationReport] whose
-        ``migrated_model`` is ``None`` only for a no-op migration (source
-        equals target) — in that case the caller's original *model* is the
-        result.
+        ``migrated_model`` is the document at the target version. On a no-op
+        migration (source equals target) no step runs and it is a copy of
+        *model*, so ``migrate(doc, version).migrated_model`` is a document
+        whatever *doc*'s version.
         The migrated document has no ``filepath`` (it is ``None``): it was
         read from a scratch file in the work directory, and the source's path
         would make a bare ``save()`` overwrite the original with a model at
@@ -166,7 +167,7 @@ def migrate(
             MigrationProgress(phase="complete", message="Source equals target; nothing to do", percent=100.0),
         )
         return MigrationReport(
-            migrated_model=None,
+            migrated_model=unmigrated_copy(model, target),
             source_version=source,
             target_version=target,
             requested_target=target,

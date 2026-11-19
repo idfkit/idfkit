@@ -125,7 +125,7 @@ from idfkit import migrate, load_idf, save_idf
 
 legacy = load_idf("legacy.idf")
 report = migrate(legacy, target_version=(25, 2, 0))
-if report.success and report.migrated_model is not None:
+if report.success:
     doc = report.migrated_model
     save_idf(doc, "legacy_v25.idf")
 # --8<-- [end:mistake-version-good]

@@ -42,6 +42,8 @@ from ._cancel import ProcessGroup
 from ._common import (
     admit_annual,
     admit_design_day,
+    admit_environments,
+    admit_model,
     admit_weather,
     async_resolve_version_mismatch,
     async_upload_results,
@@ -176,7 +178,10 @@ async def async_simulate(
             preprocessors if the model contains the corresponding objects.
         annual: Run annual simulation (``-a`` flag). The model needs a
             ``RunPeriod``; without one the run is refused (see Raises).
-        design_day: Run design-day-only simulation (``-D`` flag).
+        design_day: Run design-day-only simulation (``-D`` flag). With
+            neither flag, ``SimulationControl`` decides: by default, the
+            model's sizing periods and then its ``RunPeriod`` objects, so the
+            model needs at least one of them (see Raises).
         output_prefix: Prefix for output files (default "eplus").
         output_suffix: EnergyPlus ``--output-suffix`` style, which names the
             output files: ``"C"`` (capital, default) gives ``eplus.err`` and
@@ -235,8 +240,12 @@ async def async_simulate(
             ``GroundHeatTransfer:Control`` enables; or *weather* is
             ``None`` and the run directory already contains ``in.epw``. Also
             raised before EnergyPlus starts when *annual* is ``True`` and the
-            model has no ``RunPeriod``, or when *design_day* is ``True`` and
-            the model has no ``SizingPeriod:DesignDay``.
+            model has no ``RunPeriod``, when *design_day* is ``True`` and
+            the model has no ``SizingPeriod:DesignDay``, or when neither is
+            set and ``SimulationControl`` leaves EnergyPlus nothing to run:
+            no ``RunPeriod`` and no ``SizingPeriod:*`` (as a fresh
+            ``new_document()`` has), or both turned off.
+        TypeError: If *model* is not a document (``None``, or a path).
         ExpandObjectsError: If a preprocessing step fails.
         EnergyPlusNotFoundError: If EnergyPlus cannot be found.
         VersionMismatchError: If ``model.version`` names another release line
@@ -308,6 +317,7 @@ async def _simulate_local(
 
     try:
         # Admission is a pure argument check, so it runs before EnergyPlus discovery.
+        admit_model(model, "async_simulate")
         local_output_dir = output_dir
         weather_path = admit_weather(
             weather,
@@ -319,6 +329,7 @@ async def _simulate_local(
         )
         admit_annual(model, annual=annual)
         admit_design_day(model, design_day=design_day)
+        admit_environments(model, annual=annual, design_day=design_day)
         config = resolve_config(energyplus)
 
         sim_input_model, migration_report = await async_resolve_version_mismatch(

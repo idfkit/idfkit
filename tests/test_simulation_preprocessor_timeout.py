@@ -11,8 +11,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from conftest import runnable_model
 
-from idfkit import LATEST_VERSION, new_document
+from idfkit import LATEST_VERSION
 from idfkit.simulation._common import (
     DEFAULT_PREPROCESSOR_TIMEOUT,
     PREPROCESSOR_TIMEOUT_ENV,
@@ -65,7 +66,7 @@ def weather_file(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def slab_model():
-    model = new_document(version=LATEST_VERSION)
+    model = runnable_model(version=LATEST_VERSION)
     model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
     model.add("Zone", "Office", {"x_origin": 0.0})
     return model
@@ -116,7 +117,7 @@ class TestResolvePreprocessorTimeout:
 
 class TestSimulateForwarding:
     def test_explicit_timeout_forwarded(self, mock_config: EnergyPlusConfig, weather_file: Path, slab_model) -> None:
-        preprocessed = new_document(version=LATEST_VERSION)
+        preprocessed = runnable_model(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")
 
@@ -136,7 +137,7 @@ class TestSimulateForwarding:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         monkeypatch.setenv(PREPROCESSOR_TIMEOUT_ENV, "450")
-        preprocessed = new_document(version=LATEST_VERSION)
+        preprocessed = runnable_model(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")
 
@@ -156,7 +157,7 @@ class TestSimulateForwarding:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         monkeypatch.delenv(PREPROCESSOR_TIMEOUT_ENV, raising=False)
-        preprocessed = new_document(version=LATEST_VERSION)
+        preprocessed = runnable_model(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")
 
@@ -176,7 +177,7 @@ class TestSimulateForwarding:
 
 class TestAsyncSimulateForwarding:
     def test_explicit_timeout_forwarded(self, mock_config: EnergyPlusConfig, weather_file: Path, slab_model) -> None:
-        preprocessed = new_document(version=LATEST_VERSION)
+        preprocessed = runnable_model(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
 
         async def fake_simple(_cmd: list[str], _cwd: Path, _timeout: float):
@@ -198,14 +199,14 @@ class TestAsyncSimulateForwarding:
 
 class TestBatchForwarding:
     def test_simulationjob_default_is_none(self) -> None:
-        model = new_document(version=LATEST_VERSION)
+        model = runnable_model(version=LATEST_VERSION)
         job = SimulationJob(model=model, weather="weather.epw")
         assert job.preprocessor_timeout is None
 
     def test_batch_forwards_per_job_timeout(
         self, mock_config: EnergyPlusConfig, weather_file: Path, slab_model
     ) -> None:
-        preprocessed = new_document(version=LATEST_VERSION)
+        preprocessed = runnable_model(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")
         job = SimulationJob(model=slab_model, weather=weather_file, preprocessor_timeout=180.0)

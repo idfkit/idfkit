@@ -108,7 +108,8 @@ building = doc.building.first()  # Building | None
 if building is not None:
     north = building.north_axis
 
-# A typo names the closest matches and their object types:
+# A typo is a type error (pyright: Cannot access attribute "shading_bulding" for
+# class "IDFDocument[...]"), and at run time names the closest matches:
 #   >>> doc.shading_bulding
 #   AttributeError: 'IDFDocument' object has no attribute 'shading_bulding'.
 #   Did you mean:

@@ -6,8 +6,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from conftest import runnable_model
 
-from idfkit import LATEST_VERSION, new_document
+from idfkit import LATEST_VERSION
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.progress import SimulationProgress
 from idfkit.simulation.progress_bars import resolve_on_progress, tqdm_progress
@@ -229,7 +230,7 @@ class TestSimulateWithTqdm:
 
         from idfkit.simulation.runner import simulate
 
-        model = new_document()
+        model = runnable_model()
         result = simulate(model, weather_file, energyplus=mock_config, on_progress="tqdm")
 
         assert result.success
@@ -256,7 +257,7 @@ class TestSimulateWithTqdm:
         from idfkit.exceptions import SimulationError
         from idfkit.simulation.runner import simulate
 
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(SimulationError):
             simulate(model, weather_file, energyplus=mock_config, on_progress="tqdm")
 
@@ -274,7 +275,7 @@ class TestBatchTqdmRejection:
     def test_sync_batch_rejects_tqdm(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         from idfkit.simulation.batch import SimulationJob, simulate_batch
 
-        model = new_document()
+        model = runnable_model()
         jobs = [SimulationJob(model=model, weather=weather_file, label="j0")]
         with pytest.raises(ValueError, match="not supported for batch"):
             simulate_batch(jobs, energyplus=mock_config, on_progress="tqdm")  # type: ignore[arg-type]
@@ -284,7 +285,7 @@ class TestBatchTqdmRejection:
         from idfkit.simulation.async_batch import async_simulate_batch
         from idfkit.simulation.batch import SimulationJob
 
-        model = new_document()
+        model = runnable_model()
         jobs = [SimulationJob(model=model, weather=weather_file, label="j0")]
         with pytest.raises(ValueError, match="not supported for batch"):
             await async_simulate_batch(jobs, energyplus=mock_config, on_progress="tqdm")  # type: ignore[arg-type]
@@ -309,7 +310,7 @@ class TestTqdmCleanupOnEarlyError:
         from idfkit.exceptions import SimulationError
         from idfkit.simulation.runner import simulate
 
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(SimulationError, match="Weather file not found"):
             simulate(model, "/nonexistent/weather.epw", energyplus=mock_config, on_progress="tqdm")
 

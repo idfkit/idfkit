@@ -5691,40 +5691,6 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
                 the same flag for values read from a file. Immutable after construction.
         """
 
-    def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
-        """Get collection by Python-style attribute name.
-
-        Every object type in the document's schema is reachable this way as its
-        ``snake_case`` plural (``model.air_loop_hvacs``), or, for a type a model holds
-        at most one of, its singular (``model.output_sqlite``, ``model.building``). The
-        stub types either as ``IDFCollection`` of the generated class. The plural of such
-        a type (``model.output_sqlites``) still resolves, with a ``DeprecationWarning``. Hand-written shorthands in
-        ``_PYTHON_TO_IDF`` (e.g. ``building_surfaces`` -> ``BuildingSurface:Detailed``,
-        ``ideal_loads`` -> ``ZoneHVAC:IdealLoadsAirSystem``) also resolve, and keep
-        their meaning where one coincides with a derived name. The raw type name, with
-        ``_`` in place of ``:`` and in any case (``model.Site_Location``,
-        ``model.ZONE``), resolves as it did before derived names existed.
-
-        Without a schema loaded, only the hand-written shorthands and a
-        case-insensitive match against existing collections are available.
-
-        Examples:
-            Use attribute names for object types:
-
-            >>> from idfkit import new_document
-            >>> model = new_document()
-            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
-            Zone('Perimeter_ZN_1')
-            >>> len(model.zones)
-            1
-            >>> model.zones[0].name
-            'Perimeter_ZN_1'
-
-        Raises:
-            AttributeError: If the name resolves to no object type.  When the
-                schema has a close match the message names it.
-        """
-
     @overload
     def __getitem__(self, obj_type: Literal["Version"], /) -> IDFCollection[Version]:
         """Get collection by object type name.

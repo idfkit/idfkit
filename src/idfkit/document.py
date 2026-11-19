@@ -547,7 +547,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         ``ideal_loads`` -> ``ZoneHVAC:IdealLoadsAirSystem``) also resolve, and keep
         their meaning where one coincides with a derived name. The raw type name, with
         ``_`` in place of ``:`` and in any case (``model.Site_Location``,
-        ``model.ZONE``), resolves as it did before derived names existed.
+        ``model.ZONE``, ``model.zone``), resolves as it did before derived names existed,
+        but the stub does not declare it: a type checker reports it, as it reports a typo
+        (``model.zonez``). Use the derived accessor or ``model["Site:Location"]``.
 
         Without a schema loaded, only the hand-written shorthands and a
         case-insensitive match against existing collections are available.

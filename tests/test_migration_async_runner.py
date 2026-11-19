@@ -62,7 +62,10 @@ async def test_noop_returns_trivial_report() -> None:
     report = await async_migrate(doc, target_version=(24, 1, 0), migrator=_AsyncStubMigrator([]))
     assert report.success is True
     assert report.steps == ()
-    assert report.migrated_model is None
+    # The no-op result is a document, a copy of the input with no filepath, never None.
+    assert report.migrated_model is not doc
+    assert report.migrated_model.version == (24, 1, 0)
+    assert report.migrated_model.filepath is None
 
 
 @pytest.mark.asyncio
@@ -130,8 +133,10 @@ async def test_two_component_source_to_its_own_release_is_a_noop(tmp_path: Path)
     report = await async_migrate(doc, IDFDocumentV9_0, migrator=migrator)
 
     assert migrator.calls == []
-    assert report.migrated_model is None
     assert report.source_version == report.target_version == (9, 0, 1)
+    # The copy carries the release, as a migrated document would; the input keeps what it read.
+    assert report.migrated_model.version == report.target_version
+    assert doc.version == (9, 0, 0)
 
 
 @pytest.mark.asyncio

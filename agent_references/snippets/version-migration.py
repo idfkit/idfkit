@@ -39,7 +39,7 @@ doc = load_idf("legacy_v22.idf")  # version (22, 1, 0)
 config = find_energyplus()  # e.g. (25, 2, 0)
 
 report = migrate(doc, target_version=config.version, energyplus=config)
-new_doc = report.migrated_model  # fresh document at (25, 2, 0), typed AnyIDFDocument | None
+new_doc = report.migrated_model  # fresh document at (25, 2, 0), typed AnyIDFDocument
 # --8<-- [end:quickstart]
 
 
@@ -76,7 +76,7 @@ for from_version, to_version in chain:
 # --8<-- [start:report]
 report = migrate(doc, target_version=(25, 2, 0))
 
-report.migrated_model  # AnyIDFDocument | None (None only when source == target)
+report.migrated_model  # AnyIDFDocument (a copy of doc when source == target, never None)
 report.source_version  # (22, 1, 0)
 report.target_version  # (25, 2, 0)
 report.steps  # tuple[MigrationStep, ...]
@@ -97,15 +97,14 @@ from idfkit import IDFDocument
 from idfkit.versioned import IDFDocumentV24_1
 
 report_v24 = migrate(doc, IDFDocumentV24_1)  # MigrationReport[IDFDocumentV24_1]
-model_v24 = report_v24.migrated_model  # IDFDocumentV24_1 | None
-if model_v24 is not None:
-    for zone in model_v24.zones:  # 24.1's object types and fields
-        print(zone.name)
+model_v24 = report_v24.migrated_model  # IDFDocumentV24_1
+for zone in model_v24.zones:  # 24.1's object types and fields
+    print(zone.name)
 
-latest = migrate(doc, IDFDocument).migrated_model  # IDFDocument | None: the latest release
+latest = migrate(doc, IDFDocument).migrated_model  # IDFDocument: the latest release
 
 # A version known only at run time (an installed EnergyPlus) gives AnyIDFDocument, as strict as doc:
-any_release = migrate(doc, target_version=config.version).migrated_model  # AnyIDFDocument | None
+any_release = migrate(doc, target_version=config.version).migrated_model  # AnyIDFDocument
 # --8<-- [end:typed-result]
 
 
@@ -195,8 +194,7 @@ migrate(doc, target_version=(25, 2, 0), energyplus=config)
 
 # --8<-- [start:mistake-automigrate-good]
 report = migrate(doc, target_version=config.version)
-new_doc = report.migrated_model  # AnyIDFDocument at the target version
-assert new_doc is not None  # None only when the model was already at config.version
+new_doc = report.migrated_model  # AnyIDFDocument at the target version (a copy if already there)
 save_idf(new_doc, "migrated.idf")
 result = simulate(new_doc, "weather.epw")
 # --8<-- [end:mistake-automigrate-good]
@@ -209,7 +207,6 @@ from idfkit.simulation import SimulationJob, find_energyplus, simulate_batch
 
 config = find_energyplus()
 seed = migrate(old_doc, config.version, energyplus=config).migrated_model  # pay the transition chain once
-assert seed is not None
 jobs = []
 for wwr in (0.2, 0.3, 0.4):
     variant = seed.copy()  # already at the installed version: no auto_migrate needed

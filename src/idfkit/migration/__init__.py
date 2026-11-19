@@ -37,7 +37,7 @@ Example:
     from idfkit.versioned import IDFDocumentV25_2
 
     report = migrate(model, IDFDocumentV25_2, energyplus=config)
-    report.migrated_model  # IDFDocumentV25_2 | None
+    report.migrated_model  # IDFDocumentV25_2
     ```
 """
 

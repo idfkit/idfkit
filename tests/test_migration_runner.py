@@ -49,7 +49,10 @@ def test_noop_returns_trivial_report() -> None:
 
     assert report.success is True
     assert report.steps == ()
-    assert report.migrated_model is None
+    # The no-op result is a document, a copy of the input with no filepath, never None.
+    assert report.migrated_model is not doc
+    assert report.migrated_model.version == (24, 1, 0)
+    assert report.migrated_model.filepath is None
     assert report.source_version == report.target_version == (24, 1, 0)
 
 
@@ -96,7 +99,7 @@ def test_target_accepts_latest_document_type() -> None:
     doc = new_document(version=LATEST_VERSION)
     report = migrate(doc, IDFDocument, migrator=_StubMigrator([]))
     assert report.target_version == LATEST_VERSION
-    assert report.migrated_model is None
+    assert report.migrated_model.version == doc.version
 
 
 @pytest.mark.parametrize(
@@ -140,8 +143,10 @@ def test_two_component_source_to_its_own_release_is_a_noop(tmp_path: Path) -> No
     report = migrate(doc, IDFDocumentV9_0, migrator=migrator)
 
     assert migrator.calls == []
-    assert report.migrated_model is None
     assert report.source_version == report.target_version == (9, 0, 1)
+    # The copy carries the release, as a migrated document would; the input keeps what it read.
+    assert report.migrated_model.version == report.target_version
+    assert doc.version == (9, 0, 0)
 
 
 def test_two_component_source_migrates_from_its_release(tmp_path: Path) -> None:
@@ -357,3 +362,13 @@ def test_migrated_model_save_without_path_raises_value_error(tmp_path: Path) -> 
     migrated.save(out)
     assert out.is_file()
     assert migrated.filepath == out
+
+
+def test_noop_copy_is_independent_of_the_input() -> None:
+    """``doc = migrate(doc, version).migrated_model`` works whether or not *doc* is already current."""
+    doc = new_document(version=(24, 1, 0))
+    doc.add("Zone", "Office")
+    migrated = migrate(doc, target_version=(24, 1, 0), migrator=_StubMigrator([])).migrated_model
+    assert [z.name for z in migrated["Zone"]] == ["Office"]
+    migrated.add("Zone", "Annex")
+    assert len(doc["Zone"]) == 1

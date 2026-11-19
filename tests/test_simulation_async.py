@@ -20,6 +20,7 @@ from conftest import (
     ground_heat_model,
     refusal_r3,
     refusal_r4,
+    runnable_model,
 )
 
 from idfkit import LATEST_VERSION, new_document
@@ -98,7 +99,7 @@ class TestAsyncSimulate:
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
     async def test_success(self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_exec.return_value = _make_mock_process(returncode=0)
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(model, weather_file, energyplus=mock_config)
         assert result.success
         assert result.exit_code == 0
@@ -108,7 +109,7 @@ class TestAsyncSimulate:
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
     async def test_failure(self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_exec.return_value = _make_mock_process(returncode=1, stderr=b"error occurred")
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(model, weather_file, energyplus=mock_config)
         assert not result.success
         assert result.exit_code == 1
@@ -119,12 +120,32 @@ class TestAsyncSimulate:
         proc = _make_mock_process()
         proc.communicate = AsyncMock(side_effect=asyncio.TimeoutError)
         mock_exec.return_value = proc
-        model = new_document()
+        model = runnable_model()
 
         with pytest.raises(SimulationError, match="timed out"):
             await async_simulate(model, weather_file, energyplus=mock_config, timeout=10)
 
         proc.kill.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_no_environment_refused_before_discovery(self, weather_file: Path) -> None:
+        """Without annual or design_day, a model with nothing to run is refused before EnergyPlus is found."""
+        with (
+            patch("idfkit.simulation._common.find_energyplus") as mock_find,
+            pytest.raises(SimulationError, match="nothing to simulate: it has no RunPeriod"),
+        ):
+            await async_simulate(new_document(), weather_file)
+        mock_find.assert_not_called()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("model", [None, "model.idf"])
+    async def test_non_document_raises_type_error(self, model: object, weather_file: Path) -> None:
+        with (
+            patch("idfkit.simulation._common.find_energyplus") as mock_find,
+            pytest.raises(TypeError, match=r"async_simulate\(model, \.\.\.\): model must be an IDFDocument, got"),
+        ):
+            await async_simulate(model, weather_file)  # pyright: ignore[reportArgumentType]
+        mock_find.assert_not_called()
 
     @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
@@ -143,12 +164,12 @@ class TestAsyncSimulate:
     ) -> None:
         """EnergyPlus would blame the weather data input, so the run is refused up front."""
         with pytest.raises(SimulationError, match="design_day=True, but the model has no SizingPeriod:DesignDay"):
-            await async_simulate(new_document(), weather_file, design_day=True, energyplus=mock_config)
+            await async_simulate(runnable_model(), weather_file, design_day=True, energyplus=mock_config)
         mock_exec.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_missing_weather(self, mock_config: EnergyPlusConfig) -> None:
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(SimulationError, match="Weather file not found"):
             await async_simulate(model, "/nonexistent/weather.epw", energyplus=mock_config)
 
@@ -158,7 +179,7 @@ class TestAsyncSimulate:
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         mock_exec.return_value = _make_mock_process()
-        model = new_document()
+        model = runnable_model()
         assert "Output:SQLite" not in model
         await async_simulate(model, weather_file, energyplus=mock_config)
         assert "Output:SQLite" not in model
@@ -166,7 +187,7 @@ class TestAsyncSimulate:
     @pytest.mark.asyncio
     async def test_fs_requires_output_dir(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         fs = InMemoryFileSystem()
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(ValueError, match="output_dir is required"):
             await async_simulate(model, weather_file, energyplus=mock_config, fs=fs)
 
@@ -177,7 +198,7 @@ class TestAsyncSimulate:
     ) -> None:
         mock_exec.return_value = _make_mock_process()
         fs = InMemoryFileSystem()
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(
             model,
             weather_file,
@@ -199,7 +220,7 @@ class TestAsyncSimulate:
         """The input weather file is not uploaded, and the local run directory is gone afterwards."""
         mock_exec.return_value = _make_mock_process()
         fs = InMemoryFileSystem()
-        await async_simulate(new_document(), weather_file, energyplus=mock_config, output_dir="remote/output", fs=fs)
+        await async_simulate(runnable_model(), weather_file, energyplus=mock_config, output_dir="remote/output", fs=fs)
         local_dir = Path(mock_exec.call_args.kwargs["cwd"])
         assert not local_dir.exists()
         assert f"remote/output/{weather_file.name}" not in fs._files
@@ -216,7 +237,7 @@ class TestAsyncSimulate:
         fs = InMemoryFileSystem()
         with pytest.raises(SimulationError, match="timed out"):
             await async_simulate(
-                new_document(), weather_file, energyplus=mock_config, timeout=10, output_dir="remote/output", fs=fs
+                runnable_model(), weather_file, energyplus=mock_config, timeout=10, output_dir="remote/output", fs=fs
             )
         assert not Path(mock_exec.call_args.kwargs["cwd"]).exists()
 
@@ -226,7 +247,7 @@ class TestAsyncSimulate:
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         mock_exec.return_value = _make_mock_process(returncode=0, stdout=b"simulation output", stderr=b"some warnings")
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(model, weather_file, energyplus=mock_config)
         assert result.stdout == "simulation output"
         assert result.stderr == "some warnings"
@@ -237,7 +258,7 @@ class TestAsyncSimulate:
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         mock_exec.return_value = _make_mock_process()
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(model, weather_file, energyplus=mock_config)
         assert result.runtime_seconds >= 0
 
@@ -259,7 +280,7 @@ class TestAsyncSimulateBatch:
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
     async def test_single_job(self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_exec.return_value = _make_mock_process()
-        model = new_document()
+        model = runnable_model()
         job = SimulationJob(model=model, weather=weather_file, label="single")
         result = await async_simulate_batch([job], energyplus=mock_config)
         assert len(result) == 1
@@ -269,7 +290,7 @@ class TestAsyncSimulateBatch:
     @pytest.mark.asyncio
     async def test_auto_migrate_is_forwarded(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         with patch("idfkit.simulation.async_batch.async_simulate", side_effect=RuntimeError("stop")) as mock_sim:
-            job = SimulationJob(model=new_document(), weather=weather_file, auto_migrate=True)
+            job = SimulationJob(model=runnable_model(), weather=weather_file, auto_migrate=True)
             await async_simulate_batch([job], energyplus=mock_config)
         assert mock_sim.call_args.kwargs["auto_migrate"] is True
 
@@ -277,7 +298,7 @@ class TestAsyncSimulateBatch:
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
     async def test_multiple_jobs(self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_exec.return_value = _make_mock_process()
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(3)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(3)]
         result = await async_simulate_batch(jobs, energyplus=mock_config)
         assert len(result) == 3
         assert result.all_succeeded
@@ -296,7 +317,7 @@ class TestAsyncSimulateBatch:
             return _make_mock_process(stdout=f"run-{call_count}".encode())
 
         mock_exec.side_effect = make_proc
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(3)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(3)]
         result = await async_simulate_batch(jobs, energyplus=mock_config, max_concurrent=1)
         assert result[0].stdout == "run-1"
         assert result[1].stdout == "run-2"
@@ -317,7 +338,7 @@ class TestAsyncSimulateBatch:
             return _make_mock_process()
 
         mock_exec.side_effect = make_proc
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(3)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(3)]
         result = await async_simulate_batch(jobs, energyplus=mock_config, max_concurrent=1)
         assert len(result) == 3
         assert not result.all_succeeded
@@ -330,7 +351,7 @@ class TestAsyncSimulateBatch:
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         mock_exec.return_value = _make_mock_process()
-        job = SimulationJob(model=new_document(), weather=weather_file)
+        job = SimulationJob(model=runnable_model(), weather=weather_file)
         result = await async_simulate_batch([job], energyplus=mock_config)
         assert result.total_runtime_seconds >= 0
 
@@ -342,7 +363,7 @@ class TestAsyncSimulateBatch:
         temp_root = tmp_path / "tmp"
         temp_root.mkdir()
         monkeypatch.setattr(tempfile, "tempdir", str(temp_root))
-        jobs = [SimulationJob(model=new_document(), annual=True, label=f"annual-{i}") for i in range(3)]
+        jobs = [SimulationJob(model=runnable_model(), annual=True, label=f"annual-{i}") for i in range(3)]
         result = await async_simulate_batch(jobs, energyplus=mock_config)
         assert not any(r.success for r in result)
         assert list(temp_root.iterdir()) == []
@@ -365,7 +386,7 @@ class TestAsyncSimulateBatch:
             raise SimulationError(msg)
 
         with patch("idfkit.simulation.async_batch.async_simulate", side_effect=run_then_time_out):
-            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+            jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=str(out_dir))]
             r = (await async_simulate_batch(jobs, energyplus=mock_config))[0]
         assert r.refusal is None
         report = await r.async_errors()
@@ -374,7 +395,7 @@ class TestAsyncSimulateBatch:
     @pytest.mark.asyncio
     async def test_fs_without_output_dir_raises_up_front(self, mock_config: EnergyPlusConfig) -> None:
         """fs= with a job lacking output_dir is refused before any job runs."""
-        jobs = [SimulationJob(model=new_document(), design_day=True)]
+        jobs = [SimulationJob(model=runnable_model(), design_day=True)]
         with pytest.raises(ValueError, match=r"output_dir is required.*missing on: #0"):
             await async_simulate_batch(jobs, energyplus=mock_config, fs=InMemoryFileSystem())
         with pytest.raises(ValueError, match=r"output_dir is required"):
@@ -388,7 +409,7 @@ class TestAsyncSimulateBatch:
     ) -> None:
         mock_exec.return_value = _make_mock_process()
         cache = SimulationCache(cache_dir=tmp_path / "cache")
-        model = new_document()
+        model = runnable_model()
         job = SimulationJob(model=model, weather=weather_file, label="cached")
 
         # First run — miss, then store
@@ -408,7 +429,7 @@ class TestAsyncSimulateBatch:
     ) -> None:
         mock_exec.return_value = _make_mock_process()
         cache = SimulationCache(cache_dir=tmp_path / "cache")
-        model = new_document()
+        model = runnable_model()
 
         first = await async_simulate(
             model, weather_file, energyplus=mock_config, output_dir=tmp_path / "a", cache=cache
@@ -436,7 +457,7 @@ class TestAsyncSimulateCacheCoversExternalFiles:
         run_dir = tmp_path / "run"
         run_dir.mkdir()
         csv = run_dir / "hourly.csv"
-        model = new_document()
+        model = runnable_model()
         model.add("Schedule:File", "Staged", file_name="hourly.csv", column_number=1, validate=False)
 
         async def run() -> None:
@@ -457,7 +478,7 @@ class TestAsyncSimulateCacheCoversExternalFiles:
     ) -> None:
         mock_exec.return_value = _make_mock_process()
         cache = SimulationCache(cache_dir=tmp_path / "cache")
-        model = new_document()
+        model = runnable_model()
         model.add("ExternalInterface", "", name_of_external_interface="PtolemyServer", validate=False)
         job = SimulationJob(model=model, weather=weather_file)
 
@@ -486,7 +507,7 @@ class TestAsyncSimulateBatchStream:
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         mock_exec.return_value = _make_mock_process()
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(3)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(3)]
         events: list[SimulationEvent] = []
         async for event in async_simulate_batch_stream(jobs, energyplus=mock_config):
             events.append(event)
@@ -506,7 +527,7 @@ class TestAsyncSimulateBatchStream:
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         mock_exec.return_value = _make_mock_process()
-        job = SimulationJob(model=new_document(), weather=weather_file, label="test-stream")
+        job = SimulationJob(model=runnable_model(), weather=weather_file, label="test-stream")
         events: list[SimulationEvent] = []
         async for event in async_simulate_batch_stream([job], energyplus=mock_config):
             events.append(event)
@@ -542,7 +563,7 @@ class TestAsyncSimulateBatchStream:
             return proc
 
         mock_exec.side_effect = slow_proc
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label=f"job-{i}") for i in range(5)]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(5)]
 
         events: list[SimulationEvent] = []
         async for event in async_simulate_batch_stream(jobs, energyplus=mock_config, max_concurrent=1):
@@ -593,7 +614,7 @@ class TestAsyncFileSystem:
         """async_simulate with an AsyncFileSystem should upload without blocking."""
         mock_exec.return_value = _make_mock_process()
         fs = InMemoryAsyncFileSystem()
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(
             model,
             weather_file,
@@ -616,7 +637,7 @@ class TestAsyncFileSystem:
         """async_simulate with a sync FileSystem should wrap upload in to_thread."""
         mock_exec.return_value = _make_mock_process()
         fs = InMemoryFileSystem()
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(
             model,
             weather_file,
@@ -639,7 +660,7 @@ class TestAsyncFileSystem:
         """SimulationResult from async fs should support async_errors() etc."""
         mock_exec.return_value = _make_mock_process()
         fs = InMemoryAsyncFileSystem()
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(
             model,
             weather_file,
@@ -660,8 +681,8 @@ class TestAsyncFileSystem:
         mock_exec.return_value = _make_mock_process()
         fs = InMemoryAsyncFileSystem()
         jobs = [
-            SimulationJob(model=new_document(), weather=weather_file, label="job-0", output_dir="batch/run-0"),
-            SimulationJob(model=new_document(), weather=weather_file, label="job-1", output_dir="batch/run-1"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="job-0", output_dir="batch/run-0"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="job-1", output_dir="batch/run-1"),
         ]
         result = await async_simulate_batch(jobs, energyplus=mock_config, fs=fs)
         assert len(result) == 2
@@ -937,7 +958,7 @@ class TestAsyncRunnerHelpers:
 
         with patch("idfkit.simulation.async_runner.resolve_on_progress", return_value=(None, _cleanup)):
             mock_exec.side_effect = OSError("won't be reached anyway")
-            model = new_document()
+            model = runnable_model()
             with pytest.raises(SimulationError):
                 await async_simulate(model, "/nonexistent/weather.epw", energyplus=mock_config)
 
@@ -1023,8 +1044,8 @@ class TestAsyncBatchProgressCallback:
             events.append(event)
 
         jobs = [
-            SimulationJob(model=new_document(), weather=weather_file, label="job-0"),
-            SimulationJob(model=new_document(), weather=weather_file, label="job-1"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="job-0"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="job-1"),
         ]
         await async_simulate_batch(jobs, energyplus=mock_config, on_progress=async_cb)
 
@@ -1054,7 +1075,7 @@ class TestAsyncBatchProgressCallback:
         mock_exec.return_value = _make_mock_process()
 
         with patch("idfkit.simulation.async_batch.resolve_on_progress", return_value=(None, _cleanup)):
-            jobs = [SimulationJob(model=new_document(), weather=weather_file)]
+            jobs = [SimulationJob(model=runnable_model(), weather=weather_file)]
             await async_simulate_batch(jobs, energyplus=mock_config)
 
         assert cleanup_called
@@ -1064,7 +1085,7 @@ class TestAsyncBatchProgressCallback:
         """async_simulate_batch_stream rejects on_progress='tqdm'."""
         from idfkit.simulation.async_batch import async_simulate_batch_stream
 
-        jobs = [SimulationJob(model=new_document(), weather="/fake.epw")]
+        jobs = [SimulationJob(model=runnable_model(), weather="/fake.epw")]
         with pytest.raises(ValueError, match="not supported for batch"):
             async for _ in async_simulate_batch_stream(jobs, on_progress="tqdm"):  # type: ignore[arg-type]
                 pass
@@ -1086,7 +1107,7 @@ class TestAsyncBatchProgressCallback:
         mock_exec.return_value = _make_mock_process()
 
         with patch("idfkit.simulation.async_batch.resolve_on_progress", return_value=(None, _cleanup)):
-            jobs = [SimulationJob(model=new_document(), weather=weather_file)]
+            jobs = [SimulationJob(model=runnable_model(), weather=weather_file)]
             async for _ in async_simulate_batch_stream(jobs, energyplus=mock_config):
                 pass
 
@@ -1103,7 +1124,7 @@ class TestAsyncBatchProgressCallback:
         mock_exec.side_effect = OSError("boom")
         out_dir = tmp_path / "out"
         out_dir.mkdir()
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=str(out_dir))]
         result = await async_simulate_batch(jobs, energyplus=mock_config)
         assert not result[0].success
         assert result[0].run_dir == out_dir
@@ -1143,8 +1164,8 @@ class TestAsyncBatchProgressCallback:
             events.append(event)
 
         jobs = [
-            SimulationJob(model=new_document(), weather=weather_file, label="sync-0"),
-            SimulationJob(model=new_document(), weather=weather_file, label="sync-1"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="sync-0"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="sync-1"),
         ]
         await async_simulate_batch(jobs, energyplus=mock_config, on_progress=sync_cb)
         progress_events = [e for e in events if isinstance(e, SimulationProgress)]
@@ -1218,7 +1239,7 @@ class TestAsyncBatchWithoutWeather:
     @staticmethod
     def _jobs(weather_file: Path) -> list[SimulationJob]:
         return [
-            SimulationJob(model=new_document(), weather=weather_file, label="with-weather"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="with-weather"),
             SimulationJob(model=design_day_model(), design_day=True, label="design-day"),
         ]
 
@@ -1249,7 +1270,7 @@ class TestAsyncBatchWithoutWeather:
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
         mock_exec.return_value = _make_mock_process()
-        jobs = [*self._jobs(weather_file), SimulationJob(model=new_document(), annual=True, label="annual")]
+        jobs = [*self._jobs(weather_file), SimulationJob(model=runnable_model(), annual=True, label="annual")]
         result = await async_simulate_batch(jobs, energyplus=mock_config)
         assert result[0].success
         assert result[1].success
@@ -1284,7 +1305,7 @@ class TestAsyncWeatherAdmission:
         # Not ``or``: an IDFDocument with no objects is falsy.
         model = kwargs.pop("model", None)
         if model is None:
-            model = new_document()
+            model = runnable_model()
         with (
             patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec") as mock_exec,
             patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
@@ -1351,7 +1372,7 @@ class TestAsyncWeatherAdmission:
             patch("idfkit.simulation._common.find_energyplus") as mock_find,
             pytest.raises(SimulationError, match=re.escape(REFUSAL_R2)),
         ):
-            await async_simulate(new_document(), annual=True)  # pyright: ignore[reportCallIssue]
+            await async_simulate(runnable_model(), annual=True)  # pyright: ignore[reportCallIssue]
         mock_find.assert_not_called()
 
     @pytest.mark.asyncio
@@ -1400,7 +1421,7 @@ class TestAsyncSimulateCacheWithFileSystem:
         mock_exec.return_value = _make_mock_process()
         cache = SimulationCache(cache_dir=tmp_path / "cache")
         fs = InMemoryFileSystem() if fs_kind == "sync" else InMemoryAsyncFileSystem()
-        model = new_document()
+        model = runnable_model()
 
         first = await async_simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="a")
         assert first.run_dir == Path("a")
@@ -1425,7 +1446,7 @@ class TestAsyncSimulateCacheWithFileSystem:
         mock_exec.return_value = _make_mock_process()
         cache = SimulationCache(cache_dir=tmp_path / "cache")
         fs = InMemoryFileSystem()
-        model = new_document()
+        model = runnable_model()
         link = tmp_path / "link.epw"
         link.symlink_to(weather_file)
         await async_simulate(model, link, energyplus=mock_config, cache=cache, fs=fs, output_dir="a")

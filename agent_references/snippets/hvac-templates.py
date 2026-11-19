@@ -18,6 +18,10 @@ from idfkit.simulation import simulate
 doc = new_document()
 # ... create zones via create_block, etc.
 
+# new_document() has no RunPeriod; without one (or design days with design_day=True)
+# simulate() refuses the run, as EnergyPlus would have nothing to simulate.
+doc.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
+
 # Single Thermostat shared by every zone
 doc.add("HVACTemplate:Thermostat", "OfficeT", constant_heating_setpoint=20.0, constant_cooling_setpoint=24.0)
 

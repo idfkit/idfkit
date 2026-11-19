@@ -238,12 +238,13 @@ class TestStubRuntimeConsistency:
         # (not inherited from EppyDocumentMixin or object)
         own_public: set[str] = set()
         for name in IDFDocument.__dict__:
+            # __getattr__ is left out on purpose: the stub declares every accessor that resolves, so
+            # an undeclared name (a typo such as ``doc.zone``) is a type error rather than a collection.
             if name.startswith("_") and name not in (
                 "__init__",
                 "__contains__",
                 "__iter__",
                 "__len__",
-                "__getattr__",
             ):
                 continue
             member = IDFDocument.__dict__[name]
@@ -273,3 +274,23 @@ class TestStubRuntimeConsistency:
                 assert param_name in pyi_content, (
                     f"Parameter '{param_name}' of {method_name}() not found in document.pyi"
                 )
+
+
+class TestDocumentStubHasNoAttributeFallback:
+    """A misspelled accessor must be a type error, not an untyped ``IDFCollection[IDFObject]``."""
+
+    def test_document_pyi_declares_no_getattr(self) -> None:
+        pyi_content = generated_document_pyi((24, 1, 0))
+        assert "def __getattr__(self, name: str)" not in pyi_content
+
+    def test_misspelled_accessors_raise_at_run_time(self) -> None:
+        from idfkit import new_document
+
+        doc = new_document()
+        for typo in ("zonez", "materials_nomass"):
+            with pytest.raises(AttributeError):
+                getattr(doc, typo)
+        # ``doc.zone`` is the raw spelling of ``Zone``: it resolves at run time, but only the typed
+        # ``doc.zones`` is declared, so a type checker reports it.
+        doc.add("Zone", "Z1")
+        assert getattr(doc, "zone") is doc.zones  # noqa: B009

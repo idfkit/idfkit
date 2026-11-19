@@ -3116,17 +3116,11 @@ def _generate_document_module() -> str:
         lines.append("    ) -> None: ...")
     lines.append("")
 
-    # The untyped fallback for the raw spellings (doc.Site_Location) is IDFDocument's alone. On the
-    # shared methods base it would also answer, silently and untyped, every accessor that a
-    # version-specific document type or IDFDocumentAllVersions leaves out because that type is
-    # missing from the version, where at run time the access raises.
-    _emit_method(
-        lines,
-        "def __getattr__(self, name: str) -> IDFCollection[IDFObject]",
-        docs.get("IDFDocument.__getattr__"),
-        indent="    ",
-    )
-    lines.append("")
+    # No __getattr__: every derived accessor and shorthand is declared below as a property, so a
+    # fallback typed ``str -> IDFCollection[IDFObject]`` would answer only typos that raise at run
+    # time (``doc.zonez``) and hide them from the type checker. The raw spellings (``doc.zone``,
+    # ``doc.Site_Location``), which still resolve at run time, are a type error too, so that one
+    # spelling is typed: the derived accessor (``doc.zones``) or ``doc["Site:Location"]``.
 
     lines.extend(_generate_getitem([(t, _to_class_name(t)) for t in schema.object_types], latest_label, getitem_doc))
     lines.append("")
