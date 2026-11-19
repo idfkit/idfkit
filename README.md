@@ -156,15 +156,22 @@ save_idf(doc, "new_building.idf")
 ```python
 from idfkit.simulation import simulate
 
-result = simulate(doc, "weather.epw", design_day=True)
-
-# Query results from the SQLite output
-ts = result.sql.get_timeseries(
-    variable_name="Zone Mean Air Temperature",
-    key_value="Office",
-)
+# Without output_dir, EnergyPlus runs in a temp directory that the with block deletes on exit
+with simulate(doc, "weather.epw", design_day=True) as result:
+    # Query results from the SQLite output
+    ts = result.sql.get_timeseries(
+        variable_name="Zone Mean Air Temperature",
+        key_value="Office",
+    )
 print(f"Max temp: {max(ts.values):.1f}°C")
 ```
+
+> **Note:** The result reads its output files lazily from `result.run_dir`, so the
+> temporary directory `simulate()` creates when no `output_dir` is given stays on disk
+> until the `with` block ends or you call `result.cleanup()`. A directory you pass as
+> `output_dir` is never deleted. With `fs=` (S3 and other remote storage), the outputs are
+> uploaded and the result reads them back from there: the first read of each file is a
+> download.
 
 > **Note:** `simulate()` adds an `Output:SQLite` object when the model has none, so
 > `result.sql` is written by a successful run unless an `OutputControl:Files` object

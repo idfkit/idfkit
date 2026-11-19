@@ -87,6 +87,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** leaving a `with simulate(...) as result:` block deleted the temporary run directory
+  idfkit made when no `output_dir` was given; pass `output_dir` to keep the files.
+  `SimulationResult.cleanup()`, `async with` and `BatchResult.cleanup()` did the same, never
+  touching a caller's directory. A run that raised deleted that directory at once.
+  ([#350](https://github.com/idfkit/idfkit/pull/350))
 - **Breaking:** `SimulationResult.sql`, `csv`, `eso`, `mtr`, `html` and `variables` (and their `async_*`
   forms) no longer returned `None`: a missing file raised `OutputNotFoundError` naming the output to add
   or the `.err` to read; test with `result.sql_path is None` instead.

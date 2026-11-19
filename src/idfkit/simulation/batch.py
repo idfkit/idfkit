@@ -50,7 +50,9 @@ class SimulationJob:
             still require a weather file. A refused job is reported as a
             failed result whose ``refusal`` carries the reason.
         label: Human-readable label for progress reporting.
-        output_dir: Directory for output files (default: auto temp dir).
+        output_dir: Directory for output files. ``None`` (the default) runs
+            in a new temporary directory, deleted by
+            [BatchResult.cleanup][idfkit.simulation.batch.BatchResult.cleanup].
         expand_objects: Run ExpandObjects before simulation.
         annual: Run annual simulation.
         design_day: Run design-day-only simulation.
@@ -177,6 +179,34 @@ class BatchResult(Sequence[SimulationResult]):
         # underlying tuple directly is the same answer without the index arithmetic, and it is
         # the path every `for result in batch` actually takes.
         return iter(self.results)
+
+    def cleanup(self) -> None:
+        """Call [SimulationResult.cleanup][idfkit.simulation.result.SimulationResult.cleanup] on every result.
+
+        Deletes the temporary run directories idfkit created for jobs without an
+        ``output_dir``; a job's own ``output_dir`` is never touched. Using the
+        batch as a context manager (``with simulate_batch(jobs) as batch:``)
+        calls this on exit. Safe to call more than once.
+        """
+        for result in self.results:
+            result.cleanup()
+
+    async def async_cleanup(self) -> None:
+        """Non-blocking [cleanup][idfkit.simulation.batch.BatchResult.cleanup]; ``async with`` calls it on exit."""
+        for result in self.results:
+            await result.async_cleanup()
+
+    def __enter__(self) -> BatchResult:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.cleanup()
+
+    async def __aenter__(self) -> BatchResult:
+        return self
+
+    async def __aexit__(self, *exc: object) -> None:
+        await self.async_cleanup()
 
 
 def simulate_batch(

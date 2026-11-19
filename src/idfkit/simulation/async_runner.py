@@ -40,6 +40,7 @@ from typing import TYPE_CHECKING, Any, Literal, TypeGuard, TypeVar, cast, overlo
 from ..exceptions import SimulationError
 from ._cancel import ProcessGroup
 from ._common import (
+    RunDirectoryGuard,
     admit_annual,
     admit_design_day,
     admit_environments,
@@ -50,7 +51,6 @@ from ._common import (
     build_command,
     ensure_sql_output,
     maybe_preprocess,
-    prepare_run_directory,
     publish_exclude,
     resolve_config,
     restore_cached_result,
@@ -170,7 +170,11 @@ async def async_simulate(
             ``Site:WaterMainsTemperature`` uses ``CorrelationFromWeatherFile``
             completes with one severe error and a fixed mains temperature of
             10 °C.
-        output_dir: Directory for output files (default: auto temp dir).
+        output_dir: Directory for output files. ``None`` (the default) runs
+            in a new temporary directory, which stays on disk until you call
+            [async_cleanup][idfkit.simulation.result.SimulationResult.async_cleanup] or leave an
+            ``async with await async_simulate(...) as result:`` block. A
+            directory you pass is never deleted.
         energyplus: Pre-configured EnergyPlus installation. If None,
             uses [find_energyplus][idfkit.simulation.config.find_energyplus] for auto-discovery.
         expand_objects: Run ExpandObjects before simulation.  When
@@ -228,7 +232,8 @@ async def async_simulate(
             the full semantics.
 
     Returns:
-        SimulationResult with paths to output files.
+        SimulationResult with paths to output files. Its files are read lazily
+        from ``run_dir``, so read them before cleaning it up.
 
     Raises:
         SimulationError: On timeout or OS error, or when the weather argument
@@ -315,112 +320,114 @@ async def _simulate_local(
     """
     progress_cb, progress_cleanup = resolve_on_progress(on_progress)
 
-    try:
-        # Admission is a pure argument check, so it runs before EnergyPlus discovery.
-        admit_model(model, "async_simulate")
-        local_output_dir = output_dir
-        weather_path = admit_weather(
-            weather,
-            model=model,
-            design_day=design_day,
-            annual=annual,
-            expand_objects=expand_objects,
-            run_dir=local_output_dir,
-        )
-        admit_annual(model, annual=annual)
-        admit_design_day(model, design_day=design_day)
-        admit_environments(model, annual=annual, design_day=design_day)
-        config = resolve_config(energyplus)
-
-        sim_input_model, migration_report = await async_resolve_version_mismatch(
-            model=model,
-            config=config,
-            auto_migrate=auto_migrate,
-        )
-
-        logger.info(
-            "Starting async simulation %s",
-            "without a weather file" if weather_path is None else f"with weather {weather_path.name}",
-        )
-
-        # Copy model to avoid mutation.  The copy is taken before any await so
-        # that the cache key and the simulated model describe the same state,
-        # even if another coroutine mutates the caller's model meanwhile.
-        sim_model = sim_input_model.copy()
-
-        cache_key = None
-        if cache is not None:
-            # Hashing the model's external files is blocking I/O, so it runs off the event loop.
-            cache_key = await asyncio.to_thread(
-                runner_cache_key,
-                cache,
-                sim_model,
-                weather_path,
-                output_dir=local_output_dir,
-                config=config,
+    # Deletes the temporary run directory idfkit creates if the run raises before a result owns it.
+    with RunDirectoryGuard() as run_dir_guard:
+        try:
+            # Admission is a pure argument check, so it runs before EnergyPlus discovery.
+            admit_model(model, "async_simulate")
+            local_output_dir = output_dir
+            weather_path = admit_weather(
+                weather,
+                model=model,
+                design_day=design_day,
+                annual=annual,
                 expand_objects=expand_objects,
+                run_dir=local_output_dir,
+            )
+            admit_annual(model, annual=annual)
+            admit_design_day(model, design_day=design_day)
+            admit_environments(model, annual=annual, design_day=design_day)
+            config = resolve_config(energyplus)
+
+            sim_input_model, migration_report = await async_resolve_version_mismatch(
+                model=model,
+                config=config,
+                auto_migrate=auto_migrate,
+            )
+
+            logger.info(
+                "Starting async simulation %s",
+                "without a weather file" if weather_path is None else f"with weather {weather_path.name}",
+            )
+
+            # Copy model to avoid mutation.  The copy is taken before any await so
+            # that the cache key and the simulated model describe the same state,
+            # even if another coroutine mutates the caller's model meanwhile.
+            sim_model = sim_input_model.copy()
+
+            cache_key = None
+            if cache is not None:
+                # Hashing the model's external files is blocking I/O, so it runs off the event loop.
+                cache_key = await asyncio.to_thread(
+                    runner_cache_key,
+                    cache,
+                    sim_model,
+                    weather_path,
+                    output_dir=local_output_dir,
+                    config=config,
+                    expand_objects=expand_objects,
+                    annual=annual,
+                    design_day=design_day,
+                    output_suffix=output_suffix,
+                    readvars=readvars,
+                    extra_args=extra_args,
+                )
+            if cache is not None and cache_key is not None:
+                cached = cache.get(cache_key)
+                if cached is not None:
+                    cached.migration_report = migration_report
+                    if publish is not None:
+                        return await publish(cached, weather_path)  # uploaded straight from the cache entry
+                    # Copy the hit into output_dir, as a fresh run would fill it (no copy without one).
+                    return await asyncio.to_thread(restore_cached_result, cached, local_output_dir, weather_path)
+
+            ensure_sql_output(sim_model)
+
+            # Preprocessing may invoke subprocesses synchronously — delegate to a
+            # thread so we don't block the event loop, and kill them if this coroutine is cancelled.
+            sim_model, ep_expand = await _to_thread_killable(
+                maybe_preprocess,
+                # The copy, not the caller's model: this runs on a worker thread, which must not read a
+                # model another coroutine may be editing meanwhile.
+                sim_model,
+                config,
+                weather_path,
+                expand_objects,
+                preprocessor_timeout,
+            )
+
+            run_dir = run_dir_guard.prepare(local_output_dir, weather_path)
+            idf_path = run_dir / "model.idf"
+
+            from .._idf_encoding import source_encoding
+            from ..writers import save_idf
+
+            save_idf(sim_model, idf_path, encoding=source_encoding(sim_model, bom=False))
+
+            cmd = build_command(
+                config=config,
+                idf_path=idf_path,
+                weather_path=None if weather_path is None else run_dir / weather_path.name,
+                output_dir=run_dir,
+                output_prefix=output_prefix,
+                output_suffix=output_suffix,
+                expand_objects=ep_expand,
                 annual=annual,
                 design_day=design_day,
-                output_suffix=output_suffix,
                 readvars=readvars,
                 extra_args=extra_args,
             )
-        if cache is not None and cache_key is not None:
-            cached = cache.get(cache_key)
-            if cached is not None:
-                cached.migration_report = migration_report
-                if publish is not None:
-                    return await publish(cached, weather_path)  # uploaded straight from the cache entry
-                # Copy the hit into output_dir, as a fresh run would fill it (no copy without one).
-                return await asyncio.to_thread(restore_cached_result, cached, local_output_dir, weather_path)
 
-        ensure_sql_output(sim_model)
+            start = time.monotonic()
 
-        # Preprocessing may invoke subprocesses synchronously — delegate to a
-        # thread so we don't block the event loop, and kill them if this coroutine is cancelled.
-        sim_model, ep_expand = await _to_thread_killable(
-            maybe_preprocess,
-            # The copy, not the caller's model: this runs on a worker thread, which must not read a
-            # model another coroutine may be editing meanwhile.
-            sim_model,
-            config,
-            weather_path,
-            expand_objects,
-            preprocessor_timeout,
-        )
-
-        run_dir = prepare_run_directory(local_output_dir, weather_path)
-        idf_path = run_dir / "model.idf"
-
-        from .._idf_encoding import source_encoding
-        from ..writers import save_idf
-
-        save_idf(sim_model, idf_path, encoding=source_encoding(sim_model, bom=False))
-
-        cmd = build_command(
-            config=config,
-            idf_path=idf_path,
-            weather_path=None if weather_path is None else run_dir / weather_path.name,
-            output_dir=run_dir,
-            output_prefix=output_prefix,
-            output_suffix=output_suffix,
-            expand_objects=ep_expand,
-            annual=annual,
-            design_day=design_day,
-            readvars=readvars,
-            extra_args=extra_args,
-        )
-
-        start = time.monotonic()
-
-        if progress_cb is not None:
-            parser = ProgressParser(environment_days(sim_model))
-            stdout, stderr, returncode = await _run_with_progress(cmd, run_dir, timeout, progress_cb, parser)
-        else:
-            stdout, stderr, returncode = await _run_simple(cmd, run_dir, timeout)
-    finally:
-        if progress_cleanup is not None:
-            progress_cleanup()
+            if progress_cb is not None:
+                parser = ProgressParser(environment_days(sim_model))
+                stdout, stderr, returncode = await _run_with_progress(cmd, run_dir, timeout, progress_cb, parser)
+            else:
+                stdout, stderr, returncode = await _run_simple(cmd, run_dir, timeout)
+        finally:
+            if progress_cleanup is not None:
+                progress_cleanup()
 
     elapsed = time.monotonic() - start
 
@@ -436,6 +443,7 @@ async def _simulate_local(
         output_prefix=output_prefix,
         migration_report=migration_report,
         output_suffix=output_suffix,
+        owns_run_dir=local_output_dir is None,
     )
     if cache is not None and cache_key is not None and result.success:
         cache.put(cache_key, result)

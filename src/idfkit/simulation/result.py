@@ -6,7 +6,9 @@ after a simulation run.
 
 from __future__ import annotations
 
+import asyncio
 import os
+import shutil
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -244,6 +246,13 @@ class SimulationResult:
             entry itself and must be treated as read-only.
             ``runtime_seconds`` and ``exit_code`` are those of the run that
             filled the entry, and ``stdout``/``stderr`` are empty.
+        owns_run_dir: ``True`` when idfkit created ``run_dir`` as a temporary
+            directory for this result, which ``simulate()`` and
+            ``async_simulate()`` do when called without an ``output_dir``.
+            Only then do [cleanup][idfkit.simulation.result.SimulationResult.cleanup]
+            and the ``with`` / ``async with`` blocks delete it. ``False`` for a
+            caller's ``output_dir``, a remote ``fs`` directory and a cache entry,
+            which are never deleted.
     """
 
     run_dir: Path
@@ -259,6 +268,7 @@ class SimulationResult:
     output_suffix: Literal["C", "L", "D"] | None = field(default=None, repr=False)
     refusal: str | None = None
     cached: bool = False
+    owns_run_dir: bool = field(default=False, repr=False)
     _cached_errors: Any = field(default=_UNSET, init=False, repr=False)
     _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
@@ -289,22 +299,76 @@ class SimulationResult:
         for remote file systems). The other parsers read their files eagerly
         and hold no handles, so this is currently a no-op for them.
 
-        Call this — or use the result as a context manager — before deleting
-        the run directory. On Windows an open SQLite connection locks
-        ``eplus.sql`` and blocks ``shutil.rmtree`` / ``TemporaryDirectory``
-        cleanup with ``PermissionError [WinError 32]``. Safe to call more
-        than once; the cached connection is reopened on next access if needed.
+        Call this before deleting the run directory yourself. On Windows an
+        open SQLite connection locks ``eplus.sql`` and blocks ``shutil.rmtree``
+        / ``TemporaryDirectory`` cleanup with ``PermissionError [WinError 32]``.
+        Safe to call more than once; the cached connection is reopened on next
+        access if needed. Leaves ``run_dir`` in place; see
+        [cleanup][idfkit.simulation.result.SimulationResult.cleanup] to delete it.
         """
         cached = object.__getattribute__(self, "_cached_sql")
         if cached is not _UNSET:
             cached.close()
         object.__setattr__(self, "_cached_sql", _UNSET)
 
+    def cleanup(self) -> None:
+        """Close open handles and delete ``run_dir`` if idfkit created it.
+
+        ``simulate()`` without an ``output_dir`` runs EnergyPlus in a new
+        temporary directory, which nothing deletes on its own because the
+        output accessors read their files from it lazily. This deletes it once
+        you are done with the result. A caller-supplied ``output_dir``, a remote
+        ``fs`` directory and a cache entry are never touched
+        ([owns_run_dir][idfkit.simulation.result.SimulationResult.owns_run_dir]
+        is ``False`` for them): for those this only calls
+        [close][idfkit.simulation.result.SimulationResult.close].
+
+        The SQLite connection is closed first, so the delete is not blocked by
+        a file lock on Windows. Read what you need before calling it: an output
+        not parsed before the delete can no longer be read. Safe to call more
+        than once.
+
+        Using the result as a context manager calls this on exit::
+
+            with simulate(model, "weather.epw") as result:
+                print(result.errors.summary())
+            # the temporary run directory is gone here
+
+        Raises:
+            OSError: If the directory exists and cannot be deleted.
+        """
+        self.close()
+        if self.owns_run_dir:
+            self._remove_run_dir()
+
+    def _remove_run_dir(self) -> None:
+        if self.run_dir.exists():
+            shutil.rmtree(self.run_dir)
+
+    async def async_cleanup(self) -> None:
+        """Close open handles and delete ``run_dir`` if idfkit created it (async).
+
+        Non-blocking counterpart to
+        [cleanup][idfkit.simulation.result.SimulationResult.cleanup]: the delete
+        runs in a worker thread. ``async with`` calls this on exit.
+        """
+        # Close on the calling thread: sqlite3 refuses to close a connection from a
+        # thread other than the one that opened it, which would leave the file locked.
+        self.close()
+        if self.owns_run_dir:
+            await asyncio.to_thread(self._remove_run_dir)
+
     def __enter__(self) -> SimulationResult:
         return self
 
     def __exit__(self, *exc: object) -> None:
-        self.close()
+        self.cleanup()
+
+    async def __aenter__(self) -> SimulationResult:
+        return self
+
+    async def __aexit__(self, *exc: object) -> None:
+        await self.async_cleanup()
 
     def raise_for_status(self) -> SimulationResult:
         """Raise if the run failed; return this result if it succeeded.

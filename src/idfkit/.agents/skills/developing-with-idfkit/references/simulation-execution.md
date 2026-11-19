@@ -16,9 +16,10 @@ from idfkit import load_idf
 from idfkit.simulation import simulate
 
 doc = load_idf("building.idf")
-result = simulate(doc, "weather.epw", design_day=True)
-result.raise_for_status()  # SimulationError quoting the fatal/severe messages if EnergyPlus failed
-print(result.errors.summary())  # counts, plus the fatal and first severe messages
+# No output_dir: EnergyPlus runs in a temp dir, which the with block deletes on exit.
+with simulate(doc, "weather.epw", design_day=True) as result:
+    result.raise_for_status()  # SimulationError quoting the fatal/severe messages if EnergyPlus failed
+    print(result.errors.summary())  # counts, plus the fatal and first severe messages
 ```
 
 ## Core API
@@ -44,7 +45,7 @@ from idfkit.simulation import (
 |---|---|---|
 | `model` | required | `IDFDocument` to simulate. Not mutated. |
 | `weather` | `None` | Path to an `.epw` file. `None` is accepted only for a design-day-only run (`design_day=True`, `annual=False`); it is refused for a model with `GroundHeatTransfer:Slab:*` or `GroundHeatTransfer:Basement:*` objects while `expand_objects=True` and `GroundHeatTransfer:Control` sets the matching `run_*_preprocessor` field to `Yes`, and for a run directory that already holds `in.epw`. |
-| `output_dir` | temp dir | Where outputs are written. |
+| `output_dir` | temp dir | Where outputs are written. Your directory is never deleted; the temp dir stays until `result.cleanup()` or the end of a `with simulate(...) as result:` block. |
 | `energyplus` | auto-discover | Pre-built `EnergyPlusConfig` (skip discovery). |
 | `expand_objects` | `True` | Run `ExpandObjects` + ground-heat preprocessors as needed. |
 | `annual` | `False` | `-a` flag (annual sim, skip design days). Needs a `RunPeriod`: without one EnergyPlus simulates nothing yet exits successfully, so `simulate` raises `SimulationError` before running. `new_document()` and the geometry builders add none. |
@@ -56,6 +57,10 @@ from idfkit.simulation import (
 | `auto_migrate` | `False` | Forward-migrate the model to match the installed EP version. |
 | `on_progress` | `None` | Callback or `"tqdm"` for progress events. |
 | `fs` | `None` | `FileSystem` backend (e.g. S3) for storing outputs remotely. |
+
+## Cleaning up the run directory
+
+The result reads its files from `result.run_dir` lazily, so `simulate()` cannot delete the temp directory it creates when `output_dir` is omitted. Delete it yourself once you have read what you need: leave a `with simulate(...) as result:` block (the quick start above), or call `result.cleanup()`. Both close the SQLite connection first (an open one locks `eplus.sql` on Windows) and delete `run_dir` only when idfkit created it (`result.owns_run_dir`); a directory you passed as `output_dir`, a remote `fs=` directory and a cache entry are never touched. `cleanup()` is idempotent. Async results take `async with await async_simulate(...) as result:` or `await result.async_cleanup()`, and a `BatchResult` from either batch function takes `with` / `async with` or `batch.cleanup()`, which cleans every job's result. Without any of these, each run without an `output_dir` leaves an `idfkit_sim_*` directory in the system temp folder.
 
 ## Discovering EnergyPlus
 
@@ -126,8 +131,8 @@ from idfkit.simulation import async_simulate
 
 
 async def main():
-    result = await async_simulate(doc, "weather.epw")
-    print(result.errors.summary())
+    async with await async_simulate(doc, "weather.epw") as result:  # temp run_dir deleted on exit
+        print(result.errors.summary())
 
 
 asyncio.run(main())
@@ -146,12 +151,12 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
     set_wwr(variant, wwr=wwr)
     jobs.append(SimulationJob(model=variant, weather="weather.epw", label=f"wwr_{int(wwr * 100)}"))
 
-batch = simulate_batch(jobs, max_workers=4)
-for job, result in zip(jobs, batch):
-    if result.run_dir == REFUSED_RUN_DIR:
-        print(job.label, "refused:", result.stderr)  # EnergyPlus never ran
-    else:
-        print(job.label, result.errors.summary())
+with simulate_batch(jobs, max_workers=4) as batch:  # deletes the jobs' temp run dirs on exit
+    for job, result in zip(jobs, batch):
+        if result.run_dir == REFUSED_RUN_DIR:
+            print(job.label, "refused:", result.stderr)  # EnergyPlus never ran
+        else:
+            print(job.label, result.errors.summary())
 ```
 
 `async_simulate_batch` and `async_simulate_batch_stream` give you async/streaming variants. `simulate_batch` runs jobs concurrently on a thread pool (use `max_workers` to cap parallelism); each job is an EnergyPlus subprocess, so threads are all the parallelism it needs and documents never cross a process boundary.
@@ -221,11 +226,14 @@ result = simulate(
     fs=fs,
 )
 # EnergyPlus runs in a local temp dir; outputs are uploaded to s3://my-sim-outputs/runs/2026-05-23/baseline/
+# and the accessors read them back from S3: each first read of a file is a download.
+errors = result.errors  # downloads eplus.err
+result.close()  # removes the local temp copy result.sql downloads; the S3 objects stay
 ```
 
 The weather file must be local — remote weather is not auto-downloaded. Pre-stage with `WeatherDownloader` (see [weather-data.md](weather-data.md)).
 
-With `fs=`, EnergyPlus runs in a local temp directory that is deleted once its outputs are uploaded (the copy of the weather file is not uploaded). Reading `result.sql` then downloads the `.sql` once into a temp file, removed by `result.close()`.
+With `fs=`, EnergyPlus runs in a local temp directory that is deleted once its outputs are uploaded (the copy of the weather file is not uploaded). The result's `run_dir` is then the remote `output_dir`, and every accessor reads from remote storage: the first read of each output (`result.errors`, `result.csv`, ...) downloads that file, and each path lookup (`result.sql_path`) is a remote request. Parsed outputs are cached on the result, so a second read costs nothing. Reading `result.sql` downloads the whole `.sql` (tens of MB for an annual run) once into a local temp file, removed by `result.close()`; `result.cleanup()` and the `with` block never delete the remote files.
 
 `cache=` combines with `fs=`: the cache stays local, a miss is cached from the local run directory, and a hit uploads the cached outputs to `output_dir`, so the remote folder exists after every call.
 

@@ -664,7 +664,11 @@ def prepare_run_directory(output_dir: str | Path | None, weather_path: Path | No
         run_dir.mkdir(parents=True, exist_ok=True)
     else:
         run_dir = Path(tempfile.mkdtemp(prefix="idfkit_sim_"))
+    return _populate_run_directory(run_dir, weather_path)
 
+
+def _populate_run_directory(run_dir: Path, weather_path: Path | None) -> Path:
+    """Copy *weather_path* into *run_dir*, or check it has no stale ``in.epw`` when there is none."""
     if weather_path is None:
         refuse_default_weather(run_dir)
         return run_dir
@@ -679,6 +683,33 @@ def prepare_run_directory(output_dir: str | Path | None, weather_path: Path | No
         shutil.copy2(weather_path, dest)
 
     return run_dir
+
+
+class RunDirectoryGuard:
+    """Create the run directory, and delete it again if idfkit made it and the run then raises.
+
+    ``simulate()`` without an ``output_dir`` runs in a new temporary directory, which the
+    returned result owns and deletes on cleanup. A run that raises returns no result, so
+    nothing could reach that directory afterwards: leaving the ``with`` block with an
+    exception deletes it. A caller's ``output_dir`` is never deleted.
+    """
+
+    def __init__(self) -> None:
+        self._owned: Path | None = None
+
+    def prepare(self, output_dir: str | Path | None, weather_path: Path | None) -> Path:
+        """Create and populate the run directory, as [prepare_run_directory][idfkit.simulation._common.prepare_run_directory]."""
+        if output_dir is not None:
+            return prepare_run_directory(output_dir, weather_path)
+        self._owned = Path(tempfile.mkdtemp(prefix="idfkit_sim_"))
+        return _populate_run_directory(self._owned, weather_path)
+
+    def __enter__(self) -> RunDirectoryGuard:
+        return self
+
+    def __exit__(self, exc_type: type[BaseException] | None, *exc: object) -> None:
+        if exc_type is not None and self._owned is not None:
+            shutil.rmtree(self._owned, ignore_errors=True)
 
 
 def build_command(

@@ -134,17 +134,15 @@ If you've simulated outside Python (or cached the outputs), rebuild a `Simulatio
 --8<-- "agent_references/snippets/result-parsing.py:from-directory"
 ```
 
-## Releasing file handles (`close` / context manager)
+## Cleaning up (`cleanup` / `close` / context manager)
 
-`result.sql` opens a SQLite connection on first access and caches it. That connection holds an OS-level lock on `eplus.sql`. On **Windows**, the lock blocks deleting the run directory — `shutil.rmtree` / `TemporaryDirectory` cleanup fails with `PermissionError [WinError 32]: the process cannot access the file because it is being used by another process`. POSIX doesn't lock on open, so this only bites Windows users.
-
-Close the result — or use it as a context manager — before the run directory is removed:
+`simulate()` without an `output_dir` runs EnergyPlus in a new temporary directory, and nothing deletes it on its own: the accessors read their files from `run_dir` lazily. Use the result as a context manager, or call `result.cleanup()`, once you have read what you need:
 
 ```python
 --8<-- "agent_references/snippets/result-parsing.py:closing"
 ```
 
-`close()` is idempotent and resets the cached connection, so touching `result.sql` afterwards transparently reopens it. The other accessors (`errors`, `csv`, `eso`, `html`, `variables`) read their files eagerly and hold no handles, so they need no cleanup.
+`cleanup()` deletes `run_dir` only when idfkit created it (`result.owns_run_dir`); a caller's `output_dir`, a remote `fs=` directory and a cache entry are never touched. It first calls `close()`: `result.sql` holds an open SQLite connection, which on **Windows** locks `eplus.sql` and makes deleting the directory fail with `PermissionError [WinError 32]`. Both are idempotent. `close()` alone releases the connection and keeps the files; touching `result.sql` afterwards reopens it. The other accessors (`errors`, `csv`, `eso`, `html`, `variables`) read their files eagerly and hold no handles; an output not read before `cleanup()` can no longer be read. Async results support `async with` and `await result.async_cleanup()`.
 
 ## Plotting helpers
 

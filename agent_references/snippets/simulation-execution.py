@@ -21,9 +21,10 @@ from idfkit import load_idf
 from idfkit.simulation import simulate
 
 doc = load_idf("building.idf")
-result = simulate(doc, "weather.epw", design_day=True)
-result.raise_for_status()  # SimulationError quoting the fatal/severe messages if EnergyPlus failed
-print(result.errors.summary())  # counts, plus the fatal and first severe messages
+# No output_dir: EnergyPlus runs in a temp dir, which the with block deletes on exit.
+with simulate(doc, "weather.epw", design_day=True) as result:
+    result.raise_for_status()  # SimulationError quoting the fatal/severe messages if EnergyPlus failed
+    print(result.errors.summary())  # counts, plus the fatal and first severe messages
 # --8<-- [end:quickstart]
 
 
@@ -97,8 +98,8 @@ from idfkit.simulation import async_simulate
 
 
 async def main():
-    result = await async_simulate(doc, "weather.epw")
-    print(result.errors.summary())
+    async with await async_simulate(doc, "weather.epw") as result:  # temp run_dir deleted on exit
+        print(result.errors.summary())
 
 
 asyncio.run(main())
@@ -116,12 +117,12 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
     set_wwr(variant, wwr=wwr)
     jobs.append(SimulationJob(model=variant, weather="weather.epw", label=f"wwr_{int(wwr * 100)}"))
 
-batch = simulate_batch(jobs, max_workers=4)
-for job, result in zip(jobs, batch):
-    if result.run_dir == REFUSED_RUN_DIR:
-        print(job.label, "refused:", result.stderr)  # EnergyPlus never ran
-    else:
-        print(job.label, result.errors.summary())
+with simulate_batch(jobs, max_workers=4) as batch:  # deletes the jobs' temp run dirs on exit
+    for job, result in zip(jobs, batch):
+        if result.run_dir == REFUSED_RUN_DIR:
+            print(job.label, "refused:", result.stderr)  # EnergyPlus never ran
+        else:
+            print(job.label, result.errors.summary())
 # --8<-- [end:batch]
 
 
@@ -166,6 +167,9 @@ result = simulate(
     fs=fs,
 )
 # EnergyPlus runs in a local temp dir; outputs are uploaded to s3://my-sim-outputs/runs/2026-05-23/baseline/
+# and the accessors read them back from S3: each first read of a file is a download.
+errors = result.errors  # downloads eplus.err
+result.close()  # removes the local temp copy result.sql downloads; the S3 objects stay
 # --8<-- [end:remote-s3]
 
 

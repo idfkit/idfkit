@@ -498,3 +498,37 @@ class TestSimulateBatchWithoutWeather:
         assert result.sql_path is None
         with pytest.raises(OutputNotFoundError):
             _ = result.sql
+
+
+class TestBatchResultCleanup:
+    """BatchResult.cleanup() and its context manager delete only idfkit-created run directories."""
+
+    @patch("idfkit.simulation.runner.run_process")
+    def test_with_block_deletes_temp_dirs_only(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        out = tmp_path / "kept"
+        jobs = [
+            SimulationJob(model=runnable_model(), weather=weather_file, label="temp"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="kept", output_dir=out),
+        ]
+        with simulate_batch(jobs, energyplus=mock_config) as batch:
+            temp_dir = batch[0].run_dir
+            assert batch[0].owns_run_dir
+            assert not batch[1].owns_run_dir
+        assert not temp_dir.exists()
+        assert (out / "model.idf").exists()
+        batch.cleanup()  # idempotent
+
+    def test_refused_result_cleanup_is_noop(self) -> None:
+        refused = SimulationResult(
+            run_dir=REFUSED_RUN_DIR,
+            success=False,
+            exit_code=None,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.0,
+            refusal="no weather",
+        )
+        BatchResult(results=(refused,), total_runtime_seconds=0.0).cleanup()
