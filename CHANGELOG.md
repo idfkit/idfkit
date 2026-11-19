@@ -77,6 +77,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `add()` and, in a strict document, renaming refused a blank name on a type whose schema
+  requires one (`ValidationFailedError`), and `validate_document` reported it; give the object its name
+  when adding it. eppy's `newidfobject(type)` still creates the object nameless.
+  ([#342](https://github.com/idfkit/idfkit/pull/342))
+- pyright reported an undeclared name on an unnarrowed type whose releases differ (`AnyLights`) against
+  `_NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion`, since it may be a real field of some releases;
+  load with `as_type=` to reach it. ([#342](https://github.com/idfkit/idfkit/pull/342))
 - **Breaking:** in a strict document (the default), assigning a field or calling `update()` checked
   the value as `add()` does and raised `ValidationFailedError` for a wrong type, unlisted choice or
   out-of-range number; open with `strict=False` to store such values.
@@ -263,6 +270,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `write_idf(doc, path)` and `write_epjson(doc, path)` raised an error naming `save_idf` or `save_epjson`,
+  where they had returned text, written no file and said nothing (or failed with an unrelated `TypeError`).
+  `write_epjson()` and `save_epjson()` take an indent as `json.dumps` does: an int, a whitespace string or `None`.
+  ([#342](https://github.com/idfkit/idfkit/pull/342))
 - `find_energyplus(version=...)` named the installs it found at other versions, and how to proceed, instead of
   reporting no EnergyPlus at all; searched paths were listed once each.
   ([#339](https://github.com/idfkit/idfkit/pull/339))

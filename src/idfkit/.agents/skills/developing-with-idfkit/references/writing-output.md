@@ -50,7 +50,7 @@ idf_text = write_idf(doc)
 save_idf(doc, "out.idf", output_type="compressed")
 ```
 
-epJSON formatting is controlled by `indent` (default 2; pass `indent=0` for the most compact form).
+epJSON formatting is controlled by `indent`, as `json.dumps` takes it (default 2; a whitespace string such as `"\t"`; `indent=None` for single-line output).
 
 ## File suffixes and argument order
 
@@ -88,7 +88,7 @@ For epJSON, lossless is all-or-nothing: any mutation falls back to the standard 
 
 ## Strings vs. files
 
-`write_idf` and `write_epjson` return the serialized string and never touch the disk. Useful for tests:
+`write_idf` and `write_epjson` return the serialized string and never touch the disk. Given a path in place of `output_type` or `indent` (the 0.x `write_idf(doc, "out.idf")`), they raise `ValueError` or `TypeError` naming the `save_*` call to use instead of returning text. Useful for tests:
 
 ```python
 text = write_idf(doc)

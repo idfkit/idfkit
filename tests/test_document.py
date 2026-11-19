@@ -1004,13 +1004,15 @@ class TestNotifyNameChangeEdgeCases:
         zone.name = "NewName"
         assert empty_doc.getobject("Zone", "NewName") is zone
 
-    def test_rename_to_empty_string(self, empty_doc: IDFDocument) -> None:
-        empty_doc.add("Zone", "TestZone")
-        zone = empty_doc.getobject("Zone", "TestZone")
+    def test_rename_to_empty_string(self) -> None:
+        # A strict document refuses a blank Zone name (test_validation.TestRequiredName); a lax one stores it.
+        doc = new_document(strict=False)
+        doc.add("Zone", "TestZone")
+        zone = doc.getobject("Zone", "TestZone")
         assert zone is not None
         zone.name = ""
         assert zone.name == ""
-        assert "TESTZONE" not in empty_doc._collections["Zone"].by_name  # pyright: ignore[reportPrivateUsage]
+        assert "TESTZONE" not in doc._collections["Zone"].by_name  # pyright: ignore[reportPrivateUsage]
 
     def test_notify_name_change_obj_type_not_in_collections(self, empty_doc: IDFDocument) -> None:
         obj = IDFObject(obj_type="GhostType", name="Ghost")

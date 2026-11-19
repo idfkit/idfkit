@@ -14,7 +14,9 @@ from __future__ import annotations
 from typing import Any
 
 from idfkit import IDFDocument
+from idfkit.document import AnyIDFDocument
 from idfkit.objects import IDFObject
+from idfkit.versioned import IDFDocumentV26_1
 
 
 def correct_access(doc: IDFDocument[Any]) -> None:
@@ -63,3 +65,16 @@ def seeded_errors(doc: IDFDocument[Any]) -> None:
     vertex = doc["BuildingSurface:Detailed"]["Wall"].vertices[0]
     vertex.bogus = 1.0  # pyright: ignore[reportArgumentType]  (undeclared name on a typed group)
     print(vertex.bogus)  # pyright: ignore[reportArgumentType]  (undeclared name read on a typed group)
+
+
+def seeded_release_errors(doc: AnyIDFDocument, narrowed: IDFDocumentV26_1[Any]) -> None:
+    # An unnarrowed document types Lights with what every release declares. watts_per_floor_area
+    # is 9.6 to 23.2's watts_per_zone_floor_area renamed, so it is reported against
+    # _NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion (see test_codegen).
+    for lights in doc.lights:
+        print(lights.watts_per_floor_area)  # pyright: ignore[reportArgumentType]  (narrow first, read)
+        lights.watts_per_floor_area = 8.0  # pyright: ignore[reportArgumentType]  (narrow first, assigned)
+    # Narrowed, the field is declared, and its old name is not a field of the release.
+    for lights in narrowed.lights:
+        lights.watts_per_floor_area = 8.0
+        print(lights.watts_per_zone_floor_area)  # pyright: ignore[reportArgumentType]  (not in this release)

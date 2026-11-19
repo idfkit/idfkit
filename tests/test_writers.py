@@ -1322,3 +1322,54 @@ class TestIDFWriterPadsTemplatesToMinFields:
         text = self._object_text(write_idf(doc), "Building")
 
         assert self._field_count(text) == 1
+
+
+class TestWriteRefusesAPath:
+    """``write_idf(doc, path)`` and ``write_epjson(doc, path)``, the 0.x way to write a file, raise."""
+
+    @pytest.mark.parametrize("path", ["out.idf", Path("out.idf")])
+    def test_write_idf_names_save_idf(
+        self, empty_doc: IDFDocument, path: str | Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.chdir(tmp_path)  # the relative path resolves here, so a file written would show
+        with pytest.raises((TypeError, ValueError), match=r"writes no file; use save_idf\(doc, 'out.idf'\)"):
+            write_idf(empty_doc, path)  # pyright: ignore[reportArgumentType]
+        assert not list(tmp_path.iterdir())
+
+    @pytest.mark.parametrize("path", ["out.epJSON", Path("out.epJSON")])
+    def test_write_epjson_names_save_epjson(self, empty_doc: IDFDocument, path: str | Path) -> None:
+        with pytest.raises(TypeError, match=r"writes no file, to write a file use save_epjson\(doc, 'out.epJSON'\)"):
+            write_epjson(empty_doc, path)  # pyright: ignore[reportArgumentType]
+
+    def test_unknown_output_type_is_refused(self, empty_doc: IDFDocument) -> None:
+        with pytest.raises(ValueError, match="not one of 'standard', 'nocomment', 'compressed'"):
+            write_idf(empty_doc, "Compressed")  # pyright: ignore[reportArgumentType]
+        with pytest.raises(TypeError, match="output_type must be one of"):
+            write_idf(empty_doc, None)  # pyright: ignore[reportArgumentType]
+
+    def test_save_functions_check_their_own_arguments(self, empty_doc: IDFDocument, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match=r"save_idf\(\) got output_type='bogus'"):
+            save_idf(empty_doc, tmp_path / "a.idf", "latin-1", "bogus")  # pyright: ignore[reportArgumentType]
+        with pytest.raises(TypeError, match=r"save_epjson\(\) indent must be an int") as excinfo:
+            save_epjson(empty_doc, tmp_path / "a.epJSON", "b.epJSON")
+        assert "writes no file" not in str(excinfo.value)
+        assert not list(tmp_path.iterdir())
+
+    def test_bool_indent_is_refused(self, empty_doc: IDFDocument) -> None:
+        with pytest.raises(TypeError, match="indent must be an int"):
+            write_epjson(empty_doc, True)
+
+    @pytest.mark.parametrize("indent", [None, "\t", "  ", 0, 4])
+    def test_indents_json_dumps_takes_are_accepted(self, empty_doc: IDFDocument, indent: int | str | None) -> None:
+        empty_doc.add("Zone", "A")
+        assert write_epjson(empty_doc, indent) == json.dumps(json.loads(write_epjson(empty_doc)), indent=indent)
+
+    def test_none_indent_gives_one_line(self, empty_doc: IDFDocument, tmp_path: Path) -> None:
+        empty_doc.add("Zone", "A")
+        assert "\n" not in write_epjson(empty_doc, indent=None)
+        save_epjson(empty_doc, tmp_path / "a.epJSON", None)
+        assert "\n" not in (tmp_path / "a.epJSON").read_text()
+
+    def test_swapped_arguments_name_the_order(self, empty_doc: IDFDocument) -> None:
+        with pytest.raises(TypeError, match="the document comes first"):
+            write_idf("out.idf", empty_doc)  # pyright: ignore[reportArgumentType]

@@ -107,6 +107,16 @@ class EppyDocumentMixin:
         def __getitem__(self, key: str) -> IDFCollection[IDFObject]: ...
         def add(self, obj_type: str, name: str = "", **kwargs: Any) -> IDFObject: ...
         def removeidfobject(self, obj: IDFObject) -> None: ...
+        def _add(
+            self,
+            obj_type: str,
+            name: str,
+            field_data: dict[str, Any],
+            validate: bool,
+            adopt: IDFCollection[Any] | None,
+            *,
+            name_optional: bool = False,
+        ) -> IDFObject: ...
 
         @staticmethod
         def _compute_ref_fields(schema: EpJSONSchema, obj_type: str) -> frozenset[str]: ...
@@ -206,7 +216,9 @@ class EppyDocumentMixin:
         """Create a new object (eppy compatibility).
 
         Provided for migration convenience.  The ``Name`` kwarg becomes
-        the object name if provided.
+        the object name if provided.  Without it the object is created
+        nameless, as in eppy, to be named afterwards (``obj.Name = ...``);
+        other fields are validated as [add][idfkit.document.IDFDocument.add] does.
 
         !!! tip
             Prefer [add][idfkit.document.IDFDocument.add] for new code:
@@ -215,7 +227,10 @@ class EppyDocumentMixin:
                 zone = doc.add("Zone", "Office", x_origin=0.0)
                 ```
         """
-        name = kwargs.pop("Name", kwargs.pop("name", ""))
+        name = kwargs.pop("Name", kwargs.pop("name", None))
+        if name is None:
+            # eppy's idiom creates the object first and names it afterwards.
+            return self._add(obj_type, "", kwargs, True, None, name_optional=True)
         return self.add(obj_type, name, **kwargs)
 
     def addidfobject(self, obj: IDFObject) -> IDFObject:
