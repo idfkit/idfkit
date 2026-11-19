@@ -17,6 +17,12 @@ from idfkit.simulation.fs import FileSystem, LocalFileSystem
 if TYPE_CHECKING:
     from idfkit.objects import IDFObject
 
+__all__ = [
+    "ScheduleFileCache",
+    "evaluate_schedule_file",
+    "get_schedule_file_values",
+]
+
 # Column separator mapping
 _SEPARATORS = {
     "Comma": ",",

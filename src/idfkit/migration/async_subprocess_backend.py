@@ -28,6 +28,10 @@ from .subprocess_backend import (
     warn_on_missing_companions,
 )
 
+__all__ = [
+    "AsyncSubprocessMigrator",
+]
+
 logger = logging.getLogger(__name__)
 
 

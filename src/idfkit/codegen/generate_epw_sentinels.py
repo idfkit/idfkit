@@ -49,6 +49,10 @@ from typing import Any, Final
 
 import tomllib
 
+__all__ = [
+    "main",
+]
+
 _REPO_ROOT: Final = Path(__file__).resolve().parents[3]
 _OUTPUT_PATH: Final = Path(__file__).resolve().parents[1] / "weather" / "_epw_sentinels.py"
 _TABLE_PATH: Final = "checks/weather-monthly/sentinels.toml"

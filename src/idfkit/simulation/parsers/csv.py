@@ -15,6 +15,11 @@ from pathlib import Path
 from ._lookup import resolve_series
 from ._timeutil import summarize_series
 
+__all__ = [
+    "CSVColumn",
+    "CSVResult",
+]
+
 # Header format: "KeyValue:VariableName [Units](Frequency)"
 # Example: "Environment:Site Outdoor Air Drybulb Temperature [C](Hourly)"
 _HEADER_RE = re.compile(r"^(.+?):(.+?)\s*\[([^\]]*)\]\((\w+)\)$")

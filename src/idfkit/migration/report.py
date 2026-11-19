@@ -8,6 +8,13 @@ from typing import Generic
 
 from ._typing import DocumentT_co
 
+__all__ = [
+    "FieldDelta",
+    "MigrationDiff",
+    "MigrationReport",
+    "MigrationStep",
+]
+
 
 def _empty_count_delta() -> dict[str, int]:
     return {}

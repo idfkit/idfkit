@@ -67,6 +67,12 @@ if TYPE_CHECKING:
     from .config import EnergyPlusConfig
     from .fs import AsyncFileSystem, FileSystem
 
+__all__ = [
+    "SimulationEvent",
+    "async_simulate_batch",
+    "async_simulate_batch_stream",
+]
+
 logger = logging.getLogger(__name__)
 
 

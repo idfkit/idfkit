@@ -16,6 +16,36 @@ from typing import TYPE_CHECKING, Any, cast
 from ._surface_types import VERTEX_SURFACE_TYPES as _VERTEX_SURFACE_TYPES
 from ._zones import resolve_zone_name
 
+__all__ = [
+    "Polygon2D",
+    "Polygon3D",
+    "Vector3D",
+    "calculate_surface_area",
+    "calculate_surface_azimuth",
+    "calculate_surface_tilt",
+    "calculate_zone_ceiling_area",
+    "calculate_zone_floor_area",
+    "calculate_zone_height",
+    "calculate_zone_volume",
+    "get_surface_coords",
+    "get_zone_origin",
+    "get_zone_rotation",
+    "intersect_match",
+    "is_convex_2d",
+    "line_intersect_2d",
+    "polygon_area_2d",
+    "polygon_contains_2d",
+    "polygon_difference_2d",
+    "polygon_difference_parts_2d",
+    "polygon_intersection_2d",
+    "rotate_building",
+    "set_surface_coords",
+    "set_wwr",
+    "translate_building",
+    "translate_to_world",
+    "triangulate_2d",
+]
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:

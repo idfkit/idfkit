@@ -60,6 +60,12 @@ if TYPE_CHECKING:
     from .document import AnyIDFDocument
     from .objects import IDFObject
 
+__all__ = [
+    "MatchOptions",
+    "MatchReport",
+    "intersect_and_match",
+]
+
 logger = logging.getLogger(__name__)
 
 _EPS = 1e-9

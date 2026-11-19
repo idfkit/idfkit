@@ -9,6 +9,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
+__all__ = [
+    "MigrationPhase",
+    "MigrationProgress",
+]
+
 MigrationPhase = Literal[
     "planning",
     "preparing",

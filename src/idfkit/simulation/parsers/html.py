@@ -14,6 +14,11 @@ from dataclasses import dataclass, field
 from html.parser import HTMLParser
 from pathlib import Path
 
+__all__ = [
+    "HTMLResult",
+    "HTMLTable",
+]
+
 
 @dataclass(slots=True)
 class HTMLTable:

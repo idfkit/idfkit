@@ -29,6 +29,15 @@ if TYPE_CHECKING:
     from ..document import AnyIDFDocument
     from ..objects import IDFObject
 
+__all__ = [
+    "ColorBy",
+    "ModelViewConfig",
+    "view_exploded",
+    "view_floor_plan",
+    "view_model",
+    "view_normals",
+]
+
 
 class ColorBy(Enum):
     """Strategy for coloring surfaces in 3D views."""

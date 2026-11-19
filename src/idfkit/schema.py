@@ -34,6 +34,15 @@ if TYPE_CHECKING:
 
     from ._accessors import AccessorResolver
 
+__all__ = [
+    "EpJSONSchema",
+    "ParsingCache",
+    "ReferenceKin",
+    "SchemaManager",
+    "get_schema",
+    "get_schema_manager",
+]
+
 logger = logging.getLogger(__name__)
 
 

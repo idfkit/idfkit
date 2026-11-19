@@ -43,6 +43,10 @@ if TYPE_CHECKING:
     from .cache import SimulationCache
     from .fs import FileSystem
 
+__all__ = [
+    "simulate",
+]
+
 logger = logging.getLogger(__name__)
 
 

@@ -44,6 +44,14 @@ if TYPE_CHECKING:
 
     from ..plotting import PlotBackend
 
+__all__ = [
+    "ESOColumn",
+    "ESOEnvironment",
+    "ESOResult",
+    "ESOSeriesSpec",
+    "ESOVariable",
+]
+
 # Report ids 1-6 are reserved time/environment markers in every ESO/MTR file;
 # user variables start at id 7.
 _ENV_MARKER = 1  # Environment Title, Latitude, Longitude, Time Zone, Elevation

@@ -33,6 +33,15 @@ from .exceptions import (
 from .objects import IDFObject
 from .schema import SIZING_SENTINELS
 
+__all__ = [
+    "IDFParser",
+    "ParseResult",
+    "get_idf_version",
+    "iter_idf_objects",
+    "parse_idf",
+    "parse_idf_with_diagnostics",
+]
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:

@@ -30,6 +30,10 @@ from dataclasses import dataclass
 from .progress import MigrationProgress
 from .report import MigrationStep
 
+__all__ = [
+    "clear_migration_cache",
+]
+
 #: How many finished migrations are kept (least recently used are dropped first).
 MAX_ENTRIES = 32
 

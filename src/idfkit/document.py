@@ -46,6 +46,12 @@ from .schema import canonicalize_choices
 from .validation import validate_object
 from .versions import LATEST_VERSION
 
+__all__ = [
+    "AnyIDFDocument",
+    "IDFDocument",
+    "IDFDocumentAllVersions",
+]
+
 logger = logging.getLogger(__name__)
 
 if sys.version_info >= (3, 13):

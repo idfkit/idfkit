@@ -7,6 +7,12 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
+__all__ = [
+    "SearchResult",
+    "SpatialResult",
+    "WeatherStation",
+]
+
 _YEAR_RANGE = re.compile(r"(\d{4})-(\d{4})$")
 
 

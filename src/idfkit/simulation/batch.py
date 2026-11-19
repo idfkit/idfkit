@@ -38,6 +38,13 @@ if TYPE_CHECKING:
     from .config import EnergyPlusConfig
     from .fs import FileSystem
 
+__all__ = [
+    "BatchProgressCallback",
+    "BatchResult",
+    "SimulationJob",
+    "simulate_batch",
+]
+
 logger = logging.getLogger(__name__)
 
 

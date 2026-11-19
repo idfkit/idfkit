@@ -67,6 +67,10 @@ if TYPE_CHECKING:
     from .config import EnergyPlusConfig
     from .fs import AsyncFileSystem, FileSystem
 
+__all__ = [
+    "async_simulate",
+]
+
 logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T")

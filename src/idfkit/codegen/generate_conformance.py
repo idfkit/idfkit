@@ -28,6 +28,11 @@ from typing import Any
 
 import tomllib
 
+__all__ = [
+    "main",
+    "read_declared_level",
+]
+
 # tomllib unconditionally, so this module needs Python 3.11. That is a constraint on the
 # maintainer running codegen, never on the library: the generated file is committed, and a
 # reader on 3.10 imports a string constant that was produced elsewhere. The two sibling

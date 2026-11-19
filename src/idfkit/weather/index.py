@@ -25,6 +25,11 @@ from .._atomic import write_bytes_atomically
 from .spatial import haversine_km
 from .station import SearchResult, SpatialResult, WeatherStation, newest_first
 
+__all__ = [
+    "StationIndex",
+    "default_cache_dir",
+]
+
 logger = logging.getLogger(__name__)
 
 # Datasets of one station whose coordinates lie this close are treated as one location.

@@ -14,6 +14,13 @@ from idfkit.schedules.types import Interpolation
 if TYPE_CHECKING:
     from idfkit.schedules.types import TimeValue
 
+__all__ = [
+    "END_OF_DAY",
+    "END_OF_DAY_MINUTES",
+    "evaluate_time_values",
+    "time_to_minutes",
+]
+
 #: Sentinel for end-of-day (24:00 mapped to max representable time).
 END_OF_DAY = time(23, 59, 59, 999999)
 

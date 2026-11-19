@@ -108,6 +108,14 @@ from ..exceptions import ExpandObjectsError
 from ._cancel import run_process
 from .config import EnergyPlusConfig, find_energyplus
 
+__all__ = [
+    "expand_objects",
+    "needs_ground_heat_preprocessing",
+    "run_basement_preprocessor",
+    "run_preprocessing",
+    "run_slab_preprocessor",
+]
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:

@@ -46,6 +46,10 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from idfkit.schema import EpJSONSchema
 
+__all__ = [
+    "verify",
+]
+
 Version = tuple[int, int, int]
 
 

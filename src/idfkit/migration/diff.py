@@ -11,6 +11,10 @@ if TYPE_CHECKING:
     from ..document import AnyIDFDocument
     from ..schema import EpJSONSchema
 
+__all__ = [
+    "document_diff",
+]
+
 
 def document_diff(before: AnyIDFDocument, after: AnyIDFDocument) -> MigrationDiff:
     """Compute a structural diff between *before* and *after*.

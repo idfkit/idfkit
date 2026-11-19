@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import math
 
+__all__ = [
+    "haversine_km",
+]
+
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Great-circle distance between two points in kilometres.

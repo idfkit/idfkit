@@ -41,6 +41,12 @@ from idfkit.schedules.types import (
 if TYPE_CHECKING:
     from idfkit.objects import IDFObject
 
+__all__ = [
+    "compact_problems",
+    "evaluate_compact",
+    "parse_compact",
+]
+
 # Regex patterns for parsing Schedule:Compact fields. EnergyPlus reads a keyword with or without its
 # colon, and with space before it: ``Through 12/31``, ``Through : 12/31``, ``For AllDays`` and
 # ``Until 24:00`` all appear in its example files. The keyword must be followed by a colon or a space.

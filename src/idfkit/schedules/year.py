@@ -14,6 +14,10 @@ if TYPE_CHECKING:
     from idfkit.document import AnyIDFDocument
     from idfkit.objects import IDFObject
 
+__all__ = [
+    "evaluate_year",
+]
+
 
 def _parse_month_day(month_str: str, day_str: str) -> tuple[int, int]:
     """Parse month and day fields from Schedule:Year.

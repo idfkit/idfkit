@@ -11,6 +11,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
+__all__ = [
+    "TYPICAL_GAP_R_VALUES",
+    "GasProperties",
+    "GasType",
+    "gas_gap_resistance",
+    "get_gas_properties",
+    "typical_gap_r_value",
+]
+
 # Standard gas types supported by EnergyPlus
 GasType = Literal["Air", "Argon", "Krypton", "Xenon"]
 
