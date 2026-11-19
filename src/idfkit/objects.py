@@ -315,7 +315,7 @@ class ExtensibleGroup:
         dict that contradicts its type.
         """
         snapshot = self._snapshot()
-        for name in GROUP_READ_REQUIRED.get(self._owner.obj_type, ()):
+        for name in _required_reads(self._owner.obj_type, group=True) or ():
             if name not in snapshot and name in self._inner_names:
                 raise self._missing(name)
         return snapshot
