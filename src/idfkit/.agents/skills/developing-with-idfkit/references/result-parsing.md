@@ -229,6 +229,11 @@ If you've simulated outside Python (or cached the outputs), rebuild a `Simulatio
 from idfkit.simulation import SimulationResult
 
 result = SimulationResult.from_directory("/path/to/run", output_prefix="eplus")
+
+# A run made with simulate(..., output_suffix="L") names its outputs eplusout.err,
+# eplustbl.htm, ...; pass the same style so those names are tried first and a
+# stale file another style left in a reused directory is not read instead.
+legacy = SimulationResult.from_directory("/path/to/run", output_prefix="eplus", output_suffix="L")
 ```
 
 ## Releasing file handles (`close` / context manager)
