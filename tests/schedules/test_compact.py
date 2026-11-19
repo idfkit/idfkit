@@ -13,6 +13,7 @@ from idfkit.schedules.compact import (  # pyright: ignore[reportPrivateUsage]
     _find_period_for_date,
     _parse_cache,
     _parse_day_types,
+    compact_problems,
     evaluate_compact,
     parse_compact,
 )
@@ -561,6 +562,35 @@ class TestCacheStaleness:
         _parse_cache.clear()
 
 
+class TestProblemsCache:
+    """compact_problems is computed once per parse, not on every evaluation."""
+
+    def test_evaluate_reuses_problems_until_mutation(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        import idfkit.schedules.compact as compact_mod
+
+        sched = _make_compact("Through: 12/31", "For: AllDays", "Until: 24:00", "1.0")
+        calls: list[IDFObject] = []
+        original = compact_mod._find_compact_problems  # pyright: ignore[reportPrivateUsage]
+
+        def counting(obj: IDFObject) -> list[str]:
+            calls.append(obj)
+            return original(obj)
+
+        monkeypatch.setattr(compact_mod, "_find_compact_problems", counting)
+        for hour in range(5):
+            evaluate_compact(sched, datetime(2024, 1, 1, hour))
+        assert len(calls) == 1
+
+        sched.schedule_type_limits_name = "Fraction"  # pyright: ignore[reportAttributeAccessIssue]
+        evaluate_compact(sched, datetime(2024, 1, 1, 6))
+        assert len(calls) == 2
+
+    def test_returned_list_is_a_copy(self) -> None:
+        sched = _make_compact("Through: 6/30", "For: AllDays", "Until: 24:00", "1.0")
+        compact_problems(sched).clear()
+        assert compact_problems(sched)
+
+
 class TestConsecutiveNoneLimit:
     """Tests for consecutive None termination (lines 198-202)."""
 
@@ -606,14 +636,87 @@ class TestFinalizeWithNoRule:
 class TestNoPeriods:
     """Tests for evaluate_compact with no periods (line 262)."""
 
-    def test_empty_compact_returns_zero(self) -> None:
-        """A compact schedule with no data returns 0.0."""
+    def test_empty_compact_refused(self) -> None:
+        """A compact schedule with no data covers no day, so it is refused rather than read as 0.0."""
         doc = new_document()
         # Add a schedule with no extensible fields at all
         doc.add("Schedule:Compact", "Empty", validate=False)
         obj = doc.get_collection("Schedule:Compact").get("Empty")
-        result = evaluate_compact(obj, datetime(2024, 1, 1, 12, 0))
-        assert result == 0.0
+        with pytest.raises(ValueError, match="no 'Through:' field"):
+            evaluate_compact(obj, datetime(2024, 1, 1, 12, 0))
+
+
+class TestCoverage:
+    """A schedule EnergyPlus refuses as fatal is refused, not extended or filled."""
+
+    def test_complete_schedule_has_no_problems(self) -> None:
+        sched = _make_compact(
+            "Through: 6/30", "For: AllDays", "Until: 24:00", "1",
+            "Through: 12/31", "For: Weekdays", "Until: 8:00", "0", "Until: 24:00", "1",
+            "For: AllOtherDays", "Until: 24:00", "0",
+        )  # fmt: skip
+        assert compact_problems(sched) == []
+        assert evaluate_compact(sched, datetime(2024, 7, 8, 14)) == 1.0
+
+    def test_year_not_covered_refused(self) -> None:
+        sched = _make_compact("Through: 6/30", "For: AllDays", "Until: 24:00", "20")
+        assert compact_problems(sched) == [
+            "the last 'Through:' is 6/30, not 12/31, so the rest of the year has no values"
+        ]
+        # A date inside the covered part is refused too: EnergyPlus refuses the whole schedule.
+        for when in (datetime(2024, 7, 6, 14), datetime(2024, 1, 1, 0)):
+            with pytest.raises(ValueError, match="would stop EnergyPlus: the last 'Through:' is 6/30"):
+                evaluate_compact(sched, when)
+
+    def test_day_not_ending_at_midnight_refused(self) -> None:
+        sched = _make_compact("Through: 12/31", "For: AllDays", "Until: 12:00", "20")
+        (problem,) = compact_problems(sched)
+        assert "ends at 'Until: 12:00', not 'Until: 24:00'" in problem
+        with pytest.raises(ValueError, match="Until: 24:00"):
+            evaluate_compact(sched, datetime(2024, 7, 6, 14))
+
+    def test_each_incomplete_block_reported(self) -> None:
+        sched = _make_compact(
+            "Through: 12/31", "For: Weekdays", "Until: 18:00", "1",
+            "For: AllOtherDays", "Until: 12:00", "0",
+        )  # fmt: skip
+        problems = compact_problems(sched)
+        assert len(problems) == 2
+        assert "block 1" in problems[0]
+        assert "block 2" in problems[1]
+
+    def test_block_without_until_reported(self) -> None:
+        sched = _make_compact("Through: 12/31", "For: AllDays")
+        assert compact_problems(sched) == [
+            "'Through: 12/31' block 1 ('For:' AllDays) has no 'Until:' value, so its days have no values"
+        ]
+
+    @pytest.mark.parametrize(
+        "fields",
+        [
+            ("Through 12/31", "For AllDays", "Until 12:00", "1", "Until 24:00", "2"),
+            ("Through : 12/31", "For: AllDays", "Until: 12:00", "1", "Until 24:00", "2"),
+        ],
+        ids=["no-colons", "space-before-colon"],
+    )
+    def test_keywords_without_colon_parsed(self, fields: tuple[str, ...]) -> None:
+        """EnergyPlus reads these spellings (its example files use them), so they are not refused."""
+        sched = _make_compact(*fields)
+        assert compact_problems(sched) == []
+        assert evaluate_compact(sched, datetime(2024, 7, 8, 14)) == 2.0
+
+    def test_through_after_year_end_ignored(self) -> None:
+        """A 'Through:' after the one reaching 12/31 is read by EnergyPlus without complaint."""
+        sched = _make_compact(
+            "Through: 12/31", "For: AllDays", "Until: 24:00", "1",
+            "Through: 01/01", "For: AllDays", "Until: 24:00", "2",
+        )  # fmt: skip
+        assert compact_problems(sched) == []
+
+    def test_missing_day_types_still_evaluate(self) -> None:
+        """EnergyPlus only warns about day types a schedule leaves out, so they are not refused."""
+        sched = _make_compact("Through: 12/31", "For: Weekdays", "Until: 24:00", "1")
+        assert compact_problems(sched) == []
 
 
 class TestNoMatchingRule:

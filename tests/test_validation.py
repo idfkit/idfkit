@@ -1299,3 +1299,92 @@ class TestEmptyGroupOnlyObjectInEnergyPlus:
             ok, output = accepted(model, f"{name}_fixed")
             assert _w004(model) == []
             assert ok, output[-2000:]
+
+
+class TestValidateSchedules:
+    """Schedules EnergyPlus stops on although every field is valid on its own."""
+
+    @staticmethod
+    def _compact(doc: IDFDocument, name: str, *fields: str, limits: str = "Any") -> None:
+        doc.add(
+            "Schedule:Compact",
+            name,
+            schedule_type_limits_name=limits,
+            data=[{"field": f} for f in fields],
+            validate=False,
+        )
+
+    @staticmethod
+    def _doc() -> IDFDocument:
+        doc = new_document()
+        doc.add("ScheduleTypeLimits", "Any")
+        doc.add("ScheduleTypeLimits", "Fraction", lower_limit_value=0, upper_limit_value=1, numeric_type="Continuous")
+        return doc
+
+    def test_complete_schedule_valid(self) -> None:
+        doc = self._doc()
+        self._compact(doc, "Heat", "Through: 12/31", "For: AllDays", "Until: 24:00", "20")
+        self._compact(doc, "Frac", "Through: 12/31", "For: AllDays", "Until: 24:00", "1", limits="Fraction")
+        assert validate_document(doc).total_issues == 0
+
+    @pytest.mark.parametrize(
+        ("fields", "match"),
+        [
+            (("Through: 6/30", "For: AllDays", "Until: 24:00", "20"), "not 12/31"),
+            (("Through: 12/31", "For: AllDays", "Until: 12:00", "20"), "not 'Until: 24:00'"),
+            (("Through: 12/31", "For: AllDays", "Until: 24:00", "abc"), "cannot be read"),
+        ],
+        ids=["year-not-covered", "day-not-covered", "unreadable"],
+    )
+    def test_incomplete_compact_is_e011(self, fields: tuple[str, ...], match: str) -> None:
+        doc = self._doc()
+        self._compact(doc, "Heat", *fields)
+        result = validate_document(doc)
+        assert [e.code for e in result.errors] == ["E011"]
+        assert match in result.errors[0].message
+        assert result.errors[0].obj_name == "Heat"
+
+    def test_object_types_filter_skips_schedules(self) -> None:
+        doc = self._doc()
+        self._compact(doc, "Heat", "Through: 6/30", "For: AllDays", "Until: 24:00", "20")
+        assert validate_document(doc, object_types=["Zone"]).is_valid
+
+    def test_compact_value_outside_limits_is_e012(self) -> None:
+        doc = self._doc()
+        self._compact(doc, "Frac", "Through: 12/31", "For: AllDays", "Until: 24:00", "2.5", limits="Fraction")
+        result = validate_document(doc)
+        assert [e.code for e in result.errors] == ["E012"]
+        assert "Value 2.5 is outside the limits [0, 1] of ScheduleTypeLimits 'Fraction'" in result.errors[0].message
+        assert validate_document(doc, check_ranges=False).is_valid
+
+    def test_e011_message_reads_as_a_sentence(self) -> None:
+        doc = self._doc()
+        self._compact(doc, "Empty")
+        self._compact(doc, "Half", "Through: 6/30", "For: AllDays", "Until: 24:00", "20")
+        messages = [e.message for e in validate_document(doc).errors]
+        assert messages[0].startswith("It has no 'Through:' field")
+        assert messages[1].startswith("The last 'Through:' is 6/30")
+
+    def test_value_after_the_12_31_period_is_not_e012(self) -> None:
+        """EnergyPlus ignores a 'Through:' after the one reaching 12/31, so its values are not checked."""
+        doc = self._doc()
+        self._compact(
+            doc,
+            "Trail",
+            *("Through: 12/31", "For: AllDays", "Until: 24:00", "1"),
+            *("Through: 6/30", "For: AllDays", "Until: 24:00", "7"),
+            limits="Fraction",
+        )
+        assert validate_document(doc).is_valid
+
+    def test_constant_value_outside_limits_is_e012(self) -> None:
+        doc = self._doc()
+        doc.add("Schedule:Constant", "Always", schedule_type_limits_name="Fraction", hourly_value=-0.5)
+        result = validate_document(doc)
+        assert [e.code for e in result.errors] == ["E012"]
+
+    def test_limits_without_bounds_not_checked(self) -> None:
+        doc = self._doc()
+        self._compact(doc, "Big", "Through: 12/31", "For: AllDays", "Until: 24:00", "1e3")
+        doc.add("Schedule:Constant", "Unlimited", hourly_value=99)
+        assert validate_document(doc, check_references=False).is_valid

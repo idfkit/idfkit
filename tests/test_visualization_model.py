@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from idfkit import IDFDocument, new_document
+from idfkit.exceptions import ObjectNotFoundError
 from idfkit.geometry import Polygon3D, Vector3D
 from idfkit.scene import ResolvedSurface, get_scene
 from idfkit.visualization.model import (
@@ -438,6 +439,20 @@ class TestResolveSurfaces:
         assert len(surfaces) == 2
         assert all(s.zone == "ZoneA" for s in surfaces)
 
+    def test_zone_filter_accepts_zone_objects_and_any_case(self, multi_zone_doc: IDFDocument) -> None:
+        by_object = _surfaces(multi_zone_doc, zones=[multi_zone_doc["Zone"]["ZoneA"]])
+        by_name = _surfaces(multi_zone_doc, zones=["zonea"])
+        assert [s.name for s in by_object] == [s.name for s in by_name]
+        assert len(by_object) == 2
+
+    def test_zone_filter_unknown_name_suggests(self, multi_zone_doc: IDFDocument) -> None:
+        with pytest.raises(ObjectNotFoundError, match="Did you mean 'ZoneA'"):
+            _surfaces(multi_zone_doc, zones=["ZoneAA"])
+
+    def test_zone_filter_single_string_refused(self, multi_zone_doc: IDFDocument) -> None:
+        with pytest.raises(TypeError, match="not a single string"):
+            _surfaces(multi_zone_doc, zones="ZoneA")
+
     def test_world_coords_with_origin(self, multi_zone_doc):
         """ZoneB has x_origin=10, so its surfaces should be shifted."""
         surfaces = _surfaces(multi_zone_doc, zones=["ZoneB"])
@@ -625,6 +640,13 @@ class TestViewModelIntegration:
         fig_one = view_model(multi_zone_doc, zones=["ZoneA"])
         # Filtered model should have fewer or equal traces
         assert len(fig_one.data) <= len(fig_all.data)
+
+    def test_unknown_zone_refused(self, multi_zone_doc: IDFDocument) -> None:
+        pytest.importorskip("plotly.graph_objects")
+        from idfkit.visualization.model import view_model
+
+        with pytest.raises(ObjectNotFoundError, match="No Zone named 'nope'"):
+            view_model(multi_zone_doc, zones=["nope"])
 
     def test_custom_config(self, multi_zone_doc):
         go = pytest.importorskip("plotly.graph_objects")
@@ -889,8 +911,9 @@ class TestResolveSurfacesNoneCoords:
             },
             validate=False,
         )
-        # Include the non-existent zone name in the filter
-        assert _surfaces(doc, zones=["NonExistentZone"]) == []
+        # A filter naming a zone the model does not hold is refused, not answered with nothing
+        with pytest.raises(ObjectNotFoundError, match="No Zone named 'NonExistentZone'"):
+            _surfaces(doc, zones=["NonExistentZone"])
         # The renderer used to draw it at its authored coordinates, which puts a wall somewhere no
         # zone is and says nothing about why. The public extraction accounts for it instead.
         unresolved = get_scene(doc).unresolved
@@ -937,7 +960,8 @@ class TestResolveSurfacesNoneCoords:
                 "vertex_4_z_coordinate": 2.5,
             },
         )
-        assert _surfaces(doc, zones=["GhostZone"]) == []
+        with pytest.raises(ObjectNotFoundError):
+            _surfaces(doc, zones=["GhostZone"])
         # Both the wall and its window, each named with the zone nothing declares. The window
         # resolves against its parent's zone, so the parent's missing zone is its reason too.
         unresolved = get_scene(doc).unresolved
@@ -976,7 +1000,7 @@ class TestResolveSurfacesNoneCoords:
                 ],
             },
         )
-        surfaces = _surfaces(doc, zones=["GhostZone"])
+        surfaces = _surfaces(doc, zones=["ExistingZone"])
         shading = [s for s in surfaces if s.is_shading]
         assert len(shading) == 1
         # No transform applied since zone_obj is None

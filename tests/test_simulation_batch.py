@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from conftest import REFUSAL_R2, InMemoryFileSystem
+from conftest import REFUSAL_R2, InMemoryFileSystem, design_day_model
 
 from idfkit import LATEST_VERSION, new_document
 from idfkit.simulation.batch import REFUSED_RUN_DIR, BatchResult, SimulationJob, simulate_batch
@@ -341,7 +341,7 @@ class TestSimulateBatchWithoutWeather:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         jobs = [
             SimulationJob(model=new_document(), weather=weather_file, label="with-weather"),
-            SimulationJob(model=new_document(), design_day=True, label="design-day"),
+            SimulationJob(model=design_day_model(), design_day=True, label="design-day"),
         ]
         result = simulate_batch(jobs, energyplus=mock_config, max_workers=1)
         assert result.all_succeeded
@@ -355,7 +355,7 @@ class TestSimulateBatchWithoutWeather:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         jobs = [
             SimulationJob(model=new_document(), weather=weather_file, label="with-weather"),
-            SimulationJob(model=new_document(), design_day=True, label="design-day"),
+            SimulationJob(model=design_day_model(), design_day=True, label="design-day"),
             SimulationJob(model=new_document(), annual=True, label="annual"),
         ]
         result = simulate_batch(jobs, energyplus=mock_config)

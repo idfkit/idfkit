@@ -53,6 +53,8 @@ Internally these read the vertex list off the surface object and build a `Polygo
 
 Zone volume is computed from the bounding surfaces — it works for any prismatic and most non-prismatic geometries.
 
+Each helper takes the zone's name (any case) or the `Zone` object. A name no `Zone` has raises `ObjectNotFoundError` (a `KeyError`) with the closest zone names, as `doc["Zone"][name]` does, rather than returning `0.0`.
+
 ## Building-wide transforms
 
 ```python

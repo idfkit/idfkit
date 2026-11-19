@@ -16,6 +16,7 @@ from conftest import (
     REFUSAL_R2,
     InMemoryAsyncFileSystem,
     InMemoryFileSystem,
+    design_day_model,
     ground_heat_model,
     refusal_r3,
     refusal_r4,
@@ -133,6 +134,16 @@ class TestAsyncSimulate:
         """EnergyPlus would simulate nothing and report success, so the run is refused up front."""
         with pytest.raises(SimulationError, match="annual=True, but the model has no RunPeriod"):
             await async_simulate(new_document(), weather_file, annual=True, energyplus=mock_config)
+        mock_exec.assert_not_called()
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_design_day_without_design_days_refused(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """EnergyPlus would blame the weather data input, so the run is refused up front."""
+        with pytest.raises(SimulationError, match="design_day=True, but the model has no SizingPeriod:DesignDay"):
+            await async_simulate(new_document(), weather_file, design_day=True, energyplus=mock_config)
         mock_exec.assert_not_called()
 
     @pytest.mark.asyncio
@@ -1079,7 +1090,7 @@ class TestAsyncSimulateWithoutWeather:
     ) -> None:
         mock_exec.return_value = _make_mock_process()
         result = await async_simulate(
-            new_document(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
+            design_day_model(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
         )
         cmd = mock_exec.call_args[0]
         assert "-D" in cmd
@@ -1092,7 +1103,7 @@ class TestAsyncSimulateWithoutWeather:
     async def test_positional_none(self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         mock_exec.return_value = _make_mock_process()
         result = await async_simulate(
-            new_document(), None, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
+            design_day_model(), None, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
         )
         cmd = mock_exec.call_args[0]
         assert "-D" in cmd
@@ -1110,7 +1121,9 @@ class TestAsyncSimulateWithoutWeather:
     ) -> None:
         mock_exec.return_value = _make_mock_process()
         with caplog.at_level(logging.DEBUG, logger="idfkit.simulation"):
-            await async_simulate(new_document(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+            await async_simulate(
+                design_day_model(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
+            )
         messages = [record.getMessage() for record in caplog.records]
         assert "Starting async simulation without a weather file" in messages
         assert not any("in.epw" in m for m in messages)
@@ -1124,7 +1137,7 @@ class TestAsyncBatchWithoutWeather:
     def _jobs(weather_file: Path) -> list[SimulationJob]:
         return [
             SimulationJob(model=new_document(), weather=weather_file, label="with-weather"),
-            SimulationJob(model=new_document(), design_day=True, label="design-day"),
+            SimulationJob(model=design_day_model(), design_day=True, label="design-day"),
         ]
 
     @pytest.mark.asyncio
@@ -1170,7 +1183,7 @@ class TestAsyncFileSystemWithoutWeather:
         mock_exec.return_value = _make_mock_process()
         fs = InMemoryAsyncFileSystem()
         result = await async_simulate(
-            new_document(),
+            design_day_model(),
             design_day=True,
             energyplus=mock_config,
             output_dir="remote/output",

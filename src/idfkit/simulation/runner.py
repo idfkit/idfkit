@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Literal, overload
 from ..exceptions import SimulationError
 from ._common import (
     admit_annual,
+    admit_design_day,
     admit_weather,
     build_command,
     ensure_sql_output,
@@ -204,7 +205,8 @@ def simulate(
             ``GroundHeatTransfer:Control`` enables; or *weather* is
             ``None`` and the run directory already contains ``in.epw``. Also
             raised before EnergyPlus starts when *annual* is ``True`` and the
-            model has no ``RunPeriod``.
+            model has no ``RunPeriod``, or when *design_day* is ``True`` and
+            the model has no ``SizingPeriod:DesignDay``.
         ExpandObjectsError: If a preprocessing step (ExpandObjects, Slab,
             or Basement) fails during automatic preprocessing.
         EnergyPlusNotFoundError: If EnergyPlus cannot be found.
@@ -233,6 +235,7 @@ def simulate(
             run_dir=local_output_dir,
         )
         admit_annual(model, annual=annual)
+        admit_design_day(model, design_day=design_day)
         config = resolve_config(energyplus)
         logger.debug("EnergyPlus: %s (version %d.%d.%d)", config.executable, *config.version)
 

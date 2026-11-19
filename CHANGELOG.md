@@ -61,6 +61,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `calculate_zone_floor_area()` and the other zone helpers, and the model views'
+  `zones=`, raised `ObjectNotFoundError` (a `KeyError`) for an unknown zone instead of returning `0.0`
+  or an empty figure, and `zones=` raised `TypeError` for a bare string; catch `KeyError` and pass
+  `zones=[name]`. They also accepted a `Zone` object.
+  ([#329](https://github.com/idfkit/idfkit/pull/329))
+- **Breaking:** `evaluate()` and `values()` raised `MalformedScheduleError` for a `Schedule:Compact`
+  not covering the year through `12/31` or a day through `Until: 24:00`, which EnergyPlus stops on;
+  check `compact_problems()` first. `validate_document()` reported it (`E011`) and values outside
+  `ScheduleTypeLimits` (`E012`). ([#329](https://github.com/idfkit/idfkit/pull/329))
+- **Breaking:** `simulate(design_day=True)` and `async_simulate()` refused a model with no
+  `SizingPeriod:DesignDay` before starting EnergyPlus, naming `DesignDayManager.apply_to_model()`
+  and `apply_ashrae_sizing()` as the fix. ([#329](https://github.com/idfkit/idfkit/pull/329))
 - Validation error `E009` quoted the reference as typed instead of uppercased, named the reference
   list it was looked up in and suggested the closest declared names.
   ([#328](https://github.com/idfkit/idfkit/pull/328))
@@ -175,6 +187,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `Schedule:Compact` keywords written without a colon (`Through 12/31`, `Until 24:00`) were read.
+  ([#329](https://github.com/idfkit/idfkit/pull/329))
 - `doc[obj_type].remove(obj)` removed the object from the document as `removeidfobject()` does;
   it had left the object in the reference graph, so `get_referencing()` still reported it.
   ([#328](https://github.com/idfkit/idfkit/pull/328))

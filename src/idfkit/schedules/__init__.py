@@ -70,6 +70,7 @@ from idfkit.schedules.builder import (
     create_constant_schedule,
     create_schedule_type_limits,
 )
+from idfkit.schedules.compact import compact_problems
 from idfkit.schedules.evaluate import (
     MalformedScheduleError,
     ScheduleEvaluationError,
@@ -114,6 +115,7 @@ __all__ = [
     "SpecialDay",
     "TimeValue",
     "UnsupportedScheduleType",
+    "compact_problems",
     "create_compact_schedule_from_values",
     "create_constant_schedule",
     "create_schedule_type_limits",

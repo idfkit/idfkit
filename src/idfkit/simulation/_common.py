@@ -304,6 +304,36 @@ def admit_annual(model: AnyIDFDocument, *, annual: bool) -> None:
         raise SimulationError(ANNUAL_WITHOUT_RUN_PERIOD_MESSAGE)
 
 
+DESIGN_DAY_WITHOUT_DESIGN_DAYS_MESSAGE = (
+    "design_day=True, but the model has no SizingPeriod:DesignDay. EnergyPlus would stop with "
+    "'Errors found in Weather Data Input', although the weather file is not at fault. Add design days "
+    "first, e.g. DesignDayManager(ddy_path).apply_to_model(model) or apply_ashrae_sizing(model, station) "
+    "from idfkit.weather, or run without design_day=True."
+)
+
+
+def admit_design_day(model: AnyIDFDocument, *, design_day: bool) -> None:
+    """Refuse a design-day-only run (``-D``) of a model that has no ``SizingPeriod:DesignDay``.
+
+    Given ``-D`` and no design day, EnergyPlus reports "Requested Design Days only ... but no Design
+    Days specified" and terminates with "Errors found in Weather Data Input", which points at the
+    weather file rather than the model. ``SizingPeriod:WeatherFileDays`` and
+    ``SizingPeriod:WeatherFileConditionType`` do not count: EnergyPlus counts only
+    ``SizingPeriod:DesignDay`` objects for this check.
+
+    Args:
+        model: The model to be simulated, before version migration.
+        design_day: Whether the run is design-day-only (``-D``).
+
+    Raises:
+        SimulationError: If *design_day* is true and *model* has no ``SizingPeriod:DesignDay``.
+    """
+    if design_day and "SizingPeriod:DesignDay" not in model:
+        from ..exceptions import SimulationError
+
+        raise SimulationError(DESIGN_DAY_WITHOUT_DESIGN_DAYS_MESSAGE)
+
+
 def refuse_default_weather(run_dir: Path) -> None:
     """Refuse a run without a weather file whose run directory already holds ``in.epw``.
 

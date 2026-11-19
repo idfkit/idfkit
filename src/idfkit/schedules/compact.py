@@ -41,11 +41,13 @@ from idfkit.schedules.types import (
 if TYPE_CHECKING:
     from idfkit.objects import IDFObject
 
-# Regex patterns for parsing Schedule:Compact fields
-_THROUGH_PATTERN = re.compile(r"^through:\s*(\d{1,2})[/\-](\d{1,2})$", re.IGNORECASE)
-_FOR_PATTERN = re.compile(r"^for:\s*(.+)$", re.IGNORECASE)
-_UNTIL_PATTERN = re.compile(r"^until:\s*(\d{1,2}):(\d{2})(?::(\d{2}))?$", re.IGNORECASE)
-_INTERPOLATE_PATTERN = re.compile(r"^interpolate:\s*(yes|no|average|linear)$", re.IGNORECASE)
+# Regex patterns for parsing Schedule:Compact fields. EnergyPlus reads a keyword with or without its
+# colon, and with space before it: ``Through 12/31``, ``Through : 12/31``, ``For AllDays`` and
+# ``Until 24:00`` all appear in its example files. The keyword must be followed by a colon or a space.
+_THROUGH_PATTERN = re.compile(r"^through(?:\s*:\s*|\s+)(\d{1,2})[/\-](\d{1,2})$", re.IGNORECASE)
+_FOR_PATTERN = re.compile(r"^for(?:\s*:\s*|\s+)(.+)$", re.IGNORECASE)
+_UNTIL_PATTERN = re.compile(r"^until(?:\s*:\s*|\s+)(\d{1,2}):(\d{2})(?::(\d{2}))?$", re.IGNORECASE)
+_INTERPOLATE_PATTERN = re.compile(r"^interpolate(?:\s*:\s*|\s+)(yes|no|average|linear)$", re.IGNORECASE)
 _VALUE_PATTERN = re.compile(r"^-?\d+\.?\d*$")
 
 # Day type name mapping (case-insensitive)
@@ -75,6 +77,8 @@ _DAY_TYPE_MAP = {
 # results are discarded when the object is mutated.
 _ParseResult = tuple[list[CompactPeriod], Interpolation]
 _parse_cache: weakref.WeakKeyDictionary[IDFObject, tuple[_ParseResult, int]] = weakref.WeakKeyDictionary()
+# compact_problems results, cached the same way: evaluate_compact checks them on every call.
+_problems_cache: weakref.WeakKeyDictionary[IDFObject, tuple[tuple[str, ...], int]] = weakref.WeakKeyDictionary()
 
 
 @dataclass
@@ -212,6 +216,80 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
     return result
 
 
+def compact_problems(obj: IDFObject) -> list[str]:
+    """List the ways a Schedule:Compact fails to cover the year that EnergyPlus treats as fatal.
+
+    EnergyPlus terminates on a schedule whose last ``Through:`` is not ``12/31`` ("has missing days
+    in its schedule pointers") and on a ``For:`` block whose last ``Until:`` is not ``24:00``
+    ("incomplete day detected"). An evaluator that quietly reused the last period or the last
+    value for the uncovered time would show values for a model that cannot run.
+
+    Day types a schedule leaves out (``For: Weekdays`` alone) are not listed: EnergyPlus only
+    warns about them.
+
+    Args:
+        obj: The Schedule:Compact object.
+
+    Returns:
+        One message per problem, in field order; empty when the schedule covers the year.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> doc = new_document()
+        >>> heat = doc.add("Schedule:Compact", "Heat", data=[
+        ...     {"field": "Through: 6/30"}, {"field": "For: AllDays"},
+        ...     {"field": "Until: 12:00"}, {"field": "20"}])
+        >>> for problem in compact_problems(heat):
+        ...     print(problem)
+        the last 'Through:' is 6/30, not 12/31, so the rest of the year has no values
+        'Through: 6/30' block 1 ('For:' AllDays) ends at 'Until: 12:00', not 'Until: 24:00', so the rest of the day has no value
+    """
+    return list(_cached_problems(obj))
+
+
+def _cached_problems(obj: IDFObject) -> tuple[str, ...]:
+    """[compact_problems][idfkit.schedules.compact.compact_problems], cached until *obj* is mutated."""
+    cached = _problems_cache.get(obj)
+    if cached is not None and cached[1] == obj.mutation_version:
+        return cached[0]
+    problems = tuple(_find_compact_problems(obj))
+    _problems_cache[obj] = (problems, obj.mutation_version)
+    return problems
+
+
+def _find_compact_problems(obj: IDFObject) -> list[str]:
+    """Uncached body of [compact_problems][idfkit.schedules.compact.compact_problems]."""
+    periods, _ = parse_compact(obj)
+    if not periods:
+        return ["it has no 'Through:' field, so no day of the year has values"]
+
+    problems: list[str] = []
+    # EnergyPlus reads a 'Through:' after the one that reaches 12/31 without complaint, so the year
+    # is covered when any period reaches it, not only the last.
+    if all((p.end_month, p.end_day) != (12, 31) for p in periods):
+        last = periods[-1]
+        problems.append(
+            f"the last 'Through:' is {last.end_month}/{last.end_day}, not 12/31, so the rest of the year has no values"
+        )
+    for period in periods:
+        through = f"'Through: {period.end_month}/{period.end_day}'"
+        if not period.day_rules:
+            problems.append(f"{through} has no 'For:' field, so its days have no values")
+        for index, rule in enumerate(period.day_rules, start=1):
+            days = " ".join(sorted(rule.day_types)) or "?"
+            block = f"{through} block {index} ('For:' {days})"
+            if not rule.time_values:
+                problems.append(f"{block} has no 'Until:' value, so its days have no values")
+                continue
+            end = rule.time_values[-1].until_time
+            if end != END_OF_DAY:
+                problems.append(
+                    f"{block} ends at 'Until: {end.hour:02d}:{end.minute:02d}', not 'Until: 24:00', "
+                    "so the rest of the day has no value"
+                )
+    return problems
+
+
 def _parse_day_types(day_types_str: str) -> set[str]:
     """Parse a day types string from the For: field.
 
@@ -256,11 +334,19 @@ def evaluate_compact(
 
     Returns:
         The schedule value.
+
+    Raises:
+        ValueError: If the schedule does not cover the whole year through ``12/31`` or a day
+            through ``24:00`` (see [compact_problems][idfkit.schedules.compact.compact_problems]),
+            which EnergyPlus refuses as fatal. ``evaluate()`` raises it as
+            ``MalformedScheduleError``.
     """
     periods, interpolation = parse_compact(obj)
 
-    if not periods:
-        return 0.0
+    problems = _cached_problems(obj)
+    if problems:
+        msg = f"schedule {obj.name!r} would stop EnergyPlus: " + "; ".join(problems)
+        raise ValueError(msg)
 
     d = dt.date()
     current_time = dt.time()

@@ -31,7 +31,7 @@
 | `energyplus` | auto-discover | Pre-built `EnergyPlusConfig` (skip discovery). |
 | `expand_objects` | `True` | Run `ExpandObjects` + ground-heat preprocessors as needed. |
 | `annual` | `False` | `-a` flag (annual sim, skip design days). Needs a `RunPeriod`: without one EnergyPlus simulates nothing yet exits successfully, so `simulate` raises `SimulationError` before running. `new_document()` and the geometry builders add none. |
-| `design_day` | `False` | `-D` flag (design-day only, skip annual). |
+| `design_day` | `False` | `-D` flag (design-day only, skip annual). Needs a `SizingPeriod:DesignDay`: without one EnergyPlus stops blaming the weather data input, so `simulate` raises `SimulationError` before running. Add them with `DesignDayManager(ddy).apply_to_model(doc)` or `apply_ashrae_sizing(doc, station)`. |
 | `output_suffix` | `"C"` | File-naming style: `"C"` gives `eplus.err`, `eplusTable.htm`; `"L"` (legacy) gives `eplusout.err`, `eplustbl.htm`; `"D"` gives `eplus.err`, `eplus-table.htm`. `result.*_path` finds the file in any style. |
 | `readvars` | `False` | Run `ReadVarsESO` to produce `eplus.csv` (`eplusout.csv` with `"L"`). |
 | `timeout` | `3600` | Wall-clock seconds for the main EnergyPlus process. |

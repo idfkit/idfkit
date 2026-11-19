@@ -86,6 +86,26 @@ class TestEvaluate:
             evaluate(obj, datetime(2024, 1, 1, 12, 0))
 
 
+class TestMalformedCompact:
+    """A Schedule:Compact that EnergyPlus refuses is refused, not extended or filled."""
+
+    @pytest.mark.parametrize(
+        ("fields", "match"),
+        [
+            (["Through: 6/30", "For: AllDays", "Until: 24:00", "20"], "not 12/31"),
+            (["Through: 12/31", "For: AllDays", "Until: 12:00", "20"], "not 'Until: 24:00'"),
+        ],
+        ids=["year-not-covered", "day-not-covered"],
+    )
+    def test_evaluate_and_values_raise(self, fields: list[str], match: str) -> None:
+        doc = new_document()
+        sched = doc.add("Schedule:Compact", "Heat", data=[{"field": f} for f in fields], validate=False)
+        with pytest.raises(MalformedScheduleError, match=match):
+            evaluate(sched, datetime(2024, 7, 6, 14))
+        with pytest.raises(MalformedScheduleError, match="'Heat' would stop EnergyPlus"):
+            values(sched, year=2024, start_date=(1, 1), end_date=(1, 1))
+
+
 class TestValues:
     """Tests for values function."""
 

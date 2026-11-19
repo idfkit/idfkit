@@ -220,6 +220,10 @@ def validate_document(  # noqa: C901
                 else:
                     info.append(err)
 
+    # Schedules EnergyPlus refuses as fatal although every field is valid on its own
+    for err in _validate_schedules(doc, types_to_check, check_ranges=check_ranges):
+        errors.append(err)
+
     # Check reference integrity
     if check_references:
         ref_errors = _validate_references(doc, schema)
@@ -237,6 +241,101 @@ def validate_document(  # noqa: C901
         len(info),
     )
     return result
+
+
+#: Schedule types whose values ``_schedule_values`` reads, for the type-limits check (``E012``).
+_LIMITED_SCHEDULE_TYPES = ("Schedule:Compact", "Schedule:Constant")
+
+
+def _validate_schedules(doc: AnyIDFDocument, types_to_check: list[str], *, check_ranges: bool) -> list[ValidationError]:
+    """Report schedules EnergyPlus terminates on although each field is valid on its own.
+
+    ``E011``: a ``Schedule:Compact`` that does not cover the year through ``12/31``, or a day
+    through ``Until: 24:00``. ``E012`` (with *check_ranges*): a ``Schedule:Compact`` or
+    ``Schedule:Constant`` value outside the lower or upper limit of its ``ScheduleTypeLimits``.
+    """
+    from .schedules.compact import compact_problems
+
+    findings: list[ValidationError] = []
+    if "Schedule:Compact" in types_to_check:
+        for obj in doc["Schedule:Compact"]:
+            try:
+                problems = compact_problems(obj)
+            except ValueError as e:
+                problems = [f"it cannot be read ({e})"]
+            findings.extend(
+                ValidationError(
+                    severity=Severity.ERROR,
+                    obj_type=obj.obj_type,
+                    obj_name=obj.name,
+                    field="data",
+                    message=f"{problem[:1].upper()}{problem[1:]}; EnergyPlus stops on this schedule",
+                    code="E011",
+                )
+                for problem in problems
+            )
+    if check_ranges:
+        for obj_type in _LIMITED_SCHEDULE_TYPES:
+            if obj_type not in types_to_check:
+                continue
+            for obj in doc.get_collection(obj_type):
+                finding = _schedule_limit_failure(doc, obj)
+                if finding is not None:
+                    findings.append(finding)
+    return findings
+
+
+def _as_number(value: Any) -> float | None:
+    """*value* as a float when it is an int or float (not a bool), else ``None``."""
+    return float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+
+
+def _schedule_values(obj: IDFObject) -> list[float]:
+    """The values a ``Schedule:Compact`` or ``Schedule:Constant`` can take."""
+    if obj.obj_type == "Schedule:Constant":
+        value = _as_number(obj.data.get("hourly_value"))
+        return [] if value is None else [value]
+    from .schedules.compact import parse_compact
+
+    periods, _ = parse_compact(obj)
+    values: list[float] = []
+    for period in periods:
+        values.extend(tv.value for rule in period.day_rules for tv in rule.time_values)
+        if (period.end_month, period.end_day) == (12, 31):
+            break  # EnergyPlus ignores the periods after the one that reaches 12/31
+    return values
+
+
+def _schedule_limit_failure(doc: AnyIDFDocument, obj: IDFObject) -> ValidationError | None:
+    """``E012`` for the first value of *obj* outside its ``ScheduleTypeLimits``, if any."""
+    limits_name = obj.data.get("schedule_type_limits_name")
+    if not isinstance(limits_name, str) or not limits_name or limits_name not in doc["ScheduleTypeLimits"]:
+        return None
+    limits = doc["ScheduleTypeLimits"][limits_name]
+    lower = _as_number(limits.data.get("lower_limit_value"))
+    upper = _as_number(limits.data.get("upper_limit_value"))
+    if lower is None and upper is None:
+        return None
+    try:
+        schedule_values = _schedule_values(obj)
+    except ValueError:
+        return None  # E011 reports a schedule that cannot be read
+    for value in schedule_values:
+        if (lower is not None and value < lower) or (upper is not None and value > upper):
+            low = "-inf" if lower is None else f"{lower:g}"
+            high = "inf" if upper is None else f"{upper:g}"
+            return ValidationError(
+                severity=Severity.ERROR,
+                obj_type=obj.obj_type,
+                obj_name=obj.name,
+                field="schedule_type_limits_name",
+                message=(
+                    f"Value {value:g} is outside the limits [{low}, {high}] of ScheduleTypeLimits "
+                    f"'{limits.name}'; EnergyPlus stops on this schedule"
+                ),
+                code="E012",
+            )
+    return None
 
 
 def validate_object(
