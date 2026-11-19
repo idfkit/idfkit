@@ -439,6 +439,16 @@ class TestVersionGuards:
         )
         assert _releases(source, "Space") is None
 
+    def test_walrus_in_the_test_that_rebinds_the_document_drops_the_guard(self) -> None:
+        source = _src(
+            """\
+            def f(doc, other):
+                if doc.version >= (9, 6, 0) and (doc := other):
+                    doc["Space"]
+            """
+        )
+        assert _releases(source, "Space") is None
+
     @pytest.mark.parametrize(
         "rebinding",
         [
