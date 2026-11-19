@@ -126,6 +126,16 @@ with simulate_batch(jobs, max_workers=4) as batch:  # deletes the jobs' temp run
 # --8<-- [end:batch]
 
 
+# --8<-- [start:batch-fail-fast]
+batch = simulate_batch(jobs, max_workers=4, fail_fast=True)  # stop at the first failed job
+for result in batch.failed:  # the job that failed (and any that failed before the stop)
+    print(result.errors.summary())
+for result in batch.cancelled:  # never started, or EnergyPlus killed; nothing is raised
+    print(result.refusal)  # "never started: job 'wwr_30' failed and fail_fast=True stopped the batch"
+batch.cleanup()
+# --8<-- [end:batch-fail-fast]
+
+
 # --8<-- [start:caching]
 from idfkit.simulation import SimulationCache
 

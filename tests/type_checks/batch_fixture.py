@@ -17,7 +17,7 @@ from __future__ import annotations
 from typing_extensions import assert_type
 
 from idfkit import new_document
-from idfkit.simulation import SimulationJob, simulate_batch
+from idfkit.simulation import SimulationJob, SimulationResult, simulate_batch
 from idfkit.versioned import AnyIDFDocument
 
 
@@ -40,6 +40,8 @@ def correct_calls() -> None:
     simulate_batch([job], progress=_full)
     simulate_batch([job], progress=_positional_or_keyword)
     simulate_batch([job], progress=_kwargs)
+    stopped = simulate_batch([job], fail_fast=True)
+    assert_type(stopped.cancelled, tuple[SimulationResult, ...])
 
 
 def seeded_errors() -> None:

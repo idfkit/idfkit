@@ -87,9 +87,9 @@ _OUTPUT_HINTS: dict[str, _OutputHint] = {
 }
 
 
-def _refusal_report(refusal: str) -> ErrorReport:
-    """The error report of a refused batch job: one fatal message giving the reason."""
-    fatal = ErrorMessage(severity="Fatal", message=f"refused: {refusal}", details=())
+def _refusal_report(refusal: str, *, cancelled: bool = False) -> ErrorReport:
+    """The error report of a refused or cancelled batch job: one fatal message giving the reason."""
+    fatal = ErrorMessage(severity="Fatal", message=f"{'cancelled' if cancelled else 'refused'}: {refusal}", details=())
     return ErrorReport(
         fatal=(fatal,),
         severe=(),
@@ -253,6 +253,12 @@ class SimulationResult:
             and the ``with`` / ``async with`` blocks delete it. ``False`` for a
             caller's ``output_dir``, a remote ``fs`` directory and a cache entry,
             which are never deleted.
+        cancelled: ``True`` for a batch job that ``fail_fast=True`` cancelled
+            after another job failed: it never started, or its EnergyPlus run
+            was killed. Such a result is failed, and like a refused one carries
+            the reason in ``refusal`` and reads no files from ``run_dir``.
+            [BatchResult.cancelled][idfkit.simulation.batch.BatchResult.cancelled]
+            lists them.
     """
 
     run_dir: Path
@@ -269,6 +275,7 @@ class SimulationResult:
     refusal: str | None = None
     cached: bool = False
     owns_run_dir: bool = field(default=False, repr=False)
+    cancelled: bool = False
     _cached_errors: Any = field(default=_UNSET, init=False, repr=False)
     _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
@@ -284,7 +291,8 @@ class SimulationResult:
 
     def __repr__(self) -> str:
         if self.refusal is not None:
-            return f"SimulationResult(refused: {self.refusal!r}, run_dir={self.run_dir!r})"
+            kind = "cancelled" if self.cancelled else "refused"
+            return f"SimulationResult({kind}: {self.refusal!r}, run_dir={self.run_dir!r})"
         return (
             f"SimulationResult(run_dir={self.run_dir!r}, success={self.success!r}, exit_code={self.exit_code!r}, "
             f"runtime_seconds={self.runtime_seconds!r}, output_prefix={self.output_prefix!r}"
@@ -405,7 +413,7 @@ class SimulationResult:
     def _failure(self, report: ErrorReport, err_path: Path | None) -> SimulationError:
         """The error :meth:`raise_for_status` raises for this failed run."""
         if self.refusal is not None:
-            msg = f"Simulation refused: {self.refusal}"
+            msg = f"Simulation {'cancelled' if self.cancelled else 'refused'}: {self.refusal}"
             # A stderr that only restates the reason (the exception's own message) is not repeated.
             stderr = self.stderr if self.stderr and self.refusal not in self.stderr else None
             return SimulationError(msg, exit_code=self.exit_code, stderr=stderr, result=self)
@@ -432,7 +440,12 @@ class SimulationResult:
     def _output_error(self, output: str, err_path: Path | None) -> OutputNotFoundError:
         """Build the actionable `OutputNotFoundError` for *output* (an accessor name)."""
         hint = _OUTPUT_HINTS[output]
-        if self.refusal is not None:
+        if self.cancelled:
+            msg = (
+                f"No {hint.file}: this batch job was cancelled ({self.refusal}). "
+                "result.raise_for_status() raises with the reason."
+            )
+        elif self.refusal is not None:
             msg = (
                 f"No {hint.file}: this job was refused before EnergyPlus ran ({self.refusal}). "
                 "result.raise_for_status() raises with the reason."
@@ -462,7 +475,7 @@ class SimulationResult:
             return cached  # type: ignore[no-any-return]
         err = self.err_path
         if self.refusal is not None:
-            report = _refusal_report(self.refusal)
+            report = _refusal_report(self.refusal, cancelled=self.cancelled)
         elif err is None:
             report = ErrorReport.from_string("")
         elif self.fs is not None:
@@ -766,7 +779,7 @@ class SimulationResult:
             return cached  # type: ignore[no-any-return]
         err = await self._async_find_output_file(".err")
         if self.refusal is not None:
-            report = _refusal_report(self.refusal)
+            report = _refusal_report(self.refusal, cancelled=self.cancelled)
         elif err is None:
             report = ErrorReport.from_string("")
         elif self.async_fs is not None:

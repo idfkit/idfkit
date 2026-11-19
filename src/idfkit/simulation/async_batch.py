@@ -44,12 +44,20 @@ import asyncio
 import logging
 import os
 import time
-from collections.abc import AsyncGenerator, Callable, Sequence
+from collections.abc import AsyncGenerator, Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from .async_runner import async_simulate
-from .batch import BatchResult, SimulationJob, check_jobs_for_fs, err_snapshot, failed_job_result
+from .batch import (
+    BatchResult,
+    SimulationJob,
+    cancelled_job_result,
+    check_jobs_for_fs,
+    err_snapshot,
+    fail_fast_reason,
+    failed_job_result,
+)
 from .progress import SimulationProgress
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
@@ -92,6 +100,7 @@ async def async_simulate_batch(
     cache: SimulationCache | None = None,
     fs: FileSystem | AsyncFileSystem | None = None,
     on_progress: Callable[[SimulationProgress], Any] | None = None,
+    fail_fast: bool = False,
 ) -> BatchResult:
     """Run multiple EnergyPlus simulations concurrently using asyncio.
 
@@ -101,7 +110,11 @@ async def async_simulate_batch(
 
     Individual job failures are captured as failed
     [SimulationResult][idfkit.simulation.result.SimulationResult] entries -- the batch
-    never raises due to a single job failing.
+    never raises due to a single job failing, and by default every other job
+    still runs. With ``fail_fast=True`` the first failed job cancels the jobs
+    still queued or running (their EnergyPlus processes are killed) and the
+    batch returns, reporting them in
+    [BatchResult.cancelled][idfkit.simulation.batch.BatchResult.cancelled].
 
     Args:
         jobs: Sequence of simulation jobs to execute.
@@ -122,6 +135,8 @@ async def async_simulate_batch(
             The ``"tqdm"`` shorthand is not supported for batch runners;
             use [tqdm_progress][idfkit.simulation.progress_bars.tqdm_progress]
             with a custom per-job callback instead.
+        fail_fast: Stop the batch at the first failed job, cancelling the jobs
+            still queued or running, instead of running every job.
 
     Returns:
         A [BatchResult][idfkit.simulation.batch.BatchResult] with results in the
@@ -155,10 +170,12 @@ async def async_simulate_batch(
         semaphore = asyncio.Semaphore(max_concurrent)
         results: list[SimulationResult | None] = [None] * len(jobs)
         start = time.monotonic()
+        stopper = _FailFast(enabled=fail_fast, semaphore=semaphore)
 
         async def _run_one(idx: int, job: SimulationJob) -> None:
-            async with semaphore:
-                results[idx] = await _async_run_job(idx, job, energyplus, cache, fs, progress_cb)
+            results[idx] = await stopper.run(
+                idx, job, lambda: _async_run_job(idx, job, energyplus, cache, fs, progress_cb)
+            )
 
         tasks = [asyncio.create_task(_run_one(i, job)) for i, job in enumerate(jobs)]
         await asyncio.gather(*tasks)
@@ -175,9 +192,10 @@ async def async_simulate_batch(
 
     batch_result = BatchResult(results=tuple(final), total_runtime_seconds=elapsed)
     logger.info(
-        "Async batch complete: %d succeeded, %d failed in %.1fs",
+        "Async batch complete: %d succeeded, %d failed, %d cancelled in %.1fs",
         len(batch_result.succeeded),
         len(batch_result.failed),
+        len(batch_result.cancelled),
         elapsed,
     )
     return batch_result
@@ -191,6 +209,7 @@ async def async_simulate_batch_stream(
     cache: SimulationCache | None = None,
     fs: FileSystem | AsyncFileSystem | None = None,
     on_progress: Callable[[SimulationProgress], Any] | None = None,
+    fail_fast: bool = False,
 ) -> AsyncGenerator[SimulationEvent, None]:
     """Run simulations concurrently, yielding events as each one completes.
 
@@ -207,6 +226,10 @@ async def async_simulate_batch_stream(
     their EnergyPlus processes. Leaving an ``async for`` loop early closes it
     once the generator is garbage-collected; to close it at a known point,
     iterate inside ``contextlib.aclosing(async_simulate_batch_stream(...))``.
+
+    With ``fail_fast=True`` the first failed job cancels the jobs still queued
+    or running. The stream still yields one event per job: each cancelled job's
+    event follows, with ``event.result.cancelled`` set.
 
     Args:
         jobs: Sequence of simulation jobs to execute.
@@ -225,6 +248,8 @@ async def async_simulate_batch_stream(
             is not supported for batch runners; use
             [tqdm_progress][idfkit.simulation.progress_bars.tqdm_progress]
             with a custom per-job callback instead.
+        fail_fast: Stop the batch at the first failed job, cancelling the jobs
+            still queued or running, instead of running every job.
 
     Yields:
         [SimulationEvent][idfkit.simulation.async_batch.SimulationEvent] for each completed simulation, in the order
@@ -256,11 +281,11 @@ async def async_simulate_batch_stream(
     total = len(jobs)
     queue: asyncio.Queue[SimulationEvent] = asyncio.Queue()
     completed_count = 0
+    stopper = _FailFast(enabled=fail_fast, semaphore=semaphore)
 
     async def _run_one(idx: int, job: SimulationJob) -> None:
         nonlocal completed_count
-        async with semaphore:
-            result = await _async_run_job(idx, job, energyplus, cache, fs, progress_cb)
+        result = await stopper.run(idx, job, lambda: _async_run_job(idx, job, energyplus, cache, fs, progress_cb))
         completed_count += 1
         await queue.put(
             SimulationEvent(
@@ -285,6 +310,59 @@ async def async_simulate_batch_stream(
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
+
+
+class _FailFast:
+    """Runs the jobs of one async batch, and with *enabled* stops the batch at the first failed job.
+
+    The first failure cancels the other jobs' tasks; a task cancelled that way, queued or running,
+    returns a cancelled result instead of raising, so the batch still has one result per job. Any
+    other cancellation (the caller's) propagates as usual.
+    """
+
+    def __init__(self, *, enabled: bool, semaphore: asyncio.Semaphore) -> None:
+        self.enabled = enabled
+        self.semaphore = semaphore
+        self.reason: str | None = None
+        # Tasks currently inside run(). Only these are cancelled: cancelling a task that has not
+        # started yet would cancel it before run() could turn the cancellation into a result.
+        self._entered: set[asyncio.Task[Any]] = set()
+
+    async def run(
+        self, idx: int, job: SimulationJob, simulate: Callable[[], Awaitable[SimulationResult]]
+    ) -> SimulationResult:
+        """Run *job* (number *idx*) through *simulate* under the batch's concurrency limit."""
+        if not self.enabled:
+            async with self.semaphore:
+                return await simulate()
+        if self.reason is not None:
+            return cancelled_job_result(job, self.reason, started=False)
+        current = asyncio.current_task()
+        if current is not None:
+            self._entered.add(current)
+        started = False
+        try:
+            async with self.semaphore:
+                if self.reason is not None:
+                    return cancelled_job_result(job, self.reason, started=False)
+                started = True
+                result = await simulate()
+        except asyncio.CancelledError:
+            if self.reason is None:
+                raise  # not ours: the caller cancelled the batch
+            return cancelled_job_result(job, self.reason, started=started)
+        finally:
+            if current is not None:
+                self._entered.discard(current)
+        if not result.success and self.reason is None:
+            self.reason = fail_fast_reason(idx, job)
+            # Tasks that have not entered run() yet see self.reason on entry and return a cancelled
+            # result; only the ones suspended inside it need cancelling.
+            stopping = [task for task in self._entered if task is not current and not task.done()]
+            logger.info("Job %s failed; fail_fast cancels %d jobs", job.label or f"#{idx}", len(stopping))
+            for task in stopping:
+                task.cancel()
+        return result
 
 
 async def _async_run_job(

@@ -1,7 +1,8 @@
 """Interrupting a run kills the EnergyPlus processes it started.
 
 A stand-in ``energyplus`` shell script records its PID in its run directory and
-then sleeps, unless the run directory's name contains ``fast``.
+then sleeps, unless the run directory's name contains ``fast`` (it exits 0) or
+``fail`` (it exits 1).
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ from idfkit import LATEST_VERSION
 from idfkit.exceptions import MigrationError
 from idfkit.migration.subprocess_backend import SubprocessMigrator
 from idfkit.simulation._cancel import ProcessGroup, run_process
-from idfkit.simulation.async_batch import async_simulate_batch_stream
+from idfkit.simulation.async_batch import async_simulate_batch, async_simulate_batch_stream
 from idfkit.simulation.async_runner import async_simulate
 from idfkit.simulation.batch import SimulationJob, simulate_batch
 from idfkit.simulation.config import EnergyPlusConfig
@@ -32,7 +33,7 @@ pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="the stand-in En
 
 _SCRIPT = """#!/bin/sh
 echo $$ > "$PWD/pid"
-case "$PWD" in *fast*) exit 0 ;; esac
+case "${PWD##*/}" in *fast*) exit 0 ;; *fail*) exit 1 ;; esac
 exec sleep 60
 """
 
@@ -152,6 +153,62 @@ class TestSimulateBatchInterrupted:
 
         with pytest.raises(_Stop):
             simulate_batch(jobs, energyplus=sleepy_config, max_workers=2, progress=stop, on_progress=lambda _p: None)
+        assert not any(_alive(pid) for pid in _started_pids(run_dirs))
+
+
+class TestFailFast:
+    def test_first_failure_stops_the_batch(
+        self, tmp_path: Path, sleepy_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        run_dirs = [tmp_path / "fail0", *(tmp_path / f"slow{i}" for i in range(1, 5))]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=d) for d in run_dirs]
+
+        start = time.monotonic()
+        batch = simulate_batch(jobs, energyplus=sleepy_config, max_workers=2, fail_fast=True)
+        assert time.monotonic() - start < 30
+
+        assert batch.failed == (batch[0],)
+        assert batch.cancelled == tuple(batch[1:])
+        assert batch[1].refusal is not None
+        assert batch[1].refusal.startswith(("stopped while running: ", "never started: "))
+        # Both workers were busy (fail0 then slow2, and slow1) until the stop, so slow3 and slow4 never started.
+        assert [r.refusal for r in batch[3:]] == [
+            "never started: job #0 failed and fail_fast=True stopped the batch"
+        ] * 2
+        assert not (run_dirs[3] / "pid").exists()
+        assert not any(_alive(pid) for pid in _started_pids(run_dirs))
+
+    @pytest.mark.asyncio
+    async def test_async_first_failure_stops_the_batch(
+        self, tmp_path: Path, sleepy_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        run_dirs = [tmp_path / "fail0", tmp_path / "slow1", tmp_path / "slow2"]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=d) for d in run_dirs]
+
+        start = time.monotonic()
+        batch = await async_simulate_batch(jobs, energyplus=sleepy_config, max_concurrent=2, fail_fast=True)
+        assert time.monotonic() - start < 30
+
+        assert batch.failed == (batch[0],)
+        assert batch.cancelled == (batch[1], batch[2])
+        assert batch[2].refusal is not None
+        assert batch[2].refusal.startswith("never started: ")
+        assert not any(_alive(pid) for pid in _started_pids(run_dirs))
+
+    @pytest.mark.asyncio
+    async def test_stream_first_failure_stops_the_batch(
+        self, tmp_path: Path, sleepy_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        run_dirs = [tmp_path / "fail0", tmp_path / "slow1", tmp_path / "slow2"]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, output_dir=d) for d in run_dirs]
+        events = [
+            event
+            async for event in async_simulate_batch_stream(
+                jobs, energyplus=sleepy_config, max_concurrent=2, fail_fast=True
+            )
+        ]
+        assert (len(events), events[0].index, events[0].result.cancelled) == (3, 0, False)
+        assert sorted(e.index for e in events if e.result.cancelled) == [1, 2]
         assert not any(_alive(pid) for pid in _started_pids(run_dirs))
 
 
