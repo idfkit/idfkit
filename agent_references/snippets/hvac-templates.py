@@ -72,6 +72,7 @@ doc.add(
     "Chiller 1",
     chiller_type="ElectricCentrifugalChiller",
     capacity="Autosize",
+    nominal_cop=6.1,
     condenser_type="WaterCooled",
 )
 doc.add("HVACTemplate:Plant:Tower", "CT-1", tower_type="SingleSpeed", high_speed_nominal_capacity="Autosize")

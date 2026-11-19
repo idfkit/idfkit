@@ -1659,3 +1659,160 @@ class TestNamelessObjectIssues:
         assert restored.obj is None
         assert len(pickle.dumps(err)) < 1000
         assert copy.copy(err).obj is a
+
+
+class TestReferencesEnergyPlusAccepts:
+    """References that EnergyPlus runs without a severe error are not ``E009`` errors."""
+
+    def test_built_in_glycol_is_defined(self) -> None:
+        """SupermarketSecondary.idf gives PropyleneGlycol concentration data with no FluidProperties:Name."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("FluidProperties:Temperatures", "GlycolTemperatures", validate=False)
+        doc.add(
+            "FluidProperties:Concentration",
+            "",
+            {
+                "fluid_name": "PropyleneGlycol",
+                "fluid_property_type": "Density",
+                "temperature_values_name": "GlycolTemperatures",
+                "concentration": 0.3,
+            },
+            validate=False,
+        )
+        doc.add(
+            "PlantLoop",
+            "Loop",
+            {"fluid_type": "UserDefinedFluidType", "user_defined_fluid_type": "Water"},
+            validate=False,
+        )
+
+        result = validate_document(doc)
+
+        assert [e for e in result.errors if e.code == "E009"] == []
+
+    @pytest.mark.parametrize(
+        ("obj_type", "fields", "field"),
+        [
+            (
+                "PlantLoop",
+                {"fluid_type": "UserDefinedFluidType", "user_defined_fluid_type": "EthyleneGlycol"},
+                "user_defined_fluid_type",
+            ),
+            (
+                "CondenserLoop",
+                {"fluid_type": "UserDefinedFluidType", "user_defined_fluid_type": "PropyleneGlycol"},
+                "user_defined_fluid_type",
+            ),
+            ("Refrigeration:SecondarySystem", {"circulating_fluid_name": "EthyleneGlycol"}, "circulating_fluid_name"),
+            (
+                "Refrigeration:System",
+                {"refrigeration_system_working_fluid_type": "Water"},
+                "refrigeration_system_working_fluid_type",
+            ),
+        ],
+    )
+    def test_built_in_fluid_where_energyplus_does_not_look_it_up(
+        self, obj_type: str, fields: dict[str, str], field: str
+    ) -> None:
+        """A loop's user-defined fluid names a FluidProperties:GlycolConcentration, not a raw glycol.
+
+        EnergyPlus stops on ``User Defined Fluid Type = ETHYLENEGLYCOL, item not found``.
+        """
+        doc = new_document(version=(24, 1, 0))
+        doc.add(obj_type, "Obj", fields, validate=False)
+
+        result = validate_document(doc)
+
+        assert field in [e.field for e in result.errors if e.code == "E009"]
+
+    @pytest.mark.parametrize(
+        ("obj_type", "fields"),
+        [
+            ("PlantLoop", {"fluid_type": "UserDefinedFluidType", "user_defined_fluid_type": "Water"}),
+            ("Refrigeration:System", {"refrigeration_system_working_fluid_type": "Steam"}),
+        ],
+    )
+    def test_built_in_fluid_where_energyplus_finds_it(self, obj_type: str, fields: dict[str, str]) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add(obj_type, "Obj", fields, validate=False)
+
+        result = validate_document(doc)
+
+        assert [e.field for e in result.errors if e.code == "E009" and e.field in fields] == []
+
+    def test_an_unknown_fluid_is_still_an_error(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("FluidProperties:Concentration", "", {"fluid_name": "NotAGlycol"}, validate=False)
+
+        result = validate_document(doc)
+
+        assert [e.field for e in result.errors if e.code == "E009"] == ["fluid_name"]
+
+    def test_missing_schedule_type_limits_is_a_warning(self) -> None:
+        """EnergyPlus warns that the limits are not found and runs the schedule unchecked."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Schedule:Constant", "WaterTempSchedule", schedule_type_limits_name="Any Number", hourly_value=10.0)
+
+        result = validate_document(doc)
+
+        assert [e for e in result.errors if e.code == "E009"] == []
+        warning = next(w for w in result.warnings if w.code == "W006")
+        assert warning.field == "schedule_type_limits_name"
+        assert "'Any Number'" in warning.message
+        assert "only warns" in warning.message
+
+    def test_setpoint_schedule_ignored_by_constant_ventilation(self) -> None:
+        """CrossVent_1Zone_AirflowNetwork.idf: mode CONSTANT never reads the setpoint schedule."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "ZONA")
+        doc.add(
+            "AirflowNetwork:MultiZone:Zone",
+            "",
+            {
+                "zone_name": "ZONA",
+                "ventilation_control_mode": "CONSTANT",
+                "ventilation_control_zone_temperature_setpoint_schedule_name": "WindowVentSched",
+            },
+            validate=False,
+        )
+
+        assert [e for e in validate_document(doc).errors if e.code == "E009"] == []
+
+    def test_setpoint_schedule_read_by_temperature_ventilation(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "ZONA")
+        doc.add(
+            "AirflowNetwork:MultiZone:Zone",
+            "",
+            {
+                "zone_name": "ZONA",
+                "ventilation_control_mode": "Temperature",
+                "ventilation_control_zone_temperature_setpoint_schedule_name": "WindowVentSched",
+            },
+            validate=False,
+        )
+
+        errors = [e for e in validate_document(doc).errors if e.code == "E009"]
+        assert [e.field for e in errors] == ["ventilation_control_zone_temperature_setpoint_schedule_name"]
+
+    @pytest.mark.parametrize(
+        ("coefficient_type", "expected"), [("SurfaceAverageCalculation", []), ("Input", ["external_node_name"])]
+    )
+    def test_external_node_read_only_with_input_wind_pressure(self, coefficient_type: str, expected: list[str]) -> None:
+        """AirflowNetwork3zVentAutoWPC.idf names external nodes it never defines, as SurfaceAverageCalculation allows."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add(
+            "AirflowNetwork:SimulationControl",
+            "AFN",
+            {"wind_pressure_coefficient_type": coefficient_type},
+            validate=False,
+        )
+        doc.add(
+            "AirflowNetwork:MultiZone:Surface",
+            "",
+            {"surface_name": "Wall", "leakage_component_name": "Crack", "external_node_name": "NFacade"},
+            validate=False,
+        )
+
+        errors = [e for e in validate_document(doc).errors if e.code == "E009"]
+        assert [e.field for e in errors if e.field == "external_node_name"] == expected

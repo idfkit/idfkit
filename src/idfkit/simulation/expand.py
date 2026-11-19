@@ -69,7 +69,9 @@ order:
     ```
 
 ExpandObjects (C++) does not use the exit-code or empty-file checks because
-its error semantics differ from the Fortran preprocessors.
+its error semantics differ from the Fortran preprocessors. ``expand_objects``
+gives its ``expanded.idf`` the Fatal-message check; on the ``simulate()`` path
+the message is left for EnergyPlus to report as a failed run.
 
 **Automatic integration with ``simulate()``**
 
@@ -308,10 +310,26 @@ def _check_output_not_empty(
 
 _FATAL_PREPROC_RE = re.compile(
     r"Output:PreprocessorMessage\s*,"  # object type
-    r"\s*([^,]+)\s*,"  # preprocessor name
+    r"\s*([^,;]+?)\s*,"  # preprocessor name
     r"\s*Fatal\s*,"  # severity
-    r"\s*\n?\s*([^;]+);",  # message (may start on the next line)
+    r"([^;]*);",  # message lines, comma-separated, possibly over several lines
+    re.IGNORECASE,
 )
+_IDF_COMMENT_RE = re.compile(r"!.*$", re.MULTILINE)
+
+
+def _fatal_preprocessor_messages(text: str) -> list[tuple[str, str]]:
+    """The ``(preprocessor, message)`` of each *Fatal* ``Output:PreprocessorMessage`` in IDF *text*.
+
+    A message's lines are joined with spaces. Comments are dropped first: ExpandObjects writes a
+    ``!- Preprocessor Name`` comment after every field, which sits between the fields.
+    """
+    stripped = _IDF_COMMENT_RE.sub("", text)
+    found: list[tuple[str, str]] = []
+    for match in _FATAL_PREPROC_RE.finditer(stripped):
+        lines = (line.strip() for line in match.group(2).split(","))
+        found.append((match.group(1).strip(), " ".join(line for line in lines if line)))
+    return found
 
 
 def _check_for_fatal_preprocessor_message(
@@ -322,28 +340,34 @@ def _check_for_fatal_preprocessor_message(
 ) -> None:
     """Raise if a preprocessor output file contains a *Fatal* message.
 
-    EnergyPlus preprocessors (Slab, Basement) report errors via
+    EnergyPlus preprocessors (ExpandObjects, Slab, Basement) report errors via
     ``Output:PreprocessorMessage`` objects written to their output files.
     The process may still exit with code 0, so a non-zero exit code alone
     is not a reliable indicator of failure.  A *Fatal* severity means the
-    preprocessor could not produce valid results.
+    preprocessor could not produce valid results, and EnergyPlus stops on it.
     """
-    text = output_path.read_text(encoding="latin-1")
-    match = _FATAL_PREPROC_RE.search(text)
-    if match:
-        source = match.group(1).strip()
-        message = match.group(2).strip()
+    fatal = _fatal_preprocessor_messages(output_path.read_text(encoding="latin-1"))
+    if fatal:
+        message = "; ".join(text for _, text in fatal)
         msg = f"{label} reported a fatal error: {message}"
         raise ExpandObjectsError(
             msg,
             preprocessor=label,
             exit_code=proc.returncode,
-            stderr=f"{source}: {message}",
+            stderr="\n".join(f"{source}: {text}" for source, text in fatal),
         )
 
 
-def _run_expand_objects(config: EnergyPlusConfig, run_dir: Path, *, timeout: float) -> None:
-    """Run ExpandObjects in *run_dir* (which must already contain ``in.idf``)."""
+def _run_expand_objects(
+    config: EnergyPlusConfig, run_dir: Path, *, timeout: float, raise_on_fatal: bool = False
+) -> None:
+    """Run ExpandObjects in *run_dir* (which must already contain ``in.idf``).
+
+    With *raise_on_fatal*, a *Fatal* ``Output:PreprocessorMessage`` in ``expanded.idf`` raises
+    [ExpandObjectsError][idfkit.exceptions.ExpandObjectsError]. Without it the message is left in
+    the output, where EnergyPlus reports it as a fatal error of the run: ``simulate()`` reports a
+    failed run in its result rather than raising.
+    """
     exe = config.expand_objects_exe
     if exe is None:
         msg = (
@@ -358,6 +382,10 @@ def _run_expand_objects(config: EnergyPlusConfig, run_dir: Path, *, timeout: flo
     logger.info("Running ExpandObjects in %s", run_dir)
     proc = _run_subprocess(exe, cwd=run_dir, timeout=timeout, label="ExpandObjects")
     _require_file(run_dir / "expanded.idf", label="ExpandObjects", proc=proc)
+    # ExpandObjects exits 0 and writes expanded.idf even when it stops on a template it cannot
+    # expand; the only record is a Fatal Output:PreprocessorMessage in the output.
+    if raise_on_fatal:
+        _check_for_fatal_preprocessor_message(run_dir / "expanded.idf", label="ExpandObjects", proc=proc)
     logger.info("ExpandObjects completed (exit code %d)", proc.returncode)
 
 
@@ -583,7 +611,9 @@ def expand_objects(
         EnergyPlusNotFoundError: If no EnergyPlus installation (and therefore
             no ``ExpandObjects`` executable) can be found.
         ExpandObjectsError: If the ``ExpandObjects`` executable is missing
-            from the installation or the preprocessor exits with an error.
+            from the installation, the preprocessor exits with an error, or
+            it reports a *Fatal* ``Output:PreprocessorMessage`` (a template it
+            could not expand), whose text the error quotes.
     """
     if not _needs_expansion(model):
         return _detached_copy(model)
@@ -591,7 +621,7 @@ def expand_objects(
     config = energyplus if energyplus is not None else find_energyplus()
     run_dir = _prepare_run_dir(model)
     try:
-        _run_expand_objects(config, run_dir, timeout=timeout)
+        _run_expand_objects(config, run_dir, timeout=timeout, raise_on_fatal=True)
         return _parse_expanded(run_dir, model)
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)
@@ -637,7 +667,9 @@ def run_slab_preprocessor(
 
     Raises:
         EnergyPlusNotFoundError: If no EnergyPlus installation is found.
-        ExpandObjectsError: If any preprocessor step fails.
+        ExpandObjectsError: If any preprocessor step fails, including a *Fatal*
+            ``Output:PreprocessorMessage`` from ``ExpandObjects`` (a template it could not
+            expand), whose text the error quotes.
     """
     if not _has_slab_objects(model):
         return _detached_copy(model)
@@ -645,7 +677,7 @@ def run_slab_preprocessor(
     config = energyplus if energyplus is not None else find_energyplus()
     run_dir = _prepare_run_dir(model, weather=weather)
     try:
-        _run_expand_objects(config, run_dir, timeout=timeout)
+        _run_expand_objects(config, run_dir, timeout=timeout, raise_on_fatal=True)
 
         ght_input = run_dir / "GHTIn.idf"
         if not ght_input.is_file():
@@ -702,7 +734,9 @@ def run_basement_preprocessor(
 
     Raises:
         EnergyPlusNotFoundError: If no EnergyPlus installation is found.
-        ExpandObjectsError: If any preprocessor step fails.
+        ExpandObjectsError: If any preprocessor step fails, including a *Fatal*
+            ``Output:PreprocessorMessage`` from ``ExpandObjects`` (a template it could not
+            expand), whose text the error quotes.
     """
     if not _has_basement_objects(model):
         return _detached_copy(model)
@@ -710,7 +744,7 @@ def run_basement_preprocessor(
     config = energyplus if energyplus is not None else find_energyplus()
     run_dir = _prepare_run_dir(model, weather=weather)
     try:
-        _run_expand_objects(config, run_dir, timeout=timeout)
+        _run_expand_objects(config, run_dir, timeout=timeout, raise_on_fatal=True)
 
         ght_input = run_dir / "BasementGHTIn.idf"
         if not ght_input.is_file():

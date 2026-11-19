@@ -155,8 +155,9 @@ def validate_document(  # noqa: C901
     Args:
         doc: The document to validate
         schema: Schema to validate against (uses doc's schema if not provided)
-        check_references: Check reference integrity, and that each window or glass door names a
-            window construction rather than an opaque one (``E013``)
+        check_references: Check reference integrity (``E009``; a missing ``ScheduleTypeLimits``,
+            which EnergyPlus only warns about, is ``W006``), and that each window or glass door
+            names a window construction rather than an opaque one (``E013``)
         check_required: Check required fields, and report a group-only object such as
             ``OutdoorAir:NodeList`` that has no entries (``W004``)
         check_types: Check field types
@@ -1445,6 +1446,80 @@ def _is_implicit_remainder_space(target: str, zone_names: set[str]) -> bool:
     return target[: -len(suffix)] in zone_names
 
 
+#: Built-in fluid names EnergyPlus resolves without a ``FluidProperties:Name``, by the reference
+#: list a field looks them up in, uppercased. A glycol lookup (a loop's or secondary system's
+#: user-defined fluid) finds only ``Water``: ``EthyleneGlycol`` there stops the run ("User Defined
+#: Fluid Type = ETHYLENEGLYCOL, item not found"), since the built-in glycols are reached through a
+#: ``FluidProperties:GlycolConcentration``. A refrigerant lookup finds only ``Steam``.
+_BUILTIN_NAMES: dict[str, frozenset[str]] = {
+    "FluidNames": frozenset({"STEAM"}),
+    "FluidAndGlycolNames": frozenset({"WATER"}),
+}
+
+#: Fields that give property data for a fluid, where every built-in fluid resolves: a
+#: ``FluidProperties:Concentration`` for ``PropyleneGlycol`` (SupermarketSecondary.idf) needs no
+#: ``FluidProperties:Name`` to declare it.
+_BUILTIN_FLUID_DATA_FIELDS: frozenset[tuple[str, str]] = frozenset({
+    ("FLUIDPROPERTIES:CONCENTRATION", "fluid_name"),
+    ("FLUIDPROPERTIES:SATURATED", "fluid_name"),
+    ("FLUIDPROPERTIES:SUPERHEATED", "fluid_name"),
+})
+_BUILTIN_FLUIDS = frozenset({"WATER", "STEAM", "ETHYLENEGLYCOL", "PROPYLENEGLYCOL"})
+
+
+def _is_builtin_name(obj: IDFObject, field_name: str, lists: tuple[str, ...], target: str) -> bool:
+    """Whether EnergyPlus defines the uppercased *target* itself for *field_name* of *obj*."""
+    if (obj.obj_type.upper(), field_name) in _BUILTIN_FLUID_DATA_FIELDS:
+        return target in _BUILTIN_FLUIDS
+    return any(target in _BUILTIN_NAMES.get(name, ()) for name in lists)
+
+
+#: Reference lists whose missing target EnergyPlus only warns about. A schedule naming a
+#: ``ScheduleTypeLimits`` that does not exist runs, its values unchecked against limits.
+_WARN_ONLY_LISTS: dict[tuple[str, ...], str] = {
+    ("ScheduleTypeLimitsNames",): "W006",
+}
+
+
+def _choice(obj: IDFObject, field_name: str, default: str) -> str:
+    """The uppercased choice *obj* holds in *field_name*, or *default* when it is blank."""
+    value = obj.data.get(field_name)
+    return value.strip().upper() if isinstance(value, str) and value.strip() else default.upper()
+
+
+def _afn_wind_pressure_input(doc: AnyIDFDocument) -> bool:
+    """Whether ``AirflowNetwork:SimulationControl`` asks for user-input wind pressure coefficients."""
+    control = doc.collections.get("AirflowNetwork:SimulationControl")
+    first = control.first() if control is not None else None
+    return (
+        first is not None and _choice(first, "wind_pressure_coefficient_type", "SurfaceAverageCalculation") == "INPUT"
+    )
+
+
+#: Modes in which an AirflowNetwork zone or surface reads its temperature setpoint schedule.
+_AFN_SETPOINT_MODES = frozenset({"TEMPERATURE", "ENTHALPY", "ADJACENTTEMPERATURE", "ADJACENTENTHALPY"})
+
+#: Reference fields EnergyPlus reads only in some modes, with the test of whether *obj* is in one.
+#: A name left in a field the chosen mode ignores is never looked up, so it cannot dangle:
+#: CrossVent_1Zone_AirflowNetwork.idf keeps a setpoint schedule that does not exist on a zone
+#: whose ventilation is ``Constant``, and runs without a severe error.
+_MODE_GATED_FIELDS: dict[tuple[str, str], Callable[[AnyIDFDocument, IDFObject], bool]] = {
+    ("AIRFLOWNETWORK:MULTIZONE:ZONE", "ventilation_control_zone_temperature_setpoint_schedule_name"): (
+        lambda _doc, obj: _choice(obj, "ventilation_control_mode", "NoVent") in _AFN_SETPOINT_MODES
+    ),
+    ("AIRFLOWNETWORK:MULTIZONE:SURFACE", "ventilation_control_zone_temperature_setpoint_schedule_name"): (
+        lambda _doc, obj: _choice(obj, "ventilation_control_mode", "ZoneLevel") in _AFN_SETPOINT_MODES
+    ),
+    ("AIRFLOWNETWORK:MULTIZONE:SURFACE", "external_node_name"): lambda doc, _obj: _afn_wind_pressure_input(doc),
+}
+
+
+def _field_in_use(doc: AnyIDFDocument, obj: IDFObject, field_name: str) -> bool:
+    """Whether EnergyPlus reads *field_name* of *obj*, given the modes *obj* and *doc* choose."""
+    gate = _MODE_GATED_FIELDS.get((obj.obj_type.upper(), field_name))
+    return gate is None or gate(doc, obj)
+
+
 @dataclass(frozen=True)
 class _DeclaredNames:
     """The uppercased names a document declares, split by what each set is used for."""
@@ -1600,7 +1675,11 @@ def _validate_references(
     suggestions: dict[tuple[str, tuple[str, ...]], list[str]] = {}
     for obj, field_name, target in doc.references.iter_references():
         key = resolver.field_lists(obj.obj_type, field_name)
-        if resolver.resolves(key, target):
+        if (
+            resolver.resolves(key, target)
+            or _is_builtin_name(obj, field_name, key, target)
+            or not _field_in_use(doc, obj, field_name)
+        ):
             continue
         lists = list(key)
         if key not in candidates_by_lists:
@@ -1609,15 +1688,20 @@ def _validate_references(
         suggestion_key = (target, key)
         if suggestion_key not in suggestions:
             suggestions[suggestion_key] = closest_names(value, candidates_by_lists[key], n=3)
+        message = _dangling_message(value, lists, suggestions[suggestion_key], resolver.declaring_types(target))
+        warn_code = _WARN_ONLY_LISTS.get(key)
+        if warn_code is not None:
+            stop = "" if message.endswith("?") else "."
+            message = f"{message}{stop} EnergyPlus only warns, and does not check the values against limits"
         errors.append(
             ValidationError(
-                severity=Severity.ERROR,
+                severity=Severity.ERROR if warn_code is None else Severity.WARNING,
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
                 obj=obj,
                 field=field_name,
-                message=_dangling_message(value, lists, suggestions[suggestion_key], resolver.declaring_types(target)),
-                code="E009",
+                message=message,
+                code=warn_code or "E009",
             )
         )
 
