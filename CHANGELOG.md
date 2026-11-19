@@ -88,6 +88,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to stop at the first failed job: queued jobs never started, running EnergyPlus processes were killed,
   and the stopped jobs came back in `BatchResult.cancelled` (`SimulationResult.cancelled`), not raised.
   ([#351](https://github.com/idfkit/idfkit/pull/351))
+- `set_default_constructions()` took `roof_construction=`, `floor_construction=` and
+  `ceiling_construction=`, so roofs, floors and ceilings no longer had to share the wall
+  construction; each falls back to `construction_name`.
+  ([#354](https://github.com/idfkit/idfkit/pull/354))
 
 ### Changed
 

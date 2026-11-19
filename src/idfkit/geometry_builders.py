@@ -213,12 +213,18 @@ def set_default_constructions(
     doc: AnyIDFDocument,
     construction_name: str = "Default Construction",
     *,
+    roof_construction: str | None = None,
+    floor_construction: str | None = None,
+    ceiling_construction: str | None = None,
     window_construction: str | None = None,
 ) -> int:
     """Assign placeholder constructions to surfaces that lack one.
 
-    Sets ``construction_name`` on every ``BuildingSurface:Detailed`` (walls, floors, roofs and
-    ceilings alike) and every door ``FenestrationSurface:Detailed`` whose construction is empty.
+    Sets a construction on every ``BuildingSurface:Detailed`` and every door
+    ``FenestrationSurface:Detailed`` whose construction is empty. A building surface gets the
+    construction for its surface type: *roof_construction* for ``Roof``, *floor_construction* for
+    ``Floor`` and *ceiling_construction* for ``Ceiling``, each falling back to *construction_name*
+    when not given; walls, doors and surfaces of any other type get *construction_name*.
     Windows, glass doors and tubular daylighting surfaces need a window construction, which
     EnergyPlus refuses an opaque one for, so they get *window_construction* when it is given and
     are left unset otherwise (``validate_document`` then reports them as missing a required field).
@@ -228,7 +234,15 @@ def set_default_constructions(
 
     Args:
         doc: The document to modify.
-        construction_name: Name of the opaque construction to assign.
+        construction_name: Name of the opaque construction to assign to walls and doors, and to
+            roofs, floors and ceilings that have no construction of their own below.
+        roof_construction: Name of the construction for ``Roof`` surfaces. ``None`` uses
+            *construction_name*.
+        floor_construction: Name of the construction for ``Floor`` surfaces, interzone floors of
+            upper storeys included, not only ground floors. ``None`` uses *construction_name*.
+        ceiling_construction: Name of the construction for ``Ceiling`` surfaces. ``None`` uses
+            *construction_name*. An interzone ceiling and the floor it faces should carry
+            constructions whose layers are the reverse of each other.
         window_construction: Name of a window construction (one with a ``WindowMaterial`` layer)
             for glazed fenestration. ``None`` leaves glazed fenestration unassigned.
 
@@ -240,14 +254,30 @@ def set_default_constructions(
         >>> doc = new_document()
         >>> _ = create_block(doc, "B", [(0, 0), (10, 0), (10, 10), (0, 10)], floor_to_floor=3)
         >>> _ = set_wwr(doc, 0.3)
-        >>> set_default_constructions(doc, "Opaque", window_construction="Glazing")
+        >>> set_default_constructions(
+        ...     doc,
+        ...     "Ext Wall",
+        ...     roof_construction="Roof",
+        ...     floor_construction="Slab",
+        ...     window_construction="Glazing",
+        ... )
         10
+        >>> sorted({s.construction_name for s in doc["BuildingSurface:Detailed"]})
+        ['Ext Wall', 'Roof', 'Slab']
     """
+    by_surface_type = {
+        "roof": roof_construction or construction_name,
+        "floor": floor_construction or construction_name,
+        "ceiling": ceiling_construction or construction_name,
+    }
     count = 0
     for srf in doc["BuildingSurface:Detailed"]:
-        if not srf.get("Construction Name"):
-            srf.construction_name = construction_name
-            count += 1
+        if srf.get("Construction Name"):
+            continue
+        surface_type = srf.data.get("surface_type")
+        key = surface_type.casefold() if isinstance(surface_type, str) else ""
+        srf.construction_name = by_surface_type.get(key, construction_name)
+        count += 1
     for srf in doc["FenestrationSurface:Detailed"]:
         if srf.get("Construction Name"):
             continue
