@@ -82,15 +82,24 @@ rows = result.sql.get_tabular_data(
     table_name="End Uses",
 )
 for r in rows:
-    print(r.row_name, r.column_name, r.value, r.units)
+    print(r.row_name, r.column_name, r.value, r.units)  # value: str, padding stripped
 
-# Single value
-total = result.sql.get_tabular_value(
+# Single cell as text ("12.50") or as a number (12.5)
+text = result.sql.get_tabular_value(
     report_name="AnnualBuildingUtilityPerformanceSummary",
     table_name="End Uses",
     row_name="Total End Uses",
     column_name="Electricity",
 )
+total: float = result.sql.get_tabular_float(
+    report_name="AnnualBuildingUtilityPerformanceSummary",
+    table_name="End Uses",
+    row_name="Total End Uses",
+    column_name="Electricity",
+)
+
+# A row's number; as_float() raises ValueError, naming the cell, for a text cell
+electricity = {r.row_name: r.as_float() for r in rows if r.column_name == "Electricity"}
 # --8<-- [end:tabular]
 
 

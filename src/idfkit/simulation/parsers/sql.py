@@ -114,7 +114,9 @@ class TabularRow:
         row_name: The row label.
         column_name: The column label.
         units: The value units.
-        value: The cell value as a string.
+        value: The cell text, with the padding EnergyPlus writes around it stripped
+            (``"12.50"``, not ``"      12.50"``). Use [as_float][idfkit.simulation.parsers.sql.TabularRow.as_float]
+            for the number.
     """
 
     report_name: str
@@ -124,6 +126,31 @@ class TabularRow:
     column_name: str
     units: str
     value: str
+
+    def as_float(self) -> float:
+        """Return the cell value parsed as a float.
+
+        Returns:
+            The numeric value of the cell.
+
+        Raises:
+            ValueError: If the cell is not numeric (an empty cell, or text such as a zone
+                name or a date); the message names the cell and quotes its text.
+
+        Examples:
+            >>> row = TabularRow("R", "Entire Facility", "End Uses", "Heating", "Electricity", "GJ", "12.50")
+            >>> row.as_float()
+            12.5
+        """
+        try:
+            return float(self.value)
+        except ValueError:
+            msg = (
+                f"Tabular cell is not numeric: report='{self.report_name}', report_for='{self.report_for}', "
+                f"table='{self.table_name}', row='{self.row_name}', column='{self.column_name}' "
+                f"holds {self.value!r}"
+            )
+            raise ValueError(msg) from None
 
 
 @dataclass(frozen=True, slots=True)
@@ -546,7 +573,7 @@ class SQLResult:
                 row_name=row[3],
                 column_name=row[4],
                 units=row[5],
-                value=row[6],
+                value="" if row[6] is None else str(row[6]).strip(),
             )
             for row in cur.fetchall()
         ]
@@ -575,7 +602,8 @@ class SQLResult:
         """Retrieve a single tabular cell value.
 
         Convenience wrapper around [get_tabular_data][idfkit.simulation.parsers.sql.SQLResult.get_tabular_data] that returns
-        exactly one cell value.
+        exactly one cell value. For a number, use
+        [get_tabular_float][idfkit.simulation.parsers.sql.SQLResult.get_tabular_float].
 
         Args:
             report_name: Report name (e.g. ``"AnnualBuildingUtilityPerformanceSummary"``).
@@ -585,12 +613,58 @@ class SQLResult:
             report_for: Report scope (default ``"Entire Facility"``).
 
         Returns:
-            The cell value as a string.
+            The cell text, with surrounding whitespace stripped.
 
         Raises:
             ResultLookupError: A ``KeyError`` subclass, if no row matches (naming the
                 first argument that matches nothing, with the closest spellings) or
                 if several rows match.
+        """
+        return self._get_tabular_row(report_name, table_name, row_name, column_name, report_for).value
+
+    def get_tabular_float(
+        self,
+        report_name: str,
+        table_name: str,
+        row_name: str,
+        column_name: str,
+        report_for: str = "Entire Facility",
+    ) -> float:
+        """Retrieve a single tabular cell value as a float.
+
+        Looks the cell up as [get_tabular_value][idfkit.simulation.parsers.sql.SQLResult.get_tabular_value]
+        does, then parses it with [TabularRow.as_float][idfkit.simulation.parsers.sql.TabularRow.as_float].
+
+        Args:
+            report_name: Report name (e.g. ``"AnnualBuildingUtilityPerformanceSummary"``).
+            table_name: Table name (e.g. ``"End Uses"``).
+            row_name: Row label (e.g. ``"Heating"``).
+            column_name: Column label (e.g. ``"Electricity"``).
+            report_for: Report scope (default ``"Entire Facility"``).
+
+        Returns:
+            The numeric value of the cell.
+
+        Raises:
+            ResultLookupError: A ``KeyError`` subclass, if no row matches or several rows match,
+                as for ``get_tabular_value``.
+            ValueError: If the cell is not numeric; the message names the cell and quotes its text.
+        """
+        return self._get_tabular_row(report_name, table_name, row_name, column_name, report_for).as_float()
+
+    def _get_tabular_row(
+        self,
+        report_name: str,
+        table_name: str,
+        row_name: str,
+        column_name: str,
+        report_for: str,
+    ) -> TabularRow:
+        """Return the one row matching all five arguments.
+
+        Raises:
+            ResultLookupError: If no row matches (naming the argument that matches nothing),
+                or if several rows match.
         """
         # Raises, naming the argument that matches nothing, when no row matches.
         rows = self.get_tabular_data(
@@ -606,7 +680,7 @@ class SQLResult:
                 f"row='{row_name}', column='{column_name}', report_for='{report_for}'"
             )
             raise ResultLookupError(msg)
-        return rows[0].value
+        return rows[0]
 
     def _raise_tabular_not_found(self, filters: dict[str, tuple[str, str]]) -> NoReturn:
         """Name the first of *filters* (column -> (label, value)) that matches nothing, with its spellings.
