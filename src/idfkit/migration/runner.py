@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
+from . import cache as migration_cache
 from ._reparse import parse_migrated_idf
 from ._typing import StrictT
 from .chain import check_chain_binaries, normalize_target, plan_migration_chain, resolve_source_version
@@ -49,6 +50,7 @@ if TYPE_CHECKING:
         on_progress: OnMigrationProgress | None
         work_dir: str | Path | None
         keep_work_dir: bool
+        cache: bool
 
 
 @overload
@@ -72,6 +74,7 @@ def migrate(
     on_progress: OnMigrationProgress | None = None,
     work_dir: str | Path | None = None,
     keep_work_dir: bool = False,
+    cache: bool = True,
 ) -> MigrationReport[AnyIDFDocument[Any]]:
     """Forward-migrate *model* to *target_version* through EnergyPlus transition binaries.
 
@@ -109,6 +112,16 @@ def migrate(
             removed after migration unless *keep_work_dir* is ``True``.
         keep_work_dir: Set ``True`` to preserve intermediate files for
             inspection.
+        cache: Reuse the result of an earlier migration of the same IDF
+            content along the same steps with the same EnergyPlus install,
+            kept in memory for this process (see
+            [idfkit.migration.cache][idfkit.migration.cache]). The transition
+            binaries take seconds per step, so this is what makes repeated
+            ``simulate(..., auto_migrate=True)`` runs of one model cheap. The
+            report's ``from_cache`` says whether the binaries ran. Set
+            ``False`` to always run them. Ignored when *work_dir* or
+            *keep_work_dir* is given: those ask for the per-step files, so the
+            binaries always run.
 
     Returns:
         A [MigrationReport][idfkit.migration.report.MigrationReport] whose
@@ -187,6 +200,9 @@ def migrate(
             on_progress=on_progress,
             source=source,
             target=target,
+            # Asking for the work directory means asking to inspect the per-step files,
+            # which a cache hit would not write.
+            use_cache=cache and work_dir is None and not keep_work_dir,
         )
     finally:
         if owned_work_dir and not keep_work_dir:
@@ -204,6 +220,7 @@ def _run_chain(
     on_progress: OnMigrationProgress | None,
     source: tuple[int, int, int],
     target: tuple[int, int, int],
+    use_cache: bool = True,
 ) -> MigrationReport[AnyIDFDocument[bool]]:
     """Run every step in *chain*, returning a complete report.
 
@@ -214,8 +231,75 @@ def _run_chain(
 
     initial_idf = work_root / "step_0_input.idf"
     save_idf(model, initial_idf)
-    current_text = initial_idf.read_text(encoding="latin-1")
+    input_text = initial_idf.read_text(encoding="latin-1")
 
+    key = migration_cache.cache_key(input_text, chain, migrator) if use_cache else None
+    if key is None:
+        steps, final_text = _run_steps(input_text, chain, migrator, work_root, on_progress)
+        from_cache = False
+    else:
+        with migration_cache.in_flight(key):
+            cached = migration_cache.get(key)
+            if cached is None:
+                steps, final_text = _run_steps(input_text, chain, migrator, work_root, on_progress)
+                migration_cache.put(key, migration_cache.CachedMigration(final_text, steps))
+                from_cache = False
+            else:
+                _emit(on_progress, migration_cache.cached_progress_event(chain))
+                steps, final_text = cached.steps, cached.idf_text
+                from_cache = True
+
+    _emit(
+        on_progress,
+        MigrationProgress(
+            phase="reparsing",
+            message="Re-parsing migrated IDF",
+            total_steps=len(chain),
+            percent=100.0,
+        ),
+    )
+    final_idf = work_root / "migrated.idf"
+    final_idf.write_text(final_text, encoding="latin-1")
+    migrated = parse_migrated_idf(
+        final_idf, version=target, strict=model.strict, normalize_choices=model.normalize_choices
+    )
+    verify_migration_output(
+        model,
+        migrated,
+        target_version=target,
+        completed_steps=chain,
+    )
+
+    _emit(
+        on_progress,
+        MigrationProgress(phase="diffing", message="Computing structural diff"),
+    )
+    diff = document_diff(model, migrated)
+
+    _emit(
+        on_progress,
+        MigrationProgress(phase="complete", message="Migration complete", percent=100.0),
+    )
+
+    return MigrationReport(
+        migrated_model=migrated,
+        source_version=source,
+        target_version=target,
+        requested_target=target,
+        steps=steps,
+        diff=diff,
+        from_cache=from_cache,
+    )
+
+
+def _run_steps(
+    current_text: str,
+    chain: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...],
+    migrator: Migrator,
+    work_root: Path,
+    on_progress: OnMigrationProgress | None,
+) -> tuple[tuple[MigrationStep, ...], str]:
+    """Run the transition binaries of *chain* on *current_text*: the step records and the final text."""
     steps: list[MigrationStep] = []
     completed_pairs: list[tuple[tuple[int, int, int], tuple[int, int, int]]] = []
 
@@ -275,46 +359,7 @@ def _run_chain(
         completed_pairs.append((a, b))
         current_text = step_result.idf_text
 
-    _emit(
-        on_progress,
-        MigrationProgress(
-            phase="reparsing",
-            message="Re-parsing migrated IDF",
-            total_steps=len(chain),
-            percent=100.0,
-        ),
-    )
-    final_idf = work_root / "migrated.idf"
-    final_idf.write_text(current_text, encoding="latin-1")
-    migrated = parse_migrated_idf(
-        final_idf, version=target, strict=model.strict, normalize_choices=model.normalize_choices
-    )
-    verify_migration_output(
-        model,
-        migrated,
-        target_version=target,
-        completed_steps=tuple(completed_pairs),
-    )
-
-    _emit(
-        on_progress,
-        MigrationProgress(phase="diffing", message="Computing structural diff"),
-    )
-    diff = document_diff(model, migrated)
-
-    _emit(
-        on_progress,
-        MigrationProgress(phase="complete", message="Migration complete", percent=100.0),
-    )
-
-    return MigrationReport(
-        migrated_model=migrated,
-        source_version=source,
-        target_version=target,
-        requested_target=target,
-        steps=tuple(steps),
-        diff=diff,
-    )
+    return tuple(steps), current_text
 
 
 def _resolve_migrator(

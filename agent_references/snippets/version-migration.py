@@ -150,6 +150,8 @@ from idfkit.migration import MigrationStepResult
 
 
 class MyMigrator:
+    cache_key = "my-service-v3"  # optional: lets migrate() reuse results; omit for no caching
+
     def migrate_step(
         self,
         idf_text: str,
@@ -198,3 +200,24 @@ assert new_doc is not None  # None only when the model was already at config.ver
 save_idf(new_doc, "migrated.idf")
 result = simulate(new_doc, "weather.epw")
 # --8<-- [end:mistake-automigrate-good]
+
+
+# --8<-- [start:migrate-once]
+from idfkit import set_wwr
+from idfkit.migration import clear_migration_cache, migrate
+from idfkit.simulation import SimulationJob, find_energyplus, simulate_batch
+
+config = find_energyplus()
+seed = migrate(old_doc, config.version, energyplus=config).migrated_model  # pay the transition chain once
+assert seed is not None
+jobs = []
+for wwr in (0.2, 0.3, 0.4):
+    variant = seed.copy()  # already at the installed version: no auto_migrate needed
+    set_wwr(variant, wwr=wwr)
+    jobs.append(SimulationJob(model=variant, weather="weather.epw", label=f"wwr_{wwr}"))
+batch = simulate_batch(jobs, max_workers=4)
+
+again = migrate(old_doc, config.version, energyplus=config)  # same content: reused, milliseconds
+print(again.from_cache)  # True
+clear_migration_cache()  # or migrate(..., cache=False) to always run the binaries
+# --8<-- [end:migrate-once]

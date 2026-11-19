@@ -1521,3 +1521,141 @@ class TestWindowConstruction:
         doc = self._model("WindowMaterial")
         doc["Construction"]["Win"].layer_2 = "Missing"
         assert [e for e in validate_document(doc).errors if e.code == "E013"] == []
+
+
+# ---------------------------------------------------------------------------
+# W005: upside-down floors and roofs
+# ---------------------------------------------------------------------------
+
+
+class TestSurfaceOrientation:
+    @staticmethod
+    def _block() -> AnyIDFDocument:
+        from idfkit.zoning import create_block, footprint_rectangle
+
+        doc = new_document()
+        create_block(doc, "B", footprint_rectangle(10, 10), floor_to_floor=3.0, num_stories=2)
+        return doc
+
+    @staticmethod
+    def _reverse(obj: IDFObject) -> None:
+        from idfkit.geometry import Polygon3D, get_surface_coords, set_surface_coords
+
+        poly = get_surface_coords(obj)
+        assert poly is not None
+        set_surface_coords(obj, Polygon3D(list(reversed(poly.vertices))))
+
+    @staticmethod
+    def _w005(doc: AnyIDFDocument, *, check_geometry: bool = True) -> list[ValidationError]:
+        return [w for w in validate_document(doc, check_geometry=check_geometry).warnings if w.code == "W005"]
+
+    def test_block_has_no_upside_down_surface(self) -> None:
+        assert self._w005(self._block()) == []
+
+    def test_floor_facing_up_is_reported(self) -> None:
+        doc = self._block()
+        floor = doc["BuildingSurface:Detailed"]["B Story 1 Floor"]
+        self._reverse(floor)
+        found = self._w005(doc)
+        assert [w.obj for w in found] == [floor]
+        assert found[0].severity is Severity.WARNING
+        assert "faces up" in found[0].message
+
+    def test_roof_and_ceiling_facing_down_are_reported(self) -> None:
+        doc = self._block()
+        roofs = [s for s in doc["BuildingSurface:Detailed"] if s.surface_type in ("Roof", "Ceiling")]
+        assert roofs
+        for srf in roofs:
+            self._reverse(srf)
+        found = self._w005(doc)
+        assert {w.obj_name for w in found} == {s.name for s in roofs}
+        assert all("faces down" in w.message for w in found)
+
+    def test_clockwise_entry_direction_is_honoured(self) -> None:
+        doc = self._block()
+        rules = doc["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.vertex_entry_direction = "Clockwise"
+        # Every horizontal surface is now read in the opposite direction.
+        assert len(self._w005(doc)) == len([
+            s for s in doc["BuildingSurface:Detailed"] if s.surface_type in ("Floor", "Roof", "Ceiling")
+        ])
+
+    def test_check_geometry_false_skips_the_check(self) -> None:
+        doc = self._block()
+        self._reverse(doc["BuildingSurface:Detailed"]["B Story 1 Floor"])
+        assert self._w005(doc, check_geometry=False) == []
+
+    def test_non_numeric_vertex_is_skipped(self) -> None:
+        doc = self._block()
+        floor = doc["BuildingSurface:Detailed"]["B Story 1 Floor"]
+        floor.data["vertices"][0]["vertex_x_coordinate"] = "=$width"
+        assert self._w005(doc) == []
+
+
+# ---------------------------------------------------------------------------
+# Issues on objects without a Name field
+# ---------------------------------------------------------------------------
+
+
+class TestNamelessObjectIssues:
+    @staticmethod
+    def _templates() -> tuple[AnyIDFDocument, IDFObject, IDFObject]:
+        doc = new_document()
+        doc.add("Zone", "A")
+        doc.add("Zone", "B")
+        a = doc.add(
+            "HVACTemplate:Zone:IdealLoadsAirSystem", zone_name="A", template_thermostat_name="T", validate=False
+        )
+        b = doc.add(
+            "HVACTemplate:Zone:IdealLoadsAirSystem", zone_name="B", template_thermostat_name="Tx", validate=False
+        )
+        return doc, a, b
+
+    def test_issue_carries_the_object(self) -> None:
+        doc, a, b = self._templates()
+        errors = [e for e in validate_document(doc).errors if e.code == "E009"]
+        assert [e.obj for e in errors] == [a, b]
+        assert all(e.obj_name == "" for e in errors)
+
+    def test_issue_str_names_a_nameless_object_by_its_first_field(self) -> None:
+        doc, _, _ = self._templates()
+        lines = [str(e) for e in validate_document(doc).errors if e.code == "E009"]
+        assert lines[1].startswith(
+            "[ERROR] HVACTemplate:Zone:IdealLoadsAirSystem(zone_name='B').template_thermostat_name: "
+        )
+
+    def test_validate_object_issues_carry_the_object(self) -> None:
+        doc = new_document()
+        zone = doc.add("Zone", "Z")
+        zone.data["x_origin"] = "not a number"
+        assert doc.schema is not None
+        errors = validate_object(zone, doc.schema)
+        assert errors
+        assert all(e.obj is zone for e in errors)
+
+    def test_object_does_not_affect_equality(self) -> None:
+        _, a, b = self._templates()
+        args = (Severity.ERROR, "T", "", None, "m", "E000")
+        assert ValidationError(*args, obj=a) == ValidationError(*args, obj=b)
+
+    def test_type_hints_resolve(self) -> None:
+        import typing
+
+        hints = typing.get_type_hints(ValidationError)
+        assert "obj" not in hints
+        assert typing.get_type_hints(ValidationError.__init__)["obj"] == IDFObject | None
+
+    def test_object_is_left_out_of_asdict_and_pickle(self) -> None:
+        import copy
+        import dataclasses
+        import pickle
+
+        _, a, _ = self._templates()
+        err = ValidationError(Severity.ERROR, "T", "", None, "m", "E000", obj=a)
+        assert "obj" not in dataclasses.asdict(err)
+        restored = pickle.loads(pickle.dumps(err))  # noqa: S301
+        assert restored == err
+        assert restored.obj is None
+        assert len(pickle.dumps(err)) < 1000
+        assert copy.copy(err).obj is a

@@ -686,3 +686,32 @@ class TestObjectsAdditionalBranches:
         # Assign a private attribute through IDFObject.__setattr__
         obj.__setattr__("_source_text", "custom_text")  # pyright: ignore[reportAttributeAccessIssue]
         assert object.__getattribute__(obj, "_source_text") == "custom_text"
+
+
+class TestNamelessRepr:
+    def test_nameless_type_reads_by_its_first_set_field(self) -> None:
+        from idfkit import new_document
+
+        doc = new_document()
+        doc.add("Zone", "B")
+        obj = doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name="B", validate=False)
+        assert repr(obj) == "HVACTemplate:Zone:IdealLoadsAirSystem(zone_name='B')"
+        assert str(obj) == "HVACTemplate:Zone:IdealLoadsAirSystem: zone_name='B'"
+
+    def test_wildcard_first_field_is_followed_by_the_next(self) -> None:
+        from idfkit import new_document
+
+        doc = new_document()
+        obj = doc.add("Output:Variable", key_value="*", variable_name="Site Outdoor Air Drybulb Temperature")
+        assert repr(obj) == "Output:Variable(key_value='*', variable_name='Site Outdoor Air Drybulb Temperature')"
+
+    def test_nameless_object_without_fields_keeps_the_empty_name(self) -> None:
+        from idfkit import new_document
+
+        doc = new_document()
+        obj = doc.add("Output:SQLite")
+        assert repr(obj) == "Output:SQLite('')"
+
+    def test_named_type_with_empty_name_keeps_the_empty_name(self) -> None:
+        obj = IDFObject(obj_type="Zone", name="", data={"x_origin": 1.0}, schema={"name": {}})
+        assert repr(obj) == "Zone('')"

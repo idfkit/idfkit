@@ -37,6 +37,16 @@ class AsyncSubprocessMigrator:
     version_updater_dir: Path
     step_timeout: float = DEFAULT_STEP_TIMEOUT
 
+    @property
+    def cache_key(self) -> str:
+        """What the output depends on besides the input: the transition binaries' directory.
+
+        Lets [migrate()][idfkit.migration.migrate] reuse an earlier migration of the same
+        content (see [idfkit.migration.cache][idfkit.migration.cache]). The synchronous and
+        async backends share it, as they run the same binaries.
+        """
+        return f"IDFVersionUpdater:{self.version_updater_dir.resolve()}"
+
     async def migrate_step(
         self,
         idf_text: str,

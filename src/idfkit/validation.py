@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from ._surface_types import is_fenestration_door
 from .exceptions import closest_names
-from .objects import is_blank_slot
+from .objects import IDFObject, is_blank_slot
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
 
     from .document import AnyIDFDocument
-    from .objects import IDFObject
     from .schema import EpJSONSchema, ReferenceKin
 
 
@@ -34,7 +33,7 @@ class Severity(Enum):
     INFO = "info"
 
 
-@dataclass
+@dataclass(init=False)
 class ValidationError:
     """
     Represents a validation issue.
@@ -46,6 +45,13 @@ class ValidationError:
         field: Field name where issue was found (if applicable)
         message: Human-readable description
         code: Machine-readable error code
+        obj: The object the issue was found on, or ``None`` for a document-level
+            issue. Types without a Name field (``HVACTemplate:Zone:*``,
+            ``Output:Variable``, ...) have an empty ``obj_name``; use ``obj`` to
+            find, highlight or fix the object itself. It is a plain attribute,
+            not a dataclass field: ``dataclasses.asdict``/``astuple``, equality
+            and pickling leave it out (pickling or deep-copying an error drops
+            it), so serializing errors never copies the owning document.
     """
 
     severity: Severity
@@ -55,8 +61,41 @@ class ValidationError:
     message: str
     code: str
 
+    def __init__(
+        self,
+        severity: Severity,
+        obj_type: str,
+        obj_name: str,
+        field: str | None,
+        message: str,
+        code: str,
+        obj: IDFObject | None = None,
+    ) -> None:
+        self.severity = severity
+        self.obj_type = obj_type
+        self.obj_name = obj_name
+        self.field = field
+        self.message = message
+        self.code = code
+        # Not a dataclass field, so asdict()/astuple()/eq/repr/pickle leave it out (see docstring).
+        self.obj: IDFObject | None = obj
+
+    def __getstate__(self) -> dict[str, Any]:
+        state = dict(self.__dict__)
+        state["obj"] = None
+        return state
+
+    def __copy__(self) -> ValidationError:
+        return ValidationError(
+            self.severity, self.obj_type, self.obj_name, self.field, self.message, self.code, obj=self.obj
+        )
+
     def __str__(self) -> str:
-        location = f"{self.obj_type}:'{self.obj_name}'"
+        if not self.obj_name and self.obj is not None:
+            # A nameless object reads as its repr, which names it by its first set fields.
+            location = repr(self.obj)
+        else:
+            location = f"{self.obj_type}:'{self.obj_name}'"
         if self.field:
             location += f".{self.field}"
         return f"[{self.severity.value.upper()}] {location}: {self.message}"
@@ -108,6 +147,7 @@ def validate_document(  # noqa: C901
     check_ranges: bool = True,
     check_singletons: bool = True,
     object_types: list[str] | None = None,
+    check_geometry: bool = True,
 ) -> ValidationResult:
     """
     Validate an IDF document against schema.
@@ -123,6 +163,10 @@ def validate_document(  # noqa: C901
         check_ranges: Check numeric ranges
         check_singletons: Check singleton (maxProperties) constraints
         object_types: Only validate these types (None = all)
+        check_geometry: Warn about a floor whose vertices make it face up, or a roof or
+            ceiling that faces down (``W005``): the surface is upside down, as a clockwise
+            footprint extruded into an inside-out zone is, and EnergyPlus runs it with
+            only a warning and a wrong zone volume
 
     Returns:
         ValidationResult with all issues found
@@ -186,6 +230,7 @@ def validate_document(  # noqa: C901
                             severity=Severity.ERROR,
                             obj_type=obj_type,
                             obj_name=obj_name,
+                            obj=first,
                             field=None,
                             message=f"Singleton type '{obj_type}' has {count} instances (maximum 1 allowed)",
                             code="E010",
@@ -221,6 +266,9 @@ def validate_document(  # noqa: C901
                     warnings.append(err)
                 else:
                     info.append(err)
+
+    if check_geometry:
+        warnings.extend(_validate_surface_orientation(doc, types_to_check))
 
     # Schedules EnergyPlus refuses as fatal although every field is valid on its own
     for err in _validate_schedules(doc, types_to_check, check_ranges=check_ranges):
@@ -271,6 +319,7 @@ def _validate_schedules(doc: AnyIDFDocument, types_to_check: list[str], *, check
                     severity=Severity.ERROR,
                     obj_type=obj.obj_type,
                     obj_name=obj.name,
+                    obj=obj,
                     field="data",
                     message=f"{problem[:1].upper()}{problem[1:]}; EnergyPlus stops on this schedule",
                     code="E011",
@@ -286,6 +335,68 @@ def _validate_schedules(doc: AnyIDFDocument, types_to_check: list[str], *, check
                 if finding is not None:
                     findings.append(finding)
     return findings
+
+
+#: Surface types read by the orientation check (``W005``), with the field that holds the surface
+#: type (``None``: the type itself says it).
+_HORIZONTAL_SURFACE_TYPES: dict[str, str | None] = {
+    "BuildingSurface:Detailed": "surface_type",
+    "Floor:Detailed": None,
+    "RoofCeiling:Detailed": None,
+}
+
+
+def _validate_surface_orientation(doc: AnyIDFDocument, types_to_check: list[str]) -> list[ValidationError]:
+    """``W005`` for a floor that faces up, or a roof or ceiling that faces down.
+
+    A floor's outward normal points down (tilt 180) and a roof's or ceiling's up (tilt 0).
+    The tilt is read from the vertex order under the document's ``GlobalGeometryRules``
+    entry direction; a sloped surface is reported only once it faces the wrong half-space.
+    """
+    from .geometry import get_surface_coords
+    from .geometry_builders import get_geometry_convention
+
+    found: list[ValidationError] = []
+    clockwise: bool | None = None
+    for obj_type, type_field in _HORIZONTAL_SURFACE_TYPES.items():
+        if obj_type not in types_to_check or obj_type not in doc.collections:
+            continue
+        for obj in doc.get_collection(obj_type):
+            kind = str(obj.get(type_field) or "").lower() if type_field else obj_type.split(":")[0].lower()
+            if kind not in ("floor", "roof", "ceiling", "roofceiling"):
+                continue
+            try:
+                poly = get_surface_coords(obj)
+            except (TypeError, ValueError):
+                continue  # a non-numeric vertex is the type check's to report (E003)
+            if poly is None or poly.area <= 0:
+                continue
+            if clockwise is None:
+                clockwise = get_geometry_convention(doc)[1]
+            tilt = 180.0 - poly.tilt if clockwise else poly.tilt
+            if kind == "floor" and tilt < 89.0:
+                expected, facing = "down (tilt 180)", "up"
+            elif kind != "floor" and tilt > 91.0:
+                expected, facing = "up (tilt 0)", "down"
+            else:
+                continue
+            found.append(
+                ValidationError(
+                    severity=Severity.WARNING,
+                    obj_type=obj_type,
+                    obj_name=obj.name,
+                    obj=obj,
+                    field="vertices",
+                    message=(
+                        f"{'Floor' if kind == 'floor' else 'Roof/ceiling'} faces {facing} (tilt {tilt:.0f}), "
+                        f"its outward normal should point {expected}: the vertices are in reverse order, "
+                        "as a clockwise footprint gives. EnergyPlus reports the surface as upside down "
+                        "and computes a wrong zone volume"
+                    ),
+                    code="W005",
+                )
+            )
+    return found
 
 
 #: Fenestration types whose construction EnergyPlus requires to be a window construction (``E013``).
@@ -355,6 +466,7 @@ def _validate_window_constructions(doc: AnyIDFDocument, types_to_check: list[str
             severity=Severity.ERROR,
             obj_type=obj.obj_type,
             obj_name=obj.name,
+            obj=obj,
             field="construction_name",
             message=(
                 f"Construction '{obj.data['construction_name']}' has only opaque layers, but a window needs a "
@@ -413,6 +525,7 @@ def _schedule_limit_failure(doc: AnyIDFDocument, obj: IDFObject) -> ValidationEr
                 severity=Severity.ERROR,
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
+                obj=obj,
                 field="schedule_type_limits_name",
                 message=(
                     f"Value {value:g} is outside the limits [{low}, {high}] of ScheduleTypeLimits "
@@ -489,6 +602,7 @@ def _validate_object(  # noqa: C901
                 severity=Severity.WARNING,
                 obj_type=obj_type,
                 obj_name=obj.name,
+                obj=obj,
                 field=None,
                 message=f"Unknown object type '{obj_type}'",
                 code="W002",
@@ -509,6 +623,7 @@ def _validate_object(  # noqa: C901
                         severity=Severity.ERROR,
                         obj_type=obj_type,
                         obj_name=obj.name,
+                        obj=obj,
                         field=field_name,
                         message=f"Required field '{field_name}' is missing",
                         code="E001",
@@ -530,6 +645,7 @@ def _validate_object(  # noqa: C901
                         severity=Severity.WARNING,
                         obj_type=obj_type,
                         obj_name=obj.name,
+                        obj=obj,
                         field=field_name,
                         message=f"Unknown field '{field_name}'",
                         code="W003",
@@ -576,6 +692,7 @@ def _missing_group_keys(obj: IDFObject, wrapper: str, required: tuple[str, ...])
                         severity=Severity.ERROR,
                         obj_type=obj.obj_type,
                         obj_name=obj.name,
+                        obj=obj,
                         field=field,
                         message=f"Required field '{field}' is missing",
                         code="E001",
@@ -655,6 +772,7 @@ def _empty_group_only_object(obj: IDFObject, group_only: _GroupOnly) -> Validati
         severity=Severity.WARNING,
         obj_type=obj.obj_type,
         obj_name=obj.name,
+        obj=obj,
         field=wrapper,
         message=message,
         code="W004",
@@ -722,6 +840,7 @@ def _any_of_failure(
             severity=Severity.ERROR,
             obj_type=obj.obj_type,
             obj_name=obj.name,
+            obj=obj,
             field=field_name,
             message=f"Value '{value}' does not match any valid type",
             code="E002",
@@ -764,6 +883,7 @@ def _branch_constraint_failure(
             severity=Severity.ERROR,
             obj_type=obj.obj_type,
             obj_name=obj.name,
+            obj=obj,
             field=field_name,
             message=f"Value '{value}' not in allowed values: {branch.enum}",
             code="E004",
@@ -939,6 +1059,7 @@ class _FieldRule:
                     severity=Severity.ERROR,
                     obj_type=obj.obj_type,
                     obj_name=obj.name,
+                    obj=obj,
                     field=field_name,
                     message=f"Expected {self.expected_type}, got {type(value).__name__}",
                     code="E003",
@@ -948,6 +1069,7 @@ class _FieldRule:
                     severity=Severity.ERROR,
                     obj_type=obj.obj_type,
                     obj_name=obj.name,
+                    obj=obj,
                     field=field_name,
                     message=f"Value '{value}' not in allowed values: {self.enum}",
                     code="E004",
@@ -1064,6 +1186,7 @@ def _bound_error(obj: IDFObject, field_name: str, value: float, bound: _Bound) -
         severity=Severity.ERROR,
         obj_type=obj.obj_type,
         obj_name=obj.name,
+        obj=obj,
         field=field_name,
         message=f"Value {value} {bound.relation} {bound.limit}",
         code=bound.code,
@@ -1105,6 +1228,7 @@ def _validate_field_type(  # pyright: ignore[reportUnusedFunction]
                 severity=Severity.ERROR,
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
+                obj=obj,
                 field=field_name,
                 message=f"Expected {expected_type}, got {type(value).__name__}",
                 code="E003",
@@ -1117,6 +1241,7 @@ def _validate_field_type(  # pyright: ignore[reportUnusedFunction]
                 severity=Severity.ERROR,
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
+                obj=obj,
                 field=field_name,
                 message=f"Value '{value}' not in allowed values: {rule.enum}",
                 code="E004",
@@ -1489,6 +1614,7 @@ def _validate_references(
                 severity=Severity.ERROR,
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
+                obj=obj,
                 field=field_name,
                 message=_dangling_message(value, lists, suggestions[suggestion_key], resolver.declaring_types(target)),
                 code="E009",

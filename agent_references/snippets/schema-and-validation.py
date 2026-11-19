@@ -127,3 +127,11 @@ if field_name in doc.schema.get_field_names("Zone"):
 # --8<-- [start:mistake-version-good]
 validate_document(doc)  # uses doc.schema automatically
 # --8<-- [end:mistake-version-good]
+
+
+# --8<-- [start:nameless-issue]
+for err in validate_document(doc).errors:
+    if err.obj is not None and not err.obj_name:
+        print(repr(err.obj))  # HVACTemplate:Zone:IdealLoadsAirSystem(zone_name='B')
+        print(err.obj.zone_name)  # the field that identifies it, to highlight or fix
+# --8<-- [end:nameless-issue]

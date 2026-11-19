@@ -1037,11 +1037,34 @@ class IDFObject(EppyObjectMixin):
             return
         setattr(self, key, value)
 
+    def _identifying_fields(self) -> str:
+        """``zone_name='B'``: the first set field of an object whose type has no Name field.
+
+        A first value of ``"*"`` (``Output:Variable``'s every-key wildcard) names nothing, so the
+        next set field follows it. ``""`` for an object that has a name, whose type has a Name
+        field, or whose type is unknown: those read by their name, even an empty one.
+        """
+        if self._name or self._schema is None or "name" in self._schema:
+            return ""
+        parts: list[str] = []
+        keys = self._field_order if self._field_order is not None else list(self._data)
+        for key in keys:
+            value = self._data.get(key)
+            if value is None or value == "" or isinstance(value, (list, dict)):
+                continue
+            parts.append(f"{key}={value!r}")
+            if value != "*" or len(parts) == 2:
+                break
+        return ", ".join(parts)
+
     def __repr__(self) -> str:
+        fields = self._identifying_fields()
+        if fields:
+            return f"{self._type}({fields})"
         return f"{self._type}('{self._name}')"
 
     def __str__(self) -> str:
-        return f"{self._type}: {self._name}"
+        return f"{self._type}: {self._identifying_fields() or self._name}"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, IDFObject):

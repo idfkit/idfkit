@@ -21,10 +21,10 @@ idfkit bundles the official EnergyPlus epJSON schema for every supported version
 | `get_schema(version)` | Load and cache the `EpJSONSchema` for an EnergyPlus version. |
 | `get_schema_manager()` | Process-wide schema cache. |
 | `EpJSONSchema` | The schema container; see methods below. |
-| `validate_document(doc, *, check_references=True, check_required=True, check_types=True, check_ranges=True, check_singletons=True, object_types=None)` | Validate a whole document. Returns `ValidationResult`. |
+| `validate_document(doc, *, check_references=True, check_required=True, check_types=True, check_ranges=True, check_singletons=True, object_types=None, check_geometry=True)` | Validate a whole document. Returns `ValidationResult`. |
 | `validate_object(obj, schema=None)` | Validate one object. Returns a `list[ValidationError]`. |
 | `ValidationResult` | `.errors`, `.warnings`, `.info`, `.is_valid`, `.total_issues`. |
-| `ValidationError` | `severity`, `obj_type`, `obj_name`, `field`, `message`, `code`. |
+| `ValidationError` | `severity`, `obj_type`, `obj_name`, `field`, `message`, `code`, and `obj`: the `IDFObject` itself (`None` for a document-level issue). |
 | `Severity` | `ERROR`, `WARNING`, `INFO`. |
 | `ObjectDescription` / `FieldDescription` | Schema introspection — see [Introspection](#introspecting-the-schema). |
 
@@ -84,7 +84,15 @@ Common codes (see `ValidationError.code`):
 - `W002` — unknown object type; `W003` — unknown field
 - `W004` — an `Output:Diagnostics`, `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable` with no entries, or only blank ones: it does nothing in EnergyPlus, and its IDF (`Type,;`) is read as one blank entry. Reported by `validate_document` only, so `add()` still accepts one to fill in later.
 
+- `W005` — a floor whose vertex order makes it face up, or a roof or ceiling that faces down (reported with `check_geometry`), read under `GlobalGeometryRules`' entry direction. Its vertices are reversed, as a clockwise footprint extruded by hand gives; EnergyPlus runs it with only an "upside down" warning and a wrong zone volume.
+
 These codes are stable; agents and CI checks can filter on them.
+
+Types without a Name field (`HVACTemplate:Zone:*`, `Output:Variable`, `Timestep`, ...) have an empty `obj_name`. Use `err.obj` to find, highlight or fix the object; `str(err)` and `repr(obj)` name it by its first set field, `HVACTemplate:Zone:IdealLoadsAirSystem(zone_name='B')`:
+
+```python
+--8<-- "agent_references/snippets/schema-and-validation.py:nameless-issue"
+```
 
 A field yields at most one finding. Where a field admits several types, for example a number or the
 literal `Autosize`, the value is judged against each permitted form in turn: it is accepted as soon

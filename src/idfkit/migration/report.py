@@ -115,6 +115,10 @@ class MigrationReport(Generic[DocumentT_co]):
         steps: Ordered record of every transition step that ran.
         diff: Structural diff computed after migration. Empty when no
             steps ran (source == target).
+        from_cache: ``True`` when the transition binaries did not run because
+            the same content was migrated earlier in this process (see
+            [idfkit.migration.cache][idfkit.migration.cache]); ``steps`` are
+            then the records of that earlier run.
     """
 
     migrated_model: DocumentT_co | None
@@ -123,6 +127,7 @@ class MigrationReport(Generic[DocumentT_co]):
     requested_target: tuple[int, int, int]
     steps: tuple[MigrationStep, ...] = ()
     diff: MigrationDiff = field(default_factory=MigrationDiff)
+    from_cache: bool = False
 
     @property
     def success(self) -> bool:

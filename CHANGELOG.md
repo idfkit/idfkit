@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `counter_clockwise_footprint()`, exported from `idfkit`, returned a footprint in the
+  counter-clockwise order `create_block()` expects, reversing a clockwise one.
+  ([#332](https://github.com/idfkit/idfkit/pull/332))
+- `ValidationError.obj` held the object an issue was found on, and objects of types without a Name
+  field printed by their first field (`HVACTemplate:Zone:IdealLoadsAirSystem(zone_name='B')`).
+  ([#332](https://github.com/idfkit/idfkit/pull/332))
 - `SimulationResult.raise_for_status()` (and `async_raise_for_status()`) raised `SimulationError` for a
   failed run, quoting the fatal and first severe messages and the `.err` path; `ErrorReport.summary()`
   quoted those messages too. ([#328](https://github.com/idfkit/idfkit/pull/328))
@@ -61,6 +67,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `migrate()` and `async_migrate()` reused an earlier migration of the same content with the same
+  EnergyPlus install, held in memory, so repeated `auto_migrate=True` runs of one model skipped the
+  transition binaries; `cache=False` and `clear_migration_cache()` opted out.
+  ([#332](https://github.com/idfkit/idfkit/pull/332))
 - **Breaking:** `load_epjson()` raised `IDFParseError` for a field no EnergyPlus release has, such as
   `ceiling_hieght`, naming the closest field; pass `strict_parsing=False` to keep such keys.
   ([#331](https://github.com/idfkit/idfkit/pull/331))
@@ -202,6 +212,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `create_block()`, `ZonedBlock` and `add_shading_block()` reversed a clockwise footprint instead of
+  silently building an inside-out block, and raised `ValueError` for one with no area;
+  `validate_document()` warned (`W005`) about a floor facing up or a roof facing down.
+  ([#332](https://github.com/idfkit/idfkit/pull/332))
 - Renaming an object no longer rewrote references to a same-named object of another type, such as
   surfaces naming a Construction called like its renamed Material.
   ([#331](https://github.com/idfkit/idfkit/pull/331))

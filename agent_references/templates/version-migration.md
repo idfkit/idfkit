@@ -38,6 +38,7 @@ migrate(
     on_progress: Callable[[MigrationProgress], None] | None = None,
     work_dir: str | Path | None = None,           # default: a fresh tempdir
     keep_work_dir: bool = False,
+    cache: bool = True,                           # reuse an earlier identical migration (not with work_dir/keep_work_dir)
 ) -> MigrationReport[...]
 ```
 
@@ -78,6 +79,18 @@ A seven-step chain (22.1 → 22.2 → 23.1 → 23.2 → 24.1 → 24.2 → 25.1 �
 ```python
 --8<-- "agent_references/snippets/version-migration.py:inspect-diff"
 ```
+
+## Speed: migrate once, then batch
+
+Each transition binary spends several seconds loading its IDDs, so a multi-step migration takes tens of seconds even for a tiny model. `migrate` and `async_migrate` remember the last 32 migrations in memory for the process, keyed by the source IDF's content, the steps and the EnergyPlus install. Migrating the same content again (as repeated `simulate(..., auto_migrate=True)` runs of one model do) only re-parses the result, and `report.from_cache` is `True`. Concurrent identical migrations run the binaries once.
+
+The memo cannot help a parametric batch whose variants all differ: each `SimulationJob(auto_migrate=True)` migrates its own content. Migrate the seed once, then build the variants from the migrated model:
+
+```python
+--8<-- "agent_references/snippets/version-migration.py:migrate-once"
+```
+
+A custom backend is cached only when it has a `cache_key` string attribute; the bundled backends use their `IDFVersionUpdater` directory.
 
 ## Progress events
 

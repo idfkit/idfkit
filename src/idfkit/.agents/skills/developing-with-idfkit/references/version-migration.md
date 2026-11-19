@@ -59,6 +59,7 @@ migrate(
     on_progress: Callable[[MigrationProgress], None] | None = None,
     work_dir: str | Path | None = None,           # default: a fresh tempdir
     keep_work_dir: bool = False,
+    cache: bool = True,                           # reuse an earlier identical migration (not with work_dir/keep_work_dir)
 ) -> MigrationReport[...]
 ```
 
@@ -140,6 +141,34 @@ for obj_type, delta in diff.field_changes.items():
     print(obj_type, "added fields:", delta.added, "removed fields:", delta.removed)
 ```
 
+## Speed: migrate once, then batch
+
+Each transition binary spends several seconds loading its IDDs, so a multi-step migration takes tens of seconds even for a tiny model. `migrate` and `async_migrate` remember the last 32 migrations in memory for the process, keyed by the source IDF's content, the steps and the EnergyPlus install. Migrating the same content again (as repeated `simulate(..., auto_migrate=True)` runs of one model do) only re-parses the result, and `report.from_cache` is `True`. Concurrent identical migrations run the binaries once.
+
+The memo cannot help a parametric batch whose variants all differ: each `SimulationJob(auto_migrate=True)` migrates its own content. Migrate the seed once, then build the variants from the migrated model:
+
+```python
+from idfkit import set_wwr
+from idfkit.migration import clear_migration_cache, migrate
+from idfkit.simulation import SimulationJob, find_energyplus, simulate_batch
+
+config = find_energyplus()
+seed = migrate(old_doc, config.version, energyplus=config).migrated_model  # pay the transition chain once
+assert seed is not None
+jobs = []
+for wwr in (0.2, 0.3, 0.4):
+    variant = seed.copy()  # already at the installed version: no auto_migrate needed
+    set_wwr(variant, wwr=wwr)
+    jobs.append(SimulationJob(model=variant, weather="weather.epw", label=f"wwr_{wwr}"))
+batch = simulate_batch(jobs, max_workers=4)
+
+again = migrate(old_doc, config.version, energyplus=config)  # same content: reused, milliseconds
+print(again.from_cache)  # True
+clear_migration_cache()  # or migrate(..., cache=False) to always run the binaries
+```
+
+A custom backend is cached only when it has a `cache_key` string attribute; the bundled backends use their `IDFVersionUpdater` directory.
+
 ## Progress events
 
 ```python
@@ -173,6 +202,8 @@ from idfkit.migration import MigrationStepResult
 
 
 class MyMigrator:
+    cache_key = "my-service-v3"  # optional: lets migrate() reuse results; omit for no caching
+
     def migrate_step(
         self,
         idf_text: str,

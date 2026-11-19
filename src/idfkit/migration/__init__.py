@@ -45,6 +45,7 @@ from __future__ import annotations
 
 from .async_runner import async_migrate
 from .async_subprocess_backend import AsyncSubprocessMigrator
+from .cache import clear_migration_cache
 from .chain import plan_migration_chain
 from .diff import document_diff
 from .progress import MigrationProgress
@@ -64,6 +65,7 @@ __all__ = [
     "Migrator",
     "SubprocessMigrator",
     "async_migrate",
+    "clear_migration_cache",
     "document_diff",
     "migrate",
     "plan_migration_chain",

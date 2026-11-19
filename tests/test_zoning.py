@@ -1493,3 +1493,69 @@ class TestCreateCourtyardBlock:
                 on_slit.append(sorted(v.x for v in poly.vertices))
         overlaps = [min(a[-1], b[-1]) - max(a[0], b[0]) for i, a in enumerate(on_slit) for b in on_slit[i + 1 :]]
         assert any(_close(o, 15.0) for o in overlaps)
+
+
+# =========================================================================
+# Footprint winding
+# =========================================================================
+
+_CW_RECT = [(0.0, 0.0), (0.0, 20.0), (30.0, 20.0), (30.0, 0.0)]
+
+
+class TestClockwiseFootprint:
+    def test_block_stores_a_clockwise_footprint_counter_clockwise(self) -> None:
+        block = ZonedBlock("B", _CW_RECT, floor_to_floor=3.5)
+        assert polygon_area_2d(list(block.footprint)) > 0
+        assert block.footprint[0] == (0.0, 0.0)
+
+    def test_create_block_with_clockwise_footprint_faces_outward(self) -> None:
+        doc = new_document()
+        create_block(doc, "Office", _CW_RECT, floor_to_floor=3.5)
+        tilts: dict[str, float] = {}
+        azimuths: list[float] = []
+        for srf in doc["BuildingSurface:Detailed"]:
+            poly = get_surface_coords(srf)
+            assert poly is not None
+            if srf.surface_type == "Wall":
+                azimuths.append(round(poly.azimuth))
+                # The wall at x=0 faces west.
+                if all(v.x == 0 for v in poly.vertices):
+                    assert round(poly.azimuth) == 270
+            else:
+                tilts[srf.surface_type] = poly.tilt
+        assert sorted(azimuths) == [0, 90, 180, 270]
+        assert _close(tilts["Floor"], 180.0)
+        assert _close(tilts["Roof"], 0.0)
+
+    def test_clockwise_footprint_builds_the_same_surfaces_as_counter_clockwise(self) -> None:
+        cw, ccw = new_document(), new_document()
+        create_block(cw, "B", _CW_RECT, floor_to_floor=3.0, num_stories=2, zoning=ZoningScheme.CORE_PERIMETER)
+        create_block(
+            ccw, "B", footprint_rectangle(30, 20), floor_to_floor=3.0, num_stories=2, zoning=ZoningScheme.CORE_PERIMETER
+        )
+
+        def outlines(doc: IDFDocument) -> set[tuple[str, str, frozenset[tuple[float, float, float]], float]]:
+            out: set[tuple[str, str, frozenset[tuple[float, float, float]], float]] = set()
+            for srf in doc["BuildingSurface:Detailed"]:
+                poly = get_surface_coords(srf)
+                assert poly is not None
+                pts = frozenset((v.x, v.y, v.z) for v in poly.vertices)
+                out.add((srf.zone_name, srf.surface_type, pts, round(poly.tilt)))
+            return out
+
+        assert outlines(cw) == outlines(ccw)
+
+    def test_clockwise_custom_zone_polygon_is_reversed(self) -> None:
+        zones = [
+            ZoneFootprint("West", [(0, 0), (0, 10), (5, 10), (5, 0)]),
+            ZoneFootprint("East", [(5, 0), (10, 0), (10, 10), (5, 10)]),
+        ]
+        block = ZonedBlock("B", footprint_rectangle(10, 10), 3.0, zoning=ZoningScheme.CUSTOM, custom_zones=zones)
+        assert block.custom_zones is not None
+        assert all(polygon_area_2d(z.polygon) > 0 for z in block.custom_zones)
+        # The caller's ZoneFootprint objects are left as given.
+        assert polygon_area_2d(zones[0].polygon) < 0
+
+    def test_zero_area_footprint_raises(self) -> None:
+        with pytest.raises(ValueError, match="zero area"):
+            ZonedBlock("B", [(0, 0), (5, 0), (10, 0)], floor_to_floor=3.0)
