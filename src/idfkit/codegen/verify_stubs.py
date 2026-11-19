@@ -414,13 +414,23 @@ def _schema_fields_reading(schema: EpJSONSchema, obj_type: str, always: frozense
     return fields
 
 
-@functools.cache
 def _schema_group(schema: EpJSONSchema, obj_type: str) -> tuple[str, dict[str, frozenset[str]]] | None:
     """The extensible wrapper key of *obj_type* and the values each inner field may hold, or ``None``."""
+    return _schema_group_reading(schema, obj_type, _REQUIRED_GROUP_READS.get(obj_type, frozenset()))
+
+
+@functools.cache
+def _schema_group_reading(
+    schema: EpJSONSchema, obj_type: str, always: frozenset[str]
+) -> tuple[str, dict[str, frozenset[str]]] | None:
+    """:func:`_schema_group`, given the keys that read without ``None`` (*always*).
+
+    *always* is part of the cache key, as for :func:`_schema_fields_reading`: it depends on the
+    releases a call to :func:`verify` covers, so a later call over other releases must not reuse it.
+    """
     pc = schema.get_parsing_cache(obj_type)
     if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
         return None
-    always = _REQUIRED_GROUP_READS.get(obj_type, frozenset())
     inner = {
         name: _value_members(sub, sub.get("type") if isinstance(sub.get("type"), str) else None)
         - ({"None"} if name in always else set())

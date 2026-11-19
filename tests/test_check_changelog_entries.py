@@ -151,3 +151,9 @@ def test_missing_heading_does_not_print_the_length_rule(tmp_path: Path, capsys: 
     path.write_text("# Changelog\n", encoding="utf-8")
     assert gate.main([str(path)]) == 1
     assert "Rule (CLAUDE.md" not in capsys.readouterr().err
+
+
+def test_a_fenced_heading_does_not_end_the_unreleased_section() -> None:
+    text = "## [Unreleased]\n\n```bash\n## a shell comment\n- not an entry\n```\n\n- Real entry.\n\n## [1.0.0]\n"
+    entries = gate.unreleased_entries(text)
+    assert [entry.line for entry in entries] == [8]
