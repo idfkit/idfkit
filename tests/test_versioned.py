@@ -236,6 +236,18 @@ class TestAsVersion:
         with pytest.raises(TypeError, match="strict=False"):
             versioned.as_version(lax, versioned.IDFDocumentV9_4[Literal[True]])
 
+    def test_matches_strictness_and_release_on_the_same_member(self) -> None:
+        lax = new_document(version=(9, 4, 0), strict=False)
+        with pytest.raises(TypeError, match="strict=False"):
+            versioned.as_version(
+                lax, (versioned.IDFDocumentV9_4[Literal[True]], versioned.IDFDocumentV9_6[Literal[False]])
+            )
+        strict = new_document(version=(9, 6, 0))
+        assert (
+            versioned.as_version(strict, (versioned.IDFDocumentV9_4[Literal[False]], versioned.IDFDocumentV9_6))
+            is strict
+        )
+
     def test_refuses_another_version(self) -> None:
         doc = new_document(version=(9, 4, 0))
         with pytest.raises(TypeError, match=r"EnergyPlus 9\.4\.0, not 9\.5\.0.*IDFDocumentV9_5"):
