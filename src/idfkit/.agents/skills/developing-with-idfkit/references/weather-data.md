@@ -54,7 +54,19 @@ for variant in hits[0].variants:
     print(variant.dataset_variant, variant.dataset_years)  # "TMYx.2011-2025" (2011, 2025) ... "TMYx" None
 ```
 
-`search` splits the query on whitespace, commas, semicolons, dots and hyphens, and is case- and accent-insensitive (`"Montréal"` finds `Montreal`). A token equal to a station's state or country code qualifies the match instead of having to appear in its name, so `"Boulder, CO"` ranks Boulder, Colorado first; a token shorter than three characters must equal a whole word of the name rather than prefix one. Use it for "I know roughly what the station is called."
+`search` splits the query on whitespace, commas, semicolons, dots and hyphens, and is case- and accent-insensitive (`"Montréal"` finds `Montreal`). A token equal to a station's state or country code qualifies the match instead of having to appear in its name, so `"Boulder, CO"` ranks Boulder, Colorado first; a token shorter than three characters must equal a whole word of the name rather than prefix one. A name that starts with the query outranks one that contains it later on, so `"london"` lists London City and Gatwick before East London, South Africa, and an exact WMO number scores 1.0. Use it for "I know roughly what the station is called."
+
+A city name alone can match several countries (London is also in Ontario). Qualify it with a country or state code, or pass `country=`:
+
+```python
+index = StationIndex.load()
+# Names starting with the query rank first: London City, Luton, Gatwick... before East London (ZAF).
+# Add a country or state code to the query, or pass country=, to narrow further.
+qualified = index.search("London, GBR")
+print(qualified[0].station.display_name)  # "London City AP, ENG, GBR"
+in_country = index.search("London", country="GBR")
+print(in_country[0].station.display_name)  # "London City AP, ENG, GBR"
+```
 
 ### By address (geocode + nearest)
 

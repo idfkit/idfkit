@@ -189,6 +189,10 @@ from idfkit.weather import StationIndex, geocode
 index = StationIndex.load()
 results = index.nearest(*geocode("Chicago, IL"))
 print(results[0].station.display_name)
+
+# By name: a country or state code narrows the match, as does country=
+print(index.search("London, GBR")[0].station.display_name)  # London City AP, ENG, GBR
+print(index.search("London", country="GBR")[0].station.display_name)
 ```
 
 ## CLI
