@@ -262,8 +262,10 @@ class EppyDocumentMixin:
             >>> model.getobject("Material", "Board").thickness
             0.0127
         """
+        from ._eppy_names import resolve_eppy_key
         from .objects import to_python_name
 
+        pc = self._schema.get_parsing_cache(obj_type) if self._schema is not None else None
         name = ""
         named = False
         fields: dict[str, Any] = {}
@@ -272,6 +274,9 @@ class EppyDocumentMixin:
             # A key already in idfkit's spelling is kept, so add() resolves it as it resolves any key:
             # to_python_name would turn ReportPeriod's `name_` field into the object's name.
             field = key if key.islower() and " " not in key else to_python_name(key)
+            if pc is not None and field not in pc.known_keys:
+                # eppy's punctuation-free spelling: Vertex_1_Xcoordinate is vertex_1_x_coordinate.
+                field = resolve_eppy_key(field, pc.eppy_aliases, pc.ext_field_names) or field
             if field in spelled:
                 msg = f"newidfobject() got {spelled[field]!r} and {key!r}, which name the same field {field!r}"
                 raise TypeError(msg)

@@ -923,7 +923,7 @@ Zone,
         assert blank[6] is None
         assert blank.get("ceiling_height", "autocalculate") == "autocalculate"
         # eppy-compat positional view: the unset slots read as None in both spellings.
-        assert blank.fieldvalues[1:] == truncated.fieldvalues[1:]
+        assert blank.fieldvalues[2:] == truncated.fieldvalues[2:]
 
     def test_write_idf_reparse_equals_original(self, zones_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(zones_idf)

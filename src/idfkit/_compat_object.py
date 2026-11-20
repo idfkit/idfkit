@@ -14,13 +14,40 @@ To opt out early, avoid importing or calling any symbol from this module.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Final, cast
+
+from ._eppy_names import eppy_field_name, group_number_position, idd_field_names, numbered_idd_name
+from ._surface_types import VERTEX_SURFACE_TYPES
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from .document import AnyIDFDocument, IDFDocument
     from .objects import IDFObject
+
+
+#: eppy's geometry attributes of a surface, read through [idfkit.geometry][] on a surface with vertices.
+EPPY_SURFACE_ATTRIBUTES: Final = frozenset({"area", "azimuth", "tilt", "height", "width", "coords"})
+
+#: Types whose objects read eppy's geometry attributes: every surface type with vertices.
+_EPPY_GEOMETRY_TYPES: Final = (*VERTEX_SURFACE_TYPES, "Wall:Detailed", "RoofCeiling:Detailed", "Floor:Detailed")
+
+_SURFACE_REPLACEMENTS: Final = {
+    "area": "idfkit.geometry.calculate_surface_area(surface), or calculate_zone_floor_area(doc, zone) for a zone",
+    "azimuth": "idfkit.geometry.calculate_surface_azimuth(surface)",
+    "tilt": "idfkit.geometry.calculate_surface_tilt(surface)",
+    "coords": "idfkit.geometry.get_surface_coords(surface).as_tuple_list()",
+    "true_azimuth": (
+        "idfkit.geometry.calculate_surface_azimuth(surface), adding the zone's direction_of_relative_north "
+        "and the Building's north_axis, or translate_to_world(doc) first"
+    ),
+}
+
+#: eppy attributes idfkit has no counterpart of by that name, to the idfkit way.
+_EPPY_ATTRIBUTE_HINTS: Final = {
+    "obj": "'obj' is eppy's raw field list; read obj.fieldvalues (eppy's layout) or obj.data, and set fields by name.",
+    "objidd": "'objidd' is eppy's IDD field list; use obj.get_field_idd(field) or obj.schema_dict.",
+}
 
 
 class EppyObjectMixin:
@@ -40,6 +67,8 @@ class EppyObjectMixin:
         _schema: dict[str, Any] | None
         _document: AnyIDFDocument | None
         _field_order: list[str] | None
+        _wrapper_key: str | None
+        _ext_inner_names: tuple[str, ...]
 
         def _set_name(self, value: str) -> None: ...
         def _field_key(self, key: str) -> str: ...
@@ -70,27 +99,91 @@ class EppyObjectMixin:
         """Set the object's name (eppy compatibility)."""
         self._set_name(value)
 
+    def _eppy_layout(self) -> tuple[list[str], list[Any]]:
+        """eppy's field names and values: the key, the name, the fixed fields, then each group's fields."""
+        legacy_raw: Any = (self._schema or {}).get("legacy_idd")
+        legacy = cast("dict[str, Any] | None", legacy_raw if isinstance(legacy_raw, dict) else None)
+        legacy_fields = list(cast("list[str]", legacy.get("fields", ()))) if legacy is not None else []
+        has_name = legacy_fields[:1] == ["name"] if legacy is not None else True
+        fixed = self._field_order if self._field_order is not None else legacy_fields[1 if has_name else 0 :]
+        if not legacy_fields and self._field_order is None:
+            fixed = list(self._data.keys())
+        idd_names = idd_field_names(self._schema)
+
+        def label(key: str, group: int = 0) -> str:
+            idd = idd_names.get(key) or " ".join(word.capitalize() for word in key.split("_"))
+            spelled = eppy_field_name(
+                numbered_idd_name(idd, group, group_number_position(self._type, key)) if group else idd
+            )
+            # ``Name`` is the object's name; a nameless type's IDD ``Name`` field (``name_``) keeps its key.
+            return key if spelled == "Name" else spelled
+
+        names: list[str] = ["key"]
+        values: list[Any] = [self._type]
+        if has_name:
+            names.append("Name")
+            values.append(self._name)
+        wrapper_key = self._wrapper_key
+        for key in fixed:
+            if key == "name" or key == wrapper_key:
+                continue
+            names.append(label(key))
+            values.append(self._data.get(key))
+
+        if wrapper_key is not None:
+            inner = cast("list[str]", legacy.get("extensibles", ())) if legacy is not None else []
+            inner_names = tuple(inner) or self._ext_inner_names
+            groups_raw: Any = self._data.get(wrapper_key)
+            groups = cast("list[dict[str, Any]]", groups_raw) if isinstance(groups_raw, list) else []
+            for index in range(max(len(groups), 1)):
+                group = groups[index] if index < len(groups) else {}
+                for key in inner_names:
+                    names.append(label(key, index + 1))
+                    values.append(group.get(key))
+
+        # Trailing blanks are trimmed, as in an IDF file: never the key or the name.
+        while len(values) > (2 if has_name else 1) and values[-1] in (None, ""):
+            values.pop()
+        return names, values
+
     @property
     def fieldnames(self) -> list[str]:
-        """List of field names (eppy compatibility).
+        """Field names in eppy's layout (eppy compatibility).
+
+        ``["key", "Name", <fixed fields>, <extensible fields, group by group>]``, each spelled as eppy
+        spells it, from the IDD name with punctuation dropped: ``"Outside_Layer"``,
+        ``"Vertex_1_Xcoordinate"``. A type without a Name field has no ``"Name"`` entry. Every
+        fixed field is listed, and the fields of each extensible group present (of one group when
+        there are none). Group fields carry their number where the IDD puts it (``"Field_3"``,
+        ``"Branch_2_Name"``, ``"Value_Until_Time_1"``). Every name is accepted by attribute and item
+        access and by ``obj.get(name)``, which reads the value ``zip(obj.fieldnames, obj.fieldvalues)``
+        pairs it with. ``obj[name]`` reads the same value, except that it raises
+        [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError] for a blank
+        required field, which ``fieldvalues`` and ``obj.get(name)`` read as ``None``.
 
         !!! tip
-            Prefer ``list(obj.data.keys())`` for new code.
+            Prefer ``obj.field_order`` (the snake_case keys) and the extensible wrapper
+            (``obj.vertices``) for new code.
         """
-        if self._field_order:
-            return ["Name", *list(self._field_order)]
-        return ["Name", *list(self._data.keys())]
+        return self._eppy_layout()[0]
 
     @property
     def fieldvalues(self) -> list[Any]:
-        """List of field values in order (eppy compatibility).
+        """Field values in eppy's layout (eppy compatibility).
+
+        ``fieldvalues[0]`` is the object type (``obj.key``), ``fieldvalues[1]`` the name for a type
+        with a Name field, then the fixed fields in IDD order and the extensible groups flattened
+        after them, so ``construction.fieldvalues[2:]`` lists the layers and a
+        ``Schedule:Compact``'s ``fieldvalues[3:]`` lists its fields. A blank field reads ``None``,
+        as ``obj.get(name)`` does (attribute access raises
+        [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError] for a blank required
+        field instead), and trailing blanks are trimmed as in an IDF file. The list is a copy:
+        changing it does not change the object.
 
         !!! tip
-            Prefer ``list(obj.data.values())`` for new code.
+            Prefer ``obj.data`` and the extensible wrapper (``obj.vertices``) for new code.
         """
-        if self._field_order:
-            return [self._name] + [self._data.get(f) for f in self._field_order]
-        return [self._name, *list(self._data.values())]
+        return self._eppy_layout()[1]
 
     @property
     def theidf(self) -> IDFDocument | None:
@@ -101,6 +194,61 @@ class EppyObjectMixin:
         """
         # Typed for the latest release, as every document is unless its caller names a version.
         return cast("IDFDocument | None", self._document)
+
+    # -- Surface geometry (eppy's surface functions) ---------------------------
+
+    def _eppy_surface_attr(self, name: str) -> tuple[bool, Any]:
+        """eppy's surface geometry attribute *name* of a surface with vertices, as ``(found, value)``.
+
+        eppy gives every surface ``area``, ``azimuth``, ``tilt``, ``height``, ``width`` and ``coords``.
+        They are not properties here, so that they can never hide a field of the same name on another
+        type (``Window.height``): ``IDFObject.__getattr__`` asks for them only once *name* is not a
+        field. A surface with fewer than three vertices reads ``0.0``, and ``[]`` for ``coords``, as
+        the [idfkit.geometry][] functions do.
+
+        !!! tip
+            Prefer [calculate_surface_area][idfkit.geometry.calculate_surface_area],
+            [calculate_surface_azimuth][idfkit.geometry.calculate_surface_azimuth],
+            [calculate_surface_tilt][idfkit.geometry.calculate_surface_tilt] and
+            [get_surface_coords][idfkit.geometry.get_surface_coords] for new code.
+        """
+        if name not in EPPY_SURFACE_ATTRIBUTES or self._type not in _EPPY_GEOMETRY_TYPES:
+            return False, None
+        from .geometry import get_surface_coords
+
+        poly = get_surface_coords(cast("IDFObject", self))
+        if name == "coords":
+            return True, poly.as_tuple_list() if poly is not None else []
+        if poly is None:
+            return True, 0.0
+        if name == "area":
+            return True, poly.area
+        if name == "azimuth":
+            return True, poly.azimuth
+        if name == "tilt":
+            return True, poly.tilt
+        # eppy's height and width: of the edges at the first vertex, the steeper is the height and
+        # the flatter the width; with equal rises, the longer is the width.
+        first, after, before = poly.vertices[0], poly.vertices[1], poly.vertices[-1]
+        rise_before, rise_after = abs(before.z - first.z), abs(after.z - first.z)
+        to_before, to_after = (before - first).length(), (after - first).length()
+        if rise_before == rise_after:
+            return True, (min if name == "height" else max)(to_before, to_after)
+        before_is_steeper = rise_before > rise_after
+        return True, to_before if before_is_steeper == (name == "height") else to_after
+
+    def _eppy_attribute_hint(self, name: str) -> str | None:
+        """Where an eppy-only attribute *name* lives in idfkit, for the error that refuses it."""
+        if name in EPPY_SURFACE_ATTRIBUTES or name == "true_azimuth":
+            replacement = _SURFACE_REPLACEMENTS.get(name, "idfkit.geometry.get_surface_coords(surface)")
+            if self._type in _EPPY_GEOMETRY_TYPES:
+                # true_azimuth: this surface reads area, azimuth, ... but not this one.
+                return f"'{name}' is an eppy surface attribute idfkit does not provide. Use {replacement}."
+            return (
+                f"'{name}' is eppy's surface geometry attribute; {self._type} has no vertices to read it "
+                f"from. Use {replacement}."
+            )
+        return _EPPY_ATTRIBUTE_HINTS.get(name)
 
     # -- Schema introspection ------------------------------------------------
 
