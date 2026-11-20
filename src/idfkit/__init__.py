@@ -27,13 +27,15 @@ from __future__ import annotations
 import logging
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _pkg_version
-from typing import TYPE_CHECKING, Literal, overload
+from typing import TYPE_CHECKING, Literal, cast, overload
 
 if TYPE_CHECKING:
     from typing import TypeVar
 
     from ._compat import EppyDocumentMixin
     from ._generated_types import *
+    from .document import AnyIDFDocument
+    from .simulation.config import EnergyPlusConfig
 
     # Bound to a plain base every document type inherits, so the check is nominal. AnyIDFDocument, a union
     # of two TypedDict-backed classes, would make pyright build both, and compare them key by key at each
@@ -226,11 +228,44 @@ def new_document(
 def new_document(version: type[_D], *, normalize_choices: bool = ...) -> _D: ...
 
 
+# An installation's release is known only at run time, so the document is typed as AnyIDFDocument (as
+# load_idf types a file's), unless as_type= names the release the installation must be. An argument typed Any
+# now matches these too, so pyright types it as the wider of the returns, AnyIDFDocument, whatever the order.
+@overload
+def new_document(
+    version: EnergyPlusConfig,
+    *,
+    as_type: None = ...,
+    strict: Literal[True] = ...,
+    normalize_choices: bool = ...,
+) -> AnyIDFDocument[Literal[True]]: ...
+
+
+@overload
+def new_document(
+    version: EnergyPlusConfig,
+    *,
+    as_type: None = ...,
+    strict: Literal[False],
+    normalize_choices: bool = ...,
+) -> AnyIDFDocument[Literal[False]]: ...
+
+
+@overload
+def new_document(
+    version: EnergyPlusConfig,
+    *,
+    as_type: type[_D],
+    normalize_choices: bool = ...,
+) -> _D: ...
+
+
 # The overloads carry the types; these annotations stay built-in, which costs pyright nothing at each call
 # and keeps typing.get_type_hints working at run time.
 def new_document(
-    version: tuple[int, int, int] | type[object] = LATEST_VERSION,
+    version: tuple[int, int, int] | type[object] | object = LATEST_VERSION,
     *,
+    as_type: type[object] | None = None,
     strict: bool = True,
     normalize_choices: bool = True,
 ) -> object:
@@ -252,7 +287,17 @@ def new_document(
             ``new_document()`` for the latest release. ``simulate()`` runs a model
             only on an EnergyPlus of its release (or a newer one, with
             ``auto_migrate=True``), so to simulate on an older installed EnergyPlus,
-            create the model at its release: ``new_document(version=idfkit.simulation.find_energyplus().version)``.
+            create the model at its release by passing the installation's
+            :class:`~idfkit.simulation.EnergyPlusConfig`:
+            ``new_document(find_energyplus())``. The installation's version is matched
+            to its release line (an install reporting 9.0.0 gives a 9.0.1 model), and
+            a release idfkit bundles no schema for raises
+            :class:`~idfkit.exceptions.UnsupportedVersionError`. The document is typed
+            as ``AnyIDFDocument``, since the release is known only at run time; name
+            the release you expect with ``as_type=`` to have it typed for that release.
+        as_type: Only with an ``EnergyPlusConfig``: the document type of the release the
+            installation must be, such as ``IDFDocumentV25_1``. The document is typed as
+            that type, and ``TypeError`` is raised if the installation is another release.
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
             of returning ``None``, and assigning a value the schema refuses raises
@@ -299,17 +344,30 @@ def new_document(
         False
     """
     if not isinstance(version, tuple):
-        from ._document_types import is_type_form, release_for_new_document
+        from ._document_types import as_version, check_target, is_type_form, release_for_new_document, target_strictness
 
-        # Anything else is left to the version check, which raises TypeError for a non-tuple such as "26.1".
+        # Imported here, not at module level, so that new_document's own import never needs the simulation
+        # package. (`import idfkit` loads it today anyway, through idfkit.migration.)
+        from .simulation.config import EnergyPlusConfig
+
+        if isinstance(version, EnergyPlusConfig):
+            check_target(as_type, None, None)
+            strict = target_strictness(as_type, strict)
+            doc = new_document(_release_of_installation(version), strict=strict, normalize_choices=normalize_choices)
+            return doc if as_type is None else as_version(doc, cast("type[AnyIDFDocument]", as_type))
         if is_type_form(version):
             version, strict = release_for_new_document(version, strict)
-    _check_version(version)
-    schema = get_schema(version)
-    doc = IDFDocument(version=version, schema=schema, strict=strict, normalize_choices=normalize_choices)
+    if as_type is not None:
+        msg = "new_document takes as_type= only with an EnergyPlusConfig; pass a release's document type as version"
+        raise TypeError(msg)
+    # Anything but a tuple is refused here, at run time: the version check raises TypeError for "26.1".
+    release = cast("tuple[int, int, int]", version)
+    _check_version(release)
+    schema = get_schema(release)
+    doc = IDFDocument(version=release, schema=schema, strict=strict, normalize_choices=normalize_choices)
 
     # Seed core singleton objects for a minimal baseline model.
-    version_identifier = f"{version[0]}.{version[1]}"
+    version_identifier = f"{release[0]}.{release[1]}"
     doc["Version"].add(version_identifier=version_identifier)
     doc["Building"].add("Building")
     doc["SimulationControl"].add()
@@ -319,6 +377,25 @@ def new_document(
         coordinate_system="Relative",
     )
     return doc
+
+
+def _release_of_installation(config: EnergyPlusConfig) -> tuple[int, int, int]:
+    """The bundled release a model for *config*'s installation is created at.
+
+    The installation's version is matched to its release line, as ``simulate()`` matches it, so an install
+    reporting ``9.0.0`` still gets the 9.0.1 schema. A release idfkit has no schema for is refused rather than
+    replaced by a neighbour: a model of the latest release cannot be migrated to a newer installation idfkit
+    does not know, and one of an older release would not be what was asked for.
+
+    Raises:
+        UnsupportedVersionError: If idfkit bundles no schema of the installation's release line.
+    """
+    from .versions import find_release
+
+    release = find_release(config.version)
+    if release is None:
+        raise UnsupportedVersionError(config.version, ENERGYPLUS_VERSIONS)
+    return release
 
 
 __all__ = [

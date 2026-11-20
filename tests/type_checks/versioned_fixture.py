@@ -24,7 +24,7 @@ from typing_extensions import assert_type
 from idfkit import IDFDocument, load_idf, new_document, save_idf
 from idfkit.migration import MigrationReport, async_migrate, migrate
 from idfkit.objects import IDFCollection, IDFObject
-from idfkit.simulation import expand_objects
+from idfkit.simulation import EnergyPlusConfig, expand_objects
 from idfkit.versioned import (
     AnyIDFDocument,
     IDFDocumentBefore9_6,
@@ -201,13 +201,22 @@ def new_documents(any_version: Any, versions: list[tuple[int, int, int]]) -> Non
     strict_94: IDFDocumentV9_4[Literal[True]] = new_document(IDFDocumentV9_4[Literal[True]])
     lax_94: IDFDocumentV9_4[Literal[False]] = new_document(IDFDocumentV9_4[Literal[False]])
     print(strict_94, lax_94)
-    # The tuple form is unchanged, an untyped version included, and so is new_document as a callable.
+    # The tuple form is unchanged, and so is new_document as a callable.
     assert_type(new_document(), IDFDocument[Literal[True]])
     assert_type(new_document(version=(9, 4, 0)), IDFDocument[Literal[True]])
     assert_type(new_document((9, 4, 0), strict=False), IDFDocument[Literal[False]])
-    assert_type(new_document(any_version), IDFDocument[Literal[True]])
-    assert_type(new_document(any_version, strict=False), IDFDocument[Literal[False]])
+    # An argument typed Any may be an EnergyPlusConfig, whose release is known only at run time.
+    assert_type(new_document(any_version), AnyIDFDocument[Literal[True]])
+    assert_type(new_document(any_version, strict=False), AnyIDFDocument[Literal[False]])
     assert_type(list(map(new_document, versions)), list[IDFDocument[Literal[True]]])
+
+
+def documents_for_an_installation(config: EnergyPlusConfig) -> None:
+    """An installation's release is known at run time only: AnyIDFDocument, unless as_type= names it."""
+    assert_type(new_document(config), AnyIDFDocument[Literal[True]])
+    assert_type(new_document(config, strict=False), AnyIDFDocument[Literal[False]])
+    assert_type(new_document(config, as_type=IDFDocumentV9_4), IDFDocumentV9_4)
+    new_document(config)["Space"]  # pyright: ignore[reportArgumentType, reportCallIssue]  # 9.6 and later only
 
 
 async def migrated_documents(old: IDFDocumentV8_9) -> None:
