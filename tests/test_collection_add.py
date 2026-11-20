@@ -12,6 +12,7 @@ import pytest
 from idfkit import IDFDocument, new_document
 from idfkit.exceptions import (
     DuplicateObjectError,
+    InvalidFieldError,
     UnknownObjectTypeError,
     UnknownObjectTypeWarning,
     ValidationFailedError,
@@ -40,13 +41,13 @@ class TestAdd:
     def test_validates_like_add(self, doc: IDFDocument[Any]) -> None:
         with pytest.raises(ValidationFailedError, match="Bogus"):
             doc["Zone"].add("Office", zone_inside_convection_algorithm="Bogus")  # pyright: ignore[reportArgumentType]
-        with pytest.raises(ValidationFailedError, match="ceiling_hieght"):
+        with pytest.raises(InvalidFieldError, match="ceiling_hieght"):
             doc["Zone"].add("Office", ceiling_hieght=3.0)  # pyright: ignore[reportCallIssue]
         assert len(doc["Zone"]) == 0
 
     def test_a_failed_create_leaves_the_type_absent(self, doc: IDFDocument[Any]) -> None:
         zones = doc["Zone"]
-        with pytest.raises(ValidationFailedError):
+        with pytest.raises(InvalidFieldError):
             zones.add("Office", ceiling_hieght=3.0)  # pyright: ignore[reportCallIssue]
         assert "Zone" not in doc.collections
         assert len(zones) == 0

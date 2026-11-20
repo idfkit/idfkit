@@ -6,11 +6,11 @@ for cross-version EnergyPlus compatibility issues.
 
 from __future__ import annotations
 
-import difflib
 from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from functools import lru_cache
 
+from ..exceptions import closest_name
 from ..objects import parse_extensible_index, to_python_name
 from ..schema import EpJSONSchema, get_schema
 from ..versions import ENERGYPLUS_VERSIONS, find_closest_version, find_release, version_string
@@ -519,8 +519,7 @@ def _check_choice_value(
 
 def _closest(value: str, by_folded: Mapping[str, str]) -> str | None:
     """The name closest to *value* among *by_folded*'s, keyed by case-folded name, or ``None`` if none is close."""
-    close = difflib.get_close_matches(value.casefold(), list(by_folded), n=1, cutoff=0.6)
-    return by_folded[close[0]] if close else None
+    return closest_name(value, by_folded.values())
 
 
 def _report_add_literal(

@@ -15,9 +15,10 @@ Both forms return the type's collection, as ``doc["Output:SQLite"]`` does.
 
 from __future__ import annotations
 
-import difflib
 import re
 from collections.abc import Callable, Iterable, Mapping
+
+from .exceptions import closest_names
 
 __all__ = [
     "MEMBER_CONFLICT",
@@ -262,7 +263,7 @@ class AccessorResolver:
 
     def suggest(self, attr: str, n: int = 3) -> list[str]:
         """Closest canonical attribute names and shorthands, for an ``AttributeError`` message."""
-        return difflib.get_close_matches(attr.lower(), self._candidates.keys(), n=n, cutoff=0.6)
+        return closest_names(attr, self._candidates.keys(), n=n)
 
     def accessors(self) -> dict[str, str]:
         """Every canonical attribute name and shorthand with its object type, sorted by name.

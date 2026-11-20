@@ -11,7 +11,6 @@ Provides:
 from __future__ import annotations
 
 import contextlib
-import difflib
 import functools
 import logging
 import sys
@@ -31,6 +30,7 @@ from .exceptions import (
     UnknownObjectTypeError,
     UnknownObjectTypeWarning,
     ValidationFailedError,
+    closest_name,
 )
 from .introspection import ObjectDescription, describe_object_type
 from .objects import (
@@ -134,9 +134,9 @@ def _surface_types_upper(schema: EpJSONSchema) -> frozenset[str]:
 
 
 @functools.cache
-def _object_types_by_folded_name() -> dict[str, str]:
-    """Every object type of every bundled release, keyed by its case-folded name."""
-    return {name.casefold(): name for name in ALL_OBJECT_TYPES}
+def _object_types_by_folded_name() -> frozenset[str]:
+    """Every object type of every bundled release, case-folded."""
+    return frozenset(name.casefold() for name in ALL_OBJECT_TYPES)
 
 
 @functools.lru_cache(maxsize=256)
@@ -147,9 +147,7 @@ def _closest_object_type(obj_type: str) -> str | None:
     will be shown (``warn`` formats the message before it consults the filters), and a long name
     costs difflib milliseconds: a loop probing one misspelt name pays that once.
     """
-    by_folded = _object_types_by_folded_name()
-    close = difflib.get_close_matches(obj_type.casefold(), by_folded.keys(), n=1, cutoff=0.6)
-    return by_folded[close[0]] if close else None
+    return closest_name(obj_type, ALL_OBJECT_TYPES)
 
 
 def _warn_if_unknown_object_type(obj_type: str, *, stacklevel: int) -> None:
@@ -911,8 +909,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             validate: If True (default), validate the object against schema before adding.
                 Raises ValidationFailedError if validation fails. Set to False for
                 bulk operations where performance matters: values, required fields
-                and ranges are then not checked, but a key the schema does not name
-                still raises InvalidFieldError, whatever its value.
+                and ranges are then not checked. A key the schema does not name
+                raises InvalidFieldError in either mode, whatever its value.
             **kwargs: Additional field values
 
         Returns:
@@ -920,14 +918,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         Raises:
             UnknownObjectTypeError: If the object type is not recognised by
-                the schema
+                the schema; the message names the closest type, if one is close
             DuplicateObjectError: If a singleton object type (marked with
                 schema ``maxProperties == 1``) already exists in the document
-            ValidationFailedError: If validation fails (unknown fields, missing
-                required fields, invalid values)
-            InvalidFieldError: If ``validate=False`` and a key is not a field of
-                the object type, naming every such key (the name goes in ``name``,
-                not in ``fields``); or, in either mode, if ``name`` is not empty and
+            ValidationFailedError: If validation fails (missing required fields,
+                invalid values)
+            InvalidFieldError: If a key is not a field of the object type, naming
+                every such key and the closest field to each (the name goes in
+                ``name``, not in ``fields``); or if ``name`` is not empty and
                 the type has no Name field (the message names the field to use
                 instead, e.g. ``key_name`` for Output:Meter)
             TypeError: If the extensible wrapper value is not a list of groups,
@@ -1017,7 +1015,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             field_data = self._resolve_field_aliases(resolved_obj_type, field_data, pc)
 
             if obj_schema is None:
-                raise UnknownObjectTypeError(obj_type, version=self.version)
+                raise UnknownObjectTypeError(
+                    obj_type, version=self.version, suggestion=closest_name(obj_type, self._schema.object_types)
+                )
 
             # A type without a Name field drops a name on write; refuse it in either mode.
             refuse_name_for_nameless_type(resolved_obj_type, name, obj_schema)
@@ -1056,10 +1056,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         )
 
         # A key the type does not name would be stored, then dropped by write_idf() and written as
-        # an unknown property by write_epjson(). validate=True reports such keys (W003) with every
-        # other finding below; skipping validation must not let one through either.
+        # an unknown property by write_epjson(). It is refused with InvalidFieldError, as update()
+        # and attribute assignment refuse it, whether or not the values are validated below.
         if parsing_cache is not None:
-            refuse_unknown_fields_for_add(obj, parsing_cache, check_names=not validate)
+            refuse_unknown_fields_for_add(obj, parsing_cache)
 
         # Validate if requested
         if validate and self._schema:

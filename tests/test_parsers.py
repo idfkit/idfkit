@@ -12,7 +12,7 @@ import pytest
 from idfkit import LATEST_VERSION, get_schema, load_epjson, load_idf, load_idf_with_diagnostics
 from idfkit.epjson_parser import get_epjson_version, parse_epjson
 from idfkit.epjson_parser import load_epjson as raw_load_epjson
-from idfkit.exceptions import IDFParseError, VersionNotFoundError
+from idfkit.exceptions import IDFParseError, ParseDiagnostic, VersionNotFoundError
 from idfkit.idf_parser import get_idf_version, iter_idf_objects, parse_idf
 
 # ---------------------------------------------------------------------------
@@ -708,6 +708,108 @@ Building,
         parser.parse()
 
         assert len(parser.diagnostics) == first
+
+
+class TestMissingSemicolonBetweenObjects:
+    """An object missing its ``;`` swallowed the next one: its type was read as part of a value.
+
+    The finding is a diagnostic, never a parse failure, in either mode: a value written across two
+    lines is legal IDF (``My`` then ``Zone,`` is the one name ``"My Zone"``), so the reader cannot
+    tell the two shapes apart and must load both.
+    """
+
+    SWALLOWED = "Version, 24.1;\nZone, A, 0, 0, 0\nMaterial, M;\nZone, B;\n"
+
+    @staticmethod
+    def _write(tmp_path: Path, body: str) -> Path:
+        path = tmp_path / "swallowed.idf"
+        path.write_text(body, encoding="latin-1")
+        return path
+
+    @staticmethod
+    def _strict_findings(path: Path) -> tuple[ParseDiagnostic, ...]:
+        """The findings a strict parse recorded without stopping."""
+        from idfkit.idf_parser import IDFParser
+
+        parser = IDFParser(path, get_schema(LATEST_VERSION), strict_parsing=True)
+        parser.parse()
+        return parser.diagnostics
+
+    def test_strict_parse_loads_and_records_the_finding_at_the_value(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        path = self._write(tmp_path, self.SWALLOWED)
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.idf_parser"):
+            doc = load_idf(path)
+
+        # The object is kept as read: the Material is inside the Zone's y origin.
+        assert sorted(z.name for z in doc["Zone"]) == ["A", "B"]
+        assert "Material" not in doc
+        assert any("missing ';'" in r.getMessage() for r in caplog.records)
+        (diagnostic,) = self._strict_findings(path)
+        assert (diagnostic.code, diagnostic.line, diagnostic.obj_type, diagnostic.obj_name) == (
+            "ParseError",
+            2,
+            "Zone",
+            "A",
+        )
+        assert "'y_origin'" in diagnostic.message
+        assert "before 'Material'" in diagnostic.message
+
+    def test_with_comments_and_one_field_per_line(self, tmp_path: Path) -> None:
+        body = "Version, 24.1;\nZone,\n  A,  !- Name\n  0  !- Direction\nMaterial:NoMass, M, Rough, 1;\n"
+
+        result = load_idf_with_diagnostics(str(self._write(tmp_path, body)))
+
+        (diagnostic,) = result.diagnostics
+        assert diagnostic.line == 4
+        assert "before 'Material:NoMass'" in diagnostic.message
+
+    def test_returning_path_reports(self, tmp_path: Path) -> None:
+        result = load_idf_with_diagnostics(str(self._write(tmp_path, self.SWALLOWED)))
+
+        # One finding for one defect: the values read from the lost object are not also reported
+        # as InvalidField, though they are not numbers.
+        assert [(d.code, d.line, d.column, d.obj_type) for d in result.diagnostics] == [("ParseError", 2, 16, "Zone")]
+
+    def test_extensible_field_is_named(self, tmp_path: Path) -> None:
+        body = (
+            "Version, 24.1;\nBuildingSurface:Detailed, W, Wall, C, Z, , Outdoors, , SunExposed, WindExposed, , 4,"
+            " 0,0,0, 1,0,0, 1,1,0, 0,1,0\nZone, A;\n"
+        )
+
+        (diagnostic,) = self._strict_findings(self._write(tmp_path, body))
+
+        assert "'vertex_z_coordinate (vertices item 4)'" in diagnostic.message
+
+    def test_swallowed_name_reports_the_name_before_the_line_break(self, tmp_path: Path) -> None:
+        result = load_idf_with_diagnostics(str(self._write(tmp_path, "Version, 24.1;\nZone, A\nMaterial, M;\n")))
+
+        (diagnostic,) = result.diagnostics
+        assert diagnostic.message.startswith("Field 'name' runs onto")
+        assert diagnostic.obj_name == "A"
+        assert "\n" not in diagnostic.message
+
+    def test_a_value_across_two_lines_loads_in_both_modes(self, tmp_path: Path) -> None:
+        """``My`` then ``Zone,`` is one legal name; strict parsing must not refuse it."""
+        path = self._write(tmp_path, "Version, 24.1;\nZone,\n  My\n  Zone,\n  0.0;\n")
+
+        assert len(load_idf(path)["Zone"]) == 1
+        assert len(load_idf(path, strict_parsing=False)["Zone"]) == 1
+
+    @pytest.mark.parametrize(
+        "body",
+        [
+            "Version, 24.1;\nZone,\n  A\n  ,0;\n",  # comma at the start of the next line
+            "Version, 24.1;\nZone,\n  A,\n  0\n  ;\n",  # semicolon on its own line
+            "Version, 24.1;\nZone, A, 0\n  Office;\n",  # a line break, but no object type after it
+        ],
+    )
+    def test_line_breaks_that_swallow_no_object_are_not_flagged(self, tmp_path: Path, body: str) -> None:
+        result = load_idf_with_diagnostics(str(self._write(tmp_path, body)))
+
+        assert not [d for d in result.diagnostics if "missing ';'" in d.message]
 
 
 class TestUnterminatedObject:

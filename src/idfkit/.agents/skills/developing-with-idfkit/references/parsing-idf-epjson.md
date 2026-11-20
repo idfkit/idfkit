@@ -53,7 +53,7 @@ zone.x_orign  # returns None at run time; pyright still reports the name
 
 ## Strict parsing (the default)
 
-`strict_parsing=True` makes the IDF tokenizer fail fast on malformed objects (missing semicolons, truncated lines, unbalanced quotes) by raising `IDFParseError`. Set `strict_parsing=False` if you need to load a noisy file and inspect the diagnostics:
+`strict_parsing=True` makes the IDF tokenizer fail fast on malformed objects (missing semicolons, truncated lines, unbalanced quotes) by raising `IDFParseError`. An object missing its `;` before the next object (`Zone, A, 0, 0, 0` then `Material, M;`) is loaded as read, with the next type inside a field, in either mode: a value across two lines is legal IDF. The load logs a warning, and `load_idf_with_diagnostics()` returns a `ParseError` diagnostic at the value's line, `missing ';' ... before 'Material'?`. Set `strict_parsing=False` if you need to load a noisy file and inspect the diagnostics:
 
 ```python
 from idfkit.exceptions import IDFParseError

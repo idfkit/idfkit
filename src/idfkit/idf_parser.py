@@ -79,6 +79,11 @@ _UNTERMINATED_EXCERPT = 40
 #: reads it, so a tail that does not open like an object is reported with no type.
 _TAIL_TYPE_PATTERN = re.compile(rb"([A-Za-z/*][A-Za-z0-9:_ /*\-]*?)\s*,")
 
+#: A line break straight after a value, with no `,` before it: the first sign of an object whose `;` is
+#: missing, so that the next object's type was read as part of the value (``0\nMaterial``). Rare in a
+#: well-formed file, which ends each line with `,` or `;`, so the fields are only examined when it hits.
+_VALUE_THEN_LINE_BREAK = re.compile(r"[^,\s][ \t\r]*\n")
+
 # Pattern to split fields (handles inline comments)
 _FIELD_SPLIT_PATTERN = re.compile(rb"\s*,\s*")
 
@@ -202,6 +207,27 @@ def _string_is_legal(obj_schema: dict[str, Any] | None, field_name: str, value: 
         return any(isinstance(a, str) and a.casefold() == folded for a in cast("list[Any]", allowed))
 
     return False
+
+
+def _swallowed_field_name(pc: ParsingCache, index: int) -> str:
+    """Name the field at *index* in an object's raw values, extensible fields included.
+
+    A value past the fixed fields is named by its extensible field and group, such as
+    ``'vertex_z_coordinate (vertices item 4)'``, since that is where a ``;`` most often goes missing.
+    """
+    if pc.has_name:
+        if index == 0:
+            return "name"
+        index -= 1
+    field_names = pc.field_names if pc.has_name else pc.all_field_names
+    if index < len(field_names):
+        return field_names[index]
+    ext_index = index - len(field_names)
+    if pc.extensible and pc.ext_size > 0 and pc.ext_field_names:
+        group, slot = divmod(ext_index, pc.ext_size)
+        if slot < len(pc.ext_field_names):
+            return f"{pc.ext_field_names[slot]} ({pc.ext_wrapper_key or 'extensible'} item {group + 1})"
+    return f"field {index + 1 + (1 if pc.has_name else 0)}"
 
 
 def _field_offset(fields_raw: str, index: int) -> int | None:
@@ -609,7 +635,7 @@ class IDFParser:
                 if should_skip:
                     continue
 
-                obj = self._parse_object_cached(match, pc, encoding, obj_type_override=decoded_obj_type)
+                obj = self._parse_object_cached(match, pc, encoding, obj_type_override=decoded_obj_type, schema=schema)
                 if obj:
                     addidfobject(obj)
             except IDFParseError:
@@ -676,14 +702,22 @@ class IDFParser:
         encoding: str,
         *,
         obj_type_override: str | None = None,
+        schema: EpJSONSchema | None = None,
     ) -> IDFObject | None:
-        """Parse a single object from regex match using cached metadata."""
+        """Parse a single object from regex match using cached metadata.
+
+        *schema* names the object types a value running onto the next line is checked against.
+        """
         obj_type = obj_type_override or match.group(1).decode(encoding).strip()
         fields_raw = match.group(2).decode(encoding)
 
         fields = self._parse_fields(fields_raw)
         if not fields:
             return None
+
+        swallowed: int | None = None
+        if pc is not None and schema is not None and _VALUE_THEN_LINE_BREAK.search(fields_raw) is not None:
+            swallowed = self._check_swallowed_object(match, fields_raw, encoding, obj_type, fields, pc, schema)
 
         if pc is not None:
             has_name = pc.has_name
@@ -694,6 +728,10 @@ class IDFParser:
 
             invalid: list[tuple[int, str, str]] = []
             data = self._build_data_dict_cached(remaining_fields, field_names, pc, invalid)
+            if invalid and swallowed is not None:
+                # The values from the swallowed one on are the lost object's, read into this one's
+                # fields; the missing ';' was reported once already, so they are not reported again.
+                invalid = [entry for entry in invalid if entry[0] + (1 if has_name else 0) < swallowed]
             if invalid:
                 self._report_invalid_fields(match, fields_raw, encoding, obj_type, fields, pc, invalid)
 
@@ -718,6 +756,50 @@ class IDFParser:
             if value:
                 data[f"field_{i + 1}"] = value
         return IDFObject(obj_type=obj_type, name=name, data=data)
+
+    def _check_swallowed_object(
+        self,
+        match: re.Match[bytes],
+        fields_raw: str,
+        encoding: str,
+        obj_type: str,
+        fields: list[str],
+        pc: ParsingCache,
+        schema: EpJSONSchema,
+    ) -> int | None:
+        """Report a value that runs onto a line starting with an object type: a missing ``;``.
+
+        ``Zone, A, 0, 0, 0`` followed by ``Material, M;`` reads as one Zone whose y origin is
+        ``"0\nMaterial"``, and the Material is lost. The finding never stops the parse, in either mode:
+        a line break inside a value is legal (``My`` then ``Zone,`` is the one name ``"My Zone"``), so
+        the object is kept as read, a warning is logged, and a ``ParseError`` diagnostic is recorded,
+        which :func:`~idfkit.load_idf_with_diagnostics` returns.
+
+        Returns the index in *fields* of the value reported, or ``None`` when there is none.
+        """
+        for index, value in enumerate(fields):
+            if "\n" not in value:
+                continue
+            before, _, after = value.partition("\n")
+            next_type = next((line.strip() for line in after.split("\n") if line.strip()), "")
+            if schema.resolve_type_name(next_type) is None:
+                continue
+            field_name = _swallowed_field_name(pc, index)
+            message = (
+                f"Field {field_name!r} runs onto the next line, which starts with {next_type!r}: "
+                f"missing ';' after {before.strip()!r}, before {next_type!r}?"
+            )
+            offset = _field_offset(fields_raw, index)
+            prefix = 0 if offset is None else len(fields_raw[:offset].encode(encoding))
+            position = match.start(2) + prefix
+            # When the name itself ran on, the object's name is the part before the line break.
+            obj_name = (before.strip() if index == 0 else fields[0]) if pc.has_name else None
+            logger.warning("Possible missing ';' in %s %r: %s", obj_type, obj_name, message)
+            self._record(
+                message, code="ParseError", obj_type=obj_type, obj_name=obj_name, content=match.string, offset=position
+            )
+            return index
+        return None
 
     def _report_invalid_fields(
         self,

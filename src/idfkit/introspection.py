@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, cast
 
-from .exceptions import UnknownObjectTypeError
+from .exceptions import UnknownObjectTypeError, closest_name
 
 if TYPE_CHECKING:
     from .schema import EpJSONSchema
@@ -214,7 +214,9 @@ def describe_object_type(schema: EpJSONSchema, obj_type: str) -> ObjectDescripti
     """
     obj_schema = schema.get_object_schema(obj_type)
     if not obj_schema:
-        raise UnknownObjectTypeError(obj_type, version=schema.version)
+        raise UnknownObjectTypeError(
+            obj_type, version=schema.version, suggestion=closest_name(obj_type, schema.object_types)
+        )
 
     inner_schema = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = _merge_extensible_properties(

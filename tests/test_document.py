@@ -16,7 +16,6 @@ from idfkit.cst import DocumentCST
 from idfkit.document import AnyIDFDocument
 from idfkit.exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeWarning, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
-from idfkit.validation import ValidationError
 from idfkit.versions import LATEST_VERSION
 
 
@@ -494,17 +493,15 @@ class TestGetIddGroupDict:
 
 
 def _refused(exc: Exception) -> list[str]:
-    """The keys an add() refusal names, whichever validate mode raised it."""
-    if isinstance(exc, ValidationFailedError):
-        return [str(e.field) for e in exc.errors if isinstance(e, ValidationError) and e.code == "W003"]
+    """The keys an add() refusal names."""
     assert isinstance(exc, InvalidFieldError)
     return [entry.name for entry in exc.refused]
 
 
-# validate=True reports an unknown key as W003 in ValidationFailedError; validate=False, which
-# skips value checks, still refuses it with InvalidFieldError. Neither stores it.
+# An unknown key raises InvalidFieldError, as update() and attribute access do, whether or not the
+# values are validated (validate=False skips value checks only). Neither mode stores it.
 REFUSAL_MODES = [
-    pytest.param(True, ValidationFailedError, id="validate"),
+    pytest.param(True, InvalidFieldError, id="validate"),
     pytest.param(False, InvalidFieldError, id="no-validate"),
 ]
 
@@ -593,6 +590,25 @@ class TestAddRefusesUnknownKeys:
         )
         assert len(w2.vertices) == 3
 
+    def test_misspelt_field_suggests_the_closest(self, empty_doc: IDFDocument) -> None:
+        """add(), update() and attribute access raise the same error, naming the field meant."""
+        with pytest.raises(InvalidFieldError, match="Did you mean 'ceiling_height'") as add_info:
+            empty_doc.add("Zone", "Z", ceiling_heigth=3.0)
+        assert add_info.value.suggestions == {"ceiling_heigth": "ceiling_height"}
+        zone = empty_doc.add("Zone", "Z")
+        with pytest.raises(InvalidFieldError, match="Did you mean 'ceiling_height'"):
+            zone.update(ceiling_heigth=3.0)
+        with pytest.raises(InvalidFieldError, match="Did you mean 'ceiling_height'"):
+            _ = zone.ceiling_heigth
+
+    @pytest.mark.parametrize("key", ["Ceiling_Height", "Ceiling Height"])
+    def test_spelling_hint_is_not_repeated(self, empty_doc: IDFDocument, key: str) -> None:
+        """A refusal line that already says how to spell the field gets no second "Did you mean"."""
+        with pytest.raises(InvalidFieldError, match="spell it 'ceiling_height'") as exc_info:
+            empty_doc.add("Zone", "Z", {key: 3.0})
+        assert "Did you mean" not in str(exc_info.value)
+        assert exc_info.value.suggestions == {}
+
     def test_name_in_fields_points_to_the_name_argument(self, empty_doc: IDFDocument) -> None:
         with pytest.raises(InvalidFieldError, match="name argument") as exc_info:
             empty_doc.add("Zone", "", {"name": "Z"}, validate=False)
@@ -633,9 +649,9 @@ class TestAddWithValidation:
         assert obj.name == "TestZone"
         assert len(empty_doc["Zone"]) == 1
 
-    def test_add_object_with_unknown_field_warns(self, empty_doc: IDFDocument) -> None:
-        # Unknown field should raise ValidationFailedError
-        with pytest.raises(ValidationFailedError) as exc_info:
+    def test_add_object_with_unknown_field_raises(self, empty_doc: IDFDocument) -> None:
+        # An unknown field raises InvalidFieldError, as update() does
+        with pytest.raises(InvalidFieldError) as exc_info:
             empty_doc.add("Zone", "TestZone", fake_field=123, validate=True)
 
         # Check the error message mentions the unknown field
@@ -681,7 +697,7 @@ class TestAddWithValidation:
     def test_validation_default_is_true(self, empty_doc: IDFDocument) -> None:
         # By default, validation is enabled to catch errors early
         with pytest.raises(ValidationFailedError):
-            empty_doc.add("Zone", "TestZone", unknown_param=42)
+            empty_doc.add("Zone", "TestZone", ceiling_height="tall")
 
 
 class TestDocumentProperties:
