@@ -103,6 +103,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#328](https://github.com/idfkit/idfkit/pull/328))
 - `SimulationResult`'s repr left out `stdout` and `stderr`.
   ([#328](https://github.com/idfkit/idfkit/pull/328))
+- **Breaking:** `ESOResult.get_column()` and `CSVResult.get_column()` raised `ResultLookupError`
+  (a `KeyError`) with the closest names, and when several keys or frequencies matched, as
+  `SQLResult.get_timeseries()` does, instead of returning `None` or an arbitrary column; pass
+  `key_value=` or `frequency=`. ([#334](https://github.com/idfkit/idfkit/pull/334))
+- `SimulationJob` was typed to take a loaded document and any sequence of `extra_args`, and
+  `simulate_batch(progress=)` a `BatchProgressCallback`; a path model, or a callback that cannot take
+  the four keywords, raised `TypeError` before any job ran.
+  ([#334](https://github.com/idfkit/idfkit/pull/334))
 - **Breaking:** `SQLResult.get_timeseries()` with the default `key_value="*"` raised
   `ResultLookupError` listing the keys when a variable was reported for several, instead of returning
   an arbitrary one; pass `key_value=` (or `frequency=` for several frequencies).
@@ -238,6 +246,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#330](https://github.com/idfkit/idfkit/pull/330))
 - `Schedule:Compact` keywords written without a colon (`Through 12/31`, `Until 24:00`) were read.
   ([#329](https://github.com/idfkit/idfkit/pull/329))
+- `simulate()` and `async_simulate()` with both `cache=` and `fs=` uploaded a cache hit to
+  `output_dir` and cached a miss; a hit had uploaded nothing, and a miss was never stored.
+  ([#334](https://github.com/idfkit/idfkit/pull/334))
 - `doc[obj_type].remove(obj)` removed the object from the document as `removeidfobject()` does;
   it had left the object in the reference graph, so `get_referencing()` still reported it.
   ([#328](https://github.com/idfkit/idfkit/pull/328))

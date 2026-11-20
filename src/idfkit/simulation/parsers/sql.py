@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import contextlib
 import sqlite3
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
 from ...exceptions import ResultLookupError, closest_names
+from ._lookup import did_you_mean, listing, resolve_series
 from ._timeutil import FREQUENCY_MAP, REFERENCE_YEAR, make_timestamp
 
 if TYPE_CHECKING:
@@ -206,35 +207,6 @@ def _environment_types(
     return wanted
 
 
-def _unique(values: Iterable[str]) -> list[str]:
-    """*values* without repeats, in first-seen order."""
-    return list(dict.fromkeys(values))
-
-
-def _listing(values: Sequence[str], limit: int = 10) -> str:
-    """Up to *limit* of *values*, comma-separated, then how many were left out."""
-    shown = ", ".join(v or "''" for v in values[:limit])
-    if len(values) > limit:
-        shown += f" and {len(values) - limit} more"
-    return shown
-
-
-def _count(values: Sequence[str], noun: str) -> str:
-    return f"{len(values)} {noun}{'' if len(values) == 1 else 's'}"
-
-
-def _did_you_mean(close: Sequence[str]) -> str:
-    if not close:
-        return ""
-    quoted = [f"'{c}'" for c in close]
-    head = ", ".join(quoted[:-1])
-    return f" Did you mean {head + ' or ' if head else ''}{quoted[-1]}?"
-
-
-def _for_key(key_value: str) -> str:
-    return "" if key_value == "*" else f" for key '{key_value}'"
-
-
 class SQLResult:
     """Query interface for an EnergyPlus SQLite output database.
 
@@ -406,45 +378,22 @@ class SQLResult:
             names = [str(r[0]) for r in cur.fetchall()]
             close = closest_names(variable_name, names, n=3)
             msg = f"Variable '{variable_name}' is not in this run's output."
-            msg += _did_you_mean(close)
+            msg += did_you_mean(close)
             msg += " Request it with an Output:Variable (or Output:Meter) object; list_variables() shows what was reported."
             raise ResultLookupError(msg, suggestions=close)
-        name = rows[0][1]
-
-        if key_value != "*":
-            keys = _unique(row[2] for row in rows)
-            wanted = key_value.casefold()
-            rows = [row for row in rows if row[2].casefold() == wanted]
-            if not rows:
-                close = closest_names(key_value, keys)
-                msg = f"Variable '{name}' has no key '{key_value}'." + _did_you_mean(close)
-                if keys == [""]:
-                    msg += " It is reported with no key (as meters are); leave key_value at its default."
-                else:
-                    msg += f" It is reported for {_count(keys, 'key')}: {_listing(keys)}."
-                raise ResultLookupError(msg, suggestions=close, available=keys)
-
-        if frequency is not None:
-            freqs = _unique(row[4] for row in rows)
-            wanted = frequency.casefold()
-            rows = [row for row in rows if wanted in (row[4].casefold(), FREQUENCY_MAP.get(row[4], row[4]).casefold())]
-            if not rows:
-                msg = f"Variable '{name}'{_for_key(key_value)} is not reported at frequency '{frequency}'."
-                msg += f" It is reported at: {_listing(freqs)}."
-                raise ResultLookupError(msg, available=freqs)
-
-        keys = _unique(row[2] for row in rows)
-        if len(keys) > 1:
-            msg = f"Variable '{name}' is reported for {_count(keys, 'key')} ({_listing(keys)}); pass key_value= to pick one."
-            raise ResultLookupError(msg, available=keys)
-        freqs = _unique(row[4] for row in rows)
-        if len(freqs) > 1:
-            msg = (
-                f"Variable '{name}'{_for_key(key_value)} is reported at {len(freqs)} frequencies "
-                f"({_listing(freqs)}); pass frequency= to pick one."
-            )
-            raise ResultLookupError(msg, available=freqs)
-        return rows[0]
+        return resolve_series(
+            rows,
+            variable_name,
+            key_value,
+            frequency,
+            name_of=lambda row: row[1],
+            key_of=lambda row: row[2],
+            frequency_of=lambda row: row[4],
+            frequency_matches=lambda row, wanted: (
+                wanted in (row[4].casefold(), FREQUENCY_MAP.get(row[4], row[4]).casefold())
+            ),
+            not_found_hint="",
+        )
 
     def get_tabular_data(
         self,
@@ -576,8 +525,8 @@ class SQLResult:
             options = sorted(str(r[0]) for r in cur.fetchall() if r[0] is not None)
             if value not in options:
                 close = closest_names(value, options, n=3)
-                msg = f"No tabular {label} '{value}'{scope}." + _did_you_mean(close)
-                hint = "list_reports() lists them all" if label == "report" else f"Available: {_listing(options)}"
+                msg = f"No tabular {label} '{value}'{scope}." + did_you_mean(close)
+                hint = "list_reports() lists them all" if label == "report" else f"Available: {listing(options)}"
                 msg = f"{msg} {hint}."
                 raise ResultLookupError(msg, suggestions=close, available=options)
             conditions.append(f"{column} = ?")

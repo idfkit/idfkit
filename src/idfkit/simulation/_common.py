@@ -452,21 +452,25 @@ def maybe_preprocess(
     return sim_model, True  # Let EnergyPlus handle ExpandObjects via -x
 
 
-def upload_results(local_dir: Path, remote_dir: Path, fs: FileSystem) -> None:
+def upload_results(local_dir: Path, remote_dir: Path, fs: FileSystem, *, exclude: frozenset[str] = frozenset()) -> None:
     """Upload all output files from a local directory to a remote file system.
 
     Args:
         local_dir: Local directory containing simulation outputs.
         remote_dir: Remote directory path for the file system.
         fs: File system backend to upload to.
+        exclude: File names in *local_dir* not to upload (a cache entry's
+            metadata file, for example).
     """
     for p in local_dir.iterdir():
-        if p.is_file():
+        if p.is_file() and p.name not in exclude:
             remote_path = str(remote_dir / p.name)
             fs.write_bytes(remote_path, p.read_bytes())
 
 
-async def async_upload_results(local_dir: Path, remote_dir: Path, fs: AsyncFileSystem) -> None:
+async def async_upload_results(
+    local_dir: Path, remote_dir: Path, fs: AsyncFileSystem, *, exclude: frozenset[str] = frozenset()
+) -> None:
     """Upload all output files from a local directory to a remote async file system.
 
     Local file reads are delegated to a thread via [asyncio.to_thread][]
@@ -477,6 +481,7 @@ async def async_upload_results(local_dir: Path, remote_dir: Path, fs: AsyncFileS
         local_dir: Local directory containing simulation outputs.
         remote_dir: Remote directory path for the file system.
         fs: Async file system backend to upload to.
+        exclude: File names in *local_dir* not to upload.
     """
     import asyncio
 
@@ -485,7 +490,7 @@ async def async_upload_results(local_dir: Path, remote_dir: Path, fs: AsyncFileS
         data = await asyncio.to_thread(p.read_bytes)
         await fs.write_bytes(remote_path, data)
 
-    tasks = [asyncio.create_task(_upload_one(p)) for p in local_dir.iterdir() if p.is_file()]
+    tasks = [asyncio.create_task(_upload_one(p)) for p in local_dir.iterdir() if p.is_file() and p.name not in exclude]
     if tasks:
         await asyncio.gather(*tasks)
 

@@ -26,6 +26,9 @@ from typing import TYPE_CHECKING, Literal
 
 logger = logging.getLogger(__name__)
 
+CACHE_META_FILE = "_cache_meta.json"
+"""Name of the metadata file inside each cache entry; not a simulation output."""
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -150,7 +153,7 @@ class SimulationCache:
 
     __slots__ = ("_cache_dir",)
 
-    _META_FILE = "_cache_meta.json"
+    _META_FILE = CACHE_META_FILE
 
     def __init__(self, cache_dir: str | Path | None = None) -> None:
         self._cache_dir = Path(cache_dir) if cache_dir is not None else default_simulation_cache_dir()
@@ -321,10 +324,13 @@ class SimulationCache:
             # tmp_dir inside the existing target as a subdirectory.
             os.rename(str(tmp_dir), str(target_dir))
             logger.debug("Cached result for %s", key.hex_digest[:12])
-        except OSError:
+        except OSError as exc:
             # Another thread/process beat us, or a real filesystem error
             # — clean up the temporary directory.
             shutil.rmtree(tmp_dir, ignore_errors=True)
+            if not target_dir.is_dir():
+                # Not a lost race: the entry was not stored, so every later lookup misses. Say so.
+                logger.warning("Could not cache result for %s from %s: %s", key.hex_digest[:12], result.run_dir, exc)
 
     def contains(self, key: CacheKey) -> bool:
         """Check whether a cache entry exists for *key*."""

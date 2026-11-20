@@ -12,6 +12,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from ._lookup import resolve_series
+
 # Header format: "KeyValue:VariableName [Units](Frequency)"
 # Example: "Environment:Site Outdoor Air Drybulb Temperature [C](Hourly)"
 _HEADER_RE = re.compile(r"^(.+?):(.+?)\s*\[([^\]]*)\]\((\w+)\)$")
@@ -27,6 +29,8 @@ class CSVColumn:
         key_value: Parsed key value (e.g. ``"Environment"``).
         units: Parsed units string.
         values: The numeric values for this column.
+        frequency: Parsed reporting frequency (e.g. ``"Hourly"``); empty when
+            the header carries none.
     """
 
     header: str
@@ -34,6 +38,7 @@ class CSVColumn:
     key_value: str
     units: str
     values: tuple[float, ...]
+    frequency: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,6 +114,7 @@ class CSVResult:
                         key_value=m.group(1).strip(),
                         units=m.group(3).strip(),
                         values=tuple(values),
+                        frequency=m.group(4),
                     )
                 )
             else:
@@ -124,20 +130,60 @@ class CSVResult:
 
         return cls(timestamps=tuple(timestamps), columns=tuple(columns))
 
-    def get_column(self, variable_name: str, key_value: str | None = None) -> CSVColumn | None:
-        """Find a column by variable name and optional key value.
+    def get_column(self, variable_name: str, key_value: str | None = None, frequency: str | None = None) -> CSVColumn:
+        """Find the one column reported for a variable, key and frequency.
+
+        The lookup must resolve to one column, as
+        [SQLResult.get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries]
+        does: when a variable is reported for several keys (one per zone, say) or
+        at several frequencies, name the one you want, and the error lists them.
 
         Args:
             variable_name: The variable name to search for (case-insensitive).
-            key_value: Optional key value filter (case-insensitive).
+                A meter is found by its full name (``"Electricity:Facility"``),
+                and reports no key.
+            key_value: Key value (case-insensitive). Needed only when the
+                variable is reported for more than one key.
+            frequency: Frequency (e.g. ``"Hourly"``). Needed only when the
+                variable is reported at more than one frequency.
 
         Returns:
-            The matching CSVColumn, or None if not found.
+            The matching CSVColumn. Its values span every environment in the
+            file, in run order (design days, then run periods).
+
+        Raises:
+            ResultLookupError: A ``KeyError`` subclass, if the variable, key or
+                frequency is not in the file (with the closest names and the
+                reported keys), or if several keys or frequencies match.
         """
-        name_lower = variable_name.lower()
-        for col in self.columns:
-            if col.variable_name.lower() == name_lower and (
-                key_value is None or col.key_value.lower() == key_value.lower()
-            ):
-                return col
-        return None
+        hint = " Request it with an Output:Variable (or Output:Meter) object."
+        folded = variable_name.casefold()
+        if ":" in variable_name and not any(c.variable_name.casefold() == folded for c in self.columns):
+            # A meter header ("Electricity:Facility [J](Hourly)") has no key, but the
+            # header parser splits it at the first colon. Match a colon-bearing name on
+            # the whole "key:variable" text instead, with no key, as ESO and SQL do.
+            return resolve_series(
+                self.columns,
+                variable_name,
+                key_value,
+                frequency,
+                name_of=_full_name,
+                key_of=lambda c: "",
+                frequency_of=lambda c: c.frequency,
+                not_found_hint=hint,
+            )
+        return resolve_series(
+            self.columns,
+            variable_name,
+            key_value,
+            frequency,
+            name_of=lambda c: c.variable_name,
+            key_of=lambda c: c.key_value,
+            frequency_of=lambda c: c.frequency,
+            not_found_hint=hint,
+        )
+
+
+def _full_name(column: CSVColumn) -> str:
+    """The column's ``key:variable`` text, which for a meter column is the meter's name."""
+    return f"{column.key_value}:{column.variable_name}" if column.key_value else column.variable_name

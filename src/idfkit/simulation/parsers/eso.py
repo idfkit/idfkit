@@ -34,6 +34,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from ...exceptions import ResultLookupError
+from ._lookup import for_key, listing, resolve_series
 from ._timeutil import FREQUENCY_MAP, REFERENCE_YEAR, make_timestamp
 
 if TYPE_CHECKING:
@@ -376,7 +378,12 @@ class ESOResult:
     def get_variable(
         self, variable_name: str, key_value: str | None = None, frequency: str | None = None
     ) -> ESOVariable | None:
-        """Find a declared variable by name (case-insensitive) and optional key/frequency."""
+        """Find a declared variable by name (case-insensitive) and optional key/frequency.
+
+        Returns the first match, or ``None``; several may match when *key_value* or
+        *frequency* is left out. [get_column][idfkit.simulation.parsers.eso.ESOResult.get_column]
+        refuses such an ambiguous lookup instead.
+        """
         name_lower = variable_name.lower()
         for var in self.variables:
             if (
@@ -393,13 +400,20 @@ class ESOResult:
         key_value: str | None = None,
         frequency: str | None = None,
         environment_index: int | None = None,
-    ) -> ESOColumn | None:
+    ) -> ESOColumn:
         """Extract one variable's time series with a single targeted scan.
+
+        The lookup must resolve to one reported series, as
+        [SQLResult.get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries]
+        does: when a variable is reported for several keys (one per zone, say) or
+        at several frequencies, name the one you want, and the error lists them.
 
         Args:
             variable_name: Variable name to look up (case-insensitive).
-            key_value: Optional key value filter (e.g. zone name).
-            frequency: Optional frequency filter (e.g. ``"Hourly"``).
+            key_value: Key value (e.g. zone name, case-insensitive). Needed only
+                when the variable is reported for more than one key.
+            frequency: Frequency (e.g. ``"Hourly"``). Needed only when the
+                variable is reported at more than one frequency.
             environment_index: Which environment to return. Defaults to the last
                 environment in the file (typically the run period), mirroring the
                 most common intent. To pick a specific design day, find its index
@@ -408,22 +422,40 @@ class ESOResult:
                 and pass it here.
 
         Returns:
-            The matching [ESOColumn][idfkit.simulation.parsers.eso.ESOColumn], or
-            ``None`` if the variable is not found or has no data. The returned
-            column's ``environment_index`` cross-references back to ``environments``.
+            The matching [ESOColumn][idfkit.simulation.parsers.eso.ESOColumn]. Its
+            ``environment_index`` cross-references back to ``environments``.
+
+        Raises:
+            ResultLookupError: A ``KeyError`` subclass, if the variable, key or
+                frequency is not in the file (with the closest names and the
+                reported keys), if several keys or frequencies match, or if the
+                variable has no data (in *environment_index*, when given).
         """
-        var = self.get_variable(variable_name, key_value, frequency)
-        if var is None:
-            return None
+        var = resolve_series(
+            self.variables,
+            variable_name,
+            key_value,
+            frequency,
+            name_of=lambda v: v.variable_name,
+            key_of=lambda v: v.key_value,
+            frequency_of=lambda v: v.frequency,
+            not_found_hint=" Request it with an Output:Variable (or Output:Meter) object.",
+        )
         cols = self._scan_variable(var.report_id)
         if not cols:
-            return None
+            msg = f"Variable '{var.variable_name}'{for_key(key_value)} has no data in this file."
+            raise ResultLookupError(msg)
         if environment_index is None:
             return cols[-1]
         for col in cols:
             if col.environment_index == environment_index:
                 return col
-        return None
+        indexes = [str(col.environment_index) for col in cols]
+        msg = (
+            f"Variable '{var.variable_name}'{for_key(key_value)} has no data in environment {environment_index}."
+            f" It has data in environment {listing(indexes)}; eso.environments maps each index to its title."
+        )
+        raise ResultLookupError(msg, available=indexes)
 
     def to_dataframe(
         self,
@@ -435,14 +467,11 @@ class ESOResult:
         """Extract a variable and return it as a pandas DataFrame.
 
         Raises:
-            KeyError: If the variable is not found.
+            ResultLookupError: A ``KeyError`` subclass, as
+                [get_column][idfkit.simulation.parsers.eso.ESOResult.get_column] raises it.
             ImportError: If pandas is not installed.
         """
-        col = self.get_column(variable_name, key_value, frequency, environment_index)
-        if col is None:
-            msg = f"Variable not found: {variable_name!r}"
-            raise KeyError(msg)
-        return col.to_dataframe()
+        return self.get_column(variable_name, key_value, frequency, environment_index).to_dataframe()
 
     # -- internal scans ----------------------------------------------------
 

@@ -152,9 +152,10 @@ if csv:
     csv.timestamps  # tuple[str, ...]
     for col in csv.columns:  # each CSVColumn has parsed metadata
         print(col.variable_name, col.key_value, col.units)
-    col = csv.get_column("Electricity:Facility")  # by variable name, optional key_value=
-    if col:
-        print(col.units, max(col.values))
+    # One column per lookup: key_value= / frequency= are required when the variable is
+    # reported for several keys or frequencies; a typo raises ResultLookupError (a KeyError).
+    col = csv.get_column("Electricity:Facility")  # a meter, by its full name; it has no key
+    print(col.units, col.frequency, max(col.values))  # values span every environment, in run order
 ```
 
 Prefer SQL — CSV is one shot per `Output:Variable`, while SQL is queryable.
@@ -180,13 +181,14 @@ The `.eso` (Standard Output) and `.mtr` (Meter) files are EnergyPlus's native ti
 # but the data lazily.
 eso = result.eso  # ESOResult | None
 if eso:
-    # Lazy: a single scan that float-parses ONLY this variable.
+    # Lazy: a single scan that float-parses ONLY this variable. Like sql.get_timeseries,
+    # it raises ResultLookupError (a KeyError) on a typo, with the closest names, and when
+    # several keys or frequencies match: pass key_value= / frequency= then.
     col = eso.get_column("Zone Mean Air Temperature", "Office")
-    if col:
-        print(col.variable.units, len(col.values))  # 'C' 8760
-        col.values  # tuple[float, ...]
-        col.timestamps  # tuple[datetime, ...]
-        df = col.to_dataframe()  # requires idfkit[dataframes]
+    print(col.variable.units, len(col.values))  # 'C' 8760
+    col.values  # tuple[float, ...]
+    col.timestamps  # tuple[datetime, ...]
+    df = col.to_dataframe()  # requires idfkit[dataframes]
 
     # A file has several environments: the design days, then the run period.
     # get_column returns the LAST one (the run period) by default. To pick a
@@ -196,8 +198,7 @@ if eso:
     htg = next(e.index for e in eso.environments if "HTG" in e.title)
     design_day_col = eso.get_column("Zone Mean Air Temperature", "Office", environment_index=htg)
     # And back the other way — a column tells you its environment:
-    if design_day_col:
-        env = eso.environments[design_day_col.environment_index]
+    env = eso.environments[design_day_col.environment_index]
 
     # Eager full parse:
     all_columns = eso.columns  # tuple[ESOColumn, ...] — every variable

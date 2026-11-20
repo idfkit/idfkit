@@ -43,7 +43,7 @@ from __future__ import annotations
 from ._common import prep_outputs
 from .async_batch import SimulationEvent, async_simulate_batch, async_simulate_batch_stream
 from .async_runner import async_simulate
-from .batch import BatchResult, SimulationJob, simulate_batch
+from .batch import BatchProgressCallback, BatchResult, SimulationJob, simulate_batch
 from .cache import CacheKey, SimulationCache
 from .config import EnergyPlusConfig, find_energyplus
 from .expand import (
@@ -78,6 +78,7 @@ __all__ = [
     "AsyncFileSystem",
     "AsyncLocalFileSystem",
     "AsyncS3FileSystem",
+    "BatchProgressCallback",
     "BatchResult",
     "CSVColumn",
     "CSVResult",

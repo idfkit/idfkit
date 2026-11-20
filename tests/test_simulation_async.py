@@ -1302,3 +1302,34 @@ class TestAsyncWeatherAdmission:
         await self._assert_refused(
             refusal_r4(tmp_path.resolve()), weather=None, design_day=True, energyplus=mock_config, output_dir=tmp_path
         )
+
+
+class TestAsyncSimulateCacheWithFileSystem:
+    """``cache=`` and ``fs=`` together: a miss is stored locally and a hit is uploaded to ``output_dir``."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("fs_kind", ["sync", "async"])
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_miss_stores_then_hit_uploads(
+        self, mock_exec: AsyncMock, fs_kind: str, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        from idfkit.simulation.cache import CACHE_META_FILE
+
+        mock_exec.return_value = _make_mock_process()
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        fs = InMemoryFileSystem() if fs_kind == "sync" else InMemoryAsyncFileSystem()
+        model = new_document()
+
+        first = await async_simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="a")
+        assert first.run_dir == Path("a")
+        assert len([p for p in (tmp_path / "cache").iterdir() if not p.name.startswith(".")]) == 1
+
+        second = await async_simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="b")
+        assert mock_exec.call_count == 1  # hit
+        assert second.run_dir == Path("b")
+        assert (second.fs if fs_kind == "sync" else second.async_fs) is fs
+        names_a = {k.removeprefix("a/") for k in fs._files if k.startswith("a/")}
+        names_b = {k.removeprefix("b/") for k in fs._files if k.startswith("b/")}
+        assert names_b
+        assert names_b == names_a
+        assert CACHE_META_FILE not in names_b
