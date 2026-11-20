@@ -775,29 +775,53 @@ _ChoiceKey = tuple[str, bool, str]
 
 def _choice_name(key: _ChoiceKey) -> str:
     """``OutputMeterReportingFrequency``: the type's class name, then the field's key in CamelCase."""
+    from idfkit.codegen.generate_stubs import _to_class_name  # pyright: ignore[reportPrivateUsage]
+
     obj_type, _, field = key
-    camel = "".join(part[:1].upper() + part[1:] for part in field.split("_") if part)
-    return "".join(ch for ch in obj_type if ch.isalnum()) + camel
+    return _to_class_name(obj_type) + "".join(part[:1].upper() + part[1:] for part in field.split("_") if part)
+
+
+@dataclasses.dataclass(frozen=True)
+class _ReleaseChoices:
+    """What one release's schema says of its fields, for checking ``choices.py``.
+
+    Attributes:
+        types: The release's object types.
+        fields: Each field, top level and extensible, with the values its schema allows. A top-level
+            key ending in ``_`` is spelled as the class also declares it, without the underscore
+            (:func:`~idfkit.schema.trailing_underscore_aliases`); an extensible field as it is.
+        wrappers: Each extensible type's wrapper key.
+    """
+
+    types: frozenset[str]
+    fields: dict[_ChoiceKey, frozenset[str]]
+    wrappers: dict[str, str]
 
 
 @functools.cache
-def _release_choice_fields(ver: Version) -> dict[_ChoiceKey, frozenset[str]]:
-    """Each field of release *ver*, top level and extensible, with the values its schema allows."""
+def _release_choices(ver: Version) -> _ReleaseChoices:
+    """:class:`_ReleaseChoices` of release *ver*, read from its schema."""
+    from idfkit.schema import trailing_underscore_aliases
+
     schema = _schema_of(ver)
-    out: dict[_ChoiceKey, frozenset[str]] = {}
+    fields: dict[_ChoiceKey, frozenset[str]] = {}
+    wrappers: dict[str, str] = {}
     for obj_type in schema.object_types:
         inner = schema.get_inner_schema(obj_type)
         properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
-        for field in schema.get_field_names(obj_type):
+        names = schema.get_field_names(obj_type)
+        spelled = {key: alias for alias, key in trailing_underscore_aliases(names).items() if alias != key}
+        for field in names:
             if field.isidentifier():
                 values = _value_members(properties.get(field), schema.get_field_type(obj_type, field))
-                out[obj_type, False, field.rstrip("_")] = values - {"None"}
+                fields[obj_type, False, spelled.get(field, field)] = values - {"None"}
         pc = schema.get_parsing_cache(obj_type)
         if pc is not None and pc.ext_wrapper_key:
+            wrappers[obj_type] = pc.ext_wrapper_key
             for field, sub in pc.ext_inner_props.items():
                 if field.isidentifier():
-                    out[obj_type, True, field.rstrip("_")] = _value_members(sub, sub.get("type")) - {"None"}
-    return out
+                    fields[obj_type, True, field] = _value_members(sub, sub.get("type")) - {"None"}
+    return _ReleaseChoices(frozenset(schema.object_types), fields, wrappers)
 
 
 def _is_choice(values: frozenset[str]) -> bool:
@@ -820,7 +844,7 @@ def _held_choice_sets(versions: tuple[Version, ...]) -> dict[_ChoiceKey, dict[fr
     """Each choice field, with each set of choices it has had and the releases that list it."""
     held: dict[_ChoiceKey, dict[frozenset[str], list[Version]]] = {}
     for ver in versions:
-        for key, values in _release_choice_fields(ver).items():
+        for key, values in _release_choices(ver).fields.items():
             if _is_choice(values):
                 held.setdefault(key, {}).setdefault(values, []).append(ver)
     return held
@@ -836,14 +860,18 @@ def _release_suffix(held_in: list[Version], latest: Version) -> str:
 
 
 def _any_accepted(key: _ChoiceKey, versions: tuple[Version, ...]) -> frozenset[str]:
-    """The choices every release with *key*'s type accepts for it; empty when some release lacks the field.
+    """The choices every release with *key*'s type accepts for it; empty when ``Any<Class>`` lacks the field.
 
-    A release whose field takes any string restricts nothing.
+    ``Any<Class>`` lacks a field some release with the type does not have, and an extensible field
+    whose group some release keeps under another wrapper key. A release whose field takes any
+    string restricts nothing.
     """
-    releases = [ver for ver in versions if key[0] in _schema_of(ver).object_types]
-    sets = [_release_choice_fields(ver).get(key) for ver in releases]
+    releases = [_release_choices(ver) for ver in versions if key[0] in _release_choices(ver).types]
+    sets = [release.fields.get(key) for release in releases]
     if any(s is None for s in sets):
-        return frozenset()  # a field some release lacks is not on Any<Class>
+        return frozenset()
+    if key[1] and len({release.wrappers.get(key[0]) for release in releases}) != 1:
+        return frozenset()
     restricting = [s for s in sets if s is not None and "str" not in s]
     accepted: frozenset[str] = restricting[0] if restricting else frozenset()
     for values in restricting[1:]:
@@ -851,8 +879,13 @@ def _any_accepted(key: _ChoiceKey, versions: tuple[Version, ...]) -> frozenset[s
     return accepted
 
 
+@functools.cache
 def _expected_choices(versions: tuple[Version, ...]) -> dict[str, tuple[_ChoiceKey, frozenset[str]]]:
-    """Every alias ``choices.py`` must define, with its field and its choices, read from the schemas."""
+    """Every alias ``choices.py`` must define, with its field and its choices, read from the schemas.
+
+    Read from the bundled schemas alone, so cached for the process like the other expectations;
+    shared between calls, not to be mutated.
+    """
     expected: dict[str, tuple[_ChoiceKey, frozenset[str]]] = {}
     for key, sets in _held_choice_sets(versions).items():
         for values, held_in in sets.items():
@@ -864,14 +897,18 @@ def _expected_choices(versions: tuple[Version, ...]) -> dict[str, tuple[_ChoiceK
 
 def _any_class_accepts(module: _Module, key: _ChoiceKey) -> tuple[str, frozenset[str]] | None:
     """What ``Any<Class>`` declares assigning to top-level field *key* accepts, with the class's name."""
-    cls = "Any" + "".join(ch for ch in key[0] if ch.isalnum())
+    from idfkit.codegen.generate_stubs import _to_class_name  # pyright: ignore[reportPrivateUsage]
+
+    cls = f"Any{_to_class_name(key[0])}"
     cls = module.aliases.get(cls, cls)
     if key[1] or cls not in module.classes:
         return None  # an extensible field is checked against the schemas alone
     setters: dict[str, str] = {}
     for item in _linearise(module, cls):
         setters.update(module.classes[item].setters)
-    declared = setters.get(key[2], _fields(module, cls).get(key[2]))
+    declared = setters.get(key[2])
+    if declared is None:
+        declared = _fields(module, cls).get(key[2])
     return None if declared is None else (cls, _union_members(declared) - {"None"})
 
 
@@ -930,8 +967,8 @@ def verify(
         releases: Check the document types of only these of *versions*; ``None``, the default,
             checks every one. For a caller that knows which release a fault it planted shows in,
             as the verifier's own mutation tests do: checking one release instead of eighteen is
-            most of the cost of a call. The checks of ``AnyIDFDocument`` and of the version ranges
-            always run. Leaving a release out only leaves its problems out: the checks of
+            most of the cost of a call. The checks of ``AnyIDFDocument``, of the version ranges
+            and of ``choices.py`` always run. Leaving a release out only leaves its problems out: the checks of
             different releases do not depend on one another, so every problem reported with
             *releases* given is also reported without it.
 

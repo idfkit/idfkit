@@ -38,7 +38,7 @@ def latest(
     meter = doc["Output:Meter"].add(key_name="Electricity:Facility", reporting_frequency=frequency)
     meter.update(reporting_frequency=frequency)
     meter.reporting_frequency = frequency
-    # Reading the field gives the alias (the field always holds a value), so a value read passes back.
+    # Reading the field gives the alias's choices (the field always holds a value), so a value read passes back.
     assert_type(meter.reporting_frequency, OutputMeterReportingFrequency)
     doc["Output:Variable"].add(
         variable_name="Site Outdoor Air Drybulb Temperature", reporting_frequency=variable_frequency

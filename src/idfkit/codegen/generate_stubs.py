@@ -1885,25 +1885,28 @@ def _choice_fields(schema: EpJSONSchema) -> Iterator[tuple[_ChoiceKey, str]]:
 
     A choice field is one whose schema lists an ``enum`` of the values it takes; a field that also
     takes a number (one that may be autosized) is not one, and an ``enum`` of nothing but the blank
-    is typed ``str``. A key ending in ``_`` (some releases' ``report_name_``) is keyed without it, the
-    spelling every release's class declares.
+    is typed ``str``. A top-level key ending in ``_`` (some releases' ``report_name_``) is keyed by
+    the spelling the class also declares without it (:func:`trailing_underscore_aliases`), the one
+    every release's class shares; an extensible field's key is declared only as it is.
     """
     for obj_type in schema.object_types:
         inner = schema.get_inner_schema(obj_type)
         properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
-        for field in schema.get_field_names(obj_type):
+        names = schema.get_field_names(obj_type)
+        spelled = {key: alias for alias, key in trailing_underscore_aliases(names).items() if alias != key}
+        for field in names:
             field_schema = properties.get(field)
             if field.isidentifier() and field_schema is not None and "enum" in field_schema:
                 literal = _enum_to_literal(field_schema["enum"])
                 if literal != "str":
-                    yield (obj_type, False, field.rstrip("_")), literal
+                    yield (obj_type, False, spelled.get(field, field)), literal
         pc = schema.get_parsing_cache(obj_type)
         if pc is not None and pc.ext_wrapper_key:
             for field, sub in pc.ext_inner_props.items():
                 if field.isidentifier() and "enum" in sub:
                     literal = _enum_to_literal(sub["enum"])
                     if literal != "str":
-                        yield (obj_type, True, field.rstrip("_")), literal
+                        yield (obj_type, True, field), literal
 
 
 @functools.cache
@@ -1965,6 +1968,25 @@ def _any_choice_aliases() -> list[_ChoiceAlias]:
     return out
 
 
+def _releases_text(versions: tuple[Version, ...]) -> str:
+    """``9.0 to 9.2 and 9.4``: *versions* as runs of consecutive supported releases.
+
+    An alias is named by the first and last release listing its set; where the set stops and
+    resumes, its docstring says which releases between them list it.
+    """
+    runs: list[list[Version]] = []
+    for ver in versions:
+        if runs and SUPPORTED.versions.index(ver) == SUPPORTED.versions.index(runs[-1][-1]) + 1:
+            runs[-1].append(ver)
+        else:
+            runs.append([ver])
+    parts = [
+        f"{run[0][0]}.{run[0][1]}" if len(run) == 1 else f"{run[0][0]}.{run[0][1]} to {run[-1][0]}.{run[-1][1]}"
+        for run in runs
+    ]
+    return parts[0] if len(parts) == 1 else f"{', '.join(parts[:-1])} and {parts[-1]}"
+
+
 def _natural(name: str) -> list[tuple[int, str]]:
     """A sort key that compares the runs of digits in *name* as numbers."""
     return [(int(part), "") if part.isdigit() else (-1, part) for part in re.split(r"(\d+)", name)]
@@ -2014,9 +2036,7 @@ def generate_choices_py() -> str:
         for alias in sorted(by_base[base], key=lambda a: (a.name.startswith("Any"), a.versions[:1])):
             obj_type, _, field = alias.key
             if alias.versions:
-                first, last = alias.versions[0], alias.versions[-1]
-                span = f"{first[0]}.{first[1]}" if first == last else f"{first[0]}.{first[1]} to {last[0]}.{last[1]}"
-                doc = f"``{obj_type}`` ``{field}``, EnergyPlus {span}."
+                doc = f"``{obj_type}`` ``{field}``, EnergyPlus {_releases_text(alias.versions)}."
             else:
                 doc = f"``{obj_type}`` ``{field}``, accepted by every release that has it."
             lines += [f"{alias.name}: TypeAlias = {alias.value}", f'"""{doc}"""', ""]

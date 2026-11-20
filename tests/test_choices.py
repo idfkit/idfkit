@@ -58,7 +58,7 @@ def test_any_alias_is_what_every_release_lists() -> None:
         assert pc is not None
         if "enum" in pc.ext_inner_props["report_name"]:
             listed.append(_schema_choices(get_schema(ver), "Output:Table:SummaryReports", "report_name", group=True))
-    every = set.intersection(*listed)
+    every = listed[0].intersection(*listed[1:])
     assert _alias("AnyOutputTableSummaryReportsReportName") == every
     assert every < _alias("OutputTableSummaryReportsReportName")
     # Where every release lists the latest choices, the Any alias names the latest one.
@@ -87,10 +87,13 @@ def test_older_choice_sets_are_named_for_their_releases() -> None:
 
 
 def test_module_defines_every_generated_alias() -> None:
-    assert gen.generate_choices_py().rstrip() != ""
     names = {line.split(":", 1)[0] for line in gen.generate_choices_py().splitlines() if ": TypeAlias = " in line}
-    assert names == {
-        name
-        for name in vars(choices)
-        if not name.startswith("_") and name not in {"Literal", "TypeAlias", "annotations"}
-    }
+    assert names == set(choices.__all__)
+    assert all(hasattr(choices, name) for name in names)
+
+
+def test_a_set_that_stops_and_resumes_lists_its_releases() -> None:
+    versions = ((9, 0, 1), (9, 1, 0), (9, 2, 0), (9, 4, 0))
+    with gen.supported_up_to((9, 4, 0)):
+        assert gen._releases_text(versions) == "9.0 to 9.2 and 9.4"  # pyright: ignore[reportPrivateUsage]
+        assert gen._releases_text(versions[:1]) == "9.0"  # pyright: ignore[reportPrivateUsage]

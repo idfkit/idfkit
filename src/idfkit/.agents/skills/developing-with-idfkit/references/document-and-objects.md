@@ -517,7 +517,7 @@ A value carried from your own input to a choice field needs a type that is exact
 | Alias | Choices |
 | --- | --- |
 | `<Class><Field>` (`OutputMeterReportingFrequency`) | The latest release's; a value of it passes to `add()`, `update()` and assignment of the field |
-| `<Class><Field>_v<first>_to_v<last>` (`OutputTableSummaryReportsReportName_v9_3`) | A set only older releases list, as the range classes are named |
+| `<Class><Field>_v<first>_to_v<last>`, or `_v<release>` for one release (`OutputTableSummaryReportsReportName_v9_3`) | A set only older releases list, as the range classes are named |
 | `Any<Class><Field>` (`AnyOutputMeterReportingFrequency`) | Those every release that has the field accepts, as `Any<Class>` takes it: use it with `AnyIDFDocument` |
 
 The name is the object class followed by the field key in CamelCase; an extensible group's inner field is named like a field of the type (`OutputTableSummaryReportsReportName` for the `report_name` of `Output:Table:SummaryReports`). The stubs spell each choice set out rather than naming the alias, which keeps type checking fast; idfkit's own checks prove every alias equal to its field's choices, so a hover on the field shows the `Literal`, not the alias name. The module is importable at run time, where `typing.get_args(alias)` gives the choices.
