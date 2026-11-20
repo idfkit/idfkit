@@ -84,6 +84,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TabularRow.as_float()` and `SQLResult.get_tabular_float()` read a tabular cell as a number, raising
   `ValueError` naming the cell for non-numeric text.
   ([#347](https://github.com/idfkit/idfkit/pull/347))
+- `simulate_batch()`, `async_simulate_batch()` and `async_simulate_batch_stream()` took `fail_fast=True`
+  to stop at the first failed job: queued jobs never started, running EnergyPlus processes were killed,
+  and the stopped jobs came back in `BatchResult.cancelled` (`SimulationResult.cancelled`), not raised.
+  ([#351](https://github.com/idfkit/idfkit/pull/351))
 
 ### Changed
 

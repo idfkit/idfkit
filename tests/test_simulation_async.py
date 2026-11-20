@@ -362,6 +362,67 @@ class TestAsyncSimulateBatch:
 
     @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_fail_fast_cancels_queued_jobs(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        returncodes = iter([0, 1, 0, 0])
+
+        async def make_proc(*_args: object, **_kwargs: object) -> MagicMock:
+            return _make_mock_process(returncode=next(returncodes))
+
+        mock_exec.side_effect = make_proc
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(4)]
+        result = await async_simulate_batch(jobs, energyplus=mock_config, max_concurrent=1, fail_fast=True)
+        assert mock_exec.call_count == 2
+        assert len(result) == 4
+        assert result[0].success
+        assert result.failed == (result[1],)
+        assert result.cancelled == (result[2], result[3])
+        assert not result[1].cancelled
+        assert result[2].refusal == "never started: job 'job-1' failed and fail_fast=True stopped the batch"
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_fail_fast_without_a_failure_runs_every_job(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file) for _ in range(3)]
+        result = await async_simulate_batch(jobs, energyplus=mock_config, max_concurrent=1, fail_fast=True)
+        assert result.all_succeeded
+        assert result.cancelled == ()
+
+    @pytest.mark.asyncio
+    async def test_fail_fast_when_a_job_is_refused_before_it_suspends(self, mock_config: EnergyPlusConfig) -> None:
+        # weather=None on a non-design-day job is refused synchronously, before any task suspends,
+        # so the sibling tasks have not started when fail_fast stops the batch.
+        jobs = [SimulationJob(model=new_document(), weather=None, label=f"job-{i}") for i in range(3)]
+        result = await async_simulate_batch(jobs, energyplus=mock_config, fail_fast=True)
+        assert len(result) == 3
+        assert result.failed == (result[0],)
+        assert result.cancelled == (result[1], result[2])
+
+    @pytest.mark.asyncio
+    async def test_fail_fast_does_not_swallow_the_callers_cancellation(
+        self, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        started = asyncio.Event()
+
+        async def hang(*_args: object, **_kwargs: object) -> object:
+            started.set()
+            await asyncio.sleep(60)
+            raise AssertionError
+
+        with patch("idfkit.simulation.async_batch.async_simulate", side_effect=hang):
+            jobs = [SimulationJob(model=runnable_model(), weather=weather_file) for _ in range(2)]
+            task = asyncio.create_task(async_simulate_batch(jobs, energyplus=mock_config, fail_fast=True))
+            await started.wait()
+            task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await task
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
     async def test_total_runtime_populated(
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -553,6 +614,44 @@ class TestAsyncSimulateBatchStream:
         assert events[0].index == 0
         assert events[0].completed == 1
         assert events[0].total == 1
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_fail_fast_yields_an_event_per_job(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        returncodes = iter([1, 0, 0])
+
+        async def make_proc(*_args: object, **_kwargs: object) -> MagicMock:
+            return _make_mock_process(returncode=next(returncodes))
+
+        mock_exec.side_effect = make_proc
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label=f"job-{i}") for i in range(3)]
+        events = [
+            event
+            async for event in async_simulate_batch_stream(
+                jobs, energyplus=mock_config, max_concurrent=1, fail_fast=True
+            )
+        ]
+        assert mock_exec.call_count == 1
+        assert [(e.index, e.completed, e.result.cancelled) for e in events] == [
+            (0, 1, False),
+            (1, 2, True),
+            (2, 3, True),
+        ]
+        assert not events[0].result.success
+
+    @pytest.mark.asyncio
+    async def test_fail_fast_stream_when_a_job_is_refused_before_it_suspends(
+        self, mock_config: EnergyPlusConfig
+    ) -> None:
+        jobs = [SimulationJob(model=new_document(), weather=None, label=f"job-{i}") for i in range(3)]
+
+        async def collect() -> list[SimulationEvent]:
+            return [ev async for ev in async_simulate_batch_stream(jobs, energyplus=mock_config, fail_fast=True)]
+
+        events = await asyncio.wait_for(collect(), timeout=10)
+        assert [(e.index, e.result.cancelled) for e in events] == [(0, False), (1, True), (2, True)]
 
     @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")

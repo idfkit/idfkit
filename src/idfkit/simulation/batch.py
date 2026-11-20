@@ -8,6 +8,10 @@ which releases the GIL.
 If the caller is interrupted while a batch runs (Ctrl-C, or any other exception
 raised in the waiting thread), queued jobs are cancelled and the EnergyPlus
 processes already running are killed before the exception propagates.
+
+With ``fail_fast=True`` the first failed job stops the batch the same way, but
+nothing is raised: the jobs it stopped are reported as cancelled results in the
+returned [BatchResult][idfkit.simulation.batch.BatchResult].
 """
 
 from __future__ import annotations
@@ -17,7 +21,7 @@ import logging
 import os
 import time
 from collections.abc import Callable, Iterator, Sequence
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol, overload
@@ -116,7 +120,8 @@ class BatchProgressCallback(Protocol):
 
     Called once per finished job, with keyword arguments only, so a callback
     must accept all four by name (``def progress(*, completed, total, label,
-    success)``, or ``**kwargs``).
+    success)``, or ``**kwargs``). A job that ``fail_fast=True`` cancelled is
+    reported too, with ``success=False``, so *completed* still reaches *total*.
     """
 
     def __call__(self, *, completed: int, total: int, label: str, success: bool) -> None:
@@ -139,6 +144,11 @@ class BatchResult(Sequence[SimulationResult]):
     instead. Documenting a workaround for a call that already worked is worse than
     either fixing it or removing it, so the base class is declared.
 
+    Every result is in exactly one of
+    [succeeded][idfkit.simulation.batch.BatchResult.succeeded],
+    [failed][idfkit.simulation.batch.BatchResult.failed] and
+    [cancelled][idfkit.simulation.batch.BatchResult.cancelled].
+
     Attributes:
         results: Simulation results in the same order as the input jobs.
         total_runtime_seconds: Wall-clock time for the entire batch.
@@ -154,8 +164,18 @@ class BatchResult(Sequence[SimulationResult]):
 
     @property
     def failed(self) -> tuple[SimulationResult, ...]:
-        """Results that failed."""
-        return tuple(r for r in self.results if not r.success)
+        """Results that failed, not counting the jobs ``fail_fast=True`` cancelled."""
+        return tuple(r for r in self.results if not r.success and not r.cancelled)
+
+    @property
+    def cancelled(self) -> tuple[SimulationResult, ...]:
+        """Results of the jobs ``fail_fast=True`` cancelled after another job failed.
+
+        Always empty without ``fail_fast``. Each has
+        [cancelled][idfkit.simulation.result.SimulationResult.cancelled] set and
+        its ``refusal`` names the job that failed.
+        """
+        return tuple(r for r in self.results if r.cancelled)
 
     @property
     def all_succeeded(self) -> bool:
@@ -218,19 +238,24 @@ def simulate_batch(
     progress: BatchProgressCallback | None = None,
     fs: FileSystem | None = None,
     on_progress: Callable[[SimulationProgress], None] | None = None,
+    fail_fast: bool = False,
 ) -> BatchResult:
     """Run multiple EnergyPlus simulations in parallel.
 
     Uses [ThreadPoolExecutor][concurrent.futures.ThreadPoolExecutor] to dispatch
     simulations concurrently.  Individual job failures are captured as
     failed [SimulationResult][idfkit.simulation.result.SimulationResult] entries -- the batch never raises
-    due to a single job failing.
+    due to a single job failing, and by default every other job still runs.
+
+    With ``fail_fast=True`` the first failed job stops the batch instead:
+    queued jobs never start, running EnergyPlus processes are killed, and the
+    batch returns. Those jobs are reported as cancelled results
+    ([BatchResult.cancelled][idfkit.simulation.batch.BatchResult.cancelled]);
+    jobs that had already finished keep their results.
 
     An exception in the calling thread -- Ctrl-C, or one raised by a
-    *progress* callback -- stops the batch: queued jobs never start, running
-    EnergyPlus processes are killed, and the exception propagates once the
-    workers have stopped. To abort on the first failed job, raise from
-    *progress* when ``success`` is false.
+    *progress* callback -- stops the batch the same way, but propagates once
+    the workers have stopped, so no results are returned.
 
     Args:
         jobs: Sequence of simulation jobs to execute.
@@ -257,6 +282,8 @@ def simulate_batch(
             for batch runners; use
             [tqdm_progress][idfkit.simulation.progress_bars.tqdm_progress]
             with a custom per-job callback instead.
+        fail_fast: Stop the batch at the first failed job, cancelling the jobs
+            still queued or running, instead of running every job.
 
     Returns:
         A [BatchResult][idfkit.simulation.batch.BatchResult] with results in the same order as *jobs*.
@@ -304,20 +331,14 @@ def simulate_batch(
                 for idx, job in enumerate(jobs)
             }
 
-            for future in as_completed(future_to_index):
-                idx = future_to_index[future]
-                job = jobs[idx]
-                result = future.result()  # _run_job never raises
+            def _record(idx: int, result: SimulationResult) -> None:
+                nonlocal completed_count
                 results[idx] = result
                 completed_count += 1
-
                 if progress is not None:
-                    progress(
-                        completed=completed_count,
-                        total=total,
-                        label=job.label,
-                        success=result.success,
-                    )
+                    progress(completed=completed_count, total=total, label=jobs[idx].label, success=result.success)
+
+            _collect(future_to_index, jobs, group, fail_fast=fail_fast, record=_record)
         except BaseException:
             # Interrupted (Ctrl-C, or a progress callback raised): start no queued job,
             # kill the EnergyPlus processes that are running, then wait for the workers.
@@ -340,12 +361,61 @@ def simulate_batch(
 
     batch_result = BatchResult(results=tuple(final), total_runtime_seconds=elapsed)
     logger.info(
-        "Batch complete: %d succeeded, %d failed in %.1fs",
+        "Batch complete: %d succeeded, %d failed, %d cancelled in %.1fs",
         len(batch_result.succeeded),
         len(batch_result.failed),
+        len(batch_result.cancelled),
         elapsed,
     )
     return batch_result
+
+
+_Futures = dict[Future[SimulationResult], int]
+
+
+def _collect(
+    future_to_index: _Futures,
+    jobs: Sequence[SimulationJob],
+    group: ProcessGroup,
+    *,
+    fail_fast: bool,
+    record: Callable[[int, SimulationResult], None],
+) -> None:
+    """Pass each job's result to *record* as it finishes; with *fail_fast*, stop the rest at the first failure."""
+    unreported = dict(future_to_index)
+    for future in as_completed(future_to_index):
+        idx = unreported.pop(future)
+        result = future.result()  # _run_job never raises
+        if fail_fast and not result.success:
+            # Stop the rest before reporting this one: a job that finished meanwhile keeps its result.
+            stopped = {f: i for f, i in unreported.items() if not f.done()}
+            for f in stopped:
+                f.cancel()  # a queued job never starts
+            group.cancel()  # a running job's EnergyPlus is killed
+            logger.info("Job %s failed; fail_fast cancels %d jobs", jobs[idx].label or f"#{idx}", len(stopped))
+            record(idx, result)
+            for f, i in unreported.items():
+                if f not in stopped:  # finished before the stop
+                    record(i, f.result())
+            _drain(stopped, jobs, fail_fast_reason(idx, jobs[idx]), record)
+            return
+        record(idx, result)
+
+
+def _drain(
+    stopped: _Futures,
+    jobs: Sequence[SimulationJob],
+    reason: str,
+    record: Callable[[int, SimulationResult], None],
+) -> None:
+    """Record the jobs in *stopped*, which ``fail_fast`` cancelled for *reason*, as each settles."""
+    for f, i in stopped.items():
+        if f.cancelled():
+            record(i, cancelled_job_result(jobs[i], reason, started=False))
+    for f in as_completed([f for f in stopped if not f.cancelled()]):
+        i = stopped[f]
+        killed = f.result()
+        record(i, killed if killed.success else _stopped_result(jobs[i], killed, reason))
 
 
 def _check_progress_callback(progress: BatchProgressCallback) -> None:
@@ -380,7 +450,10 @@ def _run_job(
     """Execute a single simulation job, catching SimulationError.
 
     The subprocesses the job starts join *group*, so the batch can kill them when it is interrupted.
+    A job that starts after *group* was cancelled returns a cancelled result without running.
     """
+    if group.cancelled:
+        return cancelled_job_result(job, "the batch was stopped", started=False)
     with group.bind():
         return _run_job_in_group(idx, job, energyplus, cache, fs, on_progress)
 
@@ -488,6 +561,45 @@ def failed_job_result(job: SimulationJob, exc: Exception, *, ran: bool = False) 
         output_prefix=job.output_prefix,
         refusal=None if ran and job.output_dir is not None else _exception_reason(exc),
     )
+
+
+def fail_fast_reason(idx: int, job: SimulationJob) -> str:
+    """Why ``fail_fast=True`` cancelled the other jobs: job *idx* (*job*) failed."""
+    name = repr(job.label) if job.label else f"#{idx}"
+    return f"job {name} failed and fail_fast=True stopped the batch"
+
+
+def cancelled_job_result(job: SimulationJob, reason: str, *, started: bool) -> SimulationResult:
+    """The result of a job that ``fail_fast`` cancelled, *started* or still queued, for *reason*.
+
+    Like a refused job's result it reads no files: a killed run's partial outputs
+    stay in the job's ``output_dir`` but are not this result's.
+    """
+    return SimulationResult(
+        run_dir=Path(job.output_dir) if job.output_dir is not None else REFUSED_RUN_DIR,
+        success=False,
+        exit_code=None,
+        stdout="",
+        stderr="",
+        runtime_seconds=0.0,
+        output_prefix=job.output_prefix,
+        refusal=f"{'stopped while running' if started else 'never started'}: {reason}",
+        cancelled=True,
+    )
+
+
+def _stopped_result(job: SimulationJob, killed: SimulationResult, reason: str) -> SimulationResult:
+    """The cancelled result of a job ``fail_fast`` stopped, whose run returned *killed*.
+
+    Deletes the temporary run directory of *killed*, which holds only a killed run's partial outputs.
+    """
+    if killed.cancelled:  # it never started: the worker saw the cancellation first
+        return cancelled_job_result(job, reason, started=False)
+    try:
+        killed.cleanup()
+    except OSError:
+        logger.warning("Could not delete the run directory of stopped job %s", killed.run_dir, exc_info=True)
+    return cancelled_job_result(job, reason, started=True)
 
 
 def check_jobs_for_fs(jobs: Sequence[SimulationJob], fs: object | None) -> None:

@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import tempfile
+import threading
+import time
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -11,7 +14,15 @@ from conftest import REFUSAL_R2, InMemoryFileSystem, design_day_model, runnable_
 
 from idfkit import LATEST_VERSION
 from idfkit.exceptions import OutputNotFoundError, SimulationError
-from idfkit.simulation.batch import REFUSED_RUN_DIR, BatchResult, SimulationJob, simulate_batch
+from idfkit.simulation._cancel import _active_group  # pyright: ignore[reportPrivateUsage]
+from idfkit.simulation.batch import (
+    REFUSED_RUN_DIR,
+    BatchResult,
+    SimulationJob,
+    _stopped_result,  # pyright: ignore[reportPrivateUsage]
+    cancelled_job_result,
+    simulate_batch,
+)
 from idfkit.simulation.cache import SimulationCache
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.result import SimulationResult
@@ -148,6 +159,18 @@ class TestBatchResult:
         br = BatchResult(results=(r,), total_runtime_seconds=1.0)
         assert br.all_succeeded
 
+    def test_cancelled_is_neither_succeeded_nor_failed(self, mixed_results: tuple[SimulationResult, ...]) -> None:
+        job = SimulationJob(model=runnable_model(), label="c")
+        cancelled = cancelled_job_result(job, "job 'x' failed", started=False)
+        br = BatchResult(results=(*mixed_results, cancelled), total_runtime_seconds=3.5)
+        assert br.cancelled == (cancelled,)
+        assert br.failed == (mixed_results[1],)
+        assert len(br.succeeded) == 2
+        assert not br.all_succeeded
+
+    def test_cancelled_empty_without_fail_fast(self, mixed_results: tuple[SimulationResult, ...]) -> None:
+        assert BatchResult(results=mixed_results, total_runtime_seconds=3.5).cancelled == ()
+
     def test_len(self, mixed_results: tuple[SimulationResult, ...]) -> None:
         br = BatchResult(results=mixed_results, total_runtime_seconds=3.5)
         assert len(br) == 3
@@ -225,6 +248,93 @@ class TestSimulateBatch:
         assert not result.all_succeeded
         assert len(result.succeeded) == 2
         assert len(result.failed) == 1
+
+    @patch("idfkit.simulation.runner.run_process")
+    def test_fail_fast_without_a_failure_runs_every_job(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file) for _ in range(3)]
+        result = simulate_batch(jobs, energyplus=mock_config, max_workers=1, fail_fast=True)
+        assert result.all_succeeded
+        assert mock_run.call_count == 3
+
+    @patch("idfkit.simulation.runner.run_process")
+    def test_fail_fast_on_the_last_job_cancels_nothing(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout="ok", stderr=""),
+            MagicMock(returncode=1, stdout="", stderr="failed"),
+        ]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file) for _ in range(2)]
+        result = simulate_batch(jobs, energyplus=mock_config, max_workers=1, fail_fast=True)
+        assert (len(result.succeeded), len(result.failed), result.cancelled) == (1, 1, ())
+
+    def test_fail_fast_stops_running_and_queued_jobs(self, tmp_path: Path, mock_config: EnergyPlusConfig) -> None:
+        """The first failure stops the batch: a running job is stopped, a queued one never starts."""
+        running = threading.Event()
+        calls: list[str] = []
+
+        def fake_simulate(*, output_dir: Path, **_kwargs: Any) -> SimulationResult:
+            name = Path(output_dir).name
+            calls.append(name)
+            if name == "bad":
+                assert running.wait(10)
+                return SimulationResult(
+                    run_dir=output_dir, success=False, exit_code=1, stdout="", stderr="boom", runtime_seconds=0.1
+                )
+            if name == "q1":
+                running.set()
+            group = _active_group.get()
+            assert group is not None
+            deadline = time.monotonic() + 10
+            while not group.cancelled and time.monotonic() < deadline:  # stands in for EnergyPlus until killed
+                time.sleep(0.01)
+            temp = tmp_path / f"temp-{name}"
+            temp.mkdir()
+            return SimulationResult(
+                run_dir=temp, success=False, exit_code=-9, stdout="", stderr="", runtime_seconds=0.1, owns_run_dir=True
+            )
+
+        names = ["bad", "q1", "q2", "q3"]
+        jobs = [SimulationJob(model=runnable_model(), label=n, output_dir=tmp_path / n) for n in names]
+        progress_calls: list[tuple[int, str, bool]] = []
+
+        def progress(*, completed: int, total: int, label: str, success: bool) -> None:
+            progress_calls.append((completed, label, success))
+
+        with patch("idfkit.simulation.batch.simulate", side_effect=fake_simulate):
+            result = simulate_batch(jobs, energyplus=mock_config, max_workers=2, fail_fast=True, progress=progress)
+
+        reason = "job 'bad' failed and fail_fast=True stopped the batch"
+        assert result.failed == (result[0],)
+        assert result.cancelled == (result[1], result[2], result[3])
+        assert result[1].refusal == f"stopped while running: {reason}"
+        assert result[3].refusal == f"never started: {reason}"
+        assert "q3" not in calls
+        assert not (tmp_path / "temp-q1").exists()  # the stopped run's temporary directory is deleted
+        assert result[1].run_dir == tmp_path / "q1"
+        assert progress_calls[0] == (1, "bad", False)
+        assert [c[0] for c in progress_calls] == [1, 2, 3, 4]
+        assert all(not c[2] for c in progress_calls)
+
+    def test_cancelled_result_repr_summary_and_raise(self) -> None:
+        r = cancelled_job_result(SimulationJob(model=runnable_model()), "job 'a' failed", started=True)
+        assert r.cancelled
+        assert not r.success
+        assert repr(r) == f"SimulationResult(cancelled: {r.refusal!r}, run_dir={REFUSED_RUN_DIR!r})"
+        assert "cancelled: stopped while running" in r.errors.summary()
+        with pytest.raises(SimulationError, match=r"^Simulation cancelled: stopped while running"):
+            r.raise_for_status()
+        with pytest.raises(OutputNotFoundError, match="this batch job was cancelled"):
+            _ = r.sql
+
+    def test_stopped_result_of_a_job_that_never_ran(self) -> None:
+        job = SimulationJob(model=runnable_model())
+        placeholder = cancelled_job_result(job, "the batch was stopped", started=False)
+        r = _stopped_result(job, placeholder, "job 'a' failed")
+        assert r.refusal == "never started: job 'a' failed"
 
     @patch("idfkit.simulation.runner.run_process")
     def test_progress_callback(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
