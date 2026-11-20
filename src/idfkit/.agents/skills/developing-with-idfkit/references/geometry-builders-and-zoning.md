@@ -166,10 +166,21 @@ if bb is not None:
 # Scale all surfaces uniformly (e.g. for unit conversion or sensitivity studies)
 scale_building(doc, factor=1.1)  # 10% larger
 
-# Quickly assign placeholder constructions to surfaces that lack one. Windows need a window
+# Quickly assign placeholder constructions to surfaces that lack one. Roofs, floors and ceilings
+# take their own construction when named and construction_name otherwise. Windows need a window
 # construction (EnergyPlus stops on an opaque one), so they are left unset unless one is named.
-# Neither construction is created: add both, or validate_document() reports E009.
-set_default_constructions(doc, construction_name="Default Construction", window_construction="Default Glazing")
+# Surface types match every storey: on this 3-storey block "Floor" covers the ground floor and the
+# interzone floors, and each interzone floor faces a "Ceiling", so give the two constructions the
+# same layers in reverse order. No construction is created: add each one, or validate_document()
+# reports E009.
+set_default_constructions(
+    doc,
+    construction_name="Default Wall",
+    roof_construction="Default Roof",
+    floor_construction="Default Floor",
+    ceiling_construction="Default Floor Reversed",
+    window_construction="Default Glazing",
+)
 ```
 
 ## Horizontal adjacencies

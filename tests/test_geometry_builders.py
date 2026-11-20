@@ -106,6 +106,41 @@ class TestSetDefaultConstructions:
         assert {w.construction_name for w in doc["FenestrationSurface:Detailed"]} == {"Glazing"}
         assert {s.construction_name for s in doc["BuildingSurface:Detailed"]} == {"Opaque"}
 
+    def test_surface_type_constructions(self) -> None:
+        doc = new_document()
+        create_block(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3, num_stories=2)
+        count = set_default_constructions(
+            doc,
+            "Wall",
+            roof_construction="Roof",
+            floor_construction="Floor",
+            ceiling_construction="Ceiling",
+        )
+        surfaces = list(doc["BuildingSurface:Detailed"])
+        assert count == len(surfaces)
+        by_type: dict[str, set[str]] = {}
+        for srf in surfaces:
+            by_type.setdefault(str(srf.surface_type).casefold(), set()).add(srf.construction_name)
+        assert by_type == {"wall": {"Wall"}, "roof": {"Roof"}, "floor": {"Floor"}, "ceiling": {"Ceiling"}}
+
+    def test_surface_type_constructions_fall_back(self) -> None:
+        """Only the given surface types change; the rest keep ``construction_name``."""
+        doc = new_document()
+        create_block(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3)
+        count = set_default_constructions(doc, "Opaque", roof_construction="Roof")
+        assert count == 6
+        names = {str(s.surface_type).casefold(): s.construction_name for s in doc["BuildingSurface:Detailed"]}
+        assert names == {"wall": "Opaque", "floor": "Opaque", "roof": "Roof"}
+
+    def test_surface_type_matched_case_insensitively(self) -> None:
+        doc = new_document()
+        doc.add("BuildingSurface:Detailed", "Top", surface_type="ROOF", validate=False)
+        doc.add("BuildingSurface:Detailed", "Odd", validate=False)
+        count = set_default_constructions(doc, "Opaque", roof_construction="Roof")
+        assert count == 2
+        assert doc["BuildingSurface:Detailed"]["Top"].construction_name == "Roof"
+        assert doc["BuildingSurface:Detailed"]["Odd"].construction_name == "Opaque"
+
     def test_door_gets_opaque_construction(self) -> None:
         doc = new_document()
         create_block(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3)
