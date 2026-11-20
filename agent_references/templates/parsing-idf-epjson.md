@@ -53,6 +53,8 @@ zone.x_orign  # returns None at run time; pyright still reports the name
 
 An object type the schema does not have (`Zonee`) raises `IDFParseError` with the code `UnknownObjectType` from both `load_idf` and `load_epjson`; the epJSON message adds `Did you mean 'Zone'?`. With `strict_parsing=False`, `load_epjson` skips that type and logs a warning.
 
+An epJSON key that is not a field of its type (`{"Zone": {"Z1": {"ceiling_hieght": 3.0}}}`) raises `IDFParseError` too, code `InvalidField`, one diagnostic per key in the file: `Unknown field 'ceiling_hieght' for Zone. Did you mean 'ceiling_height'?`. EnergyPlus ignores such a key, so the value would be silently lost. A field an earlier EnergyPlus release had and this one removed (EnergyPlus's own example epJSON carries some) is kept and logged instead. With `strict_parsing=False`, every unknown key is kept and logged, and `validate_document` reports it as `W003`. A `name` key repeated inside a named object's body is dropped: the object's key is its name.
+
 ## Blank fields are unset
 
 A blank IDF field (`, ,`) is an unset field. It is not stored in `obj.data`, it is not written to epJSON, and it reads as `None`, the same as a field cut off by an early semicolon. An explicit `0` is a value and is kept. Assigning `None` or `""` to a field clears it the same way. Writing the document back to IDF and reading it again gives an equal model.

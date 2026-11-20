@@ -19,11 +19,11 @@ from .objects import is_blank_slot
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
 
     from .document import AnyIDFDocument
     from .objects import IDFObject
-    from .schema import EpJSONSchema
+    from .schema import EpJSONSchema, ReferenceKin
 
 
 class Severity(Enum):
@@ -1320,27 +1320,6 @@ def _is_implicit_remainder_space(target: str, zone_names: set[str]) -> bool:
     return target[: -len(suffix)] in zone_names
 
 
-def _reference_field_spec(schema: EpJSONSchema, obj_type: str, field_name: str) -> dict[str, Any]:
-    """Return the schema spec for a reference field, looking inside extensible groups too.
-
-    A reference field is not always positional: it may live inside an extensible group, where
-    the schema describes it under the array property's ``items.properties`` rather than at the
-    top level of the object's properties.
-    """
-    properties: dict[str, Any] = (schema.get_inner_schema(obj_type) or {}).get("properties", {})
-    spec = properties.get(field_name)
-    if isinstance(spec, dict):
-        return cast("dict[str, Any]", spec)
-    for prop in properties.values():
-        if prop.get("type") != "array":
-            continue
-        inner: dict[str, Any] = prop.get("items", {}).get("properties", {})
-        nested = inner.get(field_name)
-        if isinstance(nested, dict):
-            return cast("dict[str, Any]", nested)
-    return {}
-
-
 @dataclass(frozen=True)
 class _DeclaredNames:
     """The uppercased names a document declares, split by what each set is used for."""
@@ -1351,6 +1330,18 @@ class _DeclaredNames:
     containers: set[str]
     #: Zone names, the only thing an implicit remainder space can be built from.
     zones: set[str]
+    #: Reference list -> the names declared into it. A reference field accepts only these.
+    by_list: dict[str, set[str]]
+    #: Name -> the object types that declare it, for the message when a field names the wrong type.
+    types_by_name: dict[str, set[str]]
+    #: Name -> the reference lists it is declared into.
+    lists_by_name: dict[str, set[str]]
+
+
+def _contributed_lists(schema: EpJSONSchema, obj_type: str, field_name: str) -> list[str]:
+    """The reference lists a field carrying ``reference`` declares its value into."""
+    spec = schema.get_field_schema(obj_type, field_name) or {}
+    return list(spec.get("reference") or [])
 
 
 def _declared_names(doc: AnyIDFDocument, schema: EpJSONSchema) -> _DeclaredNames:
@@ -1364,54 +1355,129 @@ def _declared_names(doc: AnyIDFDocument, schema: EpJSONSchema) -> _DeclaredNames
     `obj.name` makes those declarations invisible and reports every reference to them as
     dangling. Eleven fields in the 26.1.0 schema declare a reference this way.
     """
-    declared = _DeclaredNames(all_names=set(), containers=set(), zones=set())
+    declared = _DeclaredNames(
+        all_names=set(), containers=set(), zones=set(), by_list={}, types_by_name={}, lists_by_name={}
+    )
+
+    def declare(name_upper: str, obj_type: str, lists: Iterable[str]) -> None:
+        declared.all_names.add(name_upper)
+        declared.types_by_name.setdefault(name_upper, set()).add(obj_type)
+        name_lists = declared.lists_by_name.setdefault(name_upper, set())
+        for ref_list in lists:
+            name_lists.add(ref_list)
+            declared.by_list.setdefault(ref_list, set()).add(name_upper)
+
     for obj_type, collection in doc.collections.items():
         rules = _object_rules(schema, obj_type)
-        contributing = rules.contributing if rules is not None else ()
+        contributing = [
+            (field_name, _contributed_lists(schema, obj_type, field_name))
+            for field_name in (rules.contributing if rules is not None else ())
+        ]
         type_upper = obj_type.upper()
         # A type without a Name field declares nothing through ``obj.name``: a name stored on
         # one is dropped on write, so a reference to it would dangle in EnergyPlus.
         type_has_name = schema.has_name(obj_type)
+        name_lists = schema.get_name_reference_lists(obj_type)
         for obj in collection:
             if type_has_name and obj.name:
                 name_upper = obj.name.upper()
-                declared.all_names.add(name_upper)
+                declare(name_upper, obj_type, name_lists)
                 if type_upper in ("ZONE", "SPACE"):
                     declared.containers.add(name_upper)
                 if type_upper == "ZONE":
                     declared.zones.add(name_upper)
-            for field_name in contributing:
+            for field_name, lists in contributing:
                 value = obj.data.get(field_name)
                 if isinstance(value, str) and value:
-                    declared.all_names.add(value.upper())
+                    declare(value.upper(), obj_type, lists)
     return declared
+
+
+class _ReferenceResolver:
+    """Decides, per reference, whether its field's ``object_list`` accepts the name it holds.
+
+    Holds the per-field and per-list lookups, so a document with thousands of references to a
+    few lists reads the schema once per field and builds each accepted-name set once.
+    """
+
+    def __init__(self, schema: EpJSONSchema, declared: _DeclaredNames) -> None:
+        self._schema = schema
+        self._declared = declared
+        self._unpopulated = _unpopulated_reference_lists(schema)
+        self._lists_by_field: dict[tuple[str, str], tuple[str, ...]] = {}
+        # None for lists that accept any declared name: no object_list, or one mixing type-name
+        # lists nothing populates with name lists.
+        self._valid_by_lists: dict[tuple[str, ...], set[str] | None] = {}
+        self._kin_by_lists: dict[tuple[str, ...], ReferenceKin] = {}
+
+    def field_lists(self, obj_type: str, field_name: str) -> tuple[str, ...]:
+        """The ``object_list`` of a reference field, inside an extensible group or not."""
+        key = (obj_type, field_name)
+        lists = self._lists_by_field.get(key)
+        if lists is None:
+            lists = tuple(self._schema.get_reference_field_object_list(obj_type, field_name) or ())
+            self._lists_by_field[key] = lists
+        return lists
+
+    def _valid_names(self, lists: tuple[str, ...]) -> set[str]:
+        if lists not in self._valid_by_lists:
+            if not lists or any(name in self._unpopulated for name in lists):
+                self._valid_by_lists[lists] = None
+            else:
+                by_list = self._declared.by_list
+                self._valid_by_lists[lists] = set[str]().union(*(by_list.get(name, set()) for name in lists))
+        valid = self._valid_by_lists[lists]
+        return self._declared.all_names if valid is None else valid
+
+    def _akin(self, lists: tuple[str, ...], target: str, types: list[str]) -> bool:
+        kin = self._kin_by_lists.get(lists)
+        if kin is None:
+            kin = self._kin_by_lists[lists] = self._schema.get_reference_kin(lists)
+        target_lists = self._declared.lists_by_name.get(target, set())
+        return any(kin.admits(obj_type, target_lists) for obj_type in types)
+
+    def resolves(self, lists: tuple[str, ...], target: str) -> bool:
+        """Whether a field with *lists* accepts the uppercased name *target*."""
+        # A field whose every list is unpopulated names object TYPES, which no object declares.
+        if lists and all(name in self._unpopulated for name in lists):
+            return True
+        if target in self._valid_names(lists):
+            return True
+        declared = self._declared
+        types = self.declaring_types(target)
+        if types and self._akin(lists, target, types):
+            return True
+        return _is_zonelist_expanded_name(target, declared.containers, declared.all_names) or (
+            _is_implicit_remainder_space(target, declared.zones)
+        )
+
+    def declaring_types(self, target: str) -> list[str]:
+        """The object types that declare the uppercased name *target*, sorted."""
+        return sorted(self._declared.types_by_name.get(target, ()))
 
 
 def _validate_references(
     doc: AnyIDFDocument,
     schema: EpJSONSchema,
 ) -> list[ValidationError]:
-    """Validate all object references."""
-    errors: list[ValidationError] = []
-    declared = _declared_names(doc, schema)
-    valid_names = declared.all_names
+    """Validate all object references.
 
-    # Check for dangling references, skipping fields whose reference list nothing populates.
-    unpopulated = _unpopulated_reference_lists(schema)
+    A reference resolves to a name in one of its field's ``object_list`` reference lists, or to an
+    object akin to them (see [ReferenceKin][idfkit.schema.ReferenceKin]), as EnergyPlus resolves
+    it. A schedule field naming a Zone, or a construction field naming a Material, is as broken as
+    one naming nothing: EnergyPlus rejects both.
+    """
+    errors: list[ValidationError] = []
+    resolver = _ReferenceResolver(schema, _declared_names(doc, schema))
     candidates_by_lists: dict[tuple[str, ...], list[str]] = {}
     # Removing one widely referenced object leaves thousands of edges to the same target: the
     # did-you-mean search runs once per (target, reference lists), not once per edge.
     suggestions: dict[tuple[str, tuple[str, ...]], list[str]] = {}
-    for obj, field_name, target in doc.references.get_dangling_references(valid_names):
-        field_spec = _reference_field_spec(schema, obj.obj_type, field_name)
-        lists: list[str] = field_spec.get("object_list") or []
-        if lists and all(name in unpopulated for name in lists):
+    for obj, field_name, target in doc.references.iter_references():
+        key = resolver.field_lists(obj.obj_type, field_name)
+        if resolver.resolves(key, target):
             continue
-        if _is_zonelist_expanded_name(target, declared.containers, valid_names):
-            continue
-        if _is_implicit_remainder_space(target, declared.zones):
-            continue
-        key = tuple(lists)
+        lists = list(key)
         if key not in candidates_by_lists:
             candidates_by_lists[key] = _reference_candidates(doc, schema, lists)
         value = _typed_value(obj, field_name, target)
@@ -1424,7 +1490,7 @@ def _validate_references(
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
                 field=field_name,
-                message=_dangling_message(value, lists, suggestions[suggestion_key]),
+                message=_dangling_message(value, lists, suggestions[suggestion_key], resolver.declaring_types(target)),
                 code="E009",
             )
         )
@@ -1466,11 +1532,21 @@ def _reference_candidates(doc: AnyIDFDocument, schema: EpJSONSchema, lists: list
     return list(names.values())
 
 
-def _dangling_message(value: str, lists: list[str], close: list[str]) -> str:
-    """The E009 message: the missing name, the reference list it was looked up in, and the closest names."""
-    message = f"Reference to non-existent object '{value}'"
-    if lists:
-        message += f" (looked up in {' or '.join(lists)})"
+def _dangling_message(value: str, lists: list[str], close: list[str], wrong_types: list[str] | None = None) -> str:
+    """The E009 message: the missing name, the reference list it was looked up in, and the closest names.
+
+    *wrong_types* are the object types that do declare the name, when it exists but is not in
+    any of the field's reference lists.
+    """
+    if wrong_types:
+        kinds = " and ".join(f"{'an' if t[0] in 'AEIOU' else 'a'} {t}" for t in wrong_types)
+        message = f"Reference to '{value}', which is {kinds}"
+        if lists:
+            message += f", not in {' or '.join(lists)}"
+    else:
+        message = f"Reference to non-existent object '{value}'"
+        if lists:
+            message += f" (looked up in {' or '.join(lists)})"
     if close:
         message += ". Did you mean " + " or ".join(f"'{name}'" for name in close) + "?"
     return message

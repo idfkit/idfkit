@@ -217,6 +217,63 @@ class TestValidateReferences:
         assert all("Did you mean 'TestZone'?" in e.message for e in zone_errors)
         assert spy.call_count == 1
 
+    def test_reference_to_wrong_object_type(self) -> None:
+        """A schedule field naming a Zone is reported, though a Zone of that name exists."""
+        doc = new_document(version=(26, 1, 0))
+        doc.add("Zone", "Office")
+        doc.add("Schedule:Constant", "Occ", hourly_value=1)
+        people = doc.add(
+            "People",
+            "P",
+            zone_or_zonelist_or_space_or_spacelist_name="Office",
+            number_of_people_schedule_name="Occ",
+            activity_level_schedule_name="Occ",
+            number_of_people_calculation_method="People",
+            number_of_people=3,
+        )
+        people.number_of_people_schedule_name = "Office"
+        [error] = [e for e in validate_document(doc).errors if e.code == "E009"]
+        assert error.field == "number_of_people_schedule_name"
+        assert error.message.startswith("Reference to 'Office', which is a Zone, not in ScheduleNames")
+
+    def test_construction_field_naming_a_material(self, simple_doc: IDFDocument) -> None:
+        simple_doc["BuildingSurface:Detailed"]["TestWall"].construction_name = "TestMaterial"
+        [error] = [e for e in validate_document(simple_doc).errors if e.code == "E009"]
+        assert "which is a Material, not in ConstructionNames" in error.message
+
+    def test_reference_to_akin_type_passes(self) -> None:
+        """A window where the object_list asks for SurfaceNames is accepted, as EnergyPlus accepts it."""
+        doc = new_document(version=(26, 1, 0))
+        doc.add("FenestrationSurface:Detailed", "Win", validate=False)
+        doc.add("SurfaceProperty:LocalEnvironment", "Env", exterior_surface_name="Win", validate=False)
+        assert [e for e in validate_document(doc).errors if e.code == "E009"] == []
+
+    @pytest.mark.parametrize("schedule_type", ["Schedule:Day:Hourly", "Schedule:Week:Daily"])
+    def test_schedule_field_naming_a_day_or_week_schedule(self, schedule_type: str) -> None:
+        """A day or week schedule is a part of a schedule, not one: EnergyPlus rejects it there."""
+        doc = new_document(version=(26, 1, 0))
+        doc.add("Zone", "Office")
+        doc.add(schedule_type, "Part", validate=False)
+        doc.add(
+            "People",
+            "P",
+            zone_or_zonelist_or_space_or_spacelist_name="Office",
+            number_of_people_schedule_name="Part",
+            number_of_people_calculation_method="People",
+            number_of_people=3,
+            validate=False,
+        )
+        errors = [e for e in validate_document(doc).errors if e.code == "E009"]
+        assert [e.field for e in errors] == ["number_of_people_schedule_name"]
+        assert f"which is a {schedule_type}, not in ScheduleNames" in errors[0].message
+
+    def test_zone_field_naming_a_zone_list(self, simple_doc: IDFDocument) -> None:
+        """A ZoneList groups zones; a field that asks for ZoneNames does not take one."""
+        simple_doc.add("ZoneList", "All Zones", validate=False)
+        simple_doc["BuildingSurface:Detailed"]["TestWall"].zone_name = "All Zones"
+        [error] = [e for e in validate_document(simple_doc).errors if e.code == "E009"]
+        assert "which is a ZoneList, not in ZoneNames" in error.message
+
     def test_valid_references_pass(self, simple_doc: IDFDocument) -> None:
         result = validate_document(simple_doc, check_references=True)
         # TestConstruction→TestMaterial and TestWall→TestZone are all valid references
@@ -383,7 +440,7 @@ class TestValidateObjectUnknownField:
         assert not any(e.code == "W003" for e in errors)
 
     def test_validate_document_reports_unknown_extensible_key(self, tmp_path: Path) -> None:
-        """A file can still carry such a key, since loading does not reject it; validation reports it."""
+        """A file loaded with ``strict_parsing=False`` keeps such a key; validation reports it."""
         path = tmp_path / "model.epJSON"
         path.write_text(
             json.dumps({
@@ -391,7 +448,7 @@ class TestValidateObjectUnknownField:
                 "Output:Table:SummaryReports": {"Output:Table:SummaryReports 1": {"report_1": "AllSummary"}},
             })
         )
-        result = validate_document(load_epjson(path))
+        result = validate_document(load_epjson(path, strict_parsing=False))
         assert any(w.code == "W003" and w.field == "report_1" for w in result.warnings)
 
 

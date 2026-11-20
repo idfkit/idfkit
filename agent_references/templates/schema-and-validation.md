@@ -76,7 +76,7 @@ Common codes (see `ValidationError.code`):
 - `E004` — value not among a field's permitted values
 - `E005` — below the minimum; `E006` — not above an exclusive minimum
 - `E007` — above the maximum; `E008` — not below an exclusive maximum
-- `E009` — reference to a name no object declares. The message quotes the value as typed, the reference list it was looked up in and the closest declared names: `Reference to non-existent object 'Opaqe' (looked up in ConstructionNames). Did you mean 'Opaque'?`
+- `E009` — reference to a name no object declares. The message quotes the value as typed, the reference list it was looked up in and the closest declared names: `Reference to non-existent object 'Opaqe' (looked up in ConstructionNames). Did you mean 'Opaque'?` A name that exists but is the wrong type for the field is `E009` too: `Reference to 'Office', which is a Zone, not in ScheduleNames`. A related type EnergyPlus also accepts there (a window where the list is `SurfaceNames`) passes. A part or a grouping of the accepted type does not: a `Schedule:Day:*` or `Schedule:Week:*` where the list is `ScheduleNames`, or a `ZoneList` where it is `ZoneNames`.
 - `E010` — singleton constraint violated (>1 instance of a `maxProperties: 1` type)
 - `E011` — a `Schedule:Compact` that does not cover the year through `12/31`, or a day through `Until: 24:00`; EnergyPlus stops on it
 - `E012` — a `Schedule:Compact` or `Schedule:Constant` value outside the lower or upper limit of its `ScheduleTypeLimits` (reported with `check_ranges`); EnergyPlus stops on it

@@ -63,6 +63,14 @@ doc["Zone"]["Office"].name = "Open_Office"
 # --8<-- [end:rename]
 
 
+# --8<-- [start:rename-shared-name]
+doc.add("Construction", "Concrete", outside_layer="Concrete")  # named like its Material
+doc["Material"]["Concrete"].name = "Concrete 200mm"
+# Construction "Concrete".outside_layer is now "Concrete 200mm";
+# every surface's construction_name still says "Concrete", the Construction.
+# --8<-- [end:rename-shared-name]
+
+
 # --8<-- [start:find-references]
 people = doc["People"]["Office People"]
 for target_name in doc.get_references(people):

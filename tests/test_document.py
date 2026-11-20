@@ -228,6 +228,123 @@ class TestIDFDocumentRename:
             empty_doc.rename("Zone", "Nonexistent", "New")
 
 
+class TestRenameSharedName:
+    """Renaming one of two objects of different types that share a name rewrites only its own references."""
+
+    @staticmethod
+    def _concrete(doc: AnyIDFDocument) -> IDFObject:
+        doc.add(
+            "Material",
+            "Concrete",
+            roughness="Rough",
+            thickness=0.2,
+            conductivity=1.4,
+            density=2300,
+            specific_heat=900,
+        )
+        doc.add("Construction", "Concrete", outside_layer="Concrete")
+        doc.add("Zone", "Z")
+        return doc.add(
+            "BuildingSurface:Detailed",
+            "W",
+            surface_type="Wall",
+            construction_name="Concrete",
+            zone_name="Z",
+            outside_boundary_condition="Outdoors",
+            sun_exposure="SunExposed",
+            wind_exposure="WindExposed",
+            validate=False,
+        )
+
+    def test_material_rename_leaves_construction_references(self) -> None:
+        doc = new_document(version=(26, 1, 0))
+        wall = self._concrete(doc)
+        doc["Material"]["Concrete"].name = "Concrete 200mm"
+        assert wall.construction_name == "Concrete"
+        assert doc["Construction"]["Concrete"].outside_layer == "Concrete 200mm"
+        # The graph followed only the edge that moved, so a later rename still finds the rest.
+        doc.rename("Construction", "Concrete", "Wall Concrete")
+        assert wall.construction_name == "Wall Concrete"
+
+    def test_construction_rename_leaves_layer_reference(self) -> None:
+        doc = new_document(version=(26, 1, 0))
+        wall = self._concrete(doc)
+        doc.rename("Construction", "Concrete", "Wall Concrete")
+        assert wall.construction_name == "Wall Concrete"
+        assert doc["Construction"]["Wall Concrete"].outside_layer == "Concrete"
+
+    def test_zone_rename_leaves_schedule_reference(self) -> None:
+        doc = new_document(version=(26, 1, 0))
+        doc.add("Zone", "Office")
+        doc.add("Schedule:Constant", "Office", hourly_value=1)
+        people = doc.add(
+            "People",
+            "P",
+            zone_or_zonelist_or_space_or_spacelist_name="Office",
+            number_of_people_schedule_name="Office",
+            activity_level_schedule_name="Office",
+            number_of_people_calculation_method="People",
+            number_of_people=3,
+        )
+        doc.rename("Zone", "Office", "Open Office")
+        assert people.zone_or_zonelist_or_space_or_spacelist_name == "Open Office"
+        assert people.number_of_people_schedule_name == "Office"
+        doc.rename("Schedule:Constant", "Office", "Office Occupancy")
+        assert people.zone_or_zonelist_or_space_or_spacelist_name == "Open Office"
+        assert people.number_of_people_schedule_name == "Office Occupancy"
+
+    def test_akin_field_follows_rename(self) -> None:
+        """A field EnergyPlus resolves more widely than its object_list follows the rename too.
+
+        ``SurfaceProperty:LocalEnvironment`` asks for ``SurfaceNames``, which a window is not in, and
+        EnergyPlus's own example files put a window there.
+        """
+        doc = new_document(version=(26, 1, 0))
+        doc.add("FenestrationSurface:Detailed", "Win", validate=False)
+        env = doc.add("SurfaceProperty:LocalEnvironment", "Env", exterior_surface_name="Win", validate=False)
+        doc.rename("FenestrationSurface:Detailed", "Win", "Window 1")
+        assert env.exterior_surface_name == "Window 1"
+
+    def test_removed_namesake_keeps_references(self) -> None:
+        """Removing the Material leaves the surfaces' edges to the Construction of the same name."""
+        doc = new_document(version=(26, 1, 0))
+        wall = self._concrete(doc)
+        doc["Construction"]["Concrete"].outside_layer = ""
+        doc.removeidfobject(doc["Material"]["Concrete"])
+        assert wall in doc.references.get_referencing("Concrete")
+        doc.rename("Construction", "Concrete", "Wall Concrete")
+        assert wall.construction_name == "Wall Concrete"
+
+    def test_contributed_list_follows_rename(self) -> None:
+        """A field pointing into a list that a contributing ``reference`` field fills follows too.
+
+        ``HVACTemplate:Zone:ConstantVolume.zone_name`` points at the Zone and re-declares it into
+        ``HVACTemplateConstantVolumeZones``, which the system's control-zone fields ask for.
+        """
+        from idfkit.validation import validate_document
+
+        doc = new_document(version=(26, 1, 0))
+        doc.add("Zone", "Space 5")
+        system = doc.add(
+            "HVACTemplate:System:ConstantVolume",
+            "AHU",
+            cooling_coil_control_zone_name="Space 5",
+            heating_coil_control_zone_name="Space 5",
+            validate=False,
+        )
+        template_zone = doc.add(
+            "HVACTemplate:Zone:ConstantVolume",
+            zone_name="Space 5",
+            template_constant_volume_system_name="AHU",
+            validate=False,
+        )
+        doc.rename("Zone", "Space 5", "Renamed Zone")
+        assert template_zone.zone_name == "Renamed Zone"
+        assert system.cooling_coil_control_zone_name == "Renamed Zone"
+        assert system.heating_coil_control_zone_name == "Renamed Zone"
+        assert [e for e in validate_document(doc).errors if e.code == "E009"] == []
+
+
 class TestIDFDocumentSchedules:
     def test_get_schedule(self, empty_doc: IDFDocument) -> None:
         empty_doc.add("Schedule:Constant", "AlwaysOn", {"hourly_value": 1.0})

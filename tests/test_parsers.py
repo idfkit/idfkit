@@ -580,6 +580,80 @@ class TestEpJSONParserBranchCoverage:
         assert len(doc["Zone"]) == 1
         assert "Unknown object type 'Totally:UnknownType'" in caplog.text
 
+    def test_parse_unknown_field_raises_with_suggestion(self, tmp_path: Path) -> None:
+        """A key no release ever had stops the parse: EnergyPlus would silently ignore its value."""
+        data = {
+            "Version": {"Version 1": {"version_identifier": "24.1"}},
+            "Zone": {"Z1": {"ceiling_hieght": 3.0}},
+        }
+        filepath = tmp_path / "unknown_field.epJSON"
+        filepath.write_text(json.dumps(data))
+        with pytest.raises(
+            IDFParseError, match=r"Unknown field 'ceiling_hieght' for Zone\. Did you mean 'ceiling_height'\?"
+        ) as info:
+            load_epjson(filepath)
+        (diagnostic,) = info.value.diagnostics
+        assert diagnostic.code == "InvalidField"
+        assert diagnostic.obj_type == "Zone"
+        assert diagnostic.obj_name == "Z1"
+
+    def test_parse_unknown_fields_reported_together(self, tmp_path: Path) -> None:
+        """Every unknown key in the file is a diagnostic of the one error."""
+        data = {
+            "Version": {"Version 1": {"version_identifier": "24.1"}},
+            "Zone": {"Z1": {"ceiling_hieght": 3.0}, "Z2": {"x_orgin": 1.0}},
+        }
+        filepath = tmp_path / "unknown_fields.epJSON"
+        filepath.write_text(json.dumps(data))
+        with pytest.raises(IDFParseError) as info:
+            load_epjson(filepath)
+        assert [d.obj_name for d in info.value.diagnostics] == ["Z1", "Z2"]
+
+    def test_parse_name_repeated_in_body_is_dropped(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        """A ``name`` key repeated inside a named object's body loads; the object's key is its name."""
+        data = {
+            "Version": {"Version 1": {"version_identifier": "24.1"}},
+            "Zone": {"Z1": {"name": "Z1", "x_origin": 1.0}, "Z2": {"name": "Other"}},
+        }
+        filepath = tmp_path / "body_name.epJSON"
+        filepath.write_text(json.dumps(data))
+        with caplog.at_level("WARNING", logger="idfkit.epjson_parser"):
+            doc = load_epjson(filepath)
+        assert doc["Zone"]["Z1"].data == {"x_origin": 1.0}
+        assert doc["Zone"]["Z2"].data == {}
+        assert "Zone 'Z1'" not in caplog.text
+        assert "Zone 'Z2'" in caplog.text
+        assert "'Other'" in caplog.text
+
+    def test_parse_unknown_field_kept_without_strict_parsing(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """``strict_parsing=False`` keeps the key, as before, and logs it with the suggestion."""
+        data = {
+            "Version": {"Version 1": {"version_identifier": "24.1"}},
+            "Zone": {"Z1": {"ceiling_hieght": 3.0}},
+        }
+        filepath = tmp_path / "unknown_field.epJSON"
+        filepath.write_text(json.dumps(data))
+        with caplog.at_level("WARNING", logger="idfkit.epjson_parser"):
+            doc = load_epjson(filepath, strict_parsing=False)
+        assert doc["Zone"]["Z1"].data == {"ceiling_hieght": 3.0}
+        assert "Did you mean 'ceiling_height'?" in caplog.text
+
+    def test_parse_field_an_earlier_release_had_is_kept(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        """A field a release removed loads, logged: EnergyPlus's own example epJSON carries such keys."""
+        data = {
+            "Version": {"Version 1": {"version_identifier": "26.1"}},
+            "FuelFactors": {"FuelFactors 1": {"existing_fuel_resource_name": "Electricity", "units_of_measure": "kg"}},
+        }
+        filepath = tmp_path / "obsolete_field.epJSON"
+        filepath.write_text(json.dumps(data))
+        with caplog.at_level("WARNING", logger="idfkit.epjson_parser"):
+            doc = load_epjson(filepath)
+        (fuel,) = doc["FuelFactors"]
+        assert fuel.data["units_of_measure"] == "kg"
+        assert "'units_of_measure' of FuelFactors" in caplog.text
+
     def test_build_field_order_none_when_no_base_names(self, tmp_path: Path) -> None:
         """Line 237: _build_field_order returns None when base_field_names is None."""
         from idfkit.epjson_parser import EpJSONParser
