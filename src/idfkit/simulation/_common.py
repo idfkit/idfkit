@@ -5,6 +5,7 @@ Internal module — not part of the public API.
 
 from __future__ import annotations
 
+import dataclasses
 import filecmp
 import os
 import shutil
@@ -619,7 +620,6 @@ def restore_cached_result(
         or *entry* itself when *output_dir* is ``None``.
     """
     from .cache import CACHE_META_FILE
-    from .result import SimulationResult as _Result
 
     if output_dir is None:
         return entry
@@ -628,18 +628,9 @@ def restore_cached_result(
     shutil.copytree(entry.run_dir, run_dir, dirs_exist_ok=True, ignore=shutil.ignore_patterns(CACHE_META_FILE))
     if weather_path is not None:
         prepare_run_directory(run_dir, weather_path)
-    return _Result(
-        run_dir=run_dir,
-        success=entry.success,
-        exit_code=entry.exit_code,
-        stdout=entry.stdout,
-        stderr=entry.stderr,
-        runtime_seconds=entry.runtime_seconds,
-        output_prefix=entry.output_prefix,
-        migration_report=entry.migration_report,
-        output_suffix=entry.output_suffix,
-        cached=True,
-    )
+    # replace() carries every field of the cache entry, so one added to SimulationResult later
+    # reaches the restored result without this function naming it.
+    return dataclasses.replace(entry, run_dir=run_dir, cached=True, owns_run_dir=False, fs=None, async_fs=None)
 
 
 def prepare_run_directory(output_dir: str | Path | None, weather_path: Path | None) -> Path:
