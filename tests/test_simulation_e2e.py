@@ -156,7 +156,6 @@ class TestDesignDaySimulation:
 
     def test_sql_has_variables(self, design_day_result: SimulationResult) -> None:
         sql = design_day_result.sql
-        assert sql is not None
         variables = sql.list_variables()
         assert len(variables) > 0
 
@@ -179,7 +178,6 @@ class TestAnnualSimulation:
 
     def test_sql_timeseries(self, annual_result: SimulationResult) -> None:
         sql = annual_result.sql
-        assert sql is not None
         # Filter for annual data only (excludes design days)
         ts = sql.get_timeseries("Zone Mean Air Temperature", environment="annual")
         # 8760 hourly values for a full year
@@ -191,14 +189,12 @@ class TestAnnualSimulation:
 
     def test_sql_outdoor_temperature(self, annual_result: SimulationResult) -> None:
         sql = annual_result.sql
-        assert sql is not None
         # Filter for annual data only (excludes design days)
         ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature", environment="annual")
         assert len(ts.values) == 8760
 
     def test_sql_tabular_data(self, annual_result: SimulationResult) -> None:
         sql = annual_result.sql
-        assert sql is not None
         rows = sql.get_tabular_data(
             report_name="AnnualBuildingUtilityPerformanceSummary",
             table_name="End Uses",
@@ -207,13 +203,11 @@ class TestAnnualSimulation:
 
     def test_csv_output(self, annual_result: SimulationResult) -> None:
         csv = annual_result.csv
-        assert csv is not None
         assert len(csv.timestamps) > 0
         assert len(csv.columns) > 0
 
     def test_eso_output(self, annual_result: SimulationResult) -> None:
         eso = annual_result.eso
-        assert eso is not None
         col = eso.get_column("Site Outdoor Air Drybulb Temperature")
         assert col is not None
         assert len(col.values) == 8760
@@ -222,8 +216,6 @@ class TestAnnualSimulation:
         """The ESO reader must agree with the trusted SQL output."""
         eso = annual_result.eso
         sql = annual_result.sql
-        assert eso is not None
-        assert sql is not None
         for name in ("Site Outdoor Air Drybulb Temperature", "Zone Mean Air Temperature"):
             ecol = eso.get_column(name)
             sts = sql.get_timeseries(name, environment="annual")

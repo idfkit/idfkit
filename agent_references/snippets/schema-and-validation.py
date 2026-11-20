@@ -118,8 +118,10 @@ result = simulate(doc, "weather.epw")
 
 
 # --8<-- [start:mistake-schema-good]
+from idfkit import get_schema
+
 field_name = "fictional_field"  # a name only known at run time
-if field_name in doc.schema.get_field_names("Zone"):
+if field_name in get_schema(doc.version).get_field_names("Zone"):
     zone[field_name] = 1.0
 # --8<-- [end:mistake-schema-good]
 

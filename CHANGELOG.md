@@ -87,6 +87,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `SimulationResult.sql`, `csv`, `eso`, `mtr`, `html` and `variables` (and their `async_*`
+  forms) no longer returned `None`: a missing file raised `OutputNotFoundError` naming the output to add
+  or the `.err` to read; test with `result.sql_path is None` instead.
+  ([#348](https://github.com/idfkit/idfkit/pull/348))
 - `TabularRow.value` (from `get_tabular_data()`) and `get_tabular_value()` returned the cell text without
   the whitespace EnergyPlus pads it with, and `""` instead of `None` for a NULL cell.
   ([#347](https://github.com/idfkit/idfkit/pull/347))

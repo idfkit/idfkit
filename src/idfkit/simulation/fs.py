@@ -36,9 +36,8 @@ Examples:
     print(result.run_dir)  # "run-001"
 
     # Query results (transparently reads from S3)
-    if result.sql is not None:
-        ts = result.sql.get_timeseries("Zone Mean Air Temperature", "ZONE 1")
-        print(f"Max temp: {max(ts.values):.1f} C")
+    ts = result.sql.get_timeseries("Zone Mean Air Temperature", "ZONE 1")
+    print(f"Max temp: {max(ts.values):.1f} C")
 
     # Later, reconstruct results from S3 (from any machine)
     result = SimulationResult.from_directory("run-001", fs=fs)

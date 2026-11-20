@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from .objects import IDFObject
     from .simulation.result import SimulationResult
 
@@ -384,6 +386,40 @@ class ResultLookupError(IdfKitError, KeyError):
     def __str__(self) -> str:
         # KeyError.__str__ gives repr() of its argument: quoted, with a literal "\n".
         return self.message
+
+
+class OutputNotFoundError(IdfKitError, FileNotFoundError):
+    """Raised when a simulation result is asked to parse an output file the run did not produce.
+
+    Raised by the parsed-output accessors of
+    [SimulationResult][idfkit.simulation.result.SimulationResult] (``sql``, ``csv``, ``eso``,
+    ``mtr``, ``html``, ``variables`` and their ``async_*`` counterparts). The message names the
+    output object to add to the model or, for a failed or refused run, where to read why.
+    To test for an output without raising, check its path: ``result.sql_path is None``.
+    Inherits from ``FileNotFoundError``.
+
+    Attributes:
+        output: The accessor that found no file, e.g. ``"sql"``.
+        run_dir: The run directory that was searched.
+    """
+
+    def __init__(self, message: str, *, output: str, run_dir: Path) -> None:
+        super().__init__(message)
+        self.message = message
+        self.output = output
+        self.run_dir = run_dir
+
+    def __str__(self) -> str:
+        return self.message
+
+    def __reduce__(self) -> tuple[Callable[..., OutputNotFoundError], tuple[str, str, Path]]:
+        # The keyword-only arguments do not survive the default exception pickling.
+        return (_make_output_not_found, (self.message, self.output, self.run_dir))
+
+
+def _make_output_not_found(message: str, output: str, run_dir: Path) -> OutputNotFoundError:
+    """Rebuild an `OutputNotFoundError` when unpickling."""
+    return OutputNotFoundError(message, output=output, run_dir=run_dir)
 
 
 class FormattingLossWarning(UserWarning):

@@ -772,7 +772,6 @@ class TestAsyncFileSystem:
             async_fs=fs,
         )
         variables = await result.async_variables()
-        assert variables is not None
         assert len(variables.variables) == 1
 
     @pytest.mark.asyncio

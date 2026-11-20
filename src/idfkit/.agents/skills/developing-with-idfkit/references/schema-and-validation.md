@@ -34,7 +34,7 @@ if not result.is_valid:
 | `Severity` | `ERROR`, `WARNING`, `INFO`. |
 | `ObjectDescription` / `FieldDescription` | Schema introspection — see [Introspection](#introspecting-the-schema). |
 
-`doc.schema` is the `EpJSONSchema` already bound to the document's version. You rarely need to pass `schema=` to `validate_document` — the default is `doc.schema`.
+`doc.schema` is the `EpJSONSchema` bound to the document's version, typed `EpJSONSchema | None`. You rarely need to pass `schema=` to `validate_document` — the default is `doc.schema`. To query the schema in typed code, use `get_schema(doc.version)`, which never returns `None`.
 
 ## Schema methods worth knowing
 
@@ -193,8 +193,10 @@ for field in desc.fields:
 !!! success "ask the schema, then use item access for a name chosen at run time"
 
     ```python
+    from idfkit import get_schema
+
     field_name = "fictional_field"  # a name only known at run time
-    if field_name in doc.schema.get_field_names("Zone"):
+    if field_name in get_schema(doc.version).get_field_names("Zone"):
         zone[field_name] = 1.0
     ```
 

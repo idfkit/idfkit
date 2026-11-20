@@ -20,15 +20,15 @@
 | Accessor | Returns | Lazy? |
 |---|---|---|
 | `result.errors` | `ErrorReport` (always available) | Eager (parsed on construction). |
-| `result.sql` | `SQLResult | None` | Lazy — opens the SQLite file on first access. |
-| `result.csv` | `CSVResult | None` | Lazy. |
-| `result.eso` / `result.mtr` | `ESOResult | None` | Lazy — dictionary parsed on access, variable data on `get_column`. |
-| `result.html` | `HTMLResult | None` | Lazy. |
-| `result.variables` | `OutputVariableIndex | None` | Lazy — parses `.rdd`/`.mdd`. |
+| `result.sql` | `SQLResult` | Lazy — opens the SQLite file on first access. |
+| `result.csv` | `CSVResult` | Lazy. |
+| `result.eso` / `result.mtr` | `ESOResult` | Lazy — dictionary parsed on access, variable data on `get_column`. |
+| `result.html` | `HTMLResult` | Lazy. |
+| `result.variables` | `OutputVariableIndex` | Lazy — parses `.rdd`/`.mdd`. |
 | `result.sql_path` / `.err_path` / `.eso_path` / `.mtr_path` / `.csv_path` / `.html_path` / `.rdd_path` / `.mdd_path` | `Path | None` | Direct file paths. |
 | `result.migration_report` | `MigrationReport | None` | Set if `auto_migrate=True`. |
 
-All `None` returns mean "the file doesn't exist" — EnergyPlus may not produce CSV/HTML unless you asked for them in the IDF (`Output:Variable`, `Output:Table:SummaryReports`).
+The parsed accessors (and their `async_*` counterparts) never return `None`. When the file doesn't exist they raise `OutputNotFoundError` (a `FileNotFoundError`), whose message names the output object to add (`Output:SQLite`, `Output:VariableDictionary`, `readvars=True` for CSV, ...) or, for a failed run, points to `raise_for_status()` and the `.err` file. To test for a file without raising, check its path: `result.csv_path is None`. EnergyPlus may not produce CSV/HTML unless you asked for them in the IDF (`Output:Variable`, `Output:Table:SummaryReports`).
 
 ## Errors (always check first)
 
@@ -156,14 +156,14 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
 
 ## Common mistakes
 
-!!! failure "accessing `result.sql` without a None check"
+!!! failure "guarding a parsed output with a None check"
 
     ```python
-    df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
-    # AttributeError if SQL output was disabled
+    if result.sql:                             # never None: raises OutputNotFoundError when there is no .sql
+        df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
     ```
 
-!!! success "check or trust the runner's auto-injection"
+!!! success "trust the runner's auto-injection, or test the path"
 
     ```python
     --8<-- "agent_references/snippets/result-parsing.py:mistake-sql-good"

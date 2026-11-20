@@ -28,7 +28,7 @@ idfkit bundles the official EnergyPlus epJSON schema for every supported version
 | `Severity` | `ERROR`, `WARNING`, `INFO`. |
 | `ObjectDescription` / `FieldDescription` | Schema introspection — see [Introspection](#introspecting-the-schema). |
 
-`doc.schema` is the `EpJSONSchema` already bound to the document's version. You rarely need to pass `schema=` to `validate_document` — the default is `doc.schema`.
+`doc.schema` is the `EpJSONSchema` bound to the document's version, typed `EpJSONSchema | None`. You rarely need to pass `schema=` to `validate_document` — the default is `doc.schema`. To query the schema in typed code, use `get_schema(doc.version)`, which never returns `None`.
 
 ## Schema methods worth knowing
 
