@@ -14,10 +14,10 @@
 ```python
 result = simulate(doc, "weather.epw")
 
-# 1. Always check errors first
-if result.errors.has_severe:
+# 1. Always check errors first: raise SimulationError if EnergyPlus failed
+result.raise_for_status()
+if result.errors.has_severe:  # a run can succeed with severe errors; read them
     print(result.errors.summary())
-    raise SystemExit
 
 # 2. Time series
 ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office", frequency="Hourly")
@@ -46,7 +46,8 @@ All `None` returns mean "the file doesn't exist" — EnergyPlus may not produce 
 
 ```python
 errs = result.errors  # ErrorReport
-print(errs.summary())  # human-readable rollup
+print(errs.summary())  # counts, then the fatal and first 3 severe messages
+print(errs.summary(max_messages=10))  # quote more severe messages
 
 if errs.has_severe:  # property, not method
     for msg in errs.severe:  # tuple[ErrorMessage, ...]
@@ -56,7 +57,7 @@ for warn in errs.warnings:
     print(warn.message)
 ```
 
-`severe()` includes both `Severe` and `Fatal`. Always treat a non-empty `severe()` as a simulation failure even if EnergyPlus exited zero — many corrupt-output cases leave the file present but unreadable.
+`simulate()` does not raise when EnergyPlus fails: the result has `success=False`, and `result.sql` may still open a partial database. `result.raise_for_status()` raises `SimulationError` for a failed run (the fatal and first severe messages and the `.err` path in its message, the result in `.result`) and returns the result otherwise; `await result.async_raise_for_status()` for an `async_fs` result. `errs.severe` and `errs.fatal` are separate tuples (properties, not methods). Treat a non-empty `errs.severe` as suspect even if EnergyPlus exited zero — many corrupt-output cases leave the file present but unreadable.
 
 ## Time series from SQLite
 
@@ -328,7 +329,7 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
     # Or check result.variables (after running with Output:VariableDictionary)
     ```
 
-!!! failure "ignoring `result.errors.has_severe()`"
+!!! failure "ignoring a failed run"
 
     ```python
     df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
@@ -338,6 +339,7 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
 !!! success "gate on errors"
 
     ```python
+    result.raise_for_status()  # SimulationError naming the cause and the .err path
     if result.errors.has_severe:
         raise SystemExit(result.errors.summary())
     df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")

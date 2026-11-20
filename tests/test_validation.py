@@ -11,6 +11,7 @@ import pytest
 
 from idfkit import IDFDocument, load_epjson, new_document
 from idfkit.document import AnyIDFDocument
+from idfkit.exceptions import closest_names
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.schema import get_schema
 from idfkit.validation import (
@@ -181,6 +182,40 @@ class TestValidateReferences:
         # Should find dangling references
         ref_errors = [e for e in result.errors if e.code == "E009"]
         assert len(ref_errors) > 0
+
+    def test_dangling_reference_quotes_value_and_suggests(self, simple_doc: IDFDocument) -> None:
+        simple_doc["BuildingSurface:Detailed"]["TestWall"].construction_name = "TestConstructon"
+        result = validate_document(simple_doc, check_references=True)
+        [error] = [e for e in result.errors if e.code == "E009"]
+        assert error.message == (
+            "Reference to non-existent object 'TestConstructon' (looked up in ConstructionNames). "
+            "Did you mean 'TestConstruction'?"
+        )
+
+    def test_dangling_reference_without_close_name(self, simple_doc: IDFDocument) -> None:
+        simple_doc["BuildingSurface:Detailed"]["TestWall"].construction_name = "Something Else"
+        result = validate_document(simple_doc, check_references=True)
+        [error] = [e for e in result.errors if e.code == "E009"]
+        assert "'Something Else'" in error.message
+        assert "Did you mean" not in error.message
+
+    def test_dangling_suggestion_computed_once_per_target(self, simple_doc: IDFDocument) -> None:
+        """Many edges to one missing name share one did-you-mean search."""
+        for i in range(20):
+            simple_doc.add(
+                "People",
+                f"People {i}",
+                {"zone_or_zonelist_or_space_or_spacelist_name": "TestZon"},
+                validate=False,
+            )
+        with patch("idfkit.validation.closest_names", wraps=closest_names) as spy:
+            result = validate_document(simple_doc, check_references=True)
+        zone_errors = [
+            e for e in result.errors if e.code == "E009" and e.field == "zone_or_zonelist_or_space_or_spacelist_name"
+        ]
+        assert len(zone_errors) == 20
+        assert all("Did you mean 'TestZone'?" in e.message for e in zone_errors)
+        assert spy.call_count == 1
 
     def test_valid_references_pass(self, simple_doc: IDFDocument) -> None:
         result = validate_document(simple_doc, check_references=True)
@@ -897,6 +932,7 @@ class TestExtensibleGroupReferences:
         result = validate_document(doc)
 
         assert [e.field for e in result.errors if e.code == "E009"] == ["electric_equipment_name"]
+        assert "'TotallyNotDefined'" in next(e.message for e in result.errors if e.code == "E009")
 
     def test_a_resolvable_reference_inside_an_extensible_group_is_not_reported(self) -> None:
         doc = new_document(version=(26, 1, 0))

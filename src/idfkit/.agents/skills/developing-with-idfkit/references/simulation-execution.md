@@ -17,7 +17,8 @@ from idfkit.simulation import simulate
 
 doc = load_idf("building.idf")
 result = simulate(doc, "weather.epw", design_day=True)
-print(result.errors.summary())
+result.raise_for_status()  # SimulationError quoting the fatal/severe messages if EnergyPlus failed
+print(result.errors.summary())  # counts, plus the fatal and first severe messages
 ```
 
 ## Core API

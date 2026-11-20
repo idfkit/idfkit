@@ -76,7 +76,7 @@ Common codes (see `ValidationError.code`):
 - `E004` — value not among a field's permitted values
 - `E005` — below the minimum; `E006` — not above an exclusive minimum
 - `E007` — above the maximum; `E008` — not below an exclusive maximum
-- `E009` — reference to a name no object declares
+- `E009` — reference to a name no object declares. The message quotes the value as typed, the reference list it was looked up in and the closest declared names: `Reference to non-existent object 'Opaqe' (looked up in ConstructionNames). Did you mean 'Opaque'?`
 - `E010` — singleton constraint violated (>1 instance of a `maxProperties: 1` type)
 - `W002` — unknown object type; `W003` — unknown field
 - `W004` — an `Output:Diagnostics`, `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable` with no entries, or only blank ones: it does nothing in EnergyPlus, and its IDF (`Type,;`) is read as one blank entry. Reported by `validate_document` only, so `add()` still accepts one to fill in later.

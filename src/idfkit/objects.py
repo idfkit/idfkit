@@ -79,6 +79,8 @@ if TYPE_CHECKING:
 
         def _holds(self, collection: IDFCollection[Any]) -> bool: ...
 
+        def _remove_from(self, collection: IDFCollection[Any], obj: IDFObject) -> None: ...
+
 
 _ItemT = TypeVar("_ItemT")
 _Item_co = TypeVar("_Item_co", covariant=True)
@@ -1768,12 +1770,7 @@ class IDFCollection(Generic[_T_co]):
         if "name" in fields:
             msg = f"add() takes the object's name positionally: add({fields['name']!r}, ...), not add(name=...)"
             raise TypeError(msg)
-        document = self._document
-        if isinstance(document, _FromOlderPickle):
-            # Unpickled from a release before collections held their document; its objects do.
-            items = cast("list[IDFObject]", self._items)
-            document = cast("_ObjectFactory | None", items[0]._document) if items else None  # pyright: ignore[reportPrivateUsage]
-            self._document = document
+        document = self._owner()
         if document is None:
             msg = (
                 f"IDFCollection({self._type}) belongs to no document (constructed directly, or an empty "
@@ -1797,8 +1794,44 @@ class IDFCollection(Generic[_T_co]):
         )
         return cast("IDFCollection[IDFObject]", self)._append(obj)
 
+    def _owner(self) -> _ObjectFactory | None:
+        """The document this collection belongs to, or ``None`` for one built by hand."""
+        document = self._document
+        if isinstance(document, _FromOlderPickle):
+            # Unpickled from a release before collections held their document; its objects do.
+            items = cast("list[IDFObject]", self._items)
+            document = cast("_ObjectFactory | None", items[0]._document) if items else None  # pyright: ignore[reportPrivateUsage]
+            self._document = document
+        return document
+
     def remove(self, obj: IDFObject) -> None:
-        """Remove an object from the collection."""
+        """Remove an object from the collection and from the document that holds it.
+
+        In a document this is [removeidfobject][idfkit.document.IDFDocument.removeidfobject]:
+        the object also leaves the reference graph, so ``get_referencing()`` no longer reports
+        it and renaming an object it pointed at no longer edits it. An object not in the
+        collection is ignored.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> zone = model.add("Zone", "Core_ZN")
+            >>> people = model.add("People", "Core People", zone_or_zonelist_or_space_or_spacelist_name="Core_ZN",
+            ...                    validate=False)
+            >>> model["People"].remove(people)
+            >>> model.get_referencing("Core_ZN")
+            set()
+        """
+        if not any(item is obj for item in self._items):
+            return
+        document = self._owner()
+        if document is not None and document._holds(self):  # pyright: ignore[reportPrivateUsage]
+            document._remove_from(self, obj)  # pyright: ignore[reportPrivateUsage]
+        else:
+            self._discard(obj)
+
+    def _discard(self, obj: IDFObject) -> None:
+        """Drop *obj* from this collection's list and name index, and nowhere else."""
         # By identity, not equality: two objects of a type with no Name field
         # compare equal when their fields match, and list.remove would take
         # whichever comes first.

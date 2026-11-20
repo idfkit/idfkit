@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
 
+from .exceptions import closest_names
 from .objects import is_blank_slot
 
 logger = logging.getLogger(__name__)
@@ -1213,6 +1214,10 @@ def _validate_references(
 
     # Check for dangling references, skipping fields whose reference list nothing populates.
     unpopulated = _unpopulated_reference_lists(schema)
+    candidates_by_lists: dict[tuple[str, ...], list[str]] = {}
+    # Removing one widely referenced object leaves thousands of edges to the same target: the
+    # did-you-mean search runs once per (target, reference lists), not once per edge.
+    suggestions: dict[tuple[str, tuple[str, ...]], list[str]] = {}
     for obj, field_name, target in doc.references.get_dangling_references(valid_names):
         field_spec = _reference_field_spec(schema, obj.obj_type, field_name)
         lists: list[str] = field_spec.get("object_list") or []
@@ -1222,15 +1227,66 @@ def _validate_references(
             continue
         if _is_implicit_remainder_space(target, declared.zones):
             continue
+        key = tuple(lists)
+        if key not in candidates_by_lists:
+            candidates_by_lists[key] = _reference_candidates(doc, schema, lists)
+        value = _typed_value(obj, field_name, target)
+        suggestion_key = (target, key)
+        if suggestion_key not in suggestions:
+            suggestions[suggestion_key] = closest_names(value, candidates_by_lists[key], n=3)
         errors.append(
             ValidationError(
                 severity=Severity.ERROR,
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
                 field=field_name,
-                message=f"Reference to non-existent object '{target}'",
+                message=_dangling_message(value, lists, suggestions[suggestion_key]),
                 code="E009",
             )
         )
 
     return errors
+
+
+def _typed_value(obj: IDFObject, field_name: str, target: str) -> str:
+    """The value *obj* holds for the reference *target*, as the user typed it.
+
+    The reference graph keys a reference by its uppercased value; the message quotes the field's
+    own spelling. A field inside an extensible group is found in the object's groups.
+    """
+    values: list[Any] = [obj.data.get(field_name)]
+    for group_list in obj.data.values():
+        if isinstance(group_list, list):
+            values.extend(
+                cast("dict[str, Any]", group).get(field_name)
+                for group in cast("list[Any]", group_list)
+                if isinstance(group, dict)
+            )
+    for value in values:
+        if isinstance(value, str) and value.strip().upper() == target:
+            return value.strip()
+    return target
+
+
+def _reference_candidates(doc: AnyIDFDocument, schema: EpJSONSchema, lists: list[str]) -> list[str]:
+    """The names the document's objects give the reference lists *lists*, the field's ``object_list``."""
+    names: dict[str, str] = {}
+    for ref_list in lists:
+        for obj_type in schema.get_types_providing_reference(ref_list):
+            collection = doc.collections.get(obj_type)
+            if collection is None:
+                continue
+            for candidate in collection:
+                if candidate.name:
+                    names.setdefault(candidate.name.upper(), candidate.name)
+    return list(names.values())
+
+
+def _dangling_message(value: str, lists: list[str], close: list[str]) -> str:
+    """The E009 message: the missing name, the reference list it was looked up in, and the closest names."""
+    message = f"Reference to non-existent object '{value}'"
+    if lists:
+        message += f" (looked up in {' or '.join(lists)})"
+    if close:
+        message += ". Did you mean " + " or ".join(f"'{name}'" for name in close) + "?"
+    return message

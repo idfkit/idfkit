@@ -88,8 +88,15 @@ class ErrorReport:
         """Total number of warnings."""
         return len(self.warnings)
 
-    def summary(self) -> str:
+    def summary(self, max_messages: int = 3) -> str:
         """Return a human-readable summary of the error report.
+
+        The counts and the run's outcome, then the fatal errors and the first severe ones, with
+        their continuation lines, so the cause of a failed run reads at a glance.
+
+        Args:
+            max_messages: How many severe errors to quote; the fatal ones are always quoted.
+                ``0`` quotes none.
 
         Returns:
             A multi-line summary string.
@@ -105,6 +112,13 @@ class ErrorReport:
             lines.append("Simulation: completed successfully")
         elif self.has_fatal:
             lines.append("Simulation: terminated with fatal error(s)")
+        quoted = (*self.fatal, *self.severe[: max(max_messages, 0)])
+        for msg in quoted:
+            lines.append(f"  {msg.severity}: {msg.message}")
+            lines.extend(f"    {detail}" for detail in msg.details)
+        unquoted = len(self.severe) - (len(quoted) - len(self.fatal))
+        if unquoted:
+            lines.append(f"  ... and {unquoted} more severe error(s)")
         return "\n".join(lines)
 
     @classmethod
