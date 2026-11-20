@@ -72,13 +72,30 @@ def _starts_entry(line: str, in_entry: bool) -> bool:
     return stripped.startswith(BULLETS) and indent < (2 if in_entry else 4)
 
 
+def _indent_fenced(lines: list[str]) -> list[str]:
+    """*lines*, with each line inside a fenced code block indented.
+
+    A fenced line is code: a ``## `` or ``- `` in it is neither a heading nor an entry. Indented, it
+    reads as a continuation of the entry around it, as Markdown reads it.
+    """
+    out: list[str] = []
+    in_fence = False
+    for line in lines:
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+        elif in_fence and line.strip():
+            line = "    " + line
+        out.append(line)
+    return out
+
+
 def unreleased_entries(text: str) -> list[Entry] | None:
     """Return the top-level bullets of the ``## [Unreleased]`` section, or ``None`` with no such heading."""
     entries: list[Entry] = []
     found = in_unreleased = False
     current: Entry | None = None
     previous_blank = False
-    for number, line in enumerate(text.splitlines(), start=1):
+    for number, line in enumerate(_indent_fenced(text.splitlines()), start=1):
         if line.startswith("## "):
             in_unreleased = line.startswith(UNRELEASED)
             found = found or in_unreleased

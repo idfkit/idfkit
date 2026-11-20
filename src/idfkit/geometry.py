@@ -21,8 +21,9 @@ if TYPE_CHECKING:
     from .document import AnyIDFDocument
     from .objects import IDFObject
 
-# Surface types that carry vertex geometry.  Used by translate_building,
-# rotate_building, scale_building, and related functions.
+# Surface types that carry vertex geometry, as a public list. translate_building, rotate_building,
+# scale_building and translate_to_world read the typed tuple in ``_surface_types`` instead, so
+# changing this list does not change which types they move.
 VERTEX_SURFACE_TYPES: list[str] = list(_VERTEX_SURFACE_TYPES)
 
 
