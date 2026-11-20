@@ -330,6 +330,12 @@ class TestSimulateBatch:
         with pytest.raises(OutputNotFoundError, match="this batch job was cancelled"):
             _ = r.sql
 
+    def test_cancelled_result_carries_the_job_output_suffix(self) -> None:
+        """A cancelled job's result reports the job's output style, like a failed job's does."""
+        job = SimulationJob(model=runnable_model(), output_suffix="L")
+        r = cancelled_job_result(job, "job 'a' failed", started=True)
+        assert r.output_suffix == "L"
+
     def test_stopped_result_of_a_job_that_never_ran(self) -> None:
         job = SimulationJob(model=runnable_model())
         placeholder = cancelled_job_result(job, "the batch was stopped", started=False)
@@ -477,6 +483,35 @@ class TestSimulateBatch:
         assert r.err_path == out_dir / "eplusout.err"
         assert r.errors.severe_count == 2
         assert not repr(r).startswith("SimulationResult(refused")
+
+    @pytest.mark.parametrize("style", ["L", "D"])
+    def test_timeout_after_energyplus_ran_reads_its_suffix_style_outputs(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path, style: str
+    ) -> None:
+        """A timed-out job reads the files its output_suffix names, not another style's left beside them."""
+        out_dir = tmp_path / "out"
+        out_dir.mkdir()
+        # An earlier run with the default "C" style left these.
+        (out_dir / "eplus.err").write_text("   ** Severe  ** stale from an earlier run\n")
+        (out_dir / "eplusTable.htm").write_text("<html>stale</html>")
+        err_name = {"L": "eplusout.err", "D": "eplus.err"}[style]
+        table_name = {"L": "eplustbl.htm", "D": "eplus-table.htm"}[style]
+
+        def run_then_time_out(**_: object) -> SimulationResult:
+            (out_dir / err_name).write_text("   ** Severe  ** from this run\n   ** Severe  ** and another\n")
+            (out_dir / table_name).write_text("<html>this run</html>")
+            msg = "Simulation timed out after 5 seconds"
+            raise SimulationError(msg)
+
+        with patch("idfkit.simulation.batch.simulate", side_effect=run_then_time_out):
+            job = SimulationJob(
+                model=runnable_model(), weather=weather_file, output_dir=str(out_dir), output_suffix=style
+            )
+            r = simulate_batch([job], energyplus=mock_config)[0]
+        assert r.refusal is None
+        assert r.err_path == out_dir / err_name
+        assert r.errors.severe_count == 2
+        assert r.html_path == out_dir / table_name
 
     def test_refusal_reason_excludes_stderr_tail(
         self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path

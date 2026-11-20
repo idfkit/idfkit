@@ -203,7 +203,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#335](https://github.com/idfkit/idfkit/pull/335))
 - A batch job refused before EnergyPlus ran carried the reason in `SimulationResult.refusal`, shown in
   its repr, `errors` and `raise_for_status()`, and read no stale files from `output_dir`; one that timed
-  out still read its run's outputs. ([#335](https://github.com/idfkit/idfkit/pull/335))
+  out still read its run's outputs.
+  ([#335](https://github.com/idfkit/idfkit/pull/335), [#359](https://github.com/idfkit/idfkit/pull/359))
 - Validation error `E009` quoted the reference as typed instead of uppercased, named the reference
   list it was looked up in and suggested the closest declared names.
   ([#328](https://github.com/idfkit/idfkit/pull/328))
