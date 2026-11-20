@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import platform
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -198,6 +199,52 @@ ZoneHVAC:IdealLoadsAirSystem,
         assert exc_info.value.preprocessor == "ExpandObjects"
         assert exc_info.value.exit_code == 1
         assert exc_info.value.stderr == "some error"
+
+    def test_fatal_preprocessor_message_raises(
+        self, model_with_hvac_template: IDFDocument, mock_config: EnergyPlusConfig
+    ) -> None:
+        """ExpandObjects exits 0 and writes a partial expanded.idf when it stops on a template.
+
+        The text is what ExpandObjects writes: a ``!-`` comment after every field, and the message
+        over several lines.
+        """
+        expanded = (
+            "Version, 24.1;\n\n"
+            "Output:PreprocessorMessage,\n"
+            "  ExpandObjects,                                           !- Preprocessor Name\n"
+            "  Fatal,                                                   !- Error Severity\n"
+            "  The number of fields in the IDD do not match the number of fields assumed.,  !- message line\n"
+            "  HVACTemplate:Zone:VAV;                                   !- message line\n\n"
+            "Output:PreprocessorMessage,\n"
+            "  ExpandObjects,                                           !- Preprocessor Name\n"
+            "  Warning,                                                 !- Error Severity\n"
+            "  Not a problem;                                           !- message line\n"
+        )
+        with (
+            patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run(expanded)),
+            pytest.raises(ExpandObjectsError, match="fatal error") as exc_info,
+        ):
+            expand_objects(model_with_hvac_template, energyplus=mock_config)
+        assert exc_info.value.preprocessor == "ExpandObjects"
+        assert (
+            "The number of fields in the IDD do not match the number of fields assumed. HVACTemplate:Zone:VAV"
+            in str(exc_info.value)
+        )
+        assert "Not a problem" not in str(exc_info.value)
+
+    def test_warning_preprocessor_message_does_not_raise(
+        self, model_with_hvac_template: IDFDocument, mock_config: EnergyPlusConfig
+    ) -> None:
+        expanded = (
+            "Version, 24.1;\n\nZone, Office;\n\n"
+            "Output:PreprocessorMessage,\n"
+            "  ExpandObjects,                                           !- Preprocessor Name\n"
+            "  Warning,                                                 !- Error Severity\n"
+            "  No heating coil.;                                        !- message line\n"
+        )
+        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run(expanded)):
+            result = expand_objects(model_with_hvac_template, energyplus=mock_config)
+        assert "Office" in result["Zone"]
 
     def test_timeout_raises(self, model_with_hvac_template: IDFDocument, mock_config: EnergyPlusConfig) -> None:
         import subprocess
@@ -464,6 +511,16 @@ class TestCheckForFatalPreprocessorMessage:
         )
         _check_for_fatal_preprocessor_message(output, label="Slab", proc=self._make_proc())
 
+    def test_reports_every_fatal_message(self, tmp_path: Path) -> None:
+        output = tmp_path / "expanded.idf"
+        output.write_text(
+            "Output:PreprocessorMessage,ExpandObjects,Fatal,Could not find air handler,Z1;\n"
+            "Output:PreprocessorMessage,ExpandObjects,Fatal,Did not find a match;\n"
+        )
+        with pytest.raises(ExpandObjectsError) as exc_info:
+            _check_for_fatal_preprocessor_message(output, label="ExpandObjects", proc=self._make_proc())
+        assert "Could not find air handler Z1; Did not find a match" in str(exc_info.value)
+
     def test_preserves_exit_code(self, tmp_path: Path) -> None:
         output = tmp_path / "EPObjects.TXT"
         output.write_text("Output:PreprocessorMessage,GroundTempCalc - Basement,Fatal,Bad input;\n")
@@ -596,6 +653,63 @@ class TestBasementFatalMessage:
             run_basement_preprocessor(doc, energyplus=mock_config)
         assert exc_info.value.preprocessor == "Basement"
         assert exc_info.value.exit_code == 0
+
+
+class TestGroundPreprocessorExpandObjectsFatal:
+    """run_slab_preprocessor and run_basement_preprocessor raise on an ExpandObjects fatal message."""
+
+    _EXPANDED = (
+        "Version, 24.1;\n\n"
+        "Output:PreprocessorMessage,\n"
+        "  ExpandObjects,                                           !- Preprocessor Name\n"
+        "  Fatal,                                                   !- Error Severity\n"
+        "  Could not find air handler AHU-9;                        !- message line\n"
+    )
+
+    @staticmethod
+    def _fake_run(ght_file: str, calls: list[str]) -> Callable[..., MagicMock]:
+        def side_effect(cmd: list[str], **kwargs: object) -> MagicMock:
+            cwd = Path(str(kwargs.get("cwd", "")))
+            name = _command_name(cmd)
+            calls.append(name)
+            if name == "ExpandObjects":
+                (cwd / "expanded.idf").write_text(TestGroundPreprocessorExpandObjectsFatal._EXPANDED)
+                (cwd / ght_file).write_text("! input\n")
+            result = MagicMock()
+            result.returncode = 0
+            result.stdout = ""
+            result.stderr = ""
+            return result
+
+        return side_effect
+
+    def test_slab(self, mock_config: EnergyPlusConfig) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
+        doc.add("GroundHeatTransfer:Control", "", {"run_slab_preprocessor": "Yes"}, validate=False)
+        calls: list[str] = []
+
+        with (
+            patch("idfkit.simulation.expand.subprocess.run", side_effect=self._fake_run("GHTIn.idf", calls)),
+            pytest.raises(ExpandObjectsError, match="Could not find air handler AHU-9") as exc_info,
+        ):
+            run_slab_preprocessor(doc, energyplus=mock_config)
+        assert exc_info.value.preprocessor == "ExpandObjects"
+        assert calls == ["ExpandObjects"]
+
+    def test_basement(self, mock_config: EnergyPlusConfig) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
+        doc.add("GroundHeatTransfer:Control", "", {"run_basement_preprocessor": "Yes"}, validate=False)
+        calls: list[str] = []
+
+        with (
+            patch("idfkit.simulation.expand.subprocess.run", side_effect=self._fake_run("BasementGHTIn.idf", calls)),
+            pytest.raises(ExpandObjectsError, match="Could not find air handler AHU-9") as exc_info,
+        ):
+            run_basement_preprocessor(doc, energyplus=mock_config)
+        assert exc_info.value.preprocessor == "ExpandObjects"
+        assert calls == ["ExpandObjects"]
 
 
 # ---------------------------------------------------------------------------
@@ -1130,6 +1244,17 @@ class TestRunPreprocessing:
             run_preprocessing(doc, energyplus=mock_config, weather=epw, timeout=120.0)
 
         assert calls == ["ExpandObjects", "Slab", "Basement"]
+
+    def test_leaves_an_expandobjects_fatal_to_the_simulation(self, mock_config: EnergyPlusConfig) -> None:
+        """``simulate()`` runs through here and reports a failed run in its result, not by raising."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Control", "", {"run_slab_preprocessor": "No"}, validate=False)
+        expanded = "Version, 24.1;\n\nOutput:PreprocessorMessage, ExpandObjects, Fatal, Slab not run;\n"
+
+        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run(expanded)):
+            result = run_preprocessing(doc, energyplus=mock_config)
+
+        assert len(result["Output:PreprocessorMessage"]) == 1
 
     def test_skips_slab_when_ght_input_not_produced(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         """When ExpandObjects doesn't produce GHTIn.idf (control=No), Slab is skipped."""

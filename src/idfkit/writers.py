@@ -71,6 +71,27 @@ def _field_label(field_name: str) -> str:
     return field_name.replace("_", " ").title()
 
 
+#: Object types the EnergyPlus preprocessors read field by field from the IDF text. ExpandObjects
+#: stops with "The number of fields in the IDD do not match the number of fields assumed" on an
+#: HVACTemplate object shorter than its ``\min-fields``; EnergyPlus itself fills a short object
+#: with defaults, so other types keep the writer's trimming.
+_PADDED_TYPE_PREFIXES: Final = ("HVACTEMPLATE:", "GROUNDHEATTRANSFER:")
+
+
+def _min_fixed_fields(obj_type: str, pc: ParsingCache | None) -> int:
+    """The number of positional values an IDF object of *obj_type* must carry, name included.
+
+    The schema's ``min_fields`` (the IDD's ``\\min-fields``) for a type a preprocessor reads, capped
+    at the type's fixed fields, and 0 for every other type.
+    """
+    if pc is None or not obj_type.upper().startswith(_PADDED_TYPE_PREFIXES):
+        return 0
+    min_fields = pc.obj_schema.get("min_fields")
+    if not isinstance(min_fields, (int, float)):
+        return 0
+    return min(int(min_fields), len(pc.all_field_names))
+
+
 def _resolve_version_identifier(doc: AnyIDFDocument[bool]) -> str:
     """Read version_identifier from the Version object, falling back to doc.version."""
     version_coll = doc.collections.get("Version")
@@ -725,6 +746,16 @@ class IDFWriter:
                 values.append(self._format_value(value))
                 comments.append(_field_label(field_name))
 
+        # Pad an HVACTemplate object's fixed fields to the schema's ``min_fields`` with blanks, as
+        # IDF Editor does. EnergyPlus fills a short object with defaults, but ExpandObjects reads the
+        # IDF text and stops with a fatal "number of fields in the IDD do not match" when a template
+        # is shorter, so a template built in code never expanded. Padding stops the trimming below
+        # too, on the preserving path as on the plain one: a short template fails either way.
+        min_fields = _min_fixed_fields(obj_type, pc)
+        while len(values) < min_fields:
+            values.append("")
+            comments.append(_field_label(pc.all_field_names[len(comments)]) if pc else "")
+
         # Append extensible groups as positional tokens (legacy IDF layout).
         if wrapper_key and pc and pc.ext_field_names:
             inner_names = pc.ext_field_names
@@ -752,7 +783,7 @@ class IDFWriter:
         # fixed fields with the name subtracted out. Both are right against their own annotations
         # and neither would notice if the other's convention moved, so a change to either belongs
         # in both.
-        while len(values) > max(1, keep_at_least) and values[-1] == "":
+        while len(values) > max(1, keep_at_least, min_fields) and values[-1] == "":
             values.pop()
             comments.pop()
 

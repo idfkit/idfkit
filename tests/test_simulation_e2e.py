@@ -372,3 +372,44 @@ class TestGroundHeatTransferControlWithoutWeather:
         assert list(result.run_dir.glob("*.epw")) == []
         messages = [" ".join((e.message, *e.details)) for e in result.errors.severe]
         assert any("the Slab preprocessor was not run" in m for m in messages)
+
+
+class TestExpandTemplatesBuiltInCode:
+    """HVACTemplate objects built with a few fields set, as the agent reference shows them."""
+
+    @staticmethod
+    def _vav(energyplus: EnergyPlusConfig, system_name: str) -> IDFDocument:
+        from idfkit import new_document
+
+        doc = new_document(version=energyplus.version)
+        doc.add("Zone", "Office")
+        doc.add("HVACTemplate:Thermostat", "T", constant_heating_setpoint=20.0, constant_cooling_setpoint=24.0)
+        doc.add(
+            "HVACTemplate:Zone:VAV",
+            zone_name="Office",
+            template_vav_system_name=system_name,
+            template_thermostat_name="T",
+        )
+        doc.add("HVACTemplate:System:VAV", "AHU-1", cooling_coil_type="ChilledWater", heating_coil_type="HotWater")
+        doc.add("HVACTemplate:Plant:ChilledWaterLoop", "CHW Loop")
+        doc.add("HVACTemplate:Plant:Chiller", "Chiller 1", chiller_type="ElectricCentrifugalChiller", nominal_cop=6.1)
+        doc.add("HVACTemplate:Plant:Tower", "CT-1", tower_type="SingleSpeed")
+        doc.add("HVACTemplate:Plant:HotWaterLoop", "HW Loop")
+        doc.add("HVACTemplate:Plant:Boiler", "Boiler 1", boiler_type="HotWaterBoiler", efficiency=0.9)
+        return doc
+
+    def test_short_templates_expand(self, energyplus: EnergyPlusConfig) -> None:
+        """ExpandObjects stopped on every template shorter than its \\min-fields."""
+        from idfkit.simulation import expand_objects
+
+        expanded = expand_objects(self._vav(energyplus, "AHU-1"), energyplus=energyplus)
+
+        assert len(expanded["PlantLoop"]) == 2
+        assert len(expanded["CondenserLoop"]) == 1
+
+    def test_a_fatal_preprocessor_message_raises(self, energyplus: EnergyPlusConfig) -> None:
+        from idfkit.exceptions import ExpandObjectsError
+        from idfkit.simulation import expand_objects
+
+        with pytest.raises(ExpandObjectsError, match="Could not find air handler name"):
+            expand_objects(self._vav(energyplus, "No Such AHU"), energyplus=energyplus)

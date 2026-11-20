@@ -107,6 +107,10 @@ Equivalent to `doc.expand()`. Useful if you prefer free functions to methods.
 
 All three return a new document whose `filepath` is `None`, even when there was nothing to expand, so a bare `expanded.save()` raises `ValueError` rather than overwriting the source: save it with `save_idf(expanded, path)` or `expanded.save(path)`.
 
+`doc.expand()`, `expand_objects()`, `run_slab_preprocessor()` and `run_basement_preprocessor()` raise `ExpandObjectsError` when `ExpandObjects` reports a *Fatal* `Output:PreprocessorMessage`, such as a zone template naming a system that does not exist or a system with no zone; the error quotes the message. They no longer return a partly expanded model. `run_preprocessing()`, which `simulate()` uses, leaves the message for EnergyPlus, so `simulate()` returns `success=False` instead of raising.
+
+The IDF writer pads every `HVACTemplate:*` and `GroundHeatTransfer:*` object to its schema `min_fields` with blank fields, as IDF Editor does, because `ExpandObjects` reads them from the IDF text and stops on a shorter one ("The number of fields in the IDD do not match"). Set only the fields you need; the blanks take their defaults.
+
 All three require EnergyPlus to be installed (`ExpandObjects` is a C++ binary that ships with EnergyPlus). Discovery is automatic via `$ENERGYPLUS_DIR`, `$PATH`, or standard install locations.
 
 ## Enumerating templates already in a model

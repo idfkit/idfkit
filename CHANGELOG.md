@@ -212,6 +212,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SimulationResult` read a previous run's `eplus.err` and `eplusTable.htm` when a run with
   `output_suffix="L"` or `"D"` reused its `output_dir`, and could take `eplus_perflog.csv` for the CSV;
   `from_directory()` gained `output_suffix=` ([#319](https://github.com/idfkit/idfkit/pull/319)).
+- `write_idf()` padded `HVACTemplate:*` and `GroundHeatTransfer:*` objects to their schema `min_fields`
+  with blank fields, so templates built in code expand instead of stopping `ExpandObjects`.
+  ([#333](https://github.com/idfkit/idfkit/pull/333))
+- `expand_objects()`, `doc.expand()`, `run_slab_preprocessor()` and `run_basement_preprocessor()` raised
+  `ExpandObjectsError` when `ExpandObjects` reported a fatal error, instead of returning a partial model.
+  ([#333](https://github.com/idfkit/idfkit/pull/333))
+- `validate_document()` no longer reported `E009` for EnergyPlus's built-in fluids where it resolves them or for
+  references in fields the object's mode leaves unused, and reported a missing `ScheduleTypeLimits`
+  as the warning `W006`, since EnergyPlus runs such models.
+  ([#333](https://github.com/idfkit/idfkit/pull/333))
 - `create_block()`, `ZonedBlock` and `add_shading_block()` reversed a clockwise footprint instead of
   silently building an inside-out block, and raised `ValueError` for one with no area;
   `validate_document()` warned (`W005`) about a floor facing up or a roof facing down.

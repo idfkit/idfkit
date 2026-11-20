@@ -1247,3 +1247,78 @@ class TestIDFParserBlankOverflow:
 
         with pytest.raises(IDFParseError, match=r"1 extra field\(s\) .*expected at most 1, got 2"):
             parse_idf(path)
+
+
+class TestIDFWriterPadsTemplatesToMinFields:
+    """An HVACTemplate object is written with at least the schema's ``min_fields`` fields.
+
+    EnergyPlus fills a short object with defaults, but ExpandObjects reads the IDF text and stops
+    with a fatal "The number of fields in the IDD do not match the number of fields assumed" on a
+    template shorter than its ``\\min-fields``. The writer trimmed trailing blanks, so every
+    template built in code with a few fields set came out too short to expand.
+    """
+
+    @staticmethod
+    def _object_text(output: str, obj_type: str) -> str:
+        start = output.index(f"{obj_type},")
+        return output[start : output.index(";", start) + 1]
+
+    @staticmethod
+    def _field_count(text: str) -> int:
+        body = "\n".join(line.split("!", 1)[0] for line in text.splitlines())
+        return body.count(",") + body.count(";") - 1
+
+    def test_boiler_is_padded_to_min_fields(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("HVACTemplate:Plant:Boiler", "Boiler 1", boiler_type="HotWaterBoiler", efficiency=0.8)
+        assert doc.schema is not None
+        obj_schema = doc.schema.get_object_schema("HVACTemplate:Plant:Boiler")
+        assert obj_schema is not None
+        min_fields = int(obj_schema["min_fields"])
+
+        text = self._object_text(write_idf(doc), "HVACTemplate:Plant:Boiler")
+
+        assert min_fields == 7
+        assert self._field_count(text) == min_fields
+        assert "!- Fuel Type" in text
+
+    def test_nameless_zone_template_is_padded(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("HVACTemplate:Zone:VAV", zone_name="Office", template_vav_system_name="AHU-1")
+
+        text = self._object_text(write_idf(doc), "HVACTemplate:Zone:VAV")
+
+        assert self._field_count(text) == 32
+
+    def test_round_trip_keeps_the_values(self, tmp_path: Path) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("HVACTemplate:Plant:Boiler", "Boiler 1", boiler_type="HotWaterBoiler", efficiency=0.8)
+        path = tmp_path / "boiler.idf"
+        save_idf(doc, path)
+
+        reread = parse_idf(path)
+        boiler = reread["HVACTemplate:Plant:Boiler"]["Boiler 1"]
+
+        assert boiler.boiler_type == "HotWaterBoiler"
+        assert boiler.efficiency == 0.8
+
+    def test_a_short_template_from_a_file_is_padded_on_an_edit(self, tmp_path: Path) -> None:
+        """The preserving path keeps an author's length, but a short template fails either way."""
+        idf_path = tmp_path / "short.idf"
+        idf_path.write_text(
+            "Version, 24.1;\n\nHVACTemplate:Plant:Boiler, Main Boiler, HotWaterBoiler, autosize, 0.8;\n"
+        )
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["HVACTemplate:Plant:Boiler"]["Main Boiler"].efficiency = 0.85
+
+        text = self._object_text(write_idf(doc), "HVACTemplate:Plant:Boiler")
+
+        assert self._field_count(text) == 7
+
+    def test_other_types_are_still_trimmed(self) -> None:
+        """EnergyPlus reads a short Building with defaults, so it keeps the writer's trimming."""
+        doc = new_document(version=(24, 1, 0))
+
+        text = self._object_text(write_idf(doc), "Building")
+
+        assert self._field_count(text) == 1
