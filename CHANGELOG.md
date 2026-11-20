@@ -95,6 +95,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- A simulation result or `BatchResult` garbage-collected without `cleanup()` deleted its temporary
+  `idfkit_sim_*` run directory and emitted a `ResourceWarning`, instead of leaving it behind. Pass
+  `output_dir` to keep the files ([d7628aa](https://github.com/idfkit/idfkit/commit/d7628aa)).
 - The bundled `developing-with-idfkit` reference created objects through typed collections
   (`doc.zones.add(...)`), and its splitter, mixer and fan examples passed the required fields they
   had left out. ([#355](https://github.com/idfkit/idfkit/pull/355))
@@ -322,6 +325,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A `SimulationResult` copied with `pickle` or `copy.deepcopy` raised `AttributeError` from `close()`
+  and `cleanup()` ([d7628aa](https://github.com/idfkit/idfkit/commit/d7628aa)).
 - `idfkit check` kept a version guard when the `if` test rebound the guarded document with `:=`,
   missing a `C001` in the body ([#321](https://github.com/idfkit/idfkit/pull/321)).
 - `as_version()` given several types matched the release against one and strictness against
