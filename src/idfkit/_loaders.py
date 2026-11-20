@@ -108,6 +108,9 @@ def load_idf(
             reproduce the original
             formatting, comments, and whitespace for unmodified objects. Choice
             normalization does not affect this: an unmodified object is written as read.
+            Without it, ``save()`` over this file drops its ``!`` comments and re-sorts its
+            objects, and warns with [FormattingLossWarning][idfkit.exceptions.FormattingLossWarning]
+            when the file has comments.
         normalize_choices: When ``True`` (the default), each choice value is stored in the
             spelling its schema declares, whatever case the file used: a surface the file
             calls ``WALL`` has ``surface_type == "Wall"``, as its ``Literal`` type says, so an

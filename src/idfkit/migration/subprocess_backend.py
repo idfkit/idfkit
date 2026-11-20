@@ -11,7 +11,9 @@ per-step temporary directory — so that ``audit.out`` and other side-effects
 land in isolation. This allows concurrent migrations against the same
 EnergyPlus install without file collisions. The companion ``V*-Energy+.idd``
 files are symlinked into ``work_dir`` before execution so the Fortran binary
-can still find them via its CWD-relative lookup.
+can still find them via its CWD-relative lookup, together with the
+``Report Variables <from> to <to>.csv`` tables that drive the output-variable
+renames.
 """
 
 from __future__ import annotations
@@ -67,7 +69,7 @@ class SubprocessMigrator:
         binary = self.locate_binary(from_version, to_version)
 
         work_dir.mkdir(parents=True, exist_ok=True)
-        stage_idd_symlinks(self.version_updater_dir, work_dir)
+        stage_transition_files(self.version_updater_dir, work_dir)
         input_idf = work_dir / "in.idf"
         input_idf.write_text(idf_text, encoding="latin-1")
 
@@ -110,6 +112,7 @@ class SubprocessMigrator:
                 stderr=proc.stderr,
             )
 
+        warn_on_missing_companions(proc.stdout, from_version, to_version)
         migrated_text = input_idf.read_text(encoding="latin-1")
         return MigrationStepResult(
             idf_text=migrated_text,
@@ -141,17 +144,48 @@ class SubprocessMigrator:
         raise MigrationError(msg, from_version=from_version, to_version=to_version)
 
 
-def stage_idd_symlinks(version_updater_dir: Path, work_dir: Path) -> None:
-    """Symlink ``V*-Energy+.idd`` files from *version_updater_dir* into *work_dir*.
+#: Companion files the transition binaries read from their working directory: the
+#: ``V*-Energy+.idd`` schemas, and the ``Report Variables <from> to <to>.csv`` tables
+#: that drive the ``Output:Variable`` / ``Output:Meter`` / EMS sensor renames.
+TRANSITION_COMPANION_GLOBS = ("V*-Energy+.idd", "Report Variables *.csv")
 
-    The Fortran transition binaries read their companion IDD relative to CWD.
-    By symlinking the IDDs into the per-step work directory we can set
+
+def stage_transition_files(version_updater_dir: Path, work_dir: Path) -> None:
+    """Symlink the transition binaries' companion files into *work_dir*.
+
+    The Fortran transition binaries read their companion IDDs and the
+    ``Report Variables <from> to <to>.csv`` rename tables relative to CWD. By
+    symlinking them into the per-step work directory we can set
     ``cwd=work_dir``, isolating ``audit.out`` writes between concurrent runs.
+    Without the CSV a binary silently skips every output-variable rename.
     """
-    for idd in version_updater_dir.glob("V*-Energy+.idd"):
-        link = work_dir / idd.name
-        if not link.exists():
-            link.symlink_to(idd)
+    for pattern in TRANSITION_COMPANION_GLOBS:
+        for companion in version_updater_dir.glob(pattern):
+            link = work_dir / companion.name
+            if not link.exists():
+                link.symlink_to(companion)
+
+
+def warn_on_missing_companions(
+    stdout: str | None,
+    from_version: tuple[int, int, int],
+    to_version: tuple[int, int, int],
+) -> None:
+    """Log a warning when a transition binary reports a missing companion file.
+
+    The binaries exit 0 when the ``Report Variables`` CSV is missing and just
+    skip the output-variable renames, so the message on stdout is the only sign.
+    """
+    if not stdout:
+        return
+    for line in stdout.splitlines():
+        if "not found" in line and "file=" in line:
+            logger.warning(
+                "Transition %s -> %s: %s Output variable renames for this step were skipped.",
+                ".".join(map(str, from_version)),
+                ".".join(map(str, to_version)),
+                line.strip(),
+            )
 
 
 def binary_candidates(

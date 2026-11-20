@@ -15,15 +15,21 @@ accept an *output_type* parameter that mirrors eppy's ``idf.outputtype`` options
 
 from __future__ import annotations
 
+import inspect
 import json
 import logging
+import math
 import os
+import re
+import warnings
 from dataclasses import dataclass
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, Literal, cast
 
+from ._finite import non_finite_fields, non_finite_message
 from ._idf_encoding import source_encoding, source_newline
+from .exceptions import FormattingLossWarning
 from .objects import is_blank_slot
 
 logger = logging.getLogger(__name__)
@@ -267,7 +273,9 @@ def write_idf(
             document that carries a CST while *indent*, *comment_column*,
             *ordering* or *version_first* is away from its default.
             Reproducing the original text and reformatting it are
-            contradictory requests.
+            contradictory requests. Also when a name or value holds ``,``,
+            ``;`` or ``!``, or a number is NaN or infinity, none of which
+            IDF can express; the message names the object and field.
 
     Examples:
         Serialize the model to an IDF string for inspection:
@@ -381,6 +389,12 @@ def save_idf(
             ending of the IDF file the document was read from, so a Windows file stays CRLF, and the
             platform's own for a document not read from an IDF file.
 
+    Warns:
+        FormattingLossWarning: *path* is the IDF file the document was read from, it has ``!``
+            comments, and the document was loaded without ``preserve_formatting=True``: the
+            write drops them and re-sorts the objects. Not warned when *preserve_formatting* is
+            given, which says the caller chose.
+
     Raises:
         TypeError: If *doc* is not a document, as when the arguments are swapped.
         ValueError: If *path* ends in ``.epJSON`` or ``.json``, which EnergyPlus reads as epJSON:
@@ -423,6 +437,11 @@ def save_idf(
         preserve_formatting,
         formatting_requested=_formatting_requested(indent, comment_column, ordering, version_first),
     )
+    # A document holding its source text (preserve_formatting=True) and written in another layout
+    # was reformatted on request (output_type or a layout control), so only a document loaded
+    # without its source text warns.
+    if not lossless and preserve_formatting is None and doc.cst is None:
+        _warn_on_overwriting_comments(doc, path)
     if encoding is None:
         # A byte-order mark the source had is part of its text, so only a lossless rewrite keeps it.
         encoding = source_encoding(doc, bom=lossless)
@@ -433,6 +452,48 @@ def save_idf(
     with open(path, "w", encoding=encoding, newline="") as f:
         f.write(content)
     logger.info("Wrote IDF (%d objects) to %s", len(doc), path)
+
+
+#: A line holding a comment someone wrote: a ``!`` not followed by ``-``. ``!-`` field labels are
+#: what the writer generates itself, so losing those loses nothing.
+_AUTHOR_COMMENT_LINE = re.compile(rb"^[^\n!]*!(?!-)", re.MULTILINE)
+
+
+def _warn_on_overwriting_comments(doc: AnyIDFDocument[bool], path: Path) -> None:
+    """Warn when *path* is the file *doc* was read from and it holds comments a write would drop.
+
+    Only the document's own source counts: writing over another file is a choice the caller made
+    by naming it. The file is read here, at save time, so a document read with
+    ``preserve_formatting=False`` pays nothing at load for a check most never need.
+    """
+    source = doc.filepath
+    if source is None or source.suffix.lower() != ".idf" or not path.is_file():
+        return
+    try:
+        if not path.samefile(source):
+            return
+        data = path.read_bytes()
+    except OSError:
+        return
+    count = len(_AUTHOR_COMMENT_LINE.findall(data))
+    if count:
+        warnings.warn(FormattingLossWarning(str(path), count), stacklevel=_first_caller_outside_idfkit())
+
+
+def _first_caller_outside_idfkit() -> int:
+    """The ``stacklevel`` of the first frame outside the idfkit package, for a warning's location.
+
+    ``model.save()`` reaches ``save_idf()`` through the compatibility layer, so a fixed level would
+    point the warning into idfkit for one route or the other.
+    """
+    package = str(Path(__file__).resolve().parent)
+    frame = inspect.currentframe()
+    level = 0
+    while frame is not None and str(Path(frame.f_code.co_filename).resolve()).startswith(package):
+        frame = frame.f_back
+        level += 1
+    # Counting this helper's own frame makes up for the caller of warnings.warn being level 1.
+    return max(level, 1)
 
 
 def write_epjson(
@@ -462,6 +523,8 @@ def write_epjson(
     Raises:
         TypeError: If *doc* is not a document, or *indent* is not an indent, as when
             a path is passed where [save_epjson][idfkit.writers.save_epjson] takes one.
+        ValueError: A number is NaN or infinity, which JSON cannot express; the
+            message names the object and field.
 
     Examples:
         Serialize the model to epJSON for use with EnergyPlus v9.3+:
@@ -500,10 +563,10 @@ def write_epjson(
 
     # Fall back to standard writer.
     writer = EpJSONWriter(doc)
-    data = writer.to_dict()
+    text = writer.to_json(indent)
 
     logger.debug("Serialized epJSON (%d objects) to string", len(doc))
-    return json.dumps(data, indent=indent)
+    return text
 
 
 def save_epjson(
@@ -706,6 +769,26 @@ def _idf_text(obj: IDFObject, field_name: str, text: str) -> str:
         )
         raise ValueError(msg)
     return text
+
+
+def _check_finite(obj: IDFObject, field_name: str, value: Any) -> None:
+    """Raise a ``ValueError`` naming the object and field when *value* is NaN or infinity.
+
+    The value would be written as ``nan`` or ``inf``, which EnergyPlus does not read as a number:
+    the run then fails far from the cause, as ``Illegal construction definition`` for a NaN
+    thickness. A list (a legacy vertex list) is checked item by item.
+    """
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError(non_finite_message(_where(obj), field_name, value))
+    elif isinstance(value, list):
+        for item in cast("list[Any]", value):
+            _check_finite(obj, field_name, item)
+
+
+def _where(obj: IDFObject) -> str:
+    """``Material 'Brick'``: the object a writer error is about, for its message."""
+    return f"{obj.obj_type} {obj.name!r}" if obj.name else obj.obj_type
 
 
 def _write_idf_lossless(doc: AnyIDFDocument[bool], field_comments: FieldComments = "preserve") -> str:
@@ -918,6 +1001,7 @@ class IDFWriter:
                 continue
             else:
                 value = obj.data.get(field_name)
+                _check_finite(obj, field_name, value)
                 text = self._format_value(value)
                 # A list is joined with commas on purpose; only a single value must not hold one.
                 values.append(text if isinstance(value, list) else _idf_text(obj, field_name, text))
@@ -942,7 +1026,9 @@ class IDFWriter:
                 for group_idx, item in enumerate(ext_items, start=1):
                     suffix = "" if group_idx == 1 else f" {group_idx}"
                     for inner in inner_names:
-                        values.append(_idf_text(obj, inner, self._format_value(item.get(inner))))
+                        slot = item.get(inner)
+                        _check_finite(obj, inner, slot)
+                        values.append(_idf_text(obj, inner, self._format_value(slot)))
                         comments.append(f"{_field_label(inner)}{suffix}")
 
         # Trim trailing empty fields, but never below what the author actually wrote.
@@ -1266,11 +1352,29 @@ class EpJSONWriter:
             return int(value)
         return value
 
-    def write_to_file(self, filepath: Path | str, indent: int = 2) -> None:
-        """Write to file."""
+    def to_json(self, indent: int | str | None = 2) -> str:
+        """The document as epJSON text.
+
+        Raises:
+            ValueError: A field holds NaN or infinity, which JSON cannot express (``json`` would
+                write ``NaN``, which EnergyPlus's epJSON reader refuses). The message names the
+                object and field.
+        """
         data = self.to_dict()
+        try:
+            return json.dumps(data, indent=indent, allow_nan=False)
+        except ValueError:
+            # Found only on failure, so a clean document pays nothing for the search.
+            for obj in self._doc.all_objects:
+                for field_name, value in non_finite_fields(obj.data):
+                    raise ValueError(non_finite_message(_where(obj), field_name, value)) from None
+            raise
+
+    def write_to_file(self, filepath: Path | str, indent: int | str | None = 2) -> None:
+        """Write to file."""
+        text = self.to_json(indent)
         with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=indent)
+            f.write(text)
 
 
 def convert_idf_to_epjson(

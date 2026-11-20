@@ -120,7 +120,7 @@ Common codes (see `ValidationError.code`):
 
 - `E001` — required field missing or blank, including a blank name on a type whose schema requires one (`field == "name"`)
 - `E002` — value matches none of a field's permitted types
-- `E003` — type mismatch on a single-typed field
+- `E003` — type mismatch on a single-typed field; also a NaN or infinity in any numeric field or extensible group slot (`field` names the slot as `vertices[2].vertex_z_coordinate`), which only a write straight into `obj.data` can store
 - `E004` — value not among a field's permitted values
 - `E005` — below the minimum; `E006` — not above an exclusive minimum
 - `E007` — above the maximum; `E008` — not below an exclusive maximum

@@ -20,7 +20,13 @@ from pathlib import Path
 
 from ..exceptions import MigrationError
 from .protocol import MigrationStepResult
-from .subprocess_backend import DEFAULT_STEP_TIMEOUT, binary_candidates, collect_audit_text, stage_idd_symlinks
+from .subprocess_backend import (
+    DEFAULT_STEP_TIMEOUT,
+    binary_candidates,
+    collect_audit_text,
+    stage_transition_files,
+    warn_on_missing_companions,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +65,7 @@ class AsyncSubprocessMigrator:
         binary = self.locate_binary(from_version, to_version)
 
         await asyncio.to_thread(work_dir.mkdir, parents=True, exist_ok=True)
-        await asyncio.to_thread(stage_idd_symlinks, self.version_updater_dir, work_dir)
+        await asyncio.to_thread(stage_transition_files, self.version_updater_dir, work_dir)
         input_idf = work_dir / "in.idf"
         await asyncio.to_thread(input_idf.write_text, idf_text, "latin-1")
 
@@ -125,6 +131,7 @@ class AsyncSubprocessMigrator:
                 stderr=stderr,
             )
 
+        warn_on_missing_companions(stdout, from_version, to_version)
         migrated_text = await asyncio.to_thread(input_idf.read_text, "latin-1")
         audit_text = await asyncio.to_thread(collect_audit_text, work_dir)
         return MigrationStepResult(
