@@ -84,13 +84,11 @@ A loop with a missing branch-list entry simulates and produces silently wrong re
 Splitter/mixer pairs define the parallel paths in an air or water loop. Each names branches via extensible fields:
 
 ```python
-splitter = doc.add("Connector:Splitter", "CHW Loop Splitter")
-splitter.inlet_branch_name = "CHW Loop Supply Inlet Branch"
+splitter = doc.connector_splitters.add("CHW Loop Splitter", inlet_branch_name="CHW Loop Supply Inlet Branch")
 splitter.branches.append(outlet_branch_name="Chiller 1 Branch")
 splitter.branches.append(outlet_branch_name="Chiller 2 Branch")
 
-mixer = doc.add("Connector:Mixer", "CHW Loop Mixer")
-mixer.outlet_branch_name = "CHW Loop Supply Outlet Branch"
+mixer = doc.connector_mixers.add("CHW Loop Mixer", outlet_branch_name="CHW Loop Supply Outlet Branch")
 mixer.branches.append(inlet_branch_name="Chiller 1 Branch")
 mixer.branches.append(inlet_branch_name="Chiller 2 Branch")
 ```
@@ -105,8 +103,7 @@ Neither `validate_document` nor `get_referencing` sees node names, so neither is
 
 ```python
 # Coil names node A and node B
-coil = doc.add(
-    "Coil:Cooling:Water",
+coil = doc.coil_cooling_waters.add(
     "AHU-1 Cooling Coil",
     availability_schedule_name="Always On",
     water_inlet_node_name="CHW Inlet Node",
@@ -116,9 +113,9 @@ coil = doc.add(
     # ...
 )
 # Adjacent component must declare the same air outlet name as its inlet
-fan = doc.add(
-    "Fan:VariableVolume",
+fan = doc.fan_variable_volumes.add(
     "AHU-1 Fan",
+    pressure_rise=600.0,
     air_inlet_node_name="AHU-1 Cooling Coil Outlet Node",  # MATCHES coil.air_outlet_node_name
     air_outlet_node_name="AHU-1 Supply Outlet Node",
     # ...

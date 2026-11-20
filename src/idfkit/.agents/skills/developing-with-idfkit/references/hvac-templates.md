@@ -21,14 +21,14 @@ doc = new_document()
 
 # new_document() has no RunPeriod; without one (or design days with design_day=True)
 # simulate() refuses the run, as EnergyPlus would have nothing to simulate.
-doc.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
+doc.run_periods.add("Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
 
 # Single Thermostat shared by every zone
-doc.add("HVACTemplate:Thermostat", "OfficeT", constant_heating_setpoint=20.0, constant_cooling_setpoint=24.0)
+doc.hvac_template_thermostats.add("OfficeT", constant_heating_setpoint=20.0, constant_cooling_setpoint=24.0)
 
 # IdealLoadsAirSystem: no plant loops needed. Best for parametric studies.
 for zone in doc["Zone"]:
-    doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name=zone.name, template_thermostat_name="OfficeT")
+    doc.hvac_template_zone_ideal_loads_air_systems.add(zone_name=zone.name, template_thermostat_name="OfficeT")
 
 result = simulate(doc, "weather.epw", expand_objects=True)
 ```
@@ -90,8 +90,7 @@ For full I/O Reference, see [docs.idfkit.com/io-reference/hvac-template-objects/
 
 ```python
 # Thermostat (shared)
-doc.add(
-    "HVACTemplate:Thermostat",
+doc.hvac_template_thermostats.add(
     "OfficeT",
     heating_setpoint_schedule_name="OfficeHtgSetpt",
     cooling_setpoint_schedule_name="OfficeClgSetpt",
@@ -99,8 +98,7 @@ doc.add(
 
 # Zone equipment — one per zone
 for zone in doc["Zone"]:
-    doc.add(
-        "HVACTemplate:Zone:VAV",
+    doc.hvac_template_zone_vavs.add(
         zone_name=zone.name,
         template_vav_system_name="AHU-1",
         template_thermostat_name="OfficeT",
@@ -109,8 +107,7 @@ for zone in doc["Zone"]:
     )
 
 # Air-side system
-doc.add(
-    "HVACTemplate:System:VAV",
+doc.hvac_template_system_vavs.add(
     "AHU-1",
     cooling_coil_type="ChilledWater",
     heating_coil_type="HotWater",
@@ -120,25 +117,22 @@ doc.add(
 )
 
 # Water-side loops + sources
-doc.add(
-    "HVACTemplate:Plant:ChilledWaterLoop",
+doc.hvac_template_plant_chilled_water_loop.add(
     "CHW Loop",
     chilled_water_design_setpoint=6.7,
     condenser_water_design_setpoint=29.4,
 )
-doc.add(
-    "HVACTemplate:Plant:Chiller",
+doc.hvac_template_plant_chillers.add(
     "Chiller 1",
     chiller_type="ElectricCentrifugalChiller",
     capacity="Autosize",
     nominal_cop=6.1,
     condenser_type="WaterCooled",
 )
-doc.add("HVACTemplate:Plant:Tower", "CT-1", tower_type="SingleSpeed", high_speed_nominal_capacity="Autosize")
+doc.hvac_template_plant_towers.add("CT-1", tower_type="SingleSpeed", high_speed_nominal_capacity="Autosize")
 
-doc.add("HVACTemplate:Plant:HotWaterLoop", "HW Loop", hot_water_design_setpoint=82.0)
-doc.add(
-    "HVACTemplate:Plant:Boiler",
+doc.hvac_template_plant_hot_water_loop.add("HW Loop", hot_water_design_setpoint=82.0)
+doc.hvac_template_plant_boilers.add(
     "Boiler 1",
     boiler_type="HotWaterBoiler",
     capacity="Autosize",
@@ -230,7 +224,7 @@ The `simulate(doc, ..., expand_objects=True)` path expands a copy for EnergyPlus
 !!! success "pick one approach per zone"
 
     ```python
-    doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name="Office", template_thermostat_name="OfficeT")
+    doc.hvac_template_zone_ideal_loads_air_systems.add(zone_name="Office", template_thermostat_name="OfficeT")
     # ... or write the ZoneHVAC:IdealLoadsAirSystem by hand, but not both.
     ```
 

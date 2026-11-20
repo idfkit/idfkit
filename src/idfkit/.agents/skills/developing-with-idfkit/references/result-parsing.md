@@ -362,8 +362,8 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
 !!! success "add the output, or discover what's available"
 
     ```python
-    doc.add(
-        "Output:Variable", key_value="*", variable_name="Zone Cooling Set Point Not Met Time", reporting_frequency="Hourly"
+    doc.output_variables.add(
+        key_value="*", variable_name="Zone Cooling Set Point Not Met Time", reporting_frequency="Hourly"
     )
     # Or check result.variables (after running with Output:VariableDictionary)
     ```

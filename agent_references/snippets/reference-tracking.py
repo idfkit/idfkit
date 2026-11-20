@@ -64,7 +64,7 @@ doc["Zone"]["Office"].name = "Open_Office"
 
 
 # --8<-- [start:rename-shared-name]
-doc.add("Construction", "Concrete", outside_layer="Concrete")  # named like its Material
+doc.constructions.add("Concrete", outside_layer="Concrete")  # named like its Material
 doc["Material"]["Concrete"].name = "Concrete 200mm"
 # Construction "Concrete".outside_layer is now "Concrete 200mm";
 # every surface's construction_name still says "Concrete", the Construction.

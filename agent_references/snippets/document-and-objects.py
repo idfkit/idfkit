@@ -34,8 +34,7 @@ save_idf(doc, "out.idf")
 
 
 # --8<-- [start:add-object]
-material = doc.add(
-    "Material",
+material = doc.materials.add(
     "XPS_50mm",
     roughness="Rough",
     thickness=0.05,
@@ -138,8 +137,7 @@ doc.rename("Zone", "Office", "OpenPlanArea")
 
 
 # --8<-- [start:extensible]
-surface = doc.add(
-    "BuildingSurface:Detailed",
+surface = doc.building_surfaces.add(
     "South Wall",
     surface_type="Wall",
     construction_name="ExtWall",
@@ -314,7 +312,7 @@ def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
     empty model of any release, and the body below is type-checked.
     """
     if "Output:SQLite" not in doc:
-        doc.add("Output:SQLite", option_type="SimpleAndTabular")
+        doc["Output:SQLite"].add(option_type="SimpleAndTabular")
 
 
 def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:

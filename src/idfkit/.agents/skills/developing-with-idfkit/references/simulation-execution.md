@@ -112,7 +112,7 @@ result = simulate(doc, design_day=True)
 
 # Full annual run — minutes. annual=True needs a RunPeriod (new_document() adds none)
 if "RunPeriod" not in doc:
-    doc.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
+    doc.run_periods.add("Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
 result = simulate(doc, "weather.epw", annual=True)
 
 # Default (both flags False) — governed by SimulationControl in the IDF: the sizing periods,

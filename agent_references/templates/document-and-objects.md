@@ -42,7 +42,7 @@ The `IDFDocument` is the in-memory representation of an EnergyPlus model. Every 
 
 ## Adding objects
 
-`doc.add()` is the canonical constructor. Pass field values as keyword arguments using Python snake_case names (`x_origin`, not `"X Origin"`):
+`doc.add(obj_type, ...)` is the canonical constructor, and the type's collection (`doc.materials.add(...)`, `doc["Material"].add(...)`) is its typed form, used in the examples here (see [Typed creation through the collection](#typed-creation-through-the-collection)). Pass field values as keyword arguments using Python snake_case names (`x_origin`, not `"X Origin"`):
 
 ```python
 --8<-- "agent_references/snippets/document-and-objects.py:add-object"

@@ -5,6 +5,7 @@ Executes EnergyPlus as a subprocess and returns structured results.
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 import subprocess
 import tempfile
@@ -438,19 +439,9 @@ def _simulate_local(
 def _publish(local: SimulationResult, remote_dir: Path, fs: FileSystem, weather_path: Path | None) -> SimulationResult:
     """Upload a local result's outputs to *remote_dir* on *fs* and return a result that reads them there."""
     upload_results(local.run_dir, remote_dir, fs, exclude=publish_exclude(weather_path))
-    return SimulationResult(
-        run_dir=remote_dir,
-        success=local.success,
-        exit_code=local.exit_code,
-        stdout=local.stdout,
-        stderr=local.stderr,
-        runtime_seconds=local.runtime_seconds,
-        output_prefix=local.output_prefix,
-        fs=fs,
-        migration_report=local.migration_report,
-        output_suffix=local.output_suffix,
-        cached=local.cached,
-    )
+    # replace() carries every field of the local result, so one added to SimulationResult later
+    # reaches the published result without this function naming it.
+    return dataclasses.replace(local, run_dir=remote_dir, fs=fs, async_fs=None, owns_run_dir=False)
 
 
 def _run_simple(

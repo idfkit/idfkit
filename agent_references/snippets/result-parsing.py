@@ -270,8 +270,8 @@ if result.sql_path is not None:
 
 
 # --8<-- [start:mistake-variable-good]
-doc.add(
-    "Output:Variable", key_value="*", variable_name="Zone Cooling Set Point Not Met Time", reporting_frequency="Hourly"
+doc.output_variables.add(
+    key_value="*", variable_name="Zone Cooling Set Point Not Met Time", reporting_frequency="Hourly"
 )
 # Or check result.variables (after running with Output:VariableDictionary)
 # --8<-- [end:mistake-variable-good]

@@ -113,7 +113,7 @@ Renaming an object that nothing references is also fine — it just updates the 
 Names are unique per type, not per model: a single-layer `Construction` is often named like its `Material`, and a `Zone` and a `Schedule` can both be `Office`. A rename rewrites only the fields whose `object_list` the renamed type's name belongs to (or a related type EnergyPlus also accepts there, such as a window in a `SurfaceNames` field), and the fields pointing into a list that a following field re-declares the name into (an `HVACTemplate:Zone:*`'s `zone_name` fills the template system's control-zone list). Renaming the Material leaves every surface's `construction_name` on the Construction:
 
 ```python
-doc.add("Construction", "Concrete", outside_layer="Concrete")  # named like its Material
+doc.constructions.add("Concrete", outside_layer="Concrete")  # named like its Material
 doc["Material"]["Concrete"].name = "Concrete 200mm"
 # Construction "Concrete".outside_layer is now "Concrete 200mm";
 # every surface's construction_name still says "Concrete", the Construction.

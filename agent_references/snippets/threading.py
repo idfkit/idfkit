@@ -48,7 +48,7 @@ doc_lock = threading.Lock()
 
 def add_zone(name: str) -> None:
     with doc_lock:
-        doc.add("Zone", name)
+        doc.zones.add(name)
 
 
 with ThreadPoolExecutor() as pool:

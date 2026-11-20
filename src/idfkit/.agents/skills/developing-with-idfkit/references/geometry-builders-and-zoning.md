@@ -262,7 +262,7 @@ region_surfaces, remaining_surfaces = split_horizontal_surface_by_regions(
     ```python
     create_block(doc, "Office", footprint_rectangle(50, 30), floor_to_floor=3.5, num_stories=3)
     for zone in doc["Zone"]:
-        doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name=zone.name, template_thermostat_name="OfficeThermostat")
+        doc.hvac_template_zone_ideal_loads_air_systems.add(zone_name=zone.name, template_thermostat_name="OfficeThermostat")
     ```
 
 See [hvac-templates.md](hvac-templates.md).
