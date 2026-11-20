@@ -330,6 +330,12 @@ class TestSimulateBatch:
         with pytest.raises(OutputNotFoundError, match="this batch job was cancelled"):
             _ = r.sql
 
+    def test_cancelled_result_carries_the_job_output_suffix(self) -> None:
+        """A cancelled job's result reports the job's output style, like a failed job's does."""
+        job = SimulationJob(model=runnable_model(), output_suffix="L")
+        r = cancelled_job_result(job, "job 'a' failed", started=True)
+        assert r.output_suffix == "L"
+
     def test_stopped_result_of_a_job_that_never_ran(self) -> None:
         job = SimulationJob(model=runnable_model())
         placeholder = cancelled_job_result(job, "the batch was stopped", started=False)
