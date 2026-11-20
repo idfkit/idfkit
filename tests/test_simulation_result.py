@@ -798,6 +798,22 @@ class TestOutputFileNaming:
         result = SimulationResult.from_directory(tmp_path)
         assert result.html_path == tmp_path / "eplusTable.htm"
 
+    @pytest.mark.parametrize("style", sorted(_STYLE_FILES))
+    def test_known_style_wins_over_stale_outputs_of_another(self, tmp_path: Path, style: str) -> None:
+        """A run of a known style finds its own outputs, whatever another style left in the directory."""
+        for files in _STYLE_FILES.values():
+            for name in files:
+                (tmp_path / name).write_text("x")
+        result = SimulationResult.from_directory(tmp_path, output_suffix=style)  # type: ignore[arg-type]
+        err, csv, htm = _STYLE_EXPECTED[style]
+        assert result.err_path == tmp_path / err
+        assert result.csv_path == tmp_path / csv
+        assert result.html_path == tmp_path / htm
+
+    def test_fallback_skips_perflog(self, tmp_path: Path) -> None:
+        (tmp_path / "eplus_perflog.csv").write_text("x")
+        assert _make_result(tmp_path).csv_path is None
+
     def test_missing_local_run_dir_raises(self, tmp_path: Path) -> None:
         """A run directory that does not exist is an error, not an empty result."""
         with pytest.raises(FileNotFoundError):

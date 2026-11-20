@@ -272,6 +272,7 @@ class SimulationCache:
                 stderr="",
                 runtime_seconds=meta["runtime_seconds"],
                 output_prefix=meta["output_prefix"],
+                output_suffix=meta.get("output_suffix"),
             )
         except (json.JSONDecodeError, KeyError, OSError):
             # Corrupted or incomplete cache entry — remove it so that
@@ -310,6 +311,7 @@ class SimulationCache:
                 "exit_code": result.exit_code,
                 "runtime_seconds": result.runtime_seconds,
                 "output_prefix": result.output_prefix,
+                "output_suffix": result.output_suffix,
             }
             meta_path = tmp_dir / self._META_FILE
             meta_path.write_text(json.dumps(meta), encoding="utf-8")
