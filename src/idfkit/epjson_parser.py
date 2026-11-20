@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 from .document import AnyIDFDocument, IDFDocument
-from .exceptions import VersionNotFoundError
+from .exceptions import IDFParseError, ParseDiagnostic, VersionNotFoundError, closest_name
 from .objects import IDFObject, drop_blank_group_slots, is_blank_slot
 from .schema import canonicalize_choices
 
@@ -30,6 +30,7 @@ def parse_epjson(
     version: tuple[int, int, int] | None = None,
     strict: bool = True,
     *,
+    strict_parsing: bool = True,
     preserve_formatting: bool = False,
     normalize_choices: bool = True,
 ) -> IDFDocument:
@@ -43,6 +44,10 @@ def parse_epjson(
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
             of returning ``None``.
+        strict_parsing: When ``True`` (the default), an object type the schema does not
+            have raises :class:`~idfkit.exceptions.IDFParseError`, as :func:`~idfkit.load_idf`
+            does, and the message suggests the closest type; EnergyPlus refuses such a file.
+            ``False`` skips it with a logged warning.
         preserve_formatting: If ``True``, store the raw JSON text so that
             :func:`~idfkit.writers.write_epjson` and
             :func:`~idfkit.writers.save_epjson` can reproduce it
@@ -56,6 +61,7 @@ def parse_epjson(
 
     Raises:
         VersionNotFoundError: If version cannot be detected
+        IDFParseError: For an object type the schema does not have, with *strict_parsing*
         IdfKitError: If parsing fails
 
     Examples:
@@ -76,7 +82,11 @@ def parse_epjson(
 
     parser = EpJSONParser(filepath, schema)
     return parser.parse(
-        version, strict=strict, preserve_formatting=preserve_formatting, normalize_choices=normalize_choices
+        version,
+        strict=strict,
+        strict_parsing=strict_parsing,
+        preserve_formatting=preserve_formatting,
+        normalize_choices=normalize_choices,
     )
 
 
@@ -147,6 +157,7 @@ class EpJSONParser:
         version: tuple[int, int, int] | None = None,
         *,
         strict: bool = True,
+        strict_parsing: bool = True,
         preserve_formatting: bool = False,
         normalize_choices: bool = True,
     ) -> IDFDocument:
@@ -156,6 +167,7 @@ class EpJSONParser:
         Args:
             version: Optional version override
             strict: Enforce strict field access on the resulting document.
+            strict_parsing: Raise on an object type the schema does not have, rather than skip it.
             preserve_formatting: Store raw JSON text for lossless round-tripping.
             normalize_choices: Store each choice value in the spelling its schema declares.
 
@@ -192,7 +204,7 @@ class EpJSONParser:
         )
 
         # Parse objects
-        self._parse_objects(data, doc, schema, normalize_choices=normalize_choices)
+        self._parse_objects(data, doc, schema, strict_parsing=strict_parsing, normalize_choices=normalize_choices)
 
         # Store raw text for lossless round-tripping (opt-in).
         if preserve_formatting:
@@ -240,9 +252,13 @@ class EpJSONParser:
         doc: AnyIDFDocument,
         schema: EpJSONSchema | None,
         *,
+        strict_parsing: bool = True,
         normalize_choices: bool = True,
     ) -> None:
         """Parse all objects from epJSON data into document.
+
+        An object type *schema* does not have raises with *strict_parsing*, and is skipped
+        without, as the IDF parser treats one.
 
         With *normalize_choices*, each choice is stored in the spelling its schema declares, as the
         IDF parser stores it. EnergyPlus's own epJSON is already canonical; a hand-written or
@@ -261,16 +277,18 @@ class EpJSONParser:
             base_field_names: tuple[str, ...] | None = None
             ref_fields: frozenset[str] | None = None
             has_name = True
-            if schema:
-                pc = schema.get_parsing_cache(obj_type)
-                if pc is not None:
-                    obj_schema = pc.obj_schema
-                    has_name = pc.has_name
-                    base_field_names = pc.field_names if has_name else pc.all_field_names
-                    ref_fields = pc.ref_fields
-
             # epJSON format: {"ObjectType": {"obj_name": {fields...}, ...}}
             objects_dict = cast(dict[str, Any], objects)
+            if schema:
+                pc = schema.get_parsing_cache(obj_type)
+                if pc is None:
+                    self._unknown_type(obj_type, objects_dict, schema, strict_parsing=strict_parsing)
+                    continue
+                obj_schema = pc.obj_schema
+                has_name = pc.has_name
+                base_field_names = pc.field_names if has_name else pc.all_field_names
+                ref_fields = pc.ref_fields
+
             for obj_name, fields in objects_dict.items():
                 if not isinstance(fields, dict):
                     continue
@@ -308,6 +326,27 @@ class EpJSONParser:
                 )
 
                 addidfobject(obj)
+
+    def _unknown_type(
+        self, obj_type: str, objects: dict[str, Any], schema: EpJSONSchema, *, strict_parsing: bool
+    ) -> None:
+        """Raise for an object type *schema* does not have, or, without *strict_parsing*, log it."""
+        suggestion = closest_name(obj_type, schema.object_types)
+        message = f"Unknown object type '{obj_type}'"
+        if suggestion is not None:
+            message += f". Did you mean '{suggestion}'?"
+        if not strict_parsing:
+            logger.warning("%s in %s; skipped %d object(s)", message, self._filepath, len(objects))
+            return
+        diagnostic = ParseDiagnostic(
+            message=message,
+            filepath=str(self._filepath),
+            obj_type=obj_type,
+            obj_name=next(iter(objects), None),
+            code="UnknownObjectType",
+        )
+        summary = "Failed to parse epJSON"
+        raise IDFParseError(summary, diagnostics=[diagnostic])
 
 
 def load_epjson(filepath: Path | str) -> dict[str, Any]:

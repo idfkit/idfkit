@@ -16,7 +16,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from ._surface_types import VERTEX_SURFACE_TYPES
+from ._surface_types import VERTEX_SURFACE_TYPES, is_fenestration_door
 from .geometry import (
     Polygon3D,
     Vector3D,
@@ -152,29 +152,52 @@ def add_shading_block(
 # ---------------------------------------------------------------------------
 
 
-def set_default_constructions(doc: AnyIDFDocument, construction_name: str = "Default Construction") -> int:
-    """Assign a placeholder construction to surfaces that lack one.
+def set_default_constructions(
+    doc: AnyIDFDocument,
+    construction_name: str = "Default Construction",
+    *,
+    window_construction: str | None = None,
+) -> int:
+    """Assign placeholder constructions to surfaces that lack one.
 
-    Iterates all ``BuildingSurface:Detailed`` and
-    ``FenestrationSurface:Detailed`` objects and sets
-    ``construction_name`` for any whose current value is empty or ``None``.
+    Sets ``construction_name`` on every ``BuildingSurface:Detailed`` (walls, floors, roofs and
+    ceilings alike) and every door ``FenestrationSurface:Detailed`` whose construction is empty.
+    Windows, glass doors and tubular daylighting surfaces need a window construction, which
+    EnergyPlus refuses an opaque one for, so they get *window_construction* when it is given and
+    are left unset otherwise (``validate_document`` then reports them as missing a required field).
 
-    Does **not** create the ``Construction`` object itself — the caller
-    is responsible for ensuring it exists.
+    Does **not** create the ``Construction`` objects — the caller is responsible for ensuring
+    they exist; ``validate_document`` reports one that does not (``E009``).
 
     Args:
         doc: The document to modify.
-        construction_name: Name of the construction to assign.
+        construction_name: Name of the opaque construction to assign.
+        window_construction: Name of a window construction (one with a ``WindowMaterial`` layer)
+            for glazed fenestration. ``None`` leaves glazed fenestration unassigned.
 
     Returns:
         Number of surfaces updated.
+
+    Examples:
+        >>> from idfkit import create_block, new_document, set_wwr
+        >>> doc = new_document()
+        >>> _ = create_block(doc, "B", [(0, 0), (10, 0), (10, 10), (0, 10)], floor_to_floor=3)
+        >>> _ = set_wwr(doc, 0.3)
+        >>> set_default_constructions(doc, "Opaque", window_construction="Glazing")
+        10
     """
     count = 0
-    for stype in ("BuildingSurface:Detailed", "FenestrationSurface:Detailed"):
-        for srf in doc[stype]:
-            if not srf.get("Construction Name"):
-                srf.construction_name = construction_name
-                count += 1
+    for srf in doc["BuildingSurface:Detailed"]:
+        if not srf.get("Construction Name"):
+            srf.construction_name = construction_name
+            count += 1
+    for srf in doc["FenestrationSurface:Detailed"]:
+        if srf.get("Construction Name"):
+            continue
+        name = construction_name if is_fenestration_door(srf) else window_construction
+        if name is not None:
+            srf.construction_name = name
+            count += 1
     return count
 
 

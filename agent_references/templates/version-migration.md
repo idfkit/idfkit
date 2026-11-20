@@ -151,5 +151,5 @@ The default `SubprocessMigrator` shells out to the binaries shipped with the ins
 
 - [simulation-execution.md](simulation-execution.md) — `auto_migrate=True` for transparent migration.
 - [parsing-idf-epjson.md](parsing-idf-epjson.md) — explicit version override at load time.
-- CLI: `idfkit migrate <input.idf> <target_version>` migrates from the shell.
+- CLI: `idfkit migrate <input.idf> [--to VERSION] [--energyplus PATH]` migrates from the shell. Without `--to` it targets the version of the EnergyPlus installation it uses, the newest that installation can simulate and migrate to. A chain with a step the installation has no transition binary for fails before any step runs.
 - API docs: [py.idfkit.com/api/migration/](https://py.idfkit.com/api/migration/)

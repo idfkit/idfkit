@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, overload
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
 from ._reparse import parse_migrated_idf
 from ._typing import StrictT
-from .chain import normalize_target, plan_migration_chain, resolve_source_version
+from .chain import check_chain_binaries, normalize_target, plan_migration_chain, resolve_source_version
 from .diff import document_diff, verify_migration_output
 from .progress import MigrationProgress
 from .report import MigrationDiff, MigrationReport, MigrationStep
@@ -136,6 +136,8 @@ def migrate(
         idfkit.exceptions.MigrationError: If any transition step fails. The
             exception's ``completed_steps`` attribute records the prefix of
             steps that succeeded; inspect it to recover partial progress.
+            A step the migrator has no transition binary for is reported
+            before any step runs.
         idfkit.exceptions.EnergyPlusNotFoundError: If *migrator* is ``None``
             and no EnergyPlus installation can be discovered.
     """
@@ -160,6 +162,7 @@ def migrate(
         )
 
     resolved_migrator = _resolve_migrator(migrator, energyplus)
+    check_chain_binaries(resolved_migrator, chain)
     total_steps = len(chain)
     _emit(
         on_progress,
@@ -248,7 +251,7 @@ def _run_chain(
                 )
             )
             raise MigrationError(
-                str(exc),
+                exc.reason,
                 from_version=a,
                 to_version=b,
                 exit_code=exc.exit_code,

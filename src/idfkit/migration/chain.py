@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, cast
 
 from .._document_types import is_type_form, release_of
-from ..exceptions import UnsupportedVersionError
+from ..exceptions import MigrationError, UnsupportedVersionError
 from ..simulation.config import normalize_version
 from ..versions import ENERGYPLUS_VERSIONS, find_release
 
@@ -140,3 +140,29 @@ def plan_migration_chain(
     for i in range(source_idx, target_idx):
         steps.append((ENERGYPLUS_VERSIONS[i], ENERGYPLUS_VERSIONS[i + 1]))
     return tuple(steps)
+
+
+def check_chain_binaries(migrator: object, chain: tuple[TransitionStep, ...]) -> None:
+    """Raise before any step runs if *migrator* has no transition binary for one of *chain*'s steps.
+
+    Only a migrator that can name its binaries (a ``locate_binary`` method, as the subprocess
+    backends have) is checked; a custom one is trusted to run every step it is given. Checking up
+    front means a chain that cannot finish fails at once, rather than after every earlier step ran.
+
+    Raises:
+        MigrationError: For the first step without a binary, with no completed steps.
+    """
+    locate = getattr(migrator, "locate_binary", None)
+    if not callable(locate):
+        return
+    for a, b in chain:
+        try:
+            locate(a, b)
+        except MigrationError as exc:
+            msg = exc.reason
+            if (a, b) != chain[0]:
+                msg += (
+                    f"; nothing was run, as this installation can migrate no further than "
+                    f"{a[0]}.{a[1]}.{a[2]}: target that, or use an EnergyPlus that ships this transition"
+                )
+            raise MigrationError(msg, from_version=a, to_version=b) from exc

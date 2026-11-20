@@ -208,6 +208,33 @@ def test_step_failure_records_prior_successes() -> None:
 
     assert exc_info.value.completed_steps == (((24, 1, 0), (24, 2, 0)),)
     assert exc_info.value.exit_code == 2
+    message = str(exc_info.value)
+    assert message.count("(24.2.0 -> 25.1.0)") == 1
+    assert message.count("boom") == 1
+
+
+class _PartialInstallMigrator(_StubMigrator):
+    """A migrator whose installation ships transitions only up to 24.2.0, as SubprocessMigrator reports them."""
+
+    def locate_binary(self, from_version: tuple[int, int, int], to_version: tuple[int, int, int]) -> Path:
+        if to_version > (24, 2, 0):
+            msg = "No transition binary found. Tried: Transition-V24-2-0-to-V25-1-0"
+            raise MigrationError(msg, from_version=from_version, to_version=to_version)
+        return Path(f"Transition-{from_version}-{to_version}")
+
+
+def test_missing_transition_binary_fails_before_any_step_runs() -> None:
+    migrator = _PartialInstallMigrator([(24, 2, 0), (25, 1, 0)])
+    doc = new_document(version=(24, 1, 0))
+    with pytest.raises(MigrationError) as exc_info:
+        migrate(doc, target_version=(25, 1, 0), migrator=migrator)
+
+    assert migrator.calls == []
+    error = exc_info.value
+    assert (error.from_version, error.to_version) == ((24, 2, 0), (25, 1, 0))
+    assert error.completed_steps == ()
+    assert str(error).count("(24.2.0 -> 25.1.0)") == 1
+    assert "no further than 24.2.0" in str(error)
 
 
 def test_progress_callback_receives_events() -> None:

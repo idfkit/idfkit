@@ -732,6 +732,9 @@ class MigrationError(IdfKitError):
         stderr: Captured stderr of the transition binary (truncated to 500 chars).
         completed_steps: Ordered ``(from, to)`` pairs that ran successfully before
             the failure. Empty when the chain failed on its first step.
+        reason: The message as given, without the step, the process output or the
+            step count the full message adds, so the error can be re-raised for
+            another step without repeating them.
     """
 
     def __init__(
@@ -749,6 +752,7 @@ class MigrationError(IdfKitError):
         self.exit_code = exit_code
         self.stderr = stderr
         self.completed_steps = tuple(completed_steps)
+        self.reason = message
         head = message
         if from_version is not None and to_version is not None:
             a, b = from_version, to_version

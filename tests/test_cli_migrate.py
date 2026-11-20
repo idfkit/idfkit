@@ -9,10 +9,12 @@ from typing import Any
 import pytest
 
 import idfkit.compat._cli as cli_module
+import idfkit.simulation.config as simulation_config
 from idfkit import load_idf, new_document, save_idf
 from idfkit.compat._cli import main
 from idfkit.exceptions import EnergyPlusNotFoundError, MigrationError, UnsupportedVersionError
 from idfkit.migration.report import FieldDelta, MigrationDiff, MigrationReport, MigrationStep
+from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.versions import LATEST_VERSION, version_string
 
 
@@ -72,33 +74,83 @@ def _make_fake_migrate(
     return fake_migrate
 
 
+def _fake_energyplus(root: Path, version: tuple[int, int, int]) -> EnergyPlusConfig:
+    """An installation record for *version*; the CLI only reads its version before calling migrate."""
+    return EnergyPlusConfig(
+        executable=root / "energyplus",
+        version=version,
+        install_dir=root,
+        idd_path=root / "Energy+.idd",
+    )
+
+
 class TestCliMigrateDefaults:
     """Argument resolution: defaults for --to and --output."""
 
-    def test_defaults_to_latest_version(
+    def test_defaults_to_installed_energyplus(
         self,
         source_idf: Path,
+        tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """Without --to, the target is the discovered installation's release, not the newest schema."""
+        installed = _fake_energyplus(tmp_path, (25, 1, 0))
+        monkeypatch.setattr(simulation_config, "find_energyplus", lambda: installed)
         record: dict[str, Any] = {}
-        monkeypatch.setattr(
-            cli_module,
-            "migrate",
-            _make_fake_migrate(target=LATEST_VERSION, record=record),
-        )
+        monkeypatch.setattr(cli_module, "migrate", _make_fake_migrate(target=(25, 1, 0), record=record))
 
         with pytest.raises(SystemExit) as exc:
             main(["migrate", str(source_idf)])
 
         assert exc.value.code == 0
-        assert record["kwargs"]["target_version"] == LATEST_VERSION
+        assert record["kwargs"]["target_version"] == (25, 1, 0)
+        assert record["kwargs"]["energyplus"] is installed
+        assert LATEST_VERSION != (25, 1, 0)
 
-        expected = source_idf.with_name(f"source-v{LATEST_VERSION[0]}-{LATEST_VERSION[1]}-{LATEST_VERSION[2]}.idf")
+        expected = source_idf.with_name("source-v25-1-0.idf")
         assert expected.is_file()
         captured = capsys.readouterr()
         assert "Wrote:" in captured.out
         assert str(expected) in captured.out
+
+    def test_default_target_without_energyplus_exits_2(
+        self,
+        source_idf: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        def not_found() -> EnergyPlusConfig:
+            raise EnergyPlusNotFoundError(["/nowhere"])
+
+        monkeypatch.setattr(simulation_config, "find_energyplus", not_found)
+        monkeypatch.setattr(cli_module, "migrate", _make_fake_migrate(target=LATEST_VERSION))
+
+        with pytest.raises(SystemExit) as exc:
+            main(["migrate", str(source_idf)])
+
+        assert exc.value.code == 2
+        err = capsys.readouterr().err
+        assert "no EnergyPlus installation found" in err
+        assert "--energyplus" in err
+
+    def test_target_older_than_model_exits_2(
+        self,
+        source_idf: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        monkeypatch.setattr(
+            cli_module,
+            "migrate",
+            _make_fake_migrate(target=(23, 2, 0), raise_exc=ValueError("Backward migration is not supported")),
+        )
+
+        with pytest.raises(SystemExit) as exc:
+            main(["migrate", str(source_idf), "--to", "23.2"])
+
+        assert exc.value.code == 2
+        assert "Backward migration" in capsys.readouterr().err
 
     def test_explicit_to_and_output(
         self,

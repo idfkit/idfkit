@@ -25,7 +25,7 @@ print(len(doc), "objects")
 | Symbol | Purpose |
 |---|---|
 | `load_idf(path, version=None, *, as_type=None, since=None, before=None, strict=True, strict_parsing=True, preserve_formatting=False)` | Parse a `.idf` file. Typed `AnyIDFDocument`, or for the release `as_type=` (or the range `since=`/`before=`) names, checked once the file is read. |
-| `load_epjson(path, version=None, *, as_type=None, since=None, before=None, strict=True, preserve_formatting=False)` | Parse an `.epJSON` file, typed the same way. |
+| `load_epjson(path, version=None, *, as_type=None, since=None, before=None, strict=True, strict_parsing=True, preserve_formatting=False)` | Parse an `.epJSON` file, typed the same way. |
 | `load_idf_with_diagnostics(path, ...)` | `load_idf` that also returns the recoverable parse findings, as a `ParseResult`; takes the same `as_type=`, `since=`, `before=`. |
 | `parse_idf(path, ...)` | Lower-level callable used by `load_idf`. |
 | `parse_epjson(path, ...)` | Lower-level callable used by `load_epjson`. |
@@ -64,6 +64,8 @@ except IDFParseError as e:
     for d in e.diagnostics:
         print(d.line, d.column, d.message)
 ```
+
+An object type the schema does not have (`Zonee`) raises `IDFParseError` with the code `UnknownObjectType` from both `load_idf` and `load_epjson`; the epJSON message adds `Did you mean 'Zone'?`. With `strict_parsing=False`, `load_epjson` skips that type and logs a warning.
 
 ## Blank fields are unset
 

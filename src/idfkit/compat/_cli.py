@@ -39,7 +39,7 @@ from typing import TYPE_CHECKING, NoReturn
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError, UnsupportedVersionError
 from ..migration import MigrationProgress, MigrationReport, migrate
-from ..versions import LATEST_VERSION, version_string
+from ..versions import version_string
 from ..weather._cli import add_subparser as _add_tmy_subparser
 from ..weather._cli import run_tmy as _run_tmy
 from ._checker import check_compatibility, resolve_version
@@ -275,7 +275,10 @@ def _build_parser() -> argparse.ArgumentParser:
         type=_parse_version_spec,
         default=None,
         metavar="VERSION",
-        help=f"Target EnergyPlus version (e.g. 25.2). Defaults to the latest supported ({version_string(LATEST_VERSION)}).",
+        help=(
+            "Target EnergyPlus version (e.g. 25.2). Defaults to the version of the EnergyPlus "
+            "installation used (--energyplus, or the one auto-discovered), the newest it can simulate."
+        ),
     )
     migrate_cmd.add_argument(
         "--energyplus",
@@ -675,11 +678,10 @@ def _format_migrate_json(report: MigrationReport, *, input_path: Path, output_pa
     return json.dumps(payload, indent=2)
 
 
-def _resolve_migrate_target(spec: tuple[int, int, int] | None) -> tuple[int, int, int]:
+def _resolve_migrate_target(spec: tuple[int, int, int]) -> tuple[int, int, int]:
     """Resolve the requested target to a bundled schema version, exiting on failure."""
-    target = spec if spec is not None else LATEST_VERSION
     try:
-        return resolve_version(target)
+        return resolve_version(spec)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         sys.exit(2)
@@ -713,6 +715,9 @@ def _invoke_migrate(
     except MigrationError as exc:
         print(f"error: migration failed: {exc}", file=sys.stderr)
         sys.exit(1)
+    except ValueError as exc:  # a target older than the model
+        print(f"error: {exc}", file=sys.stderr)
+        sys.exit(2)
 
 
 def _write_migrate_output(
@@ -751,6 +756,21 @@ def _load_source_idf(input_path: Path) -> AnyIDFDocument:
         sys.exit(2)
 
 
+def _discover_energyplus() -> EnergyPlusConfig:
+    """Auto-discover an EnergyPlus installation, exiting when there is none."""
+    from ..simulation.config import find_energyplus
+
+    try:
+        return find_energyplus()
+    except EnergyPlusNotFoundError as exc:
+        print(
+            f"error: no EnergyPlus installation found ({exc}); migration runs its transition binaries. "
+            "Pass --energyplus PATH",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+
 def _resolve_energyplus_arg(path_arg: str | None) -> EnergyPlusConfig | None:
     """Resolve an optional ``--energyplus`` path into a config, exiting on failure."""
     if path_arg is None:
@@ -771,9 +791,15 @@ def _run_migrate(args: argparse.Namespace) -> None:
         print(f"error: file not found: {input_path}", file=sys.stderr)
         sys.exit(2)
 
-    resolved_target = _resolve_migrate_target(args.to_version)
     model = _load_source_idf(input_path)
     energyplus = _resolve_energyplus_arg(args.energyplus_path)
+    if args.to_version is None:
+        # The transition binaries ship with EnergyPlus, so the installation that runs them is the
+        # one that decides how far a model can go, and it is the release the result can simulate in.
+        energyplus = energyplus or _discover_energyplus()
+        resolved_target = _resolve_migrate_target(energyplus.version)
+    else:
+        resolved_target = _resolve_migrate_target(args.to_version)
     on_progress = None if (args.quiet or args.json_output) else _progress_printer()
 
     report = _invoke_migrate(

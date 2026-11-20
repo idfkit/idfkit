@@ -1388,3 +1388,79 @@ class TestValidateSchedules:
         self._compact(doc, "Big", "Through: 12/31", "For: AllDays", "Until: 24:00", "1e3")
         doc.add("Schedule:Constant", "Unlimited", hourly_value=99)
         assert validate_document(doc, check_references=False).is_valid
+
+
+class TestWindowConstruction:
+    """``E013``: a window whose construction has only opaque layers, which EnergyPlus refuses."""
+
+    @staticmethod
+    def _model(window_layer_type: str) -> AnyIDFDocument:
+        from idfkit import create_block, footprint_rectangle, set_default_constructions, set_wwr
+
+        doc = new_document(version=(26, 1, 0))
+        create_block(doc, "Office", footprint_rectangle(30.0, 20.0), floor_to_floor=3.5)
+        set_wwr(doc, 0.3)
+        doc.add(
+            "Material", "Insul", roughness="Smooth", thickness=0.1, conductivity=0.04, density=30, specific_heat=1000
+        )
+        doc.add("Construction", "Wall", outside_layer="Insul")
+        if window_layer_type == "Material":
+            window_layer = "Insul"
+        else:
+            window_layer = "Glass"
+            doc.add("WindowMaterial:SimpleGlazingSystem", "Glass", u_factor=2.0, solar_heat_gain_coefficient=0.4)
+        doc.add("Construction", "Win", outside_layer=window_layer)
+        set_default_constructions(doc, "Wall", window_construction="Win")
+        return doc
+
+    def test_opaque_window_construction_is_an_error(self) -> None:
+        result = validate_document(self._model("Material"))
+        assert [e.code for e in result.errors] == ["E013"] * 4
+        first = result.errors[0]
+        assert first.obj_type == "FenestrationSurface:Detailed"
+        assert first.field == "construction_name"
+        assert "'Win'" in first.message
+
+    def test_glazing_construction_passes(self) -> None:
+        result = validate_document(self._model("WindowMaterial"))
+        assert result.errors == []
+
+    def test_door_with_opaque_construction_passes(self) -> None:
+        doc = self._model("WindowMaterial")
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "Door1",
+            surface_type="Door",
+            construction_name="Wall",
+            building_surface_name="Office Wall 1",
+            validate=False,
+        )
+        assert [e for e in validate_document(doc).errors if e.code == "E013"] == []
+
+    @pytest.mark.parametrize("obj_type", ["Window", "GlazedDoor", "Window:Interzone", "GlazedDoor:Interzone"])
+    def test_simple_glazed_types_with_opaque_construction(self, obj_type: str) -> None:
+        doc = self._model("WindowMaterial")
+        doc.add(obj_type, "W1", construction_name="Wall", building_surface_name="Office Wall 1", validate=False)
+        e013 = [e for e in validate_document(doc).errors if e.code == "E013"]
+        assert [(e.obj_type, e.obj_name) for e in e013] == [(obj_type, "W1")]
+
+    def test_fenestration_without_surface_type_counts_as_glazed(self) -> None:
+        doc = self._model("WindowMaterial")
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "NoType",
+            construction_name="Wall",
+            building_surface_name="Office Wall 1",
+            validate=False,
+        )
+        e013 = [e for e in validate_document(doc).errors if e.code == "E013"]
+        assert [e.obj_name for e in e013] == ["NoType"]
+
+    def test_not_reported_without_reference_checks(self) -> None:
+        result = validate_document(self._model("Material"), check_references=False)
+        assert [e for e in result.errors if e.code == "E013"] == []
+
+    def test_dangling_layer_is_left_to_e009(self) -> None:
+        doc = self._model("WindowMaterial")
+        doc["Construction"]["Win"].layer_2 = "Missing"
+        assert [e for e in validate_document(doc).errors if e.code == "E013"] == []

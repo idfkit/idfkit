@@ -191,6 +191,29 @@ async def test_step_failure_records_prior_successes() -> None:
         await async_migrate(doc, target_version=(25, 1, 0), migrator=_FailingAsyncMigrator())
 
     assert exc_info.value.completed_steps == (((24, 1, 0), (24, 2, 0)),)
+    assert str(exc_info.value).count("(24.2.0 -> 25.1.0)") == 1
+
+
+class _PartialInstallAsyncMigrator(_AsyncStubMigrator):
+    """An async migrator whose installation ships transitions only up to 24.2.0."""
+
+    def locate_binary(self, from_version: tuple[int, int, int], to_version: tuple[int, int, int]) -> Path:
+        if to_version > (24, 2, 0):
+            msg = "No transition binary found. Tried: Transition-V24-2-0-to-V25-1-0"
+            raise MigrationError(msg, from_version=from_version, to_version=to_version)
+        return Path(f"Transition-{from_version}-{to_version}")
+
+
+@pytest.mark.asyncio
+async def test_missing_transition_binary_fails_before_any_step_runs() -> None:
+    migrator = _PartialInstallAsyncMigrator([(24, 2, 0), (25, 1, 0)])
+    doc = new_document(version=(24, 1, 0))
+    with pytest.raises(MigrationError) as exc_info:
+        await async_migrate(doc, target_version=(25, 1, 0), migrator=migrator)
+
+    assert migrator.calls == []
+    assert exc_info.value.completed_steps == ()
+    assert (exc_info.value.from_version, exc_info.value.to_version) == ((24, 2, 0), (25, 1, 0))
 
 
 @pytest.mark.asyncio

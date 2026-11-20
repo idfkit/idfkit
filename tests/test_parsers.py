@@ -316,6 +316,31 @@ class TestHighLevelLoad:
         assert doc.version == (24, 1, 0)
         assert len(doc["Zone"]) == 1
 
+    def test_load_epjson_unknown_type_raises_like_load_idf(self, tmp_path: Path) -> None:
+        """The same misspelt type stops both loaders, with the same diagnostic code."""
+        from idfkit.exceptions import IDFParseError
+
+        epjson_path = tmp_path / "bad.epJSON"
+        epjson_path.write_text(
+            json.dumps({
+                "Version": {"Version 1": {"version_identifier": "24.1"}},
+                "Zonee": {"A": {}},
+                "Zone": {"Z": {}},
+            })
+        )
+        idf_path = tmp_path / "bad.idf"
+        idf_path.write_text("Version, 24.1;\nZonee, A;\nZone, Z;\n")
+
+        with pytest.raises(IDFParseError, match="Did you mean 'Zone'") as from_epjson:
+            load_epjson(epjson_path)
+        with pytest.raises(IDFParseError) as from_idf:
+            load_idf(idf_path)
+        assert from_epjson.value.diagnostics[0].code == from_idf.value.diagnostics[0].code == "UnknownObjectType"
+
+        lenient = load_epjson(epjson_path, strict_parsing=False)
+        assert "Zonee" not in lenient.collections
+        assert len(lenient["Zone"]) == 1
+
 
 # ---------------------------------------------------------------------------
 # Edge cases
@@ -512,22 +537,48 @@ class TestEpJSONParserBranchCoverage:
         parser._parse_objects({"Zone": {"Z1": {}}}, doc, None)  # pyright: ignore[reportPrivateUsage]
         assert len(doc["Zone"]) == 1
 
-    def test_parse_unknown_object_type_with_schema(self, tmp_path: Path) -> None:
-        """198->205: pc is None for unknown object type (schema present but type unrecognised)."""
+    def test_parse_unknown_object_type_with_schema_raises(self, tmp_path: Path) -> None:
+        """An object type the schema does not have stops the parse, as it does in an IDF."""
+        from idfkit.epjson_parser import EpJSONParser
+        from idfkit.exceptions import IDFParseError
+        from idfkit.schema import get_schema
+
+        schema = get_schema((24, 1, 0))
+        data: dict[str, dict[str, dict[str, str]]] = {
+            "Version": {"Version 1": {"version_identifier": "24.1"}},
+            "Zonee": {"A": {}},
+            "Zone": {"Z": {}},
+        }
+        filepath = tmp_path / "unknown_type.epJSON"
+        filepath.write_text(json.dumps(data))
+        with pytest.raises(IDFParseError, match=r"Unknown object type 'Zonee'\. Did you mean 'Zone'\?") as info:
+            EpJSONParser(filepath, schema).parse((24, 1, 0))
+        (diagnostic,) = info.value.diagnostics
+        assert diagnostic.code == "UnknownObjectType"
+        assert diagnostic.obj_type == "Zonee"
+        assert diagnostic.obj_name == "A"
+        assert diagnostic.filepath == str(filepath)
+
+    def test_parse_unknown_object_type_skipped_without_strict_parsing(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """``strict_parsing=False`` skips the unknown type, logging it, and keeps the rest."""
         from idfkit.epjson_parser import EpJSONParser
         from idfkit.schema import get_schema
 
         schema = get_schema((24, 1, 0))
-        data = {
+        data: dict[str, dict[str, dict[str, str]]] = {
             "Version": {"Version 1": {"version_identifier": "24.1"}},
             "Totally:UnknownType": {"Obj1": {"field": "value"}},
+            "Zone": {"Z": {}},
         }
         filepath = tmp_path / "unknown_type.epJSON"
         filepath.write_text(json.dumps(data))
-        parser = EpJSONParser(filepath, schema)
-        doc = parser.parse((24, 1, 0), strict=False)
-        # Unknown type parsed without schema cache
-        assert len(doc) >= 1
+        with caplog.at_level("WARNING", logger="idfkit.epjson_parser"):
+            doc = EpJSONParser(filepath, schema).parse((24, 1, 0), strict_parsing=False)
+        assert "Totally:UnknownType" not in doc.collections
+        assert len(doc["Zone"]) == 1
+        assert "Unknown object type 'Totally:UnknownType'" in caplog.text
 
     def test_build_field_order_none_when_no_base_names(self, tmp_path: Path) -> None:
         """Line 237: _build_field_order returns None when base_field_names is None."""

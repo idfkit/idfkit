@@ -85,6 +85,42 @@ class TestSetDefaultConstructions:
         count = set_default_constructions(doc)
         assert count == 0
 
+    def test_leaves_windows_unset_without_window_construction(self) -> None:
+        """An opaque construction on a window is fatal in EnergyPlus, so windows are not given one."""
+        doc = new_document()
+        create_block(doc, "B", footprint_rectangle(30.0, 20.0), floor_to_floor=3.5)
+        set_wwr(doc, 0.3)
+        count = set_default_constructions(doc, "Opaque")
+        assert count == 6
+        windows = list(doc["FenestrationSurface:Detailed"])
+        assert len(windows) == 4
+        assert all(not w.get("Construction Name") for w in windows)
+
+    def test_window_construction_for_glazed_fenestration(self) -> None:
+        doc = new_document()
+        create_block(doc, "B", footprint_rectangle(30.0, 20.0), floor_to_floor=3.5)
+        set_wwr(doc, 0.3)
+        count = set_default_constructions(doc, "Opaque", window_construction="Glazing")
+        assert count == 10
+        assert {w.construction_name for w in doc["FenestrationSurface:Detailed"]} == {"Glazing"}
+        assert {s.construction_name for s in doc["BuildingSurface:Detailed"]} == {"Opaque"}
+
+    def test_door_gets_opaque_construction(self) -> None:
+        doc = new_document()
+        create_block(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3)
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "Door1",
+            surface_type="Door",
+            building_surface_name="B Wall 1",
+            validate=False,
+        )
+        count = set_default_constructions(doc, "Opaque", window_construction="Glazing")
+        assert count == 7
+        door = doc.getobject("FenestrationSurface:Detailed", "Door1")
+        assert door is not None
+        assert door.construction_name == "Opaque"
+
 
 # ---------------------------------------------------------------------------
 # bounding_box

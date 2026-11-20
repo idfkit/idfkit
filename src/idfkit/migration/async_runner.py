@@ -22,7 +22,7 @@ from ..exceptions import EnergyPlusNotFoundError, MigrationError
 from ._reparse import parse_migrated_idf
 from ._typing import StrictT
 from .async_subprocess_backend import AsyncSubprocessMigrator
-from .chain import normalize_target, plan_migration_chain, resolve_source_version
+from .chain import check_chain_binaries, normalize_target, plan_migration_chain, resolve_source_version
 from .diff import document_diff, verify_migration_output
 from .progress import MigrationProgress
 from .report import MigrationDiff, MigrationReport, MigrationStep
@@ -112,7 +112,8 @@ async def async_migrate(
         TypeError: If *target_version* is a type that names no single release.
         ValueError: If the target is older than ``model.version``.
         idfkit.exceptions.MigrationError: On any transition-step failure; the
-            exception's ``completed_steps`` records the prefix that succeeded.
+            exception's ``completed_steps`` records the prefix that succeeded. A
+            step with no transition binary is reported before any step runs.
         idfkit.exceptions.EnergyPlusNotFoundError: If *migrator* is ``None``
             and no EnergyPlus installation can be discovered.
     """
@@ -137,6 +138,7 @@ async def async_migrate(
         )
 
     resolved_migrator = await asyncio.to_thread(_resolve_async_migrator, migrator, energyplus)
+    check_chain_binaries(resolved_migrator, chain)
     total_steps = len(chain)
     await _emit(
         on_progress,
@@ -221,7 +223,7 @@ async def _run_chain_async(
                 )
             )
             raise MigrationError(
-                str(exc),
+                exc.reason,
                 from_version=a,
                 to_version=b,
                 exit_code=exc.exit_code,

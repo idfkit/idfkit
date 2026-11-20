@@ -2478,7 +2478,15 @@ _LOADERS = (
         ("strict: {strict}", "preserve_formatting: bool = ...", "normalize_choices: bool = ..."),
         "ParseResult[{}]",
     ),
-    _Loader("load_epjson", ("strict: {strict}", "preserve_formatting: bool = ...", "normalize_choices: bool = ...")),
+    _Loader(
+        "load_epjson",
+        (
+            "strict_parsing: bool = ...",
+            "strict: {strict}",
+            "preserve_formatting: bool = ...",
+            "normalize_choices: bool = ...",
+        ),
+    ),
 )
 
 _LOADERS_DOC = '''"""Types of the public loaders, whose run-time half is ``_loaders.py``.
