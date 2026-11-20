@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `idfkit.choices` exported one `Literal` alias per EnergyPlus choice field, such as
   `OutputMeterReportingFrequency`, with `Any<Class><Field>` for what every release accepts, so a
   value passed to `add()` can be annotated without copying the choices.
-  ([60cd0d5](https://github.com/idfkit/idfkit/commit/60cd0d5))
+  ([#361](https://github.com/idfkit/idfkit/pull/361))
 
 ## [1.3.0-rc.2] - 2026-11-20
 
