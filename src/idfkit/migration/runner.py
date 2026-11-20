@@ -228,10 +228,12 @@ def _run_chain(
     On failure, raises :class:`~idfkit.exceptions.MigrationError` carrying the
     prefix of successfully-completed steps.
     """
+    from .._idf_encoding import source_encoding
     from ..writers import save_idf
 
     initial_idf = work_root / "step_0_input.idf"
-    save_idf(model, initial_idf)
+    # The Transition programs report a byte-order mark on the first line as a severe error.
+    save_idf(model, initial_idf, encoding=source_encoding(model, bom=False))
     input_text = initial_idf.read_text(encoding="latin-1")
 
     key = migration_cache.cache_key(input_text, chain, migrator) if use_cache else None

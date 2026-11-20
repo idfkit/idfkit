@@ -2513,11 +2513,17 @@ _LOADERS = (
             "strict: {strict}",
             "preserve_formatting: bool = ...",
             "normalize_choices: bool = ...",
+            "encoding: str | None = ...",
         ),
     ),
     _Loader(
         "load_idf_with_diagnostics",
-        ("strict: {strict}", "preserve_formatting: bool = ...", "normalize_choices: bool = ..."),
+        (
+            "strict: {strict}",
+            "preserve_formatting: bool = ...",
+            "normalize_choices: bool = ...",
+            "encoding: str | None = ...",
+        ),
         "ParseResult[{}]",
     ),
     _Loader(
@@ -3015,6 +3021,8 @@ def _generate_document_module() -> str:
     # Read by the writers and set by the epJSON parser; declared so it has its real type, since no
     # __getattr__ on this base answers undeclared names.
     lines.append("    _count_at_read: int | None")
+    # Set by the IDF parser and read by save_idf, as _count_at_read is.
+    lines.append("    _source_encoding: str | None")
     lines.append("")
 
     def emit(

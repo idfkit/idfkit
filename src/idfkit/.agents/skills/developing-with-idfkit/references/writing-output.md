@@ -30,7 +30,7 @@ idf_text = write_idf(doc)
 | Symbol | Purpose |
 |---|---|
 | `write_idf(doc, output_type="standard", *, preserve_formatting=None)` | Serialize to IDF and return the text. Never touches the disk. |
-| `save_idf(doc, path, encoding="latin-1", output_type="standard", *, preserve_formatting=None)` | Serialize to IDF and write it to `path`. |
+| `save_idf(doc, path, encoding=None, output_type="standard", *, preserve_formatting=None)` | Serialize to IDF and write it to `path`. |
 | `write_epjson(doc, indent=2, *, preserve_formatting=None)` | Serialize to epJSON and return the text. Never touches the disk. |
 | `save_epjson(doc, path, indent=2, *, preserve_formatting=None)` | Serialize to epJSON and write it to `path`. |
 | `idfkit.writers.convert_idf_to_epjson(src, dst)` | Convenience converter. |
@@ -58,7 +58,7 @@ epJSON formatting is controlled by `indent`, as `json.dumps` takes it (default 2
 
 ## Encoding
 
-EnergyPlus expects `latin-1` for IDF files (that's the `save_idf` default). Don't override unless you have a downstream tool that requires UTF-8 — many EnergyPlus utilities will choke on non-`latin-1` IDFs.
+`save_idf` and `IDFWriter.write_to_file` write a model back in the encoding its IDF file was read in: UTF-8 or latin-1. A UTF-8 byte-order mark the file had is written back only by a lossless `preserve_formatting` save, never into regenerated text or the files idfkit hands EnergyPlus. A document built in code or read from epJSON is written as latin-1, the encoding EnergyPlus and its utilities write. Pass `encoding=` only to convert a file: a name that latin-1 cannot hold (`办公室`) raises `UnicodeEncodeError` with `encoding="latin-1"`.
 
 ## Lossless round-trips (IDF only)
 

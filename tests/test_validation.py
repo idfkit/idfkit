@@ -1893,7 +1893,7 @@ class TestRequiredName:
     def test_eppy_newidfobject_still_validates_the_other_fields(self) -> None:
         doc = new_document()
         with pytest.raises(ValidationFailedError) as excinfo:
-            doc.newidfobject("Material")
+            doc.newidfobject("Material", validate=True)
         fields = {e.field for e in excinfo.value.errors}
         assert "name" not in fields
         assert "thickness" in fields

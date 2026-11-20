@@ -22,6 +22,7 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, Literal, cast
 
+from ._idf_encoding import source_encoding
 from .objects import is_blank_slot
 
 logger = logging.getLogger(__name__)
@@ -173,6 +174,29 @@ def _check_save_path(path: Path, func: str, wrong_suffixes: frozenset[str], othe
         raise ValueError(msg)
 
 
+def _writes_lossless(
+    doc: AnyIDFDocument[bool],
+    output_type: OutputType,
+    preserve_formatting: bool | None,
+    *,
+    formatting_requested: bool,
+) -> bool:
+    """Whether [write_idf][idfkit.writers.write_idf] reproduces the source text of *doc*."""
+    if doc.cst is None or formatting_requested or output_type != "standard":
+        return False
+    return preserve_formatting is not False
+
+
+def _formatting_requested(indent: int, comment_column: int, ordering: Ordering, version_first: bool) -> bool:
+    """Whether a layout control is away from its default."""
+    return (
+        indent != DEFAULT_INDENT
+        or comment_column != DEFAULT_COMMENT_COLUMN
+        or ordering != "sorted"
+        or version_first is not True
+    )
+
+
 def write_idf(
     doc: AnyIDFDocument[bool],
     output_type: OutputType = "standard",
@@ -291,12 +315,7 @@ def write_idf(
     # The conflict is only real when the lossless path would actually be taken. `preserve_formatting=True`
     # on a document that carries no CST has always fallen back to this writer, and asking for a control at
     # the same time must not turn that quiet fallback into an error.
-    formatting_requested = (
-        indent != DEFAULT_INDENT
-        or comment_column != DEFAULT_COMMENT_COLUMN
-        or ordering != "sorted"
-        or version_first is not True
-    )
+    formatting_requested = _formatting_requested(indent, comment_column, ordering, version_first)
     if formatting_requested and use_preserve and preserve_formatting and doc.cst is not None:
         msg = (
             "preserve_formatting reproduces the original text, so it cannot also apply indent, "
@@ -304,7 +323,7 @@ def write_idf(
         )
         raise ValueError(msg)
 
-    if use_preserve and doc.cst is not None and not formatting_requested:
+    if _writes_lossless(doc, output_type, preserve_formatting, formatting_requested=formatting_requested):
         content = _write_idf_lossless(doc, field_comments)
     else:
         writer = IDFWriter(
@@ -324,7 +343,7 @@ def write_idf(
 def save_idf(
     doc: AnyIDFDocument[bool],
     path: Path | str,
-    encoding: str = "latin-1",
+    encoding: str | None = None,
     output_type: OutputType = "standard",
     *,
     preserve_formatting: bool | None = None,
@@ -341,7 +360,9 @@ def save_idf(
     Args:
         doc: The document to save.
         path: Output path.
-        encoding: Output encoding.
+        encoding: Output encoding. ``None`` (the default) writes the encoding the document's IDF
+            file was read in (UTF-8 or latin-1), and latin-1 for a document not read from an IDF
+            file. A byte-order mark the file had is written back only by a lossless rewrite.
         output_type: Output formatting mode, as for
             [write_idf][idfkit.writers.write_idf].
         preserve_formatting: Lossless output control, as for
@@ -386,6 +407,15 @@ def save_idf(
         ordering=ordering,
         version_first=version_first,
     )
+    if encoding is None:
+        # A byte-order mark the source had is part of its text, so only a lossless rewrite keeps it.
+        lossless = _writes_lossless(
+            doc,
+            output_type,
+            preserve_formatting,
+            formatting_requested=_formatting_requested(indent, comment_column, ordering, version_first),
+        )
+        encoding = source_encoding(doc, bom=lossless)
     with open(path, "w", encoding=encoding) as f:
         f.write(content)
     logger.info("Wrote IDF (%d objects) to %s", len(doc), path)
@@ -1013,9 +1043,18 @@ class IDFWriter:
             )
         return text
 
-    def write_to_file(self, filepath: Path | str, encoding: str = "latin-1") -> None:
-        """Write to file."""
+    def write_to_file(self, filepath: Path | str, encoding: str | None = None) -> None:
+        """Write to file.
+
+        Args:
+            filepath: Output path.
+            encoding: Output encoding. ``None`` (the default) writes the encoding the document's
+                IDF file was read in, without a byte-order mark, and latin-1 for a document not
+                read from an IDF file.
+        """
         content = self.to_string()
+        if encoding is None:
+            encoding = source_encoding(self._doc, bom=False)
         with open(filepath, "w", encoding=encoding) as f:
             f.write(content)
 

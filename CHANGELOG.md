@@ -108,6 +108,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with neither a `RunPeriod` nor a sizing period (as `new_document()` makes), naming the fix, where
   EnergyPlus reported success with no results; a non-document model raised `TypeError`.
   ([#340](https://github.com/idfkit/idfkit/pull/340))
+- `newidfobject()` accepted eppy's field spellings (`Specific_Heat=`) and no longer validated on
+  creation, so eppy's create-blank-then-fill idiom works; pass `validate=True` to check at once.
+  ([#343](https://github.com/idfkit/idfkit/pull/343))
 - `migrate()` and `async_migrate()` reused an earlier migration of the same content with the same
   EnergyPlus install, held in memory, so repeated `auto_migrate=True` runs of one model skipped the
   transition binaries; `cache=False` and `clear_migration_cache()` opted out.
@@ -287,6 +290,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** `save_idf()` (and `doc.save()`) raised `ValueError` for a `.epJSON`/`.json` path, and
   `save_epjson()` for `.idf`, instead of writing the wrong format; write epJSON with `save_epjson()`.
   Swapped arguments raised `TypeError`. ([#339](https://github.com/idfkit/idfkit/pull/339))
+- A `Version,x;` inside a `!` comment no longer chose the schema in `load_idf()` and
+  `get_idf_version()`, which misread the file against another release; the real `Version` object does.
+  ([#343](https://github.com/idfkit/idfkit/pull/343))
+- `load_idf()` read UTF-8 files as latin-1, garbling non-ASCII names in lookups and epJSON exports. It
+  now detects UTF-8 (dropping a byte-order mark), else latin-1, takes `encoding=`, and `save_idf()` and
+  `IDFWriter.write_to_file()` write a model back in the encoding it was read in.
+  ([#343](https://github.com/idfkit/idfkit/pull/343))
 - `write_idf()` padded `HVACTemplate:*` and `GroundHeatTransfer:*` objects to their schema `min_fields`
   with blank fields, so templates built in code expand instead of stopping `ExpandObjects`.
   ([#333](https://github.com/idfkit/idfkit/pull/333))
