@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Literal, Protocol, overload
 from ._cancel import ProcessGroup
 from .progress import SimulationProgress
 from .progress_bars import resolve_on_progress
-from .result import REFUSED_RUN_DIR, SimulationResult
+from .result import REFUSED_RUN_DIR, SimulationResult, group_batch_results
 from .runner import simulate
 
 if TYPE_CHECKING:
@@ -164,6 +164,10 @@ class BatchResult(Sequence[SimulationResult]):
     results: tuple[SimulationResult, ...]
     total_runtime_seconds: float
 
+    def __post_init__(self) -> None:
+        # A batch dropped without cleanup() warns once for all its temporary run directories, not once per job.
+        group_batch_results(self.results)
+
     @property
     def succeeded(self) -> tuple[SimulationResult, ...]:
         """Results that completed successfully."""
@@ -213,7 +217,9 @@ class BatchResult(Sequence[SimulationResult]):
         Deletes the temporary run directories idfkit created for jobs without an
         ``output_dir``; a job's own ``output_dir`` is never touched. Using the
         batch as a context manager (``with simulate_batch(jobs) as batch:``)
-        calls this on exit. Safe to call more than once.
+        calls this on exit. Safe to call more than once. A batch garbage-collected
+        without it deletes those directories then, once no result of it is
+        reachable, and emits one ``ResourceWarning``.
         """
         for result in self.results:
             result.cleanup()

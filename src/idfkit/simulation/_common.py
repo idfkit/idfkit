@@ -13,6 +13,7 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+from ._run_dir import RunDirLease, register_temp_run_dir
 from .config import EnergyPlusConfig, find_energyplus
 
 PREPROCESSOR_TIMEOUT_ENV = "IDFKIT_PREPROCESSOR_TIMEOUT"
@@ -687,12 +688,16 @@ class RunDirectoryGuard:
 
     def __init__(self) -> None:
         self._owned: Path | None = None
+        self._lease: RunDirLease | None = None
 
     def prepare(self, output_dir: str | Path | None, weather_path: Path | None) -> Path:
         """Create and populate the run directory, as [prepare_run_directory][idfkit.simulation._common.prepare_run_directory]."""
         if output_dir is not None:
             return prepare_run_directory(output_dir, weather_path)
         self._owned = Path(tempfile.mkdtemp(prefix="idfkit_sim_"))
+        # Registered before anything else can fail, so the result built for it finds the lease; this guard
+        # holds it until then, and the result (with its copies) from then on.
+        self._lease = register_temp_run_dir(self._owned)
         return _populate_run_directory(self._owned, weather_path)
 
     def __enter__(self) -> RunDirectoryGuard:
@@ -700,6 +705,8 @@ class RunDirectoryGuard:
 
     def __exit__(self, exc_type: type[BaseException] | None, *exc: object) -> None:
         if exc_type is not None and self._owned is not None:
+            if self._lease is not None:
+                self._lease.release()  # deleted here, without the warning meant for a missing cleanup
             shutil.rmtree(self._owned, ignore_errors=True)
 
 

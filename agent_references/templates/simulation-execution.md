@@ -42,7 +42,7 @@
 
 ## Cleaning up the run directory
 
-The result reads its files from `result.run_dir` lazily, so `simulate()` cannot delete the temp directory it creates when `output_dir` is omitted. Delete it yourself once you have read what you need: leave a `with simulate(...) as result:` block (the quick start above), or call `result.cleanup()`. Both close the SQLite connection first (an open one locks `eplus.sql` on Windows) and delete `run_dir` only when idfkit created it (`result.owns_run_dir`); a directory you passed as `output_dir`, a remote `fs=` directory and a cache entry are never touched. `cleanup()` is idempotent. Async results take `async with await async_simulate(...) as result:` or `await result.async_cleanup()`, and a `BatchResult` from either batch function takes `with` / `async with` or `batch.cleanup()`, which cleans every job's result. Without any of these, each run without an `output_dir` leaves an `idfkit_sim_*` directory in the system temp folder.
+The result reads its files from `result.run_dir` lazily, so `simulate()` cannot delete the temp directory it creates when `output_dir` is omitted. Delete it yourself once you have read what you need: leave a `with simulate(...) as result:` block (the quick start above), or call `result.cleanup()`. Both close the SQLite connection first (an open one locks `eplus.sql` on Windows) and delete `run_dir` only when idfkit created it (`result.owns_run_dir`); a directory you passed as `output_dir`, a remote `fs=` directory and a cache entry are never touched. `cleanup()` is idempotent. Async results take `async with await async_simulate(...) as result:` or `await result.async_cleanup()`, and a `BatchResult` from either batch function takes `with` / `async with` or `batch.cleanup()`, which cleans every job's result. A result dropped without any of these deletes its `idfkit_sim_*` directory when it is garbage-collected (or at interpreter exit) and emits a `ResourceWarning`, as `tempfile.TemporaryDirectory` does, once per result or once per `BatchResult`; copies of a result and the batch holding it keep the directory alive until the last one goes. Treat the warning as a missing cleanup, and pass `output_dir` for files you want to keep after the result is gone. A pickled result opts out (another process may read the directory) and leaves the directory to you. Run with `python -X dev` or `-W always::ResourceWarning` to see the warnings, which Python hides by default.
 
 ## Discovering EnergyPlus
 
@@ -187,6 +187,21 @@ With `fs=`, EnergyPlus runs in a local temp directory that is deleted once its o
 
     ```python
     --8<-- "agent_references/snippets/simulation-execution.py:mistake-errors-good"
+    ```
+
+!!! failure "iterating a batch and dropping it"
+
+    ```python
+    batch = simulate_batch(jobs, max_workers=4)
+    for job, res in zip(jobs, batch):
+        print(res.errors.summary())
+    # each job's idfkit_sim_* dir lives until the batch is garbage-collected, then ResourceWarning
+    ```
+
+!!! success "clean up with `with`, or give each job an `output_dir` to keep the files"
+
+    ```python
+    --8<-- "agent_references/snippets/simulation-execution.py:mistake-cleanup-good"
     ```
 
 ## Related

@@ -211,3 +211,16 @@ if result.errors.has_severe:
         print(msg.severity, msg.message)
     raise SystemExit("Simulation failed")
 # --8<-- [end:mistake-errors-good]
+
+
+# --8<-- [start:mistake-cleanup-good]
+with simulate_batch(jobs, max_workers=4) as batch:  # temp run dirs deleted on exit, no ResourceWarning
+    for job, result in zip(jobs, batch):
+        print(job.label, result.errors.summary())
+
+kept = [
+    SimulationJob(model=job.model, weather=job.weather, label=job.label, output_dir=f"runs/{job.label}") for job in jobs
+]
+for result in simulate_batch(kept, max_workers=4):  # your output_dir is never deleted
+    print(result.run_dir)
+# --8<-- [end:mistake-cleanup-good]

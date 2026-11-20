@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 from ..exceptions import OutputNotFoundError, SimulationError
+from ._run_dir import RunDirLease, group_batch, lease_for
 from .parsers.err import ErrorMessage, ErrorReport
 
 if TYPE_CHECKING:
@@ -33,14 +34,35 @@ __all__ = [
     "SimulationResult",
 ]
 
-# Sentinel for "not yet parsed". A missing output file is not cached: its accessor raises each time.
-_UNSET: Any = object()
+
+class _Unset:
+    """Sentinel for "not yet parsed". A missing output file is not cached: its accessor raises each time.
+
+    A class rather than ``object()``, so a pickled or deep-copied result gets this same object back
+    and still knows which outputs it has not parsed.
+    """
+
+    __slots__ = ()
+
+    def __reduce__(self) -> str:
+        return "_UNSET"
+
+    def __repr__(self) -> str:
+        return "<unset>"
+
+
+_UNSET: Any = _Unset()
 
 #: ``run_dir`` of the result for a batch job that failed before EnergyPlus ran
 #: and that named no ``output_dir``. It lies under the null device, so it can
 #: never be created, and the output accessors never look inside it: a batch of
 #: refused jobs leaves nothing behind.
 REFUSED_RUN_DIR = Path(os.devnull) / "idfkit-refused-job"
+
+
+def group_batch_results(results: Iterable[SimulationResult]) -> None:
+    """Make the results of one batch report a missing cleanup with one ``ResourceWarning`` between them."""
+    group_batch(object.__getattribute__(result, "_run_dir_lease") for result in results)
 
 
 @dataclass(frozen=True)
@@ -257,7 +279,10 @@ class SimulationResult:
             Only then do [cleanup][idfkit.simulation.result.SimulationResult.cleanup]
             and the ``with`` / ``async with`` blocks delete it. ``False`` for a
             caller's ``output_dir``, a remote ``fs`` directory and a cache entry,
-            which are never deleted.
+            which are never deleted. A temporary directory nobody cleans up is
+            deleted, with a ``ResourceWarning``, once no result that refers to it
+            (copies and the batch holding it included) is reachable any more, or
+            at interpreter exit; a pickled result opts out of this.
         cancelled: ``True`` for a batch job that ``fail_fast=True`` cancelled
             after another job failed: it never started, or its EnergyPlus run
             was killed. Such a result is failed, and like a refused one carries
@@ -288,11 +313,18 @@ class SimulationResult:
     _cached_html: Any = field(default=_UNSET, init=False, repr=False)
     _cached_eso: Any = field(default=_UNSET, init=False, repr=False)
     _cached_mtr: Any = field(default=_UNSET, init=False, repr=False)
+    # Shared by every result that owns the same idfkit-created temporary run directory; deletes it, with a
+    # ResourceWarning, once none of them is reachable (see _run_dir). None for any other directory.
+    _run_dir_lease: RunDirLease | None = field(default=None, init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if self.fs is not None and self.async_fs is not None:
             msg = "fs and async_fs are mutually exclusive — provide one or neither"
             raise ValueError(msg)
+        if self.owns_run_dir and self.fs is None and self.async_fs is None:
+            # Only a directory simulate() registered when it created it has a lease, so a result built
+            # by hand with owns_run_dir=True is never deleted behind the caller's back.
+            self._run_dir_lease = lease_for(self.run_dir)
 
     def __repr__(self) -> str:
         if self.refusal is not None:
@@ -341,6 +373,11 @@ class SimulationResult:
         not parsed before the delete can no longer be read. Safe to call more
         than once.
 
+        A result that owns its directory and is garbage-collected without this
+        deletes the directory then and emits a ``ResourceWarning``, as
+        ``tempfile.TemporaryDirectory`` does; the warning means a cleanup is
+        missing.
+
         Using the result as a context manager calls this on exit::
 
             with simulate(model, "weather.epw") as result:
@@ -357,6 +394,9 @@ class SimulationResult:
     def _remove_run_dir(self) -> None:
         if self.run_dir.exists():
             shutil.rmtree(self.run_dir)
+        # Released only once deleted: if rmtree raised, garbage collection tries again (ignoring errors).
+        if self._run_dir_lease is not None:
+            self._run_dir_lease.release()
 
     async def async_cleanup(self) -> None:
         """Close open handles and delete ``run_dir`` if idfkit created it (async).
