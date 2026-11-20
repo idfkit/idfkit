@@ -39,7 +39,7 @@ for warn in errs.warnings:
 # --8<-- [start:timeseries]
 ts = result.sql.get_timeseries(
     variable_name="Zone Mean Air Temperature",
-    key_value="Office",  # zone, surface, system name; "*" for environment vars
+    key_value="Office",  # zone, surface, system name; "*" (default) only if one key is reported
     frequency="Hourly",  # optional filter
     environment=None,  # None=all, "annual", or "sizing"
 )
@@ -50,6 +50,18 @@ ts.values  # tuple[float, ...]
 # Pandas (requires idfkit[dataframes])
 df = ts.to_dataframe()
 # --8<-- [end:timeseries]
+
+
+# --8<-- [start:lookup-errors]
+from idfkit.exceptions import ResultLookupError
+
+try:
+    ts = result.sql.get_timeseries("Zone Air Temperature")  # reported for every zone
+except ResultLookupError as e:
+    print(e)  # ... is reported for 6 keys (PLENUM-1, SPACE1-1, ...); pass key_value= to pick one.
+    print(e.available)  # ('PLENUM-1', 'SPACE1-1', ...): the keys you can pass
+ts = result.sql.get_timeseries("zone air temperature", "space1-1")  # case-insensitive
+# --8<-- [end:lookup-errors]
 
 
 # --8<-- [start:tabular]

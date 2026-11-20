@@ -25,9 +25,11 @@ from __future__ import annotations
 import sqlite3
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 
+from idfkit.exceptions import ResultLookupError
 from idfkit.simulation.parsers.sql import EnvironmentInfo, SQLResult, TabularRow, VariableInfo
 
 
@@ -271,13 +273,184 @@ class TestSQLResultTimeSeries:
         assert ts.key_value == "THERMAL ZONE 1"
 
     def test_variable_not_found(self, sql_db: Path) -> None:
-        with SQLResult(sql_db) as sql, pytest.raises(KeyError, match="Variable not found"):
+        with SQLResult(sql_db) as sql, pytest.raises(KeyError, match="'Nonexistent Variable' is not in this run"):
             sql.get_timeseries("Nonexistent Variable")
 
     def test_frequency(self, sql_db: Path) -> None:
         with SQLResult(sql_db) as sql:
             ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
         assert ts.frequency == "Hourly"
+
+
+def _add_multi_key_outputs(db_path: Path) -> None:
+    """Add a variable reported for three zones and a meter reported at two frequencies."""
+    conn = sqlite3.connect(str(db_path))
+    cur = conn.cursor()
+    for index, key in ((10, "PLENUM-1"), (11, "SPACE1-1"), (12, "SPACE2-1")):
+        cur.execute(
+            "INSERT INTO ReportDataDictionary VALUES (?, 0, 'Zone', 'Facility', 'Zone', ?, "
+            "'Zone Air Temperature', 'Hourly', '', 'C')",
+            (index, key),
+        )
+        cur.execute(
+            "INSERT INTO ReportData (TimeIndex, ReportDataDictionaryIndex, Value) VALUES (3, ?, ?)", (index, index)
+        )
+    for index, freq in ((20, "Hourly"), (21, "Monthly")):
+        cur.execute(
+            "INSERT INTO ReportDataDictionary VALUES (?, 1, 'Zone', 'Facility', 'Zone', NULL, "
+            "'Electricity:Building', ?, '', 'J')",
+            (index, freq),
+        )
+        cur.execute(
+            "INSERT INTO ReportData (TimeIndex, ReportDataDictionaryIndex, Value) VALUES (3, ?, ?)", (index, index)
+        )
+    conn.commit()
+    conn.close()
+
+
+class TestSQLResultLookup:
+    """get_timeseries() resolves to one series, case-insensitively, and explains a failed lookup."""
+
+    def test_default_key_refuses_a_variable_reported_for_several_keys(self, sql_db: Path) -> None:
+        _add_multi_key_outputs(sql_db)
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError) as exc_info:
+            sql.get_timeseries("Zone Air Temperature")
+        assert str(exc_info.value) == (
+            "Variable 'Zone Air Temperature' is reported for 3 keys (PLENUM-1, SPACE1-1, SPACE2-1); "
+            "pass key_value= to pick one."
+        )
+        assert exc_info.value.available == ("PLENUM-1", "SPACE1-1", "SPACE2-1")
+
+    def test_several_frequencies_ask_for_one(self, sql_db: Path) -> None:
+        _add_multi_key_outputs(sql_db)
+        with SQLResult(sql_db) as sql:
+            with pytest.raises(ResultLookupError, match=r"at 2 frequencies \(Hourly, Monthly\); pass frequency="):
+                sql.get_timeseries("Electricity:Building")
+            ts = sql.get_timeseries("Electricity:Building", frequency="monthly")
+        assert ts.frequency == "Monthly"
+        assert ts.values == (21.0,)
+
+    def test_default_key_still_reads_a_single_key_variable(self, sql_db: Path) -> None:
+        _add_multi_key_outputs(sql_db)
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries("Zone Mean Air Temperature")
+        assert ts.key_value == "THERMAL ZONE 1"
+
+    def test_name_key_and_frequency_ignore_case(self, sql_db: Path) -> None:
+        _add_multi_key_outputs(sql_db)
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries("zone air temperature", "space1-1", frequency="HOURLY")
+        assert (ts.variable_name, ts.key_value, ts.values) == ("Zone Air Temperature", "SPACE1-1", (11.0,))
+
+    def test_unknown_variable_suggests_the_closest_name(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError) as exc_info:
+            sql.get_timeseries("Zone Mean Air Temprature", "THERMAL ZONE 1")
+        err = exc_info.value
+        assert isinstance(err, KeyError)
+        assert str(err).startswith(
+            "Variable 'Zone Mean Air Temprature' is not in this run's output. "
+            "Did you mean 'Zone Mean Air Temperature'? Request it with an Output:Variable"
+        )
+        assert err.suggestions == ("Zone Mean Air Temperature",)
+
+    def test_unknown_key_lists_the_reported_keys(self, sql_db: Path) -> None:
+        _add_multi_key_outputs(sql_db)
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError) as exc_info:
+            sql.get_timeseries("Zone Air Temperature", "SPACE9-1")
+        assert str(exc_info.value) == (
+            "Variable 'Zone Air Temperature' has no key 'SPACE9-1'. Did you mean 'SPACE2-1'? "
+            "It is reported for 3 keys: PLENUM-1, SPACE1-1, SPACE2-1."
+        )
+
+    def test_unknown_frequency_lists_the_reported_ones(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError) as exc_info:
+            sql.get_timeseries("Zone Mean Air Temperature", "THERMAL ZONE 1", frequency="Daily")
+        assert str(exc_info.value) == (
+            "Variable 'Zone Mean Air Temperature' for key 'THERMAL ZONE 1' is not reported at frequency 'Daily'. "
+            "It is reported at: Hourly."
+        )
+
+    def test_long_key_lists_are_truncated(self, tmp_path: Path, sql_db: Path) -> None:
+        conn = sqlite3.connect(str(sql_db))
+        for i in range(12):
+            conn.execute(
+                "INSERT INTO ReportDataDictionary VALUES (?, 0, 'Zone', 'Facility', 'Zone', ?, 'Surface Temp', 'Hourly', '', 'C')",
+                (100 + i, f"WALL {i:02d}"),
+            )
+        conn.commit()
+        conn.close()
+        with (
+            SQLResult(sql_db) as sql,
+            pytest.raises(ResultLookupError, match=r"WALL 09 and 2 more\); pass key_value="),
+        ):
+            sql.get_timeseries("Surface Temp")
+
+    def test_error_survives_pickling(self) -> None:
+        import pickle
+
+        err = ResultLookupError("Variable 'X' is not in this run's output.", suggestions=("Y",), available=("A",))
+        copy = pickle.loads(pickle.dumps(err))  # noqa: S301
+        assert (str(copy), copy.suggestions, copy.available) == (str(err), ("Y",), ("A",))
+
+
+def _add_monthly_zone_temperature(db_path: Path, frequency: str = "Monthly") -> None:
+    """Report 'Zone Mean Air Temperature' for THERMAL ZONE 1 at a second frequency."""
+    conn = sqlite3.connect(str(db_path))
+    conn.execute(
+        "INSERT INTO ReportDataDictionary VALUES (30, 0, 'Zone', 'Facility', 'Zone', 'THERMAL ZONE 1', "
+        "'Zone Mean Air Temperature', ?, '', 'C')",
+        (frequency,),
+    )
+    conn.execute("INSERT INTO ReportData (TimeIndex, ReportDataDictionaryIndex, Value) VALUES (3, 30, 50.0)")
+    conn.commit()
+    conn.close()
+
+
+class _HeatmapBackend:
+    """Records the heatmap call made by plot_comfort_hours."""
+
+    def __init__(self) -> None:
+        self.data: list[list[float]] = []
+
+    def heatmap(self, data: list[list[float]], **kwargs: Any) -> str:
+        self.data = data
+        return "heatmap"
+
+
+class TestPlotComfortHoursWithSQLResult:
+    """plot_comfort_hours() reads a real SQLResult whose temperature is reported at several frequencies."""
+
+    def test_prefers_hourly_when_several_frequencies_are_reported(self, sql_db: Path) -> None:
+        from idfkit.simulation.plotting.visualizations import plot_comfort_hours
+
+        _add_monthly_zone_temperature(sql_db)
+        backend = _HeatmapBackend()
+        with SQLResult(sql_db) as sql:
+            assert plot_comfort_hours(sql, ["THERMAL ZONE 1"], backend=backend) == "heatmap"  # type: ignore[arg-type]
+        # The hourly series lies in 20-26 C; the monthly 50 C value would have given 0 %.
+        assert backend.data[0][0] == 100.0
+
+    def test_frequency_argument_picks_the_series(self, sql_db: Path) -> None:
+        from idfkit.simulation.plotting.visualizations import plot_comfort_hours
+
+        _add_monthly_zone_temperature(sql_db)
+        backend = _HeatmapBackend()
+        with SQLResult(sql_db) as sql:
+            plot_comfort_hours(sql, ["THERMAL ZONE 1"], frequency="Monthly", backend=backend)  # type: ignore[arg-type]
+        assert backend.data[0][0] == 0.0
+
+    def test_no_hourly_series_still_asks_for_frequency(self, sql_db: Path) -> None:
+        from idfkit.simulation.plotting.visualizations import plot_comfort_hours
+
+        conn = sqlite3.connect(str(sql_db))
+        conn.execute(
+            "UPDATE ReportDataDictionary SET ReportingFrequency = 'Zone Timestep' WHERE ReportDataDictionaryIndex = 2"
+        )
+        conn.commit()
+        conn.close()
+        _add_monthly_zone_temperature(sql_db)
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError, match="pass frequency="):
+            plot_comfort_hours(sql, ["THERMAL ZONE 1"], backend=_HeatmapBackend())  # type: ignore[arg-type]
 
 
 class TestSQLResultEnvironmentFilter:
@@ -416,7 +589,7 @@ class TestSQLResultGetTabularValue:
         assert val == "12.50"
 
     def test_not_found_raises(self, sql_db: Path) -> None:
-        with SQLResult(sql_db) as sql, pytest.raises(KeyError, match="No tabular data found"):
+        with SQLResult(sql_db) as sql, pytest.raises(KeyError, match="No tabular row 'Nonexistent'"):
             sql.get_tabular_value(
                 report_name="AnnualBuildingUtilityPerformanceSummary",
                 table_name="End Uses",
@@ -464,6 +637,30 @@ class TestSQLResultGetTabularValue:
                 row_name="Row",
                 column_name="Col",
             )
+
+
+class TestSQLResultGetTabularValueErrors:
+    """get_tabular_value() names the argument that matches nothing, with the closest spelling."""
+
+    def test_misspelt_report_suggests_the_report(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError) as exc_info:
+            sql.get_tabular_value("AnnualBuildingUtilityPerformanceSumary", "End Uses", "Heating", "Electricity")
+        assert str(exc_info.value) == (
+            "No tabular report 'AnnualBuildingUtilityPerformanceSumary'. "
+            "Did you mean 'AnnualBuildingUtilityPerformanceSummary'? list_reports() lists them all."
+        )
+
+    def test_misspelt_table_lists_the_report_tables(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError) as exc_info:
+            sql.get_tabular_value("AnnualBuildingUtilityPerformanceSummary", "End Use", "Heating", "Electricity")
+        assert str(exc_info.value) == (
+            "No tabular table 'End Use' in report 'AnnualBuildingUtilityPerformanceSummary', "
+            "report_for 'Entire Facility'. Did you mean 'End Uses'? Available: End Uses."
+        )
+
+    def test_unknown_column_is_named(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError, match="No tabular column 'Gas'"):
+            sql.get_tabular_value("AnnualBuildingUtilityPerformanceSummary", "End Uses", "Heating", "Gas")
 
 
 class TestSQLResultListVariables:

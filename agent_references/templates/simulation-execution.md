@@ -58,7 +58,7 @@ If EnergyPlus is missing, `EnergyPlusNotFoundError` is raised.
 --8<-- "agent_references/snippets/simulation-execution.py:version-handling"
 ```
 
-Backward migration (installed EP older than the model) is never attempted — it raises `VersionMismatchError`.
+Backward migration (installed EP older than the model) is never attempted — it raises `VersionMismatchError`. This is what a `new_document()` model hits when the installed EnergyPlus is older than the latest bundled release, since `new_document()` defaults to the latest: build the model at the installed release instead, `new_document(version=idfkit.simulation.find_energyplus().version)`, or install the newer EnergyPlus. The error message names both fixes, and `auto_migrate=True` for an older model.
 
 ## Design day vs. annual
 
@@ -81,6 +81,8 @@ For UI loops or asyncio-based batch tooling:
 ```
 
 `async_simulate_batch` and `async_simulate_batch_stream` give you async/streaming variants. `simulate_batch` runs jobs concurrently on a thread pool (use `max_workers` to cap parallelism); each job is an EnergyPlus subprocess, so threads are all the parallelism it needs and documents never cross a process boundary.
+
+`SimulationJob` takes the per-run `simulate()` options, `auto_migrate=True` among them, so a batch of older models can be migrated per job.
 
 A job that fails never raises out of the batch: its result has `success=False` and the reason in `result.stderr`. A job refused before EnergyPlus ran (for example `weather=None` on a job that is not design-day-only) and that named no `output_dir` gets `run_dir == REFUSED_RUN_DIR`, a placeholder that is never created; its `errors` report is empty, so read `stderr` for the reason.
 

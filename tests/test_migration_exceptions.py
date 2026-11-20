@@ -30,6 +30,21 @@ class TestVersionMismatchError:
         text = str(err)
         assert "Backward migration is not supported" not in text
 
+    def test_backward_names_both_fixes(self) -> None:
+        # A new_document() model (the latest release) run on an older installed EnergyPlus.
+        text = str(VersionMismatchError(current=(26, 2, 0), target=(26, 1, 0)))
+        assert "new_document(version=(26, 1, 0))" in text
+        assert "version=idfkit.simulation.find_energyplus().version" in text
+        assert 'energyplus=idfkit.simulation.find_energyplus(version="26.2.0")' in text
+        assert "install EnergyPlus 26.2.0" in text
+        assert "auto_migrate" not in text
+
+    def test_forward_names_auto_migrate(self) -> None:
+        err = VersionMismatchError(current=(24, 1, 0), target=(24, 2, 0), migration_chain=(((24, 1, 0), (24, 2, 0)),))
+        text = str(err)
+        assert "auto_migrate=True to simulate() (or to each SimulationJob in a batch)" in text
+        assert "idfkit.migrate(model, target_version=(24, 2, 0))" in text
+
 
 class TestMigrationError:
     def test_carries_structured_context(self) -> None:

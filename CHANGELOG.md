@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `SimulationJob` took `auto_migrate=`, so `simulate_batch()` and `async_simulate_batch()` could
+  migrate older models per job, as `simulate()` does.
+  ([#325](https://github.com/idfkit/idfkit/pull/325))
+- `plot_comfort_hours()` took `frequency=`, and read the hourly series when the zone temperature
+  was reported at several frequencies. ([#325](https://github.com/idfkit/idfkit/pull/325))
 - `load_idf()`, `load_epjson()` and `load_idf_with_diagnostics()` took `as_type=`, `since=` and
   `before=`, as `as_version()` does, and returned the document typed for that release or range,
   raising `TypeError` if the file was of another ([#309](https://github.com/idfkit/idfkit/pull/309)).
@@ -49,6 +54,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `SQLResult.get_timeseries()` with the default `key_value="*"` raised
+  `ResultLookupError` listing the keys when a variable was reported for several, instead of returning
+  an arbitrary one; pass `key_value=` (or `frequency=` for several frequencies).
+  ([#325](https://github.com/idfkit/idfkit/pull/325))
+- `SQLResult.get_timeseries()` and `get_tabular_value()` raised `ResultLookupError` (a `KeyError`)
+  naming the closest variable, key or report and the reported keys; variable names matched
+  case-insensitively, as keys did. ([#325](https://github.com/idfkit/idfkit/pull/325))
+- `VersionMismatchError` named its fixes: `new_document(version=...)` at the installed release or
+  installing the model's, and `auto_migrate=True` for an older model.
+  ([#325](https://github.com/idfkit/idfkit/pull/325))
 - **Breaking:** `add()` with a field the type does not have raised `InvalidFieldError`, as `update()`
   does, instead of `ValidationFailedError` (`W003`); catch `InvalidFieldError`.
   ([#324](https://github.com/idfkit/idfkit/pull/324))

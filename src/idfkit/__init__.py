@@ -73,6 +73,7 @@ from .exceptions import (
     NoDesignDaysError,
     ParseError,
     RangeError,
+    ResultLookupError,
     SchemaNotFoundError,
     SimulationError,
     UnknownObjectTypeError,
@@ -244,7 +245,10 @@ def new_document(
             type in :mod:`idfkit.versioned`, which is ``IDFDocument``: it is the
             run-time class of every document, so ``new_document(type(doc))`` would
             create a document of the latest release whatever ``doc``'s. Call
-            ``new_document()`` for the latest release.
+            ``new_document()`` for the latest release. ``simulate()`` runs a model
+            only on an EnergyPlus of its release (or a newer one, with
+            ``auto_migrate=True``), so to simulate on an older installed EnergyPlus,
+            create the model at its release: ``new_document(version=idfkit.simulation.find_energyplus().version)``.
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
             of returning ``None``.
@@ -346,6 +350,7 @@ __all__ = [
     "RangeError",
     "ReferenceGraph",
     "ResolvedSurface",
+    "ResultLookupError",
     "Scene",
     "SceneBounds",
     "SchemaManager",
