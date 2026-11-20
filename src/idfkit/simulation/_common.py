@@ -462,6 +462,7 @@ def upload_results(local_dir: Path, remote_dir: Path, fs: FileSystem, *, exclude
         exclude: File names in *local_dir* not to upload (a cache entry's
             metadata file, for example).
     """
+    fs.makedirs(remote_dir, exist_ok=True)
     for p in local_dir.iterdir():
         if p.is_file() and p.name not in exclude:
             remote_path = str(remote_dir / p.name)
@@ -490,6 +491,7 @@ async def async_upload_results(
         data = await asyncio.to_thread(p.read_bytes)
         await fs.write_bytes(remote_path, data)
 
+    await fs.makedirs(remote_dir, exist_ok=True)
     tasks = [asyncio.create_task(_upload_one(p)) for p in local_dir.iterdir() if p.is_file() and p.name not in exclude]
     if tasks:
         await asyncio.gather(*tasks)

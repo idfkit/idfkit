@@ -98,6 +98,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** `simulate(design_day=True)` and `async_simulate()` refused a model with no
   `SizingPeriod:DesignDay` before starting EnergyPlus, naming `DesignDayManager.apply_to_model()`
   and `apply_ashrae_sizing()` as the fix. ([#329](https://github.com/idfkit/idfkit/pull/329))
+- **Breaking:** `HTMLTable` read the first row of an EnergyPlus table, whose headers are `<td>` cells,
+  as its `header`, so `to_dict()` returned the data; `rows[0]` became the first data row.
+  ([#335](https://github.com/idfkit/idfkit/pull/335))
+- `simulate_batch()` and `async_simulate_batch()` raised `ValueError` up front when given `fs=` and a
+  job without `output_dir`, instead of returning a failed result per job.
+  ([#335](https://github.com/idfkit/idfkit/pull/335))
+- A batch job refused before EnergyPlus ran carried the reason in `SimulationResult.refusal`, shown in
+  its repr, `errors` and `raise_for_status()`, and read no stale files from `output_dir`; one that timed
+  out still read its run's outputs. ([#335](https://github.com/idfkit/idfkit/pull/335))
 - Validation error `E009` quoted the reference as typed instead of uppercased, named the reference
   list it was looked up in and suggested the closest declared names.
   ([#328](https://github.com/idfkit/idfkit/pull/328))
@@ -246,6 +255,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#330](https://github.com/idfkit/idfkit/pull/330))
 - `Schedule:Compact` keywords written without a colon (`Through 12/31`, `Until 24:00`) were read.
   ([#329](https://github.com/idfkit/idfkit/pull/329))
+- `simulate(fs=LocalFileSystem(), output_dir=...)` and its async counterpart failed after the run
+  when `output_dir` did not exist; local file systems created parent directories, as S3 needs none.
+  ([#335](https://github.com/idfkit/idfkit/pull/335))
 - `simulate()` and `async_simulate()` with both `cache=` and `fs=` uploaded a cache hit to
   `output_dir` and cached a miss; a hit had uploaded nothing, and a miss was never stored.
   ([#334](https://github.com/idfkit/idfkit/pull/334))

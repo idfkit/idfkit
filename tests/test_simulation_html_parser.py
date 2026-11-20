@@ -136,16 +136,19 @@ class TestTitletable:
         # Subsequent rows are data
         assert rows[1] == ["Electricity", "12.50", "3.40"]
 
-    def test_table_without_header(self) -> None:
-        """Tables with no header row should not prepend an empty header."""
-        html = "<html><body><b>No Header Table</b><table><tr><td>A</td><td>B</td></tr></table></body></html>"
+    def test_table_without_th_row(self) -> None:
+        """A table with no <th> row keeps its first row first, as its header."""
+        html = (
+            "<html><body><b>No TH Table</b><table>"
+            "<tr><td>A</td><td>B</td></tr><tr><td>1</td><td>2</td></tr>"
+            "</table></body></html>"
+        )
         result = HTMLResult.from_string(html)
         pairs = result.titletable()
         assert len(pairs) == 1
         title, rows = pairs[0]
-        assert title == "No Header Table"
-        # No header was parsed, so rows contains only data rows
-        assert rows == [["A", "B"]]
+        assert title == "No TH Table"
+        assert rows == [["A", "B"], ["1", "2"]]
 
 
 # ---------------------------------------------------------------------------
@@ -287,7 +290,23 @@ class TestParserEdgeCases:
         html = "<html><body><tr><td>outside</td></tr><b>T</b><table><tr><td>v</td></tr></table></body></html>"
         result = HTMLResult.from_string(html)
         assert len(result) == 1
-        assert result[0].rows == [["v"]]
+        assert result[0].header == ["v"]
+        assert result[0].rows == []
+
+    def test_energyplus_td_header_row_becomes_header(self) -> None:
+        """EnergyPlus writes column headers as <td>; the first row is the header."""
+        html = (
+            "<html><body><b>Site and Source Energy</b><table>"
+            '<tr><td></td><td align="right">Total Energy [GJ]</td>'
+            '<td align="right">Energy Per Total Building Area [MJ/m2]</td></tr>'
+            '<tr><td align="right">Total Site Energy</td><td align="right">  12.50</td>'
+            '<td align="right">&nbsp;</td></tr>'
+            "</table></body></html>"
+        )
+        table = HTMLResult.from_string(html)[0]
+        assert table.header == ["", "Total Energy [GJ]", "Energy Per Total Building Area [MJ/m2]"]
+        assert table.rows == [["Total Site Energy", "12.50", ""]]
+        assert table.to_dict()["Total Site Energy"]["Total Energy [GJ]"] == "12.50"
 
     def test_bold_inside_table_not_treated_as_title(self) -> None:
         """A <b> tag inside a <table> should not update the title."""

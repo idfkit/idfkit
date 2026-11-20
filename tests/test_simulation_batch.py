@@ -10,6 +10,7 @@ import pytest
 from conftest import REFUSAL_R2, InMemoryFileSystem, design_day_model
 
 from idfkit import LATEST_VERSION, new_document
+from idfkit.exceptions import SimulationError
 from idfkit.simulation.batch import REFUSED_RUN_DIR, BatchResult, SimulationJob, simulate_batch
 from idfkit.simulation.cache import SimulationCache
 from idfkit.simulation.config import EnergyPlusConfig
@@ -331,6 +332,81 @@ class TestSimulateBatch:
         assert not result[0].success
         assert result[0].run_dir == out_dir
 
+    def test_refused_job_ignores_stale_err_in_output_dir(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """A refused job's errors give its reason, not a stale .err left in its output_dir."""
+        out_dir = tmp_path / "out"
+        out_dir.mkdir()
+        (out_dir / "eplusout.err").write_text("   ** Severe  ** stale from an earlier run\n")
+        with patch("idfkit.simulation.batch.simulate", side_effect=OSError("boom")):
+            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+            r = simulate_batch(jobs, energyplus=mock_config)[0]
+        assert r.refusal == "boom"
+        assert r.err_path is None
+        assert r.errors.severe_count == 0
+        assert [m.message for m in r.errors.fatal] == ["refused: boom"]
+
+    def test_timeout_after_energyplus_ran_reads_its_err(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """A job that timed out after EnergyPlus wrote its .err is a failed run, not a refusal."""
+        out_dir = tmp_path / "out"
+        out_dir.mkdir()
+        (out_dir / "eplusout.err").write_text("   ** Severe  ** stale from an earlier run\n")
+
+        def run_then_time_out(**_: object) -> SimulationResult:
+            (out_dir / "eplusout.err").write_text("   ** Severe  ** from this run\n   ** Severe  ** and another\n")
+            msg = "Simulation timed out after 5 seconds"
+            raise SimulationError(msg, stderr="partial stderr")
+
+        with patch("idfkit.simulation.batch.simulate", side_effect=run_then_time_out):
+            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+            r = simulate_batch(jobs, energyplus=mock_config)[0]
+        assert r.refusal is None
+        assert r.err_path == out_dir / "eplusout.err"
+        assert r.errors.severe_count == 2
+        assert not repr(r).startswith("SimulationResult(refused")
+
+    def test_refusal_reason_excludes_stderr_tail(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """A SimulationError's stderr appears once in raise_for_status(), not in the refusal reason."""
+        exc = SimulationError("Simulation timed out after 5 seconds", exit_code=3, stderr="line1 from eplus\nline2")
+        with patch("idfkit.simulation.batch.simulate", side_effect=exc):
+            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(tmp_path / "out"))]
+            r = simulate_batch(jobs, energyplus=mock_config)[0]
+        assert r.refusal == "Simulation timed out after 5 seconds"
+        assert repr(r).startswith("SimulationResult(refused: 'Simulation timed out after 5 seconds', run_dir=")
+        with pytest.raises(SimulationError) as info:
+            r.raise_for_status()
+        assert str(info.value).count("line1 from eplus") == 1
+        assert str(info.value).count("(exit code 3)") == 1
+
+    def test_refused_result_repr_summary_and_raise(self, mock_config: EnergyPlusConfig) -> None:
+        """A refused job says so in its repr, its error summary and raise_for_status()."""
+        r = simulate_batch([SimulationJob(model=new_document(), weather="/no/such.epw")], energyplus=mock_config)[0]
+        assert r.refusal is not None
+        assert "Weather file not found" in r.refusal
+        assert repr(r).startswith(f"SimulationResult(refused: {r.refusal!r}")
+        assert f"refused: {r.refusal}" in r.errors.summary()
+        with pytest.raises(SimulationError, match=r"^Simulation refused: Weather file not found") as info:
+            r.raise_for_status()
+        assert "EnergyPlus simulation failed" not in str(info.value)
+
+    def test_fs_without_output_dir_raises_up_front(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        """fs= with a job lacking output_dir is a configuration error, raised before any job runs."""
+        jobs = [
+            SimulationJob(model=new_document(), weather=weather_file, output_dir="remote/0"),
+            SimulationJob(model=new_document(), weather=weather_file, label="no-dir"),
+        ]
+        with (
+            patch("idfkit.simulation.batch.simulate") as mock_simulate,
+            pytest.raises(ValueError, match=r"output_dir is required.*missing on: no-dir"),
+        ):
+            simulate_batch(jobs, energyplus=mock_config, fs=InMemoryFileSystem())
+        mock_simulate.assert_not_called()
+
     def test_auto_migrate_is_forwarded_to_simulate(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         with patch("idfkit.simulation.batch.simulate", side_effect=RuntimeError("stop")) as mock_simulate:
             jobs = [
@@ -404,7 +480,9 @@ class TestSimulateBatchWithoutWeather:
         assert list(temp_root.iterdir()) == []
         assert all(r.run_dir == REFUSED_RUN_DIR for r in result)
         assert not REFUSED_RUN_DIR.exists()
-        assert result[0].errors.fatal_count == 0
+        assert [m.message for m in result[0].errors.fatal] == [f"refused: {result[0].refusal}"]
+        assert result[0].refusal is not None
+        assert result[0].refusal.startswith("A weather file is required")
 
     def test_refused_result_ignores_files_at_placeholder(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Files another process put at the shared placeholder path are never read as outputs (#228)."""

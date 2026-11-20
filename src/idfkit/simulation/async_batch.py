@@ -49,7 +49,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from .async_runner import async_simulate
-from .batch import BatchResult, SimulationJob, failed_job_result
+from .batch import BatchResult, SimulationJob, check_jobs_for_fs, err_snapshot, failed_job_result
 from .progress import SimulationProgress
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
@@ -128,11 +128,13 @@ async def async_simulate_batch(
         same order as *jobs*.
 
     Raises:
-        ValueError: If *jobs* is empty.
+        ValueError: If *jobs* is empty, or *fs* is given and a job has no
+            ``output_dir``.
     """
     if not jobs:
         msg = "jobs must not be empty"
         raise ValueError(msg)
+    check_jobs_for_fs(jobs, fs)
 
     if on_progress == "tqdm":
         msg = (
@@ -224,11 +226,13 @@ async def async_simulate_batch_stream(
         they finish.
 
     Raises:
-        ValueError: If *jobs* is empty.
+        ValueError: If *jobs* is empty, or *fs* is given and a job has no
+            ``output_dir``.
     """
     if not jobs:
         msg = "jobs must not be empty"
         raise ValueError(msg)
+    check_jobs_for_fs(jobs, fs)
 
     if on_progress == "tqdm":
         msg = (
@@ -292,6 +296,7 @@ async def _async_run_job(
     if on_progress is not None:
         job_cb = _make_async_job_progress_callback(on_progress, idx, job.label)
 
+    before = err_snapshot(job, fs)
     try:
         return await async_simulate(
             model=job.model,
@@ -316,7 +321,7 @@ async def _async_run_job(
         # Catch all exceptions (SimulationError, ExpandObjectsError,
         # EnergyPlusNotFoundError, etc.) so that a single job failure
         # never crashes the entire batch.
-        return failed_job_result(job, exc)
+        return failed_job_result(job, exc, ran=err_snapshot(job, fs) != before)
 
 
 def _make_async_job_progress_callback(

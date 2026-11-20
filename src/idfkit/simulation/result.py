@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 from ..exceptions import SimulationError
-from .parsers.err import ErrorReport
+from .parsers.err import ErrorMessage, ErrorReport
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -34,6 +34,21 @@ _UNSET: Any = object()
 #: never be created, and the output accessors never look inside it: a batch of
 #: refused jobs leaves nothing behind.
 REFUSED_RUN_DIR = Path(os.devnull) / "idfkit-refused-job"
+
+
+def _refusal_report(refusal: str) -> ErrorReport:
+    """The error report of a refused batch job: one fatal message giving the reason."""
+    fatal = ErrorMessage(severity="Fatal", message=f"refused: {refusal}", details=())
+    return ErrorReport(
+        fatal=(fatal,),
+        severe=(),
+        warnings=(),
+        info=(),
+        warmup_converged=False,
+        simulation_complete=False,
+        raw_text="",
+    )
+
 
 #: Lower-cased name stems that mark the tabular report.
 _TABLE_STEMS: tuple[str, ...] = ("table", "tbl")
@@ -158,6 +173,14 @@ class SimulationResult:
         output_suffix: The run's ``--output-suffix`` style (``"C"``, ``"L"``
             or ``"D"``), whose file names are looked up first. ``None`` when
             unknown, which tries the default ``"C"`` names first.
+        refusal: Why a batch job produced no simulation result: the message
+            of the exception ``simulate`` raised for it before EnergyPlus wrote
+            to ``run_dir`` (a refused request, EnergyPlus not found, a failed
+            preprocessor or upload). ``None`` for every result ``simulate``
+            returned, and for a job that raised after EnergyPlus ran in its
+            ``output_dir`` (a timeout), whose result reads that run's outputs. A refused result reads
+            no files from ``run_dir``; its ``errors`` hold one fatal message
+            with this reason.
     """
 
     run_dir: Path
@@ -171,6 +194,7 @@ class SimulationResult:
     async_fs: AsyncFileSystem | None = field(default=None, repr=False)
     migration_report: MigrationReport | None = field(default=None, repr=False)
     output_suffix: Literal["C", "L", "D"] | None = field(default=None, repr=False)
+    refusal: str | None = None
     _cached_errors: Any = field(default=_UNSET, init=False, repr=False)
     _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
@@ -183,6 +207,14 @@ class SimulationResult:
         if self.fs is not None and self.async_fs is not None:
             msg = "fs and async_fs are mutually exclusive — provide one or neither"
             raise ValueError(msg)
+
+    def __repr__(self) -> str:
+        if self.refusal is not None:
+            return f"SimulationResult(refused: {self.refusal!r}, run_dir={self.run_dir!r})"
+        return (
+            f"SimulationResult(run_dir={self.run_dir!r}, success={self.success!r}, exit_code={self.exit_code!r}, "
+            f"runtime_seconds={self.runtime_seconds!r}, output_prefix={self.output_prefix!r})"
+        )
 
     def close(self) -> None:
         """Release any open file handles held by cached parsers.
@@ -243,12 +275,17 @@ class SimulationResult:
 
     def _failure(self, report: ErrorReport, err_path: Path | None) -> SimulationError:
         """The error :meth:`raise_for_status` raises for this failed run."""
+        if self.refusal is not None:
+            msg = f"Simulation refused: {self.refusal}"
+            # A stderr that only restates the reason (the exception's own message) is not repeated.
+            stderr = self.stderr if self.stderr and self.refusal not in self.stderr else None
+            return SimulationError(msg, exit_code=self.exit_code, stderr=stderr, result=self)
         msg = "EnergyPlus simulation failed"
         if report.error_count:
             msg += f"\n{report.summary()}"
         if err_path is not None:
             msg += f"\nFull error report: {err_path}"
-        # Without errors in the .err file (a refused job, a timeout), stderr says why.
+        # Without errors in the .err file (a timeout, a crash), stderr says why.
         stderr = None if report.error_count else self.stderr or None
         return SimulationError(msg, exit_code=self.exit_code, stderr=stderr, result=self)
 
@@ -263,7 +300,9 @@ class SimulationResult:
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         err = self.err_path
-        if err is None:
+        if self.refusal is not None:
+            report = _refusal_report(self.refusal)
+        elif err is None:
             report = ErrorReport.from_string("")
         elif self.fs is not None:
             text = self.fs.read_text(str(err), encoding="latin-1")
@@ -502,7 +541,7 @@ class SimulationResult:
             )
             raise RuntimeError(msg)
 
-        if self.run_dir == REFUSED_RUN_DIR:
+        if self.refusal is not None or self.run_dir == REFUSED_RUN_DIR:
             return None
 
         candidates = [
@@ -546,7 +585,9 @@ class SimulationResult:
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
         err = await self._async_find_output_file(".err")
-        if err is None:
+        if self.refusal is not None:
+            report = _refusal_report(self.refusal)
+        elif err is None:
             report = ErrorReport.from_string("")
         elif self.async_fs is not None:
             text = await self.async_fs.read_text(str(err), encoding="latin-1")
@@ -764,7 +805,7 @@ class SimulationResult:
         Returns:
             Path to the file, or None if not found.
         """
-        if self.run_dir == REFUSED_RUN_DIR:
+        if self.refusal is not None or self.run_dir == REFUSED_RUN_DIR:
             return None
 
         if self.async_fs is not None:

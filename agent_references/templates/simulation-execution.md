@@ -86,7 +86,7 @@ For UI loops or asyncio-based batch tooling:
 
 `simulate_batch(progress=...)` calls the callback with keywords only, `progress(completed=, total=, label=, success=)`; it is typed as `BatchProgressCallback`, and a callback that cannot take all four is refused before any job runs.
 
-A job that fails never raises out of the batch: its result has `success=False` and the reason in `result.stderr`. A job refused before EnergyPlus ran (for example `weather=None` on a job that is not design-day-only) and that named no `output_dir` gets `run_dir == REFUSED_RUN_DIR`, a placeholder that is never created; its `errors` report is empty, so read `stderr` for the reason.
+A job that fails never raises out of the batch: its result has `success=False` and the reason in `result.stderr`. A job for which `simulate()` raised (refused before EnergyPlus ran, for example `weather=None` on a job that is not design-day-only, or EnergyPlus not found) has the reason in `result.refusal`: its repr reads `SimulationResult(refused: '...')`, its `errors` hold one fatal `refused: ...` message, `raise_for_status()` raises `SimulationError("Simulation refused: ...")`, and no output file is read from its `run_dir`. A job that raised after EnergyPlus wrote to its `output_dir` (a timeout) is not a refusal: its `errors` read that run's `.err`. One that named no `output_dir` gets `run_dir == REFUSED_RUN_DIR`, a placeholder that is never created. With `fs=`, every job needs an `output_dir`: `simulate_batch` and `async_simulate_batch` raise `ValueError` before any job runs otherwise.
 
 ## Caching
 

@@ -127,6 +127,11 @@ html = result.html
 if html:
     for table in html.tables:
         print(table.report_name, table.title)
+    # header is the column-header row; rows are the data rows below it.
+    site = html.tablebyname("Site and Source Energy")
+    if site:
+        print(site.header)  # ['', 'Total Energy [GJ]', ...]
+        print(site.to_dict()["Total Site Energy"]["Total Energy [GJ]"])
 # --8<-- [end:html]
 
 
