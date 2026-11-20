@@ -119,6 +119,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `idfkit check` kept a version guard when the `if` test rebound the guarded document with `:=`,
+  missing a `C001` in the body ([#321](https://github.com/idfkit/idfkit/pull/321)).
 - `as_version()` given several types matched the release against one and strictness against
   another, so it could accept a non-strict document as strict or refuse a matching one
   ([#320](https://github.com/idfkit/idfkit/pull/320)).

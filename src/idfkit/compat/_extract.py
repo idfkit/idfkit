@@ -356,10 +356,13 @@ class _LiteralVisitor(ast.NodeVisitor):
                     conjuncts: list[Guard] = []
                     negated: list[Guard] = []
                 else:
+                    # A walrus in the test (``... and (doc := load_idf(...))``) rebinds the document
+                    # after the guard read it, as one in the body would.
+                    test_stmt: list[ast.stmt] = [ast.Expr(value=current.test)]
                     conjuncts = [
                         g
                         for g in self._narrower.guard_conjuncts(current.test, self._scope)
-                        if not self._unsound(g.document, current.body)
+                        if not self._unsound(g.document, current.body) and not rebinds(test_stmt, g.document)
                     ]
                     whole = self._narrower.guard(current.test, self._scope)
                     negated = []
