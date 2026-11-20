@@ -193,6 +193,35 @@ class TestAsyncSimulate:
 
     @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_fs_run_skips_weather_and_deletes_local_dir(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """The input weather file is not uploaded, and the local run directory is gone afterwards."""
+        mock_exec.return_value = _make_mock_process()
+        fs = InMemoryFileSystem()
+        await async_simulate(new_document(), weather_file, energyplus=mock_config, output_dir="remote/output", fs=fs)
+        local_dir = Path(mock_exec.call_args.kwargs["cwd"])
+        assert not local_dir.exists()
+        assert f"remote/output/{weather_file.name}" not in fs._files
+        assert "remote/output/model.idf" in fs._files
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_fs_run_deletes_local_dir_on_timeout(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        proc = _make_mock_process()
+        proc.communicate = AsyncMock(side_effect=asyncio.TimeoutError)
+        mock_exec.return_value = proc
+        fs = InMemoryFileSystem()
+        with pytest.raises(SimulationError, match="timed out"):
+            await async_simulate(
+                new_document(), weather_file, energyplus=mock_config, timeout=10, output_dir="remote/output", fs=fs
+            )
+        assert not Path(mock_exec.call_args.kwargs["cwd"]).exists()
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
     async def test_stdout_stderr_captured(
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -1387,3 +1416,21 @@ class TestAsyncSimulateCacheWithFileSystem:
         assert names_b
         assert names_b == names_a
         assert CACHE_META_FILE not in names_b
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_hit_uploads_from_entry_without_local_copy(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        fs = InMemoryFileSystem()
+        model = new_document()
+        link = tmp_path / "link.epw"
+        link.symlink_to(weather_file)
+        await async_simulate(model, link, energyplus=mock_config, cache=cache, fs=fs, output_dir="a")
+        with patch("idfkit.simulation.async_runner.restore_cached_result", side_effect=AssertionError("local copy")):
+            hit = await async_simulate(model, link, energyplus=mock_config, cache=cache, fs=fs, output_dir="b")
+        assert hit.cached
+        assert "b/model.idf" in fs._files
+        assert not [k for k in fs._files if k.endswith(".epw")]

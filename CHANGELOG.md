@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ValidationError.obj` held the object an issue was found on, and objects of types without a Name
   field printed by their first field (`HVACTemplate:Zone:IdealLoadsAirSystem(zone_name='B')`).
   ([#332](https://github.com/idfkit/idfkit/pull/332))
+- `SQLResult.get_timeseries_many()` and `ESOResult.get_columns()` read several series in one scan of
+  the file, where a loop of `get_timeseries()` or `get_column()` calls scanned it once per series.
+  ([#337](https://github.com/idfkit/idfkit/pull/337))
+- `SimulationCache` took `max_bytes=` to evict least-recently-used entries, and gained `prune()` and
+  `size_bytes()`; entries no longer store a copy of the weather file. Eviction breaks hits read
+  without an `output_dir`, whose `run_dir` is the entry: give runs you keep an `output_dir`.
+  ([#337](https://github.com/idfkit/idfkit/pull/337))
 - `SimulationResult.cached` told a cache hit from a fresh run, and `environment_days(model)` with
   `ProgressParser(environment_days=...)` gave a hand-built parser `percent` on EnergyPlus 26.1.
   ([#336](https://github.com/idfkit/idfkit/pull/336))
@@ -258,6 +265,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#330](https://github.com/idfkit/idfkit/pull/330))
 - `Schedule:Compact` keywords written without a colon (`Through 12/31`, `Until 24:00`) were read.
   ([#329](https://github.com/idfkit/idfkit/pull/329))
+- `simulate()` and `async_simulate()` with `fs=` deleted their local temp directory after uploading,
+  and no longer uploaded the copy of the weather file.
+  ([#337](https://github.com/idfkit/idfkit/pull/337))
 - `simulate()` and `async_simulate()` copied a cache hit into `output_dir`, as a fresh run fills it;
   a hit had ignored `output_dir` and returned the cache entry as `run_dir`.
   ([#336](https://github.com/idfkit/idfkit/pull/336))

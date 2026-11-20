@@ -30,6 +30,8 @@ import asyncio
 import contextlib
 import inspect
 import logging
+import shutil
+import tempfile
 import time
 from collections.abc import Callable, Coroutine
 from pathlib import Path
@@ -46,11 +48,12 @@ from ._common import (
     ensure_sql_output,
     maybe_preprocess,
     prepare_run_directory,
+    publish_exclude,
     resolve_config,
     restore_cached_result,
     upload_results,
 )
-from .cache import CACHE_META_FILE, runner_cache_key
+from .cache import runner_cache_key
 from .progress import ProgressParser, SimulationProgress, environment_days
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
@@ -201,8 +204,9 @@ async def async_simulate(
             When an ``AsyncFileSystem`` is provided, uploads and result reads
             are truly non-blocking.  A sync ``FileSystem`` is automatically
             wrapped in [asyncio.to_thread][] to avoid blocking the event
-            loop.  Combined with *cache*, a miss is cached from the local
-            run directory and a hit uploads the cached outputs to
+            loop.  As in ``simulate``, the weather file is not uploaded and
+            the local temp directory is deleted afterwards.  Combined with
+            *cache*, a miss is cached from the local run directory and a hit uploads the cached outputs to
             ``output_dir``, so the remote folder exists either way.
         on_progress: Optional callback invoked with a
             [SimulationProgress][idfkit.simulation.progress.SimulationProgress] event
@@ -237,16 +241,71 @@ async def async_simulate(
             *auto_migrate* is ``False``, or if the model is
             newer than the installed EnergyPlus.
     """
-    if fs is not None and output_dir is None:
+    options: dict[str, Any] = {
+        "energyplus": energyplus,
+        "expand_objects": expand_objects,
+        "annual": annual,
+        "design_day": design_day,
+        "output_prefix": output_prefix,
+        "output_suffix": output_suffix,
+        "readvars": readvars,
+        "timeout": timeout,
+        "preprocessor_timeout": preprocessor_timeout,
+        "extra_args": extra_args,
+        "cache": cache,
+        "on_progress": on_progress,
+        "auto_migrate": auto_migrate,
+    }
+    if fs is None:
+        return await _simulate_local(model, weather, output_dir=output_dir, **options)
+    if output_dir is None:
         msg = "output_dir is required when using a file system backend"
         raise ValueError(msg)
+    # EnergyPlus runs in a local scratch directory, which is uploaded to output_dir and then deleted.
+    scratch = Path(tempfile.mkdtemp(prefix="idfkit_sim_"))
+    try:
+        remote_dir = Path(str(output_dir))
+        return await _simulate_local(
+            model,
+            weather,
+            output_dir=scratch,
+            publish=lambda local, weather_path: _publish(local, remote_dir, fs, weather_path),
+            **options,
+        )
+    finally:
+        await asyncio.to_thread(shutil.rmtree, scratch, ignore_errors=True)
 
+
+async def _simulate_local(
+    model: AnyIDFDocument,
+    weather: str | Path | None,
+    *,
+    output_dir: str | Path | None,
+    energyplus: EnergyPlusConfig | None,
+    expand_objects: bool,
+    annual: bool,
+    design_day: bool,
+    output_prefix: str,
+    output_suffix: Literal["C", "L", "D"],
+    readvars: bool,
+    timeout: float,
+    preprocessor_timeout: float | None,
+    extra_args: list[str] | None,
+    cache: SimulationCache | None,
+    on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None,
+    auto_migrate: bool,
+    publish: Callable[[SimulationResult, Path | None], Coroutine[Any, Any, SimulationResult]] | None = None,
+) -> SimulationResult:
+    """Run EnergyPlus in the local *output_dir* (a new temp directory when ``None``); see `async_simulate`.
+
+    With *publish*, the result (a cache hit as stored, uncopied) is passed to it
+    with the resolved weather file, and what it returns is returned.
+    """
     progress_cb, progress_cleanup = resolve_on_progress(on_progress)
 
     try:
         # Admission is a pure argument check, so it runs before EnergyPlus discovery.
-        # When using a remote fs, always run locally in a temp dir
-        local_output_dir = None if fs is not None else output_dir
+        local_output_dir = output_dir
         weather_path = admit_weather(
             weather,
             model=model,
@@ -296,11 +355,10 @@ async def async_simulate(
             cached = cache.get(cache_key)
             if cached is not None:
                 cached.migration_report = migration_report
-                if fs is not None:
-                    # A hit still has to land at output_dir on the remote backend, like a fresh run.
-                    return await _publish(cached, Path(str(output_dir)), fs)
+                if publish is not None:
+                    return await publish(cached, weather_path)  # uploaded straight from the cache entry
                 # Copy the hit into output_dir, as a fresh run would fill it (no copy without one).
-                return await asyncio.to_thread(restore_cached_result, cached, local_output_dir)
+                return await asyncio.to_thread(restore_cached_result, cached, local_output_dir, weather_path)
 
         ensure_sql_output(sim_model)
 
@@ -364,17 +422,18 @@ async def async_simulate(
         migration_report=migration_report,
         output_suffix=output_suffix,
     )
-    # Store from the local run directory: with fs= the result's run_dir is a remote path.
     if cache is not None and cache_key is not None and result.success:
         cache.put(cache_key, result)
-    if fs is not None:
-        return await _publish(result, Path(str(output_dir)), fs)
+    if publish is not None:
+        return await publish(result, weather_path)
     return result
 
 
-async def _publish(local: SimulationResult, remote_dir: Path, fs: FileSystem | AsyncFileSystem) -> SimulationResult:
-    """Upload a local result's files to *remote_dir* on *fs* and return a result that reads them there."""
-    exclude = frozenset({CACHE_META_FILE})
+async def _publish(
+    local: SimulationResult, remote_dir: Path, fs: FileSystem | AsyncFileSystem, weather_path: Path | None
+) -> SimulationResult:
+    """Upload a local result's outputs to *remote_dir* on *fs* and return a result that reads them there."""
+    exclude = publish_exclude(weather_path)
     if _is_async_fs(fs):
         await async_upload_results(local.run_dir, remote_dir, fs, exclude=exclude)
         async_fs: AsyncFileSystem | None = fs

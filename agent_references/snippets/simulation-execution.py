@@ -128,6 +128,11 @@ cache = SimulationCache(cache_dir=".sim_cache")
 result = simulate(doc, "weather.epw", cache=cache)  # first call runs
 result = simulate(doc, "weather.epw", cache=cache)  # second call cache-hits, milliseconds
 print(result.cached)  # True: a hit; no output_dir, so run_dir is the read-only cache entry
+
+# Bound it: evict least-recently-used entries after each store, or trim by size/age on demand.
+cache = SimulationCache(cache_dir=".sim_cache", max_bytes=5 * 1024**3)
+removed = cache.prune(max_bytes=1024**3, max_age=7 * 24 * 3600)  # entries removed
+print(cache.size_bytes())
 # --8<-- [end:caching]
 
 

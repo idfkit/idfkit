@@ -264,6 +264,7 @@ class MockSQLResult:
     ) -> None:
         self._timeseries = timeseries_data or {}
         self._tabular = tabular_data or []
+        self.many_calls = 0
 
     def get_timeseries(
         self,
@@ -276,6 +277,14 @@ class MockSQLResult:
         if key in self._timeseries:
             return self._timeseries[key]
         raise KeyError(f"Variable not found: {variable_name!r} (key={key_value!r})")  # noqa: TRY003
+
+    def get_timeseries_many(
+        self,
+        series: Sequence[tuple[str, str, str | None]],
+        environment: str | None = None,
+    ) -> list[TimeSeriesResult]:
+        self.many_calls += 1
+        return [self.get_timeseries(name, key, frequency) for name, key, frequency in series]
 
     def get_tabular_data(
         self,
@@ -373,6 +382,7 @@ class TestPlotTemperatureProfile:
 
         result = plot_temperature_profile(sql, ["ZONE 1", "ZONE 2"], backend=backend)  # type: ignore[arg-type]
 
+        assert sql.many_calls == 1  # every zone in one read
         assert len(backend.calls) == 1
         method, args, _ = backend.calls[0]
         assert method == "multi_line"

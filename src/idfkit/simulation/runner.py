@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 import subprocess
+import tempfile
 import threading
 import time
 from collections.abc import Callable
@@ -22,12 +23,13 @@ from ._common import (
     ensure_sql_output,
     maybe_preprocess,
     prepare_run_directory,
+    publish_exclude,
     resolve_config,
     resolve_version_mismatch,
     restore_cached_result,
     upload_results,
 )
-from .cache import CACHE_META_FILE, runner_cache_key
+from .cache import runner_cache_key
 from .progress import ProgressParser, SimulationProgress, environment_days
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
@@ -174,9 +176,10 @@ def simulate(
         fs: Optional file system backend for storing results on remote
             storage (e.g., S3). When provided, ``output_dir`` is required
             and specifies the remote destination path. EnergyPlus runs
-            locally in a temp directory; results are then uploaded to
-            ``output_dir`` via *fs* after execution.  Combined with
-            *cache*, a miss is cached from the local run directory and a
+            locally in a temp directory; its outputs (not the copy of the
+            weather file) are then uploaded to ``output_dir`` via *fs*, and
+            the temp directory is deleted, also when the run raises.  Combined
+            with *cache*, a miss is cached from the local run directory and a
             hit uploads the cached outputs to ``output_dir``, so the remote
             folder exists either way.
 
@@ -223,16 +226,68 @@ def simulate(
             model is newer than the installed EnergyPlus (backward migration
             is not supported).
     """
-    if fs is not None and output_dir is None:
+    options: dict[str, Any] = {
+        "energyplus": energyplus,
+        "expand_objects": expand_objects,
+        "annual": annual,
+        "design_day": design_day,
+        "output_prefix": output_prefix,
+        "output_suffix": output_suffix,
+        "readvars": readvars,
+        "timeout": timeout,
+        "preprocessor_timeout": preprocessor_timeout,
+        "extra_args": extra_args,
+        "cache": cache,
+        "on_progress": on_progress,
+        "auto_migrate": auto_migrate,
+    }
+    if fs is None:
+        return _simulate_local(model, weather, output_dir=output_dir, **options)
+    if output_dir is None:
         msg = "output_dir is required when using a file system backend"
         raise ValueError(msg)
+    # EnergyPlus runs in a local scratch directory, which is uploaded to output_dir and then deleted.
+    remote_dir = Path(str(output_dir))
+    with tempfile.TemporaryDirectory(prefix="idfkit_sim_", ignore_cleanup_errors=True) as scratch:
+        return _simulate_local(
+            model,
+            weather,
+            output_dir=scratch,
+            publish=lambda local, weather_path: _publish(local, remote_dir, fs, weather_path),
+            **options,
+        )
 
+
+def _simulate_local(
+    model: AnyIDFDocument,
+    weather: str | Path | None,
+    *,
+    output_dir: str | Path | None,
+    energyplus: EnergyPlusConfig | None,
+    expand_objects: bool,
+    annual: bool,
+    design_day: bool,
+    output_prefix: str,
+    output_suffix: Literal["C", "L", "D"],
+    readvars: bool,
+    timeout: float,
+    preprocessor_timeout: float | None,
+    extra_args: list[str] | None,
+    cache: SimulationCache | None,
+    on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None,
+    auto_migrate: bool,
+    publish: Callable[[SimulationResult, Path | None], SimulationResult] | None = None,
+) -> SimulationResult:
+    """Run EnergyPlus in the local *output_dir* (a new temp directory when ``None``); see `simulate`.
+
+    With *publish*, the result (a cache hit as stored, uncopied) is passed to it
+    with the resolved weather file, and what it returns is returned.
+    """
     progress_cb, progress_cleanup = resolve_on_progress(on_progress)
 
     try:
         # Admission is a pure argument check, so it runs before EnergyPlus discovery.
-        # When using a remote fs, always run locally in a temp dir
-        local_output_dir = None if fs is not None else output_dir
+        local_output_dir = output_dir
         weather_path = admit_weather(
             weather,
             model=model,
@@ -279,11 +334,10 @@ def simulate(
             if cached is not None:
                 logger.debug("Cache hit for key %s", cache_key.hex_digest[:12])
                 cached.migration_report = migration_report
-                if fs is not None:
-                    # A hit still has to land at output_dir on the remote backend, like a fresh run.
-                    return _publish(cached, Path(str(output_dir)), fs)
+                if publish is not None:
+                    return publish(cached, weather_path)  # uploaded straight from the cache entry
                 # Copy the hit into output_dir, as a fresh run would fill it (no copy without one).
-                return restore_cached_result(cached, local_output_dir)
+                return restore_cached_result(cached, local_output_dir, weather_path)
             logger.debug("Cache miss for key %s", cache_key.hex_digest[:12])
 
         ensure_sql_output(sim_model)
@@ -348,17 +402,16 @@ def simulate(
         migration_report=migration_report,
         output_suffix=output_suffix,
     )
-    # Store from the local run directory: with fs= the result's run_dir is a remote path.
     if cache is not None and cache_key is not None and result.success:
         cache.put(cache_key, result)
-    if fs is not None:
-        return _publish(result, Path(str(output_dir)), fs)
+    if publish is not None:
+        return publish(result, weather_path)
     return result
 
 
-def _publish(local: SimulationResult, remote_dir: Path, fs: FileSystem) -> SimulationResult:
-    """Upload a local result's files to *remote_dir* on *fs* and return a result that reads them there."""
-    upload_results(local.run_dir, remote_dir, fs, exclude=frozenset({CACHE_META_FILE}))
+def _publish(local: SimulationResult, remote_dir: Path, fs: FileSystem, weather_path: Path | None) -> SimulationResult:
+    """Upload a local result's outputs to *remote_dir* on *fs* and return a result that reads them there."""
+    upload_results(local.run_dir, remote_dir, fs, exclude=publish_exclude(weather_path))
     return SimulationResult(
         run_dir=remote_dir,
         success=local.success,

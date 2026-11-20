@@ -13,6 +13,7 @@ never looked up or stored; the runners log a warning and simulate.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import logging
@@ -20,6 +21,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
@@ -137,8 +139,14 @@ class CacheKey:
 class SimulationCache:
     """Content-addressed simulation result cache.
 
-    Each entry is a directory named by the cache key containing a full copy
-    of the simulation run directory plus a ``_cache_meta.json`` manifest.
+    Each entry is a directory named by the cache key containing a copy of
+    the simulation run directory, less the weather file (whose contents are
+    already part of the key), plus a ``_cache_meta.json`` manifest.
+
+    The cache grows with every new run unless it is bounded: pass
+    *max_bytes* to evict the least recently used entries after each store,
+    or call [prune][idfkit.simulation.cache.SimulationCache.prune] to trim it
+    by size or age.
 
     The key covers the model, the weather file, the run flags and the
     contents of every other file the model names, so editing a staged
@@ -151,12 +159,35 @@ class SimulationCache:
     look it up nor store it, and log a warning.
     """
 
-    __slots__ = ("_cache_dir",)
+    __slots__ = ("_cache_dir", "_max_bytes")
 
     _META_FILE = CACHE_META_FILE
 
-    def __init__(self, cache_dir: str | Path | None = None) -> None:
+    def __init__(self, cache_dir: str | Path | None = None, *, max_bytes: int | None = None) -> None:
+        """Open a cache rooted at *cache_dir*.
+
+        Args:
+            cache_dir: Root directory for the entries; the platform cache
+                directory when ``None``.
+            max_bytes: Upper bound on the cache's total size. After each
+                [put][idfkit.simulation.cache.SimulationCache.put] the least
+                recently used entries are evicted until the cache fits.
+                ``None`` (the default) never evicts. An entry larger than
+                *max_bytes* on its own is evicted as soon as it is stored.
+                Eviction also removes the entries behind earlier cache hits
+                read without an ``output_dir`` (whose ``run_dir`` is the
+                entry itself), so a batch can lose files of results it
+                already returned; give runs whose results you keep an
+                ``output_dir``, which receives a copy.
+
+        Raises:
+            ValueError: If *max_bytes* is negative.
+        """
+        if max_bytes is not None and max_bytes < 0:
+            msg = f"max_bytes must be non-negative, got {max_bytes}"
+            raise ValueError(msg)
         self._cache_dir = Path(cache_dir) if cache_dir is not None else default_simulation_cache_dir()
+        self._max_bytes = max_bytes
 
     @property
     def cache_dir(self) -> Path:
@@ -266,6 +297,9 @@ class SimulationCache:
 
         try:
             meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            # Mark the entry as recently used, for least-recently-used eviction.
+            with contextlib.suppress(OSError):
+                os.utime(meta_path)
 
             from .result import SimulationResult
 
@@ -291,8 +325,10 @@ class SimulationCache:
     def put(self, key: CacheKey, result: SimulationResult) -> None:
         """Store a successful simulation result in the cache.
 
-        Only results with ``success=True`` are cached.  The entire run
-        directory is copied into the cache atomically.
+        Only results with ``success=True`` are cached.  The run directory,
+        less any ``.epw`` weather file, is copied into the cache atomically.
+        With *max_bytes* set, the least recently used entries are then
+        evicted until the cache fits.
 
         Args:
             key: Cache key from [compute_key][idfkit.simulation.cache.SimulationCache.compute_key].
@@ -310,7 +346,8 @@ class SimulationCache:
         tmp_dir = Path(tempfile.mkdtemp(dir=self._cache_dir, prefix=".tmp_"))
         try:
             # Copy output files (ignore_dangling_symlinks for robustness)
-            shutil.copytree(result.run_dir, tmp_dir, dirs_exist_ok=True)
+            # The weather file is an input whose contents the key already covers.
+            shutil.copytree(result.run_dir, tmp_dir, dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.epw"))
 
             # Write metadata
             meta = {
@@ -335,10 +372,72 @@ class SimulationCache:
             if not target_dir.is_dir():
                 # Not a lost race: the entry was not stored, so every later lookup misses. Say so.
                 logger.warning("Could not cache result for %s from %s: %s", key.hex_digest[:12], result.run_dir, exc)
+        if self._max_bytes is not None:
+            self.prune(max_bytes=self._max_bytes)
 
     def contains(self, key: CacheKey) -> bool:
         """Check whether a cache entry exists for *key*."""
         return (self._cache_dir / key.hex_digest / self._META_FILE).is_file()
+
+    def size_bytes(self) -> int:
+        """Total size in bytes of the cache's stored entries."""
+        return sum(size for _, _, size in self._entries())
+
+    def prune(self, *, max_bytes: int | None = None, max_age: float | None = None) -> int:
+        """Evict entries to bound the cache's size and age.
+
+        Entries not used for longer than *max_age* are removed first; then,
+        while the cache is larger than *max_bytes*, the least recently used
+        entry is removed. An entry counts as used when it is stored and on
+        every [get][idfkit.simulation.cache.SimulationCache.get] hit.
+
+        A result whose ``run_dir`` is a cache entry (a hit read without an
+        ``output_dir``) stops working when its entry is removed.
+
+        Args:
+            max_bytes: Size to bring the cache under, or ``None`` for no size bound.
+            max_age: Age in seconds since last use beyond which an entry is
+                removed, or ``None`` for no age bound.
+
+        Returns:
+            The number of entries removed.
+
+        Raises:
+            ValueError: If *max_bytes* or *max_age* is negative.
+        """
+        for bound, value in (("max_bytes", max_bytes), ("max_age", max_age)):
+            if value is not None and value < 0:
+                msg = f"{bound} must be non-negative, got {value}"
+                raise ValueError(msg)
+        entries = sorted(self._entries(), key=lambda entry: entry[1])  # least recently used first
+        now = time.time()
+        total = sum(size for _, _, size in entries)
+        removed = 0
+        for entry_dir, used_at, size in entries:
+            too_old = max_age is not None and now - used_at > max_age
+            too_big = max_bytes is not None and total > max_bytes
+            if not too_old and not too_big:
+                continue
+            shutil.rmtree(entry_dir, ignore_errors=True)
+            total -= size
+            removed += 1
+            logger.debug("Evicted cache entry %s", entry_dir.name[:12])
+        return removed
+
+    def _entries(self) -> list[tuple[Path, float, int]]:
+        """Every stored entry as ``(directory, last-used time, size in bytes)``."""
+        if not self._cache_dir.is_dir():
+            return []
+        entries: list[tuple[Path, float, int]] = []
+        for entry_dir in self._cache_dir.iterdir():
+            meta_path = entry_dir / self._META_FILE
+            try:
+                used_at = meta_path.stat().st_mtime
+                size = sum(f.stat().st_size for f in entry_dir.rglob("*") if f.is_file())
+            except OSError:
+                continue  # not an entry (a .tmp_ staging directory), or removed meanwhile
+            entries.append((entry_dir, used_at, size))
+        return entries
 
     def clear(self) -> None:
         """Remove all cached entries."""

@@ -50,6 +50,16 @@ ts.values  # tuple[float, ...]
 
 # Pandas (requires idfkit[dataframes])
 df = ts.to_dataframe()
+
+# Several series: ONE scan of ReportData instead of one per get_timeseries call.
+# Each item is a VariableInfo, a name, (name, key) or (name, key, frequency).
+zone_temps = result.sql.get_timeseries_many([
+    v for v in result.sql.list_variables() if v.name == "Zone Mean Air Temperature"
+])
+oat, office = result.sql.get_timeseries_many([
+    "Site Outdoor Air Drybulb Temperature",
+    ("Zone Mean Air Temperature", "Office", "Hourly"),
+])
 # --8<-- [end:timeseries]
 
 
@@ -159,6 +169,9 @@ if eso:
     design_day_col = eso.get_column("Zone Mean Air Temperature", "Office", environment_index=htg)
     # And back the other way — a column tells you its environment:
     env = eso.environments[design_day_col.environment_index]
+
+    # Several variables in ONE scan (get_column scans the file once per call):
+    temp, oat_col = eso.get_columns([("Zone Mean Air Temperature", "Office"), "Site Outdoor Air Drybulb Temperature"])
 
     # Eager full parse:
     all_columns = eso.columns  # tuple[ESOColumn, ...] — every variable

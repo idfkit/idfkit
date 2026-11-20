@@ -138,8 +138,9 @@ def plot_temperature_profile(
     timestamps: Sequence[Any] = ()
     y_series: dict[str, Sequence[float]] = {}
 
-    for zone in zones:
-        ts = sql.get_timeseries("Zone Mean Air Temperature", zone, frequency=frequency)
+    # One read of the database for every zone, not one per zone.
+    series = sql.get_timeseries_many([("Zone Mean Air Temperature", zone, frequency) for zone in zones])
+    for zone, ts in zip(zones, series, strict=True):
         if not timestamps:
             timestamps = ts.timestamps
         y_series[zone] = ts.values
