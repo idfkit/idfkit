@@ -825,6 +825,65 @@ class TestVisualizationsDefaultBackend:
 class TestPlotEnergyBalanceEdgeCases:
     """Tests for edge cases in plot_energy_balance."""
 
+    @staticmethod
+    def _row(end_use: str, column: str, units: str, value: str) -> TabularRow:
+        return TabularRow(
+            "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "End Uses", end_use, column, units, value
+        )
+
+    def test_water_volume_not_added_to_energy(self) -> None:
+        """The Water column (m3) is not energy and must not be summed into the GJ bars."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        sql = MockSQLResult(
+            tabular_data=[
+                self._row("Water Systems", "Electricity", "GJ", "       60.53"),
+                self._row("Water Systems", "Water", "m3", "      498.27"),
+            ]
+        )
+        backend = MockBackend()
+        plot_energy_balance(sql, backend=backend)  # type: ignore[arg-type]
+
+        _, args, kwargs = backend.calls[0]
+        assert args[0] == ["Water Systems"]
+        assert abs(args[1][0] - 60.53) < 1e-9
+        assert kwargs["ylabel"] == "Energy (GJ)"
+
+    def test_ip_units_label(self) -> None:
+        """An IP report is labelled kBtu, not GJ, and its gallons of water are dropped."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        sql = MockSQLResult(
+            tabular_data=[
+                self._row("Heating", "Natural Gas", "kBtu", "1000.0"),
+                self._row("Water Systems", "Water", "gal", "5000.0"),
+            ]
+        )
+        backend = MockBackend()
+        plot_energy_balance(sql, backend=backend)  # type: ignore[arg-type]
+
+        _, args, kwargs = backend.calls[0]
+        assert args[0] == ["Heating"]
+        assert kwargs["ylabel"] == "Energy (kBtu)"
+
+    def test_mixed_energy_units_converted(self) -> None:
+        """InchPoundExceptElectricity reports kWh beside kBtu; both are converted to the majority unit."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        sql = MockSQLResult(
+            tabular_data=[
+                self._row("Heating", "Natural Gas", "kBtu", "100.0"),
+                self._row("Cooling", "Natural Gas", "kBtu", "100.0"),
+                self._row("Heating", "Electricity", "kWh", "1.0"),
+            ]
+        )
+        backend = MockBackend()
+        plot_energy_balance(sql, backend=backend)  # type: ignore[arg-type]
+
+        _, args, kwargs = backend.calls[0]
+        assert kwargs["ylabel"] == "Energy (kBtu)"
+        assert abs(dict(zip(args[0], args[1], strict=True))["Heating"] - (100.0 + 3.412141633)) < 1e-6
+
     def test_skips_empty_row_names(self) -> None:
         """Rows with empty row_name are skipped."""
         from idfkit.simulation.plotting.visualizations import plot_energy_balance

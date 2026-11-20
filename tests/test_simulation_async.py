@@ -372,6 +372,27 @@ class TestAsyncSimulateBatch:
         assert result2[0].success
         assert mock_exec.call_count == 1  # no additional call
 
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_cache_hit_is_copied_into_output_dir(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        model = new_document()
+
+        first = await async_simulate(
+            model, weather_file, energyplus=mock_config, output_dir=tmp_path / "a", cache=cache
+        )
+        second = await async_simulate(
+            model, weather_file, energyplus=mock_config, output_dir=tmp_path / "b", cache=cache
+        )
+        assert mock_exec.call_count == 1
+        assert not first.cached
+        assert second.cached
+        assert second.run_dir == (tmp_path / "b").resolve()
+        assert {p.name for p in second.run_dir.iterdir()} == {p.name for p in first.run_dir.iterdir()}
+
 
 class TestAsyncSimulateCacheCoversExternalFiles:
     """async_simulate hashes the files the model names into the cache key (#216)."""
@@ -900,6 +921,7 @@ class TestAsyncRunnerHelpers:
     ) -> None:
         """Lines that don't parse to a progress event are collected but don't invoke callback."""
         from idfkit.simulation.async_runner import _run_with_progress  # pyright: ignore[reportPrivateUsage]
+        from idfkit.simulation.progress import ProgressParser
 
         proc = MagicMock()
         # "EnergyPlus starting..." is not a recognised progress line — parser returns None
@@ -923,7 +945,7 @@ class TestAsyncRunnerHelpers:
         def sync_cb(event: object) -> None:
             events.append(event)
 
-        _stdout, _stderr, rc = await _run_with_progress(["ep"], tmp_path, 60.0, sync_cb)
+        _stdout, _stderr, rc = await _run_with_progress(["ep"], tmp_path, 60.0, sync_cb, ProgressParser())
         assert rc == 0
         # The non-progress line is captured in stdout but doesn't generate an event
         assert len(events) == 0
@@ -1358,6 +1380,7 @@ class TestAsyncSimulateCacheWithFileSystem:
         second = await async_simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="b")
         assert mock_exec.call_count == 1  # hit
         assert second.run_dir == Path("b")
+        assert second.cached
         assert (second.fs if fs_kind == "sync" else second.async_fs) is fs
         names_a = {k.removeprefix("a/") for k in fs._files if k.startswith("a/")}
         names_b = {k.removeprefix("b/") for k in fs._files if k.startswith("b/")}

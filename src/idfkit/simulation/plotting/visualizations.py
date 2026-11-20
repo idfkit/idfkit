@@ -6,6 +6,7 @@ plotting backends to produce common building performance visualizations.
 
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
@@ -14,6 +15,22 @@ from ...exceptions import ResultLookupError
 if TYPE_CHECKING:
     from ..parsers.sql import SQLResult, TimeSeriesResult
     from . import PlotBackend
+
+
+# Joules per unit for the energy units EnergyPlus tabular reports use (SI, IP, JtoKWH, JtoMJ, ...).
+_JOULES_PER_UNIT: dict[str, float] = {
+    "J": 1.0,
+    "kJ": 1e3,
+    "MJ": 1e6,
+    "GJ": 1e9,
+    "Wh": 3600.0,
+    "kWh": 3.6e6,
+    "MWh": 3.6e9,
+    "Btu": 1055.05585262,
+    "kBtu": 1055.05585262e3,
+    "MMBtu": 1055.05585262e6,
+    "therm": 105.505585262e6,
+}
 
 
 def plot_energy_balance(
@@ -25,7 +42,12 @@ def plot_energy_balance(
     """Create a bar chart of end-use energy consumption.
 
     Extracts data from the ``AnnualBuildingUtilityPerformanceSummary`` report
-    and plots energy consumption by end-use category.
+    and plots energy consumption by end-use category, summed across fuels.
+    Only energy columns are summed: the ``Water`` column (m3 or gal) is left
+    out.  The axis is labelled with the report's energy unit (``GJ`` for SI
+    reports, ``kBtu`` for IP); when the report mixes energy units (IP with
+    electricity in kWh, for example) every value is converted to the unit
+    most of its cells use.
 
     Args:
         sql: An open SQLResult database.
@@ -46,24 +68,30 @@ def plot_energy_balance(
         table_name="End Uses",
     )
 
-    # Aggregate by row_name (end-use category), summing across fuels
-    # We want column_name "Total Energy" or sum numeric values from fuel columns
-    energy_by_use: dict[str, float] = {}
+    # Keep the energy cells of each end-use row; water volume and anything else not energy is dropped.
+    cells: list[tuple[str, str, float]] = []
     for row in rows:
-        # Skip header rows and non-numeric values
         if row.row_name in ("", "Total End Uses"):
+            continue
+        unit = row.units.strip()
+        if unit not in _JOULES_PER_UNIT:
             continue
         try:
             value = float(row.value)
         except ValueError:
             continue
-        # Skip zero or empty values
         if value == 0:
             continue
-        # Accumulate by end-use category
-        if row.row_name not in energy_by_use:
-            energy_by_use[row.row_name] = 0.0
-        energy_by_use[row.row_name] += value
+        cells.append((row.row_name, unit, value))
+
+    unit_counts = Counter(unit for _, unit, _ in cells)
+    target_unit = unit_counts.most_common(1)[0][0] if unit_counts else None
+
+    energy_by_use: dict[str, float] = {}
+    for row_name, unit, value in cells:
+        if target_unit is not None and unit != target_unit:
+            value = value * _JOULES_PER_UNIT[unit] / _JOULES_PER_UNIT[target_unit]
+        energy_by_use[row_name] = energy_by_use.get(row_name, 0.0) + value
 
     # Sort by value descending
     sorted_items = sorted(energy_by_use.items(), key=lambda x: x[1], reverse=True)
@@ -75,7 +103,7 @@ def plot_energy_balance(
         values,
         title=title,
         xlabel="End Use",
-        ylabel="Energy (GJ)",
+        ylabel="Energy" if target_unit is None else f"Energy ({target_unit})",
     )
 
 

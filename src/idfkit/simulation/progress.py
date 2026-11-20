@@ -7,8 +7,12 @@ structured progress information from EnergyPlus stdout output.
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from ..document import AnyIDFDocument
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +59,15 @@ class ProgressParser:
     Maintains internal state to track the current environment, warmup
     iteration count, and simulation day for percentage estimation.
 
+    Recent EnergyPlus releases (26.1, for one) print ``Starting Simulation at
+    01/01/2013 for RUN PERIOD 1`` without the period's end date, so the parser cannot learn
+    the length of the period from stdout alone.  Pass *environment_days*
+    (see [environment_days][idfkit.simulation.progress.environment_days]) so it
+    can still report ``percent`` and ``sim_total_days``.  EnergyPlus prints
+    ``EnergyPlus Completed Successfully`` to stderr: feed stderr lines to
+    [parse_line][idfkit.simulation.progress.ProgressParser.parse_line] too to
+    get the ``"complete"`` event, which is emitted at most once.
+
     A new instance should be created for each simulation run.  The parser
     is designed to be defensive — unrecognised lines return ``None`` and
     never raise.
@@ -80,7 +93,17 @@ class ProgressParser:
     _RE_WRITING_TABULAR = re.compile(r"Writing tabular output")
     _RE_WRITING_SQL = re.compile(r"Writing final SQL")
 
-    def __init__(self) -> None:
+    def __init__(self, environment_days: Mapping[str, int] | None = None) -> None:
+        """Create a parser.
+
+        Args:
+            environment_days: Length in days of each simulation environment,
+                keyed by environment name (case and repeated spaces are
+                ignored).  Used when EnergyPlus does not print the period's
+                date range.
+        """
+        self._environment_days = {_env_key(k): v for k, v in (environment_days or {}).items()}
+        self._completed = False
         self._environment: str | None = None
         self._warmup_day: int = 0
         self._sim_start_day: int | None = None
@@ -127,7 +150,8 @@ class ProgressParser:
         m = self._RE_START_SIM.search(stripped)
         if m:
             date_str = m.group(1)
-            self._environment = m.group(2).strip()
+            environment = m.group(2).strip()
+            self._environment = environment
             from_date = m.group(3) if m.lastindex and m.lastindex >= 3 else None
             to_date = m.group(4) if m.lastindex and m.lastindex >= 4 else None
 
@@ -137,7 +161,7 @@ class ProgressParser:
                 end_d = _date_to_day_of_year(to_date)
                 self._sim_total_days = _day_span(start_d, end_d)
             else:
-                self._sim_total_days = None
+                self._sim_total_days = self._environment_days.get(_env_key(environment))
 
             current_day = self._sim_start_day
             percent = self._estimate_percent(current_day)
@@ -173,7 +197,8 @@ class ProgressParser:
             return self._event("postprocessing", stripped)
 
         m = self._RE_COMPLETED.search(stripped)
-        if m:
+        if m and not self._completed:
+            self._completed = True
             return self._event("complete", stripped, percent=100.0)
 
         return None
@@ -215,6 +240,63 @@ class ProgressParser:
             job_index=self._job_index,
             job_label=self._job_label,
         )
+
+
+def _env_key(name: str) -> str:
+    """Normalise an environment name the way EnergyPlus prints it: upper case, single spaces."""
+    return " ".join(name.split()).upper()
+
+
+def _int_field(obj: object, field: str) -> int | None:
+    value = getattr(obj, field, None)
+    if isinstance(value, bool) or value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def environment_days(model: AnyIDFDocument) -> dict[str, int]:
+    """Return the length in days of each simulation environment *model* defines.
+
+    Covers ``RunPeriod`` (from its begin and end month/day, ignoring years),
+    ``SizingPeriod:DesignDay`` (one day each) and
+    ``SizingPeriod:WeatherFileDays``.  The result is meant for
+    [ProgressParser][idfkit.simulation.progress.ProgressParser], which
+    [simulate][idfkit.simulation.runner.simulate] builds with it so progress
+    events carry ``percent`` on EnergyPlus versions that do not print the
+    period's date range.
+
+    Args:
+        model: The model about to be simulated.
+
+    Returns:
+        Days per environment name, in upper case with single spaces, as
+        EnergyPlus prints it.
+    """
+    days: dict[str, int] = {}
+    for obj_type in ("RunPeriod", "SizingPeriod:WeatherFileDays"):
+        if obj_type not in model:
+            continue
+        for index, obj in enumerate(model[obj_type]):
+            bm, bd = _int_field(obj, "begin_month"), _int_field(obj, "begin_day_of_month")
+            em, ed = _int_field(obj, "end_month"), _int_field(obj, "end_day_of_month")
+            if bm is None or bd is None or em is None or ed is None:
+                continue
+            span = _day_span(_date_to_day_of_year(f"{bm:02d}/{bd:02d}"), _date_to_day_of_year(f"{em:02d}/{ed:02d}"))
+            name = getattr(obj, "name", None)
+            if isinstance(name, str) and name.strip():
+                days[_env_key(name)] = span
+            elif obj_type == "RunPeriod":
+                # EnergyPlus reports an unnamed run period as ``RUN PERIOD <n>``.
+                days[f"RUN PERIOD {index + 1}"] = span
+    if "SizingPeriod:DesignDay" in model:
+        for obj in model["SizingPeriod:DesignDay"]:
+            name = getattr(obj, "name", None)
+            if isinstance(name, str) and name.strip():
+                days[_env_key(name)] = 1
+    return days
 
 
 def _date_to_day_of_year(date_str: str) -> int:

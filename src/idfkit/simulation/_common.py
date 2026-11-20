@@ -65,6 +65,7 @@ if TYPE_CHECKING:
     from ..document import AnyIDFDocument
     from ..migration.report import MigrationReport
     from .fs import AsyncFileSystem, FileSystem
+    from .result import SimulationResult
 
 
 def _migration_target(
@@ -495,6 +496,45 @@ async def async_upload_results(
     tasks = [asyncio.create_task(_upload_one(p)) for p in local_dir.iterdir() if p.is_file() and p.name not in exclude]
     if tasks:
         await asyncio.gather(*tasks)
+
+
+def restore_cached_result(entry: SimulationResult, output_dir: str | Path | None) -> SimulationResult:
+    """Copy a cache hit's files into *output_dir* and return a result that reads the copy.
+
+    The copy lands in *output_dir* (created when missing), where a fresh run
+    would have written. Without an *output_dir* nothing is copied: *entry* is
+    returned as is, so a hit costs no disk and its ``run_dir`` is the cache
+    entry itself, to be treated as read-only.
+
+    Args:
+        entry: The result [SimulationCache.get][idfkit.simulation.cache.SimulationCache.get]
+            returned, whose ``run_dir`` is the cache entry.
+        output_dir: The run's requested local output directory, or ``None``.
+
+    Returns:
+        A result with ``cached=True`` whose ``run_dir`` holds the copied files,
+        or *entry* itself when *output_dir* is ``None``.
+    """
+    from .cache import CACHE_META_FILE
+    from .result import SimulationResult as _Result
+
+    if output_dir is None:
+        return entry
+    run_dir = Path(output_dir).resolve()
+    run_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(entry.run_dir, run_dir, dirs_exist_ok=True, ignore=shutil.ignore_patterns(CACHE_META_FILE))
+    return _Result(
+        run_dir=run_dir,
+        success=entry.success,
+        exit_code=entry.exit_code,
+        stdout=entry.stdout,
+        stderr=entry.stderr,
+        runtime_seconds=entry.runtime_seconds,
+        output_prefix=entry.output_prefix,
+        migration_report=entry.migration_report,
+        output_suffix=entry.output_suffix,
+        cached=True,
+    )
 
 
 def prepare_run_directory(output_dir: str | Path | None, weather_path: Path | None) -> Path:

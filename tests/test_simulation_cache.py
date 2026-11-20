@@ -182,6 +182,8 @@ class TestGetPut:
         assert restored.exit_code == 0
         assert restored.runtime_seconds == 1.5
         assert restored.output_prefix == "eplus"
+        assert restored.cached
+        assert not result.cached
 
     def test_metadata_preserved(self, cache: SimulationCache, run_dir: Path) -> None:
         key = CacheKey(hex_digest="meta_test")

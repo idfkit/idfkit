@@ -146,6 +146,8 @@ Close the result — or use it as a context manager — before the run directory
 
 Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `idfkit[plotly]`). Pick with `get_default_backend(...)` or pass `backend=` explicitly.
 
+`plot_energy_balance` sums each end use's energy columns only (the `Water` volume column is left out) and labels the axis with the report's unit: `GJ` for SI, `kBtu` for IP. A report mixing kWh and kBtu is converted to the unit most cells use.
+
 ## Common mistakes
 
 !!! failure "accessing `result.sql` without a None check"

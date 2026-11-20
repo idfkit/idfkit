@@ -24,10 +24,11 @@ from ._common import (
     prepare_run_directory,
     resolve_config,
     resolve_version_mismatch,
+    restore_cached_result,
     upload_results,
 )
 from .cache import CACHE_META_FILE, runner_cache_key
-from .progress import ProgressParser, SimulationProgress
+from .progress import ProgressParser, SimulationProgress, environment_days
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
 
@@ -167,6 +168,9 @@ def simulate(
             ``Schedule:File`` CSV staged into *output_dir*, for example).  A
             model with a ``PythonPlugin:Instance`` or a co-simulation
             ``ExternalInterface`` is never cached; a warning is logged.
+            A hit is copied into *output_dir* like a fresh run; without one,
+            its ``run_dir`` is the read-only cache entry. Either way the
+            result has ``cached=True``.
         fs: Optional file system backend for storing results on remote
             storage (e.g., S3). When provided, ``output_dir`` is required
             and specifies the remote destination path. EnergyPlus runs
@@ -278,7 +282,8 @@ def simulate(
                 if fs is not None:
                     # A hit still has to land at output_dir on the remote backend, like a fresh run.
                     return _publish(cached, Path(str(output_dir)), fs)
-                return cached
+                # Copy the hit into output_dir, as a fresh run would fill it (no copy without one).
+                return restore_cached_result(cached, local_output_dir)
             logger.debug("Cache miss for key %s", cache_key.hex_digest[:12])
 
         ensure_sql_output(sim_model)
@@ -317,7 +322,8 @@ def simulate(
         start = time.monotonic()
 
         if progress_cb is not None:
-            stdout, stderr, returncode = _run_with_progress(cmd, run_dir, timeout, start, progress_cb)
+            parser = ProgressParser(environment_days(sim_model))
+            stdout, stderr, returncode = _run_with_progress(cmd, run_dir, timeout, start, progress_cb, parser)
         else:
             stdout, stderr, returncode = _run_simple(cmd, run_dir, timeout, start)
     finally:
@@ -364,6 +370,7 @@ def _publish(local: SimulationResult, remote_dir: Path, fs: FileSystem) -> Simul
         fs=fs,
         migration_report=local.migration_report,
         output_suffix=local.output_suffix,
+        cached=local.cached,
     )
 
 
@@ -407,6 +414,7 @@ def _run_with_progress(
     timeout: float,
     start: float,
     on_progress: Callable[[SimulationProgress], Any],
+    parser: ProgressParser,
 ) -> tuple[str, str, int]:
     """Run EnergyPlus with line-by-line stdout streaming for progress callbacks."""
     try:
@@ -439,7 +447,6 @@ def _run_with_progress(
     stderr_thread.start()
 
     stdout_lines: list[str] = []
-    parser = ProgressParser()
     timed_out = False
 
     try:
@@ -480,10 +487,30 @@ def _run_with_progress(
         msg = f"Simulation timed out after {timeout} seconds"
         raise SimulationError(msg, exit_code=None, stderr=stderr or None)
 
+    # EnergyPlus reports "EnergyPlus Completed Successfully" on stderr.
+    _emit_progress(parser, stderr_lines, on_progress)
+
     stdout = "".join(stdout_lines)
     returncode = proc.returncode if proc.returncode is not None else -1
 
     return stdout, stderr, returncode
+
+
+def _emit_progress(parser: ProgressParser, lines: list[str], on_progress: Callable[[SimulationProgress], Any]) -> None:
+    """Pass the progress events *parser* finds in stderr *lines* to *on_progress*.
+
+    A callback error is wrapped in [SimulationError][idfkit.exceptions.SimulationError],
+    as it is for a stdout event, whichever stream the line came from.
+    """
+    try:
+        for line in lines:
+            event = parser.parse_line(line)
+            if event is not None:
+                on_progress(event)
+    except Exception as exc:
+        stderr = "".join(lines)
+        msg = f"Failed during EnergyPlus execution: {exc}"
+        raise SimulationError(msg, exit_code=None, stderr=stderr or None) from exc
 
 
 # Backward-compatible aliases for existing test imports.
