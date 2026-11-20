@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
+from . import cache as migration_cache
 from ._reparse import parse_migrated_idf
 from ._typing import StrictT
 from .async_subprocess_backend import AsyncSubprocessMigrator
@@ -52,6 +53,7 @@ if TYPE_CHECKING:
         on_progress: OnMigrationProgress | None
         work_dir: str | Path | None
         keep_work_dir: bool
+        cache: bool
 
 
 @overload
@@ -75,6 +77,7 @@ async def async_migrate(
     on_progress: OnMigrationProgress | None = None,
     work_dir: str | Path | None = None,
     keep_work_dir: bool = False,
+    cache: bool = True,
 ) -> MigrationReport[AnyIDFDocument[Any]]:
     """Async counterpart to [migrate()][idfkit.migration.runner.migrate].
 
@@ -100,6 +103,10 @@ async def async_migrate(
             Defaults to a newly-created temporary directory that is removed
             after the migration unless *keep_work_dir* is ``True``.
         keep_work_dir: Preserve intermediate files for inspection.
+        cache: Reuse an earlier migration of the same content, shared with
+            [migrate()][idfkit.migration.runner.migrate]; ``False`` always
+            runs the transition binaries. Ignored when *work_dir* or
+            *keep_work_dir* is given, which ask for the per-step files.
 
     Returns:
         A [MigrationReport][idfkit.migration.report.MigrationReport]. As with
@@ -163,6 +170,9 @@ async def async_migrate(
             on_progress=on_progress,
             source=source,
             target=target,
+            # Asking for the work directory means asking to inspect the per-step files,
+            # which a cache hit would not write.
+            use_cache=cache and work_dir is None and not keep_work_dir,
         )
     finally:
         if owned_work_dir and not keep_work_dir:
@@ -180,14 +190,80 @@ async def _run_chain_async(
     on_progress: OnMigrationProgress | None,
     source: tuple[int, int, int],
     target: tuple[int, int, int],
+    use_cache: bool = True,
 ) -> MigrationReport[AnyIDFDocument[bool]]:
     """Drive every step in *chain* through an async migrator."""
     from ..writers import save_idf
 
     initial_idf = work_root / "step_0_input.idf"
     await asyncio.to_thread(save_idf, model, initial_idf)
-    current_text = await asyncio.to_thread(initial_idf.read_text, "latin-1")
+    input_text = await asyncio.to_thread(initial_idf.read_text, "latin-1")
 
+    key = migration_cache.cache_key(input_text, chain, migrator) if use_cache else None
+    if key is None:
+        steps, final_text = await _run_steps_async(input_text, chain, migrator, work_root, on_progress)
+        from_cache = False
+    else:
+        async with migration_cache.in_flight_async(key):
+            cached = migration_cache.get(key)
+            if cached is None:
+                steps, final_text = await _run_steps_async(input_text, chain, migrator, work_root, on_progress)
+                migration_cache.put(key, migration_cache.CachedMigration(final_text, steps))
+                from_cache = False
+            else:
+                await _emit(on_progress, migration_cache.cached_progress_event(chain))
+                steps, final_text = cached.steps, cached.idf_text
+                from_cache = True
+
+    await _emit(
+        on_progress,
+        MigrationProgress(
+            phase="reparsing",
+            message="Re-parsing migrated IDF",
+            total_steps=len(chain),
+            percent=100.0,
+        ),
+    )
+    final_idf = work_root / "migrated.idf"
+    await asyncio.to_thread(final_idf.write_text, final_text, "latin-1")
+    migrated = await asyncio.to_thread(
+        parse_migrated_idf,
+        final_idf,
+        version=target,
+        strict=model.strict,
+        normalize_choices=model.normalize_choices,
+    )
+    verify_migration_output(
+        model,
+        migrated,
+        target_version=target,
+        completed_steps=chain,
+    )
+
+    await _emit(on_progress, MigrationProgress(phase="diffing", message="Computing structural diff"))
+    diff = await asyncio.to_thread(document_diff, model, migrated)
+
+    await _emit(on_progress, MigrationProgress(phase="complete", message="Migration complete", percent=100.0))
+
+    return MigrationReport(
+        migrated_model=migrated,
+        source_version=source,
+        target_version=target,
+        requested_target=target,
+        steps=steps,
+        diff=diff,
+        from_cache=from_cache,
+    )
+
+
+async def _run_steps_async(
+    current_text: str,
+    chain: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...],
+    migrator: AsyncMigrator,
+    work_root: Path,
+    on_progress: OnMigrationProgress | None,
+) -> tuple[tuple[MigrationStep, ...], str]:
+    """Run the transition steps of *chain* on *current_text*: the step records and the final text."""
     steps: list[MigrationStep] = []
     completed_pairs: list[tuple[tuple[int, int, int], tuple[int, int, int]]] = []
 
@@ -247,44 +323,7 @@ async def _run_chain_async(
         completed_pairs.append((a, b))
         current_text = step_result.idf_text
 
-    await _emit(
-        on_progress,
-        MigrationProgress(
-            phase="reparsing",
-            message="Re-parsing migrated IDF",
-            total_steps=len(chain),
-            percent=100.0,
-        ),
-    )
-    final_idf = work_root / "migrated.idf"
-    await asyncio.to_thread(final_idf.write_text, current_text, "latin-1")
-    migrated = await asyncio.to_thread(
-        parse_migrated_idf,
-        final_idf,
-        version=target,
-        strict=model.strict,
-        normalize_choices=model.normalize_choices,
-    )
-    verify_migration_output(
-        model,
-        migrated,
-        target_version=target,
-        completed_steps=tuple(completed_pairs),
-    )
-
-    await _emit(on_progress, MigrationProgress(phase="diffing", message="Computing structural diff"))
-    diff = await asyncio.to_thread(document_diff, model, migrated)
-
-    await _emit(on_progress, MigrationProgress(phase="complete", message="Migration complete", percent=100.0))
-
-    return MigrationReport(
-        migrated_model=migrated,
-        source_version=source,
-        target_version=target,
-        requested_target=target,
-        steps=tuple(steps),
-        diff=diff,
-    )
+    return tuple(steps), current_text
 
 
 def _resolve_async_migrator(

@@ -9,6 +9,7 @@ from idfkit.geometry import Polygon3D, Vector3D, get_surface_coords, set_surface
 from idfkit.geometry_builders import (
     add_shading_block,
     bounding_box,
+    counter_clockwise_footprint,
     detect_horizontal_adjacencies,
     link_horizontal_surfaces,
     scale_building,
@@ -741,3 +742,39 @@ class TestSvgScaledLayers:
         svg = generate_construction_svg(props)
         assert "ThickWall" in svg
         assert "<svg" in svg
+
+
+# ---------------------------------------------------------------------------
+# Footprint winding
+# ---------------------------------------------------------------------------
+
+
+class TestCounterClockwiseFootprint:
+    def test_counter_clockwise_is_returned_unchanged(self) -> None:
+        fp = [(0.0, 0.0), (3.0, 0.0), (3.0, 2.0), (0.0, 2.0)]
+        assert counter_clockwise_footprint(fp) == fp
+
+    def test_clockwise_is_reversed_keeping_the_first_vertex(self) -> None:
+        assert counter_clockwise_footprint([(0, 0), (0, 2), (3, 2), (3, 0)]) == [(0, 0), (3, 0), (3, 2), (0, 2)]
+
+    def test_too_few_vertices_raise(self) -> None:
+        with pytest.raises(ValueError, match="at least 3 vertices"):
+            counter_clockwise_footprint([(0, 0), (1, 1)])
+
+    def test_collinear_vertices_raise(self) -> None:
+        with pytest.raises(ValueError, match="zero area"):
+            counter_clockwise_footprint([(0, 0), (1, 1), (2, 2)])
+
+    def test_shading_block_from_clockwise_footprint_faces_outward(self) -> None:
+        doc = new_document()
+        objs = add_shading_block(doc, "Tree", [(0, 0), (0, 10), (10, 10), (10, 0)], height=5.0)
+        polys = [get_surface_coords(o) for o in objs]
+        assert all(p is not None for p in polys)
+        walls = [p for p in polys if p is not None and abs(p.tilt - 90) < 1e-6]
+        assert sorted(round(p.azimuth) for p in walls) == [0, 90, 180, 270]
+        for p in walls:
+            if all(v.x == 0 for v in p.vertices):
+                assert round(p.azimuth) == 270
+        top = polys[-1]
+        assert top is not None
+        assert abs(top.tilt) < 1e-6

@@ -76,6 +76,49 @@ def get_geometry_convention(doc: AnyIDFDocument) -> tuple[str, bool]:
 
 
 # ---------------------------------------------------------------------------
+# Footprint winding
+# ---------------------------------------------------------------------------
+
+
+def counter_clockwise_footprint(
+    footprint: Sequence[tuple[float, float]], what: str = "Footprint"
+) -> list[tuple[float, float]]:
+    """Return *footprint* in counter-clockwise order, reversing a clockwise one.
+
+    Extruding a footprint assumes counter-clockwise order seen from above:
+    a clockwise one gives walls facing into the building, a floor facing up
+    and a roof facing down, which EnergyPlus simulates (with warnings) as an
+    inside-out zone of negative volume.  The first vertex is kept first.
+
+    Args:
+        footprint: 2-D polygon as ``(x, y)`` tuples, in either order.
+        what: How to name the polygon in an error message.
+
+    Returns:
+        The vertices in counter-clockwise order (a new list).
+
+    Raises:
+        ValueError: If the polygon has fewer than 3 vertices or no area
+            (all vertices on one line).
+
+    Examples:
+        >>> counter_clockwise_footprint([(0, 0), (0, 2), (3, 2), (3, 0)])
+        [(0, 0), (3, 0), (3, 2), (0, 2)]
+    """
+    fp = list(footprint)
+    if len(fp) < 3:
+        msg = f"{what} must have at least 3 vertices, got {len(fp)}"
+        raise ValueError(msg)
+    area = polygon_area_2d(fp)
+    if abs(area) < 1e-9:
+        msg = f"{what} has zero area (its vertices lie on one line): {fp!r}"
+        raise ValueError(msg)
+    if area < 0:
+        return [fp[0], *reversed(fp[1:])]
+    return fp
+
+
+# ---------------------------------------------------------------------------
 # add_shading_block
 # ---------------------------------------------------------------------------
 
@@ -95,7 +138,9 @@ def add_shading_block(
     Args:
         doc: The document to add objects to.
         name: Base name for shading surfaces.
-        footprint: 2D footprint as ``(x, y)`` tuples (counter-clockwise).
+        footprint: 2D footprint as ``(x, y)`` tuples.  A clockwise
+            footprint is reversed, so every wall faces outward and the
+            top faces up.
         height: Height of the shading block in metres.
         base_z: Z-coordinate of the block base (default ``0.0``).
             Use this to create elevated shading surfaces such as canopies.
@@ -104,12 +149,10 @@ def add_shading_block(
         List of created ``Shading:Site:Detailed`` objects.
 
     Raises:
-        ValueError: If footprint has fewer than 3 vertices or height <= 0.
+        ValueError: If footprint has fewer than 3 vertices or no area, or
+            height <= 0.
     """
-    fp = list(footprint)
-    if len(fp) < 3:
-        msg = f"Footprint must have at least 3 vertices, got {len(fp)}"
-        raise ValueError(msg)
+    fp = counter_clockwise_footprint(footprint)
     if height <= 0:
         msg = f"Height must be positive, got {height}"
         raise ValueError(msg)

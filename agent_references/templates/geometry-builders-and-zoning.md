@@ -106,15 +106,17 @@ The remainder is always EnergyPlus-safe: no holes and no zero-width slits. When 
 
 ## Common mistakes
 
-!!! failure "passing a clockwise footprint"
+!!! failure "extruding a clockwise footprint by hand"
 
     ```python
     cw_rect = [(0,0), (0,30), (50,30), (50,0)]  # clockwise
-    create_block(doc, "Office", cw_rect, floor_to_floor=3.5, num_stories=1)
-    # Surfaces will have inward normals; EnergyPlus thinks the building is inside-out.
+    for p1, p2 in zip(cw_rect, cw_rect[1:] + cw_rect[:1]):
+        ...  # walls built from these edges face into the building
     ```
 
-!!! success "counter-clockwise"
+!!! success "let the builders orient it, or normalize it first"
+
+    `create_block`, `ZonedBlock` (footprint and `custom_zones`) and `add_shading_block` reverse a clockwise footprint, so a block is never built inside-out. A footprint with no area raises `ValueError`. Hand-built geometry should go through `counter_clockwise_footprint`; `validate_document` reports an upside-down floor or roof as `W005`.
 
     ```python
     --8<-- "agent_references/snippets/geometry-builders-and-zoning.py:mistake-ccw-good"

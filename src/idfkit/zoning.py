@@ -52,6 +52,7 @@ from .geometry import Polygon3D, Vector3D, polygon_difference_parts_2d, set_surf
 from .geometry_builders import (
     WALL_ORDER,
     HorizontalAdjacency,
+    counter_clockwise_footprint,
     detect_horizontal_adjacencies,
     get_geometry_convention,
     horizontal_poly,
@@ -971,7 +972,8 @@ class ZonedBlock:
 
     Attributes:
         name: Base name for zones and surfaces.
-        footprint: 2-D footprint as ``(x, y)`` tuples (CCW).
+        footprint: 2-D footprint as ``(x, y)`` tuples, stored
+            counter-clockwise (a clockwise one is reversed).
         floor_to_floor: Floor-to-floor height in metres.
         num_stories: Number of above-ground stories.
         zoning: Zoning strategy.
@@ -996,9 +998,15 @@ class ZonedBlock:
     base_elevation: float = 0.0
 
     def __post_init__(self) -> None:
-        if len(self.footprint) < 3:
-            msg = f"Footprint must have at least 3 vertices, got {len(self.footprint)}"
-            raise ValueError(msg)
+        # A clockwise footprint would extrude into an inside-out block (walls facing in, floor
+        # facing up, roof facing down), which EnergyPlus runs with only warnings; store it CCW.
+        object.__setattr__(self, "footprint", counter_clockwise_footprint(self.footprint))
+        if self.custom_zones:
+            zones = [
+                ZoneFootprint(z.name_suffix, counter_clockwise_footprint(z.polygon, f"Zone {z.name_suffix!r} polygon"))
+                for z in self.custom_zones
+            ]
+            object.__setattr__(self, "custom_zones", zones)
         if self.floor_to_floor <= 0:
             msg = f"floor_to_floor must be positive, got {self.floor_to_floor}"
             raise ValueError(msg)
@@ -1118,7 +1126,9 @@ def create_block(
     Args:
         doc: The document to add objects to.
         name: Base name for zones and surfaces (e.g. ``"Office"``).
-        footprint: 2-D footprint as ``(x, y)`` tuples (CCW order).
+        footprint: 2-D footprint as ``(x, y)`` tuples.  Counter-clockwise
+            is expected; a clockwise footprint is reversed, so the block is
+            never built inside-out.
         floor_to_floor: Floor-to-floor height in metres.
         num_stories: Number of above-ground stories.
         zoning: Zoning strategy (default: one zone per floor).
@@ -1139,7 +1149,8 @@ def create_block(
     Raises:
         ValueError: If ``air_boundary`` is ``True`` and the document's
             EnergyPlus version is older than 9.2, which has no
-            ``Construction:AirBoundary``.
+            ``Construction:AirBoundary``, or if the footprint has fewer
+            than 3 vertices or no area.
 
     Examples:
         Core-perimeter zoning for a 3-story office:

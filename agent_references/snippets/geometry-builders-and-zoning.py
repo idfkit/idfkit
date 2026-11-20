@@ -170,7 +170,10 @@ region_surfaces, remaining_surfaces = split_horizontal_surface_by_regions(
 
 
 # --8<-- [start:mistake-ccw-good]
+from idfkit import counter_clockwise_footprint
+
 ccw_rect = footprint_rectangle(50, 30)  # CCW by construction
+ccw_drawn = counter_clockwise_footprint([(0, 0), (0, 30), (50, 30), (50, 0)])  # reversed: [(0, 0), (50, 0), ...]
 # --8<-- [end:mistake-ccw-good]
 
 
