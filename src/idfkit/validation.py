@@ -913,7 +913,17 @@ def _any_of_failure(
         failures.append(failure)
 
     # Declaration order: the first branch the value matched on type reports the failure.
-    return failures[0]
+    first = failures[0]
+    if first.code == "E004" and isinstance(value, str):
+        # A string the numeric branch refused and the choice branch did not list. Naming only the
+        # choices, ``not in allowed values: ['', 'Autocalculate']``, hides that a number was expected.
+        kinds = [b.expected_type for b in branches if b.expected_type in ("number", "integer")]
+        if kinds:
+            kind = "a number" if "number" in kinds else "an integer"
+            choices = [c for b in matched for c in (b.enum or []) if c != ""]
+            options = " or ".join(repr(c) for c in choices)
+            first.message = f"Expected {kind} or {options}, got '{value}'" if options else first.message
+    return first
 
 
 def _branch_constraint_failure(

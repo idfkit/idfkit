@@ -26,3 +26,10 @@ def source_encoding(doc: object, *, bom: bool) -> str:
     if not bom and encoding == "utf-8-sig":
         return "utf-8"
     return encoding
+
+
+def source_newline(doc: object) -> str | None:
+    """The line ending of *doc*'s IDF file, ``"\\r\\n"`` or ``"\\n"``, or ``None`` when not read from one."""
+    # Read with a default, as the encoding is: a document pickled before the slot existed has none.
+    newline: str | None = getattr(doc, "_source_newline", None)
+    return newline

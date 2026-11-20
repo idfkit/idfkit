@@ -276,6 +276,12 @@ def _string_is_legal(obj_schema: dict[str, Any] | None, field_name: str, value: 
     return False
 
 
+def _detect_newline(content: bytes) -> str:
+    """The line ending of *content*: CRLF when its first line ends with one, else LF."""
+    first = content.find(b"\n")
+    return "\r\n" if first > 0 and content[first - 1 : first] == b"\r" else "\n"
+
+
 def _swallowed_field_name(pc: ParsingCache, index: int) -> str:
     """Name the field at *index* in an object's raw values, extensible fields included.
 
@@ -610,6 +616,7 @@ class IDFParser:
             normalize_choices=normalize_choices,
         )
         doc._source_encoding = source_encoding
+        doc._source_newline = _detect_newline(content)
 
         # Parse objects
         self._parse_objects(content, doc, schema)
@@ -895,7 +902,8 @@ class IDFParser:
 
         Never raises, in either mode. A value of the wrong kind does not stop the parse: the object
         is built and the document is returned, so a caller who was reading strictly still gets what
-        they got before (FR-014). This adds a finding where there was silence, and nothing else.
+        they got before (FR-014). The value is kept as read, so ``validate_document()`` reports it.
+        This adds a finding where there was silence, and nothing else.
 
         The finding is positioned at the offending FIELD rather than at the object, because that is
         what makes it useful: the shape this catches is a missing semicolon swallowing the object

@@ -112,6 +112,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with neither a `RunPeriod` nor a sizing period (as `new_document()` makes), naming the fix, where
   EnergyPlus reported success with no results; a non-document model raised `TypeError`.
   ([#340](https://github.com/idfkit/idfkit/pull/340))
+- **Breaking:** `write_idf()` and `save_idf()` raised `ValueError` naming the object and field for a
+  value holding `,`, `;` or `!`, which IDF cannot express, instead of writing a file that did not
+  read back; rename it or save as epJSON. ([#345](https://github.com/idfkit/idfkit/pull/345))
+- `save_idf()` kept a CRLF file's line endings, in edited and added objects too, and took `newline=`
+  to choose them. ([#345](https://github.com/idfkit/idfkit/pull/345))
 - **Breaking:** eppy-compatible `fieldvalues`/`fieldnames` took eppy's layout: type key first, then
   Name, eppy's spellings (`Outside_Layer`), extensible groups flattened and trailing blanks trimmed.
   Indexes shift by one, and `fieldnames` are no longer `obj.data` keys: read `obj.field_order` for those.
@@ -298,6 +303,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** `save_idf()` (and `doc.save()`) raised `ValueError` for a `.epJSON`/`.json` path, and
   `save_epjson()` for `.idf`, instead of writing the wrong format; write epJSON with `save_epjson()`.
   Swapped arguments raised `TypeError`. ([#339](https://github.com/idfkit/idfkit/pull/339))
+- `validate_document()` now says a number was expected when text fails a numeric field that also
+  takes `Autocalculate`, instead of listing only the allowed words.
+  ([#345](https://github.com/idfkit/idfkit/pull/345))
+- A lossless rewrite of a CRLF file kept the blank line after an edited object, and an added object
+  followed the last one after a blank line. ([#345](https://github.com/idfkit/idfkit/pull/345))
 - A `Version,x;` inside a `!` comment no longer chose the schema in `load_idf()` and
   `get_idf_version()`, which misread the file against another release; the real `Version` object does.
   ([#343](https://github.com/idfkit/idfkit/pull/343))

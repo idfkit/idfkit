@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from itertools import pairwise
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
+from idfkit import new_document
 from idfkit.cst import CSTNode
 from idfkit.idf_parser import _build_idf_cst, _cst_node_type_name, parse_idf
-from idfkit.writers import save_idf, write_epjson, write_idf
+from idfkit.writers import IDFWriter, save_idf, write_epjson, write_idf
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -794,8 +797,8 @@ class TestCommentsOnAReformattedObject:
             "Version, 26.1.0;\n"
             "\n"
             "Building,\n"
-            "  Packed, City, 0.04,   !- three fields, one comment\n"
-            "  0.4;                  !- and another\n"
+            "  Packed, 0, City,      !- three fields, one comment\n"
+            "  0.04;                 !- and another\n"
         )
         doc = parse_idf(idf_path, preserve_formatting=True)
         doc["Building"]["Packed"].terrain = "Suburbs"
@@ -1091,3 +1094,132 @@ class TestRenderObject:
 
         assert doc.render_object(doc.add("Zone", "Late Arrival")) is None
         assert composing(tmp_path, preserve=False).render_object(doc["Building"].first()) is None
+
+
+class TestLineEndings:
+    """A Windows (CRLF) file is written back in CRLF, whatever was edited or added."""
+
+    CRLF = (
+        b"Version,24.1;\r\n\r\nMaterial,\r\n  Conc,\r\n  Rough,\r\n  0.1,\r\n  1.0,\r\n  2000,\r\n  900;\r\n"
+        b"\r\nZone,\r\n  Z;\r\n"
+    )
+
+    @staticmethod
+    def _assert_crlf_only(data: bytes) -> None:
+        assert data.count(b"\n") == data.count(b"\r\n")
+        assert b"\r\r" not in data
+
+    def _source(self, tmp_path: Path) -> Path:
+        path = tmp_path / "crlf.idf"
+        path.write_bytes(self.CRLF)
+        return path
+
+    def test_untouched_lossless_rewrite_is_byte_identical(self, tmp_path: Path) -> None:
+        doc = parse_idf(self._source(tmp_path), preserve_formatting=True)
+        save_idf(doc, tmp_path / "out.idf")
+        assert (tmp_path / "out.idf").read_bytes() == self.CRLF
+
+    def test_edited_and_added_objects_use_crlf(self, tmp_path: Path) -> None:
+        """They were written with bare LF, and the edited one lost its blank line."""
+        doc = parse_idf(self._source(tmp_path), preserve_formatting=True)
+        doc["Material"]["Conc"].thickness = 0.2
+        doc.add("Zone", "Z2")
+        save_idf(doc, tmp_path / "out.idf")
+
+        data = (tmp_path / "out.idf").read_bytes()
+        self._assert_crlf_only(data)
+        assert b"  900;\r\n\r\nZone," in data
+        # The added object is separated from the last one by a blank line, as any two are.
+        assert b"  Z;\r\n\r\nZone,\r\n  Z2;" in data
+
+    def test_write_idf_text_is_consistent(self, tmp_path: Path) -> None:
+        doc = parse_idf(self._source(tmp_path), preserve_formatting=True)
+        doc["Material"]["Conc"].thickness = 0.2
+        self._assert_crlf_only(write_idf(doc).encode())
+
+    def test_render_object_uses_the_source_line_ending(self, tmp_path: Path) -> None:
+        doc = parse_idf(self._source(tmp_path), preserve_formatting=True)
+        material = doc["Material"]["Conc"]
+        material.thickness = 0.2
+        rendered = doc.render_object(material)
+        assert rendered is not None
+        self._assert_crlf_only(rendered.encode())
+        span = doc.region_of(material)
+        assert span is not None
+        raw = doc.raw_text
+        assert raw is not None
+        assert raw[span.end :].startswith("\r\n\r\nZone")
+
+    def test_a_formatted_save_keeps_crlf(self, tmp_path: Path) -> None:
+        """Without preserve_formatting the whole file used to become LF."""
+        doc = parse_idf(self._source(tmp_path))
+        save_idf(doc, tmp_path / "out.idf")
+        data = (tmp_path / "out.idf").read_bytes()
+        self._assert_crlf_only(data)
+        assert b"Material,\r\n" in data
+
+    def test_an_lf_file_stays_lf(self, tmp_path: Path) -> None:
+        path = tmp_path / "lf.idf"
+        path.write_bytes(self.CRLF.replace(b"\r\n", b"\n"))
+        save_idf(parse_idf(path), tmp_path / "out.idf")
+        assert b"\r" not in (tmp_path / "out.idf").read_bytes()
+
+    @pytest.mark.parametrize("preserve", [True, False])
+    def test_newline_overrides_the_source(self, tmp_path: Path, preserve: bool) -> None:
+        doc = parse_idf(self._source(tmp_path), preserve_formatting=preserve)
+        save_idf(doc, tmp_path / "out.idf", newline="\n")
+        assert b"\r" not in (tmp_path / "out.idf").read_bytes()
+
+    def test_writer_write_to_file_keeps_crlf(self, tmp_path: Path) -> None:
+        doc = parse_idf(self._source(tmp_path))
+        IDFWriter(doc).write_to_file(tmp_path / "out.idf")
+        data = (tmp_path / "out.idf").read_bytes()
+        self._assert_crlf_only(data)
+        assert b"Material,\r\n" in data
+
+    def test_writer_write_to_file_keeps_lf(self, tmp_path: Path) -> None:
+        path = tmp_path / "lf.idf"
+        path.write_bytes(self.CRLF.replace(b"\r\n", b"\n"))
+        IDFWriter(parse_idf(path)).write_to_file(tmp_path / "out.idf")
+        assert b"\r" not in (tmp_path / "out.idf").read_bytes()
+
+    @pytest.mark.parametrize("preserve", [True, False])
+    def test_newline_crlf_on_an_lf_source(self, tmp_path: Path, preserve: bool) -> None:
+        path = tmp_path / "lf.idf"
+        path.write_bytes(self.CRLF.replace(b"\r\n", b"\n"))
+        doc = parse_idf(path, preserve_formatting=preserve)
+        save_idf(doc, tmp_path / "out.idf", newline="\r\n")
+        data = (tmp_path / "out.idf").read_bytes()
+        self._assert_crlf_only(data)
+        assert b"\r\nZone,\r\n" in data
+
+    def test_newline_crlf_on_a_new_document(self, tmp_path: Path) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z")
+        save_idf(doc, tmp_path / "out.idf", newline="\r\n")
+        data = (tmp_path / "out.idf").read_bytes()
+        self._assert_crlf_only(data)
+        assert b"Zone,\r\n" in data
+
+    @pytest.mark.parametrize("linesep", ["\n", "\r\n"])
+    def test_a_new_document_uses_the_platform_line_ending(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, linesep: str
+    ) -> None:
+        """A document not read from IDF has no source line ending; text mode used to write os.linesep."""
+        monkeypatch.setattr(os, "linesep", linesep)
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z")
+        save_idf(doc, tmp_path / "saved.idf")
+        IDFWriter(doc).write_to_file(tmp_path / "written.idf")
+        for name in ("saved.idf", "written.idf"):
+            data = (tmp_path / name).read_bytes()
+            if linesep == "\r\n":
+                self._assert_crlf_only(data)
+                assert b"Zone,\r\n" in data
+            else:
+                assert b"\r" not in data
+
+    def test_newline_is_checked(self, tmp_path: Path) -> None:
+        doc = parse_idf(self._source(tmp_path))
+        with pytest.raises(ValueError, match="newline"):
+            save_idf(doc, tmp_path / "out.idf", newline=cast("Any", "\r"))

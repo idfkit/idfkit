@@ -20,7 +20,7 @@ idfkit serializes `IDFDocument` to both EnergyPlus formats. Each format has a pa
 | Symbol | Purpose |
 |---|---|
 | `write_idf(doc, output_type="standard", *, preserve_formatting=None)` | Serialize to IDF and return the text. Never touches the disk. |
-| `save_idf(doc, path, encoding=None, output_type="standard", *, preserve_formatting=None)` | Serialize to IDF and write it to `path`. |
+| `save_idf(doc, path, encoding=None, output_type="standard", *, preserve_formatting=None, newline=None)` | Serialize to IDF and write it to `path`. |
 | `write_epjson(doc, indent=2, *, preserve_formatting=None)` | Serialize to epJSON and return the text. Never touches the disk. |
 | `save_epjson(doc, path, indent=2, *, preserve_formatting=None)` | Serialize to epJSON and write it to `path`. |
 | `idfkit.writers.convert_idf_to_epjson(src, dst)` | Convenience converter. |
@@ -49,6 +49,14 @@ epJSON formatting is controlled by `indent`, as `json.dumps` takes it (default 2
 ## Encoding
 
 `save_idf` and `IDFWriter.write_to_file` write a model back in the encoding its IDF file was read in: UTF-8 or latin-1. A UTF-8 byte-order mark the file had is written back only by a lossless `preserve_formatting` save, never into regenerated text or the files idfkit hands EnergyPlus. A document built in code or read from epJSON is written as latin-1, the encoding EnergyPlus and its utilities write. Pass `encoding=` only to convert a file: a name that latin-1 cannot hold (`办公室`) raises `UnicodeEncodeError` with `encoding="latin-1"`.
+
+## Line endings
+
+`save_idf` writes a model back with the line ending its IDF file was read with, so a Windows (CRLF) file stays CRLF, on the lossless path (edited and added objects included) and on the formatting path. `write_idf` returns the lossless text in the source's line ending and formatted text with `\n`. Pass `newline="\n"` or `newline="\r\n"` to `save_idf` to choose; a document not read from an IDF file gets the platform's own.
+
+## Values IDF cannot hold
+
+IDF has no quoting: `,` and `;` end a value and `!` starts a comment. `write_idf`/`save_idf` raise `ValueError` naming the object and field when a name or value holds one, such as `doc.add("Zone", "Office, North")` or an epJSON zone named `A,B`, rather than writing a file that no longer reads back. Rename the object, or save as epJSON, which can hold them.
 
 ## Lossless round-trips (IDF only)
 

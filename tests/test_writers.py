@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import json
-import logging
 import warnings
 from pathlib import Path
 from typing import Any, get_args
 
 import pytest
 
-from idfkit import IDFDocument, new_document, parse_idf, save_epjson, save_idf, write_epjson, write_idf
+from idfkit import IDFDocument, load_epjson, new_document, parse_idf, save_epjson, save_idf, write_epjson, write_idf
 from idfkit.epjson_parser import parse_epjson  # pyright: ignore[reportPrivateUsage]
 from idfkit.writers import (
     EpJSONWriter,
@@ -662,13 +661,35 @@ class TestIDFValueFormattingEdgeCases:
         output = write_idf(doc)
         assert "1, 2, 3" in output
 
-    def test_delimiter_in_string_logs_warning(self, caplog: pytest.LogCaptureFixture) -> None:
-        """String with IDF delimiter characters logs a warning (L416)."""
+    def test_delimiter_in_a_value_raises(self) -> None:
+        """A value holding ``,`` would be written as two fields, so the writer refuses it."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {"x_origin": "bad,value"}, validate=False)
-        with caplog.at_level(logging.WARNING, logger="idfkit.writers"):
+        with pytest.raises(ValueError, match=r"Zone 'Z1' field 'x_origin' value 'bad,value' contains ','"):
             write_idf(doc)
-        assert any("delimiter" in r.message for r in caplog.records)
+
+    @pytest.mark.parametrize("name", ["Office, North", "A;B", "Lobby!"])
+    def test_delimiter_in_a_name_raises(self, name: str, tmp_path: Path) -> None:
+        """``Office, North; wing!`` used to be written as is, and the file then failed to load."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", name)
+        with pytest.raises(ValueError, match="Zone name value"):
+            save_idf(doc, tmp_path / "out.idf")
+        assert not (tmp_path / "out.idf").exists()
+
+    def test_delimiter_in_an_extensible_value_raises(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("ZoneList", "ZL", {"zones": [{"zone_name": "A,B"}]}, validate=False)
+        with pytest.raises(ValueError, match="field 'zone_name'"):
+            write_idf(doc)
+
+    def test_epjson_name_idf_cannot_express_is_not_lost_in_silence(self, tmp_path: Path) -> None:
+        """epJSON allows ``A,B`` as a name; converting it to IDF used to write two fields."""
+        source = tmp_path / "in.epJSON"
+        source.write_text(json.dumps({"Version": {"Version 1": {"version_identifier": "24.1"}}, "Zone": {"A,B": {}}}))
+        doc = load_epjson(source)
+        with pytest.raises(ValueError, match="'A,B'"):
+            write_idf(doc)
 
 
 class TestIDFWriterNocommentMode:

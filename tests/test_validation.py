@@ -875,6 +875,13 @@ class TestAnyOfAgainstRealSchema:
         errors = _validate_object(obj, schema, check_required=False)
         assert [e.code for e in errors if e.field == "ceiling_height"] == ["E004"]
 
+    def test_ceiling_height_message_says_a_number_was_expected(self) -> None:
+        """Naming only the choices, ``['', 'Autocalculate']``, hid that the field takes a number."""
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(obj_type="Zone", name="Z1", data={"ceiling_height": "abc"})
+        errors = [e for e in _validate_object(obj, schema, check_required=False) if e.field == "ceiling_height"]
+        assert [e.message for e in errors] == ["Expected a number or 'Autocalculate', got 'abc'"]
+
     def test_ceiling_height_accepts_its_own_sentinel(self) -> None:
         schema = get_schema((24, 1, 0))
         obj = IDFObject(obj_type="Zone", name="Z1", data={"ceiling_height": "Autocalculate"})

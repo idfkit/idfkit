@@ -17,12 +17,13 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from dataclasses import dataclass
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, Literal, cast
 
-from ._idf_encoding import source_encoding
+from ._idf_encoding import source_encoding, source_newline
 from .objects import is_blank_slot
 
 logger = logging.getLogger(__name__)
@@ -351,6 +352,7 @@ def save_idf(
     comment_column: int = DEFAULT_COMMENT_COLUMN,
     ordering: Ordering = "sorted",
     version_first: bool = True,
+    newline: Literal["\n", "\r\n"] | None = None,
 ) -> None:
     """
     Serialize a document to IDF text and write it to *path*.
@@ -373,6 +375,11 @@ def save_idf(
             [write_idf][idfkit.writers.write_idf].
         ordering: Object ordering, as for
             [write_idf][idfkit.writers.write_idf].
+        version_first: Version placement, as for
+            [write_idf][idfkit.writers.write_idf].
+        newline: Line ending, ``"\n"`` or ``"\r\n"``. ``None`` (the default) writes the line
+            ending of the IDF file the document was read from, so a Windows file stays CRLF, and the
+            platform's own for a document not read from an IDF file.
 
     Raises:
         TypeError: If *doc* is not a document, as when the arguments are swapped.
@@ -398,6 +405,9 @@ def save_idf(
     _check_output_type(output_type, "save_idf", "save_idf")
     path = Path(path)
     _check_save_path(path, "save_idf", _EPJSON_SUFFIXES, "save_epjson")
+    if newline not in (None, "\n", "\r\n"):
+        msg = f"newline must be '\\n', '\\r\\n' or None, not {newline!r}"
+        raise ValueError(msg)
     content = write_idf(
         doc,
         output_type,
@@ -407,16 +417,20 @@ def save_idf(
         ordering=ordering,
         version_first=version_first,
     )
+    lossless = _writes_lossless(
+        doc,
+        output_type,
+        preserve_formatting,
+        formatting_requested=_formatting_requested(indent, comment_column, ordering, version_first),
+    )
     if encoding is None:
         # A byte-order mark the source had is part of its text, so only a lossless rewrite keeps it.
-        lossless = _writes_lossless(
-            doc,
-            output_type,
-            preserve_formatting,
-            formatting_requested=_formatting_requested(indent, comment_column, ordering, version_first),
-        )
         encoding = source_encoding(doc, bom=lossless)
-    with open(path, "w", encoding=encoding) as f:
+    # A lossless rewrite is already in the source's line endings, and is written exactly as it is.
+    if newline is not None or not lossless:
+        content = _with_newline(content.replace("\r\n", "\n"), newline or source_newline(doc) or os.linesep)
+    # newline="" writes the text as it is: Python's own translation would turn a CRLF into CR CR LF.
+    with open(path, "w", encoding=encoding, newline="") as f:
         f.write(content)
     logger.info("Wrote IDF (%d objects) to %s", len(doc), path)
 
@@ -554,8 +568,15 @@ def render_cst_node(
 
     No trailing separator: what ran between this object and the next is the caller's to keep.
     """
+    if node.obj is None:
+        return node.text
     formatter = IDFWriter(doc, output_type="standard", field_comments=field_comments)
-    return formatter.format_object(node.obj, node.text) if node.obj is not None else node.text
+    return _with_newline(formatter.format_object(node.obj, node.text), source_newline(doc) or "\n")
+
+
+def _with_newline(text: str, newline: str) -> str:
+    """*text*, which the formatter writes with ``\n``, in the line ending *newline*."""
+    return text if newline == "\n" else text.replace("\n", newline)
 
 
 def _emit_cst_node(
@@ -564,6 +585,7 @@ def _emit_cst_node(
     parts: list[str],
     emitted: set[int],
     live_ids: set[int],
+    newline: str = "\n",
 ) -> None:
     """Emit a single CST node — verbatim for clean objects, reformatted for dirty ones."""
     if node.obj is None:
@@ -582,12 +604,13 @@ def _emit_cst_node(
         # The node keeps the text this object was READ from even after the object was changed, which
         # is what lets the reformatted output carry the author's own comments rather than rebuilt
         # ones. Only the values are re-rendered.
-        parts.append(formatter.format_object(obj, node.text))
+        # In the source's own line ending, or a CRLF file comes back with LF in every edited object.
+        parts.append(_with_newline(formatter.format_object(obj, node.text), newline))
         # And the object's own trailing blank lines, rather than a fixed two. A node's text runs to
         # the end of whatever separated it from the next object, so an object the author left one
         # newline after, which is any object at the end of a file, gained a blank line every time it
         # was reformatted.
-        parts.append(node.separator or "\n\n")
+        parts.append(node.separator or newline * 2)
 
 
 @dataclass(frozen=True, slots=True)
@@ -666,6 +689,25 @@ def _annotations(source_text: str) -> list[FieldAnnotation]:
     return annotations
 
 
+def _idf_text(obj: IDFObject, field_name: str, text: str) -> str:
+    """*text*, or a ``ValueError`` naming the object and field when IDF cannot express it.
+
+    IDF has no quoting, so ``,`` and ``;`` end the value and ``!`` starts a comment. Written as is,
+    ``Office, North`` becomes two fields and the file no longer reads back. epJSON names can hold
+    these characters, so this is also what stops an epJSON-to-IDF conversion losing data in silence.
+    """
+    found = [ch for ch in ",;!" if ch in text]
+    if found:
+        chars = " ".join(repr(ch) for ch in found)
+        where = f"{obj.obj_type} name" if field_name == "name" else f"{obj.obj_type} {obj.name!r} field {field_name!r}"
+        msg = (
+            f"{where} value {text!r} contains {chars}, which IDF cannot express (it has no quoting). "
+            "Change the value, or save the document as epJSON."
+        )
+        raise ValueError(msg)
+    return text
+
+
 def _write_idf_lossless(doc: AnyIDFDocument[bool], field_comments: FieldComments = "preserve") -> str:
     """Produce IDF output that preserves original formatting via the CST.
 
@@ -682,18 +724,24 @@ def _write_idf_lossless(doc: AnyIDFDocument[bool], field_comments: FieldComments
     emitted: set[int] = set()
     live_ids = {id(o) for o in doc.all_objects}
 
+    newline = source_newline(doc) or "\n"
+
     for node in cst.nodes:
-        _emit_cst_node(node, formatter, parts, emitted, live_ids)
+        _emit_cst_node(node, formatter, parts, emitted, live_ids, newline)
 
     # Append objects added after parsing (not in any CST node).
     new_objs = [formatter.format_object(o) for o in doc.all_objects if id(o) not in emitted]
     if new_objs:
-        tail = parts[-1] if parts else ""
-        if tail and not tail.endswith("\n"):
-            parts.append("\n")
+        # A blank line before the first, as between any two objects. A file ending in one line
+        # break used to run the added object straight on after the last one.
+        text = "".join(parts)
+        body = text.rstrip("\r\n")
+        if body:
+            breaks = text.count("\n", len(body))
+            parts.append(newline * max(0, 2 - breaks))
         for obj_str in new_objs:
-            parts.append(obj_str)
-            parts.append("\n\n")
+            parts.append(_with_newline(obj_str, newline))
+            parts.append(newline * 2)
 
     return "".join(parts)
 
@@ -863,14 +911,16 @@ class IDFWriter:
 
         for field_name in field_names:
             if field_name == "name":
-                values.append(obj.name or "")
+                values.append(_idf_text(obj, "name", obj.name or ""))
                 comments.append("Name")
             elif field_name == wrapper_key:
                 # Skip — handled below as positional extensible expansion.
                 continue
             else:
                 value = obj.data.get(field_name)
-                values.append(self._format_value(value))
+                text = self._format_value(value)
+                # A list is joined with commas on purpose; only a single value must not hold one.
+                values.append(text if isinstance(value, list) else _idf_text(obj, field_name, text))
                 comments.append(_field_label(field_name))
 
         # Pad an HVACTemplate object's fixed fields to the schema's ``min_fields`` with blanks, as
@@ -892,7 +942,7 @@ class IDFWriter:
                 for group_idx, item in enumerate(ext_items, start=1):
                     suffix = "" if group_idx == 1 else f" {group_idx}"
                     for inner in inner_names:
-                        values.append(self._format_value(item.get(inner)))
+                        values.append(_idf_text(obj, inner, self._format_value(item.get(inner))))
                         comments.append(f"{_field_label(inner)}{suffix}")
 
         # Trim trailing empty fields, but never below what the author actually wrote.
@@ -1034,14 +1084,7 @@ class IDFWriter:
             # Handle vertex lists etc.
             items = cast(list[Any], value)
             return ", ".join(str(v) for v in items)
-        text = str(value)
-        if any(ch in text for ch in (",", ";", "!")):
-            logger.warning(
-                "Field value %r contains IDF delimiter characters (comma, semicolon, or exclamation mark) "
-                "that will produce invalid IDF output",
-                text,
-            )
-        return text
+        return str(value)
 
     def write_to_file(self, filepath: Path | str, encoding: str | None = None) -> None:
         """Write to file.
@@ -1052,10 +1095,10 @@ class IDFWriter:
                 IDF file was read in, without a byte-order mark, and latin-1 for a document not
                 read from an IDF file.
         """
-        content = self.to_string()
+        content = _with_newline(self.to_string(), source_newline(self._doc) or os.linesep)
         if encoding is None:
             encoding = source_encoding(self._doc, bom=False)
-        with open(filepath, "w", encoding=encoding) as f:
+        with open(filepath, "w", encoding=encoding, newline="") as f:
             f.write(content)
 
 
