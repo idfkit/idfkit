@@ -6,14 +6,20 @@ for cross-version EnergyPlus compatibility issues.
 
 from __future__ import annotations
 
-from collections.abc import Collection, Iterable, Mapping
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from functools import lru_cache
 
 from ..exceptions import closest_name
 from ..objects import parse_extensible_index, to_python_name
 from ..schema import EpJSONSchema, get_schema
-from ..versions import ENERGYPLUS_VERSIONS, find_closest_version, find_release, version_string
+from ..versions import (
+    describe_presence,
+    find_closest_version,
+    find_release,
+    format_releases,
+    version_string,
+)
 from ._diff import SchemaIndex, build_schema_index
 from ._extract import extract_literals
 from ._models import (
@@ -557,38 +563,6 @@ def _report_add_literal(
     )
 
 
-def format_releases(releases: Iterable[tuple[int, int, int]]) -> str:
-    """*releases*, oldest first, with each run of three or more consecutive supported releases as a range.
-
-    Consecutive means adjacent in :data:`~idfkit.versions.ENERGYPLUS_VERSIONS`, not in the list
-    given, so a range never covers a release that was not checked: ``8.9.0 to 9.5.0`` names seven
-    releases, and ``8.9.0, 9.5.0`` the two of a run of targets that skipped the ones between.
-    """
-    order = {v: i for i, v in enumerate(ENERGYPLUS_VERSIONS)}
-    ordered = sorted(set(releases))
-    runs: list[list[tuple[int, int, int]]] = []
-    for v in ordered:
-        if runs and v in order and runs[-1][-1] in order and order[v] == order[runs[-1][-1]] + 1:
-            runs[-1].append(v)
-        else:
-            runs.append([v])
-    parts: list[str] = []
-    for run in runs:
-        if len(run) >= 3:
-            parts.append(f"{version_string(run[0])} to {version_string(run[-1])}")
-        else:
-            parts.extend(version_string(v) for v in run)
-    return ", ".join(parts)
-
-
-def _adjacent(earlier: tuple[int, int, int], later: tuple[int, int, int]) -> bool:
-    """Whether *later* is the supported release right after *earlier*."""
-    try:
-        return ENERGYPLUS_VERSIONS.index(later) == ENERGYPLUS_VERSIONS.index(earlier) + 1
-    except ValueError:
-        return False
-
-
 def _version_difference(
     code: str,
     subject: str,
@@ -606,13 +580,7 @@ def _version_difference(
     23.1.0`` for the reverse, and otherwise the targets that have it.
     """
     missing = sorted(absent_in)
-    present = sorted(present_in)
-    if missing[-1] < present[0] and _adjacent(missing[-1], present[0]):
-        having = f"added in {version_string(present[0])}"
-    elif missing[0] > present[-1] and _adjacent(present[-1], missing[0]):
-        having = f"removed in {version_string(missing[0])}"
-    else:
-        having = f"exists in {format_releases(present)}"
+    having = describe_presence(present_in, absent_in)
     return Diagnostic(
         code=code,
         message=f"{subject} not found in {format_releases(missing)}; {having}",

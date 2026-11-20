@@ -210,6 +210,9 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
     for missing object types continues to work. Unlike a plain ``KeyError``,
     ``str()`` gives the message as written, not its ``repr()``.
 
+    When another bundled release has the type, the message says which releases have it and how to
+    reach one, instead of calling the type unknown.
+
     Attributes:
         obj_type: The type name that was not found.
         version: The EnergyPlus release it was looked up in, if known.
@@ -222,9 +225,16 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
         self.obj_type = obj_type
         self.version = version
         self.suggestion = suggestion
-        msg = f"Unknown object type: '{obj_type}'"
-        if suggestion is not None:
-            msg += f". Did you mean '{suggestion}'?"
+        from .versions import not_in_release_message
+
+        # A type another bundled release has is not unknown: say which releases have it, not a near miss.
+        release_msg = not_in_release_message(obj_type, version) if version else None
+        if release_msg is not None:
+            msg = release_msg
+        else:
+            msg = f"Unknown object type: '{obj_type}'"
+            if suggestion is not None:
+                msg += f". Did you mean '{suggestion}'?"
         if version:
             from .docs import search_url
 

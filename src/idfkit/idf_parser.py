@@ -317,7 +317,8 @@ def parse_idf(
         strict_parsing: If True, fail fast on malformed objects (default: True)
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
+            of returning ``None``, and assigning a value the schema refuses raises
+            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
         preserve_formatting: If ``True``, build a Concrete Syntax Tree (CST)
             so that writing the document back preserves original formatting,
             comments, and whitespace for unmodified objects.  The default

@@ -371,9 +371,12 @@ class TestRangeChecking:
         assert mat is not None
         assert mat.checkrange("thickness") is True
 
-    def test_checkrange_raises_on_violation(self, simple_doc: IDFDocument) -> None:
-        mat = simple_doc.getobject("Material", "TestMaterial")
-        assert mat is not None
+    def test_checkrange_raises_on_violation(self) -> None:
+        # A strict document refuses the value on assignment; a lax one stores it for checkrange to report.
+        doc = new_document(strict=False)
+        mat = doc.add(
+            "Material", "M", roughness="Rough", thickness=0.1, conductivity=1.0, density=1.0, specific_heat=100.0
+        )
         mat.thickness = -1.0
         with pytest.raises(RangeError):
             mat.checkrange("thickness")

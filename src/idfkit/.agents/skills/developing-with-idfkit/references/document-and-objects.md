@@ -83,7 +83,7 @@ A keyword that is not a field of the type is refused, never stored, whatever its
 # result is the type's class (Zone, Material, ...), not a plain IDFObject. Signature help shows the
 # required fields with no default and the others with the schema's default.
 office_zone = doc.zones.add("Office", x_origin=0.0, ceiling_height=3.0)
-office_zone.multiplier = 2  # typed: an int, checked on assignment
+office_zone.multiplier = 2  # typed as an int; a strict document also refuses 0 (below its minimum) at run time
 
 insulation = doc["Material"].add(
     "XPS_25mm",
@@ -325,7 +325,7 @@ def is_district_heated(doc: IDFDocumentSince23_2, heater_name: str) -> bool:
 
 ### A model created for an older release
 
-Pass `new_document` the release's document type: `new_document(IDFDocumentV9_4)` creates a 9.4.0 model typed as `IDFDocumentV9_4`, so the release is named once and the type and the version cannot disagree. For a non-strict model, parametrize the type, `new_document(IDFDocumentV9_4[Literal[False]])`, typed `IDFDocumentV9_4[Literal[False]]`; this form takes no `strict=`. Given a version tuple instead, `new_document` is typed for the latest release whatever the version, so a test fixture built with `new_document(version=(9, 4, 0))` is checked against the wrong release. For the latest release keep `new_document()`: `IDFDocument`, and so the latest release's own type `IDFDocumentV26_2` (which is `IDFDocument`), is refused (`TypeError`, though pyright accepts the call), because it is the run-time class of every document and `new_document(type(doc))` would otherwise create a latest-release model whatever `doc`'s release; `AnyIDFDocument` and unions of release types are refused too (a union, like `IDFDocument`, only when the call runs). A model whose version comes from a file is typed by its loader's `as_type=` or with `as_version`, as above.
+Pass `new_document` the release's document type: `new_document(IDFDocumentV9_4)` creates a 9.4.0 model typed as `IDFDocumentV9_4`, so the release is named once and the type and the version cannot disagree. For a non-strict model, parametrize the type, `new_document(IDFDocumentV9_4[Literal[False]])`, typed `IDFDocumentV9_4[Literal[False]]`; this form takes no `strict=`. Given a version tuple instead, `new_document` is typed for the latest release whatever the version, so a test fixture built with `new_document(version=(9, 4, 0))` is checked against the wrong release. For the latest release keep `new_document()`: `IDFDocument`, and so the latest release's own type `IDFDocumentV26_2` (which is `IDFDocument`), is refused (`TypeError`, though pyright accepts the call), because it is the run-time class of every document and `new_document(type(doc))` would otherwise create a latest-release model whatever `doc`'s release; `AnyIDFDocument` and unions of release types are refused too (a union, like `IDFDocument`, only when the call runs). A model whose version comes from a file is typed by its loader's `as_type=` or with `as_version`, as above. At run time, reaching a type the document's release lacks but another bundled release has (`doc.add("Space", "S")` or `doc.spaces` on a 9.4 model) raises `UnknownObjectTypeError` or `AttributeError` saying so: `'Space' is not an object type of EnergyPlus 9.4.0: it was added in 9.6.0`, followed by how to reach such a release (`idfkit.migrate(doc, ...)` or `new_document(...)`). `doc["Space"]` still returns an empty collection without a warning, so code can probe a type across releases.
 
 ```python
 from typing import Literal
@@ -510,12 +510,16 @@ To keep the source's text, pass `normalize_choices=False` to `load_idf`, `load_e
 
 ## Modifying objects
 
-Field access is via attribute. Setting a value re-validates against the schema and updates the reference graph automatically:
+Field access is via attribute. Setting a value updates the reference graph automatically. In a strict document (the default), assignment, item assignment and `update()` also check the value as `add()` does: a value of the wrong type, a choice the schema does not list or a number out of range raises `ValidationFailedError` (codes `E003` to `E008`) and leaves the object unchanged; `update()` checks every value before writing any. Clearing a field (`None`) is always accepted, and nothing checks that the object still has its required fields until `validate_document()`. A document opened with `strict=False` stores any value, for `validate_document()` to report:
 
 ```python
 zone = doc["Zone"]["Office"]
 zone.ceiling_height = 3.5  # plain field
 zone.direction_of_relative_north = 90.0
+try:
+    zone.multiplier = -3  # below its minimum of 1: refused, as add() refuses it
+except ValidationFailedError as exc:
+    print(exc)  # ... Zone:'Office'.multiplier: Value -3 is below minimum 1
 ```
 
 Dict-style access also works and accepts either Python or IDD field names — `zone["x_origin"]`, `zone["X Origin"]`, and `zone.x_origin` are all equivalent. Attribute access is the idiomatic form (better IDE autocomplete and type checking). A typed object, such as one from `doc["Lights"]` or `doc.lights`, declares the EnergyPlus 26.2 snake_case names only, and pyright reports any other attribute name, read or assigned. That includes an eppy-style capitalised spelling (`lights.Watts_per_Zone_Floor_Area`) and a field that exists only in an earlier version (`Lights.watts_per_zone_floor_area`, up to 23.2). Both still work at run time; in type-checked code, reach a field missing from 26.2 with item access (`lights["watts_per_zone_floor_area"]`). Objects from `doc.add()`, `doc.get_collection()` and the eppy API are plain `IDFObject` and accept any name; a collection's `add()` (`doc.zones.add(...)`) returns the typed class. A few epJSON keys end in `_` because their IDD name ends in punctuation or a space (`cond_flag_is_the_basement_conditioned_`, `nx_number_of_cells_in_the_x_direction_20_`). At runtime the spelling without the underscore works too, in `add()`, attribute access and `update()`, and is stored under the schema's key; `name` is never such a spelling. The typed `update()` stubs name only the schema's key, so use that key in type-checked code.

@@ -34,7 +34,7 @@ print(len(doc), "objects")
 
 ## Strict mode (the default)
 
-`strict=True` makes any attempt to access or set an unknown field name raise `InvalidFieldError`. This is what you want 99% of the time — it catches typos and version-mismatched field names at the call site. On a typed object (`doc["Zone"][...]`) pyright reports an undeclared field name before the code runs, for reading and for assigning.
+`strict=True` makes any attempt to access or set an unknown field name raise `InvalidFieldError`, and an assigned value the schema refuses (wrong type, unlisted choice, out of range) raise `ValidationFailedError`, as `add()` does. This is what you want 99% of the time — it catches typos and version-mismatched field names at the call site. On a typed object (`doc["Zone"][...]`) pyright reports an undeclared field name before the code runs, for reading and for assigning.
 
 ```python
 doc = load_idf("building.idf")  # strict=True by default

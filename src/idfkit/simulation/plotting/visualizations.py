@@ -56,6 +56,12 @@ def plot_energy_balance(
 
     Returns:
         A figure object from the backend.
+
+    Raises:
+        ResultLookupError: If the database has no ``End Uses`` table of that report, which
+            happens when the model had no ``Output:Table:SummaryReports`` or its
+            ``Output:SQLite`` option was not ``SimpleAndTabular``; the message says how to add
+            them.
     """
     if backend is None:
         from . import get_default_backend

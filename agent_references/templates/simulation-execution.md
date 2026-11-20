@@ -58,7 +58,7 @@ If EnergyPlus is missing, `EnergyPlusNotFoundError` is raised. With `version=`, 
 --8<-- "agent_references/snippets/simulation-execution.py:version-handling"
 ```
 
-Backward migration (installed EP older than the model) is never attempted — it raises `VersionMismatchError`. This is what a `new_document()` model hits when the installed EnergyPlus is older than the latest bundled release, since `new_document()` defaults to the latest: build the model at the installed release instead, `new_document(version=idfkit.simulation.find_energyplus().version)`, or install the newer EnergyPlus. The error message names both fixes, and `auto_migrate=True` for an older model.
+Backward migration (installed EP older than the model) is never attempted — it raises `VersionMismatchError`. This is what a `new_document()` model hits when the installed EnergyPlus is older than the latest bundled release, since `new_document()` defaults to the latest: build the model at the installed release instead, `new_document(version=idfkit.simulation.find_energyplus().version)`, or install the newer EnergyPlus. That call is typed as the latest release whatever the version, so pyright accepts types the installed release lacks; when you know the release, pass its type, `new_document(IDFDocumentV26_1)` (from `idfkit.versioned`), and pyright checks against it. The error message names both fixes, and `auto_migrate=True` for an older model.
 
 ## Design day vs. annual
 

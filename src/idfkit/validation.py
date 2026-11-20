@@ -583,6 +583,26 @@ def validate_object(
     )
 
 
+def field_value_error(obj: IDFObject, field_name: str, value: Any, schema: EpJSONSchema) -> ValidationError | None:
+    """The finding *value* would raise as *obj*'s *field_name*, or None when the schema accepts it.
+
+    The type, choice and range checks ``add()`` applies to each value, for one value about to be
+    assigned. A blank value clears the field and is not checked, nor is a field the schema does not
+    know: whether a name is a field is the caller's question (strict mode, or ``update()``).
+    """
+    rules = _object_rules(schema, obj.obj_type)
+    if rules is None or is_blank_slot(value):
+        return None
+    rule = rules.fields.get(field_name)
+    if rule is None:
+        return None
+    if type(value) in rule.accepts_outright:
+        return None
+    if type(value) is str and value.lower() in rule.accepts_folded:
+        return None
+    return rule.first_error(obj, field_name, value)
+
+
 def _validate_object(  # noqa: C901
     obj: IDFObject,
     schema: EpJSONSchema,

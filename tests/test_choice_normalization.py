@@ -313,7 +313,8 @@ class TestAssignment:
         assert mat.mutation_version == before
 
     def test_unlisted_value_kept(self) -> None:
-        doc = new_document(_V)
+        # A strict document refuses an unlisted choice on assignment; a lax one keeps it as written.
+        doc = new_document(_V, strict=False)
         mat = _material(doc, "Rough")
         mat.roughness = "Bumpy"  # pyright: ignore[reportAttributeAccessIssue]
         assert mat.roughness == "Bumpy"

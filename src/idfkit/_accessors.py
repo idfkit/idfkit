@@ -15,6 +15,7 @@ Both forms return the type's collection, as ``doc["Output:SQLite"]`` does.
 
 from __future__ import annotations
 
+import functools
 import re
 from collections.abc import Callable, Iterable, Mapping
 
@@ -138,6 +139,35 @@ def _underscore_key(obj_type: str) -> str:
     'buildingsurface_detailed'
     """
     return obj_type.replace(":", "_").lower()
+
+
+@functools.cache
+def _partial_type_names() -> tuple[dict[str, str], dict[str, str]]:
+    """Derived names and raw keys of the object types some bundled release lacks, with their types.
+
+    The derived names are the singular and the plural, as uniqueness can differ between releases.
+    """
+    from ._object_types import ALL_OBJECT_TYPES, PARTIAL_OBJECT_TYPES
+
+    derived: dict[str, str] = {}
+    raw: dict[str, str] = {}
+    for obj_type in ALL_OBJECT_TYPES:
+        if obj_type.casefold() not in PARTIAL_OBJECT_TYPES:
+            continue
+        singular = snake_case(obj_type)
+        derived.setdefault(singular, obj_type)
+        derived.setdefault(pluralize(singular), obj_type)
+        raw.setdefault(_underscore_key(obj_type), obj_type)
+    return derived, raw
+
+
+def other_release_object_type(attr: str) -> str | None:
+    """The object type *attr* names in some bundled release that not every release has, or None.
+
+    Matched as a resolver matches: a derived name exactly, a raw type name case-insensitively.
+    """
+    derived, raw = _partial_type_names()
+    return derived.get(attr) or raw.get(attr.lower())
 
 
 class AccessorResolver:
@@ -295,8 +325,15 @@ class AccessorAttributeError(AttributeError):
     from a worker process with its class and ``name`` intact.
     """
 
-    def __init__(self, owner: str, attr: str, resolver: AccessorResolver | None = None) -> None:
+    def __init__(
+        self,
+        owner: str,
+        attr: str,
+        resolver: AccessorResolver | None = None,
+        version: tuple[int, int, int] | None = None,
+    ) -> None:
         super().__init__(attr)
+        self._version = version  # the document's release, to name the releases that have the type
         self.name = attr  # the standard AttributeError.name, typed str | None by the base class
         self._attr = attr  # a plain str copy for our own use, so pyright strict is satisfied
         self._owner = owner
@@ -320,6 +357,14 @@ class AccessorAttributeError(AttributeError):
 
     def _build(self) -> str:
         base = f"{self._owner!r} object has no attribute {self._attr!r}"
+        if self._version is not None:
+            obj_type = other_release_object_type(self._attr)
+            if obj_type is not None:
+                from .versions import not_in_release_message
+
+                release_msg = not_in_release_message(obj_type, self._version)
+                if release_msg is not None:
+                    return f"{base}. {release_msg}"
         if self._resolver is None:
             return base
         hits = self._resolver.suggest(self._attr)

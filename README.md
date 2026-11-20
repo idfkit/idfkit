@@ -152,7 +152,8 @@ save_idf(doc, "out.idf")
 from idfkit import new_document, save_idf
 
 doc = new_document()  # the latest release; simulate() needs the model's release installed
-# or new_document(version=idfkit.simulation.find_energyplus().version) to match the EnergyPlus you have
+# To match an older EnergyPlus you have, name its release's type, so pyright checks that release:
+# from idfkit.versioned import IDFDocumentV26_1; doc = new_document(IDFDocumentV26_1)
 doc.add("Zone", "Office", x_origin=0.0, y_origin=0.0)
 save_idf(doc, "new_building.idf")
 ```

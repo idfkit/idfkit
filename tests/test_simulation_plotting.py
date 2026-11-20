@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import pytest
 
+from idfkit.exceptions import ResultLookupError
 from idfkit.simulation.parsers.sql import TabularRow, TimeSeriesResult
 from idfkit.simulation.plotting import PlotBackend, get_default_backend
 
@@ -296,6 +297,9 @@ class MockSQLResult:
             result = [r for r in result if r.report_name == report_name]
         if table_name:
             result = [r for r in result if r.table_name == table_name]
+        if not result and (report_name or table_name):
+            # As SQLResult does: a filter that matches nothing raises rather than returning [].
+            raise ResultLookupError(f"No tabular report {report_name!r}")  # noqa: TRY003
         return result
 
 
@@ -840,6 +844,16 @@ class TestPlotEnergyBalanceEdgeCases:
         return TabularRow(
             "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "End Uses", end_use, column, units, value
         )
+
+    def test_missing_report_raises(self) -> None:
+        """A database without the end-use report raises ResultLookupError, not an empty chart."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        sql = MockSQLResult(tabular_data=[])
+        backend = MockBackend()
+        with pytest.raises(ResultLookupError):
+            plot_energy_balance(sql, backend=backend)  # type: ignore[arg-type]
+        assert backend.calls == []
 
     def test_water_volume_not_added_to_energy(self) -> None:
         """The Water column (m3) is not energy and must not be summed into the GJ bars."""

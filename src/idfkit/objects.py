@@ -9,14 +9,21 @@ from __future__ import annotations
 
 import re
 import warnings
-from collections.abc import Callable, Container, Iterator, Mapping, Sequence
+from collections.abc import Callable, Container, Iterable, Iterator, Mapping, Sequence
 from copy import deepcopy
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
 from ._read_required import GROUP_READ_REQUIRED, READ_REQUIRED
-from .exceptions import InvalidFieldError, MissingRequiredFieldError, ObjectNotFoundError, RefusedEntry, format_refused
+from .exceptions import (
+    InvalidFieldError,
+    MissingRequiredFieldError,
+    ObjectNotFoundError,
+    RefusedEntry,
+    ValidationFailedError,
+    format_refused,
+)
 from .schema import NO_CHOICE_SPELLINGS, canonical_choice, trailing_underscore_aliases
 
 __all__ = [
@@ -54,6 +61,7 @@ if TYPE_CHECKING:
 
     from .document import AnyIDFDocument
     from .schema import ChoiceSpellings, ParsingCache
+    from .validation import ValidationError
 
     _P = ParamSpec("_P")
 
@@ -929,6 +937,10 @@ class IDFObject(EppyObjectMixin):
     def __setattr__(self, key: str, value: Any) -> None:
         """Set field value by attribute name.
 
+        In a strict document, a value the schema refuses (wrong type, unlisted
+        choice, out of range) raises :class:`~idfkit.exceptions.ValidationFailedError`
+        and the field keeps its value, as ``add()`` refuses it.
+
         Assigning the schema's wrapper key (e.g. ``surface.vertices = [...]``)
         replaces the canonical extensible array. Legacy eppy-style flat
         extensible writes (``surface.vertex_3_x_coordinate = 5.0``) are
@@ -987,7 +999,30 @@ class IDFObject(EppyObjectMixin):
                     version=ver,
                     extensible_fields=self._extensibles,
                 )
+            self._refuse_invalid_values([(python_key, value)])
         self._set_field(python_key, value)
+
+    def _value_errors(self, entries: Iterable[tuple[str, Any]]) -> list[ValidationError]:
+        """The findings ``add()`` would raise for these ``(field, value)`` writes, in a strict document.
+
+        A lax document (``strict=False``), a detached object and a document without a schema check
+        nothing, so a value can still be written there for ``validate_document()`` to report.
+        """
+        doc = self._document
+        if doc is None or not doc.strict:
+            return []
+        schema = doc.schema
+        if schema is None:
+            return []
+        from .validation import field_value_error
+
+        return [error for key, value in entries if (error := field_value_error(self, key, value, schema)) is not None]
+
+    def _refuse_invalid_values(self, entries: Iterable[tuple[str, Any]]) -> None:
+        """Raise :class:`ValidationFailedError` if a strict document's schema refuses any of *entries*."""
+        errors = self._value_errors(entries)
+        if errors:
+            raise ValidationFailedError(errors)
 
     def __getitem__(self, key: str | int) -> Any:
         """Get field value by name or index.
@@ -1022,6 +1057,7 @@ class IDFObject(EppyObjectMixin):
                 self._set_name(value)
             elif self._field_order and 0 < key <= len(self._field_order):
                 field_name = self._field_order[key - 1]
+                self._refuse_invalid_values([(field_name, value)])
                 self._set_field(field_name, value)
             else:
                 raise IndexError(f"Field index {key} out of range")  # noqa: TRY003
@@ -1280,6 +1316,9 @@ class IDFObject(EppyObjectMixin):
                 extensible name. ``field_name`` is the first entry refused for its name, and
                 ``refused`` holds every refused entry, including any refused for its value.
             TypeError: Every refused entry gives the wrapper key a value it rejects.
+            ValidationFailedError: In a strict document, the schema refuses a value as ``add()``
+                would (wrong type, unlisted choice, out of range); ``errors`` lists every one.
+                Names are examined first, so this is raised only when every name is accepted.
 
         Examples:
             >>> from idfkit import new_document
@@ -1306,6 +1345,10 @@ class IDFObject(EppyObjectMixin):
         refused = [entry for key, value in group.values() if (entry := self._examine(key, value)) is not None]
         if refused:
             self._refuse(refused)
+        # Every value is checked before any is written, so a refused value leaves the object as it was.
+        self._refuse_invalid_values(
+            (python_key, value) for python_key, (_, value) in group.items() if python_key != self._wrapper_key
+        )
         for key, value in group.values():
             setattr(self, key, value)
 

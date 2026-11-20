@@ -50,7 +50,9 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         """Whether strict field access mode is enabled.
 
         When ``True``, accessing or setting an unknown field name on objects in this
-        document raises :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.
+        document raises :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``,
+        and assigning a value the schema refuses raises
+        :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
 
         This property is read-only; set it via the constructor.
         """
@@ -5683,7 +5685,10 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
                 [IDFObject][idfkit.objects.IDFObject] owned by this document raises
                 :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
-                typos early.  This value is immutable after construction.
+                typos early.  A value assigned to a field, or passed to ``update()``, is
+                also checked as ``add()`` checks it, raising
+                :class:`~idfkit.exceptions.ValidationFailedError` for a wrong type, an unlisted
+                choice or an out-of-range number.  This value is immutable after construction.
             normalize_choices: When ``True`` (the default), a choice value added or assigned
                 through this document is stored in the spelling its schema declares, whatever
                 its case: ``surface_type="WALL"`` reads back ``"Wall"``, so the ``Literal``

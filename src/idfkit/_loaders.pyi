@@ -113,7 +113,8 @@ def load_idf(
         strict_parsing: If True, fail fast on malformed IDF objects (default: True)
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
+            of returning ``None``, and assigning a value the schema refuses raises
+            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree
             (CST) so that :func:`write_idf` and :func:`save_idf`
             reproduce the original
@@ -3246,7 +3247,8 @@ def load_idf_with_diagnostics(
         before: The release that range stops before, as for :func:`load_idf`.
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
+            of returning ``None``, and assigning a value the schema refuses raises
+            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree (CST) so that
             :func:`write_idf` and :func:`save_idf` reproduce the original formatting.
         normalize_choices: When ``True`` (the default), each choice value is stored in the
@@ -6166,7 +6168,8 @@ def load_epjson(
             skips it with a logged warning.
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
+            of returning ``None``, and assigning a value the schema refuses raises
+            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
         preserve_formatting: When ``True``, store the raw JSON text so
             that :func:`write_epjson` and :func:`save_epjson` can
             reproduce it byte-for-byte

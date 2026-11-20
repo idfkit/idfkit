@@ -43,7 +43,8 @@ def parse_epjson(
         version: Optional version override (auto-detected if not provided)
         strict: When ``True``, accessing or setting an unknown field name on any
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
+            of returning ``None``, and assigning a value the schema refuses raises
+            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
         strict_parsing: When ``True`` (the default), an object type the schema does not
             have raises :class:`~idfkit.exceptions.IDFParseError`, as :func:`~idfkit.load_idf`
             does, and the message suggests the closest type; EnergyPlus refuses such a file.
