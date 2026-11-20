@@ -29,6 +29,11 @@ from idfkit.schedules.types import (
     DayType,
 )
 
+__all__ = [
+    "DAY_TYPE_PRIORITY",
+    "get_applicable_day_types",
+]
+
 #: Priority order for day-type matching (more specific first).
 DAY_TYPE_PRIORITY: list[str] = [
     DAY_TYPE_SUMMER_DESIGN,

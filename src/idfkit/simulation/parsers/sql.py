@@ -24,6 +24,16 @@ if TYPE_CHECKING:
 
     from ..plotting import PlotBackend
 
+__all__ = [
+    "Environment",
+    "EnvironmentInfo",
+    "SQLResult",
+    "SeriesSpec",
+    "TabularRow",
+    "TimeSeriesResult",
+    "VariableInfo",
+]
+
 
 @dataclass(frozen=True, slots=True, repr=False)
 class TimeSeriesResult:

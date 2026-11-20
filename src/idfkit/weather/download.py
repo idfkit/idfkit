@@ -27,6 +27,12 @@ if TYPE_CHECKING:
 
     from .index import StationIndex
 
+__all__ = [
+    "PartialWeatherFiles",
+    "WeatherDownloader",
+    "WeatherFiles",
+]
+
 logger = logging.getLogger(__name__)
 
 _USER_AGENT = "idfkit (https://github.com/idfkit/idfkit)"

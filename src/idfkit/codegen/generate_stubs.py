@@ -33,6 +33,19 @@ from idfkit.docs import io_reference_url
 from idfkit.schema import EpJSONSchema, get_schema, trailing_underscore_aliases
 from idfkit.versions import ENERGYPLUS_VERSIONS, version_string
 
+__all__ = [
+    "generate_document_pyi",
+    "generate_loaders_pyi",
+    "generate_object_types_py",
+    "generate_read_required_py",
+    "generate_stubs",
+    "generate_versioned_documents",
+    "generate_versioned_py",
+    "generate_versioned_pyi",
+    "main",
+    "supported_up_to",
+]
+
 # ---- helpers ---------------------------------------------------------------
 
 Version = tuple[int, int, int]

@@ -10,6 +10,11 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+__all__ = [
+    "ErrorMessage",
+    "ErrorReport",
+]
+
 # Regex patterns for severity markers in .err files
 _FATAL_RE = re.compile(r"^\s*\*\*\s+Fatal\s+\*\*")
 _SEVERE_RE = re.compile(r"^\s*\*\*\s+Severe\s+\*\*")

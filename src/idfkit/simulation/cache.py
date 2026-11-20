@@ -26,6 +26,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+__all__ = [
+    "CacheKey",
+    "SimulationCache",
+    "default_simulation_cache_dir",
+]
+
 logger = logging.getLogger(__name__)
 
 CACHE_META_FILE = "_cache_meta.json"

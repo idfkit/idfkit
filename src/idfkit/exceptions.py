@@ -13,6 +13,37 @@ if TYPE_CHECKING:
     from .objects import IDFObject
     from .simulation.result import SimulationResult
 
+__all__ = [
+    "DanglingReferenceError",
+    "DuplicateObjectError",
+    "EnergyPlusNotFoundError",
+    "ExpandObjectsError",
+    "FileFormatError",
+    "FormattingLossWarning",
+    "IDFParseError",
+    "IdfKitError",
+    "InvalidFieldError",
+    "MigrationError",
+    "MissingRequiredFieldError",
+    "NoDesignDaysError",
+    "ObjectNotFoundError",
+    "OutputNotFoundError",
+    "ParseDiagnostic",
+    "ParseDiagnosticCode",
+    "ParseError",
+    "RangeError",
+    "RefusedEntry",
+    "ResultLookupError",
+    "SchemaNotFoundError",
+    "SimulationError",
+    "UnknownObjectTypeError",
+    "UnknownObjectTypeWarning",
+    "UnsupportedVersionError",
+    "ValidationFailedError",
+    "VersionMismatchError",
+    "VersionNotFoundError",
+]
+
 
 class IdfKitError(Exception):
     """Base exception for all idfkit errors."""

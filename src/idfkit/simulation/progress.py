@@ -14,6 +14,11 @@ from typing import TYPE_CHECKING, Literal
 if TYPE_CHECKING:
     from ..document import AnyIDFDocument
 
+__all__ = [
+    "ProgressParser",
+    "SimulationProgress",
+]
+
 
 @dataclass(frozen=True, slots=True)
 class SimulationProgress:

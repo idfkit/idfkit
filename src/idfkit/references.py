@@ -14,6 +14,10 @@ from collections import defaultdict
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any, cast
 
+__all__ = [
+    "ReferenceGraph",
+]
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:

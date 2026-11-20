@@ -35,6 +35,11 @@ if TYPE_CHECKING:
     from ..versioned import ReleaseDocumentT
     from .protocol import Migrator
 
+__all__ = [
+    "OnMigrationProgress",
+    "migrate",
+]
+
 logger = logging.getLogger(__name__)
 
 OnMigrationProgress = Callable[[MigrationProgress], Any]

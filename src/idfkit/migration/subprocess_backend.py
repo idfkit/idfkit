@@ -28,6 +28,11 @@ from ..exceptions import MigrationError
 from ..simulation._cancel import run_process
 from .protocol import MigrationStepResult
 
+__all__ = [
+    "DEFAULT_STEP_TIMEOUT",
+    "SubprocessMigrator",
+]
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_STEP_TIMEOUT: float = 600.0

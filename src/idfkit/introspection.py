@@ -15,6 +15,12 @@ from .exceptions import UnknownObjectTypeError, closest_name
 if TYPE_CHECKING:
     from .schema import EpJSONSchema
 
+__all__ = [
+    "FieldDescription",
+    "ObjectDescription",
+    "describe_object_type",
+]
+
 
 @dataclass
 class FieldDescription:

@@ -16,6 +16,12 @@ if TYPE_CHECKING:
     from ..parsers.sql import SQLResult, TimeSeriesResult
     from . import PlotBackend
 
+__all__ = [
+    "plot_comfort_hours",
+    "plot_energy_balance",
+    "plot_temperature_profile",
+]
+
 
 # Joules per unit for the energy units EnergyPlus tabular reports use (SI, IP, JtoKWH, JtoMJ, ...).
 _JOULES_PER_UNIT: dict[str, float] = {

@@ -18,6 +18,14 @@ from ._surface_types import is_fenestration_door
 from .exceptions import closest_names
 from .objects import IDFObject, is_blank_slot
 
+__all__ = [
+    "Severity",
+    "ValidationError",
+    "ValidationResult",
+    "validate_document",
+    "validate_object",
+]
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:

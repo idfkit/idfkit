@@ -38,6 +38,11 @@ if TYPE_CHECKING:
     from ..versioned import ReleaseDocumentT
     from .protocol import AsyncMigrator
 
+__all__ = [
+    "OnMigrationProgress",
+    "async_migrate",
+]
+
 logger = logging.getLogger(__name__)
 
 OnMigrationProgress = Callable[[MigrationProgress], Any] | Callable[[MigrationProgress], Awaitable[Any]]

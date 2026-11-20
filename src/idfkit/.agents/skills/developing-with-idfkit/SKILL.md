@@ -34,7 +34,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 
 ## Conventions used in every reference
 
-- **Imports come from `idfkit` directly** unless the symbol lives in a sub-package (`idfkit.simulation`, `idfkit.weather`, `idfkit.schedules`, `idfkit.thermal`, `idfkit.visualization`).
+- **Imports come from `idfkit` directly** unless the symbol lives in a sub-package (`idfkit.simulation`, `idfkit.weather`, `idfkit.schedules`, `idfkit.thermal`, `idfkit.visualization`). Every public module lists its API in `__all__`; a name you can import from a module but that is not in its `__all__` is an internal helper that may change without notice, so do not build on it. The exception is the object classes type checkers see in `idfkit.document` and `idfkit.versioned` (`Zone`, `AnyZone`, `People_v8_9_to_v9_4`), which exist only in their stubs.
 - **Python 3.10+** syntax: `tuple[int, int, int]`, `from __future__ import annotations` in real code.
 - **Strict mode is the default**: unknown field names raise `InvalidFieldError`, and a value assigned or passed to `update()` is checked as `add()` checks it (`ValidationFailedError`). Pass `strict=False` only as a tolerant migration fallback; it relaxes attribute reads and writes, not `add()` or `update()`, which refuse unknown keys in every mode.
 - **EnergyPlus version is part of every document**: `doc.version` is a `tuple[int, int, int]`. The latest supported version is exposed as `idfkit.LATEST_VERSION`.

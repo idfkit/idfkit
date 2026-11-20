@@ -66,6 +66,23 @@ if TYPE_CHECKING:
     from .document import AnyIDFDocument
     from .objects import IDFObject
 
+__all__ = [
+    "ASHRAE_PERIMETER_DEPTH",
+    "ZoneFootprint",
+    "ZonedBlock",
+    "ZoningScheme",
+    "create_block",
+    "create_courtyard_block",
+    "footprint_courtyard",
+    "footprint_courtyard_parts",
+    "footprint_h_shape",
+    "footprint_l_shape",
+    "footprint_rectangle",
+    "footprint_t_shape",
+    "footprint_u_shape",
+    "link_blocks",
+]
+
 # ASHRAE 90.1 Appendix G default perimeter depth (15 ft ≈ 4.57 m).
 ASHRAE_PERIMETER_DEPTH: float = 4.57
 

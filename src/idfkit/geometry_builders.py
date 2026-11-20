@@ -27,6 +27,20 @@ from .geometry import (
     set_surface_coords,
 )
 
+__all__ = [
+    "HorizontalAdjacency",
+    "add_shading_block",
+    "bounding_box",
+    "counter_clockwise_footprint",
+    "detect_horizontal_adjacencies",
+    "get_geometry_convention",
+    "link_horizontal_surfaces",
+    "scale_building",
+    "set_default_constructions",
+    "split_horizontal_surface",
+    "split_horizontal_surface_by_regions",
+]
+
 if TYPE_CHECKING:
     from .document import AnyIDFDocument
     from .objects import IDFObject

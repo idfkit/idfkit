@@ -44,6 +44,12 @@ from .versions import (
     version_string,
 )
 
+__all__ = [
+    "download_all_schemas",
+    "download_schema",
+    "main",
+]
+
 _GITHUB_API_BASE = "https://api.github.com/repos/NatLabRockies/EnergyPlus/releases/tags"
 _SCHEMA_FILENAME = "Energy+.schema.epJSON"
 _SCHEMA_FILENAME_GZ = "Energy+.schema.epJSON.gz"

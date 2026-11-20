@@ -38,6 +38,12 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+__all__ = [
+    "bake_all",
+    "bake_markdown",
+    "main",
+]
+
 # src/idfkit/codegen/bake_references.py -> repo root
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SOURCE_DIR = _REPO_ROOT / "agent_references" / "templates"

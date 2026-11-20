@@ -59,6 +59,15 @@ if TYPE_CHECKING:
     from types_aiobotocore_s3 import S3Client as AsyncS3Client
     from types_boto3_s3 import S3Client
 
+__all__ = [
+    "AsyncFileSystem",
+    "AsyncLocalFileSystem",
+    "AsyncS3FileSystem",
+    "FileSystem",
+    "LocalFileSystem",
+    "S3FileSystem",
+]
+
 
 @runtime_checkable
 class FileSystem(Protocol):

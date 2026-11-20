@@ -24,6 +24,11 @@ from pathlib import Path
 from idfkit.schema import get_schema
 from idfkit.versions import LATEST_VERSION
 
+__all__ = [
+    "generate",
+    "main",
+]
+
 # Regex to extract id="..." attributes from HTML.  We match
 # lowercase-alphanumeric plus hyphens (the docs build convention for
 # EnergyPlus object-type heading anchors).

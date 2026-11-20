@@ -103,6 +103,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TabularRow.value` (from `get_tabular_data()`) and `get_tabular_value()` returned the cell text without
   the whitespace EnergyPlus pads it with, and `""` instead of `None` for a NULL cell.
   ([#347](https://github.com/idfkit/idfkit/pull/347))
+- Every public module declared `__all__`, so `from idfkit.geometry import *` and autocompletion offered
+  the module's API instead of its imports and internals (`Any`, `cast`, `math`, `logger`).
+  ([#352](https://github.com/idfkit/idfkit/pull/352))
 - **Breaking:** `add()` and, in a strict document, renaming refused a blank name on a type whose schema
   requires one (`ValidationFailedError`), and `validate_document` reported it; give the object its name
   when adding it. eppy's `newidfobject(type)` still creates the object nameless.

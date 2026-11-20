@@ -20,6 +20,13 @@ if TYPE_CHECKING:
     from idfkit.objects import IDFObject
     from idfkit.simulation.fs import FileSystem
 
+__all__ = [
+    "plot_day",
+    "plot_schedule",
+    "plot_week",
+    "to_series",
+]
+
 
 def to_series(
     schedule: IDFObject,

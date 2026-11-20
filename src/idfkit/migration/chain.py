@@ -12,6 +12,11 @@ from ..versions import ENERGYPLUS_VERSIONS, find_release
 if TYPE_CHECKING:
     from ..document import AnyIDFDocument
 
+__all__ = [
+    "TransitionStep",
+    "plan_migration_chain",
+]
+
 #: A transition step: ``(from_version, to_version)``.
 TransitionStep = tuple[tuple[int, int, int], tuple[int, int, int]]
 

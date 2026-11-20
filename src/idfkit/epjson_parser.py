@@ -18,6 +18,13 @@ from .exceptions import FileFormatError, IDFParseError, ParseDiagnostic, Version
 from .objects import IDFObject, drop_blank_group_slots, is_blank_slot
 from .schema import canonicalize_choices, get_schema_manager
 
+__all__ = [
+    "EpJSONParser",
+    "get_epjson_version",
+    "load_epjson",
+    "parse_epjson",
+]
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:

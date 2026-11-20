@@ -19,6 +19,11 @@ if TYPE_CHECKING:
     from idfkit.document import AnyIDFDocument
     from idfkit.objects import IDFObject
 
+__all__ = [
+    "evaluate_week_compact",
+    "evaluate_week_daily",
+]
+
 # Schedule:Week:Daily field order (EnergyPlus uses Sunday as first day)
 _WEEK_DAILY_FIELDS = [
     "Sunday Schedule:Day Name",

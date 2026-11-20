@@ -13,6 +13,18 @@ from typing import TYPE_CHECKING, Final
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+__all__ = [
+    "ENERGYPLUS_VERSIONS",
+    "LATEST_VERSION",
+    "MINIMUM_VERSION",
+    "find_closest_version",
+    "find_release",
+    "is_supported_version",
+    "object_type_releases",
+    "releases_between",
+    "version_string",
+]
+
 # All EnergyPlus versions since v8.9.0 that publish an epJSON schema.
 # Each entry is a (major, minor, patch) tuple.
 ENERGYPLUS_VERSIONS: Final[tuple[tuple[int, int, int], ...]] = (

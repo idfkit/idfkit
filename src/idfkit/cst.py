@@ -20,6 +20,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .objects import IDFObject
 
+__all__ = [
+    "CSTNode",
+    "DocumentCST",
+    "SourceSpan",
+]
+
 
 def _empty_node_list() -> list[CSTNode]:
     return []

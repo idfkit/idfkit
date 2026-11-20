@@ -20,6 +20,12 @@ from .._forksafe import ForkSafeLock
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+__all__ = [
+    "GeocodingError",
+    "detect_location",
+    "geocode",
+]
+
 _NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 _USER_AGENT = "idfkit (https://github.com/idfkit/idfkit)"
 

@@ -28,6 +28,11 @@ if TYPE_CHECKING:
     from .parsers.html import HTMLResult
     from .parsers.sql import SQLResult
 
+__all__ = [
+    "REFUSED_RUN_DIR",
+    "SimulationResult",
+]
+
 # Sentinel for "not yet parsed". A missing output file is not cached: its accessor raises each time.
 _UNSET: Any = object()
 

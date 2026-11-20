@@ -20,6 +20,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
+__all__ = [
+    "AsyncMigrator",
+    "MigrationStepResult",
+    "Migrator",
+]
+
 
 @dataclass(frozen=True, slots=True)
 class MigrationStepResult:

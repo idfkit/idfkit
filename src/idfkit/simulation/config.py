@@ -17,6 +17,11 @@ from pathlib import Path
 
 from ..exceptions import EnergyPlusNotFoundError
 
+__all__ = [
+    "EnergyPlusConfig",
+    "find_energyplus",
+]
+
 logger = logging.getLogger(__name__)
 
 

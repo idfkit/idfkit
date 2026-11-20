@@ -17,6 +17,12 @@ from idfkit.schedules.types import SpecialDay
 if TYPE_CHECKING:
     from idfkit.document import AnyIDFDocument
 
+__all__ = [
+    "extract_special_days",
+    "get_holidays",
+    "get_special_days_by_type",
+]
+
 # Month name to number mapping (case-insensitive)
 _MONTH_NAMES = {
     "january": 1,

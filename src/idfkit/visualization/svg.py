@@ -14,6 +14,12 @@ from xml.sax.saxutils import escape, quoteattr
 if TYPE_CHECKING:
     from ..thermal.properties import ConstructionThermalProperties, LayerThermalProperties
 
+__all__ = [
+    "SVGConfig",
+    "construction_to_svg",
+    "generate_construction_svg",
+]
+
 
 @dataclass(frozen=True)
 class SVGConfig:

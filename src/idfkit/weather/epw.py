@@ -52,7 +52,20 @@ from typing import Final
 
 from ._epw_sentinels import MISSING_VALUES
 
-__all__ = ["WeatherFile", "load_epw", "monthly_means", "parse_epw"]
+__all__ = [
+    "EpwDataPeriod",
+    "EpwGroundTemperatures",
+    "EpwHolidays",
+    "EpwLocation",
+    "EpwPeriod",
+    "EpwSpecialDay",
+    "HourlyTable",
+    "MonthlyMean",
+    "WeatherFile",
+    "load_epw",
+    "monthly_means",
+    "parse_epw",
+]
 
 
 # ---------------------------------------------------------------------------

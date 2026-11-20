@@ -18,6 +18,10 @@ if TYPE_CHECKING:
     from ..document import AnyIDFDocument
     from .result import SimulationResult
 
+__all__ = [
+    "OutputVariableIndex",
+]
+
 
 @dataclass(frozen=True, slots=True)
 class OutputVariableIndex:
