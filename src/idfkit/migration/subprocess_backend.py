@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..exceptions import MigrationError
+from ..simulation._cancel import run_process
 from .protocol import MigrationStepResult
 
 logger = logging.getLogger(__name__)
@@ -71,15 +72,8 @@ class SubprocessMigrator:
         input_idf.write_text(idf_text, encoding="latin-1")
 
         try:
-            proc = subprocess.run(  # noqa: S603
-                [str(binary), str(input_idf)],
-                stdin=subprocess.DEVNULL,
-                capture_output=True,
-                text=True,
-                timeout=self.step_timeout,
-                cwd=str(work_dir),
-                check=False,
-            )
+            # Through run_process so that an interrupted simulate_batch kills a running step.
+            proc = run_process([str(binary), str(input_idf)], cwd=work_dir, timeout=self.step_timeout)
         except subprocess.TimeoutExpired as exc:
             msg = f"Transition timed out after {self.step_timeout} seconds"
             raise MigrationError(

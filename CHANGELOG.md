@@ -265,6 +265,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#330](https://github.com/idfkit/idfkit/pull/330))
 - `Schedule:Compact` keywords written without a colon (`Through 12/31`, `Until 24:00`) were read.
   ([#329](https://github.com/idfkit/idfkit/pull/329))
+- Ctrl-C or an exception in the caller stopped `simulate_batch()` only after every queued job had run;
+  it now cancels queued jobs and kills running EnergyPlus, preprocessor and transition processes, as
+  cancelling an `async_simulate()` task or closing `async_simulate_batch_stream()` now does too.
+  ([#338](https://github.com/idfkit/idfkit/pull/338))
+- `TimeSeriesResult`, `ESOColumn`, `CSVColumn` and `CSVResult` printed every value in their repr
+  (about 500 KB for an hourly annual series); they now print a one-line summary.
+  ([#338](https://github.com/idfkit/idfkit/pull/338))
 - `simulate()` and `async_simulate()` with `fs=` deleted their local temp directory after uploading,
   and no longer uploaded the copy of the weather file.
   ([#337](https://github.com/idfkit/idfkit/pull/337))

@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, Literal, NoReturn, TypeAlias
 
 from ...exceptions import ResultLookupError, closest_names
 from ._lookup import did_you_mean, listing, resolve_series
-from ._timeutil import FREQUENCY_MAP, REFERENCE_YEAR, make_timestamp
+from ._timeutil import FREQUENCY_MAP, REFERENCE_YEAR, make_timestamp, summarize_series
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from ..plotting import PlotBackend
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, repr=False)
 class TimeSeriesResult:
     """A single time series extracted from an EnergyPlus SQL database.
 
@@ -44,6 +44,13 @@ class TimeSeriesResult:
     frequency: str
     timestamps: tuple[datetime, ...]
     values: tuple[float, ...]
+
+    def __repr__(self) -> str:
+        # A summary, not the data: one hourly annual series would otherwise print about 500 KB.
+        return (
+            f"TimeSeriesResult({self.variable_name!r}, {self.key_value!r}, units={self.units!r}, "
+            f"frequency={self.frequency!r}, {summarize_series(self.timestamps, self.values)})"
+        )
 
     def to_dataframe(self) -> pd.DataFrame:
         """Convert to a pandas DataFrame.

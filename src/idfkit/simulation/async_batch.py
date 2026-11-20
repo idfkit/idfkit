@@ -44,7 +44,7 @@ import asyncio
 import logging
 import os
 import time
-from collections.abc import AsyncIterator, Callable, Sequence
+from collections.abc import AsyncGenerator, Callable, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -191,7 +191,7 @@ async def async_simulate_batch_stream(
     cache: SimulationCache | None = None,
     fs: FileSystem | AsyncFileSystem | None = None,
     on_progress: Callable[[SimulationProgress], Any] | None = None,
-) -> AsyncIterator[SimulationEvent]:
+) -> AsyncGenerator[SimulationEvent, None]:
     """Run simulations concurrently, yielding events as each one completes.
 
     This is an async generator variant of [async_simulate_batch][idfkit.simulation.async_batch.async_simulate_batch] that
@@ -202,6 +202,11 @@ async def async_simulate_batch_stream(
 
         async for event in async_simulate_batch_stream(jobs, max_concurrent=4):
             print(f"[{event.completed}/{event.total}] {event.label}")
+
+    Closing the generator cancels the jobs still queued or running and kills
+    their EnergyPlus processes. Leaving an ``async for`` loop early closes it
+    once the generator is garbage-collected; to close it at a known point,
+    iterate inside ``contextlib.aclosing(async_simulate_batch_stream(...))``.
 
     Args:
         jobs: Sequence of simulation jobs to execute.

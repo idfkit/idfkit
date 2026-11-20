@@ -2,8 +2,12 @@
 
 Runs multiple EnergyPlus simulations concurrently using a
 [ThreadPoolExecutor][concurrent.futures.ThreadPoolExecutor].  Thread-based parallelism
-is appropriate because [simulate][idfkit.simulation.runner.simulate] delegates to ``subprocess.run``
+is appropriate because [simulate][idfkit.simulation.runner.simulate] waits on an EnergyPlus subprocess,
 which releases the GIL.
+
+If the caller is interrupted while a batch runs (Ctrl-C, or any other exception
+raised in the waiting thread), queued jobs are cancelled and the EnergyPlus
+processes already running are killed before the exception propagates.
 """
 
 from __future__ import annotations
@@ -18,6 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol, overload
 
+from ._cancel import ProcessGroup
 from .progress import SimulationProgress
 from .progress_bars import resolve_on_progress
 from .result import REFUSED_RUN_DIR, SimulationResult
@@ -191,6 +196,12 @@ def simulate_batch(
     failed [SimulationResult][idfkit.simulation.result.SimulationResult] entries -- the batch never raises
     due to a single job failing.
 
+    An exception in the calling thread -- Ctrl-C, or one raised by a
+    *progress* callback -- stops the batch: queued jobs never start, running
+    EnergyPlus processes are killed, and the exception propagates once the
+    workers have stopped. To abort on the first failed job, raise from
+    *progress* when ``success`` is false.
+
     Args:
         jobs: Sequence of simulation jobs to execute.
         energyplus: Shared EnergyPlus configuration (auto-discovered if
@@ -255,9 +266,11 @@ def simulate_batch(
 
         start = time.monotonic()
 
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        group = ProcessGroup()
+        executor = ThreadPoolExecutor(max_workers=max_workers)
+        try:
             future_to_index = {
-                executor.submit(_run_job, idx, job, energyplus, cache, fs, progress_cb): idx
+                executor.submit(_run_job, idx, job, energyplus, cache, fs, progress_cb, group): idx
                 for idx, job in enumerate(jobs)
             }
 
@@ -275,6 +288,14 @@ def simulate_batch(
                         label=job.label,
                         success=result.success,
                     )
+        except BaseException:
+            # Interrupted (Ctrl-C, or a progress callback raised): start no queued job,
+            # kill the EnergyPlus processes that are running, then wait for the workers.
+            executor.shutdown(wait=False, cancel_futures=True)
+            group.cancel()
+            executor.shutdown(wait=True)
+            raise
+        executor.shutdown(wait=True)
     finally:
         if progress_cleanup is not None:
             progress_cleanup()
@@ -324,8 +345,24 @@ def _run_job(
     cache: SimulationCache | None,
     fs: FileSystem | None,
     on_progress: Callable[[SimulationProgress], None] | None,
+    group: ProcessGroup,
 ) -> SimulationResult:
-    """Execute a single simulation job, catching SimulationError."""
+    """Execute a single simulation job, catching SimulationError.
+
+    The subprocesses the job starts join *group*, so the batch can kill them when it is interrupted.
+    """
+    with group.bind():
+        return _run_job_in_group(idx, job, energyplus, cache, fs, on_progress)
+
+
+def _run_job_in_group(
+    idx: int,
+    job: SimulationJob,
+    energyplus: EnergyPlusConfig | None,
+    cache: SimulationCache | None,
+    fs: FileSystem | None,
+    on_progress: Callable[[SimulationProgress], None] | None,
+) -> SimulationResult:
     # Wrap the user callback to inject batch job context
     job_cb: Callable[[SimulationProgress], None] | None = None
     if on_progress is not None:

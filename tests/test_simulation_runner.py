@@ -289,7 +289,7 @@ class TestPrepareRunDirectory:
 class TestSimulate:
     """Tests for simulate()."""
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_success(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         model = new_document()
@@ -298,7 +298,7 @@ class TestSimulate:
         assert result.exit_code == 0
         mock_run.assert_called_once()
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_failure(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="error occurred")
         model = new_document()
@@ -306,7 +306,7 @@ class TestSimulate:
         assert not result.success
         assert result.exit_code == 1
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_timeout(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.side_effect = subprocess.TimeoutExpired(cmd=["energyplus"], timeout=10)
         model = new_document()
@@ -318,7 +318,7 @@ class TestSimulate:
         with pytest.raises(SimulationError, match="Weather file not found"):
             simulate(model, "/nonexistent/weather.epw", energyplus=mock_config)
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_model_not_mutated(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         model = new_document()
@@ -333,7 +333,7 @@ class TestSimulate:
         with pytest.raises(ValueError, match="output_dir is required"):
             simulate(model, weather_file, energyplus=mock_config, fs=fs)
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_simulate_with_fs_uploads_results(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -353,7 +353,7 @@ class TestSimulate:
         uploaded = [k for k in fs._files if k.startswith("remote/output/")]
         assert "remote/output/model.idf" in uploaded
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_fs_run_skips_weather_and_deletes_local_dir(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -366,7 +366,7 @@ class TestSimulate:
         assert f"remote/output/{weather_file.name}" not in fs._files
         assert "remote/output/model.idf" in fs._files
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_fs_run_skips_symlinked_weather(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -379,7 +379,7 @@ class TestSimulate:
         assert not [k for k in fs._files if k.endswith(".epw")]
         assert "remote/output/model.idf" in fs._files
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_fs_run_deletes_local_dir_on_timeout(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -411,7 +411,7 @@ class TestSimulatePreprocessing:
 
         with (
             patch("idfkit.simulation.expand.run_preprocessing", return_value=preprocessed) as mock_preprocess,
-            patch("idfkit.simulation.runner.subprocess.run", return_value=sim_proc) as mock_sim_run,
+            patch("idfkit.simulation.runner.run_process", return_value=sim_proc) as mock_sim_run,
         ):
             result = simulate(model, weather_file, energyplus=mock_config)
 
@@ -434,7 +434,7 @@ class TestSimulatePreprocessing:
 
         with (
             patch("idfkit.simulation.expand.run_preprocessing", return_value=preprocessed) as mock_preprocess,
-            patch("idfkit.simulation.runner.subprocess.run", return_value=sim_proc) as mock_sim_run,
+            patch("idfkit.simulation.runner.run_process", return_value=sim_proc) as mock_sim_run,
         ):
             result = simulate(model, weather_file, energyplus=mock_config)
 
@@ -443,7 +443,7 @@ class TestSimulatePreprocessing:
         assert "-x" not in sim_cmd
         assert result.success
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_no_preprocessing_for_plain_model(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -461,7 +461,7 @@ class TestSimulatePreprocessing:
         assert "-x" in sim_cmd
         assert result.success
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_no_preprocessing_when_expand_objects_false(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
@@ -509,7 +509,7 @@ class TestSimulatePreprocessing:
 
         with (
             patch("idfkit.simulation.expand.run_preprocessing", return_value=preprocessed),
-            patch("idfkit.simulation.runner.subprocess.run", return_value=sim_proc),
+            patch("idfkit.simulation.runner.run_process", return_value=sim_proc),
         ):
             simulate(model, weather_file, energyplus=mock_config)
 
@@ -525,11 +525,11 @@ class TestSimulatePreprocessing:
 class TestRunSimpleOSError:
     """Tests for the OSError exception path in _run_simple()."""
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_os_error_raises_simulation_error(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
-        """subprocess.run raising OSError should raise SimulationError."""
+        """run_process raising OSError should raise SimulationError."""
         mock_run.side_effect = OSError("No such file or directory")
         model = new_document()
         with pytest.raises(SimulationError, match="Failed to start EnergyPlus"):
@@ -573,7 +573,7 @@ class TestResolveConfig:
 class TestSimulateWithoutWeather:
     """Tests for simulate() with weather=None on a design-day-only run."""
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_command_has_no_weather(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         result = simulate(design_day_model(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
@@ -583,7 +583,7 @@ class TestSimulateWithoutWeather:
         assert result.success
         assert list(result.run_dir.glob("*.epw")) == []
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_positional_none(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         result = simulate(
@@ -594,7 +594,7 @@ class TestSimulateWithoutWeather:
         assert "-w" not in cmd
         assert list(result.run_dir.glob("*.epw")) == []
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_log_states_no_weather(
         self,
         mock_run: MagicMock,
@@ -620,7 +620,7 @@ class TestWeatherAdmission:
         if model is None:
             model = new_document()
         with (
-            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.runner.run_process") as mock_run,
             patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
             pytest.raises(SimulationError, match=re.escape(message)),
         ):
@@ -672,7 +672,7 @@ class TestWeatherAdmission:
         """Without an enabled Slab or Basement solver, only ExpandObjects runs, and it reads no weather file."""
         model = ground_heat_model(slab=slab, basement=basement)
         with (
-            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.runner.run_process") as mock_run,
             patch("idfkit.simulation.expand.run_preprocessing", side_effect=lambda m, **_: m.copy()) as mock_pre,
         ):
             mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
@@ -684,7 +684,7 @@ class TestWeatherAdmission:
     def test_annual_without_run_period_refused(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """EnergyPlus would add a run period, simulate nothing and report success, so the run is refused."""
         with (
-            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.runner.run_process") as mock_run,
             pytest.raises(SimulationError, match="annual=True, but the model has no RunPeriod"),
         ):
             simulate(new_document(), weather_file, annual=True, energyplus=mock_config)
@@ -695,7 +695,7 @@ class TestWeatherAdmission:
         model = new_document()
         model.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
         with (
-            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.runner.run_process") as mock_run,
             pytest.raises(
                 SimulationError, match=r"design_day=True, but the model has no SizingPeriod:DesignDay"
             ) as exc,
@@ -716,7 +716,7 @@ class TestWeatherAdmission:
     def test_design_day_with_design_day_runs(
         self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
-        with patch("idfkit.simulation.runner.subprocess.run") as mock_run:
+        with patch("idfkit.simulation.runner.run_process") as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
             result = simulate(
                 design_day_model(), weather_file, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
@@ -729,7 +729,7 @@ class TestWeatherAdmission:
     ) -> None:
         model = new_document()
         model.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
-        with patch("idfkit.simulation.runner.subprocess.run") as mock_run:
+        with patch("idfkit.simulation.runner.run_process") as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
             result = simulate(model, weather_file, annual=True, energyplus=mock_config, output_dir=tmp_path / "run")
         assert result.success
@@ -746,7 +746,7 @@ class TestWeatherAdmission:
 
     def test_r3_not_raised_without_expand_objects(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         with (
-            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.runner.run_process") as mock_run,
             patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
         ):
             mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
@@ -794,7 +794,7 @@ class TestWeatherAdmission:
         slab = model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.removeidfobject(slab)
         with (
-            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.runner.run_process") as mock_run,
             patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
         ):
             mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
@@ -818,7 +818,7 @@ def _schedule_file_model(file_name: str) -> Any:
 class TestSimulateCacheCoversExternalFiles:
     """The key hashes every file the model names, so a changed input is a miss and a restored one a hit."""
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_staged_file_in_output_dir(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -845,7 +845,7 @@ class TestSimulateCacheCoversExternalFiles:
         assert run()  # restored CSV: hit on the first entry
         assert mock_run.call_count == 2
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_file_outside_output_dir(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -865,7 +865,7 @@ class TestSimulateCacheCoversExternalFiles:
         simulate(model, weather_file, energyplus=mock_config, cache=cache)
         assert mock_run.call_count == 2
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_python_plugin_is_never_cached(
         self,
         mock_run: MagicMock,
@@ -889,7 +889,7 @@ class TestSimulateCacheCoversExternalFiles:
         assert "Not using the simulation cache" in caplog.text
         assert "PythonPlugin:Instance" in caplog.text
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_reused_output_dir_still_hits(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -909,7 +909,7 @@ class TestSimulateCacheCoversExternalFiles:
 class TestSimulateCacheHitLocalOutputDir:
     """A local hit is copied into ``output_dir`` like a fresh run, and says it was cached."""
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_hit_is_copied_into_output_dir(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -937,7 +937,7 @@ class TestSimulateCacheHitLocalOutputDir:
         assert third.cached
         assert (third.run_dir / "model.idf").read_text() != "scribbled"
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_hit_without_output_dir_reads_the_entry_in_place(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -960,7 +960,7 @@ class TestSimulateCacheHitLocalOutputDir:
 class TestSimulateCacheWithFileSystem:
     """``cache=`` and ``fs=`` together: a miss is stored locally and a hit is uploaded to ``output_dir``."""
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_miss_stores_then_hit_uploads(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -990,7 +990,7 @@ class TestSimulateCacheWithFileSystem:
         assert names_b == names_a
         assert CACHE_META_FILE not in names_b
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     def test_hit_uploads_from_entry_without_local_copy(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:

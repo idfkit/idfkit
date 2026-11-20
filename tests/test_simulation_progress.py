@@ -615,11 +615,11 @@ class TestSimulateWithProgress:
         with pytest.raises(SimulationError, match="no 100%"):
             simulate(_annual_model(), weather_file, energyplus=mock_config, on_progress=reject_complete)
 
-    @patch("idfkit.simulation.runner.subprocess.run")
-    def test_no_progress_uses_subprocess_run(
+    @patch("idfkit.simulation.runner.run_process")
+    def test_no_progress_uses_run_process(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
-        """Without on_progress, simulate() uses subprocess.run (original path)."""
+        """Without on_progress, simulate() runs EnergyPlus through run_process (no streaming)."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         model = new_document()
         result = simulate(model, weather_file, energyplus=mock_config)

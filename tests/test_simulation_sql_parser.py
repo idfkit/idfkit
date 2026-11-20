@@ -199,6 +199,17 @@ class TestSQLResultTimeSeries:
         assert ts.units == "C"
         assert ts.variable_name == "Site Outdoor Air Drybulb Temperature"
 
+    def test_repr_summarizes_instead_of_listing_the_data(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+        text = repr(ts)
+        assert text.startswith(
+            f"TimeSeriesResult('Site Outdoor Air Drybulb Temperature', {ts.key_value!r}, units='C', frequency='Hourly', "
+        )
+        assert "4 points, 2017-01-01 01:00 .. 2017-01-02 00:00, min -6, max -5.2" in text
+        assert "datetime" not in text
+        assert len(text) < 250
+
     def test_warmup_filtered(self, sql_db: Path) -> None:
         with SQLResult(sql_db) as sql:
             ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")

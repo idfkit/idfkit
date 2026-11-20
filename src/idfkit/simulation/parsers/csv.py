@@ -13,13 +13,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ._lookup import resolve_series
+from ._timeutil import summarize_series
 
 # Header format: "KeyValue:VariableName [Units](Frequency)"
 # Example: "Environment:Site Outdoor Air Drybulb Temperature [C](Hourly)"
 _HEADER_RE = re.compile(r"^(.+?):(.+?)\s*\[([^\]]*)\]\((\w+)\)$")
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, repr=False)
 class CSVColumn:
     """A single data column from a CSV output file.
 
@@ -40,8 +41,12 @@ class CSVColumn:
     values: tuple[float, ...]
     frequency: str = ""
 
+    def __repr__(self) -> str:
+        # A summary, not the data: one hourly annual column would otherwise print every value.
+        return f"CSVColumn({self.header!r}, {summarize_series(None, self.values)})"
 
-@dataclass(frozen=True, slots=True)
+
+@dataclass(frozen=True, slots=True, repr=False)
 class CSVResult:
     """Parsed EnergyPlus CSV output file.
 
@@ -52,6 +57,10 @@ class CSVResult:
 
     timestamps: tuple[str, ...]
     columns: tuple[CSVColumn, ...]
+
+    def __repr__(self) -> str:
+        span = f", {self.timestamps[0].strip()} .. {self.timestamps[-1].strip()}" if self.timestamps else ""
+        return f"CSVResult({len(self.timestamps)} rows, {len(self.columns)} columns{span})"
 
     @classmethod
     def from_file(cls, path: str | Path) -> CSVResult:

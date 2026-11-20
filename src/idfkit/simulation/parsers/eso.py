@@ -37,7 +37,7 @@ from typing import TYPE_CHECKING, Any, TypeAlias
 
 from ...exceptions import ResultLookupError
 from ._lookup import for_key, listing, resolve_series
-from ._timeutil import FREQUENCY_MAP, REFERENCE_YEAR, make_timestamp
+from ._timeutil import FREQUENCY_MAP, REFERENCE_YEAR, make_timestamp, summarize_series
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -128,7 +128,7 @@ class ESOEnvironment:
     elevation: float
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, repr=False)
 class ESOColumn:
     """One variable's time series within a single environment.
 
@@ -146,6 +146,15 @@ class ESOColumn:
     environment_index: int
     timestamps: tuple[datetime, ...]
     values: tuple[float, ...]
+
+    def __repr__(self) -> str:
+        # A summary, not the data: one hourly annual series would otherwise print about 500 KB.
+        var = self.variable
+        return (
+            f"ESOColumn({var.variable_name!r}, {var.key_value!r}, units={var.units!r}, "
+            f"frequency={var.frequency!r}, environment_index={self.environment_index}, "
+            f"{summarize_series(self.timestamps, self.values)})"
+        )
 
     def to_dataframe(self) -> pd.DataFrame:
         """Convert to a pandas DataFrame.

@@ -105,6 +105,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from ..exceptions import ExpandObjectsError
+from ._cancel import run_process
 from .config import EnergyPlusConfig, find_energyplus
 
 logger = logging.getLogger(__name__)
@@ -224,14 +225,7 @@ def _run_subprocess(
     Raises [ExpandObjectsError][idfkit.exceptions.ExpandObjectsError] on timeout or OS errors.
     """
     try:
-        return subprocess.run(  # noqa: S603
-            [str(exe)],
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=str(cwd),
-        )
+        return run_process([str(exe)], cwd=cwd, timeout=timeout)
     except subprocess.TimeoutExpired as exc:
         msg = f"{label} timed out after {timeout} seconds"
         raise ExpandObjectsError(

@@ -173,7 +173,7 @@ class TestSimulateRaisesOnMismatch:
 
 
 class TestSimulateMigrationWithoutWeather:
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     @patch("idfkit.migration.runner.migrate")
     def test_migration_without_weather(
         self,
@@ -200,7 +200,7 @@ class TestSimulateMigrationWithoutWeather:
         assert "-w" not in cmd
         assert result.migration_report is mock_migrate.return_value
 
-    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.simulation.runner.run_process")
     @patch("idfkit.migration.runner.migrate")
     def test_default_weather_refused_before_migration(
         self,

@@ -90,6 +90,8 @@ oat, office = result.sql.get_timeseries_many([
 
 EnergyPlus does not index `ReportData` by variable, so every `get_timeseries` call scans the whole table (over a million rows for a one-zone annual run, much more for a large model). To read more than one or two series, use `sql.get_timeseries_many(series, environment=None)`: it resolves each item as `get_timeseries` would and reads them all in one scan, returning the results in order. `eso.get_columns(series, environment_index=None)` does the same for `.eso`/`.mtr` files.
 
+Printing a series is safe: the repr of a `TimeSeriesResult` (and of an `ESOColumn`, `CSVColumn` or `CSVResult`) is a one-line summary, e.g. `TimeSeriesResult('Zone Air Temperature', 'SPACE1-1', units='C', frequency='Hourly', 8760 points, 2017-01-01 01:00 .. 2018-01-01 00:00, min 12.1, max 26.3)`. Read `.timestamps` and `.values` for the data.
+
 Every lookup failure raises `ResultLookupError`, a `KeyError` subclass whose message names the closest variable, key or report spelling ("Did you mean ...?") and the keys reported. A variable missing from the database usually means you didn't add an `Output:Variable` for it in the IDF — see [Output variable discovery](#output-variable-discovery). `get_tabular_value` raises it too, naming the first of report, `report_for`, table, row and column that matches nothing. `get_timeseries` also raises it when EnergyPlus simulated no environment at all (`sql.list_environments() == []`), rather than returning an empty series.
 
 ```python

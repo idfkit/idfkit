@@ -65,7 +65,7 @@ class TestSubprocessMigrator:
                 work_dir=tmp_path / "work",
             )
 
-    @patch("idfkit.migration.subprocess_backend.subprocess.run")
+    @patch("idfkit.migration.subprocess_backend.run_process")
     def test_success_path(
         self,
         mock_run: MagicMock,
@@ -101,7 +101,7 @@ class TestSubprocessMigrator:
         assert result.idf_text == "Version,24.2;\n"
         assert result.stdout == "ok"
 
-    @patch("idfkit.migration.subprocess_backend.subprocess.run")
+    @patch("idfkit.migration.subprocess_backend.run_process")
     def test_cwd_is_work_dir_not_updater_dir(
         self,
         mock_run: MagicMock,
@@ -129,12 +129,12 @@ class TestSubprocessMigrator:
         migrator.migrate_step("Version,24.1;\n", (24, 1, 0), (24, 2, 0), work_dir=work)
 
         _, call_kwargs = mock_run.call_args
-        assert call_kwargs["cwd"] == str(work), (
+        assert call_kwargs["cwd"] == work, (
             f"Expected cwd={work}, got cwd={call_kwargs['cwd']}. "
             "The subprocess must run in the isolated work_dir, not the shared version_updater_dir."
         )
 
-    @patch("idfkit.migration.subprocess_backend.subprocess.run")
+    @patch("idfkit.migration.subprocess_backend.run_process")
     def test_nonzero_exit_raises(
         self,
         mock_run: MagicMock,
@@ -159,7 +159,7 @@ class TestSubprocessMigrator:
                 work_dir=tmp_path / "work",
             )
 
-    @patch("idfkit.migration.subprocess_backend.subprocess.run")
+    @patch("idfkit.migration.subprocess_backend.run_process")
     def test_timeout_raises(
         self,
         mock_run: MagicMock,
