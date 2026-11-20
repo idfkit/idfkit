@@ -469,6 +469,29 @@ class TestAsyncSimulateBatch:
         assert report.severe_count == 1
 
     @pytest.mark.asyncio
+    async def test_timeout_after_energyplus_ran_reads_its_suffix_style_err(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """A timed-out "L"-style job reads eplusout.err, not a stale default-style eplus.err beside it."""
+        out_dir = tmp_path / "out"
+        out_dir.mkdir()
+        (out_dir / "eplus.err").write_text("   ** Severe  ** stale from an earlier run\n")
+
+        async def run_then_time_out(**_: object) -> None:
+            (out_dir / "eplusout.err").write_text("   ** Severe  ** from this run\n   ** Severe  ** and another\n")
+            msg = "Simulation timed out after 5 seconds"
+            raise SimulationError(msg)
+
+        with patch("idfkit.simulation.async_batch.async_simulate", side_effect=run_then_time_out):
+            job = SimulationJob(
+                model=runnable_model(), weather=weather_file, output_dir=str(out_dir), output_suffix="L"
+            )
+            r = (await async_simulate_batch([job], energyplus=mock_config))[0]
+        assert r.refusal is None
+        report = await r.async_errors()
+        assert report.severe_count == 2
+
+    @pytest.mark.asyncio
     async def test_fs_without_output_dir_raises_up_front(self, mock_config: EnergyPlusConfig) -> None:
         """fs= with a job lacking output_dir is refused before any job runs."""
         jobs = [SimulationJob(model=runnable_model(), design_day=True)]

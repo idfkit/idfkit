@@ -478,6 +478,35 @@ class TestSimulateBatch:
         assert r.errors.severe_count == 2
         assert not repr(r).startswith("SimulationResult(refused")
 
+    @pytest.mark.parametrize("style", ["L", "D"])
+    def test_timeout_after_energyplus_ran_reads_its_suffix_style_outputs(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path, style: str
+    ) -> None:
+        """A timed-out job reads the files its output_suffix names, not another style's left beside them."""
+        out_dir = tmp_path / "out"
+        out_dir.mkdir()
+        # An earlier run with the default "C" style left these.
+        (out_dir / "eplus.err").write_text("   ** Severe  ** stale from an earlier run\n")
+        (out_dir / "eplusTable.htm").write_text("<html>stale</html>")
+        err_name = {"L": "eplusout.err", "D": "eplus.err"}[style]
+        table_name = {"L": "eplustbl.htm", "D": "eplus-table.htm"}[style]
+
+        def run_then_time_out(**_: object) -> SimulationResult:
+            (out_dir / err_name).write_text("   ** Severe  ** from this run\n   ** Severe  ** and another\n")
+            (out_dir / table_name).write_text("<html>this run</html>")
+            msg = "Simulation timed out after 5 seconds"
+            raise SimulationError(msg)
+
+        with patch("idfkit.simulation.batch.simulate", side_effect=run_then_time_out):
+            job = SimulationJob(
+                model=runnable_model(), weather=weather_file, output_dir=str(out_dir), output_suffix=style
+            )
+            r = simulate_batch([job], energyplus=mock_config)[0]
+        assert r.refusal is None
+        assert r.err_path == out_dir / err_name
+        assert r.errors.severe_count == 2
+        assert r.html_path == out_dir / table_name
+
     def test_refusal_reason_excludes_stderr_tail(
         self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:

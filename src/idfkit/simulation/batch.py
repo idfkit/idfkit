@@ -566,6 +566,7 @@ def failed_job_result(job: SimulationJob, exc: Exception, *, ran: bool = False) 
         stderr=stderr if isinstance(stderr, str) and stderr else str(exc),
         runtime_seconds=0.0,
         output_prefix=job.output_prefix,
+        output_suffix=job.output_suffix,
         refusal=None if ran and job.output_dir is not None else _exception_reason(exc),
     )
 
