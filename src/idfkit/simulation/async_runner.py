@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import dataclasses
 import inspect
 import logging
 import shutil
@@ -469,20 +470,9 @@ async def _publish(
         sync_fs = cast("FileSystem", fs)
         await asyncio.to_thread(upload_results, local.run_dir, remote_dir, sync_fs, exclude=exclude)
         async_fs = None
-    return SimulationResult(
-        run_dir=remote_dir,
-        success=local.success,
-        exit_code=local.exit_code,
-        stdout=local.stdout,
-        stderr=local.stderr,
-        runtime_seconds=local.runtime_seconds,
-        output_prefix=local.output_prefix,
-        fs=sync_fs,
-        async_fs=async_fs,
-        migration_report=local.migration_report,
-        output_suffix=local.output_suffix,
-        cached=local.cached,
-    )
+    # replace() carries every field of the local result, so one added to SimulationResult later
+    # reaches the published result without this function naming it.
+    return dataclasses.replace(local, run_dir=remote_dir, fs=sync_fs, async_fs=async_fs, owns_run_dir=False)
 
 
 async def _run_simple(
