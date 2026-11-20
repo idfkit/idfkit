@@ -46,7 +46,7 @@ from idfkit.simulation import (
 | `output_dir` | temp dir | Where outputs are written. |
 | `energyplus` | auto-discover | Pre-built `EnergyPlusConfig` (skip discovery). |
 | `expand_objects` | `True` | Run `ExpandObjects` + ground-heat preprocessors as needed. |
-| `annual` | `False` | `-a` flag (annual sim, skip design days). |
+| `annual` | `False` | `-a` flag (annual sim, skip design days). Needs a `RunPeriod`: without one EnergyPlus simulates nothing yet exits successfully, so `simulate` raises `SimulationError` before running. `new_document()` and the geometry builders add none. |
 | `design_day` | `False` | `-D` flag (design-day only, skip annual). |
 | `output_suffix` | `"C"` | File-naming style: `"C"` gives `eplus.err`, `eplusTable.htm`; `"L"` (legacy) gives `eplusout.err`, `eplustbl.htm`; `"D"` gives `eplus.err`, `eplus-table.htm`. `result.*_path` finds the file in any style. |
 | `readvars` | `False` | Run `ReadVarsESO` to produce `eplus.csv` (`eplusout.csv` with `"L"`). |
@@ -97,7 +97,9 @@ result = simulate(doc, "weather.epw", design_day=True)
 # Design days only, without a weather file (weather defaults to None)
 result = simulate(doc, design_day=True)
 
-# Full annual run — minutes
+# Full annual run — minutes. annual=True needs a RunPeriod (new_document() adds none)
+if "RunPeriod" not in doc:
+    doc.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
 result = simulate(doc, "weather.epw", annual=True)
 
 # Default (both flags False) — EnergyPlus's default, governed by SimulationControl in the IDF

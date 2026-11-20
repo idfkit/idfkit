@@ -126,6 +126,16 @@ class TestAsyncSimulate:
         proc.kill.assert_called_once()
 
     @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_annual_without_run_period_refused(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """EnergyPlus would simulate nothing and report success, so the run is refused up front."""
+        with pytest.raises(SimulationError, match="annual=True, but the model has no RunPeriod"):
+            await async_simulate(new_document(), weather_file, annual=True, energyplus=mock_config)
+        mock_exec.assert_not_called()
+
+    @pytest.mark.asyncio
     async def test_missing_weather(self, mock_config: EnergyPlusConfig) -> None:
         model = new_document()
         with pytest.raises(SimulationError, match="Weather file not found"):

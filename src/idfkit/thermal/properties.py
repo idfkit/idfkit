@@ -10,9 +10,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from ..exceptions import DanglingReferenceError, closest_name
 from .gas import typical_gap_r_value
 
 if TYPE_CHECKING:
+    from ..document import IDFDocument
     from ..objects import IDFObject
 
 # Construction layer field names in order (outside to inside)
@@ -124,12 +126,8 @@ class ConstructionThermalProperties:
     visible_transmittance: float | None = None
 
 
-def _get_material_by_name(construction: IDFObject, material_name: str) -> IDFObject | None:
-    """Get material object by name from the document."""
-    document = construction.theidf
-    if document is None:
-        return None
-
+def _get_material_by_name(document: IDFDocument, material_name: str) -> IDFObject | None:
+    """The material named *material_name* among the types this module computes, or ``None``."""
     for mat_type in _MATERIAL_TYPES:
         if mat_type in document.collections:
             mat = document.collections[mat_type].get(material_name)
@@ -139,23 +137,28 @@ def _get_material_by_name(construction: IDFObject, material_name: str) -> IDFObj
     return None
 
 
-def _get_material_layer(
-    construction: IDFObject,
-    material_name: str,
-) -> LayerThermalProperties | None:
-    """Get thermal properties for a material layer.
+def _layer_types(document: IDFDocument, construction: IDFObject, field_name: str) -> list[str]:
+    """Every object type the schema lets *field_name* of *construction* name (shades, blinds, ...)."""
+    schema = document.schema
+    if schema is None:
+        return list(_MATERIAL_TYPES)
+    types: list[str] = []
+    for ref_list in schema.get_field_object_list(construction.obj_type, field_name) or ():
+        types.extend(t for t in schema.get_types_providing_reference(ref_list) if t not in types)
+    return types or list(_MATERIAL_TYPES)
 
-    Args:
-        construction: Construction IDFObject (used to access parent document)
-        material_name: Name of the material to look up
 
-    Returns:
-        LayerThermalProperties or None if material not found
-    """
-    mat = _get_material_by_name(construction, material_name)
-    if mat is None:
+def _dangling_layer(
+    document: IDFDocument, construction: IDFObject, field_name: str, material_name: str
+) -> DanglingReferenceError | None:
+    """The error for a layer naming no object at all, or ``None`` if it names one of a type not computed here."""
+    types = [t for t in _layer_types(document, construction, field_name) if t in document.collections]
+    if any(document.collections[t].get(material_name) is not None for t in types):
         return None
-    return _extract_layer_properties(mat)
+    names = [obj.name for t in types for obj in document.collections[t] if obj.name]
+    return DanglingReferenceError(
+        construction, field_name, material_name, suggestion=closest_name(material_name, names)
+    )
 
 
 def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
@@ -265,20 +268,40 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
 def get_construction_layers(construction: IDFObject) -> list[LayerThermalProperties]:
     """Get thermal properties for all layers in a construction.
 
+    A layer whose material is of a type this module does not compute (a shade or blind, say) is
+    left out. A layer naming no object at all raises, so a misspelt material never yields a
+    silently low R-value.
+
     Args:
         construction: Construction IDFObject
 
     Returns:
         List of LayerThermalProperties from outside to inside
+
+    Raises:
+        DanglingReferenceError: If a layer names a material the document does not have.
+        ValueError: If *construction* has layers but is not in a document, so they cannot be resolved.
     """
     layers: list[LayerThermalProperties] = []
+    document = construction.theidf
 
     for field_name in _LAYER_FIELDS:
         material_name = getattr(construction, field_name, None)
-        if material_name:
-            layer = _get_material_layer(construction, material_name)
-            if layer:
-                layers.append(layer)
+        if not material_name:
+            continue
+        if document is None:
+            msg = (
+                f"{construction.obj_type} '{construction.name}' is not in a document, so its layer "
+                f"'{material_name}' cannot be resolved; add it to the document that holds its materials."
+            )
+            raise ValueError(msg)
+        material = _get_material_by_name(document, material_name)
+        if material is not None:
+            layers.append(_extract_layer_properties(material))
+            continue
+        error = _dangling_layer(document, construction, field_name, material_name)
+        if error is not None:
+            raise error
 
     return layers
 
@@ -301,7 +324,11 @@ def calculate_r_value(construction: IDFObject, include_films: bool = True) -> fl
         include_films: Whether to include surface film resistances (default True)
 
     Returns:
-        Thermal resistance in m²·K/W
+        Thermal resistance in m²·K/W, or 0.0 for a construction with no layers
+
+    Raises:
+        DanglingReferenceError: If a layer names a material the document does not have.
+        ValueError: If *construction* has layers but is not in a document, so they cannot be resolved.
     """
     layers = get_construction_layers(construction)
 
@@ -345,6 +372,10 @@ def calculate_u_value(construction: IDFObject) -> float:
 
     Returns:
         Overall heat transfer coefficient in W/m²·K
+
+    Raises:
+        DanglingReferenceError: If a layer names a material the document does not have.
+        ValueError: If *construction* has layers but is not in a document, so they cannot be resolved.
     """
     r_value = calculate_r_value(construction, include_films=True)
     if r_value > 0:
@@ -363,6 +394,10 @@ def calculate_shgc(construction: IDFObject) -> float | None:
 
     Returns:
         SHGC value (0-1) or None if not a glazing construction
+
+    Raises:
+        DanglingReferenceError: If a layer names a material the document does not have.
+        ValueError: If *construction* has layers but is not in a document, so they cannot be resolved.
     """
     layers = get_construction_layers(construction)
 
@@ -413,6 +448,10 @@ def calculate_visible_transmittance(construction: IDFObject) -> float | None:
 
     Returns:
         Visible transmittance (0-1) or None if not a glazing construction
+
+    Raises:
+        DanglingReferenceError: If a layer names a material the document does not have.
+        ValueError: If *construction* has layers but is not in a document, so they cannot be resolved.
     """
     layers = get_construction_layers(construction)
 
@@ -443,6 +482,10 @@ def get_thermal_properties(construction: IDFObject) -> ConstructionThermalProper
 
     Returns:
         ConstructionThermalProperties with all calculated values
+
+    Raises:
+        DanglingReferenceError: If a layer names a material the document does not have.
+        ValueError: If *construction* has layers but is not in a document, so they cannot be resolved.
     """
     layers = get_construction_layers(construction)
 

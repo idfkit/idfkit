@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import difflib
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -212,6 +212,113 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
 
     def __reduce__(self) -> tuple[type[UnknownObjectTypeError], tuple[str, tuple[int, int, int] | None, str | None]]:
         return (type(self), (self.obj_type, self.version, self.suggestion))
+
+
+class ObjectNotFoundError(IdfKitError, KeyError):
+    """Raised when a document has no object of a type by the name looked up.
+
+    Raised by ``doc["Zone"]["name"]``, ``doc.rename()`` and the dotted ``doc.update()``. Inherits
+    from ``KeyError`` so code catching ``KeyError`` keeps working; unlike a plain ``KeyError``,
+    ``str()`` gives the message as written, not its ``repr()``.
+
+    Attributes:
+        obj_type: The object type that was searched.
+        name: The name that was not found.
+        suggestions: The closest existing names of that type ("did you mean"), closest first.
+        available: The existing names of that type, in document order.
+        object_count: How many objects of that type the document has, named or not, if known.
+
+    Examples:
+        >>> err = ObjectNotFoundError("Zone", "SPACE1_1", available=["SPACE1-1", "SPACE2-1", "PLENUM-1"])
+        >>> print(err)
+        No Zone named 'SPACE1_1'. Did you mean 'SPACE1-1'?
+          Zone names: SPACE1-1, SPACE2-1, PLENUM-1
+        >>> isinstance(err, KeyError)
+        True
+    """
+
+    #: How many existing names the message lists before it summarises the rest.
+    _LISTED_NAMES = 10
+
+    def __init__(
+        self,
+        obj_type: str,
+        name: str,
+        available: Sequence[str] | Callable[[], Iterable[str]] = (),
+        *,
+        object_count: int | None = None,
+    ) -> None:
+        """Build the error. Nothing is computed until the names or the message are read.
+
+        Args:
+            obj_type: The object type that was searched.
+            name: The name that was not found.
+            available: The existing names of that type, or a callable returning them. A callable
+                is only called when ``available``, ``suggestions`` or the message is read, so a
+                lookup miss caught as ``KeyError`` costs no more than it did.
+            object_count: How many objects of that type the document has, named or not. Defaults
+                to the number of names; pass it for types whose objects have no names.
+        """
+        super().__init__(name)
+        self.obj_type = obj_type
+        self.name = name
+        self._available_source = available
+        self._available: tuple[str, ...] | None = None
+        self._suggestions: tuple[str, ...] | None = None
+        self._message: str | None = None
+        self.object_count = object_count
+
+    @property
+    def available(self) -> tuple[str, ...]:
+        """The existing names of that type, in document order."""
+        if self._available is None:
+            source = self._available_source
+            self._available = tuple(source() if callable(source) else source)
+            self._available_source = ()
+        return self._available
+
+    @property
+    def suggestions(self) -> tuple[str, ...]:
+        """The closest existing names of that type ("did you mean"), closest first."""
+        if self._suggestions is None:
+            self._suggestions = tuple(closest_names(self.name, self.available, n=3)) if self.name else ()
+        return self._suggestions
+
+    @property
+    def message(self) -> str:
+        """The full message ``str()`` gives."""
+        if self._message is None:
+            self._message = self._build_message()
+        return self._message
+
+    def _build_message(self) -> str:
+        obj_type, name, available = self.obj_type, self.name, self.available
+        msg = f"No {obj_type} named '{name}'" if name else f"No {obj_type} object in the document"
+        if self.suggestions:
+            msg += f". Did you mean '{self.suggestions[0]}'?"
+        count = len(available) if self.object_count is None else self.object_count
+        if available:
+            listed = ", ".join(available[: self._LISTED_NAMES])
+            more = len(available) - self._LISTED_NAMES
+            if more > 0:
+                listed += f", ... ({more} more)"
+            msg += f"\n  {obj_type} names: {listed}"
+        elif count:
+            plural = "object has" if count == 1 else "objects have"
+            msg += f"\n  The document's {count} {obj_type} {plural} no name to look up by."
+        elif name:
+            msg += f"\n  The document has no {obj_type} objects."
+        return msg
+
+    def __str__(self) -> str:
+        # KeyError.__str__ gives repr() of its argument: quoted, with a literal "\n".
+        return self.message
+
+    def __reduce__(
+        self,
+    ) -> tuple[type[ObjectNotFoundError], tuple[str, str, tuple[str, ...]], dict[str, int | None]]:
+        # The names are materialised here: a callable source need not pickle.
+        return (type(self), (self.obj_type, self.name, self.available), {"object_count": self.object_count})
 
 
 class ResultLookupError(IdfKitError, KeyError):
@@ -438,15 +545,24 @@ class VersionNotFoundError(IdfKitError):
 
 
 class DanglingReferenceError(IdfKitError):
-    """Raised when an object references a non-existent object."""
+    """Raised when an object references a non-existent object.
 
-    def __init__(self, source: IDFObject, field: str, target: str) -> None:
+    Attributes:
+        source: The object holding the reference.
+        field: The field holding the reference.
+        target: The name that resolves to no object.
+        suggestion: The closest existing name the field could reference, if one is close.
+    """
+
+    def __init__(self, source: IDFObject, field: str, target: str, *, suggestion: str | None = None) -> None:
         self.source = source
         self.field = field
         self.target = target
-        super().__init__(
-            f"Object {source.obj_type}:'{source.name}' field '{field}' references non-existent object '{target}'"
-        )
+        self.suggestion = suggestion
+        msg = f"Object {source.obj_type}:'{source.name}' field '{field}' references non-existent object '{target}'"
+        if suggestion is not None:
+            msg += f". Did you mean '{suggestion}'?"
+        super().__init__(msg)
 
 
 class RangeError(IdfKitError):

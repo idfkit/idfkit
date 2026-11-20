@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import pickle
+
 import pytest
 
+from idfkit import IDFDocument, new_document
 from idfkit.exceptions import (
     DanglingReferenceError,
     DuplicateObjectError,
@@ -13,6 +16,7 @@ from idfkit.exceptions import (
     IDFParseError,
     InvalidFieldError,
     NoDesignDaysError,
+    ObjectNotFoundError,
     ParseDiagnostic,
     ParseError,
     RangeError,
@@ -216,6 +220,86 @@ class TestDanglingReferenceError:
     def test_is_idfkit_error(self) -> None:
         obj = IDFObject(obj_type="X", name="Y")
         assert isinstance(DanglingReferenceError(obj, "f", "t"), IdfKitError)
+
+    def test_suggestion(self) -> None:
+        obj = IDFObject(obj_type="Construction", name="Wall")
+        err = DanglingReferenceError(obj, "layer_2", "Insulx", suggestion="Insulation")
+        assert err.suggestion == "Insulation"
+        assert str(err).endswith(". Did you mean 'Insulation'?")
+
+
+class TestObjectNotFoundError:
+    def _doc(self) -> IDFDocument:
+        doc = new_document()
+        for name in ("SPACE1-1", "SPACE2-1", "PLENUM-1"):
+            doc.add("Zone", name)
+        return doc
+
+    def test_lookup_by_name_suggests_the_closest_name(self) -> None:
+        with pytest.raises(ObjectNotFoundError) as excinfo:
+            _ = self._doc()["Zone"]["SPACE1_1"]
+        err = excinfo.value
+        assert isinstance(err, KeyError)
+        assert isinstance(err, IdfKitError)
+        assert (
+            str(err) == "No Zone named 'SPACE1_1'. Did you mean 'SPACE1-1'?\n  Zone names: SPACE1-1, SPACE2-1, PLENUM-1"
+        )
+        assert (err.obj_type, err.name) == ("Zone", "SPACE1_1")
+        assert err.suggestions[0] == "SPACE1-1"
+        assert err.available == ("SPACE1-1", "SPACE2-1", "PLENUM-1")
+
+    def test_rename_and_dotted_update_raise_it_too(self) -> None:
+        doc = self._doc()
+        with pytest.raises(ObjectNotFoundError, match="Did you mean 'SPACE1-1'"):
+            doc.rename("Zone", "SPACE1_1", "X")
+        with pytest.raises(ObjectNotFoundError, match="Did you mean 'SPACE1-1'"):
+            doc.update({"Zone.SPACE1_1.x_origin": 1.0})
+
+    def test_empty_collection_says_so(self) -> None:
+        with pytest.raises(ObjectNotFoundError, match="The document has no Material objects"):
+            _ = self._doc()["Material"]["Concrete"]
+
+    def test_long_listing_is_truncated(self) -> None:
+        err = ObjectNotFoundError("Zone", "Q", [f"Z{i}" for i in range(25)])
+        assert "Z9, ... (15 more)" in str(err)
+        assert "Z10" not in str(err)
+
+    def test_nameless_type_does_not_claim_the_document_has_none(self) -> None:
+        doc = new_document()
+        assert len(doc["SimulationControl"]) == 1
+        with pytest.raises(ObjectNotFoundError) as excinfo:
+            _ = doc["SimulationControl"]["foo"]
+        message = str(excinfo.value)
+        assert "has no SimulationControl objects" not in message
+        assert "1 SimulationControl object has no name" in message
+
+    def test_names_are_not_computed_until_the_message_is_read(self) -> None:
+        calls: list[int] = []
+
+        def names() -> list[str]:
+            calls.append(1)
+            return ["SPACE1-1"]
+
+        err = ObjectNotFoundError("Zone", "SPACE1_1", names)
+        assert calls == []
+        assert err.suggestions == ("SPACE1-1",)
+        _ = str(err)
+        assert calls == [1]
+
+    def test_caught_miss_does_not_build_the_message(self) -> None:
+        doc = self._doc()
+        try:
+            _ = doc["Zone"]["SPACE1_1"]
+        except KeyError as exc:
+            assert isinstance(exc, ObjectNotFoundError)
+            assert exc._message is None  # pyright: ignore[reportPrivateUsage]
+            assert exc._suggestions is None  # pyright: ignore[reportPrivateUsage]
+
+    def test_pickle_round_trip(self) -> None:
+        err = ObjectNotFoundError("Zone", "SPACE1_1", lambda: ["SPACE1-1"], object_count=1)
+        clone = pickle.loads(pickle.dumps(err))  # noqa: S301
+        assert str(clone) == str(err)
+        assert clone.available == err.available
 
 
 class TestRangeError:

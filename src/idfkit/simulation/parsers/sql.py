@@ -327,8 +327,10 @@ class SQLResult:
         Raises:
             ResultLookupError: A ``KeyError`` subclass, if the variable, key or
                 frequency is not in the database (with the closest names and the
-                reported keys), if several keys or frequencies match, or if the
-                variable has no data for the *environment* asked for.
+                reported keys), if several keys or frequencies match, if the
+                variable has no data for the *environment* asked for, or if
+                EnergyPlus simulated no environment at all (an ``annual=True``
+                run of a model with no ``RunPeriod``, say).
             ValueError: If *environment* is not a recognized value.
         """
         if environment is not None and environment not in _ENVIRONMENT_TYPES:
@@ -351,6 +353,8 @@ class SQLResult:
             (rdd_index,),
         )
         rows: list[tuple[int, int, int, int, int, float, int | None]] = cur.fetchall()
+        if not rows and not self.list_environments():
+            raise ResultLookupError(self._no_environment_message(name))
         wanted = _environment_types(rows, name, environment)
 
         timestamps: list[datetime] = []
@@ -369,6 +373,16 @@ class SQLResult:
             frequency=freq,
             timestamps=tuple(timestamps),
             values=tuple(values),
+        )
+
+    @staticmethod
+    def _no_environment_message(name: str) -> str:
+        """Why *name* has no data in a run that simulated no environment, and what to do about it."""
+        return (
+            f"Variable '{name}' has no data: EnergyPlus simulated no environment in this run. "
+            "An annual run (annual=True) needs a RunPeriod in the model; a design-day run needs "
+            "SizingPeriod objects and SimulationControl's 'Run Simulation for Sizing Periods' set to Yes. "
+            "The .err file says what EnergyPlus skipped."
         )
 
     def _find_variable(

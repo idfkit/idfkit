@@ -533,6 +533,34 @@ class TestSQLResultEnvironmentFilter:
         assert ts.values[0] == 18.0
 
 
+class TestSQLResultNoEnvironment:
+    """A run that simulated no environment (annual=True without a RunPeriod) has nothing to return."""
+
+    def _empty_run(self, db_path: Path) -> None:
+        conn = sqlite3.connect(str(db_path))
+        conn.execute("DELETE FROM ReportData")
+        conn.execute("DELETE FROM Time")
+        conn.execute("DELETE FROM EnvironmentPeriods")
+        conn.commit()
+        conn.close()
+
+    def test_raises_instead_of_an_empty_series(self, sql_db: Path) -> None:
+        self._empty_run(sql_db)
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError, match="simulated no environment") as excinfo:
+            sql.get_timeseries("Zone Mean Air Temperature", "THERMAL ZONE 1")
+        assert "RunPeriod" in str(excinfo.value)
+
+    def test_a_variable_with_no_rows_in_a_simulated_run_is_still_empty(self, sql_db: Path) -> None:
+        """Outside that case an empty series stands: a reporting schedule can switch every row off."""
+        conn = sqlite3.connect(str(sql_db))
+        conn.execute("DELETE FROM ReportData WHERE ReportDataDictionaryIndex = 2")
+        conn.commit()
+        conn.close()
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries("Zone Mean Air Temperature", "THERMAL ZONE 1")
+        assert ts.values == ()
+
+
 class TestSQLResultListEnvironments:
     """Tests for list_environments()."""
 

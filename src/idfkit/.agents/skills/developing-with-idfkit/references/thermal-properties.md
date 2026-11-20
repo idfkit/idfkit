@@ -61,6 +61,8 @@ for layer in layers:
     print(layer.name, layer.thickness, layer.conductivity, layer.r_value)
 ```
 
+A layer naming a material the document does not have raises `DanglingReferenceError` (from `idfkit.exceptions`) naming the construction, the field and the closest material (`.suggestion`), so a misspelt layer never yields a silently low R-value; a layer of a type the module does not model (a shade or blind) is skipped. A construction outside a document raises `ValueError`.
+
 Each `LayerThermalProperties` exposes `name`, `obj_type`, `thickness`, `conductivity`, the computed `r_value`, and glazing fields (`is_glazing`, `shgc`, `visible_transmittance`, …) for that layer.
 
 ## R-value and U-value
@@ -172,7 +174,7 @@ for name in ("ExteriorWall_Baseline", "ExteriorWall_R30", "ExteriorWall_R40"):
 
     ```python
     loose_obj = IDFObject("Construction", "X", ...)   # no _document
-    calculate_r_value(loose_obj)                       # can't resolve material references
+    calculate_r_value(loose_obj)                       # ValueError: can't resolve material references
     ```
 
 !!! success "operate on objects belonging to a `doc`"

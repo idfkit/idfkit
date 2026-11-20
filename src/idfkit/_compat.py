@@ -17,7 +17,7 @@ from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 
-from .objects import refuse_name_for_nameless_type
+from .objects import object_not_found, refuse_name_for_nameless_type
 from .writers import OutputType
 
 if TYPE_CHECKING:
@@ -373,10 +373,10 @@ class EppyDocumentMixin:
                 msg = f"Expected 'ObjectType.ObjectName.field_name', got '{dotted_key}'"
                 raise KeyError(msg)
             obj_type, obj_name, field_name = parts
-            obj = self.getobject(obj_type, obj_name)
+            collection = self._read_collection(obj_type, stacklevel=2)
+            obj = collection.get(obj_name)
             if obj is None:
-                msg = f"No {obj_type} named '{obj_name}'"
-                raise KeyError(msg)
+                raise object_not_found(collection, obj_name)
             # A schema key is kept as given: to_python_name would turn ReportPeriod's name_ field into
             # its name. Anything else is normalized, which keeps private slots out of reach.
             field_order = obj.field_order or ()
