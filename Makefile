@@ -11,7 +11,7 @@ install: ## Install the virtual environment and install the pre-commit hooks
 # Everything idfkit.codegen.generate_stubs writes. Listed once, so the stale check and the new-file
 # check below cannot disagree about what is generated.
 GENERATED_STUBS := src/idfkit/_generated_types.pyi src/idfkit/document.pyi src/idfkit/versioned.pyi \
-	src/idfkit/versioned.py src/idfkit/_loaders.pyi src/idfkit/_read_required.py src/idfkit/_object_types.py \
+	src/idfkit/versioned.py src/idfkit/choices.py src/idfkit/_loaders.pyi src/idfkit/_read_required.py src/idfkit/_object_types.py \
 	src/idfkit/_versioned src/idfkit/_creation
 
 .PHONY: check-stubs

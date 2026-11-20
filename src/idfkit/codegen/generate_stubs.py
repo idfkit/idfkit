@@ -34,6 +34,7 @@ from idfkit.schema import EpJSONSchema, get_schema, trailing_underscore_aliases
 from idfkit.versions import ENERGYPLUS_VERSIONS, version_string
 
 __all__ = [
+    "generate_choices_py",
     "generate_document_pyi",
     "generate_loaders_pyi",
     "generate_object_types_py",
@@ -96,6 +97,7 @@ def _clear_version_caches() -> None:
         _release_creation,
         _creation_pieces,
         _piece_classes,
+        _choice_aliases,
         read_required,
         read_required_groups,
     ):
@@ -1834,6 +1836,193 @@ def _merged_groups() -> dict[str, _MergedGroup]:
     return merged
 
 
+# ---- named choice aliases (idfkit.choices) ----------------------------------
+#
+# The stubs keep every choice inline as a ``Literal``: annotating the fields with these aliases made
+# pyright slower on every file that imports idfkit (an extra module to bind, an alias to resolve per
+# use). ``idfkit.choices`` is published beside them instead, and ``verify_stubs`` proves each alias
+# equal to the choices the stubs give its field.
+
+# A choice field: an object type, whether the field is an extensible group's inner field, its key.
+_ChoiceKey: TypeAlias = tuple[str, bool, str]
+
+
+def _camel(field: str) -> str:
+    """``reporting_frequency`` -> ``ReportingFrequency``; a trailing ``_`` (9.0's keys) is dropped."""
+    return "".join(part[:1].upper() + part[1:] for part in field.split("_") if part)
+
+
+def _choice_base_name(key: _ChoiceKey) -> str:
+    """``OutputMeterReportingFrequency``: the class name of the object type followed by the field's key."""
+    obj_type, _, field = key
+    return f"{_to_class_name(obj_type)}{_camel(field)}"
+
+
+@dataclasses.dataclass(frozen=True)
+class _ChoiceAlias:
+    """One alias of ``idfkit.choices``.
+
+    Attributes:
+        name: The alias, ``OutputMeterReportingFrequency`` or ``AnyOutputMeterReportingFrequency``.
+        key: The field it is the choices of.
+        value: What it stands for: a ``Literal[...]``, or the name of another alias of the module.
+        versions: The releases whose schema lists exactly these choices; empty for an ``Any`` alias.
+    """
+
+    name: str
+    key: _ChoiceKey
+    value: str
+    versions: tuple[Version, ...] = ()
+
+
+def _choice_members(literal: str) -> list[str]:
+    """The members of a generated ``Literal[...]``, each once, in their order."""
+    return list(dict.fromkeys(_split_literal(literal[len("Literal[") : -1])))
+
+
+def _choice_fields(schema: EpJSONSchema) -> Iterator[tuple[_ChoiceKey, str]]:
+    """Each choice field of *schema*'s release with its choices, as the stubs type it (``Literal[...]``).
+
+    A choice field is one whose schema lists an ``enum`` of the values it takes; a field that also
+    takes a number (one that may be autosized) is not one, and an ``enum`` of nothing but the blank
+    is typed ``str``. A key ending in ``_`` (some releases' ``report_name_``) is keyed without it, the
+    spelling every release's class declares.
+    """
+    for obj_type in schema.object_types:
+        inner = schema.get_inner_schema(obj_type)
+        properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
+        for field in schema.get_field_names(obj_type):
+            field_schema = properties.get(field)
+            if field.isidentifier() and field_schema is not None and "enum" in field_schema:
+                literal = _enum_to_literal(field_schema["enum"])
+                if literal != "str":
+                    yield (obj_type, False, field.rstrip("_")), literal
+        pc = schema.get_parsing_cache(obj_type)
+        if pc is not None and pc.ext_wrapper_key:
+            for field, sub in pc.ext_inner_props.items():
+                if field.isidentifier() and "enum" in sub:
+                    literal = _enum_to_literal(sub["enum"])
+                    if literal != "str":
+                        yield (obj_type, True, field.rstrip("_")), literal
+
+
+@functools.cache
+def _choice_aliases() -> tuple[_ChoiceAlias, ...]:
+    """Name each set of choices every choice field has had in the supported releases.
+
+    The set the latest release lists is ``<Class><Field>``: the class name of the object type and
+    the field's key in CamelCase, an extensible group's inner field named like a field of the type
+    (``OutputTableSummaryReportsReportName``). A set only older releases list is suffixed with the
+    first and last release that list it, as the classes of an older range are (``..._v9_3``).
+    Sets are compared by their members, so a schema that lists a choice twice adds no alias.
+    """
+    held: dict[_ChoiceKey, dict[frozenset[str], tuple[list[str], list[Version]]]] = {}
+    for ver in SUPPORTED.versions:
+        for key, literal in _choice_fields(get_schema(ver)):
+            members = _choice_members(literal)
+            entry = held.setdefault(key, {}).setdefault(frozenset(members), (members, []))
+            entry[1].append(ver)
+    aliases: dict[str, _ChoiceAlias] = {}
+    for key, sets in held.items():
+        base = _choice_base_name(key)
+        for members, versions in sets.values():
+            name = base if SUPPORTED.latest in versions else _span_name(base, (versions[0], versions[-1]))
+            other = aliases.get(name)
+            if other is not None:  # pragma: no cover - a property of the bundled schemas
+                msg = f"{key} and {other.key} would both name their choices {name}"
+                raise ValueError(msg)
+            aliases[name] = _ChoiceAlias(name, key, f"Literal[{', '.join(members)}]", tuple(versions))
+    return tuple(aliases.values())
+
+
+def _any_choice_aliases() -> list[_ChoiceAlias]:
+    """``Any<Class><Field>`` for each choice field of ``Any<Class>``: what every release accepts.
+
+    As ``Any<Class>`` types assigning to a field, the alias is the choices every supported release
+    that has the type accepts (their intersection, :func:`_intersect_types`), so a value of it can
+    be written into a document of any of them. Where that is the latest release's set, it names
+    ``<Class><Field>``. A field ``Any<Class>`` does not declare, and one whose releases share no
+    choice, has none.
+    """
+    layout = _shared_layout()
+    merged = _merged_groups()
+    latest = {alias.key: alias for alias in _choice_aliases() if SUPPORTED.latest in alias.versions}
+    out: list[_ChoiceAlias] = []
+    for key, alias in latest.items():
+        obj_type, group, field = key
+        shared = layout.get(obj_type)
+        value: str | None = alias.name
+        if shared is not None and not group and field not in shared.identical:
+            value = shared.writable.get(field)
+        elif shared is not None and group and not shared.group:
+            write = {name: w for name, _, w in merged[obj_type].fields} if obj_type in merged else {}
+            value = write.get(field)
+        if value is None or not (value == alias.name or value.startswith("Literal[")):
+            continue
+        if value != alias.name and frozenset(_choice_members(value)) == frozenset(_choice_members(alias.value)):
+            value = alias.name
+        out.append(_ChoiceAlias(f"Any{alias.name}", key, value))
+    return out
+
+
+def _natural(name: str) -> list[tuple[int, str]]:
+    """A sort key that compares the runs of digits in *name* as numbers."""
+    return [(int(part), "") if part.isdigit() else (-1, part) for part in re.split(r"(\d+)", name)]
+
+
+def generate_choices_py() -> str:
+    """Generate ``choices.py``: one ``Literal`` alias per choice field and choice set.
+
+    A run-time module, so ``typing.get_args`` reads an alias's choices. The stubs do not import it;
+    ``verify_stubs`` checks each alias against the schemas and against ``Any<Class>``.
+    """
+    by_base: dict[str, list[_ChoiceAlias]] = {}
+    for alias in [*_choice_aliases(), *_any_choice_aliases()]:
+        by_base.setdefault(_choice_base_name(alias.key), []).append(alias)
+    lines = [
+        '"""The choices of every EnergyPlus choice field, one ``Literal`` alias per field.',
+        "",
+        "Annotate a value with the alias of the field it is written to, and a type checker accepts it",
+        "there and refuses any other string::",
+        "",
+        "    from idfkit.choices import OutputMeterReportingFrequency",
+        "",
+        '    frequency: OutputMeterReportingFrequency = "Hourly"',
+        '    doc["Output:Meter"].add(key_name="Electricity:Facility", reporting_frequency=frequency)',
+        "",
+        "``<Class><Field>`` is the choices of the latest release: the class name of the object type and",
+        "the field's key in CamelCase (an extensible group's inner field included). A set only older",
+        "releases list is suffixed with the first and last of them (``_v9_3``, ``_v9_4_to_v9_6``).",
+        "``Any<Class><Field>`` is what every release that has the field accepts, as ``Any<Class>``",
+        "types assigning to it. ``typing.get_args`` reads an alias's choices at run time.",
+        "",
+        "DO NOT EDIT — regenerate with:",
+        "    python -m idfkit.codegen.generate_stubs",
+        '"""',
+        "",
+        "from __future__ import annotations",
+        "",
+        "from typing import Literal, TypeAlias",
+        "",
+        "__all__ = [",
+        # Numbers compared as numbers, as ruff sorts __all__ (RUF022): _v8_9 before _v24_1.
+        *(f'    "{name}",' for name in sorted((a.name for v in by_base.values() for a in v), key=_natural)),
+        "]",
+        "",
+    ]
+    for base in sorted(by_base):
+        for alias in sorted(by_base[base], key=lambda a: (a.name.startswith("Any"), a.versions[:1])):
+            obj_type, _, field = alias.key
+            if alias.versions:
+                first, last = alias.versions[0], alias.versions[-1]
+                span = f"{first[0]}.{first[1]}" if first == last else f"{first[0]}.{first[1]} to {last[0]}.{last[1]}"
+                doc = f"``{obj_type}`` ``{field}``, EnergyPlus {span}."
+            else:
+                doc = f"``{obj_type}`` ``{field}``, accepted by every release that has it."
+            lines += [f"{alias.name}: TypeAlias = {alias.value}", f'"""{doc}"""', ""]
+    return "\n".join(lines)
+
+
 def _generate_merged_group(group: _MergedGroup, owner: str, required: frozenset[str] = frozenset()) -> list[str]:
     """The group class of a :class:`_MergedGroup`: reads give the union, writes the intersection.
 
@@ -3330,6 +3519,9 @@ def _write_stubs(base_path: Path) -> None:
     versioned_runtime_path = base_path / "versioned.py"
     versioned_runtime_path.write_text(generate_versioned_py(), encoding="utf-8")
 
+    choices_path = base_path / "choices.py"
+    choices_path.write_text(generate_choices_py(), encoding="utf-8")
+
     required_path = base_path / "_read_required.py"
     required_path.write_text(generate_read_required_py(), encoding="utf-8")
 
@@ -3373,6 +3565,7 @@ def _write_stubs(base_path: Path) -> None:
             str(pyi_path),
             str(versioned_path),
             str(versioned_runtime_path),
+            str(choices_path),
             str(required_path),
             str(loaders_path),
             str(object_types_path),
@@ -3389,6 +3582,7 @@ def _write_stubs(base_path: Path) -> None:
         [versioned_path.read_text(encoding="utf-8"), *(path.read_text(encoding="utf-8") for path in document_paths)],
         SUPPORTED.versions,
         {path.stem: path.read_text(encoding="utf-8") for path in creation_paths},
+        choices=choices_path.read_text(encoding="utf-8"),
     )
     if problems:
         for problem in problems:

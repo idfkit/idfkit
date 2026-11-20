@@ -510,6 +510,36 @@ assert raw.normalize_choices is False
 
 To keep the source's text, pass `normalize_choices=False` to `load_idf`, `load_epjson`, `load_idf_with_diagnostics` or `new_document`; `doc.normalize_choices` reports the setting, and `doc.copy()`, `migrate()` and `expand_objects()` keep it. A document pickled by a release before the setting existed holds its values as written, and unpickles with it off. It is independent of `strict` and `preserve_formatting`. The stubs do not change with it: on such a document a choice field still has its `Literal` type but can hold any case, so compare with `.casefold()` and do not rely on an exhaustive `match`.
 
+### Annotating a choice value with its alias
+
+A value carried from your own input to a choice field needs a type that is exactly the field's choices; a plain `str` is rejected. `idfkit.choices` has one `Literal` alias per choice field, so annotate with it instead of copying the list:
+
+| Alias | Choices |
+| --- | --- |
+| `<Class><Field>` (`OutputMeterReportingFrequency`) | The latest release's; a value of it passes to `add()`, `update()` and assignment of the field |
+| `<Class><Field>_v<first>_to_v<last>` (`OutputTableSummaryReportsReportName_v9_3`) | A set only older releases list, as the range classes are named |
+| `Any<Class><Field>` (`AnyOutputMeterReportingFrequency`) | Those every release that has the field accepts, as `Any<Class>` takes it: use it with `AnyIDFDocument` |
+
+The name is the object class followed by the field key in CamelCase; an extensible group's inner field is named like a field of the type (`OutputTableSummaryReportsReportName` for the `report_name` of `Output:Table:SummaryReports`). The stubs spell each choice set out rather than naming the alias, which keeps type checking fast; idfkit's own checks prove every alias equal to its field's choices, so a hover on the field shows the `Literal`, not the alias name. The module is importable at run time, where `typing.get_args(alias)` gives the choices.
+
+```python
+from idfkit.choices import AnyOutputMeterReportingFrequency, OutputMeterReportingFrequency
+from idfkit.document import AnyIDFDocument
+
+
+def add_meters(doc: IDFDocument, meters: list[str], frequency: OutputMeterReportingFrequency) -> None:
+    for meter in meters:
+        doc["Output:Meter"].add(key_name=meter, reporting_frequency=frequency)
+
+
+def add_meters_any_release(doc: AnyIDFDocument, frequency: AnyOutputMeterReportingFrequency) -> None:
+    doc["Output:Meter"].add(key_name="Electricity:Facility", reporting_frequency=frequency)
+
+
+add_meters(doc, ["Electricity:Facility"], "Hourly")
+# add_meters(doc, ["Electricity:Facility"], "Weekly")  # rejected: not a reporting frequency
+```
+
 ## Modifying objects
 
 Field access is via attribute. Setting a value updates the reference graph automatically. In a strict document (the default), assignment, item assignment and `update()` also check the value as `add()` does: a value of the wrong type, a choice the schema does not list or a number out of range raises `ValidationFailedError` (codes `E003` to `E008`) and leaves the object unchanged; `update()` checks every value before writing any. Clearing a field (`None`) is always accepted, and nothing checks that the object still has its required fields until `validate_document()`. A document opened with `strict=False` stores any value, for `validate_document()` to report:

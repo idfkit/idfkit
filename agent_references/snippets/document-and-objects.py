@@ -426,3 +426,22 @@ raw = load_idf("5ZoneAirCooled.idf", normalize_choices=False)
 walls = [s for s in raw.building_surfaces if s.surface_type.casefold() == "wall"]
 assert raw.normalize_choices is False
 # --8<-- [end:choice-spelling]
+
+
+# --8<-- [start:choice-alias]
+from idfkit.choices import AnyOutputMeterReportingFrequency, OutputMeterReportingFrequency
+from idfkit.document import AnyIDFDocument
+
+
+def add_meters(doc: IDFDocument, meters: list[str], frequency: OutputMeterReportingFrequency) -> None:
+    for meter in meters:
+        doc["Output:Meter"].add(key_name=meter, reporting_frequency=frequency)
+
+
+def add_meters_any_release(doc: AnyIDFDocument, frequency: AnyOutputMeterReportingFrequency) -> None:
+    doc["Output:Meter"].add(key_name="Electricity:Facility", reporting_frequency=frequency)
+
+
+add_meters(doc, ["Electricity:Facility"], "Hourly")
+# add_meters(doc, ["Electricity:Facility"], "Weekly")  # rejected: not a reporting frequency
+# --8<-- [end:choice-alias]

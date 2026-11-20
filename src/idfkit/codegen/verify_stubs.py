@@ -26,6 +26,9 @@ than repeated:
   of its object type in that version;
 * ``AnyIDFDocument`` offers exactly the types every version has, each with exactly the fields
   every version has, and each field's type admits every version's values;
+* ``choices.py`` defines exactly one alias per choice set each choice field has had, named for the
+  releases that list it, each with the schema's choices, and ``Any<Class><Field>`` as the choices
+  every release with the type accepts, which is what ``Any<Class>`` takes for the field;
 * every ``IDFDocumentSince``/``IDFDocumentBefore`` alias is exactly its range's releases, and every
   ``as_version`` overload for ``since=``/``before=`` is typed with exactly the releases its bounds
   name, one overload for each non-empty range.
@@ -765,6 +768,141 @@ def _required_group_reads(versions: tuple[Version, ...]) -> dict[str, frozenset[
     return {t: frozenset(f - optional.get(t, set())) for t, f in required.items()}
 
 
+# ---- idfkit.choices --------------------------------------------------------
+
+_ChoiceKey = tuple[str, bool, str]
+
+
+def _choice_name(key: _ChoiceKey) -> str:
+    """``OutputMeterReportingFrequency``: the type's class name, then the field's key in CamelCase."""
+    obj_type, _, field = key
+    camel = "".join(part[:1].upper() + part[1:] for part in field.split("_") if part)
+    return "".join(ch for ch in obj_type if ch.isalnum()) + camel
+
+
+@functools.cache
+def _release_choice_fields(ver: Version) -> dict[_ChoiceKey, frozenset[str]]:
+    """Each field of release *ver*, top level and extensible, with the values its schema allows."""
+    schema = _schema_of(ver)
+    out: dict[_ChoiceKey, frozenset[str]] = {}
+    for obj_type in schema.object_types:
+        inner = schema.get_inner_schema(obj_type)
+        properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
+        for field in schema.get_field_names(obj_type):
+            if field.isidentifier():
+                values = _value_members(properties.get(field), schema.get_field_type(obj_type, field))
+                out[obj_type, False, field.rstrip("_")] = values - {"None"}
+        pc = schema.get_parsing_cache(obj_type)
+        if pc is not None and pc.ext_wrapper_key:
+            for field, sub in pc.ext_inner_props.items():
+                if field.isidentifier():
+                    out[obj_type, True, field.rstrip("_")] = _value_members(sub, sub.get("type")) - {"None"}
+    return out
+
+
+def _is_choice(values: frozenset[str]) -> bool:
+    return bool(values) and all(v.startswith("Literal['") for v in values)
+
+
+def _read_choice_aliases(source: str) -> dict[str, frozenset[str] | str]:
+    """Each alias ``choices.py`` defines: its ``Literal`` members, or the alias it names."""
+    out: dict[str, frozenset[str] | str] = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.value is not None:
+            if isinstance(node.value, ast.Name):
+                out[node.target.id] = node.value.id
+            else:
+                out[node.target.id] = _union_members(ast.unparse(node.value))
+    return out
+
+
+def _held_choice_sets(versions: tuple[Version, ...]) -> dict[_ChoiceKey, dict[frozenset[str], list[Version]]]:
+    """Each choice field, with each set of choices it has had and the releases that list it."""
+    held: dict[_ChoiceKey, dict[frozenset[str], list[Version]]] = {}
+    for ver in versions:
+        for key, values in _release_choice_fields(ver).items():
+            if _is_choice(values):
+                held.setdefault(key, {}).setdefault(values, []).append(ver)
+    return held
+
+
+def _release_suffix(held_in: list[Version], latest: Version) -> str:
+    """``""`` for a set the latest release lists, else ``_v9_3`` or ``_v9_4_to_v9_6``."""
+    if latest in held_in:
+        return ""
+    first, last = held_in[0], held_in[-1]
+    suffix = f"_v{first[0]}_{first[1]}"
+    return suffix if first == last else f"{suffix}_to_v{last[0]}_{last[1]}"
+
+
+def _any_accepted(key: _ChoiceKey, versions: tuple[Version, ...]) -> frozenset[str]:
+    """The choices every release with *key*'s type accepts for it; empty when some release lacks the field.
+
+    A release whose field takes any string restricts nothing.
+    """
+    releases = [ver for ver in versions if key[0] in _schema_of(ver).object_types]
+    sets = [_release_choice_fields(ver).get(key) for ver in releases]
+    if any(s is None for s in sets):
+        return frozenset()  # a field some release lacks is not on Any<Class>
+    restricting = [s for s in sets if s is not None and "str" not in s]
+    accepted: frozenset[str] = restricting[0] if restricting else frozenset()
+    for values in restricting[1:]:
+        accepted &= values
+    return accepted
+
+
+def _expected_choices(versions: tuple[Version, ...]) -> dict[str, tuple[_ChoiceKey, frozenset[str]]]:
+    """Every alias ``choices.py`` must define, with its field and its choices, read from the schemas."""
+    expected: dict[str, tuple[_ChoiceKey, frozenset[str]]] = {}
+    for key, sets in _held_choice_sets(versions).items():
+        for values, held_in in sets.items():
+            expected[_choice_name(key) + _release_suffix(held_in, versions[-1])] = (key, values)
+        if any(versions[-1] in held_in for held_in in sets.values()) and (accepted := _any_accepted(key, versions)):
+            expected[f"Any{_choice_name(key)}"] = (key, accepted)
+    return expected
+
+
+def _any_class_accepts(module: _Module, key: _ChoiceKey) -> tuple[str, frozenset[str]] | None:
+    """What ``Any<Class>`` declares assigning to top-level field *key* accepts, with the class's name."""
+    cls = "Any" + "".join(ch for ch in key[0] if ch.isalnum())
+    cls = module.aliases.get(cls, cls)
+    if key[1] or cls not in module.classes:
+        return None  # an extensible field is checked against the schemas alone
+    setters: dict[str, str] = {}
+    for item in _linearise(module, cls):
+        setters.update(module.classes[item].setters)
+    declared = setters.get(key[2], _fields(module, cls).get(key[2]))
+    return None if declared is None else (cls, _union_members(declared) - {"None"})
+
+
+def _check_choices(module: _Module, source: str, versions: tuple[Version, ...], problems: list[str]) -> None:
+    """``choices.py`` names every choice set of every release, and each ``Any`` alias is what ``Any<Class>`` takes.
+
+    Each alias is compared with the schemas, read here rather than taken from the generator: the
+    stubs give each field of a release exactly its schema's values (checked above), so an alias equal
+    to the schema's choices is the type the field takes. The ``Any`` alias of a field is the choices
+    every release with the type accepts, and is compared with what ``Any<Class>`` declares writing
+    it accepts as well.
+    """
+    defined = _read_choice_aliases(source)
+    expected = _expected_choices(versions)
+    problems.extend(f"choices.py: {name} is missing" for name in sorted(set(expected) - set(defined)))
+    problems.extend(
+        f"choices.py: {name} names no choice set of a supported release"
+        for name in sorted(set(defined) - set(expected))
+    )
+    for name in sorted(set(expected) & set(defined)):
+        value = defined[name]
+        if isinstance(value, str):  # an Any alias naming the latest release's
+            value = defined.get(value)
+        key, values = expected[name]
+        if value != values:
+            problems.append(f"choices.py: {name} is not the schema's choices")
+        accepts = _any_class_accepts(module, key) if name.startswith("Any") else None
+        if accepts is not None and accepts[1] != values:
+            problems.append(f"choices.py: {name} is not what {accepts[0]}.{key[2]} accepts")
+
+
 def verify(
     types_source: str,
     document_source: str,
@@ -772,6 +910,7 @@ def verify(
     versions: tuple[Version, ...],
     creation_sources: Mapping[str, str],
     *,
+    choices: str,
     releases: Collection[Version] | None = None,
 ) -> list[str]:
     """Report every way the generated stubs misdescribe a supported version; empty when none.
@@ -786,6 +925,8 @@ def verify(
             be running as ``__main__``, a second copy of its module.
         creation_sources: The modules of ``_creation`` by module name (``_b3``), which hold the
             creation signatures the classes name.
+        choices: The generated ``choices.py``, whose aliases must be each release's choice sets
+            and, for ``Any<Class><Field>``, what ``Any<Class>`` accepts.
         releases: Check the document types of only these of *versions*; ``None``, the default,
             checks every one. For a caller that knows which release a fault it planted shows in,
             as the verifier's own mutation tests do: checking one release instead of eighteen is
@@ -817,6 +958,7 @@ def verify(
     _check_any_document(module, versions, problems)
     _check_any_names(module, versions[-1], problems)
     _check_ranges(module, sources, versions, problems)
+    _check_choices(module, choices, versions, problems)
     return problems
 
 

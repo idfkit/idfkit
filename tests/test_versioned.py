@@ -26,18 +26,18 @@ from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
 _PACKAGE = Path(versioned.__file__).resolve().parent
 
 
-_Sources = tuple[str, str, str, str, dict[str, str]]
+_Sources = tuple[str, str, str, str, dict[str, str], str]
 
 
 def _committed() -> _Sources:
-    """The committed stubs: types, document, versioned, the per-release document modules joined, and
-    the creation signature modules by name.
+    """The committed stubs: types, document, versioned, the per-release document modules joined, the
+    creation signature modules by name, and the choice aliases (``choices.py``).
 
     Read once per session (about 10 MB); the dict of creation modules is copied on every call, so a
     test may replace one of its entries without affecting the next test.
     """
-    types, document, versioned_source, documents, creation = _read_committed()
-    return types, document, versioned_source, documents, dict(creation)
+    types, document, versioned_source, documents, creation, choices = _read_committed()
+    return types, document, versioned_source, documents, dict(creation), choices
 
 
 @functools.cache
@@ -49,6 +49,7 @@ def _read_committed() -> _Sources:
         (_PACKAGE / "versioned.pyi").read_text(encoding="utf-8"),
         "\n".join(path.read_text(encoding="utf-8") for path in documents),
         {path.stem: path.read_text(encoding="utf-8") for path in sorted((_PACKAGE / "_creation").glob("_*.pyi"))},
+        (_PACKAGE / "choices.py").read_text(encoding="utf-8"),
     )
 
 
@@ -66,13 +67,16 @@ def _generated() -> _Sources:
         versioned_source,
         "\n".join(source for name, source in sorted(documents.items()) if name != "__init__.pyi"),
         {name.removesuffix(".pyi"): source for name, source in modules.items()},
+        gen.generate_choices_py(),
     )
 
 
 def _verify(
     sources: _Sources | list[Any], versions: tuple[Version, ...], releases: tuple[Version, ...] | None = None
 ) -> list[str]:
-    return verify(sources[0], sources[1], [sources[2], sources[3]], versions, sources[4], releases=releases)
+    return verify(
+        sources[0], sources[1], [sources[2], sources[3]], versions, sources[4], choices=sources[5], releases=releases
+    )
 
 
 # Where the verifier's mutation tests look for the fault each plants: the releases whose document
@@ -787,6 +791,50 @@ class TestCommittedStubs:
         sources[4] = creation
         problems = _verify(sources, ENERGYPLUS_VERSIONS, releases=releases)
         assert any(expected in problem for problem in problems), problems
+
+    @pytest.mark.parametrize(
+        ("pattern", "replacement", "expected"),
+        [
+            # An alias that lost a choice.
+            (
+                r'(\nOutputMeterReportingFrequency: TypeAlias = Literal\[\s*"Annual", )"Daily", ',
+                r"\1",
+                "choices.py: OutputMeterReportingFrequency is not the schema's choices",
+            ),
+            # An alias renamed: the field's has gone, and the new name stands for no choice set.
+            (
+                r"\nOutputMeterReportingFrequency: TypeAlias = ",
+                "\nOutputMeterFrequency: TypeAlias = ",
+                "choices.py: OutputMeterReportingFrequency is missing",
+            ),
+            (r"\Z", 'Unused: TypeAlias = Literal["A"]\n', "choices.py: Unused names no choice set"),
+            # An Any alias wider than what every release accepts.
+            (
+                r"(\nAnyOutputTableSummaryReportsReportName: TypeAlias = )Literal\[[^\]]*\]",
+                r"\1OutputTableSummaryReportsReportName",
+                "choices.py: AnyOutputTableSummaryReportsReportName is not the schema's choices",
+            ),
+        ],
+    )
+    def test_a_misdescribed_choice_alias_is_reported(self, pattern: str, replacement: str, expected: str) -> None:
+        sources = list(_committed())
+        changed = re.sub(pattern, replacement, sources[5], count=1)
+        assert changed != sources[5], "the mutation did not apply"
+        sources[5] = changed
+        problems = _verify(sources, ENERGYPLUS_VERSIONS, releases=(LATEST_VERSION,))
+        assert any(expected in problem for problem in problems), problems
+
+    def test_an_any_alias_that_differs_from_its_class_is_reported(self) -> None:
+        # The stubs keep each choice inline; the Any alias must still be what Any<Class> accepts.
+        sources = list(_committed())
+        setter = "    @heater_fuel_type.setter\n    def heater_fuel_type(\n        self,\n        value: Literal[\n"
+        assert setter in sources[0]
+        sources[0] = sources[0].replace(setter, setter + '            "Steam",\n', 1)
+        problems = _verify(sources, ENERGYPLUS_VERSIONS, releases=(LATEST_VERSION,))
+        expected = (
+            "choices.py: AnyWaterHeaterMixedHeaterFuelType is not what AnyWaterHeaterMixed.heater_fuel_type accepts"
+        )
+        assert expected in problems, problems
 
     def test_a_scope_naming_an_unverified_release_is_refused(self) -> None:
         # A release outside the verified ones, misspelled or since dropped, would otherwise check nothing.
