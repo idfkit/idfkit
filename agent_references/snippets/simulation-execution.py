@@ -66,7 +66,12 @@ print(result.migration_report.summary())  # what was changed
 
 
 # --8<-- [start:design-day-vs-annual]
-# Quick smoke-test with the heating/cooling design days only — seconds
+from idfkit.weather import DesignDayManager
+
+# Quick smoke-test with the heating/cooling design days only — seconds.
+# design_day=True needs SizingPeriod:DesignDay objects (new_document() adds none)
+if "SizingPeriod:DesignDay" not in doc:
+    DesignDayManager("weather.ddy").apply_to_model(doc)
 result = simulate(doc, "weather.epw", design_day=True)
 
 # Design days only, without a weather file (weather defaults to None)

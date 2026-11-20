@@ -102,14 +102,17 @@ from idfkit import (
     calculate_zone_volume,
 )
 
-zone_name = "Office"
+zone_name = "Office"  # any case; a name no Zone has raises ObjectNotFoundError
 calculate_zone_floor_area(doc, zone_name)
 calculate_zone_ceiling_area(doc, zone_name)
 calculate_zone_height(doc, zone_name)
 calculate_zone_volume(doc, zone_name)
+calculate_zone_volume(doc, doc["Zone"]["Office"])  # the Zone object works too
 ```
 
 Zone volume is computed from the bounding surfaces — it works for any prismatic and most non-prismatic geometries.
+
+Each helper takes the zone's name (any case) or the `Zone` object. A name no `Zone` has raises `ObjectNotFoundError` (a `KeyError`) with the closest zone names, as `doc["Zone"][name]` does, rather than returning `0.0`.
 
 ## Building-wide transforms
 

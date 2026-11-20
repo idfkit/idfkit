@@ -86,11 +86,32 @@ def refusal_r4(run_dir: Path) -> str:
     )
 
 
+def add_design_day(model: IDFDocument) -> IDFDocument:
+    """Add one ``SizingPeriod:DesignDay`` to *model* and return it.
+
+    ``simulate(design_day=True)`` refuses a model without one, as EnergyPlus would.
+    """
+    model.add(
+        "SizingPeriod:DesignDay",
+        "Summer Design Day",
+        {"month": 7, "day_of_month": 21, "day_type": "SummerDesignDay"},
+        validate=False,
+    )
+    return model
+
+
+def design_day_model(version: tuple[int, int, int] | None = None) -> IDFDocument:
+    """Return a new document with one design day, runnable with ``design_day=True``."""
+    model = new_document() if version is None else new_document(version=version)
+    return add_design_day(model)
+
+
 def ground_heat_model(*, slab: str | None = "Yes", basement: str | None = "Yes") -> IDFDocument:
     """Return a model with one Slab and one Basement object.
 
     *slab* and *basement* set the ``GroundHeatTransfer:Control`` fields;
-    when both are ``None`` the control object is omitted.
+    when both are ``None`` the control object is omitted. The model also has
+    one design day, so a design-day-only run of it is admitted.
     """
     from idfkit.versions import LATEST_VERSION
 
@@ -100,7 +121,7 @@ def ground_heat_model(*, slab: str | None = "Yes", basement: str | None = "Yes")
     if slab is not None or basement is not None:
         fields = {"run_slab_preprocessor": slab or "", "run_basement_preprocessor": basement or ""}
         model.add("GroundHeatTransfer:Control", "", fields, validate=False)
-    return model
+    return add_design_day(model)
 
 
 def fixed_vertices(*vertices: tuple[float, float, float]) -> dict[str, float]:

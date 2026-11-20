@@ -15,6 +15,7 @@ from conftest import (
     REFUSAL_R1,
     REFUSAL_R2,
     InMemoryFileSystem,
+    design_day_model,
     ground_heat_model,
     refusal_r3,
     refusal_r4,
@@ -540,7 +541,7 @@ class TestSimulateWithoutWeather:
     @patch("idfkit.simulation.runner.subprocess.run")
     def test_command_has_no_weather(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        result = simulate(new_document(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        result = simulate(design_day_model(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
         cmd = mock_run.call_args[0][0]
         assert "-D" in cmd
         assert "-w" not in cmd
@@ -550,7 +551,9 @@ class TestSimulateWithoutWeather:
     @patch("idfkit.simulation.runner.subprocess.run")
     def test_positional_none(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        result = simulate(new_document(), None, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        result = simulate(
+            design_day_model(), None, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
+        )
         cmd = mock_run.call_args[0][0]
         assert "-D" in cmd
         assert "-w" not in cmd
@@ -566,7 +569,7 @@ class TestSimulateWithoutWeather:
     ) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         with caplog.at_level(logging.DEBUG, logger="idfkit.simulation"):
-            simulate(new_document(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+            simulate(design_day_model(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
         messages = [record.getMessage() for record in caplog.records]
         assert "Starting simulation without a weather file" in messages
         assert not any("in.epw" in m for m in messages)
@@ -652,6 +655,40 @@ class TestWeatherAdmission:
             simulate(new_document(), weather_file, annual=True, energyplus=mock_config)
         mock_run.assert_not_called()
 
+    def test_design_day_without_design_days_refused(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        """EnergyPlus would blame the weather data input, so the run is refused and names the fix."""
+        model = new_document()
+        model.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
+        with (
+            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            pytest.raises(
+                SimulationError, match=r"design_day=True, but the model has no SizingPeriod:DesignDay"
+            ) as exc,
+        ):
+            simulate(model, weather_file, design_day=True, energyplus=mock_config)
+        mock_run.assert_not_called()
+        assert "apply_to_model" in str(exc.value)
+        assert "apply_ashrae_sizing" in str(exc.value)
+
+    def test_design_day_refused_before_energyplus_discovery(self, weather_file: Path) -> None:
+        with (
+            patch("idfkit.simulation._common.find_energyplus") as mock_find,
+            pytest.raises(SimulationError, match="no SizingPeriod:DesignDay"),
+        ):
+            simulate(new_document(), weather_file, design_day=True)
+        mock_find.assert_not_called()
+
+    def test_design_day_with_design_day_runs(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        with patch("idfkit.simulation.runner.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+            result = simulate(
+                design_day_model(), weather_file, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
+            )
+        assert result.success
+        assert "-D" in mock_run.call_args.args[0]
+
     def test_annual_with_run_period_runs(
         self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
     ) -> None:
@@ -718,7 +755,7 @@ class TestWeatherAdmission:
 
     def test_r3_not_raised_for_emptied_collection(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         """A type whose every object was removed leaves an empty collection, which needs no weather file."""
-        model = new_document(version=LATEST_VERSION)
+        model = design_day_model(version=LATEST_VERSION)
         slab = model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.removeidfobject(slab)
         with (

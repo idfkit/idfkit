@@ -19,6 +19,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
+from .._zones import resolve_zone_name
 from ..geometry import Polygon3D, Vector3D, is_convex_2d, triangulate_2d
 from ..scene import _FENESTRATION, ResolvedSurface, get_scene  # pyright: ignore[reportPrivateUsage]
 
@@ -26,6 +27,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from ..document import AnyIDFDocument
+    from ..objects import IDFObject
 
 
 class ColorBy(Enum):
@@ -144,7 +146,7 @@ def _is_fenestration(surface: ResolvedSurface) -> bool:
     return surface.object_type == _FENESTRATION
 
 
-def _surfaces(doc: AnyIDFDocument, zones: list[str] | None = None) -> list[ResolvedSurface]:
+def _surfaces(doc: AnyIDFDocument, zones: Sequence[str | IDFObject] | None = None) -> list[ResolvedSurface]:
     """Every surface the public extraction resolved, optionally narrowed to some zones.
 
     THE RENDERER NO LONGER RESOLVES ANYTHING.
@@ -157,11 +159,17 @@ def _surfaces(doc: AnyIDFDocument, zones: list[str] | None = None) -> list[Resol
     The filter is the renderer's and not the extraction's. ``get_scene`` takes one argument and
     returns one scene, because narrowing a list is something every caller can already do, and
     shading belongs to no zone and is kept whatever is asked for.
+
+    Every zone asked for must exist: a misspelt name raises the ``ObjectNotFoundError`` that
+    ``doc["Zone"][name]`` raises, rather than drawing an empty figure.
     """
+    if zones is not None and isinstance(zones, str):
+        msg = f"zones must be a list of zone names or Zone objects, not a single string ({zones!r})"
+        raise TypeError(msg)
+    wanted = None if zones is None else {resolve_zone_name(doc, zone).upper() for zone in zones}
     scene = get_scene(doc)
-    if zones is None:
+    if wanted is None:
         return list(scene.surfaces)
-    wanted = {zone.upper() for zone in zones}
     return [s for s in scene.surfaces if s.is_shading or s.zone.upper() in wanted]
 
 
@@ -479,7 +487,7 @@ def view_model(
     *,
     config: ModelViewConfig | None = None,
     title: str | None = "3D Building Model",
-    zones: list[str] | None = None,
+    zones: Sequence[str | IDFObject] | None = None,
 ) -> Any:
     """Interactive 3D building viewer with orbit/pan/zoom.
 
@@ -487,13 +495,14 @@ def view_model(
         doc: An IDFDocument with building geometry.
         config: Optional view configuration.
         title: Optional plot title.
-        zones: Optional list of zone names to include (all if None).
+        zones: Optional zone names or ``Zone`` objects to include (all if None).
 
     Returns:
         A plotly Figure.
 
     Raises:
         ImportError: If plotly is not installed.
+        ObjectNotFoundError: If a name in *zones* names no ``Zone`` (a ``KeyError``).
     """
     go = _get_go()
     cfg = config or ModelViewConfig()
@@ -516,7 +525,7 @@ def view_floor_plan(
     config: ModelViewConfig | None = None,
     title: str | None = "Floor Plan",
     z_cut: float | None = None,
-    zones: list[str] | None = None,
+    zones: Sequence[str | IDFObject] | None = None,
 ) -> Any:
     """2D top-down floor plan projection.
 
@@ -528,13 +537,14 @@ def view_floor_plan(
         config: Optional view configuration.
         title: Optional plot title.
         z_cut: Optional Z height for wall slicing.
-        zones: Optional list of zone names to include.
+        zones: Optional zone names or ``Zone`` objects to include.
 
     Returns:
         A plotly Figure.
 
     Raises:
         ImportError: If plotly is not installed.
+        ObjectNotFoundError: If a name in *zones* names no ``Zone`` (a ``KeyError``).
     """
     go = _get_go()
     cfg = config or ModelViewConfig()
@@ -660,7 +670,7 @@ def view_exploded(
     config: ModelViewConfig | None = None,
     title: str | None = "Exploded View",
     separation: float = 5.0,
-    zones: list[str] | None = None,
+    zones: Sequence[str | IDFObject] | None = None,
 ) -> Any:
     """Zones pulled apart to reveal internal partitions.
 
@@ -672,13 +682,14 @@ def view_exploded(
         config: Optional view configuration.
         title: Optional plot title.
         separation: Distance in meters to pull zones apart.
-        zones: Optional list of zone names to include.
+        zones: Optional zone names or ``Zone`` objects to include.
 
     Returns:
         A plotly Figure.
 
     Raises:
         ImportError: If plotly is not installed.
+        ObjectNotFoundError: If a name in *zones* names no ``Zone`` (a ``KeyError``).
     """
     go = _get_go()
     cfg = config or ModelViewConfig()
@@ -704,7 +715,7 @@ def view_normals(
     config: ModelViewConfig | None = None,
     title: str | None = "Surface Normals",
     arrow_length: float = 1.0,
-    zones: list[str] | None = None,
+    zones: Sequence[str | IDFObject] | None = None,
 ) -> Any:
     """Surface normal arrows for orientation QA.
 
@@ -716,13 +727,14 @@ def view_normals(
         config: Optional view configuration.
         title: Optional plot title.
         arrow_length: Length of normal arrows in meters.
-        zones: Optional list of zone names to include.
+        zones: Optional zone names or ``Zone`` objects to include.
 
     Returns:
         A plotly Figure.
 
     Raises:
         ImportError: If plotly is not installed.
+        ObjectNotFoundError: If a name in *zones* names no ``Zone`` (a ``KeyError``).
     """
     go = _get_go()
     cfg = config or ModelViewConfig()

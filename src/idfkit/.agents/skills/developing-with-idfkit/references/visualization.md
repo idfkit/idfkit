@@ -77,7 +77,7 @@ cfg = ModelViewConfig(
 view_model(doc, config=cfg).show()
 ```
 
-`view_model` returns a `plotly.graph_objects.Figure` — call `.show()`, `.write_image()`, or `.write_html()` on it. Requires `idfkit[plotly]`. `ColorBy` members: `ZONE`, `SURFACE_TYPE`, `BOUNDARY_CONDITION`, `CONSTRUCTION`.
+`view_model` returns a `plotly.graph_objects.Figure` — call `.show()`, `.write_image()`, or `.write_html()` on it. Requires `idfkit[plotly]`. `ColorBy` members: `ZONE`, `SURFACE_TYPE`, `BOUNDARY_CONDITION`, `CONSTRUCTION`. `zones=` (on `view_model`, `view_floor_plan`, `view_exploded` and `view_normals`) takes zone names or `Zone` objects; a name no `Zone` has raises `ObjectNotFoundError` rather than drawing an empty figure.
 
 ## Floor plans and exploded views
 

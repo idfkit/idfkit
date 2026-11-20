@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 
 import pytest
 from conftest import fixed_vertices
 
 from idfkit import IDFDocument, new_document
+from idfkit.exceptions import ObjectNotFoundError
 from idfkit.geometry import (
     Polygon3D,
     Vector3D,
@@ -434,6 +436,28 @@ class TestSurfaceGeometryUtils:
         empty_doc.add("Zone", "EmptyZone")
         area = calculate_zone_floor_area(empty_doc, "EmptyZone")
         assert area == 0.0
+
+    def test_calculate_zone_floor_area_accepts_zone_object(self, simple_doc: IDFDocument) -> None:
+        zone = simple_doc["Zone"]["TestZone"]
+        assert _close(calculate_zone_floor_area(simple_doc, zone), 100.0)
+        assert _close(calculate_zone_floor_area(simple_doc, "testzone"), 100.0)
+
+    @pytest.mark.parametrize(
+        "helper",
+        [calculate_zone_floor_area, calculate_zone_ceiling_area, calculate_zone_height, calculate_zone_volume],
+    )
+    def test_zone_helpers_refuse_unknown_zone(
+        self, simple_doc: IDFDocument, helper: Callable[[IDFDocument, str], float]
+    ) -> None:
+        """A misspelt zone raises the collection's did-you-mean error instead of returning 0.0."""
+        with pytest.raises(ObjectNotFoundError, match=r"No Zone named 'TestZone2'\. Did you mean 'TestZone'") as exc:
+            helper(simple_doc, "TestZone2")
+        assert isinstance(exc.value, KeyError)
+
+    def test_zone_helpers_refuse_object_of_other_type(self, simple_doc: IDFDocument) -> None:
+        surface = next(iter(simple_doc["BuildingSurface:Detailed"]))
+        with pytest.raises(TypeError, match="got a BuildingSurface:Detailed object"):
+            calculate_zone_volume(simple_doc, surface)
 
 
 # ---------------------------------------------------------------------------

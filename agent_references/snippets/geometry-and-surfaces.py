@@ -87,11 +87,12 @@ from idfkit import (
     calculate_zone_volume,
 )
 
-zone_name = "Office"
+zone_name = "Office"  # any case; a name no Zone has raises ObjectNotFoundError
 calculate_zone_floor_area(doc, zone_name)
 calculate_zone_ceiling_area(doc, zone_name)
 calculate_zone_height(doc, zone_name)
 calculate_zone_volume(doc, zone_name)
+calculate_zone_volume(doc, doc["Zone"]["Office"])  # the Zone object works too
 # --8<-- [end:zone-calculations]
 
 

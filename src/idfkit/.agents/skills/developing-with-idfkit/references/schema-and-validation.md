@@ -126,6 +126,8 @@ Common codes (see `ValidationError.code`):
 - `E007` — above the maximum; `E008` — not below an exclusive maximum
 - `E009` — reference to a name no object declares. The message quotes the value as typed, the reference list it was looked up in and the closest declared names: `Reference to non-existent object 'Opaqe' (looked up in ConstructionNames). Did you mean 'Opaque'?`
 - `E010` — singleton constraint violated (>1 instance of a `maxProperties: 1` type)
+- `E011` — a `Schedule:Compact` that does not cover the year through `12/31`, or a day through `Until: 24:00`; EnergyPlus stops on it
+- `E012` — a `Schedule:Compact` or `Schedule:Constant` value outside the lower or upper limit of its `ScheduleTypeLimits` (reported with `check_ranges`); EnergyPlus stops on it
 - `W002` — unknown object type; `W003` — unknown field
 - `W004` — an `Output:Diagnostics`, `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable` with no entries, or only blank ones: it does nothing in EnergyPlus, and its IDF (`Type,;`) is read as one blank entry. Reported by `validate_document` only, so `add()` still accepts one to fill in later.
 

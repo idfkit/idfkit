@@ -63,6 +63,8 @@ The evaluator covers every standard EnergyPlus schedule type:
 
 If you hit an unsupported type, `UnsupportedScheduleType` is raised.
 
+A `Schedule:Compact` that EnergyPlus refuses as fatal raises `MalformedScheduleError` from `evaluate()` and `values()` at any timestamp, instead of being extended or filled: a `Through:` must reach `12/31` (later `Through:` periods are allowed and ignored), and every `For:` block must end at `Until: 24:00`. `compact_problems(sched)` (from `idfkit.schedules`) lists what is wrong without raising, and `validate_document` reports the same as `E011`. Day types a schedule leaves out (`For: Weekdays` alone) still evaluate to `0.0`: EnergyPlus only warns about them.
+
 ## Single-timestamp evaluation
 
 ```python
@@ -206,6 +208,13 @@ Both functions read the document's `RunPeriodControl:SpecialDays` objects — id
 
     ```python
     result = validate_document(doc)  # check_references=True catches broken schedule refs
+    ```
+
+!!! failure "previewing a schedule that does not cover the year"
+
+    ```python
+    # Through: 6/30 only, or a day ending at Until: 12:00: EnergyPlus stops on it
+    v = evaluate(sched, ts)                    # MalformedScheduleError, not the last value carried on
     ```
 
 !!! failure "assuming hourly when the schedule is sub-hourly"

@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from conftest import design_day_model
 
 from idfkit import load_idf, new_document
 from idfkit.document import IDFDocument
@@ -183,7 +184,7 @@ class TestSimulateMigrationWithoutWeather:
     ) -> None:
         mock_migrate.return_value = MagicMock(migrated_model=new_document(version=(24, 2, 0)))
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        model = new_document(version=(24, 1, 0))
+        model = design_day_model(version=(24, 1, 0))
 
         result = simulate(
             model,

@@ -14,6 +14,7 @@ from itertools import pairwise
 from typing import TYPE_CHECKING, Any, cast
 
 from ._surface_types import VERTEX_SURFACE_TYPES as _VERTEX_SURFACE_TYPES
+from ._zones import resolve_zone_name
 
 logger = logging.getLogger(__name__)
 
@@ -856,11 +857,26 @@ def calculate_surface_azimuth(surface: IDFObject) -> float:
     return coords.azimuth if coords else 0.0
 
 
-def calculate_zone_floor_area(doc: AnyIDFDocument, zone_name: str) -> float:
+def _zone_surfaces(doc: AnyIDFDocument, zone: str | IDFObject) -> list[IDFObject]:
+    """Return the ``BuildingSurface:Detailed`` objects of *zone*, refusing an unknown zone."""
+    key = resolve_zone_name(doc, zone).upper()
+    return [s for s in doc["BuildingSurface:Detailed"] if (getattr(s, "zone_name", None) or "").upper() == key]
+
+
+def calculate_zone_floor_area(doc: AnyIDFDocument, zone_name: str | IDFObject) -> float:
     """Calculate the total floor area of a zone.
 
     Sums the area of all ``BuildingSurface:Detailed`` objects whose
     ``surface_type`` is ``"Floor"`` and whose ``zone_name`` matches.
+
+    Args:
+        doc: The document holding the zone.
+        zone_name: The zone's name (matched case-insensitively) or the ``Zone`` object.
+
+    Raises:
+        ObjectNotFoundError: If *doc* has no ``Zone`` of that name (a ``KeyError`` that
+            suggests the closest zone names), rather than a silent ``0.0``.
+        TypeError: If *zone_name* is an object of another type than ``Zone``.
 
     Examples:
         Calculate the floor area of a 5 m x 4 m office:
@@ -886,10 +902,7 @@ def calculate_zone_floor_area(doc: AnyIDFDocument, zone_name: str) -> float:
     """
     total_area = 0.0
 
-    for surface in doc["BuildingSurface:Detailed"]:
-        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
-            continue
-
+    for surface in _zone_surfaces(doc, zone_name):
         surface_type = getattr(surface, "surface_type", None) or ""
         if surface_type and surface_type.lower() == "floor":
             total_area += calculate_surface_area(surface)
@@ -897,11 +910,20 @@ def calculate_zone_floor_area(doc: AnyIDFDocument, zone_name: str) -> float:
     return total_area
 
 
-def calculate_zone_ceiling_area(doc: AnyIDFDocument, zone_name: str) -> float:
+def calculate_zone_ceiling_area(doc: AnyIDFDocument, zone_name: str | IDFObject) -> float:
     """Calculate the total ceiling/roof area of a zone (eppy compatibility).
 
     Sums the area of all surfaces whose ``surface_type`` is ``"Ceiling"``
     or ``"Roof"`` in the given zone.
+
+    Args:
+        doc: The document holding the zone.
+        zone_name: The zone's name (matched case-insensitively) or the ``Zone`` object.
+
+    Raises:
+        ObjectNotFoundError: If *doc* has no ``Zone`` of that name (a ``KeyError`` that
+            suggests the closest zone names), rather than a silent ``0.0``.
+        TypeError: If *zone_name* is an object of another type than ``Zone``.
 
     Examples:
         Calculate the ceiling area of a 5 m x 4 m office at z=3 m:
@@ -927,10 +949,7 @@ def calculate_zone_ceiling_area(doc: AnyIDFDocument, zone_name: str) -> float:
     """
     total_area = 0.0
 
-    for surface in doc["BuildingSurface:Detailed"]:
-        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
-            continue
-
+    for surface in _zone_surfaces(doc, zone_name):
         surface_type = getattr(surface, "surface_type", None) or ""
         if surface_type and surface_type.lower() in ("ceiling", "roof"):
             total_area += calculate_surface_area(surface)
@@ -938,11 +957,20 @@ def calculate_zone_ceiling_area(doc: AnyIDFDocument, zone_name: str) -> float:
     return total_area
 
 
-def calculate_zone_height(doc: AnyIDFDocument, zone_name: str) -> float:
+def calculate_zone_height(doc: AnyIDFDocument, zone_name: str | IDFObject) -> float:
     """Calculate the height of a zone from its surfaces.
 
     Returns the difference between the maximum and minimum Z coordinates
     across all surfaces belonging to the zone.
+
+    Args:
+        doc: The document holding the zone.
+        zone_name: The zone's name (matched case-insensitively) or the ``Zone`` object.
+
+    Raises:
+        ObjectNotFoundError: If *doc* has no ``Zone`` of that name (a ``KeyError`` that
+            suggests the closest zone names), rather than a silent ``0.0``.
+        TypeError: If *zone_name* is an object of another type than ``Zone``.
 
     Examples:
         Determine the floor-to-ceiling height of a 3 m tall office:
@@ -970,10 +998,7 @@ def calculate_zone_height(doc: AnyIDFDocument, zone_name: str) -> float:
     z_min = float("inf")
     z_max = float("-inf")
 
-    for surface in doc["BuildingSurface:Detailed"]:
-        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
-            continue
-
+    for surface in _zone_surfaces(doc, zone_name):
         coords = get_surface_coords(surface)
         if coords is None:
             continue
@@ -1051,19 +1076,24 @@ def rotate_building(doc: AnyIDFDocument, angle_deg: float, anchor: Vector3D | No
                 set_surface_coords(surface, coords.rotate_z(angle_deg, anchor=anchor))
 
 
-def calculate_zone_volume(doc: AnyIDFDocument, zone_name: str) -> float:
-    """
-    Calculate the volume of a zone from its surfaces.
+def calculate_zone_volume(doc: AnyIDFDocument, zone_name: str | IDFObject) -> float:
+    """Calculate the volume of a zone from its surfaces.
 
     Uses the divergence theorem to compute volume from surface polygons.
     Returns 0.0 if the zone has no surfaces.
+
+    Args:
+        doc: The document holding the zone.
+        zone_name: The zone's name (matched case-insensitively) or the ``Zone`` object.
+
+    Raises:
+        ObjectNotFoundError: If *doc* has no ``Zone`` of that name (a ``KeyError`` that
+            suggests the closest zone names), rather than a silent ``0.0``.
+        TypeError: If *zone_name* is an object of another type than ``Zone``.
     """
     volume = 0.0
 
-    for surface in doc["BuildingSurface:Detailed"]:
-        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
-            continue
-
+    for surface in _zone_surfaces(doc, zone_name):
         coords = get_surface_coords(surface)
         if coords is None or coords.num_vertices < 3:
             continue

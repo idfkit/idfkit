@@ -38,6 +38,7 @@ from typing import TYPE_CHECKING, Any, Literal, overload
 from ..exceptions import SimulationError
 from ._common import (
     admit_annual,
+    admit_design_day,
     admit_weather,
     async_resolve_version_mismatch,
     async_upload_results,
@@ -221,7 +222,8 @@ async def async_simulate(
             ``GroundHeatTransfer:Control`` enables; or *weather* is
             ``None`` and the run directory already contains ``in.epw``. Also
             raised before EnergyPlus starts when *annual* is ``True`` and the
-            model has no ``RunPeriod``.
+            model has no ``RunPeriod``, or when *design_day* is ``True`` and
+            the model has no ``SizingPeriod:DesignDay``.
         ExpandObjectsError: If a preprocessing step fails.
         EnergyPlusNotFoundError: If EnergyPlus cannot be found.
         VersionMismatchError: If ``model.version`` names another release line
@@ -248,6 +250,7 @@ async def async_simulate(
             run_dir=local_output_dir,
         )
         admit_annual(model, annual=annual)
+        admit_design_day(model, design_day=design_day)
         config = resolve_config(energyplus)
 
         sim_input_model, migration_report = await async_resolve_version_mismatch(
