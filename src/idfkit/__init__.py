@@ -65,6 +65,7 @@ from .exceptions import (
     DuplicateObjectError,
     EnergyPlusNotFoundError,
     ExpandObjectsError,
+    FileFormatError,
     IdfKitError,
     IDFParseError,
     InvalidFieldError,
@@ -298,7 +299,7 @@ def new_document(
     if not isinstance(version, tuple):
         from ._document_types import is_type_form, release_for_new_document
 
-        # Anything else is left to the version check, which reports it as an unsupported version.
+        # Anything else is left to the version check, which raises TypeError for a non-tuple such as "26.1".
         if is_type_form(version):
             version, strict = release_for_new_document(version, strict)
     _check_version(version)
@@ -331,6 +332,7 @@ __all__ = [
     "EpJSONSchema",
     "ExpandObjectsError",
     "FieldDescription",
+    "FileFormatError",
     "HorizontalAdjacency",
     "IDFCollection",
     "IDFDocument",

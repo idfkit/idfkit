@@ -52,6 +52,10 @@ save_idf(doc, "out.idf", output_type="compressed")
 
 epJSON formatting is controlled by `indent` (default 2; pass `indent=0` for the most compact form).
 
+## File suffixes and argument order
+
+`save_idf()` refuses a `.epJSON` or `.json` path and `save_epjson()` a `.idf` or `.imf` one with `ValueError`, since EnergyPlus picks its reader by suffix; `doc.save()` writes IDF, so save a model loaded from epJSON with `save_epjson(doc, path)`. Both raise `TypeError` when the document is not the first argument.
+
 ## Encoding
 
 EnergyPlus expects `latin-1` for IDF files (that's the `save_idf` default). Don't override unless you have a downstream tool that requires UTF-8 — many EnergyPlus utilities will choke on non-`latin-1` IDFs.

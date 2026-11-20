@@ -140,6 +140,31 @@ class IDFParseError(IdfKitError):
 ParseError = IdfKitError
 
 
+class FileFormatError(IDFParseError, ValueError):
+    """Raised when a loader is given a file in the other format: epJSON to ``load_idf``, or IDF to ``load_epjson``.
+
+    It is a ``ValueError`` too, as the ``json.JSONDecodeError`` that ``load_epjson`` raised for an
+    IDF file was.
+
+    Attributes:
+        filepath: The file that was read.
+        detected_format: The format the file's content is in, ``"idf"`` or ``"epjson"``.
+    """
+
+    def __init__(self, filepath: str, detected_format: Literal["idf", "epjson"]) -> None:
+        self.filepath = filepath
+        self.detected_format: Literal["idf", "epjson"] = detected_format
+        if detected_format == "epjson":
+            msg = f"{filepath} looks like an epJSON file (it starts with '{{'), not IDF; use load_epjson() to read it"
+        else:
+            msg = f"{filepath} looks like an IDF file (it does not start with '{{'), not epJSON; use load_idf() to read it"
+        super().__init__(msg)
+
+    def __reduce__(self) -> tuple[type[FileFormatError], tuple[str, Literal["idf", "epjson"]]]:
+        # BaseException pickles only self.args, the message; rebuild from the parts instead.
+        return (type(self), (self.filepath, self.detected_format))
+
+
 class UnsupportedVersionError(IdfKitError):
     """Raised when a non-existent EnergyPlus version is requested.
 
@@ -606,22 +631,84 @@ class ValidationFailedError(IdfKitError):
 
 
 class EnergyPlusNotFoundError(IdfKitError):
-    """Raised when EnergyPlus installation cannot be found."""
+    """Raised when EnergyPlus installation cannot be found.
 
-    def __init__(self, searched_locations: list[str] | None = None) -> None:
-        self.searched_locations = searched_locations or []
-        msg = "Could not find an EnergyPlus installation."
-        if self.searched_locations:
-            msg += "\nSearched in:\n"
-            for loc in self.searched_locations:
-                msg += f"  - {loc}\n"
-        msg += (
-            "\nTo fix this, either:\n"
-            "  1. Set the ENERGYPLUS_DIR environment variable to your EnergyPlus install directory\n"
-            "  2. Pass an explicit path: find_energyplus(path='/path/to/EnergyPlus')\n"
-            "  3. Ensure 'energyplus' is on your PATH"
-        )
+    Attributes:
+        searched_locations: The paths that were tried, each once, in the order tried.
+        requested_version: The release asked for with ``version=``, or ``None`` for any.
+        found: The installations discovery did find, as ``(version, install_dir)`` pairs,
+            when none of them is *requested_version*.
+    """
+
+    def __init__(
+        self,
+        searched_locations: list[str] | None = None,
+        *,
+        requested_version: tuple[int, int, int] | None = None,
+        found: Sequence[tuple[tuple[int, int, int], str]] = (),
+    ) -> None:
+        self.searched_locations = list(dict.fromkeys(searched_locations or []))
+        self.requested_version = requested_version
+        self.found = list(found)
+        if requested_version is not None and self.found:
+            msg = self._version_mismatch_message(requested_version, self.found)
+        else:
+            msg = "Could not find an EnergyPlus installation"
+            if requested_version is not None:
+                msg += f" of version {_dotted(requested_version)}"
+            msg += "."
+            if self.searched_locations:
+                msg += "\nSearched in:\n"
+                for loc in self.searched_locations:
+                    msg += f"  - {loc}\n"
+            msg += (
+                "\nTo fix this, either:\n"
+                "  1. Set the ENERGYPLUS_DIR environment variable to your EnergyPlus install directory\n"
+                "  2. Pass an explicit path: find_energyplus(path='/path/to/EnergyPlus')\n"
+                "  3. Ensure 'energyplus' is on your PATH"
+            )
         super().__init__(msg)
+
+    @staticmethod
+    def _version_mismatch_message(
+        requested: tuple[int, int, int], found: list[tuple[tuple[int, int, int], str]]
+    ) -> str:
+        """The message for an installation that exists, but not at the version asked for."""
+        req = _dotted(requested)
+        installs = ", ".join(f"{_dotted(v)} at {d}" for v, d in found)
+        msg = f"No EnergyPlus {req} found; found {installs}.\nTo fix this, either:\n"
+        msg += f"  1. Install EnergyPlus {req}, or point ENERGYPLUS_DIR or path= at an install of it\n"
+        msg += "  2. Drop version= to use an installed release: find_energyplus()"
+        newer = sorted({v for v, _ in found if v > requested})
+        if newer:
+            target = newer[-1]
+            msg += (
+                f"\n  3. Migrate the model to {_dotted(target)}: simulate(..., auto_migrate=True),"
+                f" or idfkit.migrate(model, target_version=({target[0]}, {target[1]}, {target[2]}))"
+            )
+        return msg
+
+    def __reduce__(self) -> tuple[Any, ...]:
+        # BaseException pickles only self.args, the message; rebuild from the parts instead, so the
+        # error survives a process boundary (multiprocessing) with its message and attributes.
+        return (
+            _rebuild_energyplus_not_found_error,
+            (self.searched_locations, self.requested_version, tuple(self.found)),
+        )
+
+
+def _rebuild_energyplus_not_found_error(
+    searched_locations: list[str],
+    requested_version: tuple[int, int, int] | None,
+    found: tuple[tuple[tuple[int, int, int], str], ...],
+) -> EnergyPlusNotFoundError:
+    """Unpickle an :class:`EnergyPlusNotFoundError` (see its ``__reduce__``)."""
+    return EnergyPlusNotFoundError(searched_locations, requested_version=requested_version, found=found)
+
+
+def _dotted(version: tuple[int, int, int]) -> str:
+    """``(24, 1, 0)`` as ``"24.1.0"``."""
+    return f"{version[0]}.{version[1]}.{version[2]}"
 
 
 class ExpandObjectsError(IdfKitError):

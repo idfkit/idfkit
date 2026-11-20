@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 from .document import AnyIDFDocument, IDFDocument
-from .exceptions import IDFParseError, ParseDiagnostic, VersionNotFoundError, closest_name
+from .exceptions import FileFormatError, IDFParseError, ParseDiagnostic, VersionNotFoundError, closest_name
 from .objects import IDFObject, drop_blank_group_slots, is_blank_slot
 from .schema import canonicalize_choices, get_schema_manager
 
@@ -178,9 +178,19 @@ class EpJSONParser:
         logger.debug("Parsing epJSON file %s", self._filepath)
 
         # Load JSON
-        with open(self._filepath, encoding="utf-8") as f:
-            raw_text = f.read()
-        data: dict[str, Any] = json.loads(raw_text)
+        try:
+            with open(self._filepath, encoding="utf-8") as f:
+                raw_text = f.read()
+            data: dict[str, Any] = json.loads(raw_text)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            # IDF text starts with a comment or an object type, never with '{'. An IDF file is often
+            # latin-1 (save_idf's default) and so not UTF-8 at all: look at the bytes, not the text.
+            with open(self._filepath, "rb") as f:
+                head = f.read(4096)
+            first = head.removeprefix(b"\xef\xbb\xbf").lstrip(b" \t\r\n")[:1]
+            if first == b"!" or first.isalpha():
+                raise FileFormatError(str(self._filepath), "idf") from exc
+            raise
 
         # Detect version if not provided
         if version is None:

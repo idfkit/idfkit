@@ -22,7 +22,13 @@ from typing import TYPE_CHECKING, Any, Final, Generic, cast
 
 from .cst import CSTNode, DocumentCST
 from .document import AnyIDFDocument, IDFDocument
-from .exceptions import IDFParseError, ParseDiagnostic, ParseDiagnosticCode, VersionNotFoundError
+from .exceptions import (
+    FileFormatError,
+    IDFParseError,
+    ParseDiagnostic,
+    ParseDiagnosticCode,
+    VersionNotFoundError,
+)
 from .objects import IDFObject
 from .schema import SIZING_SENTINELS
 
@@ -50,6 +56,9 @@ _VERSION_PATTERN = re.compile(
 )
 
 _COMMENT_PATTERN = re.compile(rb"!.*$", re.MULTILINE)
+
+# epJSON is a JSON object, so its first non-space byte is '{'; IDF text never starts with one.
+_EPJSON_START = re.compile(rb"(?:\xef\xbb\xbf)?\s*\{")
 
 # Pattern to match IDF objects: "ObjectType, field1, field2, ..., fieldN;"
 # Handles multi-line objects and comments
@@ -510,6 +519,8 @@ class IDFParser:
 
         # Load content (with mmap for large files)
         content = self._load_content()
+        if _EPJSON_START.match(content):
+            raise FileFormatError(str(self._filepath), "epjson")
 
         # Detect version if not provided
         if version is None:

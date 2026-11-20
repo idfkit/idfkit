@@ -100,6 +100,8 @@ doc = load_idf("legacy.idf", version=(9, 6, 0))
 
 If the file references a version idfkit doesn't bundle, you'll get `VersionNotFoundError`. To upgrade, see [version-migration.md](version-migration.md).
 
+The loader must match the file's content: `load_idf()` on an epJSON file, or `load_epjson()` on an IDF file, raises `FileFormatError` (an `IDFParseError` and a `ValueError`) naming the other loader. `version=` takes a tuple, `(24, 1, 0)`, here and in `new_document()`, `get_schema()` and `is_supported_version()`; a string such as `"24.1"` raises `TypeError`. Only `find_energyplus()` and `migrate()` also accept strings.
+
 A type checker cannot read the file, so a loaded document is typed as `AnyIDFDocument`: only the object types, fields and choices every supported release accepts type-check through it, whatever the file's release. To work with a release's own fields and choices, state the release when loading. The loader checks it once the file is read and raises `TypeError`, naming the file, if the file is another release; a malformed target (`since="27.1"`, or both `as_type=` and `since=`) is refused before the file is read:
 
 ```python

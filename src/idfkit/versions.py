@@ -48,6 +48,39 @@ _TAG_TO_VERSION: Final[dict[str, tuple[int, int, int]]] = {f"v{v[0]}.{v[1]}.{v[2
 _VERSION_TO_DIRNAME: Final[dict[tuple[int, int, int], str]] = {v: f"V{v[0]}-{v[1]}-{v[2]}" for v in ENERGYPLUS_VERSIONS}
 
 
+def reject_version_string(version: object) -> None:
+    """Raise TypeError if *version* is a string such as ``"26.1"``, naming the tuple to pass instead.
+
+    The version arguments of the core API (``new_document``, ``get_schema``, ``load_idf`` and the
+    helpers here) take a ``(major, minor, patch)`` tuple. A string used to be read as a sequence of
+    characters, which reported the version as ``2.6..``, failed comparing ``str`` with ``tuple``,
+    or answered ``False``.
+
+    Raises:
+        TypeError: If *version* is a string.
+
+    Examples:
+        >>> reject_version_string((24, 1, 0))
+        >>> reject_version_string("26.1")
+        Traceback (most recent call last):
+        ...
+        TypeError: version must be a (major, minor, patch) tuple, e.g. (26, 1, 0); got '26.1'
+    """
+    if isinstance(version, str):
+        msg = f"version must be a (major, minor, patch) tuple, e.g. {_example_tuple(version)}; got {version!r}"
+        raise TypeError(msg)
+
+
+def _example_tuple(version: str) -> tuple[int, int, int]:
+    """The tuple a dotted string such as ``"26.1"`` means, else :data:`LATEST_VERSION`, for an error message."""
+    parts = version.strip().lstrip("vV").replace("-", ".").split(".")
+    if len(parts) == 2:
+        parts.append("0")
+    if len(parts) == 3 and all(part.isdigit() for part in parts):
+        return (int(parts[0]), int(parts[1]), int(parts[2]))
+    return LATEST_VERSION
+
+
 def is_supported_version(version: tuple[int, int, int]) -> bool:
     """Check if a version is in the supported set.
 
@@ -58,7 +91,11 @@ def is_supported_version(version: tuple[int, int, int]) -> bool:
         False
         >>> is_supported_version(MINIMUM_VERSION)
         True
+
+    Raises:
+        TypeError: If *version* is a string such as ``"24.1.0"`` rather than a tuple.
     """
+    reject_version_string(version)
     return version in _VERSION_SET
 
 
@@ -111,6 +148,7 @@ def find_release(version: tuple[int, int, int]) -> tuple[int, int, int] | None:
         >>> find_release((8, 8, 0)) is None
         True
     """
+    reject_version_string(version)
     if version in _VERSION_SET:
         return version
     same_line = [v for v in ENERGYPLUS_VERSIONS if v[:2] == version[:2]]
