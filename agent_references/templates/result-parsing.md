@@ -90,6 +90,8 @@ The EnergyPlus SQLite schema is documented at [bigladdersoftware.com/epx/docs/](
 
 Prefer SQL — CSV is one shot per `Output:Variable`, while SQL is queryable.
 
+**A CSV series spans every environment.** The CSV file carries no environment markers, so `get_column` returns the sizing design days *and* the run period joined end to end, in run order, and there is no argument to pick one. An annual sum, a peak, or a row-index-to-date mapping over `col.values` silently includes the design days. For a single environment, read `result.sql.get_timeseries(...)` (the run period by default; `environment="sizing"` for the design days) or `result.eso.get_column(..., environment_index=...)` (the last environment, normally the run period, by default).
+
 ## HTML tabular
 
 ```python

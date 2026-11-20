@@ -137,7 +137,10 @@ if result.csv_path is not None:  # result.csv raises OutputNotFoundError when th
     # One column per lookup: key_value= / frequency= are required when the variable is
     # reported for several keys or frequencies; a typo raises ResultLookupError (a KeyError).
     col = csv.get_column("Electricity:Facility")  # a meter, by its full name; it has no key
-    print(col.units, col.frequency, max(col.values))  # values span every environment, in run order
+    # values span EVERY environment (design days, then run period): the CSV has no
+    # environment markers. For the run period alone, use result.sql.get_timeseries(...)
+    # or result.eso.get_column(..., environment_index=...).
+    print(col.units, col.frequency, len(col.values))
 # --8<-- [end:csv]
 
 
