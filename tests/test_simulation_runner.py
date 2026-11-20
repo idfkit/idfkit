@@ -24,6 +24,7 @@ from conftest import (
 
 from idfkit import LATEST_VERSION, new_document
 from idfkit.exceptions import ExpandObjectsError, SimulationError
+from idfkit.simulation.cache import SimulationCache
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.runner import _build_command, _ensure_sql_output, _prepare_run_directory, simulate
 
@@ -314,6 +315,18 @@ class TestSimulate:
         model = runnable_model()
         with pytest.raises(SimulationError, match="timed out"):
             simulate(model, weather_file, energyplus=mock_config, timeout=10)
+        # The temporary run directory idfkit created is deleted, since no result can own it.
+        assert not Path(mock_run.call_args.kwargs["cwd"]).exists()
+
+    @patch("idfkit.simulation.runner.run_process")
+    def test_timeout_keeps_caller_output_dir(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_run.side_effect = subprocess.TimeoutExpired(cmd=["energyplus"], timeout=10)
+        out = tmp_path / "out"
+        with pytest.raises(SimulationError, match="timed out"):
+            simulate(runnable_model(), weather_file, energyplus=mock_config, timeout=10, output_dir=out)
+        assert (out / "model.idf").exists()
 
     def test_missing_weather(self, mock_config: EnergyPlusConfig) -> None:
         model = runnable_model()
@@ -1087,3 +1100,49 @@ class TestModelAdmission:
     def test_path_hint(self, weather_file: Path) -> None:
         with pytest.raises(TypeError, match=r"load_idf\(path\)"):
             simulate("model.idf", weather_file)  # pyright: ignore[reportArgumentType]
+
+
+class TestSimulateCleanup:
+    """simulate() marks the temp run directory it creates as owned, so cleanup() deletes it."""
+
+    @patch("idfkit.simulation.runner.run_process")
+    def test_temp_run_dir_deleted_by_with_block(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        with simulate(runnable_model(), weather_file, energyplus=mock_config) as result:
+            assert result.owns_run_dir
+            assert (result.run_dir / "model.idf").exists()
+        assert not result.run_dir.exists()
+
+    @patch("idfkit.simulation.runner.run_process")
+    def test_output_dir_never_deleted(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        out = tmp_path / "out"
+        with simulate(runnable_model(), weather_file, energyplus=mock_config, output_dir=out) as result:
+            assert not result.owns_run_dir
+        result.cleanup()
+        assert (out / "model.idf").exists()
+
+    @patch("idfkit.simulation.runner.run_process")
+    def test_cache_entry_never_deleted(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        with simulate(runnable_model(), weather_file, energyplus=mock_config, cache=cache):
+            pass  # the miss's temp dir is deleted after it was cached
+        with simulate(runnable_model(), weather_file, energyplus=mock_config, cache=cache) as hit:
+            assert hit.cached
+            assert not hit.owns_run_dir
+        assert hit.run_dir.exists()
+
+    @patch("idfkit.simulation.runner.run_process")
+    def test_fs_result_not_owned(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        fs = InMemoryFileSystem()
+        with simulate(runnable_model(), weather_file, energyplus=mock_config, output_dir="remote/out", fs=fs) as result:
+            assert not result.owns_run_dir
+        assert fs.exists("remote/out/model.idf")

@@ -227,15 +227,15 @@ legacy = SimulationResult.from_directory("/path/to/run", output_prefix="eplus", 
 
 
 # --8<-- [start:closing]
-import tempfile
-from pathlib import Path
+# Without output_dir, simulate() runs in a temp dir that only cleanup() deletes.
+# The with block calls it on exit: it closes the SQLite connection first (so the
+# Windows file lock cannot block the delete), then removes the temp run_dir.
+with simulate(doc, "weather.epw") as result:
+    temps = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
+# result.run_dir is gone here; values already read (temps) stay usable.
 
-# result.sql opens a SQLite connection that holds an OS lock on eplus.sql.
-# On Windows that lock blocks deletion of the run directory. Close the result
-# (or use it as a context manager) before the directory is removed. The result
-# context exits first — closing the connection — then TemporaryDirectory cleans
-# up, so rmtree succeeds.
-with tempfile.TemporaryDirectory() as tmp, simulate(doc, "weather.epw", output_dir=Path(tmp) / "run") as result:
+# With your own output_dir, the same block only closes: the directory is never deleted.
+with simulate(doc, "weather.epw", output_dir="runs/baseline") as result:
     temps = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
 
 # Equivalent without a context manager:
@@ -243,7 +243,7 @@ result = simulate(doc, "weather.epw")
 try:
     temps = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
 finally:
-    result.close()  # idempotent; reopens lazily if you touch result.sql again
+    result.cleanup()  # idempotent; result.close() alone keeps the directory
 # --8<-- [end:closing]
 
 

@@ -126,6 +126,21 @@ class TestAsyncSimulate:
             await async_simulate(model, weather_file, energyplus=mock_config, timeout=10)
 
         proc.kill.assert_called_once()
+        # The temporary run directory idfkit created is deleted, since no result can own it.
+        assert not Path(mock_exec.call_args.kwargs["cwd"]).exists()
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_timeout_keeps_caller_output_dir(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        proc = _make_mock_process()
+        proc.communicate = AsyncMock(side_effect=asyncio.TimeoutError)
+        mock_exec.return_value = proc
+        out = tmp_path / "out"
+        with pytest.raises(SimulationError, match="timed out"):
+            await async_simulate(runnable_model(), weather_file, energyplus=mock_config, timeout=10, output_dir=out)
+        assert (out / "model.idf").exists()
 
     @pytest.mark.asyncio
     async def test_no_environment_refused_before_discovery(self, weather_file: Path) -> None:
@@ -1454,3 +1469,47 @@ class TestAsyncSimulateCacheWithFileSystem:
         assert hit.cached
         assert "b/model.idf" in fs._files
         assert not [k for k in fs._files if k.endswith(".epw")]
+
+
+class TestAsyncSimulateCleanup:
+    """async_simulate() results delete their temp run directory on async_cleanup / async with."""
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_temp_run_dir_deleted_by_async_with(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process(returncode=0)
+        async with await async_simulate(runnable_model(), weather_file, energyplus=mock_config) as result:
+            assert result.owns_run_dir
+            assert (result.run_dir / "model.idf").exists()
+        assert not result.run_dir.exists()
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_output_dir_never_deleted(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process(returncode=0)
+        out = tmp_path / "out"
+        result = await async_simulate(runnable_model(), weather_file, energyplus=mock_config, output_dir=out)
+        assert not result.owns_run_dir
+        await result.async_cleanup()
+        assert (out / "model.idf").exists()
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_batch_async_with_deletes_only_temp_dirs(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process(returncode=0)
+        out = tmp_path / "kept"
+        jobs = [
+            SimulationJob(model=runnable_model(), weather=weather_file, label="temp"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="kept", output_dir=out),
+        ]
+        async with await async_simulate_batch(jobs, energyplus=mock_config) as batch:
+            temp_dir = batch[0].run_dir
+            assert temp_dir.exists()
+        assert not temp_dir.exists()
+        assert (out / "model.idf").exists()

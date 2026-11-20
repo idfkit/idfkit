@@ -967,3 +967,115 @@ class TestMissingOutput:
         assert str(clone) == str(excinfo.value)
         assert clone.output == "mtr"
         assert clone.run_dir == tmp_path
+
+
+class TestCleanup:
+    """Tests for SimulationResult.cleanup() and the context managers that call it."""
+
+    def _owned(self, result_dir: Path) -> SimulationResult:
+        return SimulationResult(
+            run_dir=result_dir,
+            success=True,
+            exit_code=0,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.0,
+            owns_run_dir=True,
+        )
+
+    def test_owns_run_dir_defaults_to_false(self, tmp_path: Path) -> None:
+        assert _make_result(tmp_path).owns_run_dir is False
+
+    def test_deletes_owned_run_dir(self, result_dir: Path) -> None:
+        result = self._owned(result_dir)
+        result.cleanup()
+        assert not result_dir.exists()
+
+    def test_closes_sql_before_deleting(self, result_dir: Path) -> None:
+        result = self._owned(result_dir)
+        sql = result.sql
+        _ = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+        result.cleanup()
+        assert not result_dir.exists()
+        with pytest.raises(sqlite3.ProgrammingError):
+            sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+
+    def test_is_idempotent(self, result_dir: Path) -> None:
+        result = self._owned(result_dir)
+        result.cleanup()
+        result.cleanup()  # must not raise
+        assert not result_dir.exists()
+
+    def test_never_deletes_caller_dir(self, result_dir: Path) -> None:
+        result = SimulationResult(
+            run_dir=result_dir, success=True, exit_code=0, stdout="", stderr="", runtime_seconds=0.0
+        )
+        _ = result.sql
+        result.cleanup()
+        assert (result_dir / "eplusout.sql").exists()
+        assert result.sql.get_timeseries("Site Outdoor Air Drybulb Temperature").values[0] == -5.0  # reopened
+
+    def test_never_deletes_remote_dir(self) -> None:
+        fs = InMemoryFileSystem()
+        fs.write_text("remote/run/eplusout.err", "")
+        result = SimulationResult(
+            run_dir=Path("remote/run"), success=True, exit_code=0, stdout="", stderr="", runtime_seconds=0.0, fs=fs
+        )
+        result.cleanup()
+        assert fs.exists("remote/run/eplusout.err")
+
+    def test_parsed_outputs_survive_cleanup(self, result_dir: Path) -> None:
+        result = self._owned(result_dir)
+        errors = result.errors
+        result.cleanup()
+        assert result.errors is errors
+
+    def test_context_manager_deletes_owned_run_dir(self, result_dir: Path) -> None:
+        with self._owned(result_dir) as result:
+            assert result.csv is not None
+        assert not result_dir.exists()
+
+    def test_context_manager_deletes_on_exception(self, result_dir: Path) -> None:
+        with pytest.raises(RuntimeError), self._owned(result_dir):
+            raise RuntimeError
+        assert not result_dir.exists()
+
+    def test_context_manager_keeps_caller_dir(self, result_dir: Path) -> None:
+        with _make_result(result_dir):
+            pass
+        assert (result_dir / "eplusout.err").exists()
+
+    @pytest.mark.asyncio
+    async def test_async_cleanup(self, result_dir: Path) -> None:
+        result = self._owned(result_dir)
+        await result.async_cleanup()
+        assert not result_dir.exists()
+
+    @pytest.mark.asyncio
+    async def test_async_context_manager(self, result_dir: Path) -> None:
+        async with self._owned(result_dir) as result:
+            _ = await result.async_errors()
+        assert not result_dir.exists()
+
+    @pytest.mark.asyncio
+    async def test_async_context_manager_closes_async_sql(self, result_dir: Path) -> None:
+        """A connection opened on the event loop thread is closed there, not in the delete's worker thread."""
+        async with self._owned(result_dir) as result:
+            sql = await result.async_sql()
+            _ = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+        assert not result_dir.exists()
+        with pytest.raises(sqlite3.ProgrammingError):
+            sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+
+    @pytest.mark.asyncio
+    async def test_async_cleanup_closes_sync_sql(self, result_dir: Path) -> None:
+        result = self._owned(result_dir)
+        _ = result.sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+        await result.async_cleanup()
+        assert not result_dir.exists()
+
+    @pytest.mark.asyncio
+    async def test_async_context_manager_keeps_caller_dir(self, result_dir: Path) -> None:
+        async with _make_result(result_dir):
+            pass
+        assert (result_dir / "eplusout.err").exists()
