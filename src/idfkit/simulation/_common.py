@@ -130,11 +130,7 @@ def resolve_version_mismatch(
         VersionMismatchError: If versions differ and *auto_migrate* is
             ``False``, or if the model is newer than the installed EP
             (backward migration is never attempted).
-        SimulationError: If migration completes without producing a migrated
-            model (should not happen in practice).
     """
-    from ..exceptions import SimulationError
-
     target = _migration_target(model=model, config=config, auto_migrate=auto_migrate)
     if target is None:
         return model, None
@@ -142,11 +138,7 @@ def resolve_version_mismatch(
     from ..migration.runner import migrate
 
     report = migrate(model, target_version=target, energyplus=config)
-    migrated = report.migrated_model
-    if migrated is None:  # pragma: no cover -- chain is non-empty, so migrate() returns a model
-        msg = "Migration completed without producing a migrated model"
-        raise SimulationError(msg)
-    return migrated, report
+    return report.migrated_model, report
 
 
 async def async_resolve_version_mismatch(
@@ -161,7 +153,6 @@ async def async_resolve_version_mismatch(
     [async_migrate()][idfkit.migration.async_runner.async_migrate] so it does
     not block the event loop.
     """
-    from ..exceptions import SimulationError
     from ..migration.async_runner import async_migrate
 
     target = _migration_target(model=model, config=config, auto_migrate=auto_migrate)
@@ -169,11 +160,7 @@ async def async_resolve_version_mismatch(
         return model, None
 
     report = await async_migrate(model, target_version=target, energyplus=config)
-    migrated = report.migrated_model
-    if migrated is None:  # pragma: no cover -- chain is non-empty, so async_migrate() returns a model
-        msg = "Migration completed without producing a migrated model"
-        raise SimulationError(msg)
-    return migrated, report
+    return report.migrated_model, report
 
 
 WEATHER_EMPTY_STRING_MESSAGE = (
@@ -193,6 +180,25 @@ WEATHER_DEFAULT_FILE_MESSAGE = (
     "The run directory {run_dir} contains in.epw, which EnergyPlus reads when no weather file is given. "
     "Remove it, choose another output_dir, or pass it explicitly as weather."
 )
+
+
+def admit_model(model: object, func: str = "simulate") -> None:
+    """Refuse a *model* that is not a document, before it reaches an attribute it lacks.
+
+    ``migrate(doc, ...).migrated_model`` was ``None`` for a model already at the target, and
+    passing that on failed deep in the run with ``'NoneType' object has no attribute 'version'``.
+
+    Raises:
+        TypeError: If *model* is not an [IDFDocument][idfkit.document.IDFDocument] of any release.
+    """
+    from ..document import IDFDocument
+
+    if isinstance(model, IDFDocument):
+        return
+    msg = f"{func}(model, ...): model must be an IDFDocument, got {type(model).__name__} {model!r}"
+    if isinstance(model, (str, Path)):
+        msg += "; load it first with load_idf(path) or load_epjson(path)"
+    raise TypeError(msg)
 
 
 def admit_weather(
@@ -333,6 +339,78 @@ def admit_design_day(model: AnyIDFDocument, *, design_day: bool) -> None:
         from ..exceptions import SimulationError
 
         raise SimulationError(DESIGN_DAY_WITHOUT_DESIGN_DAYS_MESSAGE)
+
+
+NO_ENVIRONMENT_MESSAGE = (
+    "The model gives EnergyPlus nothing to simulate: {reasons}. EnergyPlus would warn and report "
+    "success with empty results. Add a run period, e.g. "
+    'model.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31), '
+    "or design days, e.g. DesignDayManager(ddy_path).apply_to_model(model) from idfkit.weather, "
+    "or set SimulationControl's run_simulation_for_* fields to Yes."
+)
+
+_SIZING_PERIOD_TYPES = (
+    "SizingPeriod:DesignDay",
+    "SizingPeriod:WeatherFileDays",
+    "SizingPeriod:WeatherFileConditionType",
+)
+_SIZING_CALCULATION_FIELDS = (
+    "do_zone_sizing_calculation",
+    "do_system_sizing_calculation",
+    "do_plant_sizing_calculation",
+)
+
+
+def _simulation_control_flag(model: AnyIDFDocument, field_name: str, *, default: bool) -> bool:
+    """A ``SimulationControl`` Yes/No field, or its schema default when blank or the object is absent."""
+    control = model["SimulationControl"].first()
+    value = control.get(field_name) if control is not None else None
+    if not isinstance(value, str) or not value.strip():
+        return default
+    return value.strip().lower() == "yes"
+
+
+def admit_environments(model: AnyIDFDocument, *, annual: bool, design_day: bool) -> None:
+    """Refuse a default-mode run (no ``-a``, no ``-D``) in which EnergyPlus would simulate nothing.
+
+    Without either flag, ``SimulationControl`` decides what runs: weather-file run periods
+    (``RunPeriod``) and sizing periods (``SizingPeriod:*``), both on by default. A model with
+    neither, as ``new_document()`` makes, runs no environment, and EnergyPlus warns and exits with
+    success, so every result is empty. Sizing periods also count when only a sizing calculation
+    (``do_zone_sizing_calculation`` and its siblings) is on. *annual* and *design_day* runs are
+    checked by [admit_annual][idfkit.simulation._common.admit_annual] and
+    [admit_design_day][idfkit.simulation._common.admit_design_day].
+
+    Args:
+        model: The model to be simulated, before version migration.
+        annual: Whether the run is annual (``-a``).
+        design_day: Whether the run is design-day-only (``-D``).
+
+    Raises:
+        SimulationError: If neither flag is set and the model has no environment that runs.
+    """
+    if annual or design_day:
+        return
+    has_run_period = "RunPeriod" in model or "RunPeriod:CustomRange" in model
+    has_sizing_period = any(t in model for t in _SIZING_PERIOD_TYPES)
+    run_weather = _simulation_control_flag(model, "run_simulation_for_weather_file_run_periods", default=True)
+    run_sizing = _simulation_control_flag(model, "run_simulation_for_sizing_periods", default=True)
+    do_sizing = any(_simulation_control_flag(model, f, default=False) for f in _SIZING_CALCULATION_FIELDS)
+    if (has_run_period and run_weather) or (has_sizing_period and (run_sizing or do_sizing)):
+        return
+
+    reasons: list[str] = []
+    if not has_run_period:
+        reasons.append("it has no RunPeriod")
+    elif not run_weather:
+        reasons.append("SimulationControl turns off weather-file run periods")
+    if not has_sizing_period:
+        reasons.append("no SizingPeriod:DesignDay or other sizing period")
+    else:
+        reasons.append("SimulationControl turns off sizing periods and every sizing calculation")
+    from ..exceptions import SimulationError
+
+    raise SimulationError(NO_ENVIRONMENT_MESSAGE.format(reasons=" and ".join(reasons)))
 
 
 def refuse_default_weather(run_dir: Path) -> None:

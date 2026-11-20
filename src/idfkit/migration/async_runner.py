@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Any, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
 from . import cache as migration_cache
-from ._reparse import parse_migrated_idf
+from ._reparse import parse_migrated_idf, unmigrated_copy
 from ._typing import StrictT
 from .async_subprocess_backend import AsyncSubprocessMigrator
 from .chain import check_chain_binaries, normalize_target, plan_migration_chain, resolve_source_version
@@ -136,7 +136,7 @@ async def async_migrate(
             MigrationProgress(phase="complete", message="Source equals target; nothing to do", percent=100.0),
         )
         return MigrationReport(
-            migrated_model=None,
+            migrated_model=unmigrated_copy(model, target),
             source_version=source,
             target_version=target,
             requested_target=target,

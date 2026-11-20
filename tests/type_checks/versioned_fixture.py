@@ -43,8 +43,17 @@ if TYPE_CHECKING:
 
 
 def raw_spelling(doc: IDFDocument[Any]) -> None:
-    """The raw type name with ``_`` for ``:`` stays an untyped fallback on IDFDocument alone."""
-    print(doc.Site_Location)
+    """No untyped fallback: a name that is not a declared accessor is an error, as it is on every document type.
+
+    The raw type name with ``_`` for ``:``, in any case (``doc.Site_Location``, ``doc.zone``), still
+    resolves at run time but is not declared; the other misspellings raise at run time.
+    """
+    print(doc.Site_Location)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
+    print(doc.site_location)
+    for zone in doc.zone:  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownVariableType]
+        print(zone)  # pyright: ignore[reportUnknownArgumentType]
+    print(len(doc.materials_nomass))  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
+    print(doc.zonez)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
 
 
 def people_count(doc: AnyIDFDocument) -> int:
@@ -205,16 +214,16 @@ async def migrated_documents(old: IDFDocumentV8_9) -> None:
     """A migration names its target's document type to get a report typed for that release."""
     report = migrate(old, IDFDocumentV9_4)
     assert_type(report, MigrationReport[IDFDocumentV9_4])
-    assert_type(report.migrated_model, IDFDocumentV9_4 | None)
-    assert_type((await async_migrate(old, target_version=IDFDocumentV9_4)).migrated_model, IDFDocumentV9_4 | None)
-    if report.migrated_model is not None:
-        report.migrated_model["People"]["Office"].zone_or_zonelist_name = "Office"
-    assert_type(migrate(old, IDFDocument).migrated_model, IDFDocument | None)
+    # Never None: a no-op migration carries a copy of the input.
+    assert_type(report.migrated_model, IDFDocumentV9_4)
+    assert_type((await async_migrate(old, target_version=IDFDocumentV9_4)).migrated_model, IDFDocumentV9_4)
+    report.migrated_model["People"]["Office"].zone_or_zonelist_name = "Office"
+    assert_type(migrate(old, IDFDocument).migrated_model, IDFDocument)
     # A version a type checker cannot know gives a document of any release, as strict as the source.
-    assert_type(migrate(old, (24, 1, 0)).migrated_model, AnyIDFDocument[bool] | None)
-    assert_type((await async_migrate(old, "24.1.0")).migrated_model, AnyIDFDocument[bool] | None)
+    assert_type(migrate(old, (24, 1, 0)).migrated_model, AnyIDFDocument[bool])
+    assert_type((await async_migrate(old, "24.1.0")).migrated_model, AnyIDFDocument[bool])
     loaded = load_idf("old.idf")
-    assert_type(migrate(loaded, "24.1.0").migrated_model, AnyIDFDocument[Literal[True]] | None)
+    assert_type(migrate(loaded, "24.1.0").migrated_model, AnyIDFDocument[Literal[True]])
     # A bare MigrationReport accepts a report of any release.
     reports: list[MigrationReport] = [report, migrate(old, "24.1.0")]
     print(reports)
@@ -251,9 +260,8 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     lax: IDFDocumentV9_4[Literal[False]] = new_document(IDFDocumentV9_4)  # pyright: ignore[reportAssignmentType]  (strict)
     print(lax)
     migrated = migrate(legacy, (24, 1, 0)).migrated_model
-    assert migrated is not None
     latest_only(migrated)  # pyright: ignore[reportArgumentType]  (a version tuple names no release a checker knows)
-    migrate(legacy, IDFDocumentV9_6).migrated_model["Space"]  # pyright: ignore[reportOptionalSubscript]  (None on a no-op)
+    migrate(legacy, IDFDocumentV9_4).migrated_model["Space"]  # pyright: ignore[reportCallIssue, reportArgumentType]  (Space is new in 9.6)
     # A migration reaches one release: AnyIDFDocument and a union of release types name none.
     migrate(legacy, AnyIDFDocument)  # pyright: ignore[reportCallIssue, reportArgumentType]  (no single release)
     # A union of release types also names no single release, and raises TypeError at run time. mypy

@@ -77,6 +77,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `IDFDocument`'s stub dropped its catch-all `__getattr__`, so a misspelled accessor
+  (`doc.zonez`) became a pyright/mypy error; raw spellings (`doc.zone`, `doc.Site_Location`) still
+  resolved at run time but were untyped errors too: use `doc.zones` or `doc["Site:Location"]`.
+  ([#340](https://github.com/idfkit/idfkit/pull/340))
+- **Breaking:** `MigrationReport.migrated_model` was never `None`: a no-op migration returned a copy
+  of the input, so `migrate(doc, version).migrated_model` was always a document; test
+  `not report.steps` to detect a no-op. ([#340](https://github.com/idfkit/idfkit/pull/340))
+- **Breaking:** `simulate()` and `async_simulate()` without `annual` or `design_day` refused a model
+  with neither a `RunPeriod` nor a sizing period (as `new_document()` makes), naming the fix, where
+  EnergyPlus reported success with no results; a non-document model raised `TypeError`.
+  ([#340](https://github.com/idfkit/idfkit/pull/340))
 - `migrate()` and `async_migrate()` reused an earlier migration of the same content with the same
   EnergyPlus install, held in memory, so repeated `auto_migrate=True` runs of one model skipped the
   transition binaries; `cache=False` and `clear_migration_cache()` opted out.

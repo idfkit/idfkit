@@ -196,7 +196,7 @@ docs = [IDFParser(Path(p), schema=schema).parse() for p in input_paths]
 
     legacy = load_idf("legacy.idf")
     report = migrate(legacy, target_version=(25, 2, 0))
-    if report.success and report.migrated_model is not None:
+    if report.success:
         doc = report.migrated_model
         save_idf(doc, "legacy_v25.idf")
     ```

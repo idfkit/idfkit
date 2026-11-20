@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from ..document import IDFDocument
+    from ._typing import DocumentT
 
 
 def parse_migrated_idf(
@@ -26,4 +27,19 @@ def parse_migrated_idf(
 
     doc = parse_idf(path, version=version, strict=strict, normalize_choices=normalize_choices)
     doc.filepath = None
+    return doc
+
+
+def unmigrated_copy(model: DocumentT, target: tuple[int, int, int]) -> DocumentT:
+    """The report's document for a no-op migration (source equals target): a copy of *model*.
+
+    A copy, not *model* itself, so that ``migrated_model`` is always a document the caller can
+    edit without touching the input, and has no ``filepath``, as a migrated document has none.
+    Its version is *target*, as a migrated document's is: a file headed ``Version, 9.0;``
+    loads as ``(9, 0, 0)``, but its release, and the report's ``target_version``, is 9.0.1.
+    """
+    doc = model.copy()
+    doc.filepath = None
+    # The stub declares no setter for ``version``: only this no-op stands in for a re-parse at *target*.
+    object.__setattr__(doc, "_version", target)
     return doc

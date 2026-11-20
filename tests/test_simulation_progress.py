@@ -8,6 +8,7 @@ from typing import Literal
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from conftest import runnable_model
 
 from idfkit import LATEST_VERSION, IDFDocument, new_document
 from idfkit.exceptions import SimulationError
@@ -115,7 +116,7 @@ NO_RANGE_STDERR = "EnergyPlus Completed Successfully.\n"
 
 
 def _annual_model() -> IDFDocument[Literal[True]]:
-    model = new_document()
+    model = runnable_model()
     model.add(
         "RunPeriod",
         "Run Period 1",
@@ -543,7 +544,7 @@ class TestSimulateWithProgress:
         mock_popen.return_value = proc
 
         events: list[SimulationProgress] = []
-        model = new_document()
+        model = runnable_model()
         simulate(model, weather_file, energyplus=mock_config, on_progress=events.append)
 
         assert len(events) == 2
@@ -565,7 +566,7 @@ class TestSimulateWithProgress:
         mock_popen.return_value = proc
 
         events: list[SimulationProgress] = []
-        model = new_document()
+        model = runnable_model()
         simulate(model, weather_file, energyplus=mock_config, on_progress=events.append)
 
         phases = [e.phase for e in events]
@@ -621,7 +622,7 @@ class TestSimulateWithProgress:
     ) -> None:
         """Without on_progress, simulate() runs EnergyPlus through run_process (no streaming)."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        model = new_document()
+        model = runnable_model()
         result = simulate(model, weather_file, energyplus=mock_config)
         assert result.success
         mock_run.assert_called_once()
@@ -639,7 +640,7 @@ class TestSimulateWithProgress:
         proc.returncode = 0
         mock_popen.return_value = proc
 
-        model = new_document()
+        model = runnable_model()
         result = simulate(model, weather_file, energyplus=mock_config, on_progress=lambda _: None)
 
         assert "line one" in result.stdout
@@ -700,7 +701,7 @@ class TestAsyncSimulateWithProgress:
         mock_exec.return_value = proc
 
         events: list[SimulationProgress] = []
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(model, weather_file, energyplus=mock_config, on_progress=events.append)
 
         assert result.success
@@ -756,7 +757,7 @@ class TestAsyncSimulateWithProgress:
         async def async_cb(event: SimulationProgress) -> None:
             events.append(event)
 
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(model, weather_file, energyplus=mock_config, on_progress=async_cb)
 
         assert result.success
@@ -771,7 +772,7 @@ class TestAsyncSimulateWithProgress:
         proc = _make_mock_process_with_stdout([b"ok\n"])
         mock_exec.return_value = proc
 
-        model = new_document()
+        model = runnable_model()
         result = await async_simulate(model, weather_file, energyplus=mock_config)
 
         assert result.success
@@ -800,7 +801,7 @@ class TestBatchWithProgress:
 
         events: list[SimulationProgress] = []
         jobs = [
-            SimulationJob(model=new_document(), weather=weather_file, label="run-0"),
+            SimulationJob(model=runnable_model(), weather=weather_file, label="run-0"),
         ]
         simulate_batch(jobs, energyplus=mock_config, on_progress=events.append, max_workers=1)
 
@@ -826,7 +827,7 @@ class TestBatchWithProgress:
         def job_cb(**kwargs: object) -> None:
             job_events.append(kwargs)
 
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label="run-0")]
+        jobs = [SimulationJob(model=runnable_model(), weather=weather_file, label="run-0")]
         simulate_batch(
             jobs,
             energyplus=mock_config,
@@ -866,7 +867,7 @@ class TestSyncRunnerStderrOnTimeout:
         proc.kill = MagicMock()
         mock_popen.return_value = proc
 
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(SimulationError, match="timed out") as exc_info:
             simulate(
                 model,
@@ -898,7 +899,7 @@ class TestSyncRunnerStderrOnTimeout:
         def bad_callback(event: SimulationProgress) -> None:
             raise RuntimeError("boom")
 
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(SimulationError, match="boom") as exc_info:
             simulate(model, weather_file, energyplus=mock_config, on_progress=bad_callback)
 
@@ -930,7 +931,7 @@ class TestAsyncRunnerSubprocessCleanup:
         def bad_callback(event: SimulationProgress) -> None:
             raise RuntimeError("boom")
 
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(SimulationError, match="boom"):
             await async_simulate(model, weather_file, energyplus=mock_config, on_progress=bad_callback)
 

@@ -6,9 +6,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from conftest import design_day_model
+from conftest import design_day_model, runnable_model
 
-from idfkit import load_idf, new_document
+from idfkit import load_idf
 from idfkit.document import IDFDocument
 from idfkit.exceptions import SimulationError, UnsupportedVersionError, VersionMismatchError
 from idfkit.migration.report import MigrationReport
@@ -36,7 +36,7 @@ def ep_config(tmp_path: Path) -> EnergyPlusConfig:
 
 class TestResolveVersionMismatch:
     def test_matching_versions_pass_through(self, ep_config: EnergyPlusConfig) -> None:
-        model = new_document(version=(24, 2, 0))
+        model = runnable_model(version=(24, 2, 0))
         result, report = resolve_version_mismatch(model=model, config=ep_config, auto_migrate=False)
         assert result is model
         assert report is None
@@ -45,7 +45,7 @@ class TestResolveVersionMismatch:
         self,
         ep_config: EnergyPlusConfig,
     ) -> None:
-        model = new_document(version=(24, 1, 0))
+        model = runnable_model(version=(24, 1, 0))
         with pytest.raises(VersionMismatchError) as exc_info:
             resolve_version_mismatch(model=model, config=ep_config, auto_migrate=False)
 
@@ -59,7 +59,7 @@ class TestResolveVersionMismatch:
         self,
         ep_config: EnergyPlusConfig,
     ) -> None:
-        model = new_document(version=(25, 1, 0))
+        model = runnable_model(version=(25, 1, 0))
         with pytest.raises(VersionMismatchError) as exc_info:
             resolve_version_mismatch(model=model, config=ep_config, auto_migrate=True)
 
@@ -118,7 +118,7 @@ class TestTwoComponentModelVersion:
 
     @patch("idfkit.migration.runner.migrate")
     def test_auto_migrate_migrates_from_the_release(self, mock_migrate: MagicMock, tmp_path: Path) -> None:
-        migrated = new_document(version=(9, 2, 0))
+        migrated = runnable_model(version=(9, 2, 0))
         mock_migrate.return_value = MagicMock(spec=MigrationReport, migrated_model=migrated)
         model = _load_two_component_9_0(tmp_path)
         config = _config_at(tmp_path, (9, 2, 0))
@@ -132,7 +132,7 @@ class TestTwoComponentModelVersion:
     @pytest.mark.asyncio
     @patch("idfkit.migration.async_runner.async_migrate")
     async def test_auto_migrate_migrates_from_the_release_async(self, mock_migrate: MagicMock, tmp_path: Path) -> None:
-        migrated = new_document(version=(9, 2, 0))
+        migrated = runnable_model(version=(9, 2, 0))
         mock_migrate.return_value = MagicMock(spec=MigrationReport, migrated_model=migrated)
         model = _load_two_component_9_0(tmp_path)
         config = _config_at(tmp_path, (9, 2, 0))
@@ -164,7 +164,7 @@ class TestSimulateRaisesOnMismatch:
         tmp_path: Path,
     ) -> None:
         mock_resolve.return_value = ep_config
-        model = new_document(version=(24, 1, 0))
+        model = runnable_model(version=(24, 1, 0))
         weather = tmp_path / "weather.epw"
         weather.write_text("dummy")
 
@@ -182,7 +182,7 @@ class TestSimulateMigrationWithoutWeather:
         ep_config: EnergyPlusConfig,
         tmp_path: Path,
     ) -> None:
-        mock_migrate.return_value = MagicMock(migrated_model=new_document(version=(24, 2, 0)))
+        mock_migrate.return_value = MagicMock(migrated_model=runnable_model(version=(24, 2, 0)))
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         model = design_day_model(version=(24, 1, 0))
 
@@ -215,7 +215,7 @@ class TestSimulateMigrationWithoutWeather:
 
         with pytest.raises(SimulationError, match=r"contains in\.epw"):
             simulate(
-                new_document(version=(24, 1, 0)),
+                runnable_model(version=(24, 1, 0)),
                 design_day=True,
                 auto_migrate=True,
                 energyplus=ep_config,

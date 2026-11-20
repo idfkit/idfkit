@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from idfkit import new_document
 from idfkit.migration.report import FieldDelta, MigrationDiff, MigrationReport, MigrationStep
-from idfkit.versioned import IDFDocumentV24_1
+from idfkit.versioned import IDFDocumentV24_1, as_version
 
 
 def test_migration_diff_is_empty() -> None:
@@ -15,7 +16,7 @@ def test_migration_report_completed_and_failed_step() -> None:
     s1 = MigrationStep(from_version=(24, 1, 0), to_version=(24, 2, 0), success=True)
     s2 = MigrationStep(from_version=(24, 2, 0), to_version=(25, 1, 0), success=False, stderr="boom")
     report = MigrationReport(
-        migrated_model=None,
+        migrated_model=new_document(version=(24, 1, 0)),
         source_version=(24, 1, 0),
         target_version=(25, 1, 0),
         requested_target=(25, 1, 0),
@@ -29,7 +30,7 @@ def test_migration_report_completed_and_failed_step() -> None:
 def test_migration_report_no_failure() -> None:
     s1 = MigrationStep(from_version=(24, 1, 0), to_version=(24, 2, 0), success=True)
     report = MigrationReport(
-        migrated_model=None,
+        migrated_model=new_document(version=(24, 1, 0)),
         source_version=(24, 1, 0),
         target_version=(24, 2, 0),
         requested_target=(24, 2, 0),
@@ -40,7 +41,7 @@ def test_migration_report_no_failure() -> None:
 
 def test_migration_report_summary_mentions_versions() -> None:
     report = MigrationReport(
-        migrated_model=None,
+        migrated_model=new_document(version=(24, 1, 0)),
         source_version=(24, 1, 0),
         target_version=(24, 2, 0),
         requested_target=(24, 2, 0),
@@ -62,13 +63,14 @@ def test_field_delta_defaults_empty() -> None:
 
 def test_migration_report_constructs_through_a_subscripted_alias() -> None:
     """``MigrationReport[X](...)`` works on every supported Python, 3.10 included."""
+    doc = as_version(new_document(version=(24, 1, 0)), IDFDocumentV24_1)
     report = MigrationReport[IDFDocumentV24_1](
-        migrated_model=None,
+        migrated_model=doc,
         source_version=(24, 1, 0),
         target_version=(24, 1, 0),
         requested_target=(24, 1, 0),
     )
     assert report.success is True
     assert report == MigrationReport(
-        migrated_model=None, source_version=(24, 1, 0), target_version=(24, 1, 0), requested_target=(24, 1, 0)
+        migrated_model=doc, source_version=(24, 1, 0), target_version=(24, 1, 0), requested_target=(24, 1, 0)
     )

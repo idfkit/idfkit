@@ -24,7 +24,7 @@ The same path is wired into `simulate(..., auto_migrate=True)` — see [simulati
 --8<-- "agent_references/snippets/version-migration.py:core-api"
 ```
 
-`migrate` always takes a parsed `IDFDocument` and returns a `MigrationReport` whose `migrated_model` attribute is the new document. The input is never mutated. The migrated document has no `filepath` (it is `None`), so a bare `new_doc.save()` raises `ValueError`: save it to a path you name, with `save_idf(new_doc, path)` or `new_doc.save(path)`. It is not tied to the source's path, because a bare save would overwrite the original file with a model at another version.
+`migrate` always takes a parsed `IDFDocument` and returns a `MigrationReport` whose `migrated_model` attribute is the new document (a copy of the input when it is already at the target). The input is never mutated. The migrated document has no `filepath` (it is `None`), so a bare `new_doc.save()` raises `ValueError`: save it to a path you name, with `save_idf(new_doc, path)` or `new_doc.save(path)`. It is not tied to the source's path, because a bare save would overwrite the original file with a model at another version.
 
 ## Top-level signature
 
@@ -52,7 +52,7 @@ migrate(
 --8<-- "agent_references/snippets/version-migration.py:typed-result"
 ```
 
-The document type is also the target at run time: `migrate(doc, IDFDocumentV24_1)` migrates to 24.1.0. A migration reaches one release, so `AnyIDFDocument` and a union or tuple of document types raise `TypeError`; pyright and mypy reject `AnyIDFDocument`, and mypy rejects a union too, but pyright accepts a union (it tries each member against the overloads), so the run-time error is the one that catches it there. The migrated document keeps the source's `strict` setting, and a tuple or string target carries it into the type: `AnyIDFDocument[Literal[True]]` for a document from `load_idf`. A bare `MigrationReport` annotation accepts a report of any release. `migrated_model` is `None` only on a no-op migration, so check it before use. Under mypy the overloads resolve the same way, but mypy does not see a document's own properties, so prefer pyright (see [document-and-objects.md](document-and-objects.md)).
+The document type is also the target at run time: `migrate(doc, IDFDocumentV24_1)` migrates to 24.1.0. A migration reaches one release, so `AnyIDFDocument` and a union or tuple of document types raise `TypeError`; pyright and mypy reject `AnyIDFDocument`, and mypy rejects a union too, but pyright accepts a union (it tries each member against the overloads), so the run-time error is the one that catches it there. The migrated document keeps the source's `strict` setting, and a tuple or string target carries it into the type: `AnyIDFDocument[Literal[True]]` for a document from `load_idf`. A bare `MigrationReport` annotation accepts a report of any release. `migrated_model` is never `None`: on a no-op migration (the model is already at the target, `report.steps == ()`) it is a copy of the input, so `doc = migrate(doc, target_version=config.version).migrated_model` is safe whatever `doc`'s version. Under mypy the overloads resolve the same way, but mypy does not see a document's own properties, so prefer pyright (see [document-and-objects.md](document-and-objects.md)).
 
 To write your own function generic over one release, as `migrate` is, use `ReleaseDocumentT` from `idfkit.versioned`: a type variable constrained to the release types, so `type[ReleaseDocumentT]` takes one release's type and refuses `AnyIDFDocument`.
 

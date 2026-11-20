@@ -47,7 +47,8 @@ def _make_fake_migrate(
             record["kwargs"] = kwargs
         if raise_exc is not None:
             raise raise_exc
-        migrated = new_document(version=target) if target != source else None
+        # A no-op report carries a copy of the input, as migrate() does.
+        migrated = new_document(version=target) if target != source else model.copy()
         step = MigrationStep(
             from_version=source,
             to_version=target,

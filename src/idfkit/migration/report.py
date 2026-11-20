@@ -101,12 +101,11 @@ class MigrationReport(Generic[DocumentT_co]):
     annotation also is.
 
     Attributes:
-        migrated_model: The new document, at ``target_version`` (``None``
-            only on a no-op migration where source equals target — in that
-            case the caller's original model is the result). Its
-            ``filepath`` is ``None``, so a bare ``save()`` raises
-            ``ValueError``; save it to an explicit path, e.g.
-            ``save_idf(report.migrated_model, path)``.
+        migrated_model: The new document, at ``target_version``. Never
+            ``None``: on a no-op migration (source equals target, no
+            ``steps``) it is a copy of the input model. Its ``filepath`` is
+            ``None``, so a bare ``save()`` raises ``ValueError``; save it to
+            an explicit path, e.g. ``save_idf(report.migrated_model, path)``.
         source_version: The version the model started at.
         target_version: The version the model was migrated to. On a partial
             failure this is the last successfully reached version, which may
@@ -121,7 +120,7 @@ class MigrationReport(Generic[DocumentT_co]):
             then the records of that earlier run.
     """
 
-    migrated_model: DocumentT_co | None
+    migrated_model: DocumentT_co
     source_version: tuple[int, int, int]
     target_version: tuple[int, int, int]
     requested_target: tuple[int, int, int]

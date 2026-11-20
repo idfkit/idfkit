@@ -19,6 +19,7 @@ from conftest import (
     ground_heat_model,
     refusal_r3,
     refusal_r4,
+    runnable_model,
 )
 
 from idfkit import LATEST_VERSION, new_document
@@ -27,7 +28,8 @@ from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.runner import _build_command, _ensure_sql_output, _prepare_run_directory, simulate
 
 if TYPE_CHECKING:
-    pass
+    from idfkit import IDFDocument
+    from idfkit._generated_types import SimulationControl
 
 
 @pytest.fixture
@@ -203,13 +205,13 @@ class TestEnsureSqlOutput:
     """Tests for _ensure_sql_output()."""
 
     def test_adds_when_missing(self) -> None:
-        doc = new_document()
+        doc = runnable_model()
         assert "Output:SQLite" not in doc
         _ensure_sql_output(doc)
         assert "Output:SQLite" in doc
 
     def test_no_duplicate(self) -> None:
-        doc = new_document()
+        doc = runnable_model()
         doc.add("Output:SQLite", option_type="SimpleAndTabular")
         _ensure_sql_output(doc)
         assert len(doc["Output:SQLite"]) == 1
@@ -292,7 +294,7 @@ class TestSimulate:
     @patch("idfkit.simulation.runner.run_process")
     def test_success(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        model = new_document()
+        model = runnable_model()
         result = simulate(model, weather_file, energyplus=mock_config)
         assert result.success
         assert result.exit_code == 0
@@ -301,7 +303,7 @@ class TestSimulate:
     @patch("idfkit.simulation.runner.run_process")
     def test_failure(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="error occurred")
-        model = new_document()
+        model = runnable_model()
         result = simulate(model, weather_file, energyplus=mock_config)
         assert not result.success
         assert result.exit_code == 1
@@ -309,19 +311,19 @@ class TestSimulate:
     @patch("idfkit.simulation.runner.run_process")
     def test_timeout(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.side_effect = subprocess.TimeoutExpired(cmd=["energyplus"], timeout=10)
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(SimulationError, match="timed out"):
             simulate(model, weather_file, energyplus=mock_config, timeout=10)
 
     def test_missing_weather(self, mock_config: EnergyPlusConfig) -> None:
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(SimulationError, match="Weather file not found"):
             simulate(model, "/nonexistent/weather.epw", energyplus=mock_config)
 
     @patch("idfkit.simulation.runner.run_process")
     def test_model_not_mutated(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        model = new_document()
+        model = runnable_model()
         assert "Output:SQLite" not in model
         simulate(model, weather_file, energyplus=mock_config)
         # Original model should not have Output:SQLite
@@ -329,7 +331,7 @@ class TestSimulate:
 
     def test_fs_requires_output_dir(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         fs = InMemoryFileSystem()
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(ValueError, match="output_dir is required"):
             simulate(model, weather_file, energyplus=mock_config, fs=fs)
 
@@ -339,7 +341,7 @@ class TestSimulate:
     ) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         fs = InMemoryFileSystem()
-        model = new_document()
+        model = runnable_model()
         result = simulate(
             model,
             weather_file,
@@ -360,7 +362,7 @@ class TestSimulate:
         """The input weather file is not uploaded, and the local run directory is gone afterwards."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         fs = InMemoryFileSystem()
-        simulate(new_document(), weather_file, energyplus=mock_config, output_dir="remote/output", fs=fs)
+        simulate(runnable_model(), weather_file, energyplus=mock_config, output_dir="remote/output", fs=fs)
         local_dir = Path(mock_run.call_args.kwargs["cwd"])
         assert not local_dir.exists()
         assert f"remote/output/{weather_file.name}" not in fs._files
@@ -375,7 +377,7 @@ class TestSimulate:
         link = tmp_path / "link.epw"
         link.symlink_to(weather_file)
         fs = InMemoryFileSystem()
-        simulate(new_document(), link, energyplus=mock_config, output_dir="remote/output", fs=fs)
+        simulate(runnable_model(), link, energyplus=mock_config, output_dir="remote/output", fs=fs)
         assert not [k for k in fs._files if k.endswith(".epw")]
         assert "remote/output/model.idf" in fs._files
 
@@ -386,7 +388,7 @@ class TestSimulate:
         mock_run.side_effect = subprocess.TimeoutExpired(cmd=["energyplus"], timeout=10)
         fs = InMemoryFileSystem()
         with pytest.raises(SimulationError, match="timed out"):
-            simulate(new_document(), weather_file, energyplus=mock_config, output_dir="remote/output", fs=fs)
+            simulate(runnable_model(), weather_file, energyplus=mock_config, output_dir="remote/output", fs=fs)
         assert not Path(mock_run.call_args.kwargs["cwd"]).exists()
 
 
@@ -400,11 +402,11 @@ class TestSimulatePreprocessing:
 
     def test_auto_preprocesses_slab_model(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """simulate() calls _run_preprocessing for models with slab objects."""
-        model = new_document(version=LATEST_VERSION)
+        model = runnable_model(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
-        preprocessed = new_document(version=LATEST_VERSION)
+        preprocessed = runnable_model(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
 
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")
@@ -423,11 +425,11 @@ class TestSimulatePreprocessing:
 
     def test_auto_preprocesses_basement_model(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """simulate() calls _run_preprocessing for models with basement objects."""
-        model = new_document(version=LATEST_VERSION)
+        model = runnable_model(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
-        preprocessed = new_document(version=LATEST_VERSION)
+        preprocessed = runnable_model(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
 
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")
@@ -449,7 +451,7 @@ class TestSimulatePreprocessing:
     ) -> None:
         """simulate() does not run preprocessing for models without GHT objects."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        model = new_document(version=LATEST_VERSION)
+        model = runnable_model(version=LATEST_VERSION)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
         with patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess:
@@ -467,7 +469,7 @@ class TestSimulatePreprocessing:
     ) -> None:
         """simulate(expand_objects=False) skips preprocessing even with GHT objects."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        model = new_document(version=LATEST_VERSION)
+        model = runnable_model(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
@@ -481,7 +483,7 @@ class TestSimulatePreprocessing:
 
     def test_preprocessing_error_propagates(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """ExpandObjectsError from preprocessing propagates through simulate()."""
-        model = new_document(version=LATEST_VERSION)
+        model = runnable_model(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
@@ -496,13 +498,13 @@ class TestSimulatePreprocessing:
 
     def test_model_not_mutated_with_preprocessing(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """Original model is not mutated when preprocessing runs."""
-        model = new_document(version=LATEST_VERSION)
+        model = runnable_model(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
         original_types = set(model.keys())
 
-        preprocessed = new_document(version=LATEST_VERSION)
+        preprocessed = runnable_model(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
 
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")
@@ -531,7 +533,7 @@ class TestRunSimpleOSError:
     ) -> None:
         """run_process raising OSError should raise SimulationError."""
         mock_run.side_effect = OSError("No such file or directory")
-        model = new_document()
+        model = runnable_model()
         with pytest.raises(SimulationError, match="Failed to start EnergyPlus"):
             simulate(model, weather_file, energyplus=mock_config)
 
@@ -618,7 +620,7 @@ class TestWeatherAdmission:
         # Not ``or``: an IDFDocument with no objects is falsy.
         model = kwargs.pop("model", None)
         if model is None:
-            model = new_document()
+            model = runnable_model()
         with (
             patch("idfkit.simulation.runner.run_process") as mock_run,
             patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
@@ -710,7 +712,7 @@ class TestWeatherAdmission:
             patch("idfkit.simulation._common.find_energyplus") as mock_find,
             pytest.raises(SimulationError, match="no SizingPeriod:DesignDay"),
         ):
-            simulate(new_document(), weather_file, design_day=True)
+            simulate(runnable_model(), weather_file, design_day=True)
         mock_find.assert_not_called()
 
     def test_design_day_with_design_day_runs(
@@ -741,7 +743,7 @@ class TestWeatherAdmission:
             patch("idfkit.simulation._common.find_energyplus") as mock_find,
             pytest.raises(SimulationError, match=re.escape(REFUSAL_R2)),
         ):
-            simulate(new_document(), annual=True)  # pyright: ignore[reportCallIssue]
+            simulate(runnable_model(), annual=True)  # pyright: ignore[reportCallIssue]
         mock_find.assert_not_called()
 
     def test_r3_not_raised_without_expand_objects(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
@@ -810,7 +812,7 @@ class TestWeatherAdmission:
 
 
 def _schedule_file_model(file_name: str) -> Any:
-    model = new_document()
+    model = runnable_model()
     model.add("Schedule:File", "Staged", file_name=file_name, column_number=1, rows_to_skip_at_top=0, validate=False)
     return model
 
@@ -878,7 +880,7 @@ class TestSimulateCacheCoversExternalFiles:
 
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         cache = SimulationCache(cache_dir=tmp_path / "cache")
-        model = new_document()
+        model = runnable_model()
         model.add("PythonPlugin:Instance", "Plugin", python_module_name="plugin", plugin_class_name="P", validate=False)
 
         with caplog.at_level(logging.WARNING, logger="idfkit.simulation.cache"):
@@ -898,7 +900,7 @@ class TestSimulateCacheCoversExternalFiles:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         cache = SimulationCache(cache_dir=tmp_path / "cache")
         run_dir = tmp_path / "run"
-        model = new_document()
+        model = runnable_model()
         simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir)  # leftovers, no cache
         (run_dir / "notes.txt").write_text("unrelated\n")
         simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache)
@@ -917,7 +919,7 @@ class TestSimulateCacheHitLocalOutputDir:
 
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         cache = SimulationCache(cache_dir=tmp_path / "cache")
-        model = new_document()
+        model = runnable_model()
 
         first = simulate(model, weather_file, energyplus=mock_config, output_dir=tmp_path / "a", cache=cache)
         assert not first.cached
@@ -946,7 +948,7 @@ class TestSimulateCacheHitLocalOutputDir:
 
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         cache = SimulationCache(cache_dir=tmp_path / "cache")
-        model = new_document()
+        model = runnable_model()
 
         simulate(model, weather_file, energyplus=mock_config, cache=cache)
         with patch("idfkit.simulation._common.shutil.copytree") as copytree:
@@ -969,7 +971,7 @@ class TestSimulateCacheWithFileSystem:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         cache = SimulationCache(cache_dir=tmp_path / "cache")
         fs = InMemoryFileSystem()
-        model = new_document()
+        model = runnable_model()
 
         first = simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="runs/a")
         assert first.run_dir == Path("runs/a")
@@ -999,7 +1001,7 @@ class TestSimulateCacheWithFileSystem:
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         cache = SimulationCache(cache_dir=tmp_path / "cache")
         fs = InMemoryFileSystem()
-        model = new_document()
+        model = runnable_model()
         simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="runs/a")
         with patch("idfkit.simulation.runner.restore_cached_result", side_effect=AssertionError("local copy")):
             hit = simulate(model, weather_file, energyplus=mock_config, cache=cache, fs=fs, output_dir="runs/b")
@@ -1020,3 +1022,68 @@ class TestSimulateCacheWithFileSystem:
             cache.put(key, result)
         assert not cache.contains(key)
         assert "Could not cache result" in caplog.text
+
+
+def _simulation_control(model: IDFDocument) -> SimulationControl:
+    control = model["SimulationControl"].first()
+    assert control is not None
+    return control
+
+
+class TestDefaultModeAdmission:
+    """Without annual or design_day, a model that gives EnergyPlus no environment is refused."""
+
+    def test_new_document_is_refused_before_energyplus_starts(self, weather_file: Path) -> None:
+        """new_document() seeds SimulationControl but no RunPeriod or design day: nothing would run."""
+        with (
+            patch("idfkit.simulation._common.find_energyplus") as mock_find,
+            pytest.raises(SimulationError, match="nothing to simulate: it has no RunPeriod") as exc,
+        ):
+            simulate(new_document(), weather_file)
+        mock_find.assert_not_called()
+        assert 'model.add("RunPeriod"' in str(exc.value)
+        assert "apply_to_model" in str(exc.value)
+
+    @pytest.mark.parametrize("environment", ["RunPeriod", "SizingPeriod:DesignDay"])
+    def test_one_environment_is_enough(
+        self, environment: str, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        model = runnable_model() if environment == "RunPeriod" else design_day_model()
+        with patch("idfkit.simulation.runner.run_process") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+            result = simulate(model, weather_file, energyplus=mock_config, output_dir=tmp_path / "run")
+        assert result.success
+
+    def test_run_period_turned_off_by_simulation_control(self, weather_file: Path) -> None:
+        model = runnable_model()
+        _simulation_control(model).update(run_simulation_for_weather_file_run_periods="No")
+        with pytest.raises(SimulationError, match="SimulationControl turns off weather-file run periods"):
+            simulate(model, weather_file)
+
+    def test_sizing_only_run_is_admitted(self) -> None:
+        """Sizing periods with every run flag off still size the HVAC when a sizing calculation is on."""
+        from idfkit.simulation._common import admit_environments
+
+        model = design_day_model()
+        _simulation_control(model).update(
+            do_zone_sizing_calculation="Yes",
+            run_simulation_for_sizing_periods="No",
+            run_simulation_for_weather_file_run_periods="No",
+        )
+        admit_environments(model, annual=False, design_day=False)
+        _simulation_control(model).update(do_zone_sizing_calculation="No")
+        with pytest.raises(SimulationError, match="turns off sizing periods"):
+            admit_environments(model, annual=False, design_day=False)
+
+
+class TestModelAdmission:
+    """simulate() names its model argument when given something that is not a document."""
+
+    @pytest.mark.parametrize("model", [None, "model.idf"])
+    def test_non_document_raises_type_error(self, model: object, weather_file: Path) -> None:
+        with pytest.raises(TypeError, match="model must be an IDFDocument, got"):
+            simulate(model, weather_file)  # pyright: ignore[reportArgumentType]
+
+    def test_path_hint(self, weather_file: Path) -> None:
+        with pytest.raises(TypeError, match=r"load_idf\(path\)"):
+            simulate("model.idf", weather_file)  # pyright: ignore[reportArgumentType]

@@ -22,6 +22,9 @@ if TYPE_CHECKING:
     Defaults to ``bool`` for a source whose strictness a checker cannot read off its type.
     """
 
+    DocumentT = TypeVar("DocumentT", bound=AnyIDFDocument[Any])
+    """A document of any release, kept as the type it was given."""
+
     DocumentT_co = TypeVar(
         "DocumentT_co",
         bound=AnyIDFDocument[Any],
@@ -34,6 +37,7 @@ else:
     from typing import TypeVar
 
     StrictT = TypeVar("StrictT", bound=bool)
+    DocumentT = TypeVar("DocumentT")
     DocumentT_co = TypeVar("DocumentT_co", covariant=True)
 
-__all__ = ["DocumentT_co", "StrictT"]
+__all__ = ["DocumentT", "DocumentT_co", "StrictT"]

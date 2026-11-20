@@ -106,6 +106,17 @@ def design_day_model(version: tuple[int, int, int] | None = None) -> IDFDocument
     return add_design_day(model)
 
 
+def runnable_model(version: tuple[int, int, int] | None = None, *, strict: bool = True) -> IDFDocument:
+    """Return a new document with one annual ``RunPeriod``, so a default-mode ``simulate`` admits it.
+
+    ``new_document()`` adds no run period and no design day, and a run of such a model is refused
+    before EnergyPlus starts (it would simulate nothing).
+    """
+    model = new_document(strict=strict) if version is None else new_document(version=version, strict=strict)
+    model.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
+    return model
+
+
 def ground_heat_model(*, slab: str | None = "Yes", basement: str | None = "Yes") -> IDFDocument:
     """Return a model with one Slab and one Basement object.
 

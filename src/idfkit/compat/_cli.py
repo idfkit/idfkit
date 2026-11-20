@@ -724,25 +724,21 @@ def _write_migrate_output(
     report: MigrationReport,
     *,
     input_path: Path,
-    fallback_model: AnyIDFDocument,
     resolved_target: tuple[int, int, int],
     explicit_output: str | None,
 ) -> Path | None:
-    """Write the migrated IDF to disk and return the resulting path, if any."""
+    """Write the migrated IDF to disk and return the resulting path, if any.
+
+    A no-op migration (no steps) writes only to an explicit ``--output``, as a copy of the input.
+    """
     from ..writers import save_idf
 
-    if report.migrated_model is not None:
-        output_path = Path(explicit_output) if explicit_output else _default_output_path(input_path, resolved_target)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        save_idf(report.migrated_model, output_path)
-        return output_path
-    if explicit_output is not None:
-        # No-op migration: still honor an explicit --output by copying the input model.
-        output_path = Path(explicit_output)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        save_idf(fallback_model, output_path)
-        return output_path
-    return None
+    if not report.steps and explicit_output is None:
+        return None
+    output_path = Path(explicit_output) if explicit_output else _default_output_path(input_path, resolved_target)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    save_idf(report.migrated_model, output_path)
+    return output_path
 
 
 def _load_source_idf(input_path: Path) -> AnyIDFDocument:
@@ -814,7 +810,6 @@ def _run_migrate(args: argparse.Namespace) -> None:
     output_path = _write_migrate_output(
         report,
         input_path=input_path,
-        fallback_model=model,
         resolved_target=resolved_target,
         explicit_output=args.output,
     )
@@ -825,7 +820,7 @@ def _run_migrate(args: argparse.Namespace) -> None:
         print(report.summary())
         if output_path is not None:
             print(f"Wrote: {output_path}")
-        elif report.migrated_model is None:
+        elif not report.steps:
             print("No migration needed (source equals target).")
 
     sys.exit(0 if report.success else 1)

@@ -80,11 +80,13 @@ If EnergyPlus is missing, `EnergyPlusNotFoundError` is raised. With `version=`, 
 from idfkit import migrate
 
 doc = load_idf("v22_model.idf")
+# Safe whatever the model's version: a model already at config.version comes back as a copy.
 doc = migrate(doc, target_version=config.version).migrated_model
 
 # Option 2 — let simulate forward-migrate transparently
 result = simulate(doc, "weather.epw", auto_migrate=True)
-print(result.migration_report.summary())  # what was changed
+if result.migration_report is not None:  # None when the model already matched
+    print(result.migration_report.summary())  # what was changed
 ```
 
 Backward migration (installed EP older than the model) is never attempted — it raises `VersionMismatchError`. This is what a `new_document()` model hits when the installed EnergyPlus is older than the latest bundled release, since `new_document()` defaults to the latest: build the model at the installed release instead, `new_document(version=idfkit.simulation.find_energyplus().version)`, or install the newer EnergyPlus. The error message names both fixes, and `auto_migrate=True` for an older model.
@@ -108,7 +110,9 @@ if "RunPeriod" not in doc:
     doc.add("RunPeriod", "Annual", begin_month=1, begin_day_of_month=1, end_month=12, end_day_of_month=31)
 result = simulate(doc, "weather.epw", annual=True)
 
-# Default (both flags False) — EnergyPlus's default, governed by SimulationControl in the IDF
+# Default (both flags False) — governed by SimulationControl in the IDF: the sizing periods,
+# then the RunPeriods. A model with neither (a fresh new_document()) is refused before
+# EnergyPlus starts, rather than "succeeding" with empty results.
 result = simulate(doc, "weather.epw")
 ```
 
