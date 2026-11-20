@@ -998,11 +998,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data: dict[str, Any],
         validate: bool,
         adopt: IDFCollection[Any] | None,
+        *,
+        name_optional: bool = False,
     ) -> IDFObject:
         """The body of :meth:`add`, with *field_data* already merged and owned by the call.
 
         *adopt* is a detached collection of this document to store if the type has none yet (see
-        :meth:`_collection_for_write`).
+        :meth:`_collection_for_write`). *name_optional* drops the missing-name error from validation,
+        for eppy's ``newidfobject(type)``, whose callers name the object after creating it.
         """
         # Get schema info
         resolved_obj_type = obj_type
@@ -1072,6 +1075,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         # Validate if requested
         if validate and self._schema:
             errors = validate_object(obj, self._schema)
+            errors = [e for e in errors if not (name_optional and e.code == "E001" and e.field == "name")]
             if errors:
                 raise ValidationFailedError(errors)
 

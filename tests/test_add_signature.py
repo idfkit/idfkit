@@ -148,8 +148,15 @@ def test_the_name_is_the_only_positional_argument() -> None:
 
 def test_an_untyped_collection_takes_an_empty_name() -> None:
     doc = new_document()
-    zone = doc.get_collection("Zone").add()
-    assert zone.name == ""
+    timestep = doc.get_collection("Timestep").add()
+    assert timestep.name == ""
+
+
+def test_an_untyped_collection_refuses_an_empty_name_the_schema_requires() -> None:
+    doc = new_document()
+    with pytest.raises(ValidationFailedError, match="Required field 'name' is missing"):
+        doc.get_collection("Zone").add()
+    assert len(doc.zones) == 0
 
 
 def test_adding_an_existing_object_still_warns_and_files_it() -> None:

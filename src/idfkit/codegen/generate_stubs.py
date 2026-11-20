@@ -309,6 +309,17 @@ _TYPED_OBJECT_BASE = "_TypedIDFObject"
 _TYPED_GROUP_BASE = "_TypedExtensibleGroup"
 _NOT_A_FIELD = "_NotAFieldOfThisObjectType"
 _NOT_A_GROUP_FIELD = "_NotAFieldOfThisExtensibleGroup"
+# ``Any<Class>`` is what an unnarrowed document (``load_idf``'s ``AnyIDFDocument``) types a collection
+# with. It declares only the fields every release has, so a field some releases have and others do
+# not (``Lights.watts_per_floor_area``, which 8.9 to 23.2 call ``watts_per_zone_floor_area``) is not
+# on it. Reported against ``_NotAFieldOfThisObjectType``, that real field read as a typo. Where the
+# releases' fields differ, ``Any<Class>`` derives from this base instead, so pyright names the remedy:
+# ``parameter "key" of type "_NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion"``. A stub cannot tell a
+# typo from a field of some releases, so the sentinel names both: narrowed, a typo is reported against the
+# plain gate. Each release's class re-declares that gate, since a field missing from a narrowed class is
+# missing from its release.
+_TYPED_ANY_BASE = "_TypedAnyReleaseIDFObject"
+_NOT_IN_EVERY_RELEASE = "_NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion"
 # A type without a Name field takes no name. Its creation signature has a positional-only parameter
 # typed with this class, which no value is, so a name passed by mistake
 # (``doc.output_variables.add("*", ...)``) reads ``parameter "this_type_has_no_name_field" of type
@@ -331,6 +342,10 @@ def _generate_typed_bases() -> list[str]:
         f"class {_NOT_A_FIELD}:",
         '    """No name is one: a type checker reports an undeclared field of a typed object against this type."""',
         "",
+        f"class {_NOT_IN_EVERY_RELEASE}:",
+        '    """No name is one: a type checker reports a field that not every release declares, read on a type for'
+        ' any release, against this type. Narrow the document with as_version() or load_idf(..., as_type=...)."""',
+        "",
         f"class {_NOT_A_GROUP_FIELD}:",
         '    """No name is one: a type checker reports an undeclared field of a typed group against this type."""',
         "",
@@ -342,6 +357,12 @@ def _generate_typed_bases() -> list[str]:
         "",
         f"    def __getattr__(self, key: {_NOT_A_FIELD}) -> object: ...",
         f"    def __setattr__(self, key: {_NOT_A_FIELD}, value: {_NOT_A_FIELD}) -> None: ...",
+        "",
+        f"class {_TYPED_ANY_BASE}({_TYPED_OBJECT_BASE}):",
+        '    """Stub-only base of an Any<Class> whose releases declare different fields: narrow to reach them."""',
+        "",
+        f"    def __getattr__(self, key: {_NOT_IN_EVERY_RELEASE}) -> object: ...",
+        f"    def __setattr__(self, key: {_NOT_IN_EVERY_RELEASE}, value: {_NOT_IN_EVERY_RELEASE}) -> None: ...",
         "",
         f"class {_TYPED_GROUP_BASE}(ExtensibleGroup):",
         '    """Stub-only base: an undeclared field name is a type error on a typed extensible group."""',
@@ -458,6 +479,19 @@ def _class_docstring(
     return "; ".join(parts) if parts else None
 
 
+def _class_head(cls_doc: str | None, field_gate: str | None, body_indent: str) -> list[str]:
+    """The docstring line of a typed class, and its re-declared attribute gate if *field_gate* names one."""
+    lines: list[str] = []
+    if cls_doc:
+        lines.append(f'{body_indent}"""{cls_doc}"""')
+    if field_gate is not None:
+        lines.append("")
+        lines.append(f"{body_indent}def __getattr__(self, key: {field_gate}) -> object: ...")
+        lines.append(f"{body_indent}def __setattr__(self, key: {field_gate}, value: {field_gate}) -> None: ...")
+        lines.append("")
+    return lines
+
+
 def _generate_object_class(
     schema: EpJSONSchema,
     obj_type: str,
@@ -479,6 +513,7 @@ def _generate_object_class(
     inherited: Iterable[tuple[str, str]] = (),
     sink: _CreationModules | None = None,
     creation: _Creation | None = None,
+    field_gate: str | None = None,
 ) -> list[str]:
     """Generate a typed IDFObject subclass for *obj_type*.
 
@@ -512,6 +547,9 @@ def _generate_object_class(
         sink: Where the creation signature is filed; a throwaway one when ``None``.
         creation: How the class creates its objects (:func:`_class_creation`); *schema*'s release's
             own when ``None``.
+        field_gate: The ``_NotAFieldOfThisObjectType`` name as reached from the module, to re-declare
+            ``__getattr__``/``__setattr__`` with on a release's class whose *base* is
+            ``_TypedAnyReleaseIDFObject`` (see :data:`_TYPED_ANY_BASE`); ``None`` inherits them.
     """
     cls_name = cls_name or _to_class_name(obj_type) + suffix
     lines: list[str] = []
@@ -543,10 +581,9 @@ def _generate_object_class(
     # Add object-level docstring from schema memo + version info
     obj_since = type_since.get(obj_type) if type_since else None
     cls_doc = class_doc if class_doc is not None else _class_docstring(schema.get_object_memo(obj_type), obj_since)
-    has_body = False
-    if cls_doc:
-        lines.append(f'{body_indent}"""{cls_doc}"""')
-        has_body = True
+    head = _class_head(cls_doc, field_gate, body_indent)
+    lines.extend(head)
+    has_body = bool(head)
 
     inherited = list(inherited)
     sink = sink if sink is not None else _CreationModules()
@@ -1672,12 +1709,14 @@ class _SharedLayout:
             what every version accepts, so what is safe to write.
         identical: The fields declared identically in all versions; only the shared base declares them.
         group: Whether the extensible group is identical in all versions.
+        partial: The fields some versions declare and others do not, which ``Any<Class>`` leaves out.
     """
 
     fields: dict[str, str]
     writable: dict[str, str]
     identical: frozenset[str]
     group: bool
+    partial: frozenset[str] = frozenset()
 
     @property
     def varying(self) -> frozenset[str]:
@@ -1716,7 +1755,8 @@ def _shared_layout() -> dict[str, _SharedLayout]:
         identical = frozenset(name for name in fields if all(d[name] == latest[name] for d in decls))
         # Compared as sets: some versions list a group's fields in another order (8.9's vertices).
         groups = {_group_key(_group_decl(sc, obj_type)) for sc in schemas}
-        layout[obj_type] = _SharedLayout(fields, writable, identical, len(groups) == 1 and None not in groups)
+        partial = frozenset(name for d in decls for name in d) - frozenset(fields)
+        layout[obj_type] = _SharedLayout(fields, writable, identical, len(groups) == 1 and None not in groups, partial)
     return layout
 
 
@@ -1877,6 +1917,7 @@ def _generate_base_class(
         field_since=field_since,
         cls_name=base,
         class_doc=_any_class_doc(obj_type),
+        base=_TYPED_ANY_BASE if layout.partial else _TYPED_OBJECT_BASE,
         skip_fields=frozenset(schema.get_field_names(obj_type)) - frozenset(layout.fields),
         omit_group=not layout.group,
         emit_update=False,
@@ -2121,6 +2162,7 @@ def _generate_range_class(
         inherited=_common_entries(schema, obj_type, shared, "_g.") if shared else (),
         sink=sink,
         creation=creation,
+        field_gate=f"_g.{_NOT_A_FIELD}" if shared and shared.partial else None,
     )
 
 
@@ -2822,6 +2864,7 @@ def _generate_types_module(sink: _CreationModules | None = None) -> str:
                 inherited=_common_entries(schema, obj_type, layout[obj_type]),
                 sink=sink,
                 creation=_class_creation(obj_type, [ver]),
+                field_gate=_NOT_A_FIELD if layout[obj_type].partial else None,
             )
         else:
             class_lines = _generate_object_class(

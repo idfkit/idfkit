@@ -144,6 +144,9 @@ from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
 class _NotAFieldOfThisObjectType:
     """No name is one: a type checker reports an undeclared field of a typed object against this type."""
 
+class _NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion:
+    """No name is one: a type checker reports a field that not every release declares, read on a type for any release, against this type. Narrow the document with as_version() or load_idf(..., as_type=...)."""
+
 class _NotAFieldOfThisExtensibleGroup:
     """No name is one: a type checker reports an undeclared field of a typed group against this type."""
 
@@ -155,6 +158,16 @@ class _TypedIDFObject(IDFObject):
 
     def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
     def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
+class _TypedAnyReleaseIDFObject(_TypedIDFObject):
+    """Stub-only base of an Any<Class> whose releases declare different fields: narrow to reach them."""
+
+    def __getattr__(self, key: _NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion) -> object: ...
+    def __setattr__(
+        self,
+        key: _NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion,
+        value: _NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion,
+    ) -> None: ...
 
 class _TypedExtensibleGroup(ExtensibleGroup):
     """Stub-only base: an undeclared field name is a type error on a typed extensible group."""
@@ -228,7 +241,7 @@ class _SimulationControlFields(_SimulationControlCommonFields, total=False):
 class _PerformancePrecisionTradeoffsCommonFields(TypedDict, total=False):
     use_coil_direct_solutions: Literal["No", "Yes"] | None
 
-class AnyPerformancePrecisionTradeoffs(_TypedIDFObject):
+class AnyPerformancePrecisionTradeoffs(_TypedAnyReleaseIDFObject):
     """``PerformancePrecisionTradeoffs`` as every supported EnergyPlus version that has it declares it: 9.2.0 and later."""
 
     use_coil_direct_solutions: Literal["No", "Yes"] | None
@@ -243,6 +256,9 @@ class _AnyPerformancePrecisionTradeoffsFields(_PerformancePrecisionTradeoffsComm
 
 class PerformancePrecisionTradeoffs(AnyPerformancePrecisionTradeoffs):
     """This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea...; Since: 9.2.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None
     """Determines which algorithm will be used to solve long wave radiant exchange among surfaces within a zone.; Default: ScriptF; Since: 9.3.0"""
@@ -289,7 +305,7 @@ class _BuildingCommonFields(TypedDict, total=False):
         | None
     )
 
-class AnyBuilding(_TypedIDFObject):
+class AnyBuilding(_TypedAnyReleaseIDFObject):
     """``Building`` as every supported EnergyPlus version declares it."""
 
     north_axis: float | None
@@ -329,6 +345,9 @@ class _AnyBuildingFields(_BuildingCommonFields, total=False):
 class Building(AnyBuilding):
     """Describes parameters that are used during the simulation of the building. There are necessary correlations between th..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     maximum_number_of_warmup_days: int | None
     """EnergyPlus will only use as many warmup days as needed to reach convergence tolerance. This field's value should NOT ...; Default: 25; Range: > 0"""
     minimum_number_of_warmup_days: int | None
@@ -362,7 +381,7 @@ class ShadowCalculationShadingZoneGroupsItem(TypedDict, total=False):
 
     shading_zone_group_zonelist_name: str | None
 
-class AnyShadowCalculation(_TypedIDFObject):
+class AnyShadowCalculation(_TypedAnyReleaseIDFObject):
     """``ShadowCalculation`` as every supported EnergyPlus version declares it."""
     @property
     def maximum_figures_in_shadow_overlap_calculations(self) -> float | int | None: ...
@@ -397,6 +416,9 @@ class _AnyShadowCalculationFields(_ShadowCalculationCommonFields, total=False):
 
 class ShadowCalculation(AnyShadowCalculation):
     """This object is used to control details of the solar, shading, and daylighting models"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     shading_calculation_method: Literal["Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
     """Select between CPU-based polygon clipping method, the GPU-based pixel counting method, or importing from external sha...; Default: PolygonClipping; Since: 9.3.0"""
@@ -542,7 +564,7 @@ class _HeatBalanceSettingsConductionFiniteDifferenceFields(TypedDict, total=Fals
 class _ZoneAirHeatBalanceAlgorithmCommonFields(TypedDict, total=False):
     algorithm: Literal["AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"] | None
 
-class AnyZoneAirHeatBalanceAlgorithm(_TypedIDFObject):
+class AnyZoneAirHeatBalanceAlgorithm(_TypedAnyReleaseIDFObject):
     """``ZoneAirHeatBalanceAlgorithm`` as every supported EnergyPlus version declares it."""
 
     algorithm: Literal["AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"] | None
@@ -557,6 +579,9 @@ class _AnyZoneAirHeatBalanceAlgorithmFields(_ZoneAirHeatBalanceAlgorithmCommonFi
 
 class ZoneAirHeatBalanceAlgorithm(AnyZoneAirHeatBalanceAlgorithm):
     """Controls the zone/space air heat balance."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     do_space_heat_balance_for_sizing: Literal["No", "Yes"] | None
     """If yes, space heat balance will be calculated and reported during sizing.; Default: No; Since: 23.1.0"""
@@ -599,7 +624,7 @@ class _ZoneAirMassFlowConservationCommonFields(TypedDict, total=False):
     infiltration_balancing_method: Literal["AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"] | None
     infiltration_balancing_zones: Literal["AllZones", "MixingSourceZonesOnly"] | None
 
-class AnyZoneAirMassFlowConservation(_TypedIDFObject):
+class AnyZoneAirMassFlowConservation(_TypedAnyReleaseIDFObject):
     """``ZoneAirMassFlowConservation`` as every supported EnergyPlus version declares it."""
 
     infiltration_balancing_method: Literal["AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"] | None
@@ -616,6 +641,9 @@ class _AnyZoneAirMassFlowConservationFields(_ZoneAirMassFlowConservationCommonFi
 
 class ZoneAirMassFlowConservation(AnyZoneAirMassFlowConservation):
     """Enforces the zone air mass flow balance by either adjusting zone mixing object flow only, adjusting zone total return..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     adjust_zone_mixing_and_return_for_air_mass_flow_balance: (
         Literal["AdjustMixingOnly", "AdjustMixingThenReturn", "AdjustReturnOnly", "AdjustReturnThenMixing", "None"]
@@ -801,7 +829,7 @@ class _SiteLocationCommonFields(TypedDict, total=False):
     time_zone: float | None
     elevation: float | None
 
-class AnySiteLocation(_TypedIDFObject):
+class AnySiteLocation(_TypedAnyReleaseIDFObject):
     """``Site:Location`` as every supported EnergyPlus version declares it."""
 
     latitude: float | None
@@ -820,6 +848,9 @@ class _AnySiteLocationFields(_SiteLocationCommonFields, total=False): ...
 
 class SiteLocation(AnySiteLocation):
     """Specifies the building's location. Only one location is allowed. Weather data file location, if it exists, will overr..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     keep_site_location_information: Literal["No", "Yes"] | None
     """Default: No; Since: 24.2.0"""
@@ -903,7 +934,7 @@ class _SizingPeriodDesignDayCommonFields(TypedDict, total=False):
     ashrae_clear_sky_optical_depth_for_beam_irradiance_taub: float | None
     ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud: float | None
 
-class AnySizingPeriodDesignDay(_TypedIDFObject):
+class AnySizingPeriodDesignDay(_TypedAnyReleaseIDFObject):
     """``SizingPeriod:DesignDay`` as every supported EnergyPlus version declares it."""
     @property
     def month(self) -> float | int: ...
@@ -1009,6 +1040,9 @@ class _AnySizingPeriodDesignDayFields(_SizingPeriodDesignDayCommonFields, total=
 
 class SizingPeriodDesignDay(AnySizingPeriodDesignDay):
     """The design day object creates the parameters for the program to create the 24 hour weather profile that can be used f..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     month: int
     """Range: >= 1, <= 12"""
@@ -1221,7 +1255,7 @@ class _RunPeriodCommonFields(TypedDict, total=False):
     use_weather_file_rain_indicators: Literal["No", "Yes"] | None
     use_weather_file_snow_indicators: Literal["No", "Yes"] | None
 
-class AnyRunPeriod(_TypedIDFObject):
+class AnyRunPeriod(_TypedAnyReleaseIDFObject):
     """``RunPeriod`` as every supported EnergyPlus version declares it."""
     @property
     def begin_month(self) -> float | int: ...
@@ -1274,6 +1308,9 @@ class _AnyRunPeriodFields(_RunPeriodCommonFields, total=False):
 
 class RunPeriod(AnyRunPeriod):
     """Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not o..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     begin_month: int
     """Range: >= 1, <= 12"""
@@ -1351,7 +1388,7 @@ class _RunPeriodControlDaylightSavingTimeFields(TypedDict, total=False):
 class _WeatherPropertySkyTemperatureCommonFields(TypedDict, total=False):
     schedule_name: str | None
 
-class AnyWeatherPropertySkyTemperature(_TypedIDFObject):
+class AnyWeatherPropertySkyTemperature(_TypedAnyReleaseIDFObject):
     """``WeatherProperty:SkyTemperature`` as every supported EnergyPlus version declares it."""
     @property
     def calculation_type(
@@ -1388,6 +1425,9 @@ class _AnyWeatherPropertySkyTemperatureFields(_WeatherPropertySkyTemperatureComm
 
 class WeatherPropertySkyTemperature(AnyWeatherPropertySkyTemperature):
     """This object is used to override internal sky temperature calculations."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     calculation_type: (
         Literal[
@@ -1729,7 +1769,7 @@ class _SiteGroundTemperatureUndisturbedXingCommonFields(TypedDict, total=False):
     phase_shift_of_temperature_amplitude_1: float
     phase_shift_of_temperature_amplitude_2: float
 
-class AnySiteGroundTemperatureUndisturbedXing(_TypedIDFObject):
+class AnySiteGroundTemperatureUndisturbedXing(_TypedAnyReleaseIDFObject):
     """``Site:GroundTemperature:Undisturbed:Xing`` as every supported EnergyPlus version declares it."""
 
     soil_thermal_conductivity: float
@@ -1761,6 +1801,9 @@ class _AnySiteGroundTemperatureUndisturbedXingFields(
 
 class SiteGroundTemperatureUndisturbedXing(AnySiteGroundTemperatureUndisturbedXing):
     """Undisturbed ground temperature object using the Xing 2014 2 harmonic parameter model."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     average_soil_surface_temperature: float
     """[C]; Since: 23.2.0"""
@@ -2046,7 +2089,7 @@ class _SiteWaterMainsTemperatureCommonFields(TypedDict, total=False):
     annual_average_outdoor_air_temperature: float | None
     maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None
 
-class AnySiteWaterMainsTemperature(_TypedIDFObject):
+class AnySiteWaterMainsTemperature(_TypedAnyReleaseIDFObject):
     """``Site:WaterMainsTemperature`` as every supported EnergyPlus version declares it."""
     @property
     def calculation_method(self) -> Literal["Correlation", "Schedule", "CorrelationFromWeatherFile"] | None: ...
@@ -2068,6 +2111,9 @@ class _AnySiteWaterMainsTemperatureFields(_SiteWaterMainsTemperatureCommonFields
 
 class SiteWaterMainsTemperature(AnySiteWaterMainsTemperature):
     """Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     calculation_method: Literal["Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
     """If calculation method is CorrelationFromWeatherFile, the two numeric input fields are ignored. Instead, EnergyPlus ca...; Default: CorrelationFromWeatherFile"""
@@ -2461,7 +2507,7 @@ class _ScheduleWeekCompactFields(TypedDict, total=False):
 class _ScheduleYearCommonFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
 
-class AnyScheduleYear(_TypedIDFObject):
+class AnyScheduleYear(_TypedAnyReleaseIDFObject):
     """``Schedule:Year`` as every supported EnergyPlus version declares it."""
 
     schedule_type_limits_name: str | None
@@ -2492,6 +2538,9 @@ class ScheduleYearScheduleWeeksItem(TypedDict, total=False):
 
 class ScheduleYear(AnyScheduleYear):
     """A Schedule:Year contains from 1 to 52 week schedules"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     schedule_weeks: ExtensibleList[ScheduleYearScheduleWeeksGroup]
 
@@ -2643,7 +2692,7 @@ class _ScheduleFileCommonFields(TypedDict, total=False):
     number_of_hours_of_data: float | None
     interpolate_to_timestep: Literal["No", "Yes"] | None
 
-class AnyScheduleFile(_TypedIDFObject):
+class AnyScheduleFile(_TypedAnyReleaseIDFObject):
     """``Schedule:File`` as every supported EnergyPlus version declares it."""
 
     schedule_type_limits_name: str | None
@@ -2680,6 +2729,9 @@ class _AnyScheduleFileFields(_ScheduleFileCommonFields, total=False):
 class ScheduleFile(AnyScheduleFile):
     """A Schedule:File points to a text computer file that has 8760-8784 hours of data."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     column_number: int
     """Range: >= 1"""
     rows_to_skip_at_top: int
@@ -2711,7 +2763,7 @@ class _MaterialCommonFields(TypedDict, total=False):
     solar_absorptance: float | None
     visible_absorptance: float | None
 
-class AnyMaterial(_TypedIDFObject):
+class AnyMaterial(_TypedAnyReleaseIDFObject):
     """``Material`` as every supported EnergyPlus version declares it."""
 
     roughness: Literal["MediumRough", "MediumSmooth", "Rough", "Smooth", "VeryRough", "VerySmooth"]
@@ -2738,6 +2790,9 @@ class _AnyMaterialFields(_MaterialCommonFields, total=False): ...
 class Material(AnyMaterial):
     """Regular materials described with full set of thermal properties"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     thermal_absorptance_inside_face: float | None
     """When blank, this value is equal to the Thermal Absorptance field above. When entered, the Thermal Absorptance field a...; Range: > 0.0, <= 0.99999; Since: 26.2.0"""
     solar_absorptance_inside_face: float | None
@@ -2760,7 +2815,7 @@ class _MaterialNoMassCommonFields(TypedDict, total=False):
     solar_absorptance: float | None
     visible_absorptance: float | None
 
-class AnyMaterialNoMass(_TypedIDFObject):
+class AnyMaterialNoMass(_TypedAnyReleaseIDFObject):
     """``Material:NoMass`` as every supported EnergyPlus version declares it."""
 
     roughness: Literal["MediumRough", "MediumSmooth", "Rough", "Smooth", "VeryRough", "VerySmooth"]
@@ -2780,6 +2835,9 @@ class _AnyMaterialNoMassFields(_MaterialNoMassCommonFields, total=False): ...
 
 class MaterialNoMass(AnyMaterialNoMass):
     """Regular materials properties described whose principal description is R (Thermal Resistance)"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     thermal_absorptance_inside_face: float | None
     """When blank, this value is equal to the Thermal Absorptance field above. When entered, the Thermal Absorptance field a...; Range: > 0.0, <= 0.99999; Since: 26.2.0"""
@@ -3741,7 +3799,7 @@ class _WindowMaterialGlazingEquivalentLayerCommonFields(TypedDict, total=False):
     back_side_infrared_emissivity: float | None
     infrared_transmittance_applies_to_front_and_back: float | None
 
-class AnyWindowMaterialGlazingEquivalentLayer(_TypedIDFObject):
+class AnyWindowMaterialGlazingEquivalentLayer(_TypedAnyReleaseIDFObject):
     """``WindowMaterial:Glazing:EquivalentLayer`` as every supported EnergyPlus version declares it."""
 
     optical_data_type: Literal["Spectral", "SpectralAverage"] | None
@@ -3815,6 +3873,9 @@ class _AnyWindowMaterialGlazingEquivalentLayerFields(
 
 class WindowMaterialGlazingEquivalentLayer(AnyWindowMaterialGlazingEquivalentLayer):
     """Glass material properties for Windows or Glass Doors Transmittance/Reflectance input method."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     thermal_resistance: float | None
     """This is the R-Value in SI for the glass. The default value is an approximation for a single layer of glass at 1/4' in...; [m2-K/W]; Default: 0.158; Range: > 0.0; Since: 9.2.0"""
@@ -3923,7 +3984,7 @@ class _MaterialPropertyMoisturePenetrationDepthSettingsFields(TypedDict, total=F
 class _MaterialPropertyPhaseChangeCommonFields(TypedDict, total=False):
     temperature_coefficient_for_thermal_conductivity: float | None
 
-class AnyMaterialPropertyPhaseChange(_TypedIDFObject):
+class AnyMaterialPropertyPhaseChange(_TypedAnyReleaseIDFObject):
     """``MaterialProperty:PhaseChange`` as every supported EnergyPlus version declares it."""
 
     temperature_coefficient_for_thermal_conductivity: float | None
@@ -3951,6 +4012,9 @@ class MaterialPropertyPhaseChangeValuesItem(TypedDict, total=False):
 
 class MaterialPropertyPhaseChange(AnyMaterialPropertyPhaseChange):
     """Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) Na..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     values: ExtensibleList[MaterialPropertyPhaseChangeValuesGroup]
 
@@ -4014,7 +4078,7 @@ class _MaterialPropertyPhaseChangeHysteresisFields(TypedDict, total=False):
 
 class _MaterialPropertyVariableThermalConductivityCommonFields(TypedDict, total=False): ...
 
-class AnyMaterialPropertyVariableThermalConductivity(_TypedIDFObject):
+class AnyMaterialPropertyVariableThermalConductivity(_TypedAnyReleaseIDFObject):
     """``MaterialProperty:VariableThermalConductivity`` as every supported EnergyPlus version declares it."""
 
     def update(
@@ -4045,6 +4109,9 @@ class MaterialPropertyVariableThermalConductivityValuesItem(TypedDict, total=Fal
 class MaterialPropertyVariableThermalConductivity(AnyMaterialPropertyVariableThermalConductivity):
     """Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity ..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     values: ExtensibleList[MaterialPropertyVariableThermalConductivityValuesGroup]
 
     def update(
@@ -4072,7 +4139,7 @@ class _MaterialPropertyVariableAbsorptanceCommonFields(TypedDict, total=False):
     solar_absorptance_function_name: str | None
     solar_absorptance_schedule_name: str | None
 
-class AnyMaterialPropertyVariableAbsorptance(_TypedIDFObject):
+class AnyMaterialPropertyVariableAbsorptance(_TypedAnyReleaseIDFObject):
     """``MaterialProperty:VariableAbsorptance`` as every supported EnergyPlus version that has it declares it: 23.1.0 and later."""
 
     reference_material_name: str
@@ -4099,6 +4166,9 @@ class _AnyMaterialPropertyVariableAbsorptanceFields(_MaterialPropertyVariableAbs
 
 class MaterialPropertyVariableAbsorptance(AnyMaterialPropertyVariableAbsorptance):
     """Since: 23.1.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     control_signal_inside_face: (
         Literal["Scheduled", "SpaceHeatingCoolingMode", "SurfaceReceivedSolarRadiation", "SurfaceTemperature"] | None
@@ -5329,7 +5399,7 @@ class _ConstructionAirBoundaryCommonFields(TypedDict, total=False):
     simple_mixing_air_changes_per_hour: float | None
     simple_mixing_schedule_name: str | None
 
-class AnyConstructionAirBoundary(_TypedIDFObject):
+class AnyConstructionAirBoundary(_TypedAnyReleaseIDFObject):
     """``Construction:AirBoundary`` as every supported EnergyPlus version that has it declares it: 9.2.0 and later."""
 
     air_exchange_method: Literal["None", "SimpleMixing"] | None
@@ -5349,6 +5419,8 @@ class _AnyConstructionAirBoundaryFields(_ConstructionAirBoundaryCommonFields, to
 class ConstructionAirBoundary(AnyConstructionAirBoundary):
     """Indicates an open boundary between two zones. It may be used for base surfaces and fenestration surfaces. The two adj...; Since: 9.2.0"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionAirBoundaryFields]
     ) -> None: ...  # type: ignore[override]
@@ -5436,7 +5508,7 @@ class _ConstructionComplexFenestrationStateCommonFields(TypedDict, total=False):
     gap_4_name: str | None
     layer_5_name: str | None
 
-class AnyConstructionComplexFenestrationState(_TypedIDFObject):
+class AnyConstructionComplexFenestrationState(_TypedAnyReleaseIDFObject):
     """``Construction:ComplexFenestrationState`` as every supported EnergyPlus version declares it."""
 
     basis_type: Literal["LBNLWINDOW", "UserDefined"] | None
@@ -5472,6 +5544,9 @@ class _AnyConstructionComplexFenestrationStateFields(
 
 class ConstructionComplexFenestrationState(AnyConstructionComplexFenestrationState):
     """Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     outside_layer_directional_front_absorptance_matrix_name: str
     """Since: 23.2.0"""
@@ -5761,7 +5836,7 @@ class SpaceTagsItem(TypedDict, total=False):
 
     tag: str | None
 
-class AnySpace(_TypedIDFObject):
+class AnySpace(_TypedAnyReleaseIDFObject):
     """``Space`` as every supported EnergyPlus version that has it declares it: 9.6.0 and later."""
 
     zone_name: str
@@ -5778,6 +5853,9 @@ class _AnySpaceFields(_SpaceCommonFields, total=False): ...
 
 class Space(AnySpace):
     """Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space ...; Since: 9.6.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     ceiling_height: float | Literal["Autocalculate"] | None
     """If this field is 0.0, negative or autocalculate, then the average height of the space is automatically calculated and...; [m]; Default: Autocalculate; Since: 22.2.0"""
@@ -5980,7 +6058,7 @@ class BuildingSurfaceDetailedVerticesItem(TypedDict, total=False):
     vertex_y_coordinate: Required[float]
     vertex_z_coordinate: Required[float]
 
-class AnyBuildingSurfaceDetailed(_TypedIDFObject):
+class AnyBuildingSurfaceDetailed(_TypedAnyReleaseIDFObject):
     """``BuildingSurface:Detailed`` as every supported EnergyPlus version declares it."""
 
     surface_type: Literal["Ceiling", "Floor", "Roof", "Wall"]
@@ -6072,6 +6150,9 @@ class _AnyBuildingSurfaceDetailedFields(_BuildingSurfaceDetailedCommonFields, to
 class BuildingSurfaceDetailed(AnyBuildingSurfaceDetailed):
     """Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition: Literal[
@@ -6146,7 +6227,7 @@ class WallDetailedVerticesItem(TypedDict, total=False):
     vertex_y_coordinate: Required[float]
     vertex_z_coordinate: Required[float]
 
-class AnyWallDetailed(_TypedIDFObject):
+class AnyWallDetailed(_TypedAnyReleaseIDFObject):
     """``Wall:Detailed`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6235,6 +6316,9 @@ class _AnyWallDetailedFields(_WallDetailedCommonFields, total=False):
 class WallDetailed(AnyWallDetailed):
     """Allows for detailed entry of wall heat transfer surfaces."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition: Literal[
@@ -6307,7 +6391,7 @@ class RoofCeilingDetailedVerticesItem(TypedDict, total=False):
     vertex_y_coordinate: Required[float]
     vertex_z_coordinate: Required[float]
 
-class AnyRoofCeilingDetailed(_TypedIDFObject):
+class AnyRoofCeilingDetailed(_TypedAnyReleaseIDFObject):
     """``RoofCeiling:Detailed`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6392,6 +6476,9 @@ class _AnyRoofCeilingDetailedFields(_RoofCeilingDetailedCommonFields, total=Fals
 class RoofCeilingDetailed(AnyRoofCeilingDetailed):
     """Allows for detailed entry of roof/ceiling heat transfer surfaces."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition: Literal[
@@ -6462,7 +6549,7 @@ class FloorDetailedVerticesItem(TypedDict, total=False):
     vertex_y_coordinate: Required[float]
     vertex_z_coordinate: Required[float]
 
-class AnyFloorDetailed(_TypedIDFObject):
+class AnyFloorDetailed(_TypedAnyReleaseIDFObject):
     """``Floor:Detailed`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6551,6 +6638,9 @@ class _AnyFloorDetailedFields(_FloorDetailedCommonFields, total=False):
 class FloorDetailed(AnyFloorDetailed):
     """Allows for detailed entry of floor heat transfer surfaces."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition: Literal[
@@ -6609,7 +6699,7 @@ class _WallExteriorCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class AnyWallExterior(_TypedIDFObject):
+class AnyWallExterior(_TypedAnyReleaseIDFObject):
     """``Wall:Exterior`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6639,6 +6729,9 @@ class _AnyWallExteriorFields(_WallExteriorCommonFields, total=False): ...
 class WallExterior(AnyWallExterior):
     """Allows for simplified entry of exterior walls. View Factor to Ground is automatically calculated."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -6659,7 +6752,7 @@ class _WallAdiabaticCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class AnyWallAdiabatic(_TypedIDFObject):
+class AnyWallAdiabatic(_TypedAnyReleaseIDFObject):
     """``Wall:Adiabatic`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6689,6 +6782,9 @@ class _AnyWallAdiabaticFields(_WallAdiabaticCommonFields, total=False): ...
 class WallAdiabatic(AnyWallAdiabatic):
     """Allows for simplified entry of interior walls."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -6709,7 +6805,7 @@ class _WallUndergroundCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class AnyWallUnderground(_TypedIDFObject):
+class AnyWallUnderground(_TypedAnyReleaseIDFObject):
     """``Wall:Underground`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6741,6 +6837,9 @@ class _AnyWallUndergroundFields(_WallUndergroundCommonFields, total=False): ...
 class WallUnderground(AnyWallUnderground):
     """Allows for simplified entry of underground walls."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -6762,7 +6861,7 @@ class _WallInterzoneCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class AnyWallInterzone(_TypedIDFObject):
+class AnyWallInterzone(_TypedAnyReleaseIDFObject):
     """``Wall:Interzone`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6794,6 +6893,9 @@ class _AnyWallInterzoneFields(_WallInterzoneCommonFields, total=False): ...
 class WallInterzone(AnyWallInterzone):
     """Allows for simplified entry of interzone walls (walls between zones)."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space for the inside face of the surface (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -6814,7 +6916,7 @@ class _RoofCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class AnyRoof(_TypedIDFObject):
+class AnyRoof(_TypedAnyReleaseIDFObject):
     """``Roof`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6844,6 +6946,9 @@ class _AnyRoofFields(_RoofCommonFields, total=False): ...
 class Roof(AnyRoof):
     """Allows for simplified entry of roofs (exterior). View Factor to Ground is automatically calculated."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -6864,7 +6969,7 @@ class _CeilingAdiabaticCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class AnyCeilingAdiabatic(_TypedIDFObject):
+class AnyCeilingAdiabatic(_TypedAnyReleaseIDFObject):
     """``Ceiling:Adiabatic`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6896,6 +7001,9 @@ class _AnyCeilingAdiabaticFields(_CeilingAdiabaticCommonFields, total=False): ..
 class CeilingAdiabatic(AnyCeilingAdiabatic):
     """Allows for simplified entry of interior ceilings."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -6917,7 +7025,7 @@ class _CeilingInterzoneCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class AnyCeilingInterzone(_TypedIDFObject):
+class AnyCeilingInterzone(_TypedAnyReleaseIDFObject):
     """``Ceiling:Interzone`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -6951,6 +7059,9 @@ class _AnyCeilingInterzoneFields(_CeilingInterzoneCommonFields, total=False): ..
 class CeilingInterzone(AnyCeilingInterzone):
     """Allows for simplified entry of ceilings using adjacent zone (interzone) heat transfer - adjacent surface should be a ..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -6971,7 +7082,7 @@ class _FloorGroundContactCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class AnyFloorGroundContact(_TypedIDFObject):
+class AnyFloorGroundContact(_TypedAnyReleaseIDFObject):
     """``Floor:GroundContact`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -7003,6 +7114,9 @@ class _AnyFloorGroundContactFields(_FloorGroundContactCommonFields, total=False)
 class FloorGroundContact(AnyFloorGroundContact):
     """Allows for simplified entry of exterior floors with ground contact. View Factors to Ground is automatically calculated."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -7025,7 +7139,7 @@ class _FloorAdiabaticCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class AnyFloorAdiabatic(_TypedIDFObject):
+class AnyFloorAdiabatic(_TypedAnyReleaseIDFObject):
     """``Floor:Adiabatic`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -7055,6 +7169,9 @@ class _AnyFloorAdiabaticFields(_FloorAdiabaticCommonFields, total=False): ...
 class FloorAdiabatic(AnyFloorAdiabatic):
     """Allows for simplified entry of exterior floors ignoring ground contact or interior floors. View Factor to Ground is a..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -7076,7 +7193,7 @@ class _FloorInterzoneCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class AnyFloorInterzone(_TypedIDFObject):
+class AnyFloorInterzone(_TypedAnyReleaseIDFObject):
     """``Floor:Interzone`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -7108,6 +7225,9 @@ class _AnyFloorInterzoneFields(_FloorInterzoneCommonFields, total=False): ...
 class FloorInterzone(AnyFloorInterzone):
     """Allows for simplified entry of floors using adjacent zone (interzone) heat transfer - adjacent surface should be a ce..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     space_name: str | None
     """Space for the inside face of the surface (optional, see description of Space object for more details).; Since: 9.6.0"""
 
@@ -7138,7 +7258,7 @@ class _FenestrationSurfaceDetailedCommonFields(TypedDict, total=False):
     vertex_4_y_coordinate: float | None
     vertex_4_z_coordinate: float | None
 
-class AnyFenestrationSurfaceDetailed(_TypedIDFObject):
+class AnyFenestrationSurfaceDetailed(_TypedAnyReleaseIDFObject):
     """``FenestrationSurface:Detailed`` as every supported EnergyPlus version declares it."""
     @property
     def surface_type(
@@ -7207,6 +7327,9 @@ class _AnyFenestrationSurfaceDetailedFields(_FenestrationSurfaceDetailedCommonFi
 class FenestrationSurfaceDetailed(AnyFenestrationSurfaceDetailed):
     """Allows for detailed entry of subsurfaces (windows, doors, glass doors, tubular daylighting devices)."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     surface_type: Literal[
         "Door",
         "FixedWindow",
@@ -7248,7 +7371,7 @@ class _WindowCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class AnyWindow(_TypedIDFObject):
+class AnyWindow(_TypedAnyReleaseIDFObject):
     """``Window`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -7276,6 +7399,8 @@ class _AnyWindowFields(_WindowCommonFields, total=False): ...
 class Window(AnyWindow):
     """Allows for simplified entry of Windows."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowFields]) -> None: ...  # type: ignore[override]
     _creation_signature: _c107.Window  # type: ignore[assignment]
 
@@ -7321,7 +7446,7 @@ class _GlazedDoorCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class AnyGlazedDoor(_TypedIDFObject):
+class AnyGlazedDoor(_TypedAnyReleaseIDFObject):
     """``GlazedDoor`` as every supported EnergyPlus version declares it."""
 
     construction_name: str
@@ -7349,6 +7474,8 @@ class _AnyGlazedDoorFields(_GlazedDoorCommonFields, total=False): ...
 class GlazedDoor(AnyGlazedDoor):
     """Allows for simplified entry of glass Doors."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GlazedDoorFields]) -> None: ...  # type: ignore[override]
     _creation_signature: _c52.GlazedDoor  # type: ignore[assignment]
 
@@ -7493,7 +7620,7 @@ class WindowShadingControlFenestrationSurfacesItem(TypedDict, total=False):
 
     fenestration_surface_name: Required[str]
 
-class AnyWindowShadingControl(_TypedIDFObject):
+class AnyWindowShadingControl(_TypedAnyReleaseIDFObject):
     """``WindowShadingControl`` as every supported EnergyPlus version that has it declares it: 9.0.1 and later."""
 
     zone_name: str
@@ -7625,6 +7752,9 @@ class _AnyWindowShadingControlFields(_WindowShadingControlCommonFields, total=Fa
 class WindowShadingControl(AnyWindowShadingControl):
     """Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ...; Since: 9.0.1"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     shading_control_sequence_number: int | None
     """If multiple WindowShadingControl objects are used than the order that they deploy the window shades can be set with t...; Default: 1; Range: >= 1"""
     shading_control_type: Literal[
@@ -7713,7 +7843,7 @@ class _WindowPropertyFrameAndDividerCommonFields(TypedDict, total=False):
     inside_reveal_depth: float | None
     inside_reveal_solar_absorptance: float | None
 
-class AnyWindowPropertyFrameAndDivider(_TypedIDFObject):
+class AnyWindowPropertyFrameAndDivider(_TypedAnyReleaseIDFObject):
     """``WindowProperty:FrameAndDivider`` as every supported EnergyPlus version declares it."""
 
     frame_width: float | None
@@ -7780,6 +7910,9 @@ class _AnyWindowPropertyFrameAndDividerFields(_WindowPropertyFrameAndDividerComm
 
 class WindowPropertyFrameAndDivider(AnyWindowPropertyFrameAndDivider):
     """Specifies the dimensions of a window frame, dividers, and inside reveal surfaces. Referenced by the surface objects f..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     number_of_horizontal_dividers: int | None
     """'Horizontal' means parallel to local window X-axis; Default: 0; Range: >= 0"""
@@ -7950,7 +8083,7 @@ class _InternalMassCommonFields(TypedDict, total=False):
     construction_name: str | None
     surface_area: float
 
-class AnyInternalMass(_TypedIDFObject):
+class AnyInternalMass(_TypedAnyReleaseIDFObject):
     """``InternalMass`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -7965,6 +8098,9 @@ class _AnyInternalMassFields(_InternalMassCommonFields, total=False): ...
 
 class InternalMass(AnyInternalMass):
     """Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_name: str | None
     """Zone(s) the surface is a part of. This field is ignored when a Space or SpaceList Name is specified.; Since: 9.2.0"""
@@ -8646,7 +8782,7 @@ class FoundationKivaBlocksItem(TypedDict, total=False):
     custom_block_x_position: float | None
     custom_block_z_position: float | None
 
-class AnyFoundationKiva(_TypedIDFObject):
+class AnyFoundationKiva(_TypedAnyReleaseIDFObject):
     """``Foundation:Kiva`` as every supported EnergyPlus version declares it."""
 
     interior_horizontal_insulation_material_name: str | None
@@ -8683,6 +8819,9 @@ class _AnyFoundationKivaFields(_FoundationKivaCommonFields, total=False): ...
 
 class FoundationKiva(AnyFoundationKiva):
     """Refined definition of the foundation surface construction used to inform two-dimensional heat transfer calculated usi..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     initial_indoor_air_temperature: float | None
     """Indoor air temperature used for Kiva initialization (prior to warmup period) If left blank, indoor air temperature wi...; [C]; Since: 9.2.0"""
@@ -11126,7 +11265,7 @@ class _SurfacePropertyLocalEnvironmentCommonFields(TypedDict, total=False):
     surrounding_surfaces_object_name: str | None
     outdoor_air_node_name: str | None
 
-class AnySurfacePropertyLocalEnvironment(_TypedIDFObject):
+class AnySurfacePropertyLocalEnvironment(_TypedAnyReleaseIDFObject):
     """``SurfaceProperty:LocalEnvironment`` as every supported EnergyPlus version declares it."""
 
     exterior_surface_name: str | None
@@ -11145,6 +11284,9 @@ class _AnySurfacePropertyLocalEnvironmentFields(_SurfacePropertyLocalEnvironment
 
 class SurfacePropertyLocalEnvironment(AnySurfacePropertyLocalEnvironment):
     """This object defines the local environment properties of an exterior surface. One or more environment properties have ..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     sunlit_fraction_schedule_name: str | None
     """Enter the name of a Schedule object; Since: 23.2.0"""
@@ -11325,7 +11467,7 @@ class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsItem(TypedDict, total=F
     to_surface: str | None
     view_factor: float | None
 
-class AnyZonePropertyUserViewFactorsBySurfaceName(_TypedIDFObject):
+class AnyZonePropertyUserViewFactorsBySurfaceName(_TypedAnyReleaseIDFObject):
     """``ZoneProperty:UserViewFactors:BySurfaceName`` as every supported EnergyPlus version that has it declares it: 9.4.0 and later."""
 
     view_factors: ExtensibleList[ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup]
@@ -11344,6 +11486,9 @@ class _AnyZonePropertyUserViewFactorsBySurfaceNameFields(
 
 class ZonePropertyUserViewFactorsBySurfaceName(AnyZonePropertyUserViewFactorsBySurfaceName):
     """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b...; Since: 9.4.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
     """View factors may be entered for a space, zone, group of spaces, or group of zones in the same enclosure by way of Con...; Since: 9.6.0"""
@@ -13359,7 +13504,7 @@ class _PeopleCommonFields(TypedDict, total=False):
     clothing_insulation_schedule_name: str | None
     air_velocity_schedule_name: str | None
 
-class AnyPeople(_TypedIDFObject):
+class AnyPeople(_TypedAnyReleaseIDFObject):
     """``People`` as every supported EnergyPlus version declares it."""
 
     number_of_people_schedule_name: str
@@ -13468,6 +13613,9 @@ class _AnyPeopleFields(_PeopleCommonFields, total=False):
 
 class People(AnyPeople):
     """Sets internal gains and contaminant rates for occupants in the zone. If a ZoneList, SpaceList, or a Zone comprised of..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     """Since: 9.6.0"""
@@ -13713,7 +13861,7 @@ class _PeopleDefinitionFields(TypedDict, total=False):
 
 class _ComfortViewFactorAnglesCommonFields(TypedDict, total=False): ...
 
-class AnyComfortViewFactorAngles(_TypedIDFObject):
+class AnyComfortViewFactorAngles(_TypedAnyReleaseIDFObject):
     """``ComfortViewFactorAngles`` as every supported EnergyPlus version declares it."""
 
     def update(
@@ -13738,6 +13886,9 @@ class ComfortViewFactorAnglesAnglesItem(TypedDict, total=False):
 
 class ComfortViewFactorAngles(AnyComfortViewFactorAngles):
     """Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     angles: ExtensibleList[ComfortViewFactorAnglesAnglesGroup]
 
@@ -13764,7 +13915,7 @@ class _LightsCommonFields(TypedDict, total=False):
     return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None
     return_air_heat_gain_node_name: str | None
 
-class AnyLights(_TypedIDFObject):
+class AnyLights(_TypedAnyReleaseIDFObject):
     """``Lights`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str
@@ -13801,6 +13952,9 @@ class _AnyLightsFields(_LightsCommonFields, total=False): ...
 
 class Lights(AnyLights):
     """Sets internal gains for lights in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is s..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     """Since: 9.6.0"""
@@ -13897,7 +14051,7 @@ class _ElectricEquipmentCommonFields(TypedDict, total=False):
     fraction_lost: float | None
     end_use_subcategory: str | None
 
-class AnyElectricEquipment(_TypedIDFObject):
+class AnyElectricEquipment(_TypedAnyReleaseIDFObject):
     """``ElectricEquipment`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str
@@ -13926,6 +14080,9 @@ class _AnyElectricEquipmentFields(_ElectricEquipmentCommonFields, total=False): 
 
 class ElectricEquipment(AnyElectricEquipment):
     """Sets internal gains for electric equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than on..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     """Since: 9.6.0"""
@@ -14008,7 +14165,7 @@ class _GasEquipmentCommonFields(TypedDict, total=False):
     carbon_dioxide_generation_rate: float | None
     end_use_subcategory: str | None
 
-class AnyGasEquipment(_TypedIDFObject):
+class AnyGasEquipment(_TypedAnyReleaseIDFObject):
     """``GasEquipment`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str
@@ -14039,6 +14196,9 @@ class _AnyGasEquipmentFields(_GasEquipmentCommonFields, total=False): ...
 
 class GasEquipment(AnyGasEquipment):
     """Sets internal gains and contaminant rates for gas equipment in the zone. If a ZoneList, SpaceList, or a Zone comprise..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     """Since: 9.6.0"""
@@ -14127,7 +14287,7 @@ class _HotWaterEquipmentCommonFields(TypedDict, total=False):
     fraction_lost: float | None
     end_use_subcategory: str | None
 
-class AnyHotWaterEquipment(_TypedIDFObject):
+class AnyHotWaterEquipment(_TypedAnyReleaseIDFObject):
     """``HotWaterEquipment`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str
@@ -14158,6 +14318,9 @@ class _AnyHotWaterEquipmentFields(_HotWaterEquipmentCommonFields, total=False): 
 
 class HotWaterEquipment(AnyHotWaterEquipment):
     """Sets internal gains for hot water equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than o..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     """Since: 9.6.0"""
@@ -14243,7 +14406,7 @@ class _SteamEquipmentCommonFields(TypedDict, total=False):
     fraction_lost: float | None
     end_use_subcategory: str | None
 
-class AnySteamEquipment(_TypedIDFObject):
+class AnySteamEquipment(_TypedAnyReleaseIDFObject):
     """``SteamEquipment`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str
@@ -14272,6 +14435,9 @@ class _AnySteamEquipmentFields(_SteamEquipmentCommonFields, total=False): ...
 
 class SteamEquipment(AnySteamEquipment):
     """Sets internal gains for steam equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one S..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     """Since: 9.6.0"""
@@ -14358,7 +14524,7 @@ class _OtherEquipmentCommonFields(TypedDict, total=False):
     carbon_dioxide_generation_rate: float | None
     end_use_subcategory: str | None
 
-class AnyOtherEquipment(_TypedIDFObject):
+class AnyOtherEquipment(_TypedAnyReleaseIDFObject):
     """``OtherEquipment`` as every supported EnergyPlus version declares it."""
     @property
     def fuel_type(
@@ -14446,6 +14612,9 @@ class _AnyOtherEquipmentFields(_OtherEquipmentCommonFields, total=False):
 
 class OtherEquipment(AnyOtherEquipment):
     """Sets internal gains or losses for 'other' equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of mor..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: (
         Literal[
@@ -14613,7 +14782,7 @@ class _IndoorLivingWallCommonFields(TypedDict, total=False):
     led_nominal_power: float | None
     radiant_fraction_of_led_lights: float | None
 
-class AnyIndoorLivingWall(_TypedIDFObject):
+class AnyIndoorLivingWall(_TypedAnyReleaseIDFObject):
     """``IndoorLivingWall`` as every supported EnergyPlus version that has it declares it: 24.1.0 and later."""
 
     surface_name: str
@@ -14649,6 +14818,8 @@ class _AnyIndoorLivingWallFields(_IndoorLivingWallCommonFields, total=False): ..
 class IndoorLivingWall(AnyIndoorLivingWall):
     """Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrate...; Since: 24.1.0"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_IndoorLivingWallFields]) -> None: ...  # type: ignore[override]
     _creation_signature: _c38.IndoorLivingWall  # type: ignore[assignment]
 
@@ -14684,7 +14855,7 @@ class _ElectricEquipmentITEAirCooledCommonFields(TypedDict, total=False):
     return_temperature_difference: float | None
     return_temperature_difference_schedule: str | None
 
-class AnyElectricEquipmentITEAirCooled(_TypedIDFObject):
+class AnyElectricEquipmentITEAirCooled(_TypedAnyReleaseIDFObject):
     """``ElectricEquipment:ITE:AirCooled`` as every supported EnergyPlus version declares it."""
 
     air_flow_calculation_method: Literal["FlowControlWithApproachTemperatures", "FlowFromSystem"] | None
@@ -14758,6 +14929,9 @@ class _AnyElectricEquipmentITEAirCooledFields(_ElectricEquipmentITEAirCooledComm
 
 class ElectricEquipmentITEAirCooled(AnyElectricEquipmentITEAirCooled):
     """This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed.; Since: 9.6.0"""
@@ -14901,7 +15075,7 @@ class _ZoneBaseboardOutdoorTemperatureControlledCommonFields(TypedDict, total=Fa
     fraction_radiant: float | None
     end_use_subcategory: str | None
 
-class AnyZoneBaseboardOutdoorTemperatureControlled(_TypedIDFObject):
+class AnyZoneBaseboardOutdoorTemperatureControlled(_TypedAnyReleaseIDFObject):
     """``ZoneBaseboard:OutdoorTemperatureControlled`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str
@@ -14945,6 +15119,9 @@ class _AnyZoneBaseboardOutdoorTemperatureControlledFields(
 
 class ZoneBaseboardOutdoorTemperatureControlled(AnyZoneBaseboardOutdoorTemperatureControlled):
     """Specifies outside temperature-controlled electric baseboard heating. If a ZoneList, SpaceList, or a Zone comprised of..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     """Since: 9.6.0"""
@@ -15262,7 +15439,7 @@ class AnyDaylightingControlsControlDataItem(TypedDict, total=False):
     daylighting_reference_point_name: Required[str]
     illuminance_setpoint_at_reference_point: float | None
 
-class AnyDaylightingControls(_TypedIDFObject):
+class AnyDaylightingControls(_TypedAnyReleaseIDFObject):
     """``Daylighting:Controls`` as every supported EnergyPlus version declares it."""
 
     daylighting_method: Literal["DElight", "SplitFlux"] | None
@@ -15316,6 +15493,9 @@ class DaylightingControlsControlDataItem(TypedDict, total=False):
 class DaylightingControls(AnyDaylightingControls):
     """Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_space_name: str
     """Since: 9.6.0"""
     number_of_stepped_control_steps: int | None
@@ -15337,7 +15517,7 @@ class _DaylightingReferencePointCommonFields(TypedDict, total=False):
     y_coordinate_of_reference_point: float
     z_coordinate_of_reference_point: float | None
 
-class AnyDaylightingReferencePoint(_TypedIDFObject):
+class AnyDaylightingReferencePoint(_TypedAnyReleaseIDFObject):
     """``Daylighting:ReferencePoint`` as every supported EnergyPlus version declares it."""
 
     x_coordinate_of_reference_point: float
@@ -15356,6 +15536,9 @@ class _AnyDaylightingReferencePointFields(_DaylightingReferencePointCommonFields
 
 class DaylightingReferencePoint(AnyDaylightingReferencePoint):
     """Used by Daylighting:Controls to identify the reference point coordinates for each sensor. Reference points are given ..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name: str
     """Since: 9.6.0"""
@@ -15506,7 +15689,7 @@ class _OutputIlluminanceMapCommonFields(TypedDict, total=False):
     y_minimum_coordinate: float | None
     y_maximum_coordinate: float | None
 
-class AnyOutputIlluminanceMap(_TypedIDFObject):
+class AnyOutputIlluminanceMap(_TypedAnyReleaseIDFObject):
     """``Output:IlluminanceMap`` as every supported EnergyPlus version declares it."""
 
     z_height: float | None
@@ -15538,6 +15721,9 @@ class _AnyOutputIlluminanceMapFields(_OutputIlluminanceMapCommonFields, total=Fa
 
 class OutputIlluminanceMap(AnyOutputIlluminanceMap):
     """reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point Coo..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name: str
     """Since: 24.2.0"""
@@ -15582,7 +15768,7 @@ class _ZoneInfiltrationDesignFlowRateCommonFields(TypedDict, total=False):
     velocity_term_coefficient: float | None
     velocity_squared_term_coefficient: float | None
 
-class AnyZoneInfiltrationDesignFlowRate(_TypedIDFObject):
+class AnyZoneInfiltrationDesignFlowRate(_TypedAnyReleaseIDFObject):
     """``ZoneInfiltration:DesignFlowRate`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -15614,6 +15800,9 @@ class _AnyZoneInfiltrationDesignFlowRateFields(_ZoneInfiltrationDesignFlowRateCo
 class ZoneInfiltrationDesignFlowRate(AnyZoneInfiltrationDesignFlowRate):
     """Infiltration is specified as a design level which is modified by a Schedule fraction, temperature difference and wind..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_or_space_or_spacelist_name: str
     """Since: 22.2.0"""
     flow_rate_per_floor_area: float | None
@@ -15640,7 +15829,7 @@ class _ZoneInfiltrationEffectiveLeakageAreaCommonFields(TypedDict, total=False):
     stack_coefficient: float
     wind_coefficient: float
 
-class AnyZoneInfiltrationEffectiveLeakageArea(_TypedIDFObject):
+class AnyZoneInfiltrationEffectiveLeakageArea(_TypedAnyReleaseIDFObject):
     """``ZoneInfiltration:EffectiveLeakageArea`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -15667,6 +15856,9 @@ class _AnyZoneInfiltrationEffectiveLeakageAreaFields(
 class ZoneInfiltrationEffectiveLeakageArea(AnyZoneInfiltrationEffectiveLeakageArea):
     """Infiltration is specified as effective leakage area at 4 Pa, schedule fraction, stack and wind coefficients, and is a..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
 
@@ -15686,7 +15878,7 @@ class _ZoneInfiltrationFlowCoefficientCommonFields(TypedDict, total=False):
     wind_coefficient: float
     shelter_factor: float
 
-class AnyZoneInfiltrationFlowCoefficient(_TypedIDFObject):
+class AnyZoneInfiltrationFlowCoefficient(_TypedAnyReleaseIDFObject):
     """``ZoneInfiltration:FlowCoefficient`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -15711,6 +15903,9 @@ class _AnyZoneInfiltrationFlowCoefficientFields(_ZoneInfiltrationFlowCoefficient
 
 class ZoneInfiltrationFlowCoefficient(AnyZoneInfiltrationFlowCoefficient):
     """Infiltration is specified as flow coefficient, schedule fraction, stack and wind coefficients, and is a function of t..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
@@ -15748,7 +15943,7 @@ class _ZoneVentilationDesignFlowRateCommonFields(TypedDict, total=False):
     maximum_outdoor_temperature_schedule_name: str | None
     maximum_wind_speed: float | None
 
-class AnyZoneVentilationDesignFlowRate(_TypedIDFObject):
+class AnyZoneVentilationDesignFlowRate(_TypedAnyReleaseIDFObject):
     """``ZoneVentilation:DesignFlowRate`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -15808,6 +16003,9 @@ class _AnyZoneVentilationDesignFlowRateFields(_ZoneVentilationDesignFlowRateComm
 class ZoneVentilationDesignFlowRate(AnyZoneVentilationDesignFlowRate):
     """Ventilation is specified as a design level which is modified by a schedule fraction, temperature difference and wind ..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_or_space_or_spacelist_name: str
     """Since: 22.2.0"""
     flow_rate_per_floor_area: float | None
@@ -15844,7 +16042,7 @@ class _ZoneVentilationWindandStackOpenAreaCommonFields(TypedDict, total=False):
     maximum_outdoor_temperature_schedule_name: str | None
     maximum_wind_speed: float | None
 
-class AnyZoneVentilationWindandStackOpenArea(_TypedIDFObject):
+class AnyZoneVentilationWindandStackOpenArea(_TypedAnyReleaseIDFObject):
     """``ZoneVentilation:WindandStackOpenArea`` as every supported EnergyPlus version declares it."""
 
     opening_area: float | None
@@ -15892,6 +16090,9 @@ class _AnyZoneVentilationWindandStackOpenAreaFields(_ZoneVentilationWindandStack
 class ZoneVentilationWindandStackOpenArea(AnyZoneVentilationWindandStackOpenArea):
     """This object is specified as natural ventilation driven by wind and stack effect only: Ventilation Wind = Cw * Opening..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
 
@@ -15936,7 +16137,7 @@ class _ZoneMixingCommonFields(TypedDict, total=False):
     minimum_outdoor_temperature_schedule_name: str | None
     maximum_outdoor_temperature_schedule_name: str | None
 
-class AnyZoneMixing(_TypedIDFObject):
+class AnyZoneMixing(_TypedAnyReleaseIDFObject):
     """``ZoneMixing`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -15965,6 +16166,9 @@ class _AnyZoneMixingFields(_ZoneMixingCommonFields, total=False): ...
 
 class ZoneMixing(AnyZoneMixing):
     """ZoneMixing is a simple air exchange from one zone or space to another. Note that this statement only affects the ener..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
@@ -16004,7 +16208,7 @@ class _ZoneCrossMixingCommonFields(TypedDict, total=False):
     minimum_outdoor_temperature_schedule_name: str | None
     maximum_outdoor_temperature_schedule_name: str | None
 
-class AnyZoneCrossMixing(_TypedIDFObject):
+class AnyZoneCrossMixing(_TypedAnyReleaseIDFObject):
     """``ZoneCrossMixing`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -16035,6 +16239,9 @@ class _AnyZoneCrossMixingFields(_ZoneCrossMixingCommonFields, total=False): ...
 
 class ZoneCrossMixing(AnyZoneCrossMixing):
     """ZoneCrossMixing exchanges an equal amount of air between two zones or spaces. Note that this statement affects the en..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
@@ -16069,7 +16276,7 @@ class _ZoneRefrigerationDoorMixingCommonFields(TypedDict, total=False):
     door_area: float | None
     door_protection_type: Literal["AirCurtain", "None", "StripCurtain"] | None
 
-class AnyZoneRefrigerationDoorMixing(_TypedIDFObject):
+class AnyZoneRefrigerationDoorMixing(_TypedAnyReleaseIDFObject):
     """``ZoneRefrigerationDoorMixing`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str
@@ -16090,6 +16297,9 @@ class _AnyZoneRefrigerationDoorMixingFields(_ZoneRefrigerationDoorMixingCommonFi
 
 class ZoneRefrigerationDoorMixing(AnyZoneRefrigerationDoorMixing):
     """Refrigeration Door Mixing is used for an opening between two zones (or spaces) that are at the same elevation but hav..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name_1: str
     """If a space name is used, it must belong to a different zone than Zone or Space Name 2.; Since: 24.2.0"""
@@ -16129,7 +16339,7 @@ class _ZoneEarthtubeCommonFields(TypedDict, total=False):
     velocity_term_flow_coefficient: float | None
     velocity_squared_term_flow_coefficient: float | None
 
-class AnyZoneEarthtube(_TypedIDFObject):
+class AnyZoneEarthtube(_TypedAnyReleaseIDFObject):
     """``ZoneEarthtube`` as every supported EnergyPlus version declares it."""
 
     zone_name: str
@@ -16182,6 +16392,9 @@ class _AnyZoneEarthtubeFields(_ZoneEarthtubeCommonFields, total=False): ...
 
 class ZoneEarthtube(AnyZoneEarthtube):
     """Earth Tube is specified as a design level which is modified by a Schedule fraction, temperature difference and wind s..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     earth_tube_model_type: Literal["Basic", "Vertical"] | None
     """Default: Basic; Since: 23.2.0"""
@@ -16237,7 +16450,7 @@ class _ZoneCoolTowerShowerCommonFields(TypedDict, total=False):
     fraction_of_flow_schedule: float | None
     rated_power_consumption: float
 
-class AnyZoneCoolTowerShower(_TypedIDFObject):
+class AnyZoneCoolTowerShower(_TypedAnyReleaseIDFObject):
     """``ZoneCoolTower:Shower`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -16273,6 +16486,9 @@ class _AnyZoneCoolTowerShowerFields(_ZoneCoolTowerShowerCommonFields, total=Fals
 
 class ZoneCoolTowerShower(AnyZoneCoolTowerShower):
     """A cooltower (sometimes referred to as a wind tower or a shower cooling tower) models passive downdraught evaporative ..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name: str
     """Since: 24.2.0"""
@@ -16332,7 +16548,7 @@ class _ZoneThermalChimneyCommonFields(TypedDict, total=False):
     distance_from_top_of_thermal_chimney_to_inlet_20: float | None
     cross_sectional_areas_of_air_channel_inlet_20: float | None
 
-class AnyZoneThermalChimney(_TypedIDFObject):
+class AnyZoneThermalChimney(_TypedAnyReleaseIDFObject):
     """``ZoneThermalChimney`` as every supported EnergyPlus version declares it."""
 
     zone_name: str
@@ -16435,6 +16651,9 @@ class _AnyZoneThermalChimneyFields(_ZoneThermalChimneyCommonFields, total=False)
 
 class ZoneThermalChimney(AnyZoneThermalChimney):
     """A thermal chimney is a vertical shaft utilizing solar radiation to enhance natural ventilation. It consists of an abs..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name_1: str
     """Since: 24.2.0"""
@@ -16586,7 +16805,7 @@ class _AirflowNetworkSimulationControlCommonFields(TypedDict, total=False):
     height_dependence_of_external_node_temperature: Literal["No", "Yes"] | None
     solver: Literal["ConjugateGradient", "SkylineLU"] | None
 
-class AnyAirflowNetworkSimulationControl(_TypedIDFObject):
+class AnyAirflowNetworkSimulationControl(_TypedAnyReleaseIDFObject):
     """``AirflowNetwork:SimulationControl`` as every supported EnergyPlus version declares it."""
 
     airflownetwork_control: (
@@ -16636,6 +16855,9 @@ class _AnyAirflowNetworkSimulationControlFields(_AirflowNetworkSimulationControl
 
 class AirflowNetworkSimulationControl(AnyAirflowNetworkSimulationControl):
     """This object defines the global parameters used in an Airflow Network simulation."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     maximum_number_of_iterations: int | None
     """Determines the maximum number of iterations used to converge on a solution. If this limit is exceeded, the program te...; [dimensionless]; Default: 500; Range: > 10, <= 30000"""
@@ -17830,7 +18052,7 @@ class _AirflowNetworkDistributionComponentOutdoorAirFlowCommonFields(TypedDict, 
     air_mass_flow_exponent_when_no_outdoor_air_flow: float | None
     reference_crack_conditions: str | None
 
-class AnyAirflowNetworkDistributionComponentOutdoorAirFlow(_TypedIDFObject):
+class AnyAirflowNetworkDistributionComponentOutdoorAirFlow(_TypedAnyReleaseIDFObject):
     """``AirflowNetwork:Distribution:Component:OutdoorAirFlow`` as every supported EnergyPlus version declares it."""
 
     air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float
@@ -17855,6 +18077,9 @@ class _AnyAirflowNetworkDistributionComponentOutdoorAirFlowFields(
 class AirflowNetworkDistributionComponentOutdoorAirFlow(AnyAirflowNetworkDistributionComponentOutdoorAirFlow):
     """This object includes the outdoor air flow rate set by the Controller:OutdoorAir object in the airflow network."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     outdoor_air_mixer_name: str
     """Since: 9.0.1"""
 
@@ -17876,7 +18101,7 @@ class _AirflowNetworkDistributionComponentReliefAirFlowCommonFields(TypedDict, t
     air_mass_flow_exponent_when_no_outdoor_air_flow: float | None
     reference_crack_conditions: str | None
 
-class AnyAirflowNetworkDistributionComponentReliefAirFlow(_TypedIDFObject):
+class AnyAirflowNetworkDistributionComponentReliefAirFlow(_TypedAnyReleaseIDFObject):
     """``AirflowNetwork:Distribution:Component:ReliefAirFlow`` as every supported EnergyPlus version declares it."""
 
     air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float
@@ -17900,6 +18125,9 @@ class _AnyAirflowNetworkDistributionComponentReliefAirFlowFields(
 
 class AirflowNetworkDistributionComponentReliefAirFlow(AnyAirflowNetworkDistributionComponentReliefAirFlow):
     """This object allows variation of air flow rate to perform pressure."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     outdoor_air_mixer_name: str
     """Since: 9.0.1"""
@@ -18733,7 +18961,7 @@ class _HVACTemplateZonePTACCommonFields(TypedDict, total=False):
     baseboard_heating_availability_schedule_name: str | None
     baseboard_heating_capacity: float | Literal["Autosize"] | None
 
-class AnyHVACTemplateZonePTAC(_TypedIDFObject):
+class AnyHVACTemplateZonePTAC(_TypedAnyReleaseIDFObject):
     """``HVACTemplate:Zone:PTAC`` as every supported EnergyPlus version declares it."""
 
     zone_name: str
@@ -18831,6 +19059,9 @@ class _AnyHVACTemplateZonePTACFields(_HVACTemplateZonePTACCommonFields, total=Fa
 class HVACTemplateZonePTAC(AnyHVACTemplateZonePTAC):
     """Packaged Terminal Air Conditioner"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     capacity_control_method: Literal["None", "SingleZoneVAV"] | None
     """Default: None; Since: 9.0.1"""
 
@@ -18899,7 +19130,7 @@ class _HVACTemplateZonePTHPCommonFields(TypedDict, total=False):
     baseboard_heating_availability_schedule_name: str | None
     baseboard_heating_capacity: float | Literal["Autosize"] | None
 
-class AnyHVACTemplateZonePTHP(_TypedIDFObject):
+class AnyHVACTemplateZonePTHP(_TypedAnyReleaseIDFObject):
     """``HVACTemplate:Zone:PTHP`` as every supported EnergyPlus version declares it."""
 
     zone_name: str
@@ -19017,6 +19248,9 @@ class _AnyHVACTemplateZonePTHPFields(_HVACTemplateZonePTHPCommonFields, total=Fa
 class HVACTemplateZonePTHP(AnyHVACTemplateZonePTHP):
     """Packaged Terminal Heat Pump"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     capacity_control_method: Literal["None", "SingleZoneVAV"] | None
     """Default: None; Since: 9.0.1"""
 
@@ -19078,7 +19312,7 @@ class _HVACTemplateZoneWaterToAirHeatPumpCommonFields(TypedDict, total=False):
     baseboard_heating_availability_schedule_name: str | None
     baseboard_heating_capacity: float | Literal["Autosize"] | None
 
-class AnyHVACTemplateZoneWaterToAirHeatPump(_TypedIDFObject):
+class AnyHVACTemplateZoneWaterToAirHeatPump(_TypedAnyReleaseIDFObject):
     """``HVACTemplate:Zone:WaterToAirHeatPump`` as every supported EnergyPlus version declares it."""
 
     zone_name: str
@@ -19181,6 +19415,9 @@ class _AnyHVACTemplateZoneWaterToAirHeatPumpFields(_HVACTemplateZoneWaterToAirHe
 
 class HVACTemplateZoneWaterToAirHeatPump(AnyHVACTemplateZoneWaterToAirHeatPump):
     """Water to Air Heat Pump to be used with HVACTemplate:Plant:MixedWaterLoop"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     latent_capacity_time_constant: float | None
     """Time constant for the cooling coil's capacity to reach steady state after startup Suggested value is 60 for a typical...; [s]; Default: 60.0; Range: >= 0.0, <= 500.0; Since: 23.2.0"""
@@ -23181,7 +23418,7 @@ class _SizingZoneCommonFields(TypedDict, total=False):
     dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["Autosize"] | None
     dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["Autosize"] | None
 
-class AnySizingZone(_TypedIDFObject):
+class AnySizingZone(_TypedAnyReleaseIDFObject):
     """``Sizing:Zone`` as every supported EnergyPlus version declares it."""
 
     zone_or_zonelist_name: str
@@ -23250,6 +23487,9 @@ class _AnySizingZoneFields(_SizingZoneCommonFields, total=False): ...
 
 class SizingZone(AnySizingZone):
     """Specifies the data needed to perform a zone design air flow calculation. The calculation is done for every sizing per..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     zone_load_sizing_method: (
         Literal["Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"] | None
@@ -23535,7 +23775,7 @@ class _SizingSystemCommonFields(TypedDict, total=False):
     fraction_of_autosized_heating_design_capacity: float | None
     central_cooling_capacity_control_method: Literal["Bypass", "OnOff", "VAV", "VT"] | None
 
-class AnySizingSystem(_TypedIDFObject):
+class AnySizingSystem(_TypedAnyReleaseIDFObject):
     """``Sizing:System`` as every supported EnergyPlus version declares it."""
 
     airloop_name: str
@@ -23655,6 +23895,9 @@ class _AnySizingSystemFields(_SizingSystemCommonFields, total=False):
 class SizingSystem(AnySizingSystem):
     """Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, he..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     type_of_load_to_size_on: Literal["Latent", "Sensible", "Total", "VentilationRequirement"] | None
     """Specifies the basis for sizing the system supply air flow rate Sensible and Total use the zone design air flow rates ...; Default: Sensible"""
     system_outdoor_air_method: (
@@ -23749,7 +23992,7 @@ class _OutputControlSizingStyleFields(TypedDict, total=False):
 class _ZoneControlHumidistatCommonFields(TypedDict, total=False):
     zone_name: str
 
-class AnyZoneControlHumidistat(_TypedIDFObject):
+class AnyZoneControlHumidistat(_TypedAnyReleaseIDFObject):
     """``ZoneControl:Humidistat`` as every supported EnergyPlus version declares it."""
 
     zone_name: str
@@ -23763,6 +24006,9 @@ class _AnyZoneControlHumidistatFields(_ZoneControlHumidistatCommonFields, total=
 
 class ZoneControlHumidistat(AnyZoneControlHumidistat):
     """Specifies zone relative humidity setpoint schedules for humidifying and dehumidifying."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     humidifying_setpoint_schedule_name: str
     """Hourly schedule values should be in relative humidity (percent) or dew-point temperatures (deg. C).; Since: 26.2.0"""
@@ -24345,7 +24591,7 @@ class _ZoneHVACIdealLoadsAirSystemCommonFields(TypedDict, total=False):
     latent_heat_recovery_effectiveness: float | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class AnyZoneHVACIdealLoadsAirSystem(_TypedIDFObject):
+class AnyZoneHVACIdealLoadsAirSystem(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:IdealLoadsAirSystem`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24414,6 +24660,9 @@ class _AnyZoneHVACIdealLoadsAirSystemFields(_ZoneHVACIdealLoadsAirSystemCommonFi
 
 class ZoneHVACIdealLoadsAirSystem(AnyZoneHVACIdealLoadsAirSystem):
     """Ideal system used to calculate loads without modeling a full HVAC system. All that is required for the ideal system a..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     heating_fuel_efficiency_schedule_name: str | None
     """Reference heating fuel efficiency value for converting heating ideal loads into fuel energy consumption. The minimum ...; Since: 25.2.0"""
@@ -24692,7 +24941,7 @@ class _ZoneHVACPackagedTerminalAirConditionerCommonFields(TypedDict, total=False
     minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None
     maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None
 
-class AnyZoneHVACPackagedTerminalAirConditioner(_TypedIDFObject):
+class AnyZoneHVACPackagedTerminalAirConditioner(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:PackagedTerminalAirConditioner`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24780,6 +25029,9 @@ class _AnyZoneHVACPackagedTerminalAirConditionerFields(
 class ZoneHVACPackagedTerminalAirConditioner(AnyZoneHVACPackagedTerminalAirConditioner):
     """Packaged terminal air conditioner (PTAC). Forced-convection heating-cooling unit with supply fan, direct expansion (D..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None
     """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes; Since: 24.1.0"""
     cooling_coil_object_type: Literal[
@@ -24837,7 +25089,7 @@ class _ZoneHVACPackagedTerminalHeatPumpCommonFields(TypedDict, total=False):
     minimum_supply_air_temperature_in_cooling_mode: float | Literal["Autosize"] | None
     maximum_supply_air_temperature_in_heating_mode: float | Literal["Autosize"] | None
 
-class AnyZoneHVACPackagedTerminalHeatPump(_TypedIDFObject):
+class AnyZoneHVACPackagedTerminalHeatPump(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:PackagedTerminalHeatPump`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24932,6 +25184,9 @@ class _AnyZoneHVACPackagedTerminalHeatPumpFields(_ZoneHVACPackagedTerminalHeatPu
 class ZoneHVACPackagedTerminalHeatPump(AnyZoneHVACPackagedTerminalHeatPump):
     """Packaged terminal heat pump (PTHP). Forced-convection heating-cooling unit with supply fan, direct expansion (DX) coo..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None
     """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes; Since: 24.1.0"""
     cooling_coil_object_type: Literal[
@@ -24994,7 +25249,7 @@ class _ZoneHVACWaterToAirHeatPumpCommonFields(TypedDict, total=False):
     heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class AnyZoneHVACWaterToAirHeatPump(_TypedIDFObject):
+class AnyZoneHVACWaterToAirHeatPump(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:WaterToAirHeatPump`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -25061,6 +25316,9 @@ class _AnyZoneHVACWaterToAirHeatPumpFields(_ZoneHVACWaterToAirHeatPumpCommonFiel
 
 class ZoneHVACWaterToAirHeatPump(AnyZoneHVACWaterToAirHeatPump):
     """Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None
     """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes; Since: 24.1.0"""
@@ -25410,7 +25668,7 @@ class _ZoneHVACEvaporativeCoolerUnitCommonFields(TypedDict, total=False):
     second_evaporative_cooler_name: str | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class AnyZoneHVACEvaporativeCoolerUnit(_TypedIDFObject):
+class AnyZoneHVACEvaporativeCoolerUnit(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:EvaporativeCoolerUnit`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -25470,6 +25728,9 @@ class _AnyZoneHVACEvaporativeCoolerUnitFields(_ZoneHVACEvaporativeCoolerUnitComm
 
 class ZoneHVACEvaporativeCoolerUnit(AnyZoneHVACEvaporativeCoolerUnit):
     """Zone evaporative cooler. Forced-convection cooling-only unit with supply fan, 100% outdoor air supply. Optional relie..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     shut_off_relative_humidity: float | None
     """Zone relative humidity above which the evap cooler is shut off.; [percent]; Range: >= 0.0, <= 100.0; Since: 23.2.0"""
@@ -25572,7 +25833,7 @@ class ZoneHVACHybridUnitaryHVACModesItem(TypedDict, total=False):
     mode_minimum_supply_air_mass_flow_rate_ratio: float | None
     mode_maximum_supply_air_mass_flow_rate_ratio: float | None
 
-class AnyZoneHVACHybridUnitaryHVAC(_TypedIDFObject):
+class AnyZoneHVACHybridUnitaryHVAC(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:HybridUnitaryHVAC`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -25813,6 +26074,9 @@ class _AnyZoneHVACHybridUnitaryHVACFields(_ZoneHVACHybridUnitaryHVACCommonFields
 
 class ZoneHVACHybridUnitaryHVAC(AnyZoneHVACHybridUnitaryHVAC):
     """Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include ou..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     fan_heat_included_in_lookup_tables: Literal["No", "Yes"] | None
     """This field specifies if the fan heat is accounted for in the lookup tables.; Default: No; Since: 9.4.0"""
@@ -26827,7 +27091,7 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields(TypedDict, total=
     availability_manager_list_name: str | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class AnyZoneHVACTerminalUnitVariableRefrigerantFlow(_TypedIDFObject):
+class AnyZoneHVACTerminalUnitVariableRefrigerantFlow(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as every supported EnergyPlus version declares it."""
 
     terminal_unit_availability_schedule: str | None
@@ -26911,6 +27175,9 @@ class _AnyZoneHVACTerminalUnitVariableRefrigerantFlowFields(
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow(AnyZoneHVACTerminalUnitVariableRefrigerantFlow):
     """A terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ter..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     supply_air_fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel"] | None
     """Supply Air Fan Object Type must be Fan:SystemModel, Fan:OnOff, or Fan:ConstantVolume if AirConditioner:VariableRefrig...; Default: Fan:ConstantVolume"""
@@ -27015,7 +27282,7 @@ class ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsItem(TypedDict, tot
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
 
-class AnyZoneHVACBaseboardRadiantConvectiveWater(_TypedIDFObject):
+class AnyZoneHVACBaseboardRadiantConvectiveWater(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:Baseboard:RadiantConvective:Water`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27046,6 +27313,9 @@ class _AnyZoneHVACBaseboardRadiantConvectiveWaterFields(
 
 class ZoneHVACBaseboardRadiantConvectiveWater(AnyZoneHVACBaseboardRadiantConvectiveWater):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     design_object: str | None
     """Since: 9.5.0"""
@@ -27122,7 +27392,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsItem(TypedDict, tot
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
 
-class AnyZoneHVACBaseboardRadiantConvectiveSteam(_TypedIDFObject):
+class AnyZoneHVACBaseboardRadiantConvectiveSteam(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:Baseboard:RadiantConvective:Steam`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27151,6 +27421,9 @@ class _AnyZoneHVACBaseboardRadiantConvectiveSteamFields(
 
 class ZoneHVACBaseboardRadiantConvectiveSteam(AnyZoneHVACBaseboardRadiantConvectiveSteam):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     design_object: str | None
     """Since: 9.5.0"""
@@ -27487,7 +27760,7 @@ class _ZoneHVACLowTemperatureRadiantVariableFlowCommonFields(TypedDict, total=Fa
     number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None
     circuit_length: float | None
 
-class AnyZoneHVACLowTemperatureRadiantVariableFlow(_TypedIDFObject):
+class AnyZoneHVACLowTemperatureRadiantVariableFlow(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27529,6 +27802,9 @@ class _AnyZoneHVACLowTemperatureRadiantVariableFlowFields(
 
 class ZoneHVACLowTemperatureRadiantVariableFlow(AnyZoneHVACLowTemperatureRadiantVariableFlow):
     """Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     design_object: str | None
     """Since: 9.5.0"""
@@ -27669,7 +27945,7 @@ class _ZoneHVACLowTemperatureRadiantConstantFlowCommonFields(TypedDict, total=Fa
     number_of_circuits: Literal["CalculateFromCircuitLength", "OnePerSurface"] | None
     circuit_length: float | None
 
-class AnyZoneHVACLowTemperatureRadiantConstantFlow(_TypedIDFObject):
+class AnyZoneHVACLowTemperatureRadiantConstantFlow(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27721,6 +27997,9 @@ class _AnyZoneHVACLowTemperatureRadiantConstantFlowFields(
 
 class ZoneHVACLowTemperatureRadiantConstantFlow(AnyZoneHVACLowTemperatureRadiantConstantFlow):
     """Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     design_object: str | None
     """Since: 9.5.0"""
@@ -27822,7 +28101,7 @@ class _ZoneHVACLowTemperatureRadiantElectricCommonFields(TypedDict, total=False)
     heating_throttling_range: float | None
     heating_setpoint_temperature_schedule_name: str
 
-class AnyZoneHVACLowTemperatureRadiantElectric(_TypedIDFObject):
+class AnyZoneHVACLowTemperatureRadiantElectric(_TypedAnyReleaseIDFObject):
     """``ZoneHVAC:LowTemperatureRadiant:Electric`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27894,6 +28173,9 @@ class _AnyZoneHVACLowTemperatureRadiantElectricFields(_ZoneHVACLowTemperatureRad
 
 class ZoneHVACLowTemperatureRadiantElectric(AnyZoneHVACLowTemperatureRadiantElectric):
     """Electric resistance low temperature radiant system"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     temperature_control_type: (
         Literal[
@@ -28336,7 +28618,7 @@ class _AirTerminalSingleDuctVAVNoReheatCommonFields(TypedDict, total=False):
     minimum_air_flow_fraction_schedule_name: str | None
     design_specification_outdoor_air_object_name: str | None
 
-class AnyAirTerminalSingleDuctVAVNoReheat(_TypedIDFObject):
+class AnyAirTerminalSingleDuctVAVNoReheat(_TypedAnyReleaseIDFObject):
     """``AirTerminal:SingleDuct:VAV:NoReheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -28365,6 +28647,9 @@ class _AnyAirTerminalSingleDuctVAVNoReheatFields(_AirTerminalSingleDuctVAVNoRehe
 
 class AirTerminalSingleDuctVAVNoReheat(AnyAirTerminalSingleDuctVAVNoReheat):
     """Central air system terminal unit, single duct, variable volume, with no reheat coil."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     minimum_air_flow_turndown_schedule_name: str | None
     """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
@@ -28400,7 +28685,7 @@ class _AirTerminalSingleDuctVAVReheatCommonFields(TypedDict, total=False):
     maximum_reheat_air_temperature: float | None
     design_specification_outdoor_air_object_name: str | None
 
-class AnyAirTerminalSingleDuctVAVReheat(_TypedIDFObject):
+class AnyAirTerminalSingleDuctVAVReheat(_TypedAnyReleaseIDFObject):
     """``AirTerminal:SingleDuct:VAV:Reheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -28452,6 +28737,9 @@ class _AnyAirTerminalSingleDuctVAVReheatFields(_AirTerminalSingleDuctVAVReheatCo
 class AirTerminalSingleDuctVAVReheat(AnyAirTerminalSingleDuctVAVReheat):
     """Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam)."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     minimum_air_flow_turndown_schedule_name: str | None
     """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
@@ -28480,7 +28768,7 @@ class _AirTerminalSingleDuctVAVReheatVariableSpeedFanCommonFields(TypedDict, tot
     minimum_hot_water_or_steam_flow_rate: float | None
     heating_convergence_tolerance: float | None
 
-class AnyAirTerminalSingleDuctVAVReheatVariableSpeedFan(_TypedIDFObject):
+class AnyAirTerminalSingleDuctVAVReheatVariableSpeedFan(_TypedAnyReleaseIDFObject):
     """``AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -28523,6 +28811,9 @@ class _AnyAirTerminalSingleDuctVAVReheatVariableSpeedFanFields(
 class AirTerminalSingleDuctVAVReheatVariableSpeedFan(AnyAirTerminalSingleDuctVAVReheatVariableSpeedFan):
     """Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam)..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     minimum_air_flow_turndown_schedule_name: str | None
     """This field adjusts the fan-off minimum flow rate by multiplying it using this scheduled fraction values. This field i...; Since: 9.3.0"""
 
@@ -28546,7 +28837,7 @@ class _AirTerminalSingleDuctVAVHeatAndCoolNoReheatCommonFields(TypedDict, total=
     maximum_air_flow_rate: float | Literal["Autosize"]
     zone_minimum_air_flow_fraction: float
 
-class AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheat(_TypedIDFObject):
+class AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheat(_TypedAnyReleaseIDFObject):
     """``AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -28573,6 +28864,9 @@ class _AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheatFields(
 
 class AirTerminalSingleDuctVAVHeatAndCoolNoReheat(AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheat):
     """Central air system terminal unit, single duct, variable volume for both cooling and heating, with no reheat coil."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     minimum_air_flow_turndown_schedule_name: str | None
     """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
@@ -28606,7 +28900,7 @@ class _AirTerminalSingleDuctVAVHeatAndCoolReheatCommonFields(TypedDict, total=Fa
     convergence_tolerance: float | None
     maximum_reheat_air_temperature: float | None
 
-class AnyAirTerminalSingleDuctVAVHeatAndCoolReheat(_TypedIDFObject):
+class AnyAirTerminalSingleDuctVAVHeatAndCoolReheat(_TypedAnyReleaseIDFObject):
     """``AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -28649,6 +28943,9 @@ class _AnyAirTerminalSingleDuctVAVHeatAndCoolReheatFields(
 class AirTerminalSingleDuctVAVHeatAndCoolReheat(AnyAirTerminalSingleDuctVAVHeatAndCoolReheat):
     """Central air system terminal unit, single duct, variable volume for both cooling and heating, with reheat coil (hot wa..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     minimum_air_flow_turndown_schedule_name: str | None
     """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
@@ -28683,7 +28980,7 @@ class _AirTerminalSingleDuctSeriesPIUReheatCommonFields(TypedDict, total=False):
     minimum_hot_water_or_steam_flow_rate: float | None
     convergence_tolerance: float | None
 
-class AnyAirTerminalSingleDuctSeriesPIUReheat(_TypedIDFObject):
+class AnyAirTerminalSingleDuctSeriesPIUReheat(_TypedAnyReleaseIDFObject):
     """``AirTerminal:SingleDuct:SeriesPIU:Reheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -28725,6 +29022,9 @@ class _AnyAirTerminalSingleDuctSeriesPIUReheatFields(
 
 class AirTerminalSingleDuctSeriesPIUReheat(AnyAirTerminalSingleDuctSeriesPIUReheat):
     """Central air system terminal unit, single duct, variable volume, series powered induction unit (PIU), with reheat coil..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     fan_control_type: Literal["ConstantSpeed", "VariableSpeed"] | None
     """If VariableSpeed, then the fan object type must be Fan:SystemModel; Default: ConstantSpeed; Since: 24.2.0"""
@@ -28768,7 +29068,7 @@ class _AirTerminalSingleDuctParallelPIUReheatCommonFields(TypedDict, total=False
     minimum_hot_water_or_steam_flow_rate: float | None
     convergence_tolerance: float | None
 
-class AnyAirTerminalSingleDuctParallelPIUReheat(_TypedIDFObject):
+class AnyAirTerminalSingleDuctParallelPIUReheat(_TypedAnyReleaseIDFObject):
     """``AirTerminal:SingleDuct:ParallelPIU:Reheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -28812,6 +29112,9 @@ class _AnyAirTerminalSingleDuctParallelPIUReheatFields(
 
 class AirTerminalSingleDuctParallelPIUReheat(AnyAirTerminalSingleDuctParallelPIUReheat):
     """Central air system terminal unit, single duct, variable volume, parallel powered induction unit (PIU), with reheat co..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     fan_control_type: Literal["ConstantSpeed", "VariableSpeed"] | None
     """If VariableSpeed, then the fan object type must be Fan:SystemModel; Default: ConstantSpeed; Since: 24.2.0"""
@@ -29177,7 +29480,7 @@ class _AirTerminalDualDuctVAVCommonFields(TypedDict, total=False):
     zone_minimum_air_flow_fraction: float | None
     design_specification_outdoor_air_object_name: str | None
 
-class AnyAirTerminalDualDuctVAV(_TypedIDFObject):
+class AnyAirTerminalDualDuctVAV(_TypedAnyReleaseIDFObject):
     """``AirTerminal:DualDuct:VAV`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -29202,6 +29505,9 @@ class _AnyAirTerminalDualDuctVAVFields(_AirTerminalDualDuctVAVCommonFields, tota
 
 class AirTerminalDualDuctVAV(AnyAirTerminalDualDuctVAV):
     """Central air system terminal unit, dual duct, variable volume."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     minimum_air_flow_turndown_schedule_name: str | None
     """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
@@ -30341,7 +30647,7 @@ class _CoilCoolingWaterDetailedGeometryCommonFields(TypedDict, total=False):
     condensate_collection_water_storage_tank_name: str | None
     design_water_temperature_difference: float | None
 
-class AnyCoilCoolingWaterDetailedGeometry(_TypedIDFObject):
+class AnyCoilCoolingWaterDetailedGeometry(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:Water:DetailedGeometry`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -30395,6 +30701,9 @@ class _AnyCoilCoolingWaterDetailedGeometryFields(_CoilCoolingWaterDetailedGeomet
 
 class CoilCoolingWaterDetailedGeometry(AnyCoilCoolingWaterDetailedGeometry):
     """Chilled water cooling coil, detailed flat fin coil model for continuous plate fins, with inputs for detailed coil geo..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     design_inlet_water_temperature: float | Literal["Autosize"] | None
     """This input field is optional. If specified, it is used for sizing the coil Design Geometry Parameters. If autosized, ...; [C]; Default: Autosize; Since: 9.6.0"""
@@ -30512,7 +30821,7 @@ class _CoilCoolingDXCurveFitPerformanceCommonFields(TypedDict, total=False):
     alternative_operating_mode_1: str | None
     alternative_operating_mode_2: str | None
 
-class AnyCoilCoolingDXCurveFitPerformance(_TypedIDFObject):
+class AnyCoilCoolingDXCurveFitPerformance(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:DX:CurveFit:Performance`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     crankcase_heater_capacity: float | None
@@ -30563,6 +30872,9 @@ class _AnyCoilCoolingDXCurveFitPerformanceFields(_CoilCoolingDXCurveFitPerforman
 class CoilCoolingDXCurveFitPerformance(AnyCoilCoolingDXCurveFitPerformance):
     """DX cooling coil performance specification referencing one or more operating modes. Mode 1 is always the base design o...; Since: 9.3.0"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
     """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
 
@@ -30596,7 +30908,7 @@ class _CoilCoolingDXCurveFitOperatingModeCommonFields(TypedDict, total=False):
     speed_9_name: str | None
     speed_10_name: str | None
 
-class AnyCoilCoolingDXCurveFitOperatingMode(_TypedIDFObject):
+class AnyCoilCoolingDXCurveFitOperatingMode(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:DX:CurveFit:OperatingMode`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     rated_gross_total_cooling_capacity: float | Literal["Autosize"] | None
@@ -30645,6 +30957,9 @@ class _AnyCoilCoolingDXCurveFitOperatingModeFields(_CoilCoolingDXCurveFitOperati
 class CoilCoolingDXCurveFitOperatingMode(AnyCoilCoolingDXCurveFitOperatingMode):
     """DX cooling coil performance for a single operating mode which may have one or more speeds.; Since: 9.3.0"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     apply_part_load_fraction_to_speeds_greater_than_1: Literal["No", "Yes"] | None
     """Default: No; Since: 26.2.0"""
     nominal_speed_number: int | None
@@ -30678,7 +30993,7 @@ class _CoilCoolingDXCurveFitSpeedCommonFields(TypedDict, total=False):
     sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None
     sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
 
-class AnyCoilCoolingDXCurveFitSpeed(_TypedIDFObject):
+class AnyCoilCoolingDXCurveFitSpeed(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:DX:CurveFit:Speed`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     gross_total_cooling_capacity_fraction: float
@@ -30726,6 +31041,8 @@ class _AnyCoilCoolingDXCurveFitSpeedFields(_CoilCoolingDXCurveFitSpeedCommonFiel
 class CoilCoolingDXCurveFitSpeed(AnyCoilCoolingDXCurveFitSpeed):
     """DX cooling coil performance for a single speed within a single operating mode.; Since: 9.3.0"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXCurveFitSpeedFields]
     ) -> None: ...  # type: ignore[override]
@@ -30791,7 +31108,7 @@ class _CoilCoolingDXSingleSpeedCommonFields(TypedDict, total=False):
     report_ashrae_standard_127_performance_ratings: Literal["No", "Yes"] | None
     zone_name_for_condenser_placement: str | None
 
-class AnyCoilCoolingDXSingleSpeed(_TypedIDFObject):
+class AnyCoilCoolingDXSingleSpeed(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:DX:SingleSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -30867,6 +31184,9 @@ class _AnyCoilCoolingDXSingleSpeedFields(_CoilCoolingDXSingleSpeedCommonFields, 
 class CoilCoolingDXSingleSpeed(AnyCoilCoolingDXSingleSpeed):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), single-speed..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
     """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
 
@@ -30918,7 +31238,7 @@ class _CoilCoolingDXTwoSpeedCommonFields(TypedDict, total=False):
     low_speed_sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None
     zone_name_for_condenser_placement: str | None
 
-class AnyCoilCoolingDXTwoSpeed(_TypedIDFObject):
+class AnyCoilCoolingDXTwoSpeed(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:DX:TwoSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -31003,6 +31323,9 @@ class _AnyCoilCoolingDXTwoSpeedFields(_CoilCoolingDXTwoSpeedCommonFields, total=
 
 class CoilCoolingDXTwoSpeed(AnyCoilCoolingDXTwoSpeed):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), two-speed (o..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     high_speed_2017_rated_evaporator_fan_power_per_volume_flow_rate: float | None
     """Enter the evaporator fan power per air volume flow rate at the rated test conditions as defined in the 2017 version o...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0; Since: 23.2.0"""
@@ -31114,7 +31437,7 @@ class _CoilCoolingDXMultiSpeedCommonFields(TypedDict, total=False):
     speed_4_rated_evaporative_condenser_pump_power_consumption: float | Literal["Autosize"] | None
     zone_name_for_condenser_placement: str | None
 
-class AnyCoilCoolingDXMultiSpeed(_TypedIDFObject):
+class AnyCoilCoolingDXMultiSpeed(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:DX:MultiSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -31326,6 +31649,9 @@ class _AnyCoilCoolingDXMultiSpeedFields(_CoilCoolingDXMultiSpeedCommonFields, to
 class CoilCoolingDXMultiSpeed(AnyCoilCoolingDXMultiSpeed):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric or engine-driven compressor and condenser f..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
     """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     fuel_type: Literal[
@@ -31477,7 +31803,7 @@ class _CoilCoolingDXVariableSpeedCommonFields(TypedDict, total=False):
     speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None
     speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
 
-class AnyCoilCoolingDXVariableSpeed(_TypedIDFObject):
+class AnyCoilCoolingDXVariableSpeed(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:DX:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     indoor_air_inlet_node_name: str
@@ -31723,6 +32049,9 @@ class _AnyCoilCoolingDXVariableSpeedFields(_CoilCoolingDXVariableSpeedCommonFiel
 class CoilCoolingDXVariableSpeed(AnyCoilCoolingDXVariableSpeed):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), variable-spe..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     number_of_speeds: int | None
@@ -31788,7 +32117,7 @@ class _CoilCoolingDXTwoStageWithHumidityControlModeCommonFields(TypedDict, total
     basin_heater_setpoint_temperature: float | None
     basin_heater_operating_schedule_name: str | None
 
-class AnyCoilCoolingDXTwoStageWithHumidityControlMode(_TypedIDFObject):
+class AnyCoilCoolingDXTwoStageWithHumidityControlMode(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -31842,6 +32171,9 @@ class _AnyCoilCoolingDXTwoStageWithHumidityControlModeFields(
 
 class CoilCoolingDXTwoStageWithHumidityControlMode(AnyCoilCoolingDXTwoStageWithHumidityControlMode):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), two-stage wi..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
     """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
@@ -32256,7 +32588,7 @@ class _CoilHeatingFuelCommonFields(TypedDict, total=False):
     temperature_setpoint_node_name: str | None
     part_load_fraction_correlation_curve_name: str | None
 
-class AnyCoilHeatingFuel(_TypedIDFObject):
+class AnyCoilHeatingFuel(_TypedAnyReleaseIDFObject):
     """``Coil:Heating:Fuel`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -32306,6 +32638,9 @@ class _AnyCoilHeatingFuelFields(_CoilHeatingFuelCommonFields, total=False):
 
 class CoilHeatingFuel(AnyCoilHeatingFuel):
     """Gas or other fuel heating coil. If the coil is located directly in an air loop branch or outdoor air equipment list, ..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: (
         Literal[
@@ -32363,7 +32698,7 @@ class _CoilHeatingGasMultiStageCommonFields(TypedDict, total=False):
     stage_4_gas_burner_efficiency: float | None
     stage_4_nominal_capacity: float | Literal["Autosize"] | None
 
-class AnyCoilHeatingGasMultiStage(_TypedIDFObject):
+class AnyCoilHeatingGasMultiStage(_TypedAnyReleaseIDFObject):
     """``Coil:Heating:Gas:MultiStage`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -32406,6 +32741,9 @@ class _AnyCoilHeatingGasMultiStageFields(_CoilHeatingGasMultiStageCommonFields, 
 class CoilHeatingGasMultiStage(AnyCoilHeatingGasMultiStage):
     """Gas heating coil, multi-stage. If the coil is located directly in an air loop branch or outdoor air equipment list, t..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     off_cycle_parasitic_gas_load: float | None
     """parasitic gas load when the gas coil is not operating (i.e., standing pilot); [W]; Since: 23.2.0"""
     number_of_stages: int
@@ -32440,7 +32778,7 @@ class _CoilHeatingDesuperheaterCommonFields(TypedDict, total=False):
     heating_source_name: str
     temperature_setpoint_node_name: str | None
 
-class AnyCoilHeatingDesuperheater(_TypedIDFObject):
+class AnyCoilHeatingDesuperheater(_TypedAnyReleaseIDFObject):
     """``Coil:Heating:Desuperheater`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -32500,6 +32838,9 @@ class _AnyCoilHeatingDesuperheaterFields(_CoilHeatingDesuperheaterCommonFields, 
 
 class CoilHeatingDesuperheater(AnyCoilHeatingDesuperheater):
     """Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     heating_source_object_type: Literal[
         "Coil:Cooling:DX",
@@ -32564,7 +32905,7 @@ class _CoilHeatingDXSingleSpeedCommonFields(TypedDict, total=False):
     sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None
     sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
 
-class AnyCoilHeatingDXSingleSpeed(_TypedIDFObject):
+class AnyCoilHeatingDXSingleSpeed(_TypedAnyReleaseIDFObject):
     """``Coil:Heating:DX:SingleSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -32636,6 +32977,9 @@ class _AnyCoilHeatingDXSingleSpeedFields(_CoilHeatingDXSingleSpeedCommonFields, 
 
 class CoilHeatingDXSingleSpeed(AnyCoilHeatingDXSingleSpeed):
     """Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
     """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
@@ -32728,7 +33072,7 @@ class _CoilHeatingDXMultiSpeedCommonFields(TypedDict, total=False):
     speed_4_sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None
     speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
 
-class AnyCoilHeatingDXMultiSpeed(_TypedIDFObject):
+class AnyCoilHeatingDXMultiSpeed(_TypedAnyReleaseIDFObject):
     """``Coil:Heating:DX:MultiSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -32921,6 +33265,9 @@ class _AnyCoilHeatingDXMultiSpeedFields(_CoilHeatingDXMultiSpeedCommonFields, to
 class CoilHeatingDXMultiSpeed(AnyCoilHeatingDXMultiSpeed):
     """Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven com..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
     """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     fuel_type: Literal[
@@ -33040,7 +33387,7 @@ class _CoilHeatingDXVariableSpeedCommonFields(TypedDict, total=False):
     speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None
     speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
 
-class AnyCoilHeatingDXVariableSpeed(_TypedIDFObject):
+class AnyCoilHeatingDXVariableSpeed(_TypedAnyReleaseIDFObject):
     """``Coil:Heating:DX:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     indoor_air_inlet_node_name: str
@@ -33218,6 +33565,9 @@ class _AnyCoilHeatingDXVariableSpeedFields(_CoilHeatingDXVariableSpeedCommonFiel
 class CoilHeatingDXVariableSpeed(AnyCoilHeatingDXVariableSpeed):
     """Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     number_of_speeds: int | None
@@ -33287,7 +33637,7 @@ class _CoilCoolingWaterToAirHeatPumpParameterEstimationCommonFields(TypedDict, t
     source_side_heat_transfer_resistance1: float | None
     source_side_heat_transfer_resistance2: float | None
 
-class AnyCoilCoolingWaterToAirHeatPumpParameterEstimation(_TypedIDFObject):
+class AnyCoilCoolingWaterToAirHeatPumpParameterEstimation(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` as every supported EnergyPlus version declares it."""
 
     compressor_type: Literal["Reciprocating", "Rotary", "Scroll"]
@@ -33354,6 +33704,9 @@ class _AnyCoilCoolingWaterToAirHeatPumpParameterEstimationFields(
 class CoilCoolingWaterToAirHeatPumpParameterEstimation(AnyCoilCoolingWaterToAirHeatPumpParameterEstimation):
     """Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     part_load_fraction_correlation_curve_name: str
@@ -33407,7 +33760,7 @@ class _CoilHeatingWaterToAirHeatPumpParameterEstimationCommonFields(TypedDict, t
     source_side_heat_transfer_resistance1: float | None
     source_side_heat_transfer_resistance2: float | None
 
-class AnyCoilHeatingWaterToAirHeatPumpParameterEstimation(_TypedIDFObject):
+class AnyCoilHeatingWaterToAirHeatPumpParameterEstimation(_TypedAnyReleaseIDFObject):
     """``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` as every supported EnergyPlus version declares it."""
 
     compressor_type: Literal["Reciprocating", "Rotary", "Scroll"]
@@ -33468,6 +33821,9 @@ class _AnyCoilHeatingWaterToAirHeatPumpParameterEstimationFields(
 class CoilHeatingWaterToAirHeatPumpParameterEstimation(AnyCoilHeatingWaterToAirHeatPumpParameterEstimation):
     """Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     part_load_fraction_correlation_curve_name: str
@@ -33500,7 +33856,7 @@ class _CoilCoolingWaterToAirHeatPumpEquationFitCommonFields(TypedDict, total=Fal
     nominal_time_for_condensate_removal_to_begin: float | None
     ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None
 
-class AnyCoilCoolingWaterToAirHeatPumpEquationFit(_TypedIDFObject):
+class AnyCoilCoolingWaterToAirHeatPumpEquationFit(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str
@@ -33536,6 +33892,9 @@ class _AnyCoilCoolingWaterToAirHeatPumpEquationFitFields(
 
 class CoilCoolingWaterToAirHeatPumpEquationFit(AnyCoilCoolingWaterToAirHeatPumpEquationFit):
     """Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
@@ -33726,7 +34085,7 @@ class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields(TypedDi
     speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None
     speed_10_waste_heat_function_of_temperature_curve_name: str | None
 
-class AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(_TypedIDFObject):
+class AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(_TypedAnyReleaseIDFObject):
     """``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` as every supported EnergyPlus version declares it."""
 
     water_to_refrigerant_hx_water_inlet_node_name: str
@@ -34033,6 +34392,9 @@ class _AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields(
 class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit):
     """Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     number_of_speeds: int | None
@@ -34074,7 +34436,7 @@ class _CoilHeatingWaterToAirHeatPumpEquationFitCommonFields(TypedDict, total=Fal
     gross_rated_heating_capacity: float | Literal["Autosize"]
     gross_rated_heating_cop: float
 
-class AnyCoilHeatingWaterToAirHeatPumpEquationFit(_TypedIDFObject):
+class AnyCoilHeatingWaterToAirHeatPumpEquationFit(_TypedAnyReleaseIDFObject):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str
@@ -34104,6 +34466,9 @@ class _AnyCoilHeatingWaterToAirHeatPumpEquationFitFields(
 
 class CoilHeatingWaterToAirHeatPumpEquationFit(AnyCoilHeatingWaterToAirHeatPumpEquationFit):
     """Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
@@ -34268,7 +34633,7 @@ class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields(TypedDi
     speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None
     speed_10_waste_heat_function_of_temperature_curve_name: str | None
 
-class AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(_TypedIDFObject):
+class AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(_TypedAnyReleaseIDFObject):
     """``Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`` as every supported EnergyPlus version declares it."""
 
     water_to_refrigerant_hx_water_inlet_node_name: str
@@ -34547,6 +34912,9 @@ class _AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields(
 class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit):
     """Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     number_of_speeds: int | None
@@ -34601,7 +34969,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpPumpedCommonFields(TypedDict, total=Fal
     heating_cop_function_of_water_flow_fraction_curve_name: str | None
     part_load_fraction_correlation_curve_name: str | None
 
-class AnyCoilWaterHeatingAirToWaterHeatPumpPumped(_TypedIDFObject):
+class AnyCoilWaterHeatingAirToWaterHeatPumpPumped(_TypedAnyReleaseIDFObject):
     """``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` as every supported EnergyPlus version declares it."""
 
     rated_heating_capacity: float
@@ -34674,6 +35042,9 @@ class _AnyCoilWaterHeatingAirToWaterHeatPumpPumpedFields(
 class CoilWaterHeatingAirToWaterHeatPumpPumped(AnyCoilWaterHeatingAirToWaterHeatPumpPumped):
     """Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
@@ -34713,7 +35084,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpWrappedCommonFields(TypedDict, total=Fa
     heating_cop_function_of_air_flow_fraction_curve_name: str | None
     part_load_fraction_correlation_curve_name: str | None
 
-class AnyCoilWaterHeatingAirToWaterHeatPumpWrapped(_TypedIDFObject):
+class AnyCoilWaterHeatingAirToWaterHeatPumpWrapped(_TypedAnyReleaseIDFObject):
     """``Coil:WaterHeating:AirToWaterHeatPump:Wrapped`` as every supported EnergyPlus version declares it."""
 
     rated_heating_capacity: float
@@ -34767,6 +35138,9 @@ class _AnyCoilWaterHeatingAirToWaterHeatPumpWrappedFields(
 
 class CoilWaterHeatingAirToWaterHeatPumpWrapped(AnyCoilWaterHeatingAirToWaterHeatPumpWrapped):
     """Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
@@ -34897,7 +35271,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedCommonFields(TypedDict, to
     speed_10_cop_function_of_air_flow_fraction_curve_name: str | None
     speed_10_cop_function_of_water_flow_fraction_curve_name: str | None
 
-class AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed(_TypedIDFObject):
+class AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed(_TypedAnyReleaseIDFObject):
     """``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` as every supported EnergyPlus version declares it."""
     @property
     def number_of_speeds(self) -> float | int | None: ...
@@ -35140,6 +35514,9 @@ class _AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields(
 
 class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed):
     """variable-speed Heat pump water heater (VSHPWH) heating coil, air-to-water direct-expansion (DX) system which includes..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
@@ -36586,7 +36963,7 @@ class _HeatExchangerAirToAirSensibleAndLatentCommonFields(TypedDict, total=False
     rate_of_defrost_time_fraction_increase: float | None
     economizer_lockout: Literal["No", "Yes"] | None
 
-class AnyHeatExchangerAirToAirSensibleAndLatent(_TypedIDFObject):
+class AnyHeatExchangerAirToAirSensibleAndLatent(_TypedAnyReleaseIDFObject):
     """``HeatExchanger:AirToAir:SensibleAndLatent`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -36636,6 +37013,9 @@ class _AnyHeatExchangerAirToAirSensibleAndLatentFields(
 
 class HeatExchangerAirToAirSensibleAndLatent(AnyHeatExchangerAirToAirSensibleAndLatent):
     """This object models an air-to-air heat exchanger using effectiveness relationships. The heat exchanger can transfer se..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     sensible_effectiveness_of_heating_air_flow_curve_name: str | None
     """optional if this field has value, then the sensible effectiveness for heating will be the value in N2 multiplied by t...; Since: 24.1.0"""
@@ -36935,7 +37315,7 @@ class _AirLoopHVACUnitarySystemCommonFields(TypedDict, total=False):
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     design_specification_multispeed_object_name: str | None
 
-class AnyAirLoopHVACUnitarySystem(_TypedIDFObject):
+class AnyAirLoopHVACUnitarySystem(_TypedAnyReleaseIDFObject):
     """``AirLoopHVAC:UnitarySystem`` as every supported EnergyPlus version declares it."""
 
     control_type: Literal["Load", "SetPoint", "SingleZoneVAV"] | None
@@ -37191,6 +37571,9 @@ class _AnyAirLoopHVACUnitarySystemFields(_AirLoopHVACUnitarySystemCommonFields, 
 
 class AirLoopHVACUnitarySystem(AnyAirLoopHVACUnitarySystem):
     """AirloopHVAC:UnitarySystem is a generic HVAC system type that allows any configuration of coils and/or fan. This objec..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     cooling_coil_object_type: (
         Literal[
@@ -37654,7 +38037,7 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirCommonFields(TypedDict, total=False):
     supply_air_fan_operating_mode_schedule_name: str | None
     dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None
 
-class AnyAirLoopHVACUnitaryHeatPumpAirToAir(_TypedIDFObject):
+class AnyAirLoopHVACUnitaryHeatPumpAirToAir(_TypedAnyReleaseIDFObject):
     """``AirLoopHVAC:UnitaryHeatPump:AirToAir`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -37714,6 +38097,9 @@ class _AnyAirLoopHVACUnitaryHeatPumpAirToAirFields(_AirLoopHVACUnitaryHeatPumpAi
 class AirLoopHVACUnitaryHeatPumpAirToAir(AnyAirLoopHVACUnitaryHeatPumpAirToAir):
     """Unitary heat pump system, heating and cooling, single-speed with supply fan, direct expansion (DX) cooling coil, DX h..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     dx_heating_coil_sizing_ratio: float | None
     """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
@@ -37759,7 +38145,7 @@ class _AirLoopHVACUnitaryHeatPumpWaterToAirCommonFields(TypedDict, total=False):
     dehumidification_control_type: Literal["CoolReheat", "None"] | None
     heat_pump_coil_water_flow_mode: Literal["Constant", "ConstantOnDemand", "Cycling"] | None
 
-class AnyAirLoopHVACUnitaryHeatPumpWaterToAir(_TypedIDFObject):
+class AnyAirLoopHVACUnitaryHeatPumpWaterToAir(_TypedAnyReleaseIDFObject):
     """``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -37826,6 +38212,9 @@ class _AnyAirLoopHVACUnitaryHeatPumpWaterToAirFields(
 class AirLoopHVACUnitaryHeatPumpWaterToAir(AnyAirLoopHVACUnitaryHeatPumpWaterToAir):
     """Unitary heat pump system, heating and cooling, single-speed with constant volume supply fan (continuous or cycling), ..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     dx_heating_coil_sizing_ratio: float | None
     """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
@@ -37876,7 +38265,7 @@ class _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassCommonFields(TypedDict, tota
     maximum_outlet_air_temperature_during_heating_operation: float | None
     dehumidification_control_type: Literal["CoolReheat", "Multimode", "None"] | None
 
-class AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(_TypedIDFObject):
+class AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(_TypedAnyReleaseIDFObject):
     """``AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -37966,6 +38355,9 @@ class _AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields(
 class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass):
     """Unitary system, heating and cooling with constant volume supply fan (continuous or cycling), direct expansion (DX) co..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     priority_control_mode: Literal["CoolingPriority", "HeatingPriority", "LoadPriority", "ZonePriority"] | None
     """CoolingPriority = system provides cooling if any zone requires cooling. HeatingPriority = system provides heating if ...; Default: ZonePriority"""
     plenum_or_mixer_inlet_node_name: str | None
@@ -38029,7 +38421,7 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedCommonFields(TypedDict, total
     cooling_speed_3_supply_air_flow_rate: float | Literal["Autosize"] | None
     cooling_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None
 
-class AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(_TypedIDFObject):
+class AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(_TypedAnyReleaseIDFObject):
     """``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -38121,6 +38513,9 @@ class _AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields(
 
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed):
     """Unitary system, heating and cooling, multi-speed with constant volume supply fan (continuous or cycling), direct expa..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     dx_heating_coil_sizing_ratio: float | None
     """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
@@ -38221,7 +38616,7 @@ class _AirConditionerVariableRefrigerantFlowCommonFields(TypedDict, total=False)
     initial_heat_recovery_heating_energy_fraction: float | None
     heat_recovery_heating_energy_time_constant: float | None
 
-class AnyAirConditionerVariableRefrigerantFlow(_TypedIDFObject):
+class AnyAirConditionerVariableRefrigerantFlow(_TypedAnyReleaseIDFObject):
     """``AirConditioner:VariableRefrigerantFlow`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -38437,6 +38832,9 @@ class _AnyAirConditionerVariableRefrigerantFlowFields(_AirConditionerVariableRef
 
 class AirConditionerVariableRefrigerantFlow(AnyAirConditionerVariableRefrigerantFlow):
     """Variable refrigerant flow (VRF) air-to-air heat pump condensing unit (includes one or more electric compressors and o..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     minimum_condenser_inlet_node_temperature_in_cooling_mode: float | None
     """For cooling mode operation, enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum ...; [C]; Default: -6.0; Since: 9.6.0"""
@@ -39021,7 +39419,7 @@ class _ControllerOutdoorAirCommonFields(TypedDict, total=False):
         Literal["BypassWhenOAFlowGreaterThanMinimum", "BypassWhenWithinEconomizerLimits"] | None
     )
 
-class AnyControllerOutdoorAir(_TypedIDFObject):
+class AnyControllerOutdoorAir(_TypedAnyReleaseIDFObject):
     """``Controller:OutdoorAir`` as every supported EnergyPlus version declares it."""
 
     relief_air_outlet_node_name: str
@@ -39095,6 +39493,9 @@ class _AnyControllerOutdoorAirFields(_ControllerOutdoorAirCommonFields, total=Fa
 
 class ControllerOutdoorAir(AnyControllerOutdoorAir):
     """Controller to set the outdoor air flow rate for an air loop. Control options include fixed, proportional, scheduled, ..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     economizer_operation_staging: Literal["EconomizerFirst", "InterlockedWithMechanicalCooling"] | None
     """This input is only used when the Controller:OutdoorAir is used in conjunction with an AirLoopHVAC:UnitarySystem with ...; Default: InterlockedWithMechanicalCooling; Since: 23.2.0"""
@@ -39385,7 +39786,7 @@ class _AirLoopHVACOutdoorAirSystemCommonFields(TypedDict, total=False):
     controller_list_name: str | None
     outdoor_air_equipment_list_name: str
 
-class AnyAirLoopHVACOutdoorAirSystem(_TypedIDFObject):
+class AnyAirLoopHVACOutdoorAirSystem(_TypedAnyReleaseIDFObject):
     """``AirLoopHVAC:OutdoorAirSystem`` as every supported EnergyPlus version declares it."""
 
     controller_list_name: str | None
@@ -39403,6 +39804,8 @@ class _AnyAirLoopHVACOutdoorAirSystemFields(_AirLoopHVACOutdoorAirSystemCommonFi
 class AirLoopHVACOutdoorAirSystem(AnyAirLoopHVACOutdoorAirSystem):
     """Outdoor air subsystem for an AirLoopHVAC. Includes an outdoor air mixing box and optional outdoor air conditioning eq..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACOutdoorAirSystemFields]
     ) -> None: ...  # type: ignore[override]
@@ -40366,7 +40769,7 @@ class _PumpVariableSpeedCommonFields(TypedDict, total=False):
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     design_minimum_flow_rate_fraction: float | None
 
-class AnyPumpVariableSpeed(_TypedIDFObject):
+class AnyPumpVariableSpeed(_TypedAnyReleaseIDFObject):
     """``Pump:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str
@@ -40433,6 +40836,9 @@ class _AnyPumpVariableSpeedFields(_PumpVariableSpeedCommonFields, total=False): 
 class PumpVariableSpeed(AnyPumpVariableSpeed):
     """This pump model is described in the ASHRAE secondary HVAC toolkit."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
@@ -40461,7 +40867,7 @@ class _PumpConstantSpeedCommonFields(TypedDict, total=False):
     design_electric_power_per_unit_flow_rate: float | None
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
 
-class AnyPumpConstantSpeed(_TypedIDFObject):
+class AnyPumpConstantSpeed(_TypedAnyReleaseIDFObject):
     """``Pump:ConstantSpeed`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str
@@ -40507,6 +40913,9 @@ class _AnyPumpConstantSpeedFields(_PumpConstantSpeedCommonFields, total=False): 
 class PumpConstantSpeed(AnyPumpConstantSpeed):
     """This pump model is described in the ASHRAE secondary HVAC toolkit."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
@@ -40535,7 +40944,7 @@ class _PumpVariableSpeedCondensateCommonFields(TypedDict, total=False):
     design_electric_power_per_unit_flow_rate: float | None
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
 
-class AnyPumpVariableSpeedCondensate(_TypedIDFObject):
+class AnyPumpVariableSpeedCondensate(_TypedAnyReleaseIDFObject):
     """``Pump:VariableSpeed:Condensate`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str
@@ -40581,6 +40990,9 @@ class _AnyPumpVariableSpeedCondensateFields(_PumpVariableSpeedCondensateCommonFi
 class PumpVariableSpeedCondensate(AnyPumpVariableSpeedCondensate):
     """This pump model is described in the ASHRAE secondary HVAC toolkit. Variable Speed Condensate pump for Steam Systems"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
@@ -40609,7 +41021,7 @@ class _HeaderedPumpsConstantSpeedCommonFields(TypedDict, total=False):
     design_electric_power_per_unit_flow_rate: float | None
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
 
-class AnyHeaderedPumpsConstantSpeed(_TypedIDFObject):
+class AnyHeaderedPumpsConstantSpeed(_TypedAnyReleaseIDFObject):
     """``HeaderedPumps:ConstantSpeed`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str
@@ -40656,6 +41068,9 @@ class _AnyHeaderedPumpsConstantSpeedFields(_HeaderedPumpsConstantSpeedCommonFiel
 class HeaderedPumpsConstantSpeed(AnyHeaderedPumpsConstantSpeed):
     """This Headered pump object describes a pump bank with more than 1 pump in parallel"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     number_of_pumps_in_bank: int | None
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
@@ -40691,7 +41106,7 @@ class _HeaderedPumpsVariableSpeedCommonFields(TypedDict, total=False):
     design_electric_power_per_unit_flow_rate: float | None
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
 
-class AnyHeaderedPumpsVariableSpeed(_TypedIDFObject):
+class AnyHeaderedPumpsVariableSpeed(_TypedAnyReleaseIDFObject):
     """``HeaderedPumps:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str
@@ -40748,6 +41163,9 @@ class _AnyHeaderedPumpsVariableSpeedFields(_HeaderedPumpsVariableSpeedCommonFiel
 class HeaderedPumpsVariableSpeed(AnyHeaderedPumpsVariableSpeed):
     """This Headered pump object describes a pump bank with more than 1 pump in parallel"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     number_of_pumps_in_bank: int | None
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
@@ -40791,7 +41209,7 @@ class _LoadProfilePlantCommonFields(TypedDict, total=False):
     peak_flow_rate: float
     flow_rate_fraction_schedule_name: str
 
-class AnyLoadProfilePlant(_TypedIDFObject):
+class AnyLoadProfilePlant(_TypedAnyReleaseIDFObject):
     """``LoadProfile:Plant`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str
@@ -40811,6 +41229,9 @@ class _AnyLoadProfilePlantFields(_LoadProfilePlantCommonFields, total=False): ..
 
 class LoadProfilePlant(AnyLoadProfilePlant):
     """Used to simulate a scheduled plant loop demand profile. Load and flow rate are specified using schedules. Positive va..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     plant_loop_fluid_type: Literal["Steam", "Water"] | None
     """Default: Water; Since: 23.2.0"""
@@ -41266,7 +41687,7 @@ class _BoilerHotWaterCommonFields(TypedDict, total=False):
     sizing_factor: float | None
     end_use_subcategory: str | None
 
-class AnyBoilerHotWater(_TypedIDFObject):
+class AnyBoilerHotWater(_TypedAnyReleaseIDFObject):
     """``Boiler:HotWater`` as every supported EnergyPlus version declares it."""
     @property
     def fuel_type(
@@ -41347,6 +41768,9 @@ class _AnyBoilerHotWaterFields(_BoilerHotWaterCommonFields, total=False):
 
 class BoilerHotWater(AnyBoilerHotWater):
     """This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: Literal[
         "Coal",
@@ -41598,7 +42022,7 @@ class _ChillerElectricEIRCommonFields(TypedDict, total=False):
     heat_recovery_leaving_temperature_setpoint_node_name: str | None
     end_use_subcategory: str | None
 
-class AnyChillerElectricEIR(_TypedIDFObject):
+class AnyChillerElectricEIR(_TypedAnyReleaseIDFObject):
     """``Chiller:Electric:EIR`` as every supported EnergyPlus version declares it."""
 
     reference_capacity: float | Literal["Autosize"]
@@ -41674,6 +42098,9 @@ class _AnyChillerElectricEIRFields(_ChillerElectricEIRCommonFields, total=False)
 class ChillerElectricEIR(AnyChillerElectricEIR):
     """This chiller model is the empirical model from the DOE-2 building Energy simulation program. Chiller performance at o..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     condenser_flow_control: (
         Literal["ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"] | None
     )
@@ -41737,7 +42164,7 @@ class _ChillerElectricReformulatedEIRCommonFields(TypedDict, total=False):
     heat_recovery_leaving_temperature_setpoint_node_name: str | None
     end_use_subcategory: str | None
 
-class AnyChillerElectricReformulatedEIR(_TypedIDFObject):
+class AnyChillerElectricReformulatedEIR(_TypedAnyReleaseIDFObject):
     """``Chiller:Electric:ReformulatedEIR`` as every supported EnergyPlus version declares it."""
 
     reference_capacity: float | Literal["Autosize"]
@@ -41804,6 +42231,9 @@ class _AnyChillerElectricReformulatedEIRFields(_ChillerElectricReformulatedEIRCo
 
 class ChillerElectricReformulatedEIR(AnyChillerElectricReformulatedEIR):
     """This chiller model is an empirical model, a reformulated version of Chiller:Electric:EIR where the performance is a f..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     condenser_flow_control: (
         Literal["ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"] | None
@@ -41874,7 +42304,7 @@ class _ChillerElectricCommonFields(TypedDict, total=False):
     heat_recovery_leaving_temperature_setpoint_node_name: str | None
     end_use_subcategory: str | None
 
-class AnyChillerElectric(_TypedIDFObject):
+class AnyChillerElectric(_TypedAnyReleaseIDFObject):
     """``Chiller:Electric`` as every supported EnergyPlus version declares it."""
 
     condenser_type: Literal["AirCooled", "EvaporativelyCooled", "WaterCooled"] | None
@@ -41946,6 +42376,9 @@ class _AnyChillerElectricFields(_ChillerElectricCommonFields, total=False): ...
 
 class ChillerElectric(AnyChillerElectric):
     """This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller ..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     thermosiphon_capacity_fraction_curve_name: str | None
     """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo...; Since: 24.2.0"""
@@ -42146,7 +42579,7 @@ class _ChillerConstantCOPCommonFields(TypedDict, total=False):
     basin_heater_setpoint_temperature: float | None
     basin_heater_operating_schedule_name: str | None
 
-class AnyChillerConstantCOP(_TypedIDFObject):
+class AnyChillerConstantCOP(_TypedAnyReleaseIDFObject):
     """``Chiller:ConstantCOP`` as every supported EnergyPlus version declares it."""
 
     nominal_capacity: float | Literal["Autosize"]
@@ -42183,6 +42616,9 @@ class _AnyChillerConstantCOPFields(_ChillerConstantCOPCommonFields, total=False)
 
 class ChillerConstantCOP(AnyChillerConstantCOP):
     """This constant COP chiller model provides a means of quickly specifying a Chiller where performance data is not availa..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     thermosiphon_capacity_fraction_curve_name: str | None
     """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo...; Since: 24.2.0"""
@@ -42837,7 +43273,7 @@ class _HeatPumpPlantLoopEIRCoolingCommonFields(TypedDict, total=False):
     electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str
 
-class AnyHeatPumpPlantLoopEIRCooling(_TypedIDFObject):
+class AnyHeatPumpPlantLoopEIRCooling(_TypedAnyReleaseIDFObject):
     """``HeatPump:PlantLoop:EIR:Cooling`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     load_side_inlet_node_name: str
@@ -42874,6 +43310,9 @@ class _AnyHeatPumpPlantLoopEIRCoolingFields(_HeatPumpPlantLoopEIRCoolingCommonFi
 
 class HeatPumpPlantLoopEIRCooling(AnyHeatPumpPlantLoopEIRCooling):
     """An EIR formulated water to water heat pump model, cooling operation.; Since: 9.3.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     heat_recovery_inlet_node_name: str | None
     """Not available with water source condenser type; Since: 24.2.0"""
@@ -42944,7 +43383,7 @@ class _HeatPumpPlantLoopEIRHeatingCommonFields(TypedDict, total=False):
     electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str
 
-class AnyHeatPumpPlantLoopEIRHeating(_TypedIDFObject):
+class AnyHeatPumpPlantLoopEIRHeating(_TypedAnyReleaseIDFObject):
     """``HeatPump:PlantLoop:EIR:Heating`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     load_side_inlet_node_name: str
@@ -42981,6 +43420,9 @@ class _AnyHeatPumpPlantLoopEIRHeatingFields(_HeatPumpPlantLoopEIRHeatingCommonFi
 
 class HeatPumpPlantLoopEIRHeating(AnyHeatPumpPlantLoopEIRHeating):
     """An EIR formulated water to water heat pump model, heating operation; Since: 9.3.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     heat_recovery_inlet_node_name: str | None
     """Not available with water source condenser type; Since: 24.2.0"""
@@ -43104,7 +43546,7 @@ class _HeatPumpAirToWaterFuelFiredHeatingCommonFields(TypedDict, total=False):
     auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None
     standby_electric_power: float | None
 
-class AnyHeatPumpAirToWaterFuelFiredHeating(_TypedIDFObject):
+class AnyHeatPumpAirToWaterFuelFiredHeating(_TypedAnyReleaseIDFObject):
     """``HeatPump:AirToWater:FuelFired:Heating`` as every supported EnergyPlus version that has it declares it: 23.1.0 and later."""
 
     water_inlet_node_name: str
@@ -43191,6 +43633,9 @@ class _AnyHeatPumpAirToWaterFuelFiredHeatingFields(_HeatPumpAirToWaterFuelFiredH
 class HeatPumpAirToWaterFuelFiredHeating(AnyHeatPumpAirToWaterFuelFiredHeating):
     """The object defines a fuel-fired absorption heat pump based on equation-fit models.; Since: 23.1.0"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     minimum_unloading_ratio: float | None
     """Minimum modulation level of the gas-fired heat pump. Typically less than 1.0 and slightly higher than the minimum par...; Default: 0.25; Range: >= 0.0, <= 1.0; Since: 25.2.0"""
 
@@ -43242,7 +43687,7 @@ class _HeatPumpAirToWaterFuelFiredCoolingCommonFields(TypedDict, total=False):
     auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None
     standby_electric_power: float | None
 
-class AnyHeatPumpAirToWaterFuelFiredCooling(_TypedIDFObject):
+class AnyHeatPumpAirToWaterFuelFiredCooling(_TypedAnyReleaseIDFObject):
     """``HeatPump:AirToWater:FuelFired:Cooling`` as every supported EnergyPlus version that has it declares it: 23.1.0 and later."""
 
     water_inlet_node_name: str
@@ -43318,6 +43763,9 @@ class _AnyHeatPumpAirToWaterFuelFiredCoolingFields(_HeatPumpAirToWaterFuelFiredC
 
 class HeatPumpAirToWaterFuelFiredCooling(AnyHeatPumpAirToWaterFuelFiredCooling):
     """The object defines a fuel-fired absorption heat pump based on equation-fit models.; Since: 23.1.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     minimum_unloading_ratio: float | None
     """Minimum modulation level of the gas-fired heat pump. Typically less than 1.0 and slightly higher than the minimum par...; Default: 0.25; Range: >= 0.0, <= 1.0; Since: 25.2.0"""
@@ -43670,7 +44118,7 @@ class _HeatPumpWaterToWaterEquationFitHeatingCommonFields(TypedDict, total=False
     sizing_factor: float | None
     companion_cooling_heat_pump_name: str | None
 
-class AnyHeatPumpWaterToWaterEquationFitHeating(_TypedIDFObject):
+class AnyHeatPumpWaterToWaterEquationFitHeating(_TypedAnyReleaseIDFObject):
     """``HeatPump:WaterToWater:EquationFit:Heating`` as every supported EnergyPlus version declares it."""
 
     source_side_inlet_node_name: str
@@ -43706,6 +44154,9 @@ class _AnyHeatPumpWaterToWaterEquationFitHeatingFields(
 class HeatPumpWaterToWaterEquationFitHeating(AnyHeatPumpWaterToWaterEquationFitHeating):
     """simple water-water hp curve-fit model"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     heating_capacity_curve_name: str
     """Since: 9.5.0"""
     heating_compressor_power_curve_name: str
@@ -43733,7 +44184,7 @@ class _HeatPumpWaterToWaterEquationFitCoolingCommonFields(TypedDict, total=False
     sizing_factor: float | None
     companion_heating_heat_pump_name: str | None
 
-class AnyHeatPumpWaterToWaterEquationFitCooling(_TypedIDFObject):
+class AnyHeatPumpWaterToWaterEquationFitCooling(_TypedAnyReleaseIDFObject):
     """``HeatPump:WaterToWater:EquationFit:Cooling`` as every supported EnergyPlus version declares it."""
 
     source_side_inlet_node_name: str
@@ -43769,6 +44220,9 @@ class _AnyHeatPumpWaterToWaterEquationFitCoolingFields(
 
 class HeatPumpWaterToWaterEquationFitCooling(AnyHeatPumpWaterToWaterEquationFitCooling):
     """simple water-water heat pump curve-fit model"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     cooling_capacity_curve_name: str
     """Since: 9.5.0"""
@@ -44089,7 +44543,7 @@ class _CentralHeatPumpSystemCommonFields(TypedDict, total=False):
     chiller_heater_modules_performance_component_name_20: str | None
     chiller_heater_modules_control_schedule_name_20: str | None
 
-class AnyCentralHeatPumpSystem(_TypedIDFObject):
+class AnyCentralHeatPumpSystem(_TypedAnyReleaseIDFObject):
     """``CentralHeatPumpSystem`` as every supported EnergyPlus version declares it."""
 
     cooling_loop_inlet_node_name: str
@@ -44272,6 +44726,9 @@ class _AnyCentralHeatPumpSystemFields(_CentralHeatPumpSystemCommonFields, total=
 class CentralHeatPumpSystem(AnyCentralHeatPumpSystem):
     """This chiller bank can contain multiple chiller heaters and heat pump performance objects. Its function is to encapsul..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     number_of_chiller_heater_modules_1: int | None
     """Default: 1; Range: >= 1"""
     number_of_chiller_heater_modules_2: int | None
@@ -44373,7 +44830,7 @@ class _ChillerHeaterPerformanceElectricEIRCommonFields(TypedDict, total=False):
     heating_mode_cooling_capacity_optimum_part_load_ratio: float | None
     sizing_factor: float | None
 
-class AnyChillerHeaterPerformanceElectricEIR(_TypedIDFObject):
+class AnyChillerHeaterPerformanceElectricEIR(_TypedAnyReleaseIDFObject):
     """``ChillerHeaterPerformance:Electric:EIR`` as every supported EnergyPlus version declares it."""
 
     reference_cooling_mode_evaporator_capacity: float | Literal["Autosize"]
@@ -44445,6 +44902,8 @@ class _AnyChillerHeaterPerformanceElectricEIRFields(_ChillerHeaterPerformanceEle
 class ChillerHeaterPerformanceElectricEIR(AnyChillerHeaterPerformanceElectricEIR):
     """This chiller model is a generic chiller-heater where the cooling mode performance is a function of condenser entering..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerHeaterPerformanceElectricEIRFields]
     ) -> None: ...  # type: ignore[override]
@@ -44487,7 +44946,7 @@ class _CoolingTowerSingleSpeedCommonFields(TypedDict, total=False):
     sizing_factor: float | None
     end_use_subcategory: str | None
 
-class AnyCoolingTowerSingleSpeed(_TypedIDFObject):
+class AnyCoolingTowerSingleSpeed(_TypedAnyReleaseIDFObject):
     """``CoolingTower:SingleSpeed`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str
@@ -44570,6 +45029,9 @@ class _AnyCoolingTowerSingleSpeedFields(_CoolingTowerSingleSpeedCommonFields, to
 
 class CoolingTowerSingleSpeed(AnyCoolingTowerSingleSpeed):
     """This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     free_convection_regime_air_flow_rate: float | Literal["Autocalculate"] | None
     """[m3/s]; Default: 0.0; Since: 9.2.0"""
@@ -45609,7 +46071,7 @@ class GroundHeatExchangerSystemVerticalWellLocationsItem(TypedDict, total=False)
 
     ghe_vertical_single_object_name: str | None
 
-class AnyGroundHeatExchangerSystem(_TypedIDFObject):
+class AnyGroundHeatExchangerSystem(_TypedAnyReleaseIDFObject):
     """``GroundHeatExchanger:System`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str
@@ -45639,6 +46101,9 @@ class _AnyGroundHeatExchangerSystemFields(_GroundHeatExchangerSystemCommonFields
 
 class GroundHeatExchangerSystem(AnyGroundHeatExchangerSystem):
     """Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response fac..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     g_function_calculation_method: Literal["FullDesign", "UBHWTcalc", "UHFcalc"] | None
     """Default: UHFcalc; Since: 9.6.0"""
@@ -47418,7 +47883,7 @@ class _ThermalStorageIceSimpleCommonFields(TypedDict, total=False):
     inlet_node_name: str
     outlet_node_name: str
 
-class AnyThermalStorageIceSimple(_TypedIDFObject):
+class AnyThermalStorageIceSimple(_TypedAnyReleaseIDFObject):
     """``ThermalStorage:Ice:Simple`` as every supported EnergyPlus version declares it."""
 
     ice_storage_type: Literal["IceOnCoilExternal", "IceOnCoilInternal"]
@@ -47440,6 +47905,9 @@ class _AnyThermalStorageIceSimpleFields(_ThermalStorageIceSimpleCommonFields, to
 
 class ThermalStorageIceSimple(AnyThermalStorageIceSimple):
     """This ice storage model is a simplified model It requires a setpoint placed on the Chilled Water Side Outlet Node It s..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     capacity: float | Literal["Autosize"]
     """[GJ] (ton-hrs)"""
@@ -47468,7 +47936,7 @@ class _ThermalStorageIceDetailedCommonFields(TypedDict, total=False):
     freezing_temperature_of_storage_medium: float | None
     thaw_process_indicator: Literal["InsideMelt", "OutsideMelt"] | None
 
-class AnyThermalStorageIceDetailed(_TypedIDFObject):
+class AnyThermalStorageIceDetailed(_TypedAnyReleaseIDFObject):
     """``ThermalStorage:Ice:Detailed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -47504,6 +47972,9 @@ class _AnyThermalStorageIceDetailedFields(_ThermalStorageIceDetailedCommonFields
 
 class ThermalStorageIceDetailed(AnyThermalStorageIceDetailed):
     """This input syntax is intended to describe a thermal storage system that includes smaller containers filled with water..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     capacity: float | Literal["Autosize"]
     """This includes only the latent storage capacity; [GJ]"""
@@ -48083,7 +48554,7 @@ class _CondenserLoopFields(TypedDict, total=False):
 
 class _PlantEquipmentListCommonFields(TypedDict, total=False): ...
 
-class AnyPlantEquipmentList(_TypedIDFObject):
+class AnyPlantEquipmentList(_TypedAnyReleaseIDFObject):
     """``PlantEquipmentList`` as every supported EnergyPlus version declares it."""
 
     def update(
@@ -48109,6 +48580,9 @@ class PlantEquipmentListEquipmentItem(TypedDict, total=False):
 class PlantEquipmentList(AnyPlantEquipmentList):
     """List plant equipment in order of operating priority, 1st in list will be used 1st, etc Use only plant equipment in th..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     equipment: ExtensibleList[PlantEquipmentListEquipmentGroup]
 
     def update(
@@ -48121,7 +48595,7 @@ class _PlantEquipmentListFields(_PlantEquipmentListCommonFields, total=False):
 
 class _CondenserEquipmentListCommonFields(TypedDict, total=False): ...
 
-class AnyCondenserEquipmentList(_TypedIDFObject):
+class AnyCondenserEquipmentList(_TypedAnyReleaseIDFObject):
     """``CondenserEquipmentList`` as every supported EnergyPlus version declares it."""
 
     def update(
@@ -48146,6 +48620,9 @@ class CondenserEquipmentListEquipmentItem(TypedDict, total=False):
 
 class CondenserEquipmentList(AnyCondenserEquipmentList):
     """List condenser equipment in order of operating priority, 1st in list will be used 1st, etc Use only condenser equipme..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     equipment: ExtensibleList[CondenserEquipmentListEquipmentGroup]
 
@@ -58634,7 +59111,7 @@ class _HybridModelZoneCommonFields(TypedDict, total=False):
     calculate_zone_air_infiltration_rate: Literal["No", "Yes"] | None
     zone_measured_air_temperature_schedule_name: str | None
 
-class AnyHybridModelZone(_TypedIDFObject):
+class AnyHybridModelZone(_TypedAnyReleaseIDFObject):
     """``HybridModel:Zone`` as every supported EnergyPlus version declares it."""
 
     zone_name: str
@@ -58673,6 +59150,9 @@ class _AnyHybridModelZoneFields(_HybridModelZoneCommonFields, total=False):
 
 class HybridModelZone(AnyHybridModelZone):
     """Zones with measured air temperature data and a range of dates. If the range of temperature measurement dates includes..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     calculate_zone_people_count: Literal["No", "Yes"] | None
     """Use measured humidity ratio data (temperature, humidity ratio, or CO2 concentration) to calculate zone people count. ...; Default: No; Since: 9.1.0"""
@@ -59669,7 +60149,7 @@ class _CurveDoubleExponentialDecayCommonFields(TypedDict, total=False):
     input_unit_type_for_x: Literal["Dimensionless"] | None
     output_unit_type: Literal["Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class AnyCurveDoubleExponentialDecay(_TypedIDFObject):
+class AnyCurveDoubleExponentialDecay(_TypedAnyReleaseIDFObject):
     """``Curve:DoubleExponentialDecay`` as every supported EnergyPlus version declares it."""
 
     coefficient1_c1: float
@@ -59695,6 +60175,9 @@ class _AnyCurveDoubleExponentialDecayFields(_CurveDoubleExponentialDecayCommonFi
 
 class CurveDoubleExponentialDecay(AnyCurveDoubleExponentialDecay):
     """Double exponential decay curve with one independent variable. Input consists of the curve name, the five coefficients..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     coefficient4_c4: float
     """Since: 9.4.0"""
@@ -65620,7 +66103,7 @@ class _OutputTableReportPeriodCommonFields(TypedDict, total=False):
     end_day_of_month: int
     end_hour_of_day: int
 
-class AnyOutputTableReportPeriod(_TypedIDFObject):
+class AnyOutputTableReportPeriod(_TypedAnyReleaseIDFObject):
     """``Output:Table:ReportPeriod`` as every supported EnergyPlus version that has it declares it: 22.2.0 and later."""
 
     report_name: (
@@ -65655,6 +66138,8 @@ class _AnyOutputTableReportPeriodFields(_OutputTableReportPeriodCommonFields, to
 class OutputTableReportPeriod(AnyOutputTableReportPeriod):
     """This object allows the user to generate the resilience tabular reports over a subset of a run period. When it is defi...; Since: 22.2.0"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableReportPeriodFields]
     ) -> None: ...  # type: ignore[override]
@@ -65670,7 +66155,7 @@ class _OutputControlTableStyleCommonFields(TypedDict, total=False):
         | None
     )
 
-class AnyOutputControlTableStyle(_TypedIDFObject):
+class AnyOutputControlTableStyle(_TypedAnyReleaseIDFObject):
     """``OutputControl:Table:Style`` as every supported EnergyPlus version declares it."""
 
     column_separator: (
@@ -65696,6 +66181,9 @@ class _AnyOutputControlTableStyleFields(_OutputControlTableStyleCommonFields, to
 
 class OutputControlTableStyle(AnyOutputControlTableStyle):
     """default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs s..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     unit_conversion: Literal["InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
     """Default: None"""
@@ -65886,7 +66374,7 @@ class MeterCustomVariableDetailsItem(TypedDict, total=False):
     key_name: str | None
     output_variable_or_meter_name: str | None
 
-class AnyMeterCustom(_TypedIDFObject):
+class AnyMeterCustom(_TypedAnyReleaseIDFObject):
     """``Meter:Custom`` as every supported EnergyPlus version declares it."""
 
     variable_details: ExtensibleList[MeterCustomVariableDetailsGroup]
@@ -65898,6 +66386,9 @@ class _AnyMeterCustomFields(_MeterCustomCommonFields, total=False): ...
 
 class MeterCustom(AnyMeterCustom):
     """Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     resource_type: (
         Literal[
@@ -65963,7 +66454,7 @@ class MeterCustomDecrementVariableDetailsItem(TypedDict, total=False):
     key_name: str | None
     output_variable_or_meter_name: str | None
 
-class AnyMeterCustomDecrement(_TypedIDFObject):
+class AnyMeterCustomDecrement(_TypedAnyReleaseIDFObject):
     """``Meter:CustomDecrement`` as every supported EnergyPlus version declares it."""
 
     source_meter_name: str
@@ -65979,6 +66470,9 @@ class _AnyMeterCustomDecrementFields(_MeterCustomDecrementCommonFields, total=Fa
 
 class MeterCustomDecrement(AnyMeterCustomDecrement):
     """Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     resource_type: (
         Literal[
@@ -66062,7 +66556,7 @@ class _OutputControlFilesCommonFields(TypedDict, total=False):
     output_extshd: Literal["No", "Yes"] | None
     output_tarcog: Literal["No", "Yes"] | None
 
-class AnyOutputControlFiles(_TypedIDFObject):
+class AnyOutputControlFiles(_TypedAnyReleaseIDFObject):
     """``OutputControl:Files`` as every supported EnergyPlus version that has it declares it: 9.4.0 and later."""
 
     output_csv: Literal["No", "Yes"] | None
@@ -66138,6 +66632,9 @@ class _AnyOutputControlFilesFields(_OutputControlFilesCommonFields, total=False)
 class OutputControlFiles(AnyOutputControlFiles):
     """Conditionally turn on/off output from EnergyPlus.; Since: 9.4.0"""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     output_space_sizing: Literal["No", "Yes"] | None
     """Default: Yes; Since: 24.2.0"""
     output_plant_component_sizing: Literal["No", "Yes"] | None
@@ -66175,7 +66672,7 @@ class _OutputJSONCommonFields(TypedDict, total=False):
     output_cbor: Literal["No", "Yes"] | None
     output_messagepack: Literal["No", "Yes"] | None
 
-class AnyOutputJSON(_TypedIDFObject):
+class AnyOutputJSON(_TypedAnyReleaseIDFObject):
     """``Output:JSON`` as every supported EnergyPlus version that has it declares it: 9.1.0 and later."""
 
     option_type: Literal["TimeSeries", "TimeSeriesAndTabular"]
@@ -66193,6 +66690,9 @@ class _AnyOutputJSONFields(_OutputJSONCommonFields, total=False): ...
 
 class OutputJSON(AnyOutputJSON):
     """Output from EnergyPlus can be written to JSON format files.; Since: 9.1.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     unit_conversion_for_tabular_data: (
         Literal[
@@ -66219,7 +66719,7 @@ class _OutputJSONFields(_OutputJSONCommonFields, total=False):
 class _OutputSQLiteCommonFields(TypedDict, total=False):
     option_type: Literal["Simple", "SimpleAndTabular"] | None
 
-class AnyOutputSQLite(_TypedIDFObject):
+class AnyOutputSQLite(_TypedAnyReleaseIDFObject):
     """``Output:SQLite`` as every supported EnergyPlus version declares it."""
 
     option_type: Literal["Simple", "SimpleAndTabular"] | None
@@ -66231,6 +66731,9 @@ class _AnyOutputSQLiteFields(_OutputSQLiteCommonFields, total=False): ...
 
 class OutputSQLite(AnyOutputSQLite):
     """Output from EnergyPlus can be written to an SQLite format file."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     unit_conversion_for_tabular_data: (
         Literal[
@@ -66274,7 +66777,7 @@ class _EnvironmentalImpactFactorsCommonFields(TypedDict, total=False):
     total_carbon_equivalent_emission_factor_from_ch4: float | None
     total_carbon_equivalent_emission_factor_from_co2: float | None
 
-class AnyEnvironmentalImpactFactors(_TypedIDFObject):
+class AnyEnvironmentalImpactFactors(_TypedAnyReleaseIDFObject):
     """``EnvironmentalImpactFactors`` as every supported EnergyPlus version declares it."""
 
     district_cooling_cop: float | None
@@ -66295,6 +66798,9 @@ class _AnyEnvironmentalImpactFactorsFields(_EnvironmentalImpactFactorsCommonFiel
 
 class EnvironmentalImpactFactors(AnyEnvironmentalImpactFactors):
     """Used to help convert district and ideal energy use to a fuel type and provide total carbon equivalent with coefficien..."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     district_heating_water_efficiency: float | None
     """District heating efficiency used when converted to natural gas; Default: 0.3; Range: > 0.0; Since: 23.2.0"""
@@ -66346,7 +66852,7 @@ class _FuelFactorsCommonFields(TypedDict, total=False):
     nuclear_low_level_emission_factor: float | None
     nuclear_low_level_emission_factor_schedule_name: str | None
 
-class AnyFuelFactors(_TypedIDFObject):
+class AnyFuelFactors(_TypedAnyReleaseIDFObject):
     """``FuelFactors`` as every supported EnergyPlus version declares it."""
     @property
     def existing_fuel_resource_name(
@@ -66459,6 +66965,9 @@ class _AnyFuelFactorsFields(_FuelFactorsCommonFields, total=False):
 class FuelFactors(AnyFuelFactors):
     """Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for u..."""
 
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
+
     existing_fuel_resource_name: (
         Literal[
             "Coal",
@@ -66497,7 +67006,7 @@ class _FuelFactorsFields(_FuelFactorsCommonFields, total=False):
 
 class _OutputDiagnosticsCommonFields(TypedDict, total=False): ...
 
-class AnyOutputDiagnostics(_TypedIDFObject):
+class AnyOutputDiagnostics(_TypedAnyReleaseIDFObject):
     """``Output:Diagnostics`` as every supported EnergyPlus version declares it."""
 
     def update(
@@ -66552,6 +67061,9 @@ class OutputDiagnosticsDiagnosticsItem(TypedDict, total=False):
 
 class OutputDiagnostics(AnyOutputDiagnostics):
     """Special keys to produce certain warning messages or effect certain simulation characteristics."""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     diagnostics: ExtensibleList[OutputDiagnosticsDiagnosticsGroup]
 
@@ -66639,7 +67151,7 @@ class _PythonPluginSearchPathsCommonFields(TypedDict, total=False):
     add_current_working_directory_to_search_path: Literal["No", "Yes"] | None
     add_input_file_directory_to_search_path: Literal["No", "Yes"] | None
 
-class AnyPythonPluginSearchPaths(_TypedIDFObject):
+class AnyPythonPluginSearchPaths(_TypedAnyReleaseIDFObject):
     """``PythonPlugin:SearchPaths`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     add_current_working_directory_to_search_path: Literal["No", "Yes"] | None
@@ -66667,6 +67179,9 @@ class PythonPluginSearchPathsPySearchPathsItem(TypedDict, total=False):
 
 class PythonPluginSearchPaths(AnyPythonPluginSearchPaths):
     """Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file ...; Since: 9.3.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     add_epin_environment_variable_to_search_path: Literal["No", "Yes"] | None
     """The 'epin' environment variable is set by some EnergyPlus interfaces in order to let EnergyPlus find external files i...; Default: Yes; Since: 22.1.0"""
@@ -66703,7 +67218,7 @@ class _PythonPluginInstanceFields(TypedDict, total=False):
 
 class _PythonPluginVariablesCommonFields(TypedDict, total=False): ...
 
-class AnyPythonPluginVariables(_TypedIDFObject):
+class AnyPythonPluginVariables(_TypedAnyReleaseIDFObject):
     """``PythonPlugin:Variables`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     def update(
@@ -66726,6 +67241,9 @@ class PythonPluginVariablesGlobalPyVarsItem(TypedDict, total=False):
 
 class PythonPluginVariables(AnyPythonPluginVariables):
     """This object defines name identifiers for custom Python Plugin variable data that should be shared among all running P...; Since: 9.3.0"""
+
+    def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _NotAFieldOfThisObjectType, value: _NotAFieldOfThisObjectType) -> None: ...
 
     global_py_vars: ExtensibleList[PythonPluginVariablesGlobalPyVarsGroup]
 

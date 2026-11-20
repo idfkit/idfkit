@@ -9,9 +9,9 @@ from unittest.mock import patch
 
 import pytest
 
-from idfkit import IDFDocument, load_epjson, new_document
+from idfkit import IDFDocument, load_epjson, new_document, parse_idf
 from idfkit.document import AnyIDFDocument
-from idfkit.exceptions import closest_names
+from idfkit.exceptions import ValidationFailedError, closest_names
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.schema import get_schema
 from idfkit.validation import (
@@ -1816,3 +1816,85 @@ class TestReferencesEnergyPlusAccepts:
 
         errors = [e for e in validate_document(doc).errors if e.code == "E009"]
         assert [e.field for e in errors if e.field == "external_node_name"] == expected
+
+
+class TestRequiredName:
+    """A type whose schema requires a Name refuses a blank one, as it refuses any blank required field."""
+
+    @pytest.mark.parametrize("name", ["", "   "])
+    def test_add_refuses_a_blank_name(self, name: str) -> None:
+        doc = new_document()
+        with pytest.raises(ValidationFailedError, match="Required field 'name' is missing"):
+            doc.add("Zone", name)
+        with pytest.raises(ValidationFailedError, match="Required field 'name' is missing"):
+            doc.zones.add(name)
+        assert len(doc.zones) == 0
+
+    def test_add_without_a_name_is_refused(self) -> None:
+        doc = new_document()
+        with pytest.raises(ValidationFailedError) as excinfo:
+            doc.add("Zone")
+        assert [(e.code, e.field) for e in excinfo.value.errors] == [("E001", "name")]
+
+    def test_a_type_whose_name_is_optional_is_not_checked(self) -> None:
+        schema = get_schema((24, 1, 0))
+        rules = _object_rules(schema, "Building")
+        assert rules is not None
+        assert not rules.name_required
+        zone_rules = _object_rules(schema, "Zone")
+        assert zone_rules is not None
+        assert zone_rules.name_required
+
+    def test_a_type_without_a_name_field_is_unaffected(self) -> None:
+        doc = new_document()
+        assert doc.add("Timestep", number_of_timesteps_per_hour=4).name == ""
+
+    def test_validate_document_reports_a_blank_name(self) -> None:
+        doc = new_document()
+        doc.add("Zone", validate=False)
+        result = validate_document(doc)
+        assert [(e.obj_type, e.code, e.field) for e in result.errors] == [("Zone", "E001", "name")]
+
+    def test_a_parsed_blank_name_is_reported(self, tmp_path: Path) -> None:
+        path = tmp_path / "blank.idf"
+        path.write_text("Version, 24.1;\nZone, , 0;\n")
+        doc = parse_idf(path)
+        result = validate_document(doc)
+        assert any(e.code == "E001" and e.field == "name" and e.obj_type == "Zone" for e in result.errors)
+
+    def test_renaming_to_a_blank_name_is_refused_in_a_strict_document(self) -> None:
+        doc = new_document()
+        zone = doc.add("Zone", "A")
+        for blank in ("", "  "):
+            with pytest.raises(ValidationFailedError, match="Required field 'name' is missing"):
+                zone.name = blank
+        assert zone.name == "A"
+        assert doc.zones["A"] is zone
+
+    def test_renaming_to_a_blank_name_is_allowed_in_a_lax_document(self) -> None:
+        doc = new_document(strict=False)
+        zone = doc.add("Zone", "A")
+        zone.name = ""
+        assert [(e.code, e.field) for e in validate_document(doc).errors] == [("E001", "name")]
+
+    def test_renaming_a_type_whose_name_is_optional_to_blank_is_allowed(self) -> None:
+        doc = new_document()
+        building = next(iter(doc["Building"]))
+        building.name = ""
+        assert building.name == ""
+
+    def test_eppy_newidfobject_creates_a_nameless_object_to_name_afterwards(self) -> None:
+        doc = new_document()
+        zone = doc.newidfobject("ZONE")
+        zone.Name = "Office"
+        assert doc.zones["Office"] is zone
+        assert not validate_document(doc).errors
+
+    def test_eppy_newidfobject_still_validates_the_other_fields(self) -> None:
+        doc = new_document()
+        with pytest.raises(ValidationFailedError) as excinfo:
+            doc.newidfobject("Material")
+        fields = {e.field for e in excinfo.value.errors}
+        assert "name" not in fields
+        assert "thickness" in fields
+        assert len(doc.materials) == 0

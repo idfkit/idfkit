@@ -571,6 +571,16 @@ class TestGenerateStubs:
             "def __setattr__(self, name: _NotAFieldOfThisExtensibleGroup, value: _NotAFieldOfThisExtensibleGroup)"
             " -> None: ..." in content
         )
+        # A field some releases declare and others do not is reported on Any<Class> against a sentinel
+        # that names the remedy, and each release's class re-declares the plain gate.
+        assert "class _NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion:" in content
+        assert "class _TypedAnyReleaseIDFObject(_TypedIDFObject):" in content
+        assert (
+            "def __getattr__(self, key: _NotAFieldInEveryRelease_TypoOrNarrowWithAsVersion) -> object: ..." in content
+        )
+        assert "class AnyLights(_TypedAnyReleaseIDFObject):" in content
+        lights = content.split("\nclass Lights(AnyLights):", 1)[1].split("\nclass ", 1)[0]
+        assert "def __getattr__(self, key: _NotAFieldOfThisObjectType) -> object: ..." in lights
         # ReadOnly typed the entries of the TypedDict maps, which are gone; nothing else uses it.
         assert "from typing_extensions import Required, Unpack" in content
         # A trailing-underscore field is declared under both spellings the runtime accepts.

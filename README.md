@@ -19,16 +19,8 @@ An EnergyPlus IDF and epJSON toolkit for Python, with no third-party dependencie
 > [!NOTE]
 > **Upgrading from 0.x.** Since 1.0.0, writing a model to disk uses
 > `save_idf(doc, path)` and `save_epjson(doc, path)`. `write_idf` and
-> `write_epjson` only return a string.
->
-> Code that still calls `write_*` with a path fails without naming the cause:
-> `write_epjson(doc, path)` raises `TypeError: can't multiply sequence by
-> non-int of type 'PosixPath'`, and `write_idf(doc, path)` takes the path as
-> its `output_type` argument, returns the IDF text, and writes no file, so the
-> failure surfaces only when the file is next read.
->
-> Search for `write_idf(` and `write_epjson(` called with two positional
-> arguments, or run a type checker, which rejects both. Full notes are in the
+> `write_epjson` only return a string, and raise an error naming the `save_*`
+> call if they are given a path. Full notes are in the
 > [changelog](CHANGELOG.md#migration).
 
 > [!NOTE]
@@ -122,7 +114,8 @@ uv add idfkit
 ```python
 from idfkit import load_idf, save_idf
 
-# Load an existing IDF file
+# Load an existing IDF file. For pyright to check the fields of the file's release, pass that
+# release's class, e.g. as_type=IDFDocumentV24_1 from idfkit.versioned (TypeError for another release).
 doc = load_idf("in.idf")
 
 # Query objects with O(1) lookups

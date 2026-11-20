@@ -207,6 +207,9 @@ class _HVACTemplatePlantBoiler_v8_9_to_v9_2Fields(_g._HVACTemplatePlantBoilerCom
 class ScheduleFile_v8_9_to_v9_1(_g.AnyScheduleFile):
     """``Schedule:File`` as declared in EnergyPlus 8.9.0 to 9.1.0. A Schedule:File points to a text computer file that has 8760-8784 hours of data."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     column_number: float
     """Range: >= 1.0"""
     rows_to_skip_at_top: float
@@ -230,6 +233,9 @@ class _ScheduleFile_v8_9_to_v9_1Fields(_g._ScheduleFileCommonFields, total=False
 class ScheduleFile_v9_2_to_v9_6(_g.AnyScheduleFile):
     """``Schedule:File`` as declared in EnergyPlus 9.2.0 to 9.6.0. A Schedule:File points to a text computer file that has 8760-8784 hours of data."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     column_number: float
     """Range: >= 1.0"""
     rows_to_skip_at_top: float
@@ -252,6 +258,9 @@ class _ScheduleFile_v9_2_to_v9_6Fields(_g._ScheduleFileCommonFields, total=False
 
 class ScheduleFile_v22_1(_g.AnyScheduleFile):
     """``Schedule:File`` as declared in EnergyPlus 22.1.0. A Schedule:File points to a text computer file that has 8760-8784 hours of data."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     column_number: float
     """Range: >= 1.0"""
@@ -320,6 +329,9 @@ class _AvailabilityManagerOptimumStart_v8_9_to_v22_1Fields(
 class GasEquipment_v8_9_to_v9_5(_g.AnyGasEquipment):
     """``GasEquipment`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains and contaminant rates for gas equipment in the zone. If you use a ZoneList in the Zone name field..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
     """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
@@ -335,6 +347,9 @@ class _GasEquipment_v8_9_to_v9_5Fields(_g._GasEquipmentCommonFields, total=False
 
 class GasEquipment_v9_6_to_v23_2(_g.AnyGasEquipment):
     """``GasEquipment`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains and contaminant rates for gas equipment in the zone. If a ZoneList, SpaceList, or a Zone comprise..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
@@ -438,6 +453,9 @@ class _ExteriorFuelEquipment_v9_3_to_v23_1Fields(_g._ExteriorFuelEquipmentCommon
 class HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4(_g.AnyHeatPumpWaterToWaterEquationFitHeating):
     """``HeatPump:WaterToWater:EquationFit:Heating`` as declared in EnergyPlus 8.9.0 to 9.4.0. simple water-water hp curve-fit model"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     heating_capacity_coefficient_1: float
     heating_capacity_coefficient_2: float
     heating_capacity_coefficient_3: float
@@ -474,6 +492,8 @@ class _HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4Fields(
 class CeilingAdiabatic_v8_9_to_v9_5(_g.AnyCeilingAdiabatic):
     """``Ceiling:Adiabatic`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of interior ceilings."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CeilingAdiabatic_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -483,6 +503,9 @@ class _CeilingAdiabatic_v8_9_to_v9_5Fields(_g._CeilingAdiabaticCommonFields, tot
 
 class CoilCoolingDXSingleSpeed_v8_9_to_v22_1(_g.AnyCoilCoolingDXSingleSpeed):
     """``Coil:Cooling:DX:SingleSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), single-speed..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     rated_evaporator_fan_power_per_volume_flow_rate: float | None
     """Enter the evaporator fan power per air volume flow rate at the rated test conditions. The test conditions vary extern...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0"""
@@ -498,6 +521,8 @@ class _CoilCoolingDXSingleSpeed_v8_9_to_v22_1Fields(_g._CoilCoolingDXSingleSpeed
 class CoilCoolingDXSingleSpeed_v22_2_to_v23_1(_g.AnyCoilCoolingDXSingleSpeed):
     """``Coil:Cooling:DX:SingleSpeed`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), single-speed..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -556,6 +581,8 @@ class _FanSystemModel_v8_9_to_v22_1Fields(_g._FanSystemModelCommonFields, total=
 class SiteLocation_v8_9_to_v24_1(_g.AnySiteLocation):
     """``Site:Location`` as declared in EnergyPlus 8.9.0 to 24.1.0. Specifies the building's location. Only one location is allowed. Weather data file location, if it exists, will overr..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteLocation_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -591,6 +618,8 @@ class _GeneratorInternalCombustionEngine_v8_9_to_v9_2Fields(
 class FoundationKiva_v8_9_to_v9_1(_g.AnyFoundationKiva):
     """``Foundation:Kiva`` as declared in EnergyPlus 8.9.0 to 9.1.0. Refined definition of the foundation surface construction used to inform two-dimensional heat transfer calculated usi..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FoundationKiva_v8_9_to_v9_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -601,6 +630,8 @@ class _FoundationKiva_v8_9_to_v9_1Fields(_g._FoundationKivaCommonFields, total=F
 class MaterialNoMass_v8_9_to_v26_1(_g.AnyMaterialNoMass):
     """``Material:NoMass`` as declared in EnergyPlus 8.9.0 to 26.1.0. Regular materials properties described whose principal description is R (Thermal Resistance)"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialNoMass_v8_9_to_v26_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -629,6 +660,9 @@ class _AirflowNetworkDistributionComponentFan_v8_9_to_v9_1Fields(
 
 class ZoneThermalChimney_v8_9_to_v24_1(_g.AnyZoneThermalChimney):
     """``ZoneThermalChimney`` as declared in EnergyPlus 8.9.0 to 24.1.0. A thermal chimney is a vertical shaft utilizing solar radiation to enhance natural ventilation. It consists of an abs..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_1_name: str
     relative_ratios_of_air_flow_rates_passing_through_zone_1: float | None
@@ -834,6 +868,8 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1(
 ):
     """``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` as declared in EnergyPlus 8.9.0 to 23.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -850,6 +886,9 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1(
     _g.AnyCoilCoolingWaterToAirHeatPumpParameterEstimation
 ):
     """``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     part_load_fraction_correlation_curve_name: str
     """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (cooling l..."""
@@ -879,6 +918,8 @@ class _CoilCoolingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1Fields(
 class CeilingInterzone_v8_9_to_v9_5(_g.AnyCeilingInterzone):
     """``Ceiling:Interzone`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of ceilings using adjacent zone (interzone) heat transfer - adjacent surface should be a ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CeilingInterzone_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -888,6 +929,9 @@ class _CeilingInterzone_v8_9_to_v9_5Fields(_g._CeilingInterzoneCommonFields, tot
 
 class ElectricEquipmentITEAirCooled_v8_9_to_v9_5(_g.AnyElectricEquipmentITEAirCooled):
     """``ElectricEquipment:ITE:AirCooled`` as declared in EnergyPlus 8.9.0 to 9.5.0. This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_name: str
     watts_per_zone_floor_area: float | None
@@ -911,6 +955,9 @@ class _ElectricEquipmentITEAirCooled_v8_9_to_v9_5Fields(_g._ElectricEquipmentITE
 class ElectricEquipmentITEAirCooled_v9_6_to_v22_1(_g.AnyElectricEquipmentITEAirCooled):
     """``ElectricEquipment:ITE:AirCooled`` as declared in EnergyPlus 9.6.0 to 22.1.0. This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed."""
     watts_per_zone_floor_area: float | None
@@ -933,6 +980,9 @@ class _ElectricEquipmentITEAirCooled_v9_6_to_v22_1Fields(_g._ElectricEquipmentIT
 
 class ElectricEquipmentITEAirCooled_v22_2_to_v23_2(_g.AnyElectricEquipmentITEAirCooled):
     """``ElectricEquipment:ITE:AirCooled`` as declared in EnergyPlus 22.2.0 to 23.2.0. This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_space_name: str
     """ZoneList and SpaceList names are not allowed."""
@@ -992,6 +1042,9 @@ class _CoolingTowerTwoSpeed_v8_9_to_v22_1Fields(_g._CoolingTowerTwoSpeedCommonFi
 class WeatherPropertySkyTemperature_v8_9_to_v9_2(_g.AnyWeatherPropertySkyTemperature):
     """``WeatherProperty:SkyTemperature`` as declared in EnergyPlus 8.9.0 to 9.2.0. This object is used to override internal sky temperature calculations."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     calculation_type: (
         Literal["DifferenceScheduleDewPointValue", "DifferenceScheduleDryBulbValue", "ScheduleValue"] | None
     )
@@ -1012,6 +1065,8 @@ class _WeatherPropertySkyTemperature_v8_9_to_v9_2Fields(_g._WeatherPropertySkyTe
 class WindowMaterialGlazingEquivalentLayer_v8_9_to_v9_1(_g.AnyWindowMaterialGlazingEquivalentLayer):
     """``WindowMaterial:Glazing:EquivalentLayer`` as declared in EnergyPlus 8.9.0 to 9.1.0. Glass material properties for Windows or Glass Doors Transmittance/Reflectance input method."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -1094,6 +1149,9 @@ class _DesignSpecificationOutdoorAir_v8_9_to_v9_4Fields(_g._DesignSpecificationO
 class BuildingSurfaceDetailed_v8_9_to_v9_5(_g.AnyBuildingSurfaceDetailed):
     """``BuildingSurface:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     outside_boundary_condition: Literal[
         "Adiabatic",
         "Foundation",
@@ -1140,6 +1198,9 @@ class _BuildingSurfaceDetailed_v8_9_to_v9_5Fields(_g._BuildingSurfaceDetailedCom
 
 class BuildingSurfaceDetailed_v9_6_to_v24_2(_g.AnyBuildingSurfaceDetailed):
     """``BuildingSurface:Detailed`` as declared in EnergyPlus 9.6.0 to 24.2.0. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
@@ -1191,6 +1252,9 @@ class _BuildingSurfaceDetailed_v9_6_to_v24_2Fields(_g._BuildingSurfaceDetailedCo
 class SiteGroundTemperatureUndisturbedXing_v8_9_to_v23_1(_g.AnySiteGroundTemperatureUndisturbedXing):
     """``Site:GroundTemperature:Undisturbed:Xing`` as declared in EnergyPlus 8.9.0 to 23.1.0. Undisturbed ground temperature object using the Xing 2014 2 harmonic parameter model."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     average_soil_surface_tempeature: float
     """[C]"""
 
@@ -1228,6 +1292,9 @@ class _AirLoopHVACUnitaryFurnaceHeatCool_v8_9_to_v9_2Fields(
 
 class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4(_g.AnyZoneHVACBaseboardRadiantConvectiveSteam):
     """``ZoneHVAC:Baseboard:RadiantConvective:Steam`` as declared in EnergyPlus 8.9.0 to 9.4.0. The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     heating_design_capacity_method: (
         Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
@@ -1267,6 +1334,8 @@ class _ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4Fields(
 class SizingZone_v8_9_to_v22_1(_g.AnySizingZone):
     """``Sizing:Zone`` as declared in EnergyPlus 8.9.0 to 22.1.0. Specifies the data needed to perform a zone design air flow calculation. The calculation is done for every sizing per..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingZone_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -1276,6 +1345,9 @@ class _SizingZone_v8_9_to_v22_1Fields(_g._SizingZoneCommonFields, total=False): 
 
 class SizingZone_v22_2_to_v24_1(_g.AnySizingZone):
     """``Sizing:Zone`` as declared in EnergyPlus 22.2.0 to 24.1.0. Specifies the data needed to perform a zone design air flow calculation. The calculation is done for every sizing per..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_load_sizing_method: (
         Literal["Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"] | None
@@ -1326,6 +1398,9 @@ class _SizingZone_v22_2_to_v24_1Fields(_g._SizingZoneCommonFields, total=False):
 
 class SizingZone_v24_2_to_v25_1(_g.AnySizingZone):
     """``Sizing:Zone`` as declared in EnergyPlus 24.2.0 to 25.1.0. Specifies the data needed to perform a zone design air flow calculation. The calculation is done for every sizing per..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_load_sizing_method: (
         Literal["Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"] | None
@@ -1379,6 +1454,9 @@ class _SizingZone_v24_2_to_v25_1Fields(_g._SizingZoneCommonFields, total=False):
 
 class OtherEquipment_v8_9_to_v9_2(_g.AnyOtherEquipment):
     """``OtherEquipment`` as declared in EnergyPlus 8.9.0 to 9.2.0. Sets internal gains or losses for 'other' equipment in the zone."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: (
         Literal[
@@ -1437,6 +1515,9 @@ class _OtherEquipment_v8_9_to_v9_2Fields(_g._OtherEquipmentCommonFields, total=F
 class OtherEquipment_v9_3_to_v9_5(_g.AnyOtherEquipment):
     """``OtherEquipment`` as declared in EnergyPlus 9.3.0 to 9.5.0. Sets internal gains or losses for 'other' equipment in the zone."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: (
         Literal[
             "Coal",
@@ -1491,6 +1572,9 @@ class _OtherEquipment_v9_3_to_v9_5Fields(_g._OtherEquipmentCommonFields, total=F
 
 class OtherEquipment_v9_6_to_v23_1(_g.AnyOtherEquipment):
     """``OtherEquipment`` as declared in EnergyPlus 9.6.0 to 23.1.0. Sets internal gains or losses for 'other' equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of mor..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: (
         Literal[
@@ -1547,6 +1631,9 @@ class _OtherEquipment_v9_6_to_v23_1Fields(_g._OtherEquipmentCommonFields, total=
 class OtherEquipment_v23_2(_g.AnyOtherEquipment):
     """``OtherEquipment`` as declared in EnergyPlus 23.2.0. Sets internal gains or losses for 'other' equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of mor..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: (
         Literal[
             "Coal",
@@ -1602,6 +1689,8 @@ class _OtherEquipment_v23_2Fields(_g._OtherEquipmentCommonFields, total=False):
 class AirTerminalDualDuctVAV_v8_9_to_v9_2(_g.AnyAirTerminalDualDuctVAV):
     """``AirTerminal:DualDuct:VAV`` as declared in EnergyPlus 8.9.0 to 9.2.0. Central air system terminal unit, dual duct, variable volume."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalDualDuctVAV_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
@@ -2157,6 +2246,9 @@ class _EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3Fields(
 class BoilerHotWater_v8_9(_g.AnyBoilerHotWater):
     """``Boiler:HotWater`` as declared in EnergyPlus 8.9.0. This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: str
     design_water_outlet_temperature: float | None
     """[C]"""
@@ -2176,6 +2268,9 @@ class _BoilerHotWater_v8_9Fields(_g._BoilerHotWaterCommonFields, total=False):
 class BoilerHotWater_v9_0_to_v9_2(_g.AnyBoilerHotWater):
     """``Boiler:HotWater`` as declared in EnergyPlus 9.0.1 to 9.2.0. This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: str
     parasitic_electric_load: float | None
     """[W]; Default: 0.0; Range: >= 0.0"""
@@ -2191,6 +2286,9 @@ class _BoilerHotWater_v9_0_to_v9_2Fields(_g._BoilerHotWaterCommonFields, total=F
 
 class BoilerHotWater_v9_3_to_v23_1(_g.AnyBoilerHotWater):
     """``Boiler:HotWater`` as declared in EnergyPlus 9.3.0 to 23.1.0. This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: Literal[
         "Coal",
@@ -2230,6 +2328,8 @@ class _BoilerHotWater_v9_3_to_v23_1Fields(_g._BoilerHotWaterCommonFields, total=
 class PumpVariableSpeedCondensate_v8_9_to_v9_0(_g.AnyPumpVariableSpeedCondensate):
     """``Pump:VariableSpeed:Condensate`` as declared in EnergyPlus 8.9.0 to 9.0.1. This pump model is described in the ASHRAE secondary HVAC toolkit. Variable Speed Condensate pump for Steam Systems"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -2262,6 +2362,8 @@ class _RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1Fields(
 class ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1(_g.AnyZoneHVACIdealLoadsAirSystem):
     """``ZoneHVAC:IdealLoadsAirSystem`` as declared in EnergyPlus 8.9.0 to 25.1.0. Ideal system used to calculate loads without modeling a full HVAC system. All that is required for the ideal system a..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -2420,6 +2522,8 @@ class _ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2Fields(
 class LoadProfilePlant_v8_9_to_v23_1(_g.AnyLoadProfilePlant):
     """``LoadProfile:Plant`` as declared in EnergyPlus 8.9.0 to 23.1.0. Used to simulate a scheduled plant loop demand profile. Load and flow rate are specified using schedules. Positive va..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LoadProfilePlant_v8_9_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -2771,6 +2875,9 @@ class _ZoneHVACOutdoorAirUnitEquipmentList_v8_9Fields(_g._ZoneHVACOutdoorAirUnit
 class MaterialPropertyPhaseChange_v8_9_to_v24_1(_g.AnyMaterialPropertyPhaseChange):
     """``MaterialProperty:PhaseChange`` as declared in EnergyPlus 8.9.0 to 24.1.0. Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) He..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     temperature_1: float
     """for Temperature-enthalpy function; [C]"""
     enthalpy_1: float
@@ -3106,6 +3213,9 @@ class _EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1Fields(_g._EvaporativeFluidCo
 class ZoneRefrigerationDoorMixing_v8_9_to_v24_1(_g.AnyZoneRefrigerationDoorMixing):
     """``ZoneRefrigerationDoorMixing`` as declared in EnergyPlus 8.9.0 to 24.1.0. Refrigeration Door Mixing is used for an opening between two zones that are at the same elevation but have different ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_1_name: str
     zone_2_name: str
 
@@ -3124,6 +3234,8 @@ class _ZoneRefrigerationDoorMixing_v8_9_to_v24_1Fields(_g._ZoneRefrigerationDoor
 class ChillerConstantCOP_v8_9_to_v24_1(_g.AnyChillerConstantCOP):
     """``Chiller:ConstantCOP`` as declared in EnergyPlus 8.9.0 to 24.1.0. This constant COP chiller model provides a means of quickly specifying a Chiller where performance data is not availa..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerConstantCOP_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -3154,6 +3266,8 @@ class _PhotovoltaicPerformanceSandia_v8_9_to_v22_1Fields(_g._PhotovoltaicPerform
 class FloorGroundContact_v8_9_to_v9_5(_g.AnyFloorGroundContact):
     """``Floor:GroundContact`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of exterior floors with ground contact. View Factors to Ground is automatically calculated."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorGroundContact_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -3163,6 +3277,9 @@ class _FloorGroundContact_v8_9_to_v9_5Fields(_g._FloorGroundContactCommonFields,
 
 class AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2(_g.AnyAirConditionerVariableRefrigerantFlow):
     """``AirConditioner:VariableRefrigerantFlow`` as declared in EnergyPlus 8.9.0 to 9.2.0. Variable refrigerant flow (VRF) air-to-air heat pump condensing unit (includes one or more electric compressors and o..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     minimum_outdoor_temperature_in_cooling_mode: float | None
     """Enter the minimum outdoor temperature allowed for cooling operation. Cooling is disabled below this temperature.; [C]; Default: -6.0"""
@@ -3203,6 +3320,9 @@ class _AirConditionerVariableRefrigerantFlow_v8_9_to_v9_2Fields(
 
 class AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5(_g.AnyAirConditionerVariableRefrigerantFlow):
     """``AirConditioner:VariableRefrigerantFlow`` as declared in EnergyPlus 9.3.0 to 9.5.0. Variable refrigerant flow (VRF) air-to-air heat pump condensing unit (includes one or more electric compressors and o..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     minimum_outdoor_temperature_in_cooling_mode: float | None
     """Enter the minimum outdoor temperature allowed for cooling operation. Cooling is disabled below this temperature.; [C]; Default: -6.0"""
@@ -3270,6 +3390,9 @@ class _AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5Fields(
 class AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1(_g.AnyAirConditionerVariableRefrigerantFlow):
     """``AirConditioner:VariableRefrigerantFlow`` as declared in EnergyPlus 9.6.0 to 22.1.0. Variable refrigerant flow (VRF) air-to-air heat pump condensing unit (includes one or more electric compressors and o..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     minimum_condenser_inlet_node_temperature_in_cooling_mode: float | None
     """For cooling mode operation, enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum ...; [C]; Default: -6.0"""
     maximum_condenser_inlet_node_temperature_in_cooling_mode: float | None
@@ -3335,6 +3458,9 @@ class _AirConditionerVariableRefrigerantFlow_v9_6_to_v22_1Fields(
 
 class ScheduleYear_v8_9(_g.AnyScheduleYear):
     """``Schedule:Year`` as declared in EnergyPlus 8.9.0. A Schedule:Year contains from 1 to 52 week schedules"""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     schedule_week_name_1: str
     start_month_1: float
@@ -3728,6 +3854,9 @@ class ScheduleYearScheduleWeeksItem_v9_0_to_v22_1(TypedDict, total=False):
 class ScheduleYear_v9_0_to_v22_1(_g.AnyScheduleYear):
     """``Schedule:Year`` as declared in EnergyPlus 9.0.1 to 22.1.0. A Schedule:Year contains from 1 to 52 week schedules"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     schedule_weeks: ExtensibleList[ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1]
 
     def update(
@@ -3740,6 +3869,9 @@ class _ScheduleYear_v9_0_to_v22_1Fields(_g._ScheduleYearCommonFields, total=Fals
 
 class ZoneControlHumidistat_v8_9_to_v26_1(_g.AnyZoneControlHumidistat):
     """``ZoneControl:Humidistat`` as declared in EnergyPlus 8.9.0 to 26.1.0. Specifies zone relative humidity setpoint schedules for humidifying and dehumidifying."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     humidifying_relative_humidity_setpoint_schedule_name: str
     """hourly schedule values should be in Relative Humidity (percent)"""
@@ -3946,6 +4078,9 @@ class _WaterHeaterMixed_v9_3_to_v23_1Fields(_g._WaterHeaterMixedCommonFields, to
 class ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2(_g.AnyZoneHVACHybridUnitaryHVAC):
     """``ZoneHVAC:HybridUnitaryHVAC`` as declared in EnergyPlus 8.9.0 to 9.2.0. Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include ou..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_operating_modes: float | None
     """The value in this field defines the number of discrete operating modes for the unitary hybrid equipment. Supply air m...; Default: 1.0; Range: >= 1.0, <= 26.0"""
     first_fuel_type: (
@@ -4077,6 +4212,9 @@ class _ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2Fields(_g._ZoneHVACHybridUnitaryHVA
 class ZoneHVACHybridUnitaryHVAC_v9_3(_g.AnyZoneHVACHybridUnitaryHVAC):
     """``ZoneHVAC:HybridUnitaryHVAC`` as declared in EnergyPlus 9.3.0. Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include ou..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_operating_modes: float | None
     """The value in this field defines the number of discrete operating modes for the unitary hybrid equipment. Supply air m...; Default: 1.0; Range: >= 1.0, <= 26.0"""
     first_fuel_type: (
@@ -4207,6 +4345,9 @@ class _ZoneHVACHybridUnitaryHVAC_v9_3Fields(_g._ZoneHVACHybridUnitaryHVACCommonF
 
 class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1(_g.AnyZoneHVACHybridUnitaryHVAC):
     """``ZoneHVAC:HybridUnitaryHVAC`` as declared in EnergyPlus 9.4.0 to 23.1.0. Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include ou..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fan_heat_included_in_lookup_tables: Literal["No", "Yes"] | None
     """This field specifies if the fan heat is accounted for in the lookup tables.; Default: No"""
@@ -4363,6 +4504,9 @@ class DaylightingControlsControlDataItem_v8_9_to_v9_5(TypedDict, total=False):
 class DaylightingControls_v8_9_to_v9_5(_g.AnyDaylightingControls):
     """``Daylighting:Controls`` as declared in EnergyPlus 8.9.0 to 9.5.0. Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
     number_of_stepped_control_steps: float | None
     """The number of steps, excluding off, in a stepped lighting control system. If Lighting Control Type is Stepped, this f...; Default: 1.0; Range: >= 1.0"""
@@ -4398,6 +4542,9 @@ class DaylightingControlsControlDataItem_v9_6_to_v22_1(TypedDict, total=False):
 class DaylightingControls_v9_6_to_v22_1(_g.AnyDaylightingControls):
     """``Daylighting:Controls`` as declared in EnergyPlus 9.6.0 to 22.1.0. Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_space_name: str
     number_of_stepped_control_steps: float | None
     """The number of steps, excluding off, in a stepped lighting control system. If Lighting Control Type is Stepped, this f...; Default: 1.0; Range: >= 1.0"""
@@ -4418,6 +4565,9 @@ class _DaylightingControls_v9_6_to_v22_1Fields(_g._DaylightingControlsCommonFiel
 class ThermalStorageIceDetailed_v8_9_to_v9_1(_g.AnyThermalStorageIceDetailed):
     """``ThermalStorage:Ice:Detailed`` as declared in EnergyPlus 8.9.0 to 9.1.0. This input syntax is intended to describe a thermal storage system that includes smaller containers filled with water..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     capacity: float
     """This includes only the latent storage capacity; [GJ]"""
     discharging_curve_object_type: Literal["CubicLinear", "QuadraticLinear"] | None
@@ -4435,6 +4585,9 @@ class _ThermalStorageIceDetailed_v8_9_to_v9_1Fields(_g._ThermalStorageIceDetaile
 
 class ThermalStorageIceDetailed_v9_2_to_v25_1(_g.AnyThermalStorageIceDetailed):
     """``ThermalStorage:Ice:Detailed`` as declared in EnergyPlus 9.2.0 to 25.1.0. This input syntax is intended to describe a thermal storage system that includes smaller containers filled with water..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     capacity: float
     """This includes only the latent storage capacity; [GJ]"""
@@ -4485,6 +4638,9 @@ class _DemandManagerExteriorLights_v8_9_to_v22_1Fields(_g._DemandManagerExterior
 class ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1(_g.AnyZoneHVACTerminalUnitVariableRefrigerantFlow):
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as declared in EnergyPlus 8.9.0 to 9.1.0. Zone terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     supply_air_fan_object_type: (
         Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
@@ -4507,6 +4663,9 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1Fields(
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2(_g.AnyZoneHVACTerminalUnitVariableRefrigerantFlow):
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as declared in EnergyPlus 9.2.0. Zone terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     supply_air_fan_object_type: (
         Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
@@ -4546,6 +4705,9 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2Fields(
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1(_g.AnyZoneHVACTerminalUnitVariableRefrigerantFlow):
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as declared in EnergyPlus 9.3.0 to 23.1.0. A terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ter..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     supply_air_fan_object_type: (
         Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
@@ -4588,6 +4750,9 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_3_to_v23_1Fields(
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1(_g.AnyZoneHVACTerminalUnitVariableRefrigerantFlow):
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as declared in EnergyPlus 23.2.0 to 24.1.0. A terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ter..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     supply_air_fan_object_type: (
         Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
@@ -4721,6 +4886,9 @@ class _WindowMaterialGasMixture_v8_9_to_v22_1Fields(_g._WindowMaterialGasMixture
 class ZoneAirMassFlowConservation_v8_9_to_v9_4(_g.AnyZoneAirMassFlowConservation):
     """``ZoneAirMassFlowConservation`` as declared in EnergyPlus 8.9.0 to 9.4.0. Enforces the zone air mass flow balance by adjusting zone mixing object and/or infiltration object mass flow rates. I..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["No", "Yes"] | None
     """If Yes, Zone mixing object flow rates are adjusted to balance the zone air mass flow and additional infiltration air ...; Default: No"""
 
@@ -4737,6 +4905,9 @@ class _ZoneAirMassFlowConservation_v8_9_to_v9_4Fields(_g._ZoneAirMassFlowConserv
 
 class EnvironmentalImpactFactors_v8_9_to_v23_1(_g.AnyEnvironmentalImpactFactors):
     """``EnvironmentalImpactFactors`` as declared in EnergyPlus 8.9.0 to 23.1.0. Used to help convert district and ideal energy use to a fuel type and provide total carbon equivalent with coefficien..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     district_heating_efficiency: float | None
     """District heating efficiency used when converted to natural gas; Default: 0.3; Range: > 0.0"""
@@ -5003,6 +5174,9 @@ class _GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1Fields(
 class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1(_g.AnyAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass):
     """``AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`` as declared in EnergyPlus 8.9.0 to 9.1.0. Unitary system, heating and cooling with constant volume supply fan (continuous or cycling), direct expansion (DX) co..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     priority_control_mode: Literal["CoolingPriority", "HeatingPriority", "ZonePriority"] | None
     """CoolingPriority = system provides cooling if any zone requires cooling. HeatingPriority = system provides heating if ...; Default: ZonePriority"""
 
@@ -5021,6 +5195,9 @@ class _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_v8_9_to_v9_1Fields(
 
 class AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1(_g.AnyAirLoopHVACUnitaryHeatPumpWaterToAir):
     """``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` as declared in EnergyPlus 8.9.0 to 23.1.0. Unitary heat pump system, heating and cooling, single-speed with constant volume supply fan (continuous or cycling), ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     maximum_cycling_rate: float | None
     """The maximum on-off cycling rate for the compressor Suggested value is 2.5 for a typical heat pump; [cycles/hr]; Default: 2.5; Range: >= 0.0, <= 5.0"""
@@ -5050,6 +5227,8 @@ class _AirLoopHVACUnitaryHeatPumpWaterToAir_v8_9_to_v23_1Fields(
 class AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1(_g.AnyAirLoopHVACUnitaryHeatPumpWaterToAir):
     """``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` as declared in EnergyPlus 23.2.0 to 25.1.0. Unitary heat pump system, heating and cooling, single-speed with constant volume supply fan (continuous or cycling), ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -5065,6 +5244,9 @@ class _AirLoopHVACUnitaryHeatPumpWaterToAir_v23_2_to_v25_1Fields(
 class ZoneCoolTowerShower_v8_9_to_v24_1(_g.AnyZoneCoolTowerShower):
     """``ZoneCoolTower:Shower`` as declared in EnergyPlus 8.9.0 to 24.1.0. A cooltower (sometimes referred to as a wind tower or a shower cooling tower) models passive downdraught evaporative ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
 
     def update(
@@ -5077,6 +5259,9 @@ class _ZoneCoolTowerShower_v8_9_to_v24_1Fields(_g._ZoneCoolTowerShowerCommonFiel
 
 class SizingSystem_v8_9_to_v9_5(_g.AnySizingSystem):
     """``Sizing:System`` as declared in EnergyPlus 8.9.0 to 9.5.0. Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, he..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     type_of_load_to_size_on: Literal["Sensible", "Total", "VentilationRequirement"] | None
     """Specifies the basis for sizing the system supply air flow rate Sensible and Total use the zone design air flow rates ...; Default: Sensible"""
@@ -5094,6 +5279,9 @@ class _SizingSystem_v8_9_to_v9_5Fields(_g._SizingSystemCommonFields, total=False
 
 class SizingSystem_v9_6_to_v22_1(_g.AnySizingSystem):
     """``Sizing:System`` as declared in EnergyPlus 9.6.0 to 22.1.0. Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, he..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     type_of_load_to_size_on: Literal["Sensible", "Total", "VentilationRequirement"] | None
     """Specifies the basis for sizing the system supply air flow rate Sensible and Total use the zone design air flow rates ...; Default: Sensible"""
@@ -5118,6 +5306,9 @@ class _SizingSystem_v9_6_to_v22_1Fields(_g._SizingSystemCommonFields, total=Fals
 
 class SizingSystem_v22_2_to_v25_1(_g.AnySizingSystem):
     """``Sizing:System`` as declared in EnergyPlus 22.2.0 to 25.1.0. Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, he..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     type_of_load_to_size_on: Literal["Latent", "Sensible", "Total", "VentilationRequirement"] | None
     """Specifies the basis for sizing the system supply air flow rate Sensible and Total use the zone design air flow rates ...; Default: Sensible"""
@@ -5189,6 +5380,9 @@ class _Zone_v9_5_to_v22_1Fields(_g._ZoneCommonFields, total=False):
 class RunPeriod_v8_9(_g.AnyRunPeriod):
     """``RunPeriod`` as declared in EnergyPlus 8.9.0. Specified a range of dates and other parameters for a weather file simulation. Multiple run periods may be input, but..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     begin_month: float
     """Range: >= 1.0, <= 12.0"""
     begin_day_of_month: float
@@ -5225,6 +5419,9 @@ class _RunPeriod_v8_9Fields(_g._RunPeriodCommonFields, total=False):
 
 class RunPeriod_v9_0_to_v9_5(_g.AnyRunPeriod):
     """``RunPeriod`` as declared in EnergyPlus 9.0.1 to 9.5.0. Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not o..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     begin_month: float
     """Range: >= 1.0, <= 12.0"""
@@ -5264,6 +5461,9 @@ class _RunPeriod_v9_0_to_v9_5Fields(_g._RunPeriodCommonFields, total=False):
 
 class RunPeriod_v9_6_to_v22_1(_g.AnyRunPeriod):
     """``RunPeriod`` as declared in EnergyPlus 9.6.0 to 22.1.0. Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not o..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     begin_month: float
     """Range: >= 1.0, <= 12.0"""
@@ -5307,6 +5507,8 @@ class _RunPeriod_v9_6_to_v22_1Fields(_g._RunPeriodCommonFields, total=False):
 class HVACTemplateZonePTHP_v8_9(_g.AnyHVACTemplateZonePTHP):
     """``HVACTemplate:Zone:PTHP`` as declared in EnergyPlus 8.9.0. Packaged Terminal Heat Pump"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZonePTHP_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
@@ -5334,6 +5536,8 @@ class _WaterHeaterSizing_v8_9_to_v22_1Fields(_g._WaterHeaterSizingCommonFields, 
 class AirflowNetworkDistributionComponentReliefAirFlow_v8_9(_g.AnyAirflowNetworkDistributionComponentReliefAirFlow):
     """``AirflowNetwork:Distribution:Component:ReliefAirFlow`` as declared in EnergyPlus 8.9.0. This object allows variation of air flow rate to perform pressure."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -5349,6 +5553,9 @@ class _AirflowNetworkDistributionComponentReliefAirFlow_v8_9Fields(
 class OutputControlTableStyle_v8_9_to_v23_2(_g.AnyOutputControlTableStyle):
     """``OutputControl:Table:Style`` as declared in EnergyPlus 8.9.0 to 23.2.0. default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs s..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     unit_conversion: Literal["InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
     """Default: None"""
 
@@ -5362,6 +5569,9 @@ class _OutputControlTableStyle_v8_9_to_v23_2Fields(_g._OutputControlTableStyleCo
 
 class OutputControlTableStyle_v24_1_to_v25_1(_g.AnyOutputControlTableStyle):
     """``OutputControl:Table:Style`` as declared in EnergyPlus 24.1.0 to 25.1.0. default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs s..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     unit_conversion: Literal["InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
     """Default: None"""
@@ -5377,6 +5587,8 @@ class _OutputControlTableStyle_v24_1_to_v25_1Fields(_g._OutputControlTableStyleC
 class Material_v8_9_to_v26_1(_g.AnyMaterial):
     """``Material`` as declared in EnergyPlus 8.9.0 to 26.1.0. Regular materials described with full set of thermal properties"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Material_v8_9_to_v26_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -5437,6 +5649,8 @@ class _ZoneGroup_v8_9_to_v22_1Fields(_g._ZoneGroupCommonFields, total=False):
 class CoilCoolingDXTwoSpeed_v8_9_to_v23_1(_g.AnyCoilCoolingDXTwoSpeed):
     """``Coil:Cooling:DX:TwoSpeed`` as declared in EnergyPlus 8.9.0 to 23.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), two-speed (o..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXTwoSpeed_v8_9_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -5447,6 +5661,8 @@ class _CoilCoolingDXTwoSpeed_v8_9_to_v23_1Fields(_g._CoilCoolingDXTwoSpeedCommon
 class WallUnderground_v8_9_to_v9_5(_g.AnyWallUnderground):
     """``Wall:Underground`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of underground walls."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallUnderground_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -5456,6 +5672,9 @@ class _WallUnderground_v8_9_to_v9_5Fields(_g._WallUndergroundCommonFields, total
 
 class HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2(_g.AnyHeatExchangerAirToAirSensibleAndLatent):
     """``HeatExchanger:AirToAir:SensibleAndLatent`` as declared in EnergyPlus 8.9.0 to 23.2.0. This object models an air-to-air heat exchanger using effectiveness relationships. The heat exchanger can transfer se..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     sensible_effectiveness_at_75_heating_air_flow: float | None
     """[dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
@@ -5484,6 +5703,9 @@ class _HeatExchangerAirToAirSensibleAndLatent_v8_9_to_v23_2Fields(
 
 class CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4(_g.AnyCoilHeatingWaterToAirHeatPumpEquationFit):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 8.9.0 to 9.4.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     heating_capacity_coefficient_1: float
     heating_capacity_coefficient_2: float
@@ -5521,6 +5743,9 @@ class _CoilHeatingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4Fields(
 class CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1(_g.AnyCoilHeatingWaterToAirHeatPumpEquationFit):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 9.5.0 to 22.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     heating_capacity_curve_name: str
     heating_power_consumption_curve_name: str
 
@@ -5540,6 +5765,9 @@ class _CoilHeatingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1Fields(
 
 class CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1(_g.AnyCoilHeatingWaterToAirHeatPumpEquationFit):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     rated_entering_water_temperature: float | None
     """Rated entering water temperature corresponding to the water-to -air application for which this coil is used. For exam...; [C]; Default: 20.0"""
@@ -5569,6 +5797,9 @@ class _CoilHeatingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1Fields(
 
 class CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1(_g.AnyCoilHeatingWaterToAirHeatPumpEquationFit):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     rated_entering_water_temperature: float | None
     """Rated entering water temperature corresponding to the water-to -air application for which this coil is used. For exam...; [C]; Default: 20.0"""
@@ -5602,6 +5833,8 @@ class _CoilHeatingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1Fields(
 class ChillerElectricReformulatedEIR_v8_9_to_v24_1(_g.AnyChillerElectricReformulatedEIR):
     """``Chiller:Electric:ReformulatedEIR`` as declared in EnergyPlus 8.9.0 to 24.1.0. This chiller model is an empirical model, a reformulated version of Chiller:Electric:EIR where the performance is a f..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -5643,6 +5876,9 @@ class _SizingPeriodWeatherFileDays_v8_9_to_v22_1Fields(_g._SizingPeriodWeatherFi
 class People_v8_9_to_v9_4(_g.AnyPeople):
     """``People`` as declared in EnergyPlus 8.9.0 to 9.4.0. Sets internal gains and contaminant rates for occupants in the zone. If you use a ZoneList in the Zone or ZoneList na..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_name: str
     people_per_zone_floor_area: float | None
     """[person/m2]; Range: >= 0.0"""
@@ -5679,6 +5915,9 @@ class _People_v8_9_to_v9_4Fields(_g._PeopleCommonFields, total=False):
 
 class People_v9_5(_g.AnyPeople):
     """``People`` as declared in EnergyPlus 9.5.0. Sets internal gains and contaminant rates for occupants in the zone. If you use a ZoneList in the Zone or ZoneList na..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_name: str
     people_per_zone_floor_area: float | None
@@ -5765,6 +6004,9 @@ class _People_v9_5Fields(_g._PeopleCommonFields, total=False):
 
 class People_v9_6_to_v22_1(_g.AnyPeople):
     """``People`` as declared in EnergyPlus 9.6.0 to 22.1.0. Sets internal gains and contaminant rates for occupants in the zone. If a ZoneList, SpaceList, or a Zone comprised of..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     people_per_floor_area: float | None
@@ -5853,6 +6095,9 @@ class _People_v9_6_to_v22_1Fields(_g._PeopleCommonFields, total=False):
 
 class People_v22_2_to_v23_2(_g.AnyPeople):
     """``People`` as declared in EnergyPlus 22.2.0 to 23.2.0. Sets internal gains and contaminant rates for occupants in the zone. If a ZoneList, SpaceList, or a Zone comprised of..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     people_per_floor_area: float | None
@@ -6281,6 +6526,9 @@ class _ZoneHVACForcedAirUserDefined_v8_9_to_v22_1Fields(_g._ZoneHVACForcedAirUse
 class ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTemperatureRadiantVariableFlow):
     """``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` as declared in EnergyPlus 8.9.0 to 9.3.0. Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     hydronic_tubing_inside_diameter: float | None
     """[m] (in); Default: 0.013; Range: >= 0.0, > True"""
     temperature_control_type: (
@@ -6362,6 +6610,9 @@ class _ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3Fields(
 
 class ZoneHVACLowTemperatureRadiantVariableFlow_v9_4(_g.AnyZoneHVACLowTemperatureRadiantVariableFlow):
     """``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` as declared in EnergyPlus 9.4.0. Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fluid_to_radiant_surface_heat_transfer_model: Literal["ConvectionOnly", "ISOStandard"] | None
     """This parameter identifies how the heat transfer between fluid being circulated through the radiant system and the rad...; Default: ConvectionOnly"""
@@ -6464,6 +6715,9 @@ class _ZoneHVACLowTemperatureRadiantVariableFlow_v9_4Fields(
 class ConstructionComplexFenestrationState_v8_9_to_v9_5(_g.AnyConstructionComplexFenestrationState):
     """``Construction:ComplexFenestrationState`` as declared in EnergyPlus 8.9.0 to 9.5.0. Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     outside_layer_directional_front_absoptance_matrix_name: str
     outside_layer_directional_back_absoptance_matrix_name: str
     cfs_gap_1_directional_front_absoptance_matrix_name: str | None
@@ -6525,6 +6779,9 @@ class _ConstructionComplexFenestrationState_v8_9_to_v9_5Fields(
 
 class ConstructionComplexFenestrationState_v9_6_to_v23_1(_g.AnyConstructionComplexFenestrationState):
     """``Construction:ComplexFenestrationState`` as declared in EnergyPlus 9.6.0 to 23.1.0. Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     outside_layer_directional_front_absoptance_matrix_name: str
     outside_layer_directional_back_absoptance_matrix_name: str
@@ -6673,6 +6930,9 @@ class _RunPeriodCustomRange_v8_9Fields(TypedDict, total=False):
 class CoilHeatingDXSingleSpeed_v8_9_to_v22_1(_g.AnyCoilHeatingDXSingleSpeed):
     """``Coil:Heating:DX:SingleSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     rated_supply_fan_power_per_volume_flow_rate: float | None
     """Enter the supply fan power per air volume flow rate at the rated test conditions. The test conditions vary external s...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0"""
     region_number_for_calculating_hspf: float | None
@@ -6689,6 +6949,9 @@ class _CoilHeatingDXSingleSpeed_v8_9_to_v22_1Fields(_g._CoilHeatingDXSingleSpeed
 
 class CoilHeatingDXSingleSpeed_v22_2_to_v23_1(_g.AnyCoilHeatingDXSingleSpeed):
     """``Coil:Heating:DX:SingleSpeed`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     region_number_for_calculating_hspf: int | None
     """Standard Region number for which HSPF and other standard ratings are calculated; Default: 4; Range: >= 1, <= 6"""
@@ -6707,6 +6970,8 @@ class _CoilHeatingDXSingleSpeed_v22_2_to_v23_1Fields(_g._CoilHeatingDXSingleSpee
 class PumpConstantSpeed_v8_9_to_v9_0(_g.AnyPumpConstantSpeed):
     """``Pump:ConstantSpeed`` as declared in EnergyPlus 8.9.0 to 9.0.1. This pump model is described in the ASHRAE secondary HVAC toolkit."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpConstantSpeed_v8_9_to_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
@@ -6717,6 +6982,8 @@ class _PumpConstantSpeed_v8_9_to_v9_0Fields(_g._PumpConstantSpeedCommonFields, t
 class HVACTemplateZonePTAC_v8_9(_g.AnyHVACTemplateZonePTAC):
     """``HVACTemplate:Zone:PTAC`` as declared in EnergyPlus 8.9.0. Packaged Terminal Air Conditioner"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZonePTAC_v8_9Fields]
     ) -> None: ...  # type: ignore[override]
@@ -6726,6 +6993,9 @@ class _HVACTemplateZonePTAC_v8_9Fields(_g._HVACTemplateZonePTACCommonFields, tot
 
 class CoilHeatingDXVariableSpeed_v8_9_to_v22_1(_g.AnyCoilHeatingDXVariableSpeed):
     """``Coil:Heating:DX:VariableSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_speeds: float | None
     """[dimensionless]; Default: 2.0; Range: >= 1.0, <= 10.0"""
@@ -6768,6 +7038,9 @@ class _CoilHeatingDXVariableSpeed_v8_9_to_v22_1Fields(_g._CoilHeatingDXVariableS
 class CoilHeatingDXVariableSpeed_v22_2_to_v23_1(_g.AnyCoilHeatingDXVariableSpeed):
     """``Coil:Heating:DX:VariableSpeed`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_speeds: int | None
     """[dimensionless]; Default: 2; Range: >= 1, <= 10"""
     nominal_speed_level: int | None
@@ -6808,6 +7081,9 @@ class _CoilHeatingDXVariableSpeed_v22_2_to_v23_1Fields(_g._CoilHeatingDXVariable
 
 class CoilHeatingDXVariableSpeed_v23_2_to_v25_1(_g.AnyCoilHeatingDXVariableSpeed):
     """``Coil:Heating:DX:VariableSpeed`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_speeds: int | None
     """[dimensionless]; Default: 2; Range: >= 1, <= 10"""
@@ -6853,6 +7129,9 @@ class _CoilHeatingDXVariableSpeed_v23_2_to_v25_1Fields(_g._CoilHeatingDXVariable
 class ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1(_g.AnyZoneVentilationWindandStackOpenArea):
     """``ZoneVentilation:WindandStackOpenArea`` as declared in EnergyPlus 8.9.0 to 22.1.0. This object is specified as natural ventilation driven by wind and stack effect only: Ventilation Wind = Cw * Opening..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
 
     def update(
@@ -6871,6 +7150,9 @@ class _ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1Fields(
 class HeaderedPumpsConstantSpeed_v8_9_to_v9_0(_g.AnyHeaderedPumpsConstantSpeed):
     """``HeaderedPumps:ConstantSpeed`` as declared in EnergyPlus 8.9.0 to 9.0.1. This Headered pump object describes a pump bank with more than 1 pump in parallel"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_pumps_in_bank: float | None
 
     def update(
@@ -6886,6 +7168,9 @@ class _HeaderedPumpsConstantSpeed_v8_9_to_v9_0Fields(_g._HeaderedPumpsConstantSp
 
 class HeaderedPumpsConstantSpeed_v9_1_to_v22_1(_g.AnyHeaderedPumpsConstantSpeed):
     """``HeaderedPumps:ConstantSpeed`` as declared in EnergyPlus 9.1.0 to 22.1.0. This Headered pump object describes a pump bank with more than 1 pump in parallel"""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_pumps_in_bank: float | None
     end_use_subcategory: str | None
@@ -6920,6 +7205,9 @@ class _SizingParameters_v8_9_to_v22_1Fields(_g._SizingParametersCommonFields, to
 class FuelFactors_v8_9_to_v9_2(_g.AnyFuelFactors):
     """``FuelFactors`` as declared in EnergyPlus 8.9.0 to 9.2.0. Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for u..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     existing_fuel_resource_name: str | None
     units_of_measure: str | None
     energy_per_unit_factor: float | None
@@ -6936,6 +7224,9 @@ class _FuelFactors_v8_9_to_v9_2Fields(_g._FuelFactorsCommonFields, total=False):
 
 class FuelFactors_v9_3_to_v22_1(_g.AnyFuelFactors):
     """``FuelFactors`` as declared in EnergyPlus 9.3.0 to 22.1.0. Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for u..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     existing_fuel_resource_name: (
         Literal[
@@ -6982,6 +7273,9 @@ class _FuelFactors_v9_3_to_v22_1Fields(_g._FuelFactorsCommonFields, total=False)
 class HVACTemplateZoneWaterToAirHeatPump_v8_9_to_v23_1(_g.AnyHVACTemplateZoneWaterToAirHeatPump):
     """``HVACTemplate:Zone:WaterToAirHeatPump`` as declared in EnergyPlus 8.9.0 to 23.1.0. Water to Air Heat Pump to be used with HVACTemplate:Plant:MixedWaterLoop"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     heat_pump_time_constant: float | None
     """Time constant for the cooling coil's capacity to reach steady state after startup Suggested value is 60 for a typical...; [s]; Default: 60.0; Range: >= 0.0, <= 500.0"""
     fraction_of_on_cycle_power_use: float | None
@@ -7026,6 +7320,9 @@ class _SurfacePropertySurroundingSurfaces_v8_9_to_v26_1Fields(
 class Window_v8_9(_g.AnyWindow):
     """``Window`` as declared in EnergyPlus 8.9.0. Allows for simplified entry of Windows."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     shading_control_name: str | None
     """enter the name of a WindowProperty:ShadingControl object used for windows and glass doors only If not specified, wind..."""
 
@@ -7037,6 +7334,9 @@ class _Window_v8_9Fields(_g._WindowCommonFields, total=False):
 
 class ShadowCalculation_v8_9_to_v9_2(_g.AnyShadowCalculation):
     """``ShadowCalculation`` as declared in EnergyPlus 8.9.0 to 9.2.0. This object is used to control details of the solar, shading, and daylighting models"""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     calculation_method: Literal["AverageOverDaysInFrequency", "TimestepFrequency"] | None
     """choose calculation method. note that TimestepFrequency is only needed for certain cases and can increase execution ti...; Default: AverageOverDaysInFrequency"""
@@ -7063,6 +7363,9 @@ class _ShadowCalculation_v8_9_to_v9_2Fields(_g._ShadowCalculationCommonFields, t
 
 class ShadowCalculation_v9_3_to_v22_1(_g.AnyShadowCalculation):
     """``ShadowCalculation`` as declared in EnergyPlus 9.3.0 to 22.1.0. This object is used to control details of the solar, shading, and daylighting models"""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     shading_calculation_method: Literal["Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
     """Select between CPU-based polygon clipping method, the GPU-based pixel counting method, or importing from external sha...; Default: PolygonClipping"""
@@ -7158,6 +7461,8 @@ class _OutputControlSurfaceColorScheme_v8_9_to_v22_1Fields(
 class ChillerElectricEIR_v8_9_to_v24_1(_g.AnyChillerElectricEIR):
     """``Chiller:Electric:EIR`` as declared in EnergyPlus 8.9.0 to 24.1.0. This chiller model is the empirical model from the DOE-2 building Energy simulation program. Chiller performance at o..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricEIR_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -7167,6 +7472,9 @@ class _ChillerElectricEIR_v8_9_to_v24_1Fields(_g._ChillerElectricEIRCommonFields
 
 class WallDetailed_v8_9_to_v9_5(_g.AnyWallDetailed):
     """``Wall:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of wall heat transfer surfaces."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     outside_boundary_condition: Literal[
         "Adiabatic",
@@ -7214,6 +7522,9 @@ class _WallDetailed_v8_9_to_v9_5Fields(_g._WallDetailedCommonFields, total=False
 
 class WallDetailed_v9_6_to_v24_2(_g.AnyWallDetailed):
     """``Wall:Detailed`` as declared in EnergyPlus 9.6.0 to 24.2.0. Allows for detailed entry of wall heat transfer surfaces."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
@@ -7265,6 +7576,9 @@ class _WallDetailed_v9_6_to_v24_2Fields(_g._WallDetailedCommonFields, total=Fals
 class OutputIlluminanceMap_v8_9_to_v22_1(_g.AnyOutputIlluminanceMap):
     """``Output:IlluminanceMap`` as declared in EnergyPlus 8.9.0 to 22.1.0. reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point Coo..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
     number_of_x_grid_points: float | None
     """Maximum number of total grid points must be <= 2500 (X*Y); Default: 2.0; Range: >= 1.0"""
@@ -7283,6 +7597,9 @@ class _OutputIlluminanceMap_v8_9_to_v22_1Fields(_g._OutputIlluminanceMapCommonFi
 
 class OutputIlluminanceMap_v22_2_to_v24_1(_g.AnyOutputIlluminanceMap):
     """``Output:IlluminanceMap`` as declared in EnergyPlus 22.2.0 to 24.1.0. reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point Coo..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_name: str
     number_of_x_grid_points: int | None
@@ -7320,6 +7637,9 @@ class _GroundHeatExchangerSlinky_v8_9_to_v22_1Fields(_g._GroundHeatExchangerSlin
 class FenestrationSurfaceDetailed_v8_9(_g.AnyFenestrationSurfaceDetailed):
     """``FenestrationSurface:Detailed`` as declared in EnergyPlus 8.9.0. Allows for detailed entry of subsurfaces (windows, doors, glass doors, tubular daylighting devices)."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"]
     shading_control_name: str | None
     """enter the name of a WindowProperty:ShadingControl object used for windows and glass doors only If not specified, wind..."""
@@ -7335,6 +7655,9 @@ class _FenestrationSurfaceDetailed_v8_9Fields(_g._FenestrationSurfaceDetailedCom
 
 class FenestrationSurfaceDetailed_v9_0_to_v26_1(_g.AnyFenestrationSurfaceDetailed):
     """``FenestrationSurface:Detailed`` as declared in EnergyPlus 9.0.1 to 26.1.0. Allows for detailed entry of subsurfaces (windows, doors, glass doors, tubular daylighting devices)."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"]
 
@@ -7352,6 +7675,9 @@ class _FenestrationSurfaceDetailed_v9_0_to_v26_1Fields(_g._FenestrationSurfaceDe
 class InternalMass_v8_9_to_v9_1(_g.AnyInternalMass):
     """``InternalMass`` as declared in EnergyPlus 8.9.0 to 9.1.0. Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
     """Zone the surface is a part of used to be Interior Environment"""
 
@@ -7366,6 +7692,9 @@ class _InternalMass_v8_9_to_v9_1Fields(_g._InternalMassCommonFields, total=False
 class InternalMass_v9_2_to_v9_5(_g.AnyInternalMass):
     """``InternalMass`` as declared in EnergyPlus 9.2.0 to 9.5.0. Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_name: str | None
     """Zone the surface is a part of used to be Interior Environment"""
 
@@ -7379,6 +7708,9 @@ class _InternalMass_v9_2_to_v9_5Fields(_g._InternalMassCommonFields, total=False
 
 class SteamEquipment_v8_9_to_v9_5(_g.AnySteamEquipment):
     """``SteamEquipment`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains for steam equipment in the zone."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
@@ -7395,6 +7727,9 @@ class _SteamEquipment_v8_9_to_v9_5Fields(_g._SteamEquipmentCommonFields, total=F
 
 class SteamEquipment_v9_6_to_v23_2(_g.AnySteamEquipment):
     """``SteamEquipment`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains for steam equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one S..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
@@ -7928,6 +8263,9 @@ class _CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1Fields(
 class DaylightingReferencePoint_v8_9_to_v9_5(_g.AnyDaylightingReferencePoint):
     """``Daylighting:ReferencePoint`` as declared in EnergyPlus 8.9.0 to 9.5.0. Used by Daylighting:Controls to identify the reference point coordinates for each sensor. Reference points are given ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
 
     def update(
@@ -8331,6 +8669,9 @@ class _MaterialPropertyHeatAndMoistureTransferDiffusion_v8_9_to_v22_1Fields(
 class ZoneCrossMixing_v8_9_to_v22_1(_g.AnyZoneCrossMixing):
     """``ZoneCrossMixing`` as declared in EnergyPlus 8.9.0 to 22.1.0. ZoneCrossMixing exchanges an equal amount of air between two zones. Note that this statement affects the energy balan..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
     flow_rate_per_zone_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
@@ -8361,6 +8702,9 @@ class _ZoneCrossMixing_v8_9_to_v22_1Fields(_g._ZoneCrossMixingCommonFields, tota
 class ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1(_g.AnyZoneInfiltrationEffectiveLeakageArea):
     """``ZoneInfiltration:EffectiveLeakageArea`` as declared in EnergyPlus 8.9.0 to 22.1.0. Infiltration is specified as effective leakage area at 4 Pa, schedule fraction, stack and wind coefficients, and is a..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
 
     def update(
@@ -8379,6 +8723,8 @@ class _ZoneInfiltrationEffectiveLeakageArea_v8_9_to_v22_1Fields(
 class FloorAdiabatic_v8_9_to_v9_5(_g.AnyFloorAdiabatic):
     """``Floor:Adiabatic`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of exterior floors ignoring ground contact or interior floors. View Factor to Ground is a..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorAdiabatic_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -8388,6 +8734,9 @@ class _FloorAdiabatic_v8_9_to_v9_5Fields(_g._FloorAdiabaticCommonFields, total=F
 
 class AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5(_g.AnyAirLoopHVACOutdoorAirSystem):
     """``AirLoopHVAC:OutdoorAirSystem`` as declared in EnergyPlus 8.9.0 to 9.5.0. Outdoor air subsystem for an AirLoopHVAC. Includes an outdoor air mixing box and optional outdoor air conditioning eq..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     availability_manager_list_name: str | None
     """Enter the name of an AvailabilityManagerAssignmentList object."""
@@ -8405,6 +8754,9 @@ class _AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5Fields(_g._AirLoopHVACOutdoorAirS
 
 class MeterCustomDecrement_v8_9_to_v9_2(_g.AnyMeterCustomDecrement):
     """``Meter:CustomDecrement`` as declared in EnergyPlus 8.9.0 to 9.2.0. Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: (
         Literal[
@@ -8451,6 +8803,9 @@ class _MeterCustomDecrement_v8_9_to_v9_2Fields(_g._MeterCustomDecrementCommonFie
 class MeterCustomDecrement_v9_3(_g.AnyMeterCustomDecrement):
     """``Meter:CustomDecrement`` as declared in EnergyPlus 9.3.0. Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: (
         Literal[
             "Coal",
@@ -8495,6 +8850,9 @@ class _MeterCustomDecrement_v9_3Fields(_g._MeterCustomDecrementCommonFields, tot
 
 class MeterCustomDecrement_v9_4_to_v23_1(_g.AnyMeterCustomDecrement):
     """``Meter:CustomDecrement`` as declared in EnergyPlus 9.4.0 to 23.1.0. Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     resource_type: (
         Literal[
@@ -8610,6 +8968,9 @@ class _RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1Fields(
 class CoilHeatingDesuperheater_v8_9_to_v22_1(_g.AnyCoilHeatingDesuperheater):
     """``Coil:Heating:Desuperheater`` as declared in EnergyPlus 8.9.0 to 22.1.0. Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     heating_source_object_type: Literal[
         "Coil:Cooling:DX:SingleSpeed",
         "Coil:Cooling:DX:TwoSpeed",
@@ -8643,6 +9004,9 @@ class _CoilHeatingDesuperheater_v8_9_to_v22_1Fields(_g._CoilHeatingDesuperheater
 
 class CoilHeatingDesuperheater_v22_2_to_v23_1(_g.AnyCoilHeatingDesuperheater):
     """``Coil:Heating:Desuperheater`` as declared in EnergyPlus 22.2.0 to 23.1.0. Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     heating_source_object_type: Literal[
         "Coil:Cooling:DX",
@@ -8720,6 +9084,8 @@ class _GroundHeatExchangerResponseFactors_v8_9_to_v22_1Fields(
 class AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1(_g.AnyAirLoopHVACUnitaryHeatPumpAirToAir):
     """``AirLoopHVAC:UnitaryHeatPump:AirToAir`` as declared in EnergyPlus 8.9.0 to 25.1.0. Unitary heat pump system, heating and cooling, single-speed with supply fan, direct expansion (DX) cooling coil, DX h..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -8735,6 +9101,8 @@ class _AirLoopHVACUnitaryHeatPumpAirToAir_v8_9_to_v25_1Fields(
 class WallInterzone_v8_9_to_v9_5(_g.AnyWallInterzone):
     """``Wall:Interzone`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of interzone walls (walls between zones)."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallInterzone_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -8773,6 +9141,9 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v8_9_to_v22_1(
     _g.AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed
 ):
     """``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. vairlable-speed Heat pump water heater (VSHPWH) heating coil, air-to-water direct-expansion (DX) system which include..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_speeds: float | None
     """[dimensionless]; Default: 1.0; Range: >= 1.0, <= 10.0"""
@@ -8888,6 +9259,9 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v22_2_to_v23_1(
 ):
     """``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` as declared in EnergyPlus 22.2.0 to 23.1.0. vairlable-speed Heat pump water heater (VSHPWH) heating coil, air-to-water direct-expansion (DX) system which include..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_speeds: int | None
     """[dimensionless]; Default: 1; Range: >= 1, <= 10"""
     nominal_speed_level: int | None
@@ -9001,6 +9375,9 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v23_2_to_v25_1(
     _g.AnyCoilWaterHeatingAirToWaterHeatPumpVariableSpeed
 ):
     """``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` as declared in EnergyPlus 23.2.0 to 25.1.0. variable-speed Heat pump water heater (VSHPWH) heating coil, air-to-water direct-expansion (DX) system which includes..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_speeds: int | None
     """[dimensionless]; Default: 1; Range: >= 1, <= 10"""
@@ -9117,6 +9494,9 @@ class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_v23_2_to_v25_1Fields(
 class SurfacePropertyLocalEnvironment_v8_9_to_v22_1(_g.AnySurfacePropertyLocalEnvironment):
     """``SurfaceProperty:LocalEnvironment`` as declared in EnergyPlus 8.9.0 to 22.1.0. This object defines the local environment properties of an exterior surface. One or more environment properties have ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     external_shading_fraction_schedule_name: str | None
     """Enter the name of a Schedule object"""
 
@@ -9135,6 +9515,9 @@ class _SurfacePropertyLocalEnvironment_v8_9_to_v22_1Fields(
 
 class SurfacePropertyLocalEnvironment_v22_2_to_v23_1(_g.AnySurfacePropertyLocalEnvironment):
     """``SurfaceProperty:LocalEnvironment`` as declared in EnergyPlus 22.2.0 to 23.1.0. This object defines the local environment properties of an exterior surface. One or more environment properties have ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     external_shading_fraction_schedule_name: str | None
     """Enter the name of a Schedule object"""
@@ -9211,6 +9594,9 @@ class _ZoneControlThermostatStagedDualSetpoint_v8_9_to_v22_1Fields(
 class ElectricEquipment_v8_9_to_v9_5(_g.AnyElectricEquipment):
     """``ElectricEquipment`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains for electric equipment in the zone. If you use a ZoneList in the Zone or ZoneList name field then..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_name: str
     watts_per_zone_floor_area: float | None
     """[W/m2] (W/ft2); Range: >= 0.0"""
@@ -9226,6 +9612,9 @@ class _ElectricEquipment_v8_9_to_v9_5Fields(_g._ElectricEquipmentCommonFields, t
 
 class ElectricEquipment_v9_6_to_v23_2(_g.AnyElectricEquipment):
     """``ElectricEquipment`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains for electric equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than on..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     watts_per_zone_floor_area: float | None
@@ -9319,6 +9708,8 @@ class _HVACTemplateZoneFanCoil_v9_0Fields(_g._HVACTemplateZoneFanCoilCommonField
 class OutputSQLite_v8_9_to_v9_4(_g.AnyOutputSQLite):
     """``Output:SQLite`` as declared in EnergyPlus 8.9.0 to 9.4.0. Output from EnergyPlus can be written to an SQLite format file."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSQLite_v8_9_to_v9_4Fields]
     ) -> None: ...  # type: ignore[override]
@@ -9328,6 +9719,9 @@ class _OutputSQLite_v8_9_to_v9_4Fields(_g._OutputSQLiteCommonFields, total=False
 
 class OutputSQLite_v9_5_to_v23_2(_g.AnyOutputSQLite):
     """``Output:SQLite`` as declared in EnergyPlus 9.5.0 to 23.2.0. Output from EnergyPlus can be written to an SQLite format file."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     unit_conversion_for_tabular_data: (
         Literal["InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "UseOutputControlTableStyle"] | None
@@ -9346,6 +9740,9 @@ class _OutputSQLite_v9_5_to_v23_2Fields(_g._OutputSQLiteCommonFields, total=Fals
 
 class OutputSQLite_v24_1_to_v25_1(_g.AnyOutputSQLite):
     """``Output:SQLite`` as declared in EnergyPlus 24.1.0 to 25.1.0. Output from EnergyPlus can be written to an SQLite format file."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     unit_conversion_for_tabular_data: (
         Literal[
@@ -9418,6 +9815,9 @@ class _GeneratorMicroTurbine_v9_3_to_v9_4Fields(_g._GeneratorMicroTurbineCommonF
 class AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1(_g.AnyAirTerminalSingleDuctParallelPIUReheat):
     """``AirTerminal:SingleDuct:ParallelPIU:Reheat`` as declared in EnergyPlus 8.9.0 to 24.1.0. Central air system terminal unit, single duct, variable volume, parallel powered induction unit (PIU), with reheat co..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     reheat_coil_air_inlet_node_name: str | None
     """mixer outlet node"""
 
@@ -9436,6 +9836,9 @@ class _AirTerminalSingleDuctParallelPIUReheat_v8_9_to_v24_1Fields(
 
 class AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2(_g.AnyAirTerminalSingleDuctParallelPIUReheat):
     """``AirTerminal:SingleDuct:ParallelPIU:Reheat`` as declared in EnergyPlus 24.2.0 to 25.2.0. Central air system terminal unit, single duct, variable volume, parallel powered induction unit (PIU), with reheat co..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     reheat_coil_air_inlet_node_name: str | None
     """mixer outlet node"""
@@ -9470,6 +9873,9 @@ class _AirTerminalSingleDuctParallelPIUReheat_v24_2_to_v25_2Fields(
 class ThermalStorageIceSimple_v8_9_to_v25_1(_g.AnyThermalStorageIceSimple):
     """``ThermalStorage:Ice:Simple`` as declared in EnergyPlus 8.9.0 to 25.1.0. This ice storage model is a simplified model It requires a setpoint placed on the Chilled Water Side Outlet Node It s..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     capacity: float
     """[GJ] (ton-hrs)"""
 
@@ -9484,6 +9890,8 @@ class _ThermalStorageIceSimple_v8_9_to_v25_1Fields(_g._ThermalStorageIceSimpleCo
 class GroundHeatExchangerSystem_v8_9_to_v9_5(_g.AnyGroundHeatExchangerSystem):
     """``GroundHeatExchanger:System`` as declared in EnergyPlus 8.9.0 to 9.5.0. Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response fac..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerSystem_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -9493,6 +9901,9 @@ class _GroundHeatExchangerSystem_v8_9_to_v9_5Fields(_g._GroundHeatExchangerSyste
 
 class GroundHeatExchangerSystem_v9_6_to_v25_1(_g.AnyGroundHeatExchangerSystem):
     """``GroundHeatExchanger:System`` as declared in EnergyPlus 9.6.0 to 25.1.0. Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response fac..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     g_function_calculation_method: Literal["UBHWTcalc", "UHFcalc"] | None
     """Default: UHFcalc"""
@@ -9556,6 +9967,9 @@ class _RoomAirTemperaturePatternTwoGradient_v8_9_to_v22_1Fields(
 class ZoneMixing_v8_9_to_v22_1(_g.AnyZoneMixing):
     """``ZoneMixing`` as declared in EnergyPlus 8.9.0 to 22.1.0. ZoneMixing is a simple air exchange from one zone to another. Note that this statement only affects the energy balanc..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
     flow_rate_per_zone_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
@@ -9585,6 +9999,9 @@ class _ZoneMixing_v8_9_to_v22_1Fields(_g._ZoneMixingCommonFields, total=False):
 
 class CoilHeatingDXMultiSpeed_v8_9_to_v9_2(_g.AnyCoilHeatingDXMultiSpeed):
     """``Coil:Heating:DX:MultiSpeed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven com..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: Literal[
         "Diesel",
@@ -9637,6 +10054,9 @@ class _CoilHeatingDXMultiSpeed_v8_9_to_v9_2Fields(_g._CoilHeatingDXMultiSpeedCom
 class CoilHeatingDXMultiSpeed_v9_3_to_v22_1(_g.AnyCoilHeatingDXMultiSpeed):
     """``Coil:Heating:DX:MultiSpeed`` as declared in EnergyPlus 9.3.0 to 22.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven com..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: Literal[
         "Diesel",
         "Electricity",
@@ -9688,6 +10108,9 @@ class _CoilHeatingDXMultiSpeed_v9_3_to_v22_1Fields(_g._CoilHeatingDXMultiSpeedCo
 class CoilHeatingDXMultiSpeed_v22_2_to_v23_1(_g.AnyCoilHeatingDXMultiSpeed):
     """``Coil:Heating:DX:MultiSpeed`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven com..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: Literal[
         "Diesel",
         "Electricity",
@@ -9727,6 +10150,9 @@ class _CoilHeatingDXMultiSpeed_v22_2_to_v23_1Fields(_g._CoilHeatingDXMultiSpeedC
 class ZoneVentilationDesignFlowRate_v8_9_to_v22_1(_g.AnyZoneVentilationDesignFlowRate):
     """``ZoneVentilation:DesignFlowRate`` as declared in EnergyPlus 8.9.0 to 22.1.0. Ventilation is specified as a design level which is modified by a schedule fraction, temperature difference and wind ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_name: str
     flow_rate_per_zone_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
@@ -9745,6 +10171,9 @@ class _ZoneVentilationDesignFlowRate_v8_9_to_v22_1Fields(_g._ZoneVentilationDesi
 
 class ZoneVentilationDesignFlowRate_v22_2_to_v24_2(_g.AnyZoneVentilationDesignFlowRate):
     """``ZoneVentilation:DesignFlowRate`` as declared in EnergyPlus 22.2.0 to 24.2.0. Ventilation is specified as a design level which is modified by a schedule fraction, temperature difference and wind ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     flow_rate_per_floor_area: float | None
@@ -9791,6 +10220,9 @@ class _WindowPropertyStormWindow_v8_9_to_v22_1Fields(_g._WindowPropertyStormWind
 class SiteWaterMainsTemperature_v8_9(_g.AnySiteWaterMainsTemperature):
     """``Site:WaterMainsTemperature`` as declared in EnergyPlus 8.9.0. Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     calculation_method: Literal["Correlation", "Schedule"] | None
 
     def update(
@@ -9803,6 +10235,9 @@ class _SiteWaterMainsTemperature_v8_9Fields(_g._SiteWaterMainsTemperatureCommonF
 
 class SiteWaterMainsTemperature_v9_0_to_v25_1(_g.AnySiteWaterMainsTemperature):
     """``Site:WaterMainsTemperature`` as declared in EnergyPlus 9.0.1 to 25.1.0. Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     calculation_method: Literal["Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
     """If calculation method is CorrelationFromWeatherFile, the two numeric input fields are ignored. Instead, EnergyPlus ca...; Default: CorrelationFromWeatherFile"""
@@ -9841,6 +10276,9 @@ class _MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1Fields(
 
 class OutputDiagnostics_v8_9_to_v9_3(_g.AnyOutputDiagnostics):
     """``Output:Diagnostics`` as declared in EnergyPlus 8.9.0 to 9.3.0. Special keys to produce certain warning messages or effect certain simulation characteristics."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     key_1: (
         Literal[
@@ -10006,6 +10444,9 @@ class _SiteGroundDomainSlab_v8_9_to_v22_1Fields(_g._SiteGroundDomainSlabCommonFi
 class CondenserEquipmentList_v8_9_to_v9_0(_g.AnyCondenserEquipmentList):
     """``CondenserEquipmentList`` as declared in EnergyPlus 8.9.0 to 9.0.1. List condenser equipment in order of operating priority, 1st in list will be used 1st, etc Use only condenser equipme..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     equipment_1_object_type: str | None
     equipment_1_name: str | None
     equipment_2_object_type: str | None
@@ -10057,6 +10498,9 @@ class _CondenserEquipmentList_v8_9_to_v9_0Fields(_g._CondenserEquipmentListCommo
 class ZoneInfiltrationFlowCoefficient_v8_9_to_v22_1(_g.AnyZoneInfiltrationFlowCoefficient):
     """``ZoneInfiltration:FlowCoefficient`` as declared in EnergyPlus 8.9.0 to 22.1.0. Infiltration is specified as flow coefficient, schedule fraction, stack and wind coefficients, and is a function of t..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
 
     def update(
@@ -10089,6 +10533,9 @@ class _WindowMaterialComplexShade_v8_9Fields(_g._WindowMaterialComplexShadeCommo
 class Lights_v8_9_to_v9_5(_g.AnyLights):
     """``Lights`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains for lights in the zone. If you use a ZoneList in the Zone or ZoneList name field then this defini..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_name: str
     watts_per_zone_floor_area: float | None
     """[W/m2] (W/ft2); Range: >= 0.0"""
@@ -10104,6 +10551,9 @@ class _Lights_v8_9_to_v9_5Fields(_g._LightsCommonFields, total=False):
 
 class Lights_v9_6_to_v23_2(_g.AnyLights):
     """``Lights`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains for lights in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is s..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     watts_per_zone_floor_area: float | None
@@ -10124,6 +10574,9 @@ class _Lights_v9_6_to_v23_2Fields(_g._LightsCommonFields, total=False):
 class HeaderedPumpsVariableSpeed_v8_9_to_v9_0(_g.AnyHeaderedPumpsVariableSpeed):
     """``HeaderedPumps:VariableSpeed`` as declared in EnergyPlus 8.9.0 to 9.0.1. This Headered pump object describes a pump bank with more than 1 pump in parallel"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_pumps_in_bank: float | None
 
     def update(
@@ -10139,6 +10592,9 @@ class _HeaderedPumpsVariableSpeed_v8_9_to_v9_0Fields(_g._HeaderedPumpsVariableSp
 
 class HeaderedPumpsVariableSpeed_v9_1_to_v22_1(_g.AnyHeaderedPumpsVariableSpeed):
     """``HeaderedPumps:VariableSpeed`` as declared in EnergyPlus 9.1.0 to 22.1.0. This Headered pump object describes a pump bank with more than 1 pump in parallel"""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_pumps_in_bank: float | None
     end_use_subcategory: str | None
@@ -10158,6 +10614,9 @@ class _HeaderedPumpsVariableSpeed_v9_1_to_v22_1Fields(_g._HeaderedPumpsVariableS
 
 class ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1(_g.AnyZoneHVACPackagedTerminalAirConditioner):
     """``ZoneHVAC:PackagedTerminalAirConditioner`` as declared in EnergyPlus 8.9.0 to 22.1.0. Packaged terminal air conditioner (PTAC). Forced-convection heating-cooling unit with supply fan, direct expansion (D..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     cooling_coil_object_type: Literal[
         "Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"
@@ -10181,6 +10640,9 @@ class _ZoneHVACPackagedTerminalAirConditioner_v8_9_to_v22_1Fields(
 
 class ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2(_g.AnyZoneHVACPackagedTerminalAirConditioner):
     """``ZoneHVAC:PackagedTerminalAirConditioner`` as declared in EnergyPlus 22.2.0 to 23.2.0. Packaged terminal air conditioner (PTAC). Forced-convection heating-cooling unit with supply fan, direct expansion (D..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     cooling_coil_object_type: Literal[
         "Coil:Cooling:DX",
@@ -10211,6 +10673,9 @@ class _ZoneHVACPackagedTerminalAirConditioner_v22_2_to_v23_2Fields(
 class SizingPeriodDesignDay_v8_9(_g.AnySizingPeriodDesignDay):
     """``SizingPeriod:DesignDay`` as declared in EnergyPlus 8.9.0. The design day object creates the parameters for the program to create the 24 hour weather profile that can be used f..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     month: float
     """Range: >= 1.0, <= 12.0"""
     day_of_month: float
@@ -10231,6 +10696,9 @@ class _SizingPeriodDesignDay_v8_9Fields(_g._SizingPeriodDesignDayCommonFields, t
 class SizingPeriodDesignDay_v9_0_to_v9_2(_g.AnySizingPeriodDesignDay):
     """``SizingPeriod:DesignDay`` as declared in EnergyPlus 9.0.1 to 9.2.0. The design day object creates the parameters for the program to create the 24 hour weather profile that can be used f..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     month: float
     """Range: >= 1.0, <= 12.0"""
     day_of_month: float
@@ -10250,6 +10718,9 @@ class _SizingPeriodDesignDay_v9_0_to_v9_2Fields(_g._SizingPeriodDesignDayCommonF
 
 class SizingPeriodDesignDay_v9_3_to_v22_1(_g.AnySizingPeriodDesignDay):
     """``SizingPeriod:DesignDay`` as declared in EnergyPlus 9.3.0 to 22.1.0. The design day object creates the parameters for the program to create the 24 hour weather profile that can be used f..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     month: float
     """Range: >= 1.0, <= 12.0"""
@@ -10276,6 +10747,9 @@ class _SizingPeriodDesignDay_v9_3_to_v22_1Fields(_g._SizingPeriodDesignDayCommon
 
 class CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4(_g.AnyCoilCoolingWaterToAirHeatPumpEquationFit):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 8.9.0 to 9.4.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     total_cooling_capacity_coefficient_1: float
     total_cooling_capacity_coefficient_2: float
@@ -10325,6 +10799,9 @@ class _CoilCoolingWaterToAirHeatPumpEquationFit_v8_9_to_v9_4Fields(
 class CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1(_g.AnyCoilCoolingWaterToAirHeatPumpEquationFit):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 9.5.0 to 22.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     total_cooling_capacity_curve_name: str
     sensible_cooling_capacity_curve_name: str
     cooling_power_consumption_curve_name: str
@@ -10346,6 +10823,9 @@ class _CoilCoolingWaterToAirHeatPumpEquationFit_v9_5_to_v22_1Fields(
 
 class CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1(_g.AnyCoilCoolingWaterToAirHeatPumpEquationFit):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     rated_entering_water_temperature: float | None
     """Rated entering water temperature corresponding to the water-to -air application for which this coil is used. For exam...; [C]; Default: 30.0; Range: > 0.0"""
@@ -10377,6 +10857,9 @@ class _CoilCoolingWaterToAirHeatPumpEquationFit_v22_2_to_v23_1Fields(
 
 class CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1(_g.AnyCoilCoolingWaterToAirHeatPumpEquationFit):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     rated_entering_water_temperature: float | None
     """Rated entering water temperature corresponding to the water-to -air application for which this coil is used. For exam...; [C]; Default: 30.0; Range: > 0.0"""
@@ -10421,6 +10904,9 @@ class _CoilCoolingWaterToAirHeatPumpEquationFit_v23_2_to_v25_1Fields(
 class ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4(_g.AnyZoneHVACBaseboardRadiantConvectiveWater):
     """``ZoneHVAC:Baseboard:RadiantConvective:Water`` as declared in EnergyPlus 8.9.0 to 9.4.0. The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     heating_design_capacity_method: (
         Literal["CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
@@ -10459,6 +10945,9 @@ class _ZoneHVACBaseboardRadiantConvectiveWater_v8_9_to_v9_4Fields(
 class ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1(_g.AnyZoneInfiltrationDesignFlowRate):
     """``ZoneInfiltration:DesignFlowRate`` as declared in EnergyPlus 8.9.0 to 22.1.0. Infiltration is specified as a design level which is modified by a Schedule fraction, temperature difference and wind..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_name: str
     flow_per_zone_floor_area: float | None
     """[m3/s-m2]; Range: >= 0.0"""
@@ -10480,6 +10969,9 @@ class _ZoneInfiltrationDesignFlowRate_v8_9_to_v22_1Fields(_g._ZoneInfiltrationDe
 
 class ZoneInfiltrationDesignFlowRate_v22_2_to_v24_2(_g.AnyZoneInfiltrationDesignFlowRate):
     """``ZoneInfiltration:DesignFlowRate`` as declared in EnergyPlus 22.2.0 to 24.2.0. Infiltration is specified as a design level which is modified by a Schedule fraction, temperature difference and wind..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     flow_rate_per_floor_area: float | None
@@ -10540,6 +11032,8 @@ class _CoolingTowerVariableSpeed_v8_9_to_v22_1Fields(_g._CoolingTowerVariableSpe
 class ZoneEarthtube_v8_9_to_v23_1(_g.AnyZoneEarthtube):
     """``ZoneEarthtube`` as declared in EnergyPlus 8.9.0 to 23.1.0. Earth Tube is specified as a design level which is modified by a Schedule fraction, temperature difference and wind s..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneEarthtube_v8_9_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -10549,6 +11043,9 @@ class _ZoneEarthtube_v8_9_to_v23_1Fields(_g._ZoneEarthtubeCommonFields, total=Fa
 
 class HotWaterEquipment_v8_9_to_v9_5(_g.AnyHotWaterEquipment):
     """``HotWaterEquipment`` as declared in EnergyPlus 8.9.0 to 9.5.0. Sets internal gains for hot water equipment in the zone. If you use a ZoneList in the Zone name field then this defin..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_name: str
     power_per_zone_floor_area: float | None
@@ -10565,6 +11062,9 @@ class _HotWaterEquipment_v8_9_to_v9_5Fields(_g._HotWaterEquipmentCommonFields, t
 
 class HotWaterEquipment_v9_6_to_v23_2(_g.AnyHotWaterEquipment):
     """``HotWaterEquipment`` as declared in EnergyPlus 9.6.0 to 23.2.0. Sets internal gains for hot water equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than o..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_or_space_or_spacelist_name: str
     power_per_zone_floor_area: float | None
@@ -10611,6 +11111,9 @@ class _PipingSystemUndergroundDomain_v8_9_to_v22_1Fields(_g._PipingSystemUndergr
 class ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1(_g.AnyZoneHVACPackagedTerminalHeatPump):
     """``ZoneHVAC:PackagedTerminalHeatPump`` as declared in EnergyPlus 8.9.0 to 22.1.0. Packaged terminal heat pump (PTHP). Forced-convection heating-cooling unit with supply fan, direct expansion (DX) coo..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     cooling_coil_object_type: Literal[
         "Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"
     ]
@@ -10633,6 +11136,9 @@ class _ZoneHVACPackagedTerminalHeatPump_v8_9_to_v22_1Fields(
 
 class ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2(_g.AnyZoneHVACPackagedTerminalHeatPump):
     """``ZoneHVAC:PackagedTerminalHeatPump`` as declared in EnergyPlus 22.2.0 to 23.2.0. Packaged terminal heat pump (PTHP). Forced-convection heating-cooling unit with supply fan, direct expansion (DX) coo..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     cooling_coil_object_type: Literal[
         "Coil:Cooling:DX",
@@ -10662,6 +11168,9 @@ class _ZoneHVACPackagedTerminalHeatPump_v22_2_to_v23_2Fields(
 
 class ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1(_g.AnyZoneHVACPackagedTerminalHeatPump):
     """``ZoneHVAC:PackagedTerminalHeatPump`` as declared in EnergyPlus 24.1.0 to 25.1.0. Packaged terminal heat pump (PTHP). Forced-convection heating-cooling unit with supply fan, direct expansion (DX) coo..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None
     """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes"""
@@ -10695,6 +11204,8 @@ class _ZoneHVACPackagedTerminalHeatPump_v24_1_to_v25_1Fields(
 class AirTerminalSingleDuctVAVHeatAndCoolReheat_v8_9_to_v9_2(_g.AnyAirTerminalSingleDuctVAVHeatAndCoolReheat):
     """``AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat`` as declared in EnergyPlus 8.9.0 to 9.2.0. Central air system terminal unit, single duct, variable volume for both cooling and heating, with reheat coil (hot wa..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -11678,6 +12189,8 @@ class _TableOneIndependentVariable_v9_0_to_v9_1Fields(TypedDict, total=False):
 class ChillerElectric_v8_9_to_v24_1(_g.AnyChillerElectric):
     """``Chiller:Electric`` as declared in EnergyPlus 8.9.0 to 24.1.0. This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectric_v8_9_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -11687,6 +12200,9 @@ class _ChillerElectric_v8_9_to_v24_1Fields(_g._ChillerElectricCommonFields, tota
 
 class CoolingTowerSingleSpeed_v8_9_to_v9_1(_g.AnyCoolingTowerSingleSpeed):
     """``CoolingTower:SingleSpeed`` as declared in EnergyPlus 8.9.0 to 9.1.0. This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     free_convection_air_flow_rate: float | Literal["Autocalculate"] | None
     """[m3/s]; Default: 0.0"""
@@ -11711,6 +12227,9 @@ class _CoolingTowerSingleSpeed_v8_9_to_v9_1Fields(_g._CoolingTowerSingleSpeedCom
 class CoolingTowerSingleSpeed_v9_2_to_v22_1(_g.AnyCoolingTowerSingleSpeed):
     """``CoolingTower:SingleSpeed`` as declared in EnergyPlus 9.2.0 to 22.1.0. This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     free_convection_regime_air_flow_rate: float | Literal["Autocalculate"] | None
     """[m3/s]; Default: 0.0"""
     free_convection_regime_air_flow_rate_sizing_factor: float | None
@@ -11734,6 +12253,8 @@ class _CoolingTowerSingleSpeed_v9_2_to_v22_1Fields(_g._CoolingTowerSingleSpeedCo
 class Roof_v8_9_to_v9_5(_g.AnyRoof):
     """``Roof`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of roofs (exterior). View Factor to Ground is automatically calculated."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Roof_v8_9_to_v9_5Fields]) -> None: ...  # type: ignore[override]
     _creation_signature: _cv74.Roof_v8_9_to_v9_5  # type: ignore[assignment]
 
@@ -11805,6 +12326,8 @@ class _GeneratorCombustionTurbine_v9_3_to_v9_4Fields(_g._GeneratorCombustionTurb
 class PumpVariableSpeed_v8_9_to_v9_0(_g.AnyPumpVariableSpeed):
     """``Pump:VariableSpeed`` as declared in EnergyPlus 8.9.0 to 9.0.1. This pump model is described in the ASHRAE secondary HVAC toolkit."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpVariableSpeed_v8_9_to_v9_0Fields]
     ) -> None: ...  # type: ignore[override]
@@ -11814,6 +12337,9 @@ class _PumpVariableSpeed_v8_9_to_v9_0Fields(_g._PumpVariableSpeedCommonFields, t
 
 class CoilHeatingGasMultiStage_v8_9_to_v22_1(_g.AnyCoilHeatingGasMultiStage):
     """``Coil:Heating:Gas:MultiStage`` as declared in EnergyPlus 8.9.0 to 22.1.0. Gas heating coil, multi-stage. If the coil is located directly in an air loop branch or outdoor air equipment list, t..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     parasitic_gas_load: float | None
     """parasitic gas load associated with the gas coil operation (i.e., standing pilot); [W]"""
@@ -11843,6 +12369,9 @@ class _CoilHeatingGasMultiStage_v8_9_to_v22_1Fields(_g._CoilHeatingGasMultiStage
 
 class CoilHeatingGasMultiStage_v22_2_to_v23_1(_g.AnyCoilHeatingGasMultiStage):
     """``Coil:Heating:Gas:MultiStage`` as declared in EnergyPlus 22.2.0 to 23.1.0. Gas heating coil, multi-stage. If the coil is located directly in an air loop branch or outdoor air equipment list, t..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     parasitic_gas_load: float | None
     """parasitic gas load associated with the gas coil operation (i.e., standing pilot); [W]"""
@@ -11876,6 +12405,8 @@ class _CoilHeatingGasMultiStage_v22_2_to_v23_1Fields(_g._CoilHeatingGasMultiStag
 class AirTerminalSingleDuctVAVReheatVariableSpeedFan_v8_9_to_v9_2(_g.AnyAirTerminalSingleDuctVAVReheatVariableSpeedFan):
     """``AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan`` as declared in EnergyPlus 8.9.0 to 9.2.0. Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam)..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -11892,6 +12423,9 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1(
     _g.AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit
 ):
     """``Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_speeds: float | None
     """[dimensionless]; Default: 2.0; Range: >= 1.0, <= 10.0"""
@@ -11919,6 +12453,9 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v25_1(
     _g.AnyCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit
 ):
     """``Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`` as declared in EnergyPlus 22.2.0 to 25.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_speeds: int | None
     """[dimensionless]; Default: 2; Range: >= 1, <= 10"""
@@ -12106,6 +12643,9 @@ class _ScheduleDayList_v8_9_to_v22_1Fields(_g._ScheduleDayListCommonFields, tota
 class PlantEquipmentList_v8_9_to_v9_0(_g.AnyPlantEquipmentList):
     """``PlantEquipmentList`` as declared in EnergyPlus 8.9.0 to 9.0.1. List plant equipment in order of operating priority, 1st in list will be used 1st, etc Use only plant equipment in th..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     equipment_1_object_type: str | None
     equipment_1_name: str | None
     equipment_2_object_type: str | None
@@ -12157,6 +12697,8 @@ class _PlantEquipmentList_v8_9_to_v9_0Fields(_g._PlantEquipmentListCommonFields,
 class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2(_g.AnyAirTerminalSingleDuctVAVHeatAndCoolNoReheat):
     """``AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat`` as declared in EnergyPlus 8.9.0 to 9.2.0. Central air system terminal unit, single duct, variable volume for both cooling and heating, with no reheat coil."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -12171,6 +12713,9 @@ class _AirTerminalSingleDuctVAVHeatAndCoolNoReheat_v8_9_to_v9_2Fields(
 
 class HybridModelZone_v8_9_to_v9_0(_g.AnyHybridModelZone):
     """``HybridModel:Zone`` as declared in EnergyPlus 8.9.0 to 9.0.1. Zones with measured air temperature data and a range of dates. If the range of temperature measurement dates includes..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     begin_month: float
     """Range: >= 1.0, <= 12.0"""
@@ -12194,6 +12739,9 @@ class _HybridModelZone_v8_9_to_v9_0Fields(_g._HybridModelZoneCommonFields, total
 
 class HybridModelZone_v9_1_to_v22_1(_g.AnyHybridModelZone):
     """``HybridModel:Zone`` as declared in EnergyPlus 9.1.0 to 22.1.0. Zones with measured air temperature data and a range of dates. If the range of temperature measurement dates includes..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     calculate_zone_people_count: Literal["No", "Yes"] | None
     """Use measured humidity ratio data (temperature, humidity ratio, or CO2 concentration) to calculate zone people count. ...; Default: No"""
@@ -12375,6 +12923,9 @@ class _CoilWaterHeatingDesuperheater_v22_2_to_v24_2Fields(_g._CoilWaterHeatingDe
 class AirTerminalSingleDuctSeriesPIUReheat_v8_9_to_v24_1(_g.AnyAirTerminalSingleDuctSeriesPIUReheat):
     """``AirTerminal:SingleDuct:SeriesPIU:Reheat`` as declared in EnergyPlus 8.9.0 to 24.1.0. Central air system terminal unit, single duct, variable volume, series powered induction unit (PIU), with reheat coil..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     reheat_coil_air_inlet_node_name: str | None
 
     def update(
@@ -12392,6 +12943,9 @@ class _AirTerminalSingleDuctSeriesPIUReheat_v8_9_to_v24_1Fields(
 
 class AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2(_g.AnyAirTerminalSingleDuctSeriesPIUReheat):
     """``AirTerminal:SingleDuct:SeriesPIU:Reheat`` as declared in EnergyPlus 24.2.0 to 25.2.0. Central air system terminal unit, single duct, variable volume, series powered induction unit (PIU), with reheat coil..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     reheat_coil_air_inlet_node_name: str | None
     fan_control_type: Literal["ConstantSpeed", "VariableSpeed"] | None
@@ -12424,6 +12978,9 @@ class _AirTerminalSingleDuctSeriesPIUReheat_v24_2_to_v25_2Fields(
 
 class HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4(_g.AnyHeatPumpWaterToWaterEquationFitCooling):
     """``HeatPump:WaterToWater:EquationFit:Cooling`` as declared in EnergyPlus 8.9.0 to 9.4.0. simple water-water heat pump curve-fit model"""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     cooling_capacity_coefficient_1: float
     cooling_capacity_coefficient_2: float
@@ -12461,6 +13018,9 @@ class _HeatPumpWaterToWaterEquationFitCooling_v8_9_to_v9_4Fields(
 class Building_v8_9_to_v22_1(_g.AnyBuilding):
     """``Building`` as declared in EnergyPlus 8.9.0 to 22.1.0. Describes parameters that are used during the simulation of the building. There are necessary correlations between th..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     maximum_number_of_warmup_days: float | None
     """EnergyPlus will only use as many warmup days as needed to reach convergence tolerance. This field's value should NOT ...; Default: 25.0; Range: > 0.0"""
     minimum_number_of_warmup_days: float | None
@@ -12478,6 +13038,9 @@ class _Building_v8_9_to_v22_1Fields(_g._BuildingCommonFields, total=False):
 class Building_v22_2_to_v26_1(_g.AnyBuilding):
     """``Building`` as declared in EnergyPlus 22.2.0 to 26.1.0. Describes parameters that are used during the simulation of the building. There are necessary correlations between th..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     maximum_number_of_warmup_days: int | None
     """EnergyPlus will only use as many warmup days as needed to reach convergence tolerance. This field's value should NOT ...; Default: 25; Range: > 0"""
     minimum_number_of_warmup_days: int | None
@@ -12494,6 +13057,9 @@ class _Building_v22_2_to_v26_1Fields(_g._BuildingCommonFields, total=False):
 
 class CentralHeatPumpSystem_v8_9_to_v22_1(_g.AnyCentralHeatPumpSystem):
     """``CentralHeatPumpSystem`` as declared in EnergyPlus 8.9.0 to 22.1.0. This chiller bank can contain multiple chiller heaters and heat pump performance objects. Its function is to encapsul..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     control_method: Literal["SmartMixing"] | None
     """Default: SmartMixing"""
@@ -12568,6 +13134,9 @@ class _CentralHeatPumpSystem_v8_9_to_v22_1Fields(_g._CentralHeatPumpSystemCommon
 
 class CentralHeatPumpSystem_v22_2_to_v26_1(_g.AnyCentralHeatPumpSystem):
     """``CentralHeatPumpSystem`` as declared in EnergyPlus 22.2.0 to 26.1.0. This chiller bank can contain multiple chiller heaters and heat pump performance objects. Its function is to encapsul..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     control_method: Literal["SmartMixing"] | None
     """Default: SmartMixing"""
@@ -13065,6 +13634,9 @@ class _ZoneHVACEquipmentList_v9_3_to_v22_1Fields(_g._ZoneHVACEquipmentListCommon
 class WindowPropertyFrameAndDivider_v8_9_to_v9_6(_g.AnyWindowPropertyFrameAndDivider):
     """``WindowProperty:FrameAndDivider`` as declared in EnergyPlus 8.9.0 to 9.6.0. Specifies the dimensions of a window frame, dividers, and inside reveal surfaces. Referenced by the surface objects f..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_horizontal_dividers: float | None
     """'Horizontal' means parallel to local window X-axis; Default: 0.0; Range: >= 0.0"""
     number_of_vertical_dividers: float | None
@@ -13084,6 +13656,9 @@ class _WindowPropertyFrameAndDivider_v8_9_to_v9_6Fields(_g._WindowPropertyFrameA
 
 class WindowPropertyFrameAndDivider_v22_1_to_v26_1(_g.AnyWindowPropertyFrameAndDivider):
     """``WindowProperty:FrameAndDivider`` as declared in EnergyPlus 22.1.0 to 26.1.0. Specifies the dimensions of a window frame, dividers, and inside reveal surfaces. Referenced by the surface objects f..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_horizontal_dividers: float | None
     """'Horizontal' means parallel to local window X-axis; Default: 0.0; Range: >= 0.0"""
@@ -13160,6 +13735,9 @@ class _WindowPropertyFrameAndDivider_v22_1_to_v26_1Fields(_g._WindowPropertyFram
 class CoilCoolingDXVariableSpeed_v8_9_to_v22_1(_g.AnyCoilCoolingDXVariableSpeed):
     """``Coil:Cooling:DX:VariableSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), variable-spe..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_speeds: float | None
     """[dimensionless]; Default: 2.0; Range: >= 1.0, <= 10.0"""
     nominal_speed_level: float | None
@@ -13195,6 +13773,9 @@ class _CoilCoolingDXVariableSpeed_v8_9_to_v22_1Fields(_g._CoilCoolingDXVariableS
 class CoilCoolingDXVariableSpeed_v22_2_to_v23_1(_g.AnyCoilCoolingDXVariableSpeed):
     """``Coil:Cooling:DX:VariableSpeed`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), variable-spe..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_speeds: int | None
     """[dimensionless]; Default: 2; Range: >= 1, <= 10"""
     nominal_speed_level: int | None
@@ -13229,6 +13810,9 @@ class _CoilCoolingDXVariableSpeed_v22_2_to_v23_1Fields(_g._CoilCoolingDXVariable
 
 class CoilCoolingDXVariableSpeed_v23_2_to_v25_1(_g.AnyCoilCoolingDXVariableSpeed):
     """``Coil:Cooling:DX:VariableSpeed`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), variable-spe..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_speeds: int | None
     """[dimensionless]; Default: 2; Range: >= 1, <= 10"""
@@ -13592,6 +14176,9 @@ class _TableMultiVariableLookup_v9_0_to_v9_1Fields(TypedDict, total=False):
 class ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1(_g.AnyZoneHVACWaterToAirHeatPump):
     """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 8.9.0 to 23.1.0. Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     maximum_cycling_rate: float | None
     """The maximum on-off cycling rate for the compressor Suggested value is 2.5 for a typical heat pump; [cycles/hr]; Default: 2.5; Range: >= 0.0, <= 5.0"""
     heat_pump_time_constant: float | None
@@ -13618,6 +14205,9 @@ class _ZoneHVACWaterToAirHeatPump_v8_9_to_v23_1Fields(_g._ZoneHVACWaterToAirHeat
 class ZoneHVACWaterToAirHeatPump_v23_2(_g.AnyZoneHVACWaterToAirHeatPump):
     """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 23.2.0. Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     """Enter the type of performance specification object used to describe the multispeed coil or fan."""
     design_specification_multispeed_object_name: str | None
@@ -13634,6 +14224,9 @@ class _ZoneHVACWaterToAirHeatPump_v23_2Fields(_g._ZoneHVACWaterToAirHeatPumpComm
 
 class ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1(_g.AnyZoneHVACWaterToAirHeatPump):
     """``ZoneHVAC:WaterToAirHeatPump`` as declared in EnergyPlus 24.1.0 to 25.1.0. Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["No", "Yes"] | None
     """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes"""
@@ -13657,6 +14250,9 @@ class _ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1Fields(_g._ZoneHVACWaterToAirHea
 
 class FloorDetailed_v8_9_to_v9_5(_g.AnyFloorDetailed):
     """``Floor:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of floor heat transfer surfaces."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     outside_boundary_condition: Literal[
         "Adiabatic",
@@ -13704,6 +14300,9 @@ class _FloorDetailed_v8_9_to_v9_5Fields(_g._FloorDetailedCommonFields, total=Fal
 
 class FloorDetailed_v9_6_to_v24_2(_g.AnyFloorDetailed):
     """``Floor:Detailed`` as declared in EnergyPlus 9.6.0 to 24.2.0. Allows for detailed entry of floor heat transfer surfaces."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
@@ -13792,6 +14391,9 @@ class _HeatExchangerFluidToFluid_v8_9_to_v25_2Fields(_g._HeatExchangerFluidToFlu
 class AirLoopHVACUnitarySystem_v8_9_to_v9_2(_g.AnyAirLoopHVACUnitarySystem):
     """``AirLoopHVAC:UnitarySystem`` as declared in EnergyPlus 8.9.0 to 9.2.0. AirloopHVAC:UnitarySystem is a generic HVAC system type that allows any configuration of coils and/or fan. This objec..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     cooling_coil_object_type: (
         Literal[
             "Coil:Cooling:DX:MultiSpeed",
@@ -13876,6 +14478,9 @@ class _AirLoopHVACUnitarySystem_v8_9_to_v9_2Fields(_g._AirLoopHVACUnitarySystemC
 
 class AirLoopHVACUnitarySystem_v9_3_to_v22_1(_g.AnyAirLoopHVACUnitarySystem):
     """``AirLoopHVAC:UnitarySystem`` as declared in EnergyPlus 9.3.0 to 22.1.0. AirloopHVAC:UnitarySystem is a generic HVAC system type that allows any configuration of coils and/or fan. This objec..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     cooling_coil_object_type: (
         Literal[
@@ -13963,6 +14568,9 @@ class _AirLoopHVACUnitarySystem_v9_3_to_v22_1Fields(_g._AirLoopHVACUnitarySystem
 
 class AirLoopHVACUnitarySystem_v22_2_to_v23_1(_g.AnyAirLoopHVACUnitarySystem):
     """``AirLoopHVAC:UnitarySystem`` as declared in EnergyPlus 22.2.0 to 23.1.0. AirloopHVAC:UnitarySystem is a generic HVAC system type that allows any configuration of coils and/or fan. This objec..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     cooling_coil_object_type: (
         Literal[
@@ -14055,6 +14663,9 @@ class _AirLoopHVACUnitarySystem_v22_2_to_v23_1Fields(_g._AirLoopHVACUnitarySyste
 
 class AirLoopHVACUnitarySystem_v23_2(_g.AnyAirLoopHVACUnitarySystem):
     """``AirLoopHVAC:UnitarySystem`` as declared in EnergyPlus 23.2.0. AirloopHVAC:UnitarySystem is a generic HVAC system type that allows any configuration of coils and/or fan. This objec..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     cooling_coil_object_type: (
         Literal[
@@ -14174,6 +14785,9 @@ class _HVACTemplateSystemUnitarySystem_v8_9_to_v22_1Fields(
 class CoilCoolingDXMultiSpeed_v8_9_to_v9_2(_g.AnyCoilCoolingDXMultiSpeed):
     """``Coil:Cooling:DX:MultiSpeed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Direct expansion (DX) cooling coil and condensing unit (includes electric or engine-driven compressor and condenser f..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: Literal[
         "Diesel",
         "Electricity",
@@ -14222,6 +14836,9 @@ class _CoilCoolingDXMultiSpeed_v8_9_to_v9_2Fields(_g._CoilCoolingDXMultiSpeedCom
 class CoilCoolingDXMultiSpeed_v9_3_to_v22_1(_g.AnyCoilCoolingDXMultiSpeed):
     """``Coil:Cooling:DX:MultiSpeed`` as declared in EnergyPlus 9.3.0 to 22.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric or engine-driven compressor and condenser f..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: Literal[
         "Diesel",
         "Electricity",
@@ -14269,6 +14886,9 @@ class _CoilCoolingDXMultiSpeed_v9_3_to_v22_1Fields(_g._CoilCoolingDXMultiSpeedCo
 
 class CoilCoolingDXMultiSpeed_v22_2_to_v23_1(_g.AnyCoilCoolingDXMultiSpeed):
     """``Coil:Cooling:DX:MultiSpeed`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric or engine-driven compressor and condenser f..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: Literal[
         "Diesel",
@@ -14321,6 +14941,8 @@ class _MatrixTwoDimension_v8_9_to_v22_1Fields(_g._MatrixTwoDimensionCommonFields
 class WallExterior_v8_9_to_v9_5(_g.AnyWallExterior):
     """``Wall:Exterior`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of exterior walls. View Factor to Ground is automatically calculated."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallExterior_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -14347,6 +14969,9 @@ class _DemandManagerAssignmentList_v8_9_to_v22_1Fields(_g._DemandManagerAssignme
 
 class ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1(_g.AnyChillerHeaterPerformanceElectricEIR):
     """``ChillerHeaterPerformance:Electric:EIR`` as declared in EnergyPlus 8.9.0 to 26.1.0. This chiller model is a generic chiller-heater where the cooling mode performance is a function of condenser entering..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     condenser_type: Literal["AirCooled", "WaterCooled"] | None
     """Default: WaterCooled"""
@@ -14411,6 +15036,8 @@ class _ThermalStorageChilledWaterStratified_v22_2_to_v25_1Fields(
 class ControllerOutdoorAir_v8_9_to_v23_1(_g.AnyControllerOutdoorAir):
     """``Controller:OutdoorAir`` as declared in EnergyPlus 8.9.0 to 23.1.0. Controller to set the outdoor air flow rate for an air loop. Control options include fixed, proportional, scheduled, ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerOutdoorAir_v8_9_to_v23_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -14551,6 +15178,8 @@ class _MaterialPropertyHeatAndMoistureTransferRedistribution_v8_9_to_v22_1Fields
 class AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9(_g.AnyAirflowNetworkDistributionComponentOutdoorAirFlow):
     """``AirflowNetwork:Distribution:Component:OutdoorAirFlow`` as declared in EnergyPlus 8.9.0. This object includes the outdoor air flow rate set by the Controller:OutdoorAir object in the airflow network."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -14565,6 +15194,9 @@ class _AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9Fields(
 
 class RoofCeilingDetailed_v8_9_to_v9_5(_g.AnyRoofCeilingDetailed):
     """``RoofCeiling:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of roof/ceiling heat transfer surfaces."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     outside_boundary_condition: Literal[
         "Adiabatic",
@@ -14608,6 +15240,9 @@ class _RoofCeilingDetailed_v8_9_to_v9_5Fields(_g._RoofCeilingDetailedCommonField
 
 class RoofCeilingDetailed_v9_6_to_v24_2(_g.AnyRoofCeilingDetailed):
     """``RoofCeiling:Detailed`` as declared in EnergyPlus 9.6.0 to 24.2.0. Allows for detailed entry of roof/ceiling heat transfer surfaces."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
@@ -14655,6 +15290,8 @@ class _RoofCeilingDetailed_v9_6_to_v24_2Fields(_g._RoofCeilingDetailedCommonFiel
 class ZoneHVACEvaporativeCoolerUnit_v8_9_to_v23_1(_g.AnyZoneHVACEvaporativeCoolerUnit):
     """``ZoneHVAC:EvaporativeCoolerUnit`` as declared in EnergyPlus 8.9.0 to 23.1.0. Zone evaporative cooler. Forced-convection cooling-only unit with supply fan, 100% outdoor air supply. Optional relie..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -14799,6 +15436,8 @@ class _LifeCycleCostUsePriceEscalation_v22_2_to_v23_1Fields(
 class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5(_g.AnyCoilCoolingWaterDetailedGeometry):
     """``Coil:Cooling:Water:DetailedGeometry`` as declared in EnergyPlus 8.9.0 to 9.5.0. Chilled water cooling coil, detailed flat fin coil model for continuous plate fins, with inputs for detailed coil geo..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -14894,6 +15533,8 @@ class _TableTwoIndependentVariables_v8_9_to_v9_1Fields(TypedDict, total=False):
 class AirTerminalSingleDuctVAVReheat_v8_9_to_v9_2(_g.AnyAirTerminalSingleDuctVAVReheat):
     """``AirTerminal:SingleDuct:VAV:Reheat`` as declared in EnergyPlus 8.9.0 to 9.2.0. Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam)."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -14926,6 +15567,8 @@ class _RefrigerationSecondarySystem_v8_9_to_v22_1Fields(_g._RefrigerationSeconda
 class ZoneAirHeatBalanceAlgorithm_v8_9_to_v22_2(_g.AnyZoneAirHeatBalanceAlgorithm):
     """``ZoneAirHeatBalanceAlgorithm`` as declared in EnergyPlus 8.9.0 to 22.2.0. Determines which algorithm will be used to solve the zone air heat balance."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -15081,6 +15724,8 @@ class _SizingPlant_v8_9_to_v22_1Fields(_g._SizingPlantCommonFields, total=False)
 class AirTerminalSingleDuctVAVNoReheat_v8_9_to_v9_2(_g.AnyAirTerminalSingleDuctVAVNoReheat):
     """``AirTerminal:SingleDuct:VAV:NoReheat`` as declared in EnergyPlus 8.9.0 to 9.2.0. Central air system terminal unit, single duct, variable volume, with no reheat coil."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -15095,6 +15740,9 @@ class _AirTerminalSingleDuctVAVNoReheat_v8_9_to_v9_2Fields(
 
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1(_g.AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed):
     """``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. Unitary system, heating and cooling, multi-speed with constant volume supply fan (continuous or cycling), direct expa..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None
     """Needs to match the corresponding minimum outdoor temperature defined in the DX heating coil object.; [C]; Default: -8.0"""
@@ -15120,6 +15768,9 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v8_9_to_v22_1Fields(
 
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1(_g.AnyAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed):
     """``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` as declared in EnergyPlus 22.2.0 to 25.1.0. Unitary system, heating and cooling, multi-speed with constant volume supply fan (continuous or cycling), direct expa..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None
     """Needs to match the corresponding minimum outdoor temperature defined in the DX heating coil object.; [C]; Default: -8.0"""
@@ -15160,6 +15811,9 @@ class _Timestep_v8_9_to_v22_1Fields(_g._TimestepCommonFields, total=False):
 class CoilCoolingDXTwoStageWithHumidityControlMode_v8_9_to_v22_1(_g.AnyCoilCoolingDXTwoStageWithHumidityControlMode):
     """``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), two-stage wi..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_capacity_stages: float | None
     """Default: 1.0; Range: >= 1.0, <= 2.0"""
     number_of_enhanced_dehumidification_modes: float | None
@@ -15181,6 +15835,9 @@ class _CoilCoolingDXTwoStageWithHumidityControlMode_v8_9_to_v22_1Fields(
 
 class CoilCoolingDXTwoStageWithHumidityControlMode_v22_2_to_v23_1(_g.AnyCoilCoolingDXTwoStageWithHumidityControlMode):
     """``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), two-stage wi..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_capacity_stages: int | None
     """Default: 1; Range: >= 1, <= 2"""
@@ -15204,6 +15861,8 @@ class _CoilCoolingDXTwoStageWithHumidityControlMode_v22_2_to_v23_1Fields(
 class FloorInterzone_v8_9_to_v9_5(_g.AnyFloorInterzone):
     """``Floor:Interzone`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of floors using adjacent zone (interzone) heat transfer - adjacent surface should be a ce..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorInterzone_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -15213,6 +15872,9 @@ class _FloorInterzone_v8_9_to_v9_5Fields(_g._FloorInterzoneCommonFields, total=F
 
 class ComfortViewFactorAngles_v8_9_to_v9_5(_g.AnyComfortViewFactorAngles):
     """``ComfortViewFactorAngles`` as declared in EnergyPlus 8.9.0 to 9.5.0. Used to specify radiant view factors for thermal comfort calculations."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_name: str | None
     surface_1_name: str | None
@@ -15326,6 +15988,9 @@ class _ComfortViewFactorAngles_v8_9_to_v9_5Fields(_g._ComfortViewFactorAnglesCom
 
 class ComfortViewFactorAngles_v9_6_to_v23_2(_g.AnyComfortViewFactorAngles):
     """``ComfortViewFactorAngles`` as declared in EnergyPlus 9.6.0 to 23.2.0. Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_name: str | None
     surface_1_name: str | None
@@ -15840,6 +16505,9 @@ class _ComfortViewFactorAngles_v9_6_to_v23_2Fields(_g._ComfortViewFactorAnglesCo
 class ComfortViewFactorAngles_v24_1_to_v25_1(_g.AnyComfortViewFactorAngles):
     """``ComfortViewFactorAngles`` as declared in EnergyPlus 24.1.0 to 25.1.0. Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     surface_1_name: str | None
     angle_factor_1: float | None
     """Range: >= 0.0, <= 1.0"""
@@ -16351,6 +17019,8 @@ class _ComfortViewFactorAngles_v24_1_to_v25_1Fields(_g._ComfortViewFactorAnglesC
 class WallAdiabatic_v8_9_to_v9_5(_g.AnyWallAdiabatic):
     """``Wall:Adiabatic`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for simplified entry of interior walls."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallAdiabatic_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
@@ -16415,6 +17085,8 @@ class _PlantComponentUserDefined_v8_9_to_v22_1Fields(_g._PlantComponentUserDefin
 class CoilWaterHeatingAirToWaterHeatPumpWrapped_v8_9_to_v23_1(_g.AnyCoilWaterHeatingAirToWaterHeatPumpWrapped):
     """``Coil:WaterHeating:AirToWaterHeatPump:Wrapped`` as declared in EnergyPlus 8.9.0 to 23.1.0. Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -16429,6 +17101,9 @@ class _CoilWaterHeatingAirToWaterHeatPumpWrapped_v8_9_to_v23_1Fields(
 
 class CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1(_g.AnyCoilWaterHeatingAirToWaterHeatPumpWrapped):
     """``Coil:WaterHeating:AirToWaterHeatPump:Wrapped`` as declared in EnergyPlus 23.2.0 to 25.1.0. Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
     """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
@@ -16693,6 +17368,9 @@ class _RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1Fields(
 class GlazedDoor_v8_9(_g.AnyGlazedDoor):
     """``GlazedDoor`` as declared in EnergyPlus 8.9.0. Allows for simplified entry of glass Doors."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     shading_control_name: str | None
     """enter the name of a WindowProperty:ShadingControl object used for windows and glass doors only If not specified, wind..."""
 
@@ -16704,6 +17382,9 @@ class _GlazedDoor_v8_9Fields(_g._GlazedDoorCommonFields, total=False):
 
 class MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1(_g.AnyMaterialPropertyVariableThermalConductivity):
     """``MaterialProperty:VariableThermalConductivity`` as declared in EnergyPlus 8.9.0 to 24.1.0. Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     temperature_1: float
     """for Temperature-Thermal Conductivity function; [C]"""
@@ -16781,6 +17462,9 @@ class _MaterialPropertyVariableThermalConductivity_v8_9_to_v24_1Fields(
 class AirflowNetworkSimulationControl_v8_9_to_v9_4(_g.AnyAirflowNetworkSimulationControl):
     """``AirflowNetwork:SimulationControl`` as declared in EnergyPlus 8.9.0 to 9.4.0. This object defines the global parameters used in an Airflow Network simulation."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     maximum_number_of_iterations: float | None
     """Determines the maximum number of iterations used to converge on a solution. If this limit is exceeded, the program te...; [dimensionless]; Default: 500.0; Range: >= 10.0, > True, <= 30000.0"""
 
@@ -16797,6 +17481,9 @@ class _AirflowNetworkSimulationControl_v8_9_to_v9_4Fields(_g._AirflowNetworkSimu
 
 class AirflowNetworkSimulationControl_v9_5_to_v22_1(_g.AnyAirflowNetworkSimulationControl):
     """``AirflowNetwork:SimulationControl`` as declared in EnergyPlus 9.5.0 to 22.1.0. This object defines the global parameters used in an Airflow Network simulation."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     maximum_number_of_iterations: float | None
     """Determines the maximum number of iterations used to converge on a solution. If this limit is exceeded, the program te...; [dimensionless]; Default: 500.0; Range: > 10.0, <= 30000.0"""
@@ -16820,6 +17507,8 @@ class _AirflowNetworkSimulationControl_v9_5_to_v22_1Fields(
 class CoilWaterHeatingAirToWaterHeatPumpPumped_v8_9_to_v23_1(_g.AnyCoilWaterHeatingAirToWaterHeatPumpPumped):
     """``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` as declared in EnergyPlus 8.9.0 to 23.1.0. Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -16834,6 +17523,9 @@ class _CoilWaterHeatingAirToWaterHeatPumpPumped_v8_9_to_v23_1Fields(
 
 class CoilWaterHeatingAirToWaterHeatPumpPumped_v23_2_to_v25_1(_g.AnyCoilWaterHeatingAirToWaterHeatPumpPumped):
     """``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` as declared in EnergyPlus 23.2.0 to 25.1.0. Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
     """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
@@ -16853,6 +17545,9 @@ class _CoilWaterHeatingAirToWaterHeatPumpPumped_v23_2_to_v25_1Fields(
 
 class CoilHeatingFuel_v8_9_to_v9_2(_g.AnyCoilHeatingFuel):
     """``Coil:Heating:Fuel`` as declared in EnergyPlus 8.9.0 to 9.2.0. Gas or other fuel heating coil. If the coil is located directly in an air loop branch or outdoor air equipment list, ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: (
         Literal[
@@ -16884,6 +17579,9 @@ class _CoilHeatingFuel_v8_9_to_v9_2Fields(_g._CoilHeatingFuelCommonFields, total
 class CoilHeatingFuel_v9_3(_g.AnyCoilHeatingFuel):
     """``Coil:Heating:Fuel`` as declared in EnergyPlus 9.3.0. Gas or other fuel heating coil. If the coil is located directly in an air loop branch or outdoor air equipment list, ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: (
         Literal["Diesel", "FuelOilNo1", "FuelOilNo2", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"]
         | None
@@ -16909,6 +17607,9 @@ class _CoilHeatingFuel_v9_3Fields(_g._CoilHeatingFuelCommonFields, total=False):
 
 class CoilHeatingFuel_v9_4_to_v23_1(_g.AnyCoilHeatingFuel):
     """``Coil:Heating:Fuel`` as declared in EnergyPlus 9.4.0 to 23.1.0. Gas or other fuel heating coil. If the coil is located directly in an air loop branch or outdoor air equipment list, ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fuel_type: (
         Literal[
@@ -16956,6 +17657,9 @@ class _CoilHeatingFuel_v9_4_to_v23_1Fields(_g._CoilHeatingFuelCommonFields, tota
 class ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5(_g.AnyZoneBaseboardOutdoorTemperatureControlled):
     """``ZoneBaseboard:OutdoorTemperatureControlled`` as declared in EnergyPlus 8.9.0 to 9.5.0. Specifies outside temperature-controlled electric baseboard heating."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_name: str
     capacity_at_low_temperature: float | None
     """[W]; Range: >= 0.0, > True"""
@@ -16986,6 +17690,9 @@ class _ZoneBaseboardOutdoorTemperatureControlled_v8_9_to_v9_5Fields(
 class ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1(_g.AnyZoneBaseboardOutdoorTemperatureControlled):
     """``ZoneBaseboard:OutdoorTemperatureControlled`` as declared in EnergyPlus 9.6.0 to 26.1.0. Specifies outside temperature-controlled electric baseboard heating. If a ZoneList, SpaceList, or a Zone comprised of..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_or_space_or_spacelist_name: str
     capacity_at_low_temperature: float | None
     """[W]; Range: > 0.0"""
@@ -17015,6 +17722,9 @@ class _ZoneBaseboardOutdoorTemperatureControlled_v9_6_to_v26_1Fields(
 
 class ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3(_g.AnyZoneHVACLowTemperatureRadiantElectric):
     """``ZoneHVAC:LowTemperatureRadiant:Electric`` as declared in EnergyPlus 8.9.0 to 9.3.0. Electric resistance low temperature radiant system"""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     temperature_control_type: (
         Literal[
@@ -17052,6 +17762,9 @@ class _ZoneHVACLowTemperatureRadiantElectric_v8_9_to_v9_3Fields(
 
 class ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3(_g.AnyZoneHVACLowTemperatureRadiantConstantFlow):
     """``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` as declared in EnergyPlus 8.9.0 to 9.3.0. Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     hydronic_tubing_inside_diameter: float | None
     """[m]; Default: 0.013; Range: >= 0.0, > True"""
@@ -17104,6 +17817,9 @@ class _ZoneHVACLowTemperatureRadiantConstantFlow_v8_9_to_v9_3Fields(
 
 class ZoneHVACLowTemperatureRadiantConstantFlow_v9_4(_g.AnyZoneHVACLowTemperatureRadiantConstantFlow):
     """``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` as declared in EnergyPlus 9.4.0. Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     fluid_to_radiant_surface_heat_transfer_model: Literal["ConvectionOnly", "ISOStandard"] | None
     """This parameter identifies how the heat transfer between fluid being circulated through the radiant system and the rad...; Default: ConvectionOnly"""
@@ -17178,6 +17894,9 @@ class _ZoneHVACLowTemperatureRadiantConstantFlow_v9_4Fields(
 class MeterCustom_v8_9_to_v9_2(_g.AnyMeterCustom):
     """``Meter:Custom`` as declared in EnergyPlus 8.9.0 to 9.2.0. Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: (
         Literal[
             "Coal",
@@ -17223,6 +17942,9 @@ class _MeterCustom_v8_9_to_v9_2Fields(_g._MeterCustomCommonFields, total=False):
 class MeterCustom_v9_3(_g.AnyMeterCustom):
     """``Meter:Custom`` as declared in EnergyPlus 9.3.0. Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     fuel_type: (
         Literal[
             "Coal",
@@ -17265,6 +17987,9 @@ class _MeterCustom_v9_3Fields(_g._MeterCustomCommonFields, total=False):
 
 class MeterCustom_v9_4_to_v23_1(_g.AnyMeterCustom):
     """``Meter:Custom`` as declared in EnergyPlus 9.4.0 to 23.1.0. Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     resource_type: (
         Literal[
@@ -17360,6 +18085,8 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation_v8_9_to_v23_1(
 ):
     """``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` as declared in EnergyPlus 8.9.0 to 23.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -17376,6 +18103,9 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1(
     _g.AnyCoilHeatingWaterToAirHeatPumpParameterEstimation
 ):
     """``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     part_load_fraction_correlation_curve_name: str
     """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (heating l..."""
@@ -17396,6 +18126,9 @@ class _CoilHeatingWaterToAirHeatPumpParameterEstimation_v23_2_to_v25_1Fields(
 class CurveDoubleExponentialDecay_v8_9_to_v9_3(_g.AnyCurveDoubleExponentialDecay):
     """``Curve:DoubleExponentialDecay`` as declared in EnergyPlus 8.9.0 to 9.3.0. Double exponential decay curve with one independent variable. Input consists of the curve name, the five coefficients..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     coefficient3_c4: float
     coefficient3_c5: float
 
@@ -17415,6 +18148,9 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v8_9_to_v22_1(
     _g.AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit
 ):
     """``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_speeds: float | None
     """[dimensionless]; Default: 2.0; Range: >= 1.0, <= 10.0"""
@@ -17440,6 +18176,9 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v22_2_to_v23_1(
 ):
     """``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` as declared in EnergyPlus 22.2.0 to 23.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     number_of_speeds: int | None
     """[dimensionless]; Default: 2; Range: >= 1, <= 10"""
     nominal_speed_level: int | None
@@ -17463,6 +18202,9 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_v23_2_to_v25_1(
     _g.AnyCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit
 ):
     """``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` as declared in EnergyPlus 23.2.0 to 25.1.0. Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     number_of_speeds: int | None
     """[dimensionless]; Default: 2; Range: >= 1, <= 10"""
@@ -17671,6 +18413,9 @@ class _SurfaceConvectionAlgorithmInside_v8_9_to_v9_4Fields(
 class WindowShadingControl_v9_0_to_v9_1(_g.AnyWindowShadingControl):
     """``WindowShadingControl`` as declared in EnergyPlus 9.0.1 to 9.1.0. Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     shading_control_sequence_number: float | None
     """If multiple WindowShadingControl objects are used than the order that they deploy the window shades can be set with t...; Default: 1.0; Range: >= 1.0"""
     construction_with_shading_name_: str | None
@@ -17737,6 +18482,9 @@ class _WindowShadingControl_v9_0_to_v9_1Fields(_g._WindowShadingControlCommonFie
 
 class WindowShadingControl_v9_2_to_v22_1(_g.AnyWindowShadingControl):
     """``WindowShadingControl`` as declared in EnergyPlus 9.2.0 to 22.1.0. Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     shading_control_sequence_number: float | None
     """If multiple WindowShadingControl objects are used than the order that they deploy the window shades can be set with t...; Default: 1.0; Range: >= 1.0"""
@@ -17897,6 +18645,8 @@ class _HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2Fields(TypedDict, total=False)
 class OutputJSON_v9_1_to_v25_1(_g.AnyOutputJSON):
     """``Output:JSON`` as declared in EnergyPlus 9.1.0 to 25.1.0. Output from EnergyPlus can be written to JSON format files."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputJSON_v9_1_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -17906,6 +18656,9 @@ class _OutputJSON_v9_1_to_v25_1Fields(_g._OutputJSONCommonFields, total=False): 
 
 class ConstructionAirBoundary_v9_2_to_v9_4(_g.AnyConstructionAirBoundary):
     """``Construction:AirBoundary`` as declared in EnergyPlus 9.2.0 to 9.4.0. Indicates an open boundary between two zones. It may be used for base surfaces and fenestration surfaces. When this c..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     solar_and_daylighting_method: Literal["GroupedZones", "InteriorWindow"] | None
     """This field controls how the surface is modeled for solar distribution and daylighting calculations.; Default: GroupedZones"""
@@ -17924,6 +18677,8 @@ class _ConstructionAirBoundary_v9_2_to_v9_4Fields(_g._ConstructionAirBoundaryCom
 class PerformancePrecisionTradeoffs_v9_2(_g.AnyPerformancePrecisionTradeoffs):
     """``PerformancePrecisionTradeoffs`` as declared in EnergyPlus 9.2.0. This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PerformancePrecisionTradeoffs_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
@@ -17933,6 +18688,9 @@ class _PerformancePrecisionTradeoffs_v9_2Fields(_g._PerformancePrecisionTradeoff
 
 class PerformancePrecisionTradeoffs_v9_3(_g.AnyPerformancePrecisionTradeoffs):
     """``PerformancePrecisionTradeoffs`` as declared in EnergyPlus 9.3.0. This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None
     """Determines which algorithm will be used to solve long wave radiant exchange among surfaces within a zone.; Default: ScriptF"""
@@ -17953,6 +18711,9 @@ class _PerformancePrecisionTradeoffs_v9_3Fields(_g._PerformancePrecisionTradeoff
 
 class PerformancePrecisionTradeoffs_v9_4_to_v9_5(_g.AnyPerformancePrecisionTradeoffs):
     """``PerformancePrecisionTradeoffs`` as declared in EnergyPlus 9.4.0 to 9.5.0. This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_radiant_exchange_algorithm: Literal["CarrollMRT", "ScriptF"] | None
     """Determines which algorithm will be used to solve long wave radiant exchange among surfaces within a zone.; Default: ScriptF"""
@@ -18037,6 +18798,8 @@ class _TableLookup_v9_2_to_v22_1Fields(_g._TableLookupCommonFields, total=False)
 class CoilCoolingDXCurveFitPerformance_v9_3_to_v23_1(_g.AnyCoilCoolingDXCurveFitPerformance):
     """``Coil:Cooling:DX:CurveFit:Performance`` as declared in EnergyPlus 9.3.0 to 23.1.0. DX cooling coil performance specification referencing one or more operating modes. Mode 1 is always the base design o..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -18051,6 +18814,9 @@ class _CoilCoolingDXCurveFitPerformance_v9_3_to_v23_1Fields(
 
 class CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1(_g.AnyCoilCoolingDXCurveFitOperatingMode):
     """``Coil:Cooling:DX:CurveFit:OperatingMode`` as declared in EnergyPlus 9.3.0 to 22.1.0. DX cooling coil performance for a single operating mode which may have one or more speeds."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     nominal_speed_number: float | None
     """Must be lower than or equal to the highest speed number. If blank, defaults to the highest speed number used."""
@@ -18071,6 +18837,9 @@ class _CoilCoolingDXCurveFitOperatingMode_v9_3_to_v22_1Fields(
 class CoilCoolingDXCurveFitOperatingMode_v22_2_to_v26_1(_g.AnyCoilCoolingDXCurveFitOperatingMode):
     """``Coil:Cooling:DX:CurveFit:OperatingMode`` as declared in EnergyPlus 22.2.0 to 26.1.0. DX cooling coil performance for a single operating mode which may have one or more speeds."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     nominal_speed_number: int | None
     """Must be lower than or equal to the highest speed number. If blank, defaults to the highest speed number used."""
 
@@ -18090,6 +18859,9 @@ class _CoilCoolingDXCurveFitOperatingMode_v22_2_to_v26_1Fields(
 class CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1(_g.AnyCoilCoolingDXCurveFitSpeed):
     """``Coil:Cooling:DX:CurveFit:Speed`` as declared in EnergyPlus 9.3.0 to 22.1.0. DX cooling coil performance for a single speed within a single operating mode."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     rated_evaporator_fan_power_per_volume_flow_rate: float | None
     """Enter the evaporator fan power per air volume flow rate at the rated test conditions. The test conditions vary extern...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0"""
 
@@ -18107,6 +18879,8 @@ class _CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1Fields(_g._CoilCoolingDXCurveFitS
 class HeatPumpPlantLoopEIRCooling_v9_3_to_v23_1(_g.AnyHeatPumpPlantLoopEIRCooling):
     """``HeatPump:PlantLoop:EIR:Cooling`` as declared in EnergyPlus 9.3.0 to 23.1.0. An EIR formulated water to water heat pump model, cooling operation."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -18119,6 +18893,9 @@ class _HeatPumpPlantLoopEIRCooling_v9_3_to_v23_1Fields(_g._HeatPumpPlantLoopEIRC
 
 class HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1(_g.AnyHeatPumpPlantLoopEIRCooling):
     """``HeatPump:PlantLoop:EIR:Cooling`` as declared in EnergyPlus 23.2.0 to 24.1.0. An EIR formulated water to water heat pump model, cooling operation."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     control_type: Literal["Load", "Setpoint"] | None
     """Heat pump can be controlled on leaving water temperature set point or plant load; Default: Load"""
@@ -18155,6 +18932,8 @@ class _HeatPumpPlantLoopEIRCooling_v23_2_to_v24_1Fields(_g._HeatPumpPlantLoopEIR
 class HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1(_g.AnyHeatPumpPlantLoopEIRHeating):
     """``HeatPump:PlantLoop:EIR:Heating`` as declared in EnergyPlus 9.3.0 to 23.1.0. An EIR formulated water to water heat pump model, heating operation"""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -18167,6 +18946,9 @@ class _HeatPumpPlantLoopEIRHeating_v9_3_to_v23_1Fields(_g._HeatPumpPlantLoopEIRH
 
 class HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1(_g.AnyHeatPumpPlantLoopEIRHeating):
     """``HeatPump:PlantLoop:EIR:Heating`` as declared in EnergyPlus 23.2.0 to 24.1.0. An EIR formulated water to water heat pump model, heating operation"""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     heating_to_cooling_capacity_sizing_ratio: float | None
     """Multiplies the autosized heating capacity; Default: 1.0; Range: >= 0.0"""
@@ -18232,6 +19014,9 @@ class _HeatPumpPlantLoopEIRHeating_v23_2_to_v24_1Fields(_g._HeatPumpPlantLoopEIR
 class PythonPluginSearchPaths_v9_3(_g.AnyPythonPluginSearchPaths):
     """``PythonPlugin:SearchPaths`` as declared in EnergyPlus 9.3.0. Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     search_path_1: str | None
     search_path_2: str | None
     search_path_3: str | None
@@ -18264,6 +19049,9 @@ class PythonPluginSearchPathsPySearchPathsItem_v9_4_to_v9_6(TypedDict, total=Fal
 class PythonPluginSearchPaths_v9_4_to_v9_6(_g.AnyPythonPluginSearchPaths):
     """``PythonPlugin:SearchPaths`` as declared in EnergyPlus 9.4.0 to 9.6.0. Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     py_search_paths: ExtensibleList[PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6]
 
     def update(
@@ -18278,6 +19066,9 @@ class _PythonPluginSearchPaths_v9_4_to_v9_6Fields(_g._PythonPluginSearchPathsCom
 
 class PythonPluginVariables_v9_3(_g.AnyPythonPluginVariables):
     """``PythonPlugin:Variables`` as declared in EnergyPlus 9.3.0. This object defines name identifiers for custom Python Plugin variable data that should be shared among all running P..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     variable_name_1: str | None
     """This variable is used to identify and create a shared variable in EnergyPlus. This variable can then be used by all r..."""
@@ -18457,6 +19248,9 @@ class _PythonPluginOutputVariable_v9_4_to_v23_1Fields(_g._PythonPluginOutputVari
 class ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5(_g.AnyZonePropertyUserViewFactorsBySurfaceName):
     """``ZoneProperty:UserViewFactors:BySurfaceName`` as declared in EnergyPlus 9.4.0 to 9.5.0. View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_name: str | None
     """View factors may be entered for a single zone or for a group of zones connected by Construction:AirBoundary"""
 
@@ -18476,6 +19270,8 @@ class _ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5Fields(
 class OutputControlFiles_v9_4_to_v24_1(_g.AnyOutputControlFiles):
     """``OutputControl:Files`` as declared in EnergyPlus 9.4.0 to 24.1.0. Conditionally turn on/off output from EnergyPlus."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlFiles_v9_4_to_v24_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -18485,6 +19281,9 @@ class _OutputControlFiles_v9_4_to_v24_1Fields(_g._OutputControlFilesCommonFields
 
 class OutputControlFiles_v24_2_to_v25_1(_g.AnyOutputControlFiles):
     """``OutputControl:Files`` as declared in EnergyPlus 24.2.0 to 25.1.0. Conditionally turn on/off output from EnergyPlus."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     output_space_sizing: Literal["No", "Yes"] | None
     """Default: Yes"""
@@ -18547,6 +19346,8 @@ class _ElectricLoadCenterStorageLiIonNMCBattery_v9_5_to_v22_1Fields(
 class Space_v9_6_to_v22_1(_g.AnySpace):
     """``Space`` as declared in EnergyPlus 9.6.0 to 22.1.0. Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space ..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Space_v9_6_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
@@ -18556,6 +19357,9 @@ class _Space_v9_6_to_v22_1Fields(_g._SpaceCommonFields, total=False): ...
 
 class Space_v22_2_to_v26_1(_g.AnySpace):
     """``Space`` as declared in EnergyPlus 22.2.0 to 26.1.0. Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space ..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     ceiling_height: float | Literal["Autocalculate"] | None
     """If this field is 0.0, negative or autocalculate, then the average height of the space is automatically calculated and...; [m]; Default: Autocalculate"""
@@ -18573,6 +19377,9 @@ class _Space_v22_2_to_v26_1Fields(_g._SpaceCommonFields, total=False):
 
 class OutputTableReportPeriod_v22_2_to_v25_1(_g.AnyOutputTableReportPeriod):
     """``Output:Table:ReportPeriod`` as declared in EnergyPlus 22.2.0 to 25.1.0. This object allows the user to generate the resilience tabular reports over a subset of a run period. When it is defi..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     name_: str
     """descriptive name cannot be blank and must be unique"""
@@ -18606,6 +19413,8 @@ class _OutputTableReportPeriod_v22_2_to_v25_1Fields(_g._OutputTableReportPeriodC
 class MaterialPropertyVariableAbsorptance_v23_1_to_v26_1(_g.AnyMaterialPropertyVariableAbsorptance):
     """``MaterialProperty:VariableAbsorptance`` as declared in EnergyPlus 23.1.0 to 26.1.0."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -18621,6 +19430,8 @@ class _MaterialPropertyVariableAbsorptance_v23_1_to_v26_1Fields(
 class HeatPumpAirToWaterFuelFiredHeating_v23_1_to_v25_1(_g.AnyHeatPumpAirToWaterFuelFiredHeating):
     """``HeatPump:AirToWater:FuelFired:Heating`` as declared in EnergyPlus 23.1.0 to 25.1.0. The object defines a fuel-fired absorption heat pump based on equation-fit models."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -18636,6 +19447,8 @@ class _HeatPumpAirToWaterFuelFiredHeating_v23_1_to_v25_1Fields(
 class HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1(_g.AnyHeatPumpAirToWaterFuelFiredCooling):
     """``HeatPump:AirToWater:FuelFired:Cooling`` as declared in EnergyPlus 23.1.0 to 25.1.0. The object defines a fuel-fired absorption heat pump based on equation-fit models."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
@@ -18650,6 +19463,9 @@ class _HeatPumpAirToWaterFuelFiredCooling_v23_1_to_v25_1Fields(
 
 class IndoorLivingWall_v24_1(_g.AnyIndoorLivingWall):
     """``IndoorLivingWall`` as declared in EnergyPlus 24.1.0. Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrate..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     led_intensity_schedule_name_: str | None
     led_nominal_intensity_: float | None
@@ -18676,6 +19492,9 @@ class _IndoorLivingWall_v24_1Fields(_g._IndoorLivingWallCommonFields, total=Fals
 
 class BuildingSurfaceDetailed_v25_1_to_v26_1(_g.AnyBuildingSurfaceDetailed):
     """``BuildingSurface:Detailed`` as declared in EnergyPlus 25.1.0 to 26.1.0. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     space_name: str | None
     """Space the surface is a part of (optional, see description of Space object for more details)."""
@@ -18849,6 +19668,9 @@ class _EnergyManagementSystemProgram_v8_9Fields(_g._EnergyManagementSystemProgra
 class InternalMass_v9_6_to_v24_1(_g.AnyInternalMass):
     """``InternalMass`` as declared in EnergyPlus 9.6.0 to 24.1.0. Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
 
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
+
     zone_or_zonelist_name: str | None
     """Zone the surface is a part of. used to be Interior Environment"""
     space_or_spacelist_name: str | None
@@ -18865,6 +19687,9 @@ class _InternalMass_v9_6_to_v24_1Fields(_g._InternalMassCommonFields, total=Fals
 
 class InternalMass_v24_2_to_v26_1(_g.AnyInternalMass):
     """``InternalMass`` as declared in EnergyPlus 24.2.0 to 26.1.0. Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
+
+    def __getattr__(self, key: _g._NotAFieldOfThisObjectType) -> object: ...
+    def __setattr__(self, key: _g._NotAFieldOfThisObjectType, value: _g._NotAFieldOfThisObjectType) -> None: ...
 
     zone_or_zonelist_name: str | None
     """Zone(s) the surface is a part of. This field is ignored when a Space or SpaceList Name is specified."""

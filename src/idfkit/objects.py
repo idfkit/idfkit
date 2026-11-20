@@ -1116,17 +1116,36 @@ class IDFObject(EppyObjectMixin):
         Raises:
             InvalidFieldError: If *value* is not empty and the object's type has no Name field
                 (``Output:Meter``, ``Timestep``, ...): the name would be dropped on write.
+            ValidationFailedError: If, in a strict document, *value* is blank and the object's
+                type requires a name, as ``add()`` refuses it.
         """
         old = self._name
         if old == value:
             return
         refuse_name_for_nameless_type(self._type, value, self._schema)
+        self._refuse_blank_name(value)
         object.__setattr__(self, "_name", value)
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)
         doc = self._document
         if doc is not None:
             doc.notify_name_change(self, old, value)
+
+    def _refuse_blank_name(self, value: str) -> None:
+        """Raise :class:`ValidationFailedError` if a strict document's schema requires a name and *value* is blank."""
+        if value.strip():
+            return
+        doc = self._document
+        if doc is None or not doc.strict:
+            return
+        schema = doc.schema
+        if schema is None:
+            return
+        from .validation import name_error
+
+        error = name_error(self, value, schema)
+        if error is not None:
+            raise ValidationFailedError([error])
 
     def _bump_version(self) -> None:
         """Mark the object as mutated.

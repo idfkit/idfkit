@@ -603,6 +603,32 @@ def field_value_error(obj: IDFObject, field_name: str, value: Any, schema: EpJSO
     return rule.first_error(obj, field_name, value)
 
 
+def name_error(obj: IDFObject, value: str, schema: EpJSONSchema) -> ValidationError | None:
+    """The finding renaming *obj* to *value* would raise, or None when the schema accepts the name.
+
+    A blank or whitespace name on a type whose schema requires one is refused, as ``add()`` refuses it.
+    """
+    if value.strip():
+        return None
+    rules = _object_rules(schema, obj.obj_type)
+    if rules is None or not rules.name_required:
+        return None
+    return _missing_name_error(obj)
+
+
+def _missing_name_error(obj: IDFObject) -> ValidationError:
+    """E001 on the name of *obj*, whose type requires one."""
+    return ValidationError(
+        severity=Severity.ERROR,
+        obj_type=obj.obj_type,
+        obj_name=obj.name,
+        obj=obj,
+        field="name",
+        message="Required field 'name' is missing",
+        code="E001",
+    )
+
+
 def _validate_object(  # noqa: C901
     obj: IDFObject,
     schema: EpJSONSchema,
@@ -636,6 +662,10 @@ def _validate_object(  # noqa: C901
 
     # Check required fields
     if check_required:
+        # The name sits outside `data`, so the loop below never sees it. A blank name on a type
+        # whose schema requires one is written as a bare `Zone,`, which EnergyPlus refuses.
+        if rules.name_required and not obj.name.strip():
+            errors.append(_missing_name_error(obj))
         for field_name in rules.required:
             value = data.get(field_name)
             if value is None or value == "":
@@ -1297,12 +1327,14 @@ class _ObjectRules:
         group_required: The extensible wrapper key and the keys the schema marks required, with no
             default, in each of its groups, or None when the type has no group or its groups require
             nothing.
+        name_required: Whether the schema marks the type's Name ``is_required``.
     """
 
     fields: dict[str, _FieldRule]
     required: set[str]
     contributing: tuple[str, ...]
     group_required: tuple[str, tuple[str, ...]] | None = None
+    name_required: bool = False
 
 
 # Compiled object-type rules, keyed by schema version then object type.
@@ -1333,9 +1365,17 @@ def _object_rules(schema: EpJSONSchema, obj_type: str) -> _ObjectRules | None:
         required=set(inner_schema.get("required", [])),
         contributing=tuple(name for name, spec in properties.items() if spec and spec.get("reference")),
         group_required=_group_required(schema, obj_type, properties),
+        name_required=_name_required(schema, obj_type),
     )
     by_type[obj_type] = rules
     return rules
+
+
+def _name_required(schema: EpJSONSchema, obj_type: str) -> bool:
+    """Whether *obj_type*'s schema marks its Name ``is_required``; False for a type without a Name field."""
+    outer: dict[str, Any] = schema.get_object_schema(obj_type) or {}
+    name_spec: dict[str, Any] = outer.get("name") or {}
+    return bool(name_spec.get("is_required"))
 
 
 def _group_required(

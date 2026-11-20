@@ -70,7 +70,7 @@ For tight inner loops or interactive workflows, `validate_object` skips referenc
 
 Common codes (see `ValidationError.code`):
 
-- `E001` — required field missing or blank
+- `E001` — required field missing or blank, including a blank name on a type whose schema requires one (`field == "name"`)
 - `E002` — value matches none of a field's permitted types
 - `E003` — type mismatch on a single-typed field
 - `E004` — value not among a field's permitted values

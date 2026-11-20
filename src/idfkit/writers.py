@@ -123,6 +123,45 @@ def _check_document(doc: object, func: str) -> None:
     raise TypeError(msg)
 
 
+_OUTPUT_TYPES: Final = ("standard", "nocomment", "compressed")
+
+
+def _check_output_type(output_type: object, func: str, save_func: str) -> None:
+    """Refuse an output type that is not one of the three forms.
+
+    ``write_idf(doc, "out.idf")``, the 0.x way to write a file, lands the path in this argument. Left
+    unchecked it was taken as the standard form: the call returned text, wrote no file and said nothing.
+    """
+    if isinstance(output_type, str) and output_type in _OUTPUT_TYPES:
+        return
+    if isinstance(output_type, (str, PathLike)):
+        text = f"{output_type}"
+        msg = (
+            f"{func}() got output_type={text!r}, which is not one of {', '.join(map(repr, _OUTPUT_TYPES))}."
+            f" If that is a path: {func}() returns text and writes no file; use {save_func}(doc, {text!r})"
+        )
+        raise (TypeError(msg) if isinstance(output_type, PathLike) else ValueError(msg))
+    msg = f"{func}() output_type must be one of {', '.join(map(repr, _OUTPUT_TYPES))}, got {output_type!r}"
+    raise TypeError(msg)
+
+
+def _check_indent(indent: object, func: str, save_func: str) -> None:
+    """Refuse an indent ``json.dumps`` would not take, as a path given to ``write_epjson(doc, path)`` lands there.
+
+    An int, ``None`` (compact output) and a whitespace string such as ``"\\t"`` are indents. A path, or a string
+    with anything but whitespace in it, is not.
+    """
+    if indent is None or (isinstance(indent, int) and not isinstance(indent, bool)):
+        return
+    if isinstance(indent, str) and not indent.strip():
+        return
+    msg = f"{func}() indent must be an int, None or a whitespace string, got {type(indent).__name__} {indent!r}"
+    if func != save_func and isinstance(indent, (str, PathLike)):
+        text = f"{indent}"
+        msg += f"; {func}() returns text and writes no file, to write a file use {save_func}(doc, {text!r})"
+    raise TypeError(msg)
+
+
 def _check_save_path(path: Path, func: str, wrong_suffixes: frozenset[str], other_func: str) -> None:
     """Refuse a path whose suffix names the other format: EnergyPlus picks its reader by the suffix."""
     if path.suffix.lower() in wrong_suffixes:
@@ -196,6 +235,9 @@ def write_idf(
         The IDF text.
 
     Raises:
+        TypeError: If *doc* is not a document, or *output_type* is a path object.
+        ValueError: If *output_type* is not one of the three forms, as when a path is
+            passed where [save_idf][idfkit.writers.save_idf] takes one.
         ValueError: If *preserve_formatting* is explicitly ``True`` on a
             document that carries a CST while *indent*, *comment_column*,
             *ordering* or *version_first* is away from its default.
@@ -219,6 +261,8 @@ def write_idf(
         >>> "\\n" not in compressed.split("Zone")[1].split(";")[0]
         True
     """
+    _check_document(doc, "write_idf")
+    _check_output_type(output_type, "write_idf", "save_idf")
     # An explicitly requested output FORM wins over preservation, including over an explicit
     # `preserve_formatting=True`. A form is a different artifact, which the original text was never
     # going to express, so producing it is honest; granting preservation instead drops the request
@@ -330,6 +374,7 @@ def save_idf(
             ```
     """
     _check_document(doc, "save_idf")
+    _check_output_type(output_type, "save_idf", "save_idf")
     path = Path(path)
     _check_save_path(path, "save_idf", _EPJSON_SUFFIXES, "save_epjson")
     content = write_idf(
@@ -348,7 +393,7 @@ def save_idf(
 
 def write_epjson(
     doc: AnyIDFDocument[bool],
-    indent: int = 2,
+    indent: int | str | None = 2,
     *,
     preserve_formatting: bool | None = None,
 ) -> str:
@@ -360,7 +405,8 @@ def write_epjson(
 
     Args:
         doc: The document to serialize.
-        indent: JSON indentation.
+        indent: JSON indentation, as ``json.dumps`` takes it: a number of spaces, a
+            whitespace string such as ``"\\t"``, or ``None`` for compact output.
         preserve_formatting: If ``True``, return the original JSON text
             verbatim when no objects have been modified. When ``None``
             (the default), automatically uses lossless output if raw text
@@ -368,6 +414,10 @@ def write_epjson(
 
     Returns:
         The epJSON text.
+
+    Raises:
+        TypeError: If *doc* is not a document, or *indent* is not an indent, as when
+            a path is passed where [save_epjson][idfkit.writers.save_epjson] takes one.
 
     Examples:
         Serialize the model to epJSON for use with EnergyPlus v9.3+:
@@ -380,6 +430,8 @@ def write_epjson(
         >>> '"Zone"' in json_str
         True
     """
+    _check_document(doc, "write_epjson")
+    _check_indent(indent, "write_epjson", "save_epjson")
     # Note: epJSON preservation is all-or-nothing (any mutation or addition
     # falls back to the standard JSON writer), unlike IDF which has per-object
     # granularity via CST nodes.
@@ -413,7 +465,7 @@ def write_epjson(
 def save_epjson(
     doc: AnyIDFDocument[bool],
     path: Path | str,
-    indent: int = 2,
+    indent: int | str | None = 2,
     *,
     preserve_formatting: bool | None = None,
 ) -> None:
@@ -426,12 +478,13 @@ def save_epjson(
     Args:
         doc: The document to save.
         path: Output path.
-        indent: JSON indentation.
+        indent: JSON indentation, as for [write_epjson][idfkit.writers.write_epjson].
         preserve_formatting: Lossless output control, as for
             [write_epjson][idfkit.writers.write_epjson].
 
     Raises:
-        TypeError: If *doc* is not a document, as when the arguments are swapped.
+        TypeError: If *doc* is not a document, as when the arguments are swapped, or
+            *indent* is not an indent.
         ValueError: If *path* ends in ``.idf`` or ``.imf``, which EnergyPlus reads as IDF:
             use [save_idf][idfkit.writers.save_idf] for those.
 
@@ -443,6 +496,7 @@ def save_epjson(
             ```
     """
     _check_document(doc, "save_epjson")
+    _check_indent(indent, "save_epjson", "save_epjson")
     path = Path(path)
     _check_save_path(path, "save_epjson", _IDF_SUFFIXES, "save_idf")
     content = write_epjson(doc, indent, preserve_formatting=preserve_formatting)

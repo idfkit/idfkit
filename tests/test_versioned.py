@@ -615,7 +615,7 @@ class TestCommittedStubs:
             # A writable field that some version lacks (People before 9.6): reported, not a KeyError.
             (
                 0,
-                r'(?m)^(class AnyPeople\(_TypedIDFObject\):\n    """[^\n]*"""\n)',
+                r'(?m)^(class AnyPeople\(_TypedAnyReleaseIDFObject\):\n    """[^\n]*"""\n)',
                 r"\1    @property\n"
                 r"    def zone_or_zonelist_or_space_or_spacelist_name(self) -> str | None: ...\n"
                 r"    @zone_or_zonelist_or_space_or_spacelist_name.setter\n"
@@ -626,7 +626,7 @@ class TestCommittedStubs:
             # A field every release requires, read as optional: the type would promise less than the run time.
             (
                 0,
-                r"(class AnyMaterial\(_TypedIDFObject\):\n(?:.*\n)*?    thickness: )float\n",
+                r"(class AnyMaterial\(_TypedAnyReleaseIDFObject\):\n(?:.*\n)*?    thickness: )float\n",
                 r"\1float | None\n",
                 "mistyped ['thickness']",
                 (LATEST_VERSION,),
