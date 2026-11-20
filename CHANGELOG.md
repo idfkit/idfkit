@@ -81,9 +81,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with no (or only blank) entries, which IDF cannot write ([#279](https://github.com/idfkit/idfkit/pull/279)).
 - The typed `doc.zones.add(...)` / `doc["Zone"].add(...)` took `validate=False`, as `doc.add()` does,
   to skip validation while type-checking the fields ([#304](https://github.com/idfkit/idfkit/pull/304)).
+- `TabularRow.as_float()` and `SQLResult.get_tabular_float()` read a tabular cell as a number, raising
+  `ValueError` naming the cell for non-numeric text.
+  ([#347](https://github.com/idfkit/idfkit/pull/347))
 
 ### Changed
 
+- `TabularRow.value` (from `get_tabular_data()`) and `get_tabular_value()` returned the cell text without
+  the whitespace EnergyPlus pads it with, and `""` instead of `None` for a NULL cell.
+  ([#347](https://github.com/idfkit/idfkit/pull/347))
 - **Breaking:** `add()` and, in a strict document, renaming refused a blank name on a type whose schema
   requires one (`ValidationFailedError`), and `validate_document` reported it; give the object its name
   when adding it. eppy's `newidfobject(type)` still creates the object nameless.

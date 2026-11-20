@@ -62,6 +62,8 @@ Every lookup failure raises `ResultLookupError`, a `KeyError` subclass whose mes
 --8<-- "agent_references/snippets/result-parsing.py:tabular"
 ```
 
+Cell values are typed `str`, with the whitespace EnergyPlus pads them with stripped. For a number use `TabularRow.as_float()` or `get_tabular_float(...)` (same arguments as `get_tabular_value`), not `float(...)` by hand: both raise `ValueError` naming the cell and quoting its text when the cell is not numeric (a date, a zone name, or empty), and `get_tabular_float` raises `ResultLookupError` for a lookup that matches no row or several, as `get_tabular_value` does.
+
 `get_tabular_data` returns `list[TabularRow]`; there is no direct tabular-to-DataFrame helper. If you need a DataFrame, build one yourself: `pd.DataFrame([dataclasses.asdict(r) for r in rows])`. `SQLResult.to_dataframe` is for time-series variables only (see above).
 
 To enumerate what's available:

@@ -364,6 +364,7 @@ class ResultLookupError(IdfKitError, KeyError):
 
     Raised by [SQLResult.get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries],
     [SQLResult.get_tabular_value][idfkit.simulation.parsers.sql.SQLResult.get_tabular_value],
+    [SQLResult.get_tabular_float][idfkit.simulation.parsers.sql.SQLResult.get_tabular_float],
     [ESOResult.get_column][idfkit.simulation.parsers.eso.ESOResult.get_column] and
     [CSVResult.get_column][idfkit.simulation.parsers.csv.CSVResult.get_column].
     Inherits from ``KeyError`` so code catching ``KeyError`` keeps working; unlike a plain

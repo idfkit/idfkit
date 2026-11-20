@@ -169,7 +169,7 @@ def sql_db(tmp_path: Path) -> Path:
     cur.execute(
         "INSERT INTO TabularDataWithStrings VALUES "
         "(1, 'AnnualBuildingUtilityPerformanceSummary', 'Entire Facility', "
-        "'End Uses', 'Heating', 'Electricity', 'GJ', '12.50')"
+        "'End Uses', 'Heating', 'Electricity', 'GJ', '               12.50')"
     )
     cur.execute(
         "INSERT INTO TabularDataWithStrings VALUES "
@@ -752,6 +752,81 @@ class TestSQLResultGetTabularValue:
                 row_name="Row",
                 column_name="Col",
             )
+
+
+def _tabular_db(tmp_path: Path, cells: list[tuple[str, str, str | None]]) -> Path:
+    """Write a database whose only table holds *cells* (row, column, value) of report 'R', table 'T'."""
+    db_path = tmp_path / "tabular.sql"
+    conn = sqlite3.connect(str(db_path))
+    cur = conn.cursor()
+    cur.execute(
+        "CREATE TABLE TabularDataWithStrings ("
+        "  TabularDataIndex INTEGER PRIMARY KEY,"
+        "  ReportName TEXT, ReportForString TEXT,"
+        "  TableName TEXT, RowName TEXT, ColumnName TEXT,"
+        "  Units TEXT, Value TEXT)"
+    )
+    for index, (row, column, value) in enumerate(cells, start=1):
+        cur.execute(
+            "INSERT INTO TabularDataWithStrings VALUES (?, 'R', 'Entire Facility', 'T', ?, ?, '', ?)",
+            (index, row, column, value),
+        )
+    conn.commit()
+    conn.close()
+    return db_path
+
+
+class TestTabularNumbers:
+    """Cell text is stripped of EnergyPlus's padding, and as_float()/get_tabular_float() parse it."""
+
+    def test_value_is_stripped(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            rows = sql.get_tabular_data(row_name="Heating")
+            val = sql.get_tabular_value("AnnualBuildingUtilityPerformanceSummary", "End Uses", "Heating", "Electricity")
+        assert rows[0].value == "12.50"
+        assert val == "12.50"
+
+    def test_get_tabular_float(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            val = sql.get_tabular_float(
+                report_name="AnnualBuildingUtilityPerformanceSummary",
+                table_name="End Uses",
+                row_name="Heating",
+                column_name="Electricity",
+            )
+        assert val == 12.5
+        assert isinstance(val, float)
+
+    def test_as_float(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            rows = sql.get_tabular_data(table_name="End Uses")
+        assert sorted(r.as_float() for r in rows) == [8.3, 12.5]
+
+    def test_text_cell_raises_naming_the_cell(self, tmp_path: Path) -> None:
+        db = _tabular_db(tmp_path, [("Time of Peak", "Electricity", "  01-JAN-08:00  ")])
+        with SQLResult(db) as sql, pytest.raises(ValueError, match="not numeric") as exc_info:
+            sql.get_tabular_float("R", "T", "Time of Peak", "Electricity")
+        assert str(exc_info.value) == (
+            "Tabular cell is not numeric: report='R', report_for='Entire Facility', table='T', "
+            "row='Time of Peak', column='Electricity' holds '01-JAN-08:00'"
+        )
+        assert not isinstance(exc_info.value, KeyError)
+
+    def test_empty_and_null_cells_raise(self, tmp_path: Path) -> None:
+        db = _tabular_db(tmp_path, [("Blank", "C", "     "), ("Null", "C", None)])
+        with SQLResult(db) as sql:
+            assert sql.get_tabular_value("R", "T", "Blank", "C") == ""
+            assert sql.get_tabular_value("R", "T", "Null", "C") == ""
+            with pytest.raises(ValueError, match="row='Blank', column='C' holds ''"):
+                sql.get_tabular_float("R", "T", "Blank", "C")
+
+    def test_lookup_errors_are_still_result_lookup_errors(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError, match="No tabular column 'Gas'"):
+            sql.get_tabular_float("AnnualBuildingUtilityPerformanceSummary", "End Uses", "Heating", "Gas")
+
+    def test_tabular_row_as_float_direct(self) -> None:
+        row = TabularRow("R", "Entire Facility", "T", "Row", "Col", "W", "-3.5E+02")
+        assert row.as_float() == -350.0
 
 
 class TestSQLResultGetTabularValueErrors:
