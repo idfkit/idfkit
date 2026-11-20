@@ -42,7 +42,12 @@ from idfkit.weather import (
 index = StationIndex.load()
 hits = index.search("chicago ohare")
 for hit in hits[:3]:
-    print(hit.score, hit.station.display_name)
+    print(hit.score, hit.station.display_name, hit.station.dataset_variant)
+
+# One hit per physical station: .station is its newest dataset,
+# .variants every TMYx year range of it, newest first.
+for variant in hits[0].variants:
+    print(variant.dataset_variant, variant.dataset_years)  # "TMYx.2011-2025" (2011, 2025) ... "TMYx" None
 # --8<-- [end:search-name]
 
 
@@ -97,7 +102,9 @@ station.wmo  # "725300" (string, preserves leading zeros)
 station.latitude, station.longitude
 station.elevation  # metres above sea level
 station.timezone  # hours offset from GMT, e.g. -6.0
-station.source  # dataset source, e.g. "TMYx.2009-2023"
+station.dataset_variant  # which dataset, e.g. "TMYx.2011-2025" (or "TMYx")
+station.dataset_years  # (2011, 2025), or None for a plain "TMYx"
+station.source  # upstream source tag, e.g. "SRC-TMYx" -- not the dataset
 station.url  # download URL for the ZIP (EPW + DDY)
 # --8<-- [end:inspect]
 
@@ -127,7 +134,8 @@ print(f"Added {len(added)} design days")
 # --8<-- [start:design-days-lower]
 from idfkit.weather import DesignDayManager, DesignDayType
 
-ddm = DesignDayManager.from_station(station)
+ddm = DesignDayManager.from_station(station)  # station's own dataset
+older = DesignDayManager.from_station(station, dataset="2009-2023")  # another; ValueError lists them if absent
 heating = ddm.get(DesignDayType.HEATING_99_6)  # IDFObject | None
 cooling = ddm.get(DesignDayType.COOLING_DB_0_4)
 added = ddm.apply_to_model(  # injects per the preset args
@@ -173,5 +181,6 @@ simulate(doc, "weather.epw")
 
 
 # --8<-- [start:mistake-uniqueness-good]
-station_by_key = {(s.wmo, s.source): s for s in index.stations}
+station_by_key = {s.filename_stem: s for s in index.stations}  # one entry per dataset
+datasets_by_station = {s.station_key: s for s in index.stations}  # collapses the year ranges
 # --8<-- [end:mistake-uniqueness-good]

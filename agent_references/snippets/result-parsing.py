@@ -41,7 +41,7 @@ ts = result.sql.get_timeseries(
     variable_name="Zone Mean Air Temperature",
     key_value="Office",  # zone, surface, system name; "*" (default) only if one key is reported
     frequency="Hourly",  # optional filter
-    environment=None,  # None=all, "annual", or "sizing"
+    environment=None,  # None = run period (design days only if no run period), "annual", "sizing", "all"
 )
 print(ts.units, len(ts.values))  # 'C' 8760
 ts.timestamps  # tuple[datetime, ...]
@@ -87,7 +87,9 @@ total = result.sql.get_tabular_value(
 for r in result.sql.list_reports():
     print(r)
 for v in result.sql.list_variables():
-    print(v.name, v.key_value, v.frequency, v.units)
+    print(v.name, v.key_value, v.frequency, v.units)  # a meter's key_value is ""
+    # Each entry can be passed straight back:
+    series = result.sql.get_timeseries(v.name, key_value=v.key_value, frequency=v.frequency)
 for e in result.sql.list_environments():
     print(e.environment_type, e.name)
 # --8<-- [end:enumerate]

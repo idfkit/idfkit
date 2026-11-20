@@ -17,6 +17,7 @@ from urllib.error import HTTPError, URLError
 
 from .geocode import GeocodingError, detect_location, geocode
 from .index import StationIndex, default_cache_dir
+from .spatial import haversine_km
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -448,7 +449,12 @@ def _resolve_matches(
             max_distance_km=filters.max_km,
             country=filters.country,
         )
-        matches = [TmyMatch(station=r.station, distance_km=r.distance_km) for r in spatial]
+        # Each dataset reports its own distance: the datasets of one station do not always share coordinates.
+        matches = [
+            TmyMatch(station=s, distance_km=haversine_km(lat, lon, s.latitude, s.longitude))
+            for r in spatial
+            for s in r.variants
+        ]
         if filters.query:
             q = filters.query.lower()
             matches = [m for m in matches if q in m.station.display_name.lower()]
@@ -458,7 +464,7 @@ def _resolve_matches(
     if filters.query:
         search_limit = max(limit * 4, 40)
         search = index.search(filters.query, limit=search_limit, country=filters.country)
-        matches = [TmyMatch(station=r.station, score=r.score, match_field=r.match_field) for r in search]
+        matches = [TmyMatch(station=s, score=r.score, match_field=r.match_field) for r in search for s in r.variants]
         return _post_filter(matches, filters)
 
     # 5. Metadata-only

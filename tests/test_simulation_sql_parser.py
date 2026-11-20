@@ -193,9 +193,9 @@ class TestSQLResultTimeSeries:
     def test_get_outdoor_temp(self, sql_db: Path) -> None:
         with SQLResult(sql_db) as sql:
             ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
-        # Default environment=None returns all data (sizing + annual)
-        assert len(ts.values) == 5
-        assert ts.values[0] == -17.0  # Sizing data first
+        # Default environment=None reads the run period, not the design days
+        assert len(ts.values) == 4
+        assert ts.values[0] == -5.2
         assert ts.units == "C"
         assert ts.variable_name == "Site Outdoor Air Drybulb Temperature"
 
@@ -268,8 +268,8 @@ class TestSQLResultTimeSeries:
     def test_get_by_key_value(self, sql_db: Path) -> None:
         with SQLResult(sql_db) as sql:
             ts = sql.get_timeseries("Zone Mean Air Temperature", "THERMAL ZONE 1")
-        # Default environment=None returns all data (sizing + annual)
-        assert len(ts.values) == 5
+        # Default environment=None reads the run period, not the design days
+        assert len(ts.values) == 4
         assert ts.key_value == "THERMAL ZONE 1"
 
     def test_variable_not_found(self, sql_db: Path) -> None:
@@ -469,18 +469,52 @@ class TestSQLResultEnvironmentFilter:
         assert ts.values[0] == -17.0
         assert ts.timestamps[0] == datetime(2017, 12, 21, 1, 0)
 
-    def test_default_returns_all(self, sql_db: Path) -> None:
+    def test_default_reads_the_run_period_only(self, sql_db: Path) -> None:
         with SQLResult(sql_db) as sql:
             ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
-        # Default environment=None returns all data (sizing + annual)
+        # The design day is left out, so the timestamps stay monotonic
+        assert ts.values == (-5.2, -5.5, -5.8, -6.0)
+        assert list(ts.timestamps) == sorted(ts.timestamps)
+
+    def test_all_returns_design_days_then_run_period(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature", environment="all")
+        # 1 sizing + 4 annual = 5
         assert len(ts.values) == 5
         assert ts.values[0] == -17.0  # Sizing data first
 
-    def test_none_returns_all(self, sql_db: Path) -> None:
+    def test_default_reads_design_days_when_there_is_no_run_period(self, sql_db: Path) -> None:
+        conn = sqlite3.connect(str(sql_db))
+        conn.execute("DELETE FROM ReportData WHERE TimeIndex >= 3")
+        conn.commit()
+        conn.close()
         with SQLResult(sql_db) as sql:
-            ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature", environment=None)
-        # 1 sizing + 4 annual = 5
-        assert len(ts.values) == 5
+            ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+        assert ts.values == (-17.0,)
+
+    def test_annual_on_a_design_day_only_run_raises(self, sql_db: Path) -> None:
+        conn = sqlite3.connect(str(sql_db))
+        conn.execute("DELETE FROM ReportData WHERE TimeIndex >= 3")
+        conn.commit()
+        conn.close()
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError, match="no run-period") as exc:
+            sql.get_timeseries("Site Outdoor Air Drybulb Temperature", environment="annual")
+        assert "environment='sizing'" in str(exc.value)
+        assert exc.value.available == ("sizing",)
+
+    def test_sizing_on_a_run_period_only_variable_raises(self, sql_db: Path) -> None:
+        conn = sqlite3.connect(str(sql_db))
+        conn.execute("DELETE FROM ReportData WHERE TimeIndex = 2")
+        conn.commit()
+        conn.close()
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError, match="no design-day"):
+            sql.get_timeseries("Site Outdoor Air Drybulb Temperature", environment="sizing")
+
+    def test_dataframe_default_matches_annual(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            default = sql.get_timeseries("Zone Mean Air Temperature")
+            annual = sql.get_timeseries("Zone Mean Air Temperature", environment="annual")
+        assert default == annual
 
     def test_invalid_environment(self, sql_db: Path) -> None:
         with SQLResult(sql_db) as sql, pytest.raises(ValueError, match="environment must be"):
@@ -687,6 +721,28 @@ class TestSQLResultListVariables:
         meter = variables[2]
         assert meter.name == "Electricity:Facility"
         assert meter.is_meter is True
+
+    def test_meter_with_null_key_reports_an_empty_key(self, sql_db: Path) -> None:
+        conn = sqlite3.connect(str(sql_db))
+        conn.execute("UPDATE ReportDataDictionary SET KeyValue = NULL, Type = NULL WHERE ReportDataDictionaryIndex = 3")
+        conn.commit()
+        conn.close()
+        with SQLResult(sql_db) as sql:
+            meter = sql.list_variables()[2]
+            assert meter.key_value == ""
+            assert meter.variable_type == ""
+            # What list_variables() reports can be passed back to get_timeseries()
+            ts = sql.get_timeseries(meter.name, key_value=meter.key_value, frequency=meter.frequency)
+        assert ts.key_value == ""
+
+    def test_every_listed_variable_can_be_fetched(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            for v in sql.list_variables():
+                sql.get_timeseries(v.name, key_value=v.key_value, frequency=v.frequency, environment="all")
+
+    def test_a_key_passed_for_a_meter_says_it_has_none(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(ResultLookupError, match="no key \\(as meters are\\)"):
+            sql.get_timeseries("Electricity:Facility", key_value="None")
 
 
 class TestSQLResultListReports:

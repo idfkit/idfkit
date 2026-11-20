@@ -37,7 +37,7 @@ from idfkit.weather.index import (
     _temp_cache_dir,  # pyright: ignore[reportPrivateUsage]
     default_cache_dir,
 )
-from idfkit.weather.station import WeatherStation
+from idfkit.weather.station import SearchResult, SpatialResult, WeatherStation
 
 
 def _fixture_stations() -> list[WeatherStation]:
@@ -991,6 +991,93 @@ class TestGetByFilename:
         """Filename without extractable WMO and no exact match -> empty (line 478)."""
         idx = StationIndex.from_stations(_fixture_stations())
         assert idx.get_by_filename("no_match_here") == []
+
+
+def _ohare_variants() -> list[WeatherStation]:
+    """O'Hare's datasets as the index lists them: oldest range first, then the undated one."""
+    base = _fixture_stations()[0]
+    stem = base.url.removesuffix("_TMYx.2009-2023.zip")
+    return [
+        replace(base, source="Custom-725300", url=f"{stem}_TMYx.2004-2018.zip", latitude=41.99),
+        replace(base, source="SRC-TMYx", url=f"{stem}_TMYx.2009-2023.zip"),
+        replace(base, source="SRC-TMYx", url=f"{stem}_TMYx.2011-2025.zip"),
+        replace(base, source="SRC-TMYx", url=f"{stem}_TMYx.zip"),
+    ]
+
+
+class TestDatasetVariants:
+    def _index(self) -> StationIndex:
+        return StationIndex.from_stations([*_ohare_variants(), *_fixture_stations()[1:]])
+
+    def test_search_returns_one_hit_per_station_newest_first(self) -> None:
+        results = self._index().search("ohare")
+        assert [r.station.city for r in results].count("Chicago.Ohare.Intl.AP") == 1
+        top = results[0]
+        assert top.station.dataset_variant == "TMYx.2011-2025"
+        assert [v.dataset_variant for v in top.variants] == [
+            "TMYx.2011-2025",
+            "TMYx.2009-2023",
+            "TMYx.2004-2018",
+            "TMYx",
+        ]
+        assert top.variants[0] is top.station
+
+    def test_variants_do_not_use_up_the_limit(self) -> None:
+        results = self._index().search("chicago", limit=2)
+        assert {r.station.wmo for r in results} == {"725300", "725340"}
+
+    def test_nearest_returns_one_hit_per_station_newest_first(self) -> None:
+        results = self._index().nearest(41.98, -87.92, limit=2)
+        assert [r.station.wmo for r in results] == ["725300", "725340"]
+        assert results[0].station.dataset_variant == "TMYx.2011-2025"
+        assert len(results[0].variants) == 4
+
+    def test_exact_filename_still_returns_that_dataset(self) -> None:
+        results = self._index().search("USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2004-2018")
+        assert [r.station.dataset_variant for r in results] == ["TMYx.2004-2018"]
+        assert results[0].variants == (results[0].station,)
+
+    def test_dataset_years_and_station_key(self) -> None:
+        old, _, _, plain = _ohare_variants()
+        assert old.dataset_years == (2004, 2018)
+        assert plain.dataset_years is None
+        assert old.station_key == plain.station_key == "USA_IL_Chicago.Ohare.Intl.AP.725300"
+
+    def test_nearest_measures_each_dataset_at_its_own_coordinates(self) -> None:
+        # As in the real index: the newer datasets of a station sit at 0.0, 0.0.
+        base, *_ = _ohare_variants()
+        moved = [
+            base,
+            *(replace(v, latitude=0.0, longitude=0.0) for v in _ohare_variants()[1:]),
+        ]
+        idx = StationIndex.from_stations([*moved, *_fixture_stations()[1:]])
+        near = idx.nearest(base.latitude, base.longitude, limit=1, max_distance_km=1)
+        assert len(near) == 1
+        assert near[0].station is base
+        assert near[0].variants == (base,)
+        assert near[0].distance_km == pytest.approx(0.0, abs=1e-6)
+
+        # Without a distance cap the far datasets form a result of their own, at their real distance.
+        everything = idx.nearest(base.latitude, base.longitude, limit=10)
+        ohare = [r for r in everything if r.station.station_key == base.station_key]
+        assert [r.station.dataset_variant for r in ohare] == ["TMYx.2004-2018", "TMYx.2011-2025"]
+        assert ohare[1].distance_km > 4000
+        assert [r.distance_km for r in everything] == sorted(r.distance_km for r in everything)
+
+    def test_nearest_reports_the_newest_datasets_own_distance(self) -> None:
+        # The newest dataset sits 2 km from the oldest: one result, the newest's distance.
+        variants = _ohare_variants()
+        variants[2] = replace(variants[2], latitude=variants[1].latitude + 0.018)
+        idx = StationIndex.from_stations([*variants, *_fixture_stations()[1:]])
+        top = idx.nearest(variants[1].latitude, variants[1].longitude, limit=1)[0]
+        assert top.station.dataset_variant == "TMYx.2011-2025"
+        assert len(top.variants) == 4
+        assert top.distance_km == pytest.approx(2.0, abs=0.1)
+
+    def test_results_built_without_variants_list_their_station(self) -> None:
+        station = _fixture_stations()[0]
+        assert SpatialResult(station=station, distance_km=1.0).variants == (station,)
+        assert SearchResult(station=station, score=1.0, match_field="name").variants == (station,)
 
 
 class TestNearest:

@@ -227,6 +227,37 @@ class TestDesignDayManager:
         assert len(ddm.all_design_days) == 11
         mock_downloader.get_ddy.assert_called_once_with(station)
 
+    def test_from_station_downloads_the_dataset_asked_for(self) -> None:
+        from dataclasses import replace
+
+        from idfkit.weather.index import StationIndex
+
+        station = _make_station()
+        older = replace(station, url=station.url.replace("2009-2023", "2004-2018"))
+        mock_downloader = MagicMock()
+        mock_downloader.get_ddy.return_value = _FIXTURES / "sample.ddy"
+        index = StationIndex.from_stations([older, station])
+
+        with (
+            patch("idfkit.weather.download.WeatherDownloader", return_value=mock_downloader),
+            patch("idfkit.weather.index.StationIndex.load", return_value=index),
+        ):
+            DesignDayManager.from_station(station, dataset="2004-2018")
+            DesignDayManager.from_station(station, dataset="TMYx.2009-2023")
+
+        assert [c.args[0] for c in mock_downloader.get_ddy.call_args_list] == [older, station]
+
+    def test_from_station_refuses_an_unknown_dataset(self) -> None:
+        from idfkit.weather.index import StationIndex
+
+        station = _make_station()
+        index = StationIndex.from_stations([station])
+        with (
+            patch("idfkit.weather.index.StationIndex.load", return_value=index),
+            pytest.raises(ValueError, match=r"has no dataset '1999-2000'\. It has: TMYx\.2009-2023\."),
+        ):
+            DesignDayManager.from_station(station, dataset="1999-2000")
+
 
 class TestApplyToModel:
     @pytest.fixture()
