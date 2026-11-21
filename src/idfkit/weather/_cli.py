@@ -277,7 +277,7 @@ def _resolve_action(ns: argparse.Namespace) -> TmyAction:
 
 
 def _namespace_to_config(ns: argparse.Namespace) -> TmyRunConfig:
-    """Translate an argparse Namespace into a validated :class:`TmyRunConfig`.
+    """Translate an argparse Namespace into a validated ``TmyRunConfig``.
 
     Collected errors are attached to ``_errors`` on the returned config so
     the caller can print them and exit cleanly.
@@ -399,7 +399,7 @@ def _resolve_coords(filters: TmyFilters, *, quiet: bool) -> tuple[float, float] 
     """Resolve the spatial anchor from ``--nearby``, ``--near``, or ``--lat/--lon``.
 
     Returns ``None`` when no spatial filter is active. Raises
-    :class:`GeocodingError` on geocoding / IP-detection failure.
+    [GeocodingError][idfkit.weather.geocode.GeocodingError] on geocoding / IP-detection failure.
     """
     if filters.lat is not None and filters.lon is not None:
         return filters.lat, filters.lon

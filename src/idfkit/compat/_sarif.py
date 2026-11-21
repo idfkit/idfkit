@@ -36,7 +36,7 @@ def _build_rules() -> list[dict[str, Any]]:
 
 
 def _diagnostic_to_result(diag: Diagnostic) -> dict[str, Any]:
-    """Convert a single :class:`Diagnostic` to a SARIF ``result`` object."""
+    """Convert a single [Diagnostic][idfkit.compat.Diagnostic] to a SARIF ``result`` object."""
     result: dict[str, Any] = {
         "ruleId": diag.code,
         "level": _SEVERITY_MAP.get(diag.severity, "warning"),

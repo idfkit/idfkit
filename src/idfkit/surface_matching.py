@@ -79,7 +79,7 @@ _LINE_EPS = 1e-15
 
 @dataclass(frozen=True)
 class MatchOptions:
-    """Tunable tolerances and scope for :func:`intersect_and_match`.
+    """Tunable tolerances and scope for [intersect_and_match][idfkit.surface_matching.intersect_and_match].
 
     Attributes:
         angle_tol_deg: Two surfaces are treated as coplanar when the angle
@@ -110,7 +110,7 @@ class MatchOptions:
 
 @dataclass
 class MatchReport:
-    """Summary of what :func:`intersect_and_match` changed.
+    """Summary of what [intersect_and_match][idfkit.surface_matching.intersect_and_match] changed.
 
     Attributes:
         pairs_matched: Number of matched interior fragment pairs created.
@@ -407,10 +407,10 @@ def intersect_and_match(doc: AnyIDFDocument, options: MatchOptions | None = None
 
     Args:
         doc: The document to modify.
-        options: Tolerances and scope; defaults to :class:`MatchOptions`.
+        options: Tolerances and scope; defaults to [MatchOptions][idfkit.surface_matching.MatchOptions].
 
     Returns:
-        A :class:`MatchReport` describing what changed.
+        A [MatchReport][idfkit.surface_matching.MatchReport] describing what changed.
 
     Examples:
         >>> from idfkit import new_document

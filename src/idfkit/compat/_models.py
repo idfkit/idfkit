@@ -81,7 +81,7 @@ class Diagnostic:
         from_version: Version string where the literal is valid. For a rule that is not about a
             difference between versions (``C003``, ``C004``, ``C006``), the lowest target version.
         to_version: Version string where the literal is invalid: for ``C001`` and ``C002``, the
-            earliest of :attr:`missing_in`. For a rule that is not about a difference between
+            earliest of [missing_in][idfkit.compat.Diagnostic.missing_in]. For a rule that is not about a difference between
             versions, the highest target version.
         suggested_fix: Optional suggested replacement or action.
         missing_in: For ``C001`` and ``C002``, every target release (in the code's scope) that
@@ -137,7 +137,7 @@ RULE_SEVERITIES: dict[str, CompatSeverity] = {
     "C005": CompatSeverity.WARNING,
     "C006": CompatSeverity.ERROR,
 }
-"""The severity each rule reports at, keyed like :data:`DIAGNOSTIC_CODES`."""
+"""The severity each rule reports at, keyed like [DIAGNOSTIC_CODES][idfkit.compat.DIAGNOSTIC_CODES]."""
 
 DEFAULT_RULES: frozenset[str] = frozenset({"C001", "C002", "C003", "C005", "C006"})
 """The rules checked unless a selection says otherwise.

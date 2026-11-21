@@ -206,7 +206,7 @@ def numbered_idd_name(idd_name: str, group: int, position: int = 1) -> str:
     The epJSON schema names an extensible field once, without its group number (``"Vertex
     X-coordinate"``). The IDD numbers it after the first word in most types (``"Vertex 1
     X-coordinate"``, ``"Field 1"``, ``"Branch 1 Name"``) and elsewhere in others (``"Value Until
-    Time 1"``, ``"Fenestration Surface 1 Name"``): :func:`group_number_position` says where.
+    Time 1"``, ``"Fenestration Surface 1 Name"``): ``group_number_position`` says where.
 
     Examples:
         >>> numbered_idd_name("Vertex X-coordinate", 2)
@@ -222,7 +222,7 @@ def numbered_idd_name(idd_name: str, group: int, position: int = 1) -> str:
 
 
 def _key_spelling(name: str) -> str:
-    """What :func:`~idfkit.objects.to_python_name` makes of *name*."""
+    """What [to_python_name][idfkit.objects.to_python_name] makes of *name*."""
     return _NOT_KEY_CHAR.sub("_", name.lower()).strip("_")
 
 
@@ -246,7 +246,7 @@ def idd_field_names(obj_schema: Mapping[str, Any] | None) -> dict[str, str]:
 
 
 def eppy_field_aliases(obj_schema: Mapping[str, Any] | None) -> dict[str, str]:
-    """Map eppy's spelling of each field, as :func:`~idfkit.objects.to_python_name` reads it, to its key.
+    """Map eppy's spelling of each field, as [to_python_name][idfkit.objects.to_python_name] reads it, to its key.
 
     Only spellings that differ from the key and name no other field are mapped:
     ``vertex_1_xcoordinate`` -> ``vertex_1_x_coordinate`` on ``FenestrationSurface:Detailed``, and
@@ -269,9 +269,9 @@ def eppy_field_aliases(obj_schema: Mapping[str, Any] | None) -> dict[str, str]:
 def resolve_eppy_key(python_key: str, aliases: Mapping[str, str], extensibles: Container[str]) -> str | None:
     """The key eppy's spelling *python_key* names, or ``None`` when it is not one of them.
 
-    *python_key* is eppy's name as :func:`~idfkit.objects.to_python_name` reads it
+    *python_key* is eppy's name as [to_python_name][idfkit.objects.to_python_name] reads it
     (``Vertex_1_Xcoordinate`` is ``vertex_1_xcoordinate``), *aliases* the type's
-    :func:`eppy_field_aliases`. A fixed field maps to its key (``vertex_1_x_coordinate`` on
+    [eppy_field_aliases][idfkit.schema.eppy_field_aliases]. A fixed field maps to its key (``vertex_1_x_coordinate`` on
     ``FenestrationSurface:Detailed``); a numbered extensible field maps to the flat spelling
     ``vertex_x_coordinate_1``, which the legacy flat-extensible paths route to its group.
     """

@@ -416,7 +416,7 @@ class SimulationResult:
         raise self._failure(report, await self._async_find_output_file(".err"))
 
     def _failure(self, report: ErrorReport, err_path: Path | None) -> SimulationError:
-        """The error :meth:`raise_for_status` raises for this failed run."""
+        """The error [raise_for_status][idfkit.simulation.result.SimulationResult.raise_for_status] raises for this failed run."""
         if self.refusal is not None:
             msg = f"Simulation {'cancelled' if self.cancelled else 'refused'}: {self.refusal}"
             # A stderr that only restates the reason (the exception's own message) is not repeated.

@@ -52,9 +52,9 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         """Whether strict field access mode is enabled.
 
         When ``True``, accessing or setting an unknown field name on objects in this
-        document raises :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``,
+        document raises [InvalidFieldError][idfkit.exceptions.InvalidFieldError] instead of returning ``None``,
         and assigning a value the schema refuses raises
-        :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
+        [ValidationFailedError][idfkit.exceptions.ValidationFailedError], as ``add()`` does.
 
         This property is read-only; set it via the constructor.
         """
@@ -95,7 +95,7 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         Empty for a document read with ``preserve_formatting=True`` and not edited since. Every
         object for a document read without it, because there is nothing to reproduce.
 
-        :attr:`raw_text` answers whether a write will preserve at all. This answers how many
+        [raw_text][idfkit.document.IDFDocument.raw_text] answers whether a write will preserve at all. This answers how many
         objects it will REWRITE, and it is the part a consumer cannot work out for itself: a rename
         clears the record on every object that referred to the renamed one, so counting from your
         own edit log reports one where the answer is nine.
@@ -104,10 +104,10 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         two.** An object removed from the document is no longer in it to be yielded, so this can
         return nothing for a write that changes the file. A consumer treating an empty result as
         "the file is unchanged" would be wrong on every removal. To ask whether the file will
-        differ at all, compare the write with :attr:`raw_text`; ask this for how much of it is
+        differ at all, compare the write with [raw_text][idfkit.document.IDFDocument.raw_text]; ask this for how much of it is
         being written afresh.
 
-        :attr:`IDFObject.source_text` is the same record read one object at a time, and it is the
+        [IDFObject.source_text][idfkit.objects.IDFObject.source_text] is the same record read one object at a time, and it is the
         retained TEXT rather than a flag: a reader has to know that HAVING text means unchanged.
         This asks the question directly.
 
@@ -120,22 +120,22 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
             True
         """
     def region_of(self, obj: IDFObject) -> SourceSpan | None:
-        """Where *obj*'s characters sit in :attr:`raw_text`, or ``None`` if they sit nowhere.
+        """Where *obj*'s characters sit in [raw_text][idfkit.document.IDFDocument.raw_text], or ``None`` if they sit nowhere.
 
         ``None`` for an object added since the read and for a document read without
         ``preserve_formatting=True``.
 
-        This is what makes :meth:`changed_objects` usable. Turning an edit into the smallest
+        This is what makes [changed_objects][idfkit.document.IDFDocument.changed_objects] usable. Turning an edit into the smallest
         possible change to a file takes three things: WHICH objects will be rewritten, WHAT text
         each becomes, and WHERE the old one was. Without the third a consumer has to write the whole
-        file and compare, which is the work :meth:`changed_objects` exists to avoid.
+        file and compare, which is the work [changed_objects][idfkit.document.IDFDocument.changed_objects] exists to avoid.
 
         The range is where the object WAS, and stays answerable after it changes. That is the case
         it is for: the objects worth locating are the ones being rewritten.
 
         **Where the replacement text comes from is not settled here.** A preserving write hands the
         formatter the object's own source, so text produced any other way differs from what
-        :func:`~idfkit.writers.write_idf` would have produced for the same object: the author's
+        [write_idf][idfkit.writers.write_idf] would have produced for the same object: the author's
         units and notes come back as generated labels. A consumer that needs the two to agree takes
         the whole file from ``write_idf``. That gap is open, and it is recorded rather than papered
         over.
@@ -150,12 +150,12 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
     def render_object(self, obj: IDFObject, *, field_comments: FieldComments = "preserve") -> str | None:
         """*obj*, rendered exactly as a preserving write would render it.
 
-        The text that belongs in the range :meth:`region_of` returns, so the two compose into an
-        edit that leaves the file where :func:`~idfkit.writers.write_idf` would have left it.
+        The text that belongs in the range [region_of][idfkit.document.IDFDocument.region_of] returns, so the two compose into an
+        edit that leaves the file where [write_idf][idfkit.writers.write_idf] would have left it.
         ``None`` for an object the retained source does not hold, which is the same set
-        :meth:`region_of` declines.
+        [region_of][idfkit.document.IDFDocument.region_of] declines.
 
-        :meth:`~idfkit.writers.IDFWriter.format_object` is not this, and that is the reason this
+        [format_object][idfkit.writers.IDFWriter.format_object] is not this, and that is the reason this
         exists. A preserving write hands the formatter the object's own source text, so a caller
         who does not have that text gets the author's units and notes back as generated labels:
         ``!- North Axis {deg}`` becomes ``!- North Axis``. That is a unit lost from an engineering
@@ -376,7 +376,7 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         """Add an existing IDFObject to the document.
 
         Overrides the eppy-compatibility method from
-        :class:`~idfkit._compat.EppyDocumentMixin` to keep ``_version`` in sync
+        ``EppyDocumentMixin`` to keep ``_version`` in sync
         when a ``Version`` object is added (e.g. during parsing or copy).
 
         In a document that normalizes choices (the default), the object's choice
@@ -385,10 +385,10 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         opted out holds what its ``Literal`` types say.
         """
     def _adopt(self, obj: IDFObject) -> IDFObject:
-        """File *obj* as :meth:`addidfobject` does, with its values taken as they are.
+        """File *obj* as [addidfobject][idfkit.document.IDFDocument.addidfobject] does, with its values taken as they are.
 
         For objects already in this document's spelling: the parsers', which normalize while
-        they read, and the twins :meth:`copy` makes of a document with the same setting.
+        they read, and the twins [copy][idfkit.document.IDFDocument.copy] makes of a document with the same setting.
         """
     def removeidfobject(self, obj: IDFObject) -> None:
         """Remove an object from the document.
@@ -583,13 +583,13 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
         The copy is independent -- modifying the copy does not affect
         the original.  Strict mode is preserved, and so is the source
         formatting of a ``preserve_formatting=True`` read: the copy writes
-        the same bytes the original would, and :meth:`region_of` and
-        :meth:`render_object` answer for its objects.
+        the same bytes the original would, and [region_of][idfkit.document.IDFDocument.region_of] and
+        [render_object][idfkit.document.IDFDocument.render_object] answer for its objects.
 
         ``copy.deepcopy`` and ``pickle`` give the same result through the
         default machinery: every slot of a document copies correctly on its
         own, and the schema travels by version (see
-        :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
+        ``EpJSONSchema.__reduce__``).
         A document pickled by an earlier release has no ``normalize_choices``
         slot, and reads it as ``False``.
         This method is the faster of the two, as it rebuilds the model
@@ -628,7 +628,7 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
 
     Indexing it, or reaching an accessor, with an object type that some supported version lacks is a
     type error, as is a field some version lacks through ``update``. ``AnyIDFDocument`` is this class;
-    annotate with that name. :class:`IDFDocument` and every document type in :mod:`idfkit.versioned`
+    annotate with that name. [IDFDocument][idfkit.document.IDFDocument] and every document type in [idfkit.versioned][idfkit.versioned]
     derive from it. Narrow a document to its release with ``idfkit.versioned.as_version`` to reach what
     only that release has.
     """
@@ -5633,8 +5633,8 @@ class IDFDocumentAllVersions(_IDFDocumentMethods[Strict]):
 AnyIDFDocument: TypeAlias = IDFDocumentAllVersions[Strict]
 """A document of any supported EnergyPlus version.
 
-:class:`IDFDocument`, typed for the latest release, and every older release's type in
-:mod:`idfkit.versioned` derive from it, so annotate with it to accept a document whatever its
+[IDFDocument][idfkit.document.IDFDocument], typed for the latest release, and every older release's type in
+[idfkit.versioned][idfkit.versioned] derive from it, so annotate with it to accept a document whatever its
 version. Through it, a document offers what every supported version has: the object types
 present in all of them, each typed as all of them declare it, so a field whose choices changed
 between releases reads as the union of them, accepts only their intersection, and a field some
@@ -5685,11 +5685,11 @@ class IDFDocument(IDFDocumentAllVersions[Strict]):
             filepath: Source file path
             strict: When ``True``, accessing or setting an unknown field name on any
                 [IDFObject][idfkit.objects.IDFObject] owned by this document raises
-                :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.  This
+                [InvalidFieldError][idfkit.exceptions.InvalidFieldError] instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
                 typos early.  A value assigned to a field, or passed to ``update()``, is
                 also checked as ``add()`` checks it, raising
-                :class:`~idfkit.exceptions.ValidationFailedError` for a wrong type, an unlisted
+                [ValidationFailedError][idfkit.exceptions.ValidationFailedError] for a wrong type, an unlisted
                 choice or an out-of-range number.  This value is immutable after construction.
             normalize_choices: When ``True`` (the default), a choice value added or assigned
                 through this document is stored in the spelling its schema declares, whatever

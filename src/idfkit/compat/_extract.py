@@ -37,7 +37,7 @@ def extract_literals(
 
     Each literal records the releases its code can run against when the code around it narrows
     the document (an ``as_version`` receiver, or an enclosing ``if doc.version >= (9, 4, 0):``);
-    :mod:`idfkit.compat._narrow` lists exactly what is recognised.
+    ``idfkit.compat._narrow`` lists exactly what is recognised.
 
     Args:
         source: Python source code to analyse.
@@ -52,7 +52,7 @@ def extract_literals(
             whose schema it has loaded already.
 
     Returns:
-        List of :class:`ExtractedLiteral` instances.
+        List of [ExtractedLiteral][idfkit.compat.ExtractedLiteral] instances.
     """
     tree = ast.parse(source, filename)
     has_import = _has_idfkit_import(tree, package)

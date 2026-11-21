@@ -539,7 +539,7 @@ class TestCommittedStubs:
             # A release's document that no longer derives from IDFDocumentAllVersions.
             (
                 3,
-                r"(?m)^    IDFDocumentAllVersions\[Strict\],\n\):\n(    \"\"\"An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9\.4)",
+                r"(?m)^    IDFDocumentAllVersions\[Strict\],\n\):\n(    \"\"\"An \[IDFDocument\]\[idfkit\.document\.IDFDocument\] typed for EnergyPlus 9\.4)",
                 r"):\n\1",
                 "IDFDocumentV9_4: does not derive from IDFDocumentAllVersions",
                 ((9, 4, 0),),

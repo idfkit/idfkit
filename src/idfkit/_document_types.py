@@ -2,18 +2,18 @@
 
 For a type checker, ``AnyIDFDocument`` (``document.pyi``) and each ``IDFDocumentV<major>_<minor>``
 (``versioned.pyi``) are distinct classes: each carries the object types and fields of its
-EnergyPlus version. At run time there is one document class, :class:`~idfkit.document.IDFDocument`,
+EnergyPlus version. At run time there is one document class, [IDFDocument][idfkit.document.IDFDocument],
 and its version is a value read from the file. The stand-ins here connect the two: ``isinstance``
 against one holds exactly for a document of its version, which is what
-:func:`as_version` checks before it hands a document back under that type.
+[as_version][idfkit.zoning.as_version] checks before it hands a document back under that type.
 
 That ``isinstance`` is this module's mechanism, not the public way to check a release. The
 latest release's type has no stand-in: it is ``IDFDocument``, which every document is an
 instance of, so ``isinstance(doc, IDFDocument)`` holds for a document of any release while a type
-checker then types it as the latest one. :func:`as_version` is the check.
+checker then types it as the latest one. [as_version][idfkit.zoning.as_version] is the check.
 
 A document's version is matched to a release the way its schema is chosen,
-by :func:`~idfkit.versions.find_closest_version`: a file states its version with two components
+by [find_closest_version][idfkit.versions.find_closest_version]: a file states its version with two components
 (``Version, 9.0;``), so a document read from one carries patch ``0`` even where the release's is
 not (9.0.1).
 """
@@ -31,6 +31,7 @@ from typing import (
     ForwardRef,
     Literal,
     NoReturn,
+    TypeAlias,
     TypeVar,
     Union,
     cast,
@@ -49,16 +50,27 @@ from .versions import (
 )
 
 if TYPE_CHECKING:
-    from typing import TypeAlias
-
     from typing_extensions import TypeIs
 
     from .document import AnyIDFDocument
 
-    # What since= and before= take: a release's document type, its number, or its version tuple.
-    _Bound: TypeAlias = "type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int]"
 
 _D = TypeVar("_D", bound="AnyIDFDocument")
+
+DocumentTypeTarget: TypeAlias = "type[AnyIDFDocument] | tuple[type[AnyIDFDocument], ...]"
+"""The release a document must be, as ``as_type=`` and [as_version][idfkit.versioned.as_version] take it.
+
+A release's document type from [idfkit.versioned][], such as ``IDFDocumentV9_4``, or a tuple of
+them for any one of several releases. The document is typed as that release, or as the union of
+the tuple's releases.
+"""
+
+ReleaseBound: TypeAlias = "type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int]"
+"""One end of a range of releases, as ``since=`` and ``before=`` take it.
+
+A release's document type (``IDFDocumentV9_6``), its number (``"9.6"``) or its version tuple
+(``(9, 6)`` or ``(9, 6, 0)``). ``since=`` includes the release it names and ``before=`` excludes it.
+"""
 
 
 class DocumentTypeMeta(type):
@@ -134,7 +146,7 @@ def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
 
 def is_type_form(value: object) -> TypeIs[type[Any]]:
     """Whether *value* names a type (a class, a parametrized one such as ``IDFDocumentV9_4[bool]``, or a union)
-    rather than a version value, for the functions that take either: :func:`idfkit.new_document` and ``migrate``.
+    rather than a version value, for the functions that take either: [idfkit.new_document][idfkit.new_document] and ``migrate``.
 
     A union is not itself a class; the narrowing serves the other branch, where the value is a version.
     """
@@ -142,16 +154,16 @@ def is_type_form(value: object) -> TypeIs[type[Any]]:
 
 
 def release_for_new_document(document_type: object, strict: bool) -> tuple[tuple[int, int, int], bool]:
-    """The release and strictness of the document :func:`idfkit.new_document` creates for *document_type*.
+    """The release and strictness of the document [idfkit.new_document][idfkit.new_document] creates for *document_type*.
 
-    The release is the one :func:`release_of` resolves; the strictness the one the type argument states
-    (``IDFDocumentV9_4[Literal[False]]``), else *strict*. On top of :func:`release_of`, ``IDFDocument`` is
+    The release is the one [release_of][idfkit.migration.chain.release_of] resolves; the strictness the one the type argument states
+    (``IDFDocumentV9_4[Literal[False]]``), else *strict*. On top of [release_of][idfkit.migration.chain.release_of], ``IDFDocument`` is
     refused: it is the run-time class of every document, so ``new_document(type(doc))`` would create a
     latest-release document typed as ``doc``'s release. So is a subclass of a release type, which
     ``new_document`` would type as the subclass while returning an ``IDFDocument``.
 
     Raises:
-        TypeError: As :func:`release_of` does, for ``IDFDocument`` or a subclass of a release type, and for a
+        TypeError: As [release_of][idfkit.migration.chain.release_of] does, for ``IDFDocument`` or a subclass of a release type, and for a
             strictness that contradicts *strict*.
     """
     from .document import IDFDocument
@@ -178,7 +190,7 @@ def target_strictness(document_type: object, strict: bool) -> bool:
     """The strictness of a document typed as *document_type*: the one its type argument states, else *strict*.
 
     ``IDFDocumentV9_4[Literal[False]]`` states ``False``. For a tuple or union, its members' stated
-    strictness, which must agree. What :func:`idfkit.new_document` and the loaders' ``as_type=`` create
+    strictness, which must agree. What [idfkit.new_document][idfkit.new_document] and the loaders' ``as_type=`` create
     the document with, so that the type and the document's ``strict`` cannot disagree.
 
     Raises:
@@ -231,7 +243,7 @@ def _stated_strictness(document_type: object) -> bool | None:
 
 
 def release_of(document_type: object) -> tuple[int, int, int]:
-    """The one release *document_type* stands for, as :func:`as_version` resolves it.
+    """The one release *document_type* stands for, as [as_version][idfkit.zoning.as_version] resolves it.
 
     Raises:
         TypeError: If *document_type* is not a document type, or names no single release:
@@ -267,7 +279,7 @@ def _release(bound: object, keyword: str) -> tuple[int, int, int]:
 
     A document type names the release it stands for (``IDFDocument`` the latest). A string
     (``"9.6"``, ``"9.6.0"``) or a version tuple (``(9, 6, 0)``, as ``doc.version`` is) names one by
-    number, and is matched to its release line by :func:`~idfkit.versions.find_release`; a number
+    number, and is matched to its release line by [find_release][idfkit.versions.find_release]; a number
     newer than every supported release, which a file may degrade to the latest, names no release.
     """
     if isinstance(bound, str):
@@ -349,15 +361,15 @@ def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], ...]) -> _D: 
 def as_version(
     doc: AnyIDFDocument,
     *,
-    since: _Bound | None = None,
-    before: _Bound | None = None,
+    since: ReleaseBound | None = None,
+    before: ReleaseBound | None = None,
 ) -> AnyIDFDocument: ...
 def as_version(
     doc: AnyIDFDocument,
     document_type: type[_D] | tuple[type[_D], ...] | None = None,
     *,
-    since: _Bound | None = None,
-    before: _Bound | None = None,
+    since: ReleaseBound | None = None,
+    before: ReleaseBound | None = None,
 ) -> _D | AnyIDFDocument:
     """Type *doc* as a document of the EnergyPlus version *document_type* stands for, or one of several.
 
@@ -413,7 +425,7 @@ def check_target(document_type: object, since: object, before: object) -> None:
 
     What the loaders (``load_idf(path, as_type=...)``, ``since=``, ``before=``) check up front, so a
     misspelt bound fails at once rather than after a parse. Whether the document meets the target
-    is :func:`as_version`'s check, made once it is read.
+    is [as_version][idfkit.zoning.as_version]'s check, made once it is read.
 
     Raises:
         TypeError: If both a document type and a range are given, or the document type is not one.

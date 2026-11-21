@@ -51,16 +51,16 @@ def parse_epjson(
         schema: Optional EpJSONSchema for validation
         version: Optional version override (auto-detected if not provided)
         strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            IDFObject raises [InvalidFieldError][idfkit.exceptions.InvalidFieldError] instead
             of returning ``None``, and assigning a value the schema refuses raises
-            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
+            [ValidationFailedError][idfkit.exceptions.ValidationFailedError], as ``add()`` does.
         strict_parsing: When ``True`` (the default), an object type the schema does not
-            have raises :class:`~idfkit.exceptions.IDFParseError`, as :func:`~idfkit.load_idf`
+            have raises [IDFParseError][idfkit.exceptions.IDFParseError], as [load_idf][idfkit.load_idf]
             does, and the message suggests the closest type; EnergyPlus refuses such a file.
             ``False`` skips it with a logged warning.
         preserve_formatting: If ``True``, store the raw JSON text so that
-            :func:`~idfkit.writers.write_epjson` and
-            :func:`~idfkit.writers.save_epjson` can reproduce it
+            [write_epjson][idfkit.writers.write_epjson] and
+            [save_epjson][idfkit.writers.save_epjson] can reproduce it
             byte-for-byte when no objects have been modified.
         normalize_choices: When ``True`` (the default), each choice value is stored in the
             spelling its schema declares, whatever case the file used, as the field's

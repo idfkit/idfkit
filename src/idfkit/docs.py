@@ -99,7 +99,7 @@ def io_reference_url(
         obj_type: EnergyPlus object type name (e.g. ``"Zone"``).
         version: EnergyPlus version as ``(major, minor, patch)`` tuple.
         schema: Optional schema for fallback group lookup.  When ``None`` the
-            function tries to load the schema for *version* via :func:`get_schema`.
+            function tries to load the schema for *version* via [get_schema][idfkit.schema.get_schema].
         base_url: Documentation site base URL (for testing overrides).
     """
     ver = _resolve_doc_version(version)

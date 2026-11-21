@@ -255,7 +255,7 @@ def _string_is_legal(obj_schema: dict[str, Any] | None, field_name: str, value: 
     """Whether *value*, a string the numeric coercion rejected, is legal for this field anyway.
 
     Two things make a string legal. Either it is a sizing sentinel, which any numeric field takes
-    whatever its own enum says (see :data:`_SIZING_SENTINELS`), or the field declares an
+    whatever its own enum says (see ``_SIZING_SENTINELS``), or the field declares an
     ``anyOf`` whose string branch admits it.
 
     Consulted only when coercion has already failed, so the parse path pays nothing for it.
@@ -324,7 +324,7 @@ def _swallowed_field_name(pc: ParsingCache, index: int) -> str:
 def _field_offset(fields_raw: str, index: int) -> int | None:
     """Character offset in *fields_raw* where field *index* begins, or None if it runs out.
 
-    Walks the text the way :meth:`IDFParser._parse_fields` does, stepping over ``!`` comments so a
+    Walks the text the way ``IDFParser._parse_fields`` does, stepping over ``!`` comments so a
     comma inside one is not counted as a separator. Only called when a finding is being built, so
     the cost lands on the malformed object rather than on every field of every object.
     """
@@ -397,13 +397,13 @@ def parse_idf(
         version: Optional version override (auto-detected if not provided)
         encoding: File encoding. ``None`` (the default) reads the file as UTF-8 when its bytes
             are valid UTF-8, and as latin-1 otherwise. A leading UTF-8 byte-order mark is dropped.
-            The document remembers the encoding, and :func:`~idfkit.writers.save_idf` writes it
+            The document remembers the encoding, and [save_idf][idfkit.writers.save_idf] writes it
             back unless told otherwise.
         strict_parsing: If True, fail fast on malformed objects (default: True)
         strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            IDFObject raises [InvalidFieldError][idfkit.exceptions.InvalidFieldError] instead
             of returning ``None``, and assigning a value the schema refuses raises
-            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
+            [ValidationFailedError][idfkit.exceptions.ValidationFailedError], as ``add()`` does.
         preserve_formatting: If ``True``, build a Concrete Syntax Tree (CST)
             so that writing the document back preserves original formatting,
             comments, and whitespace for unmodified objects.  The default
@@ -478,7 +478,7 @@ def parse_idf_with_diagnostics(
     Every logging announcement fires exactly as it does today. A caller with a handler installed
     sees no change (FR-014); this is a second way to reach the same findings, not a replacement.
 
-    `encoding` and `normalize_choices` are the parameters of :func:`parse_idf`.
+    `encoding` and `normalize_choices` are the parameters of [parse_idf][idfkit.idf_parser.parse_idf].
     """
     filepath = Path(filepath)
 
@@ -519,7 +519,7 @@ class IDFParser:
     _content: bytes | None
     _strict_parsing: bool
     _diagnostics: list[ParseDiagnostic]
-    #: Whether the parse in progress stores choices in their schema's spelling; set by :meth:`parse`.
+    #: Whether the parse in progress stores choices in their schema's spelling; set by [parse][idfkit.idf_parser.IDFParser.parse].
     _normalize_choices: bool
 
     def __init__(
@@ -878,7 +878,7 @@ class IDFParser:
         ``"0\nMaterial"``, and the Material is lost. The finding never stops the parse, in either mode:
         a line break inside a value is legal (``My`` then ``Zone,`` is the one name ``"My Zone"``), so
         the object is kept as read, a warning is logged, and a ``ParseError`` diagnostic is recorded,
-        which :func:`~idfkit.load_idf_with_diagnostics` returns.
+        which [load_idf_with_diagnostics][idfkit.load_idf_with_diagnostics] returns.
 
         Returns the index in *fields* of the value reported, or ``None`` when there is none.
         """
@@ -1197,7 +1197,7 @@ def iter_idf_objects(
         Tuples of (object_type, name, [field_values])
 
     This is useful for quick scanning or filtering without full parsing.
-    ``encoding`` is read as :func:`parse_idf` reads it: ``None`` detects UTF-8 or latin-1.
+    ``encoding`` is read as [parse_idf][idfkit.idf_parser.parse_idf] reads it: ``None`` detects UTF-8 or latin-1.
 
     Note:
         Type names are returned exactly as they appear in the IDF file
@@ -1315,16 +1315,16 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
 
 
 def _build_idf_cst(text: str) -> DocumentCST:
-    """Build a :class:`DocumentCST` from the original IDF source text.
+    """Build a [DocumentCST][idfkit.cst.DocumentCST] from the original IDF source text.
 
-    The returned CST is a flat list of :class:`CSTNode` items whose ``text``
+    The returned CST is a flat list of [CSTNode][idfkit.cst.CSTNode] items whose ``text``
     attributes, when concatenated, reproduce *text* exactly.  Nodes that
     correspond to IDF objects are distinguished from pure-text nodes
     (comments, blank lines, preamble) so that the writer can substitute
     freshly formatted output for mutated objects while keeping everything
     else verbatim.
 
-    Performance: single-pass regex scanner using :data:`_CST_OBJECT_RE`.
+    Performance: single-pass regex scanner using ``_CST_OBJECT_RE``.
     """
     nodes: list[CSTNode] = []
     pos = 0
@@ -1346,7 +1346,7 @@ def _link_cst_to_objects(
     diagnostics: list[ParseDiagnostic] | None = None,
     filepath: str | None = None,
 ) -> bool:
-    """Link object :class:`CSTNode` items to their parsed :class:`IDFObject`.
+    """Link object [CSTNode][idfkit.cst.CSTNode] items to their parsed [IDFObject][idfkit.objects.IDFObject].
 
     The CST preserves file order while ``doc.all_objects`` groups objects by
     type.  Within each type the collection preserves insertion (= file) order,

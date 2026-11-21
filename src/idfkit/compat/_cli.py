@@ -66,7 +66,7 @@ if TYPE_CHECKING:
 def _parse_version_spec(spec: str) -> tuple[int, int, int]:
     """Parse a ``migrate --to`` value like ``"24.2"`` or ``"25.1.0"`` into the release it names.
 
-    Read as ``idfkit check`` reads its releases (:func:`~idfkit.compat._config.parse_release`): a
+    Read as ``idfkit check`` reads its releases (``parse_release``): a
     line idfkit does not support, newer ones included, is an error rather than the latest release.
     """
     try:

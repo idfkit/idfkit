@@ -9,11 +9,19 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from ._document_types import as_version, document_type, release_type_var, release_union
+from ._document_types import (
+    DocumentTypeTarget,
+    ReleaseBound,
+    as_version,
+    document_type,
+    release_type_var,
+    release_union,
+)
 from .document import AnyIDFDocument, IDFDocument
 
 __all__ = [
     "AnyIDFDocument",
+    "DocumentTypeTarget",
     "IDFDocumentBefore9_0",
     "IDFDocumentBefore9_1",
     "IDFDocumentBefore9_2",
@@ -67,6 +75,7 @@ __all__ = [
     "IDFDocumentV25_2",
     "IDFDocumentV26_1",
     "IDFDocumentV26_2",
+    "ReleaseBound",
     "ReleaseDocumentT",
     "as_version",
 ]
@@ -116,7 +125,7 @@ ReleaseDocumentT = release_type_var(
 Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one
 release's type and refuses ``AnyIDFDocument``, which names no single release. A union of release
 types names none either: mypy refuses it, but pyright tries each member against the constraints
-and accepts it, so check at run time too. :func:`idfkit.migration.migrate` takes its target this
+and accepts it, so check at run time too. [idfkit.migration.migrate][idfkit.migration.migrate] takes its target this
 way, and raises ``TypeError`` for a union.
 """
 

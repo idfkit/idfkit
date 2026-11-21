@@ -640,7 +640,7 @@ def render_cst_node(
     generating new ones, which is the whole reason a rewritten object keeps the author's units and
     notes.
 
-    Shared with :meth:`IDFDocument.render_object` so a consumer splicing one object into the range
+    Shared with [IDFDocument.render_object][idfkit.document.IDFDocument.render_object] so a consumer splicing one object into the range
     it came from gets the bytes a whole write would have put there. Two constructions of the
     formatter would be two answers to that question, and `field_comments` already had to be threaded
     through this path by hand once.
@@ -727,7 +727,7 @@ def _annotations(source_text: str) -> list[FieldAnnotation]:
 
     Delimiters are what advance the position. The first closes the type name, the second closes
     field 0, and the *d*-th closes field *d - 2*, which is the same positional order
-    :meth:`IDFWriter._get_field_values_and_comments` emits.
+    ``IDFWriter._get_field_values_and_comments`` emits.
     """
     annotations: list[FieldAnnotation] = []
     pending: list[str] = []
@@ -811,7 +811,7 @@ def _write_idf_lossless(doc: AnyIDFDocument[bool], field_comments: FieldComments
     """Produce IDF output that preserves original formatting via the CST.
 
     Unmodified objects are emitted verbatim.  Mutated or new objects use
-    the standard :class:`IDFWriter` formatter.  Removed objects are dropped.
+    the standard [IDFWriter][idfkit.writers.IDFWriter] formatter.  Removed objects are dropped.
     """
     cst = doc.cst
     if cst is None:

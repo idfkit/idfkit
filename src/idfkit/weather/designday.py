@@ -95,9 +95,9 @@ def _sanitize_ddy_text(text: str) -> tuple[str, list[str]]:
 def sanitize_ddy_bytes(data: bytes, name: str) -> tuple[bytes, list[str]]:
     """Return *data*, the bytes of a DDY file called *name*, with placeholder values blanked.
 
-    The in-memory form of :func:`sanitize_ddy_file`: the weather downloader uses it to clean a DDY
+    The in-memory form of [sanitize_ddy_file][idfkit.weather.designday.sanitize_ddy_file]: the weather downloader uses it to clean a DDY
     before the DDY is first written to the cache, so a cached DDY never has to be rewritten under
-    a reader. Logs the same warning as :func:`sanitize_ddy_file`, naming *name*.
+    a reader. Logs the same warning as [sanitize_ddy_file][idfkit.weather.designday.sanitize_ddy_file], naming *name*.
 
     Args:
         data: The content of a ``.ddy`` file.
@@ -125,7 +125,7 @@ def sanitize_ddy_file(ddy_path: Path | str) -> list[str]:
 
     The file is edited in place: a symlink's target is cleaned, and the file keeps its inode,
     owner and permissions. A file nobody else is reading at the same time is the expected case;
-    to clean a DDY other threads or processes may be reading, use :func:`sanitize_ddy_bytes` and
+    to clean a DDY other threads or processes may be reading, use [sanitize_ddy_bytes][idfkit.weather.designday.sanitize_ddy_bytes] and
     publish the result with an atomic rename.
 
     Args:
@@ -398,7 +398,7 @@ class DesignDayManager:
         return self._location
 
     def raise_if_empty(self) -> None:
-        """Raise :exc:`NoDesignDaysError` if this DDY has no design days.
+        """Raise [NoDesignDaysError][idfkit.exceptions.NoDesignDaysError] if this DDY has no design days.
 
         When constructed via [from_station][idfkit.weather.designday.DesignDayManager.from_station], the error message includes
         suggestions for nearby stations that may have design day data.

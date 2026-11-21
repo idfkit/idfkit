@@ -75,7 +75,7 @@ def _extract_enum_values(field_schema: dict[str, Any]) -> set[str]:
 
 
 def build_schema_index(schema: EpJSONSchema) -> SchemaIndex:
-    """Build a :class:`SchemaIndex` from an ``EpJSONSchema``.
+    """Build a [SchemaIndex][idfkit.compat.SchemaIndex] from an ``EpJSONSchema``.
 
     Iterates over all object types and their field properties to collect
     the set of object type names, all enumerated choice values, and
@@ -112,9 +112,9 @@ def build_schema_index(schema: EpJSONSchema) -> SchemaIndex:
 
 
 def diff_schemas(from_index: SchemaIndex, to_index: SchemaIndex) -> SchemaDiff:
-    """Compute the diff between two :class:`SchemaIndex` instances.
+    """Compute the diff between two [SchemaIndex][idfkit.compat.SchemaIndex] instances.
 
-    Returns a :class:`SchemaDiff` describing which object types and choice
+    Returns a [SchemaDiff][idfkit.compat.SchemaDiff] describing which object types and choice
     values were added or removed between *from_index* and *to_index*.
     """
     removed_types = from_index.object_types - to_index.object_types

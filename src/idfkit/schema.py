@@ -112,7 +112,7 @@ def canonical_choice(spellings: ChoiceSpellings | None, value: Any) -> Any:
     to an entry of *spellings* changes; anything else, a number or an unlisted string, is returned
     as is. A numeric field that declares one sizing keyword also maps the other one to it
     (``Autocalculate`` reads ``"Autosize"`` where only ``Autosize`` is listed), as EnergyPlus's
-    ``ConvertInputFormat`` does (see :func:`_choice_spellings`). A ``str`` subclass, such as a
+    ``ConvertInputFormat`` does (see ``_choice_spellings``). A ``str`` subclass, such as a
     ``StrEnum`` member, is matched by its text and stored as a plain ``str``.
     """
     if spellings and isinstance(value, str):
@@ -167,7 +167,7 @@ def trailing_underscore_aliases(field_names: Iterable[str]) -> dict[str, str]:
 
     EnergyPlus derives an epJSON key from the IDD field name without trimming, so a name that
     ends in punctuation or a space ends in ``_``: ``"COND: Flag: Is the basement conditioned?"``
-    is ``cond_flag_is_the_basement_conditioned_``. :func:`~idfkit.objects.to_python_name` trims
+    is ``cond_flag_is_the_basement_conditioned_``. [to_python_name][idfkit.objects.to_python_name] trims
     that underscore, so both the key itself and the spelling without it are mapped here, the
     latter only when it is not a field of its own. ``name`` is never mapped: it means the
     object's name everywhere, including on the nameless ``Output:Table:ReportPeriod`` of
@@ -223,10 +223,10 @@ class ParsingCache:
     #: Choice spellings of the positional fields and of one extensible group (idfkit#180).
     choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
     ext_choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
-    #: Trailing-underscore field spellings to their keys (see :func:`trailing_underscore_aliases`).
+    #: Trailing-underscore field spellings to their keys (see [trailing_underscore_aliases][idfkit.schema.trailing_underscore_aliases]).
     field_aliases: Mapping[str, str] = field(default_factory=dict[str, str])
     #: eppy's spellings of fields whose IDD name has punctuation inside a word, to their keys
-    #: (``vertex_1_xcoordinate`` -> ``vertex_1_x_coordinate``; see :func:`~idfkit._eppy_names.eppy_field_aliases`).
+    #: (``vertex_1_xcoordinate`` -> ``vertex_1_x_coordinate``; see [eppy_field_aliases][idfkit.schema.eppy_field_aliases]).
     eppy_aliases: Mapping[str, str] = field(default_factory=dict[str, str])
 
 
@@ -406,7 +406,7 @@ class EpJSONSchema:
         A document carries its schema, so pickling a document (multiprocessing,
         joblib, ``copy.deepcopy``) would otherwise carry the full ~4 MB schema
         with it and come back as a private copy, breaking the one-schema-per-
-        version invariant that :class:`SchemaManager` maintains.  The schema the
+        version invariant that [SchemaManager][idfkit.schema.SchemaManager] maintains.  The schema the
         manager handed out for this version is reconstructed by asking the
         manager again, which is a cache hit in the same process and a bundled
         load in a worker.
@@ -1376,7 +1376,7 @@ class SchemaManager:
 
         Pickling asks this: a schema the manager owns travels by version and is re-resolved through
         the manager on load, while any other instance travels by content (see
-        :meth:`EpJSONSchema.__reduce__`).
+        ``EpJSONSchema.__reduce__``).
         """
         return self._cache.get(schema.version) is schema
 
@@ -1419,7 +1419,7 @@ def get_schema_manager() -> SchemaManager:
 
 
 def _rebuild_schema(cls: type[EpJSONSchema], state: dict[str, Any]) -> EpJSONSchema:
-    """Unpickle a schema the manager does not own (see :meth:`EpJSONSchema.__reduce__`)."""
+    """Unpickle a schema the manager does not own (see ``EpJSONSchema.__reduce__``)."""
     schema = cls.__new__(cls)
     for name, value in state.items():
         setattr(schema, name, value)
