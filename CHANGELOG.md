@@ -11,12 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `idfkit.versioned.DocumentTypeTarget` and `ReleaseBound` name what `as_type=`, `since=` and `before=`
   take, and `idfkit.weather.GeocodingErrorKind` names `GeocodingError.kind`; signatures used private
-  aliases before ([#PR](https://github.com/idfkit/idfkit/pull/PR)).
+  aliases before ([#362](https://github.com/idfkit/idfkit/pull/362)).
 
 ### Fixed
 
 - Docstring cross-references were Sphinx roles, which the API reference showed as raw text; they are
-  now links ([#PR](https://github.com/idfkit/idfkit/pull/PR)).
+  now links ([#362](https://github.com/idfkit/idfkit/pull/362)).
 
 ## [1.3.0-rc.2] - 2026-11-20
 
