@@ -40,7 +40,7 @@ __all__ = [
 
 @lru_cache(maxsize=2)
 def _folded_required_reads(group: bool) -> dict[str, tuple[str, ...]]:
-    """[READ_REQUIRED][idfkit.objects.READ_REQUIRED] (or the group table) keyed by upper-cased object type."""
+    """``READ_REQUIRED`` (or the group table) keyed by upper-cased object type."""
     table = GROUP_READ_REQUIRED if group else READ_REQUIRED
     return {obj_type.upper(): names for obj_type, names in table.items()}
 
@@ -833,7 +833,7 @@ class IDFObject(EppyObjectMixin):
     def _eppy_key(self, python_key: str) -> str | None:
         """The key eppy's spelling *python_key* (``vertex_1_xcoordinate``) names, or ``None``.
 
-        See [resolve_eppy_key][idfkit.objects.resolve_eppy_key]; a numbered extensible field resolves to its
+        See ``resolve_eppy_key``; a numbered extensible field resolves to its
         flat spelling, which the legacy flat-extensible path then routes to its group.
         """
         return resolve_eppy_key(python_key, self._eppy_aliases(), self._extensibles)

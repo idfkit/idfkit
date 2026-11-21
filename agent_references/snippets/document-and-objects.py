@@ -202,6 +202,23 @@ def count_people(doc: AnyIDFDocument) -> int:
 # --8<-- [end:versioned]
 
 
+# --8<-- [start:versioned-forward-target]
+from idfkit.versioned import DocumentTypeTarget, ReleaseBound
+
+
+def load_release(path: str, as_type: DocumentTypeTarget | None = None) -> AnyIDFDocument:
+    """Take a release as as_type= does, and pass it on."""
+    return load_idf(path, as_type=as_type)
+
+
+def load_range(path: str, since: ReleaseBound | None = None, before: ReleaseBound | None = None) -> AnyIDFDocument:
+    """Take a range as since= and before= do, and pass it on: in a call of its own, not with as_type=."""
+    return load_idf(path, since=since, before=before)
+
+
+# --8<-- [end:versioned-forward-target]
+
+
 # --8<-- [start:versioned-read-write]
 def use_natural_gas(doc: AnyIDFDocument) -> None:
     for heater in doc["WaterHeater:Mixed"]:

@@ -421,6 +421,13 @@ class TestRangeAliases:
         alias: Any = versioned.IDFDocumentSince23_2  # to a type checker an alias is no class; it runs
         assert versioned.as_version(doc, alias) is doc
 
+    @pytest.mark.parametrize("alias", ["DocumentTypeTarget", "ReleaseBound"])
+    def test_a_target_alias_is_a_union_at_run_time(self, alias: str) -> None:
+        # A string would make ``alias | None`` raise TypeError in a module without
+        # ``from __future__ import annotations``.
+        optional = getattr(versioned, alias) | None
+        assert type(None) in get_args(optional)
+
 
 # ---------------------------------------------------------------------------
 # Generated stubs

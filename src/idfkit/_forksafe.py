@@ -2,7 +2,7 @@
 
 A child forked while some thread holds a ``threading.Lock`` inherits the lock still held, by a
 thread the child does not have, so the child's first ``acquire`` waits forever. Every
-process-wide lock in idfkit is a [ForkSafeLock][idfkit.schema.ForkSafeLock], and one ``os.register_at_fork`` hook
+process-wide lock in idfkit is a ``ForkSafeLock``, and one ``os.register_at_fork`` hook
 hands each of them a fresh lock in the child, the way the standard library's ``logging``
 re-initialises its handler locks.
 

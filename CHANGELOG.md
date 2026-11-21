@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `idfkit.versioned.DocumentTypeTarget` and `ReleaseBound` name what `as_type=`, `since=` and `before=`
-  take, and `idfkit.weather.GeocodingErrorKind` names `GeocodingError.kind`; signatures used private
-  aliases before ([#362](https://github.com/idfkit/idfkit/pull/362)).
+- `idfkit.versioned.DocumentTypeTarget` and `ReleaseBound` named what `as_type=`, `since=` and `before=`
+  took, and `idfkit.weather.GeocodingErrorKind` named `GeocodingError.kind`, where signatures had used
+  private aliases ([#362](https://github.com/idfkit/idfkit/pull/362)).
 
 ### Fixed
 
-- Docstring cross-references were Sphinx roles, which the API reference showed as raw text; they are
-  now links ([#362](https://github.com/idfkit/idfkit/pull/362)).
+- Docstring cross-references, written as Sphinx roles that the API reference showed as raw text,
+  became links ([#362](https://github.com/idfkit/idfkit/pull/362)).
 
 ## [1.3.0-rc.2] - 2026-11-20
 

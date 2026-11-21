@@ -271,7 +271,7 @@ def resolve_eppy_key(python_key: str, aliases: Mapping[str, str], extensibles: C
 
     *python_key* is eppy's name as [to_python_name][idfkit.objects.to_python_name] reads it
     (``Vertex_1_Xcoordinate`` is ``vertex_1_xcoordinate``), *aliases* the type's
-    [eppy_field_aliases][idfkit.schema.eppy_field_aliases]. A fixed field maps to its key (``vertex_1_x_coordinate`` on
+    ``eppy_field_aliases``. A fixed field maps to its key (``vertex_1_x_coordinate`` on
     ``FenestrationSurface:Detailed``); a numbered extensible field maps to the flat spelling
     ``vertex_x_coordinate_1``, which the legacy flat-extensible paths route to its group.
     """

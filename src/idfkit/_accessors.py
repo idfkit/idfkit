@@ -45,7 +45,7 @@ _SPLIT_AFTER_LOWER = re.compile(r"([a-z0-9])([A-Z])")
 _COLLAPSE = re.compile(r"_+")
 
 MEMBER_CONFLICT = "<IDFDocument member>"
-"""Marker in [AccessorResolver.conflicts][idfkit.schema.AccessorResolver.conflicts] for a name owned by a real member."""
+"""Marker in ``AccessorResolver.conflicts`` for a name owned by a real member."""
 
 
 def snake_case(obj_type: str) -> str:

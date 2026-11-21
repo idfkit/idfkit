@@ -5,12 +5,12 @@ For a type checker, ``AnyIDFDocument`` (``document.pyi``) and each ``IDFDocument
 EnergyPlus version. At run time there is one document class, [IDFDocument][idfkit.document.IDFDocument],
 and its version is a value read from the file. The stand-ins here connect the two: ``isinstance``
 against one holds exactly for a document of its version, which is what
-[as_version][idfkit.zoning.as_version] checks before it hands a document back under that type.
+[as_version][idfkit.versioned.as_version] checks before it hands a document back under that type.
 
 That ``isinstance`` is this module's mechanism, not the public way to check a release. The
 latest release's type has no stand-in: it is ``IDFDocument``, which every document is an
 instance of, so ``isinstance(doc, IDFDocument)`` holds for a document of any release while a type
-checker then types it as the latest one. [as_version][idfkit.zoning.as_version] is the check.
+checker then types it as the latest one. [as_version][idfkit.versioned.as_version] is the check.
 
 A document's version is matched to a release the way its schema is chosen,
 by [find_closest_version][idfkit.versions.find_closest_version]: a file states its version with two components
@@ -50,22 +50,27 @@ from .versions import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeIs
+    from typing_extensions import TypeIs, Unpack
 
     from .document import AnyIDFDocument
 
 
 _D = TypeVar("_D", bound="AnyIDFDocument")
 
-DocumentTypeTarget: TypeAlias = "type[AnyIDFDocument] | tuple[type[AnyIDFDocument], ...]"
+# Each alias is a union at run time, not a string, so that ``DocumentTypeTarget | None`` evaluates in a
+# caller's own signature; only what this module cannot import at run time is quoted. The tuple is
+# non-empty, as the overloads of the loaders and ``as_version`` in the stubs take it.
+DocumentTypeTarget: TypeAlias = (
+    type["AnyIDFDocument"] | tuple["type[AnyIDFDocument]", "Unpack[tuple[type[AnyIDFDocument], ...]]"]
+)
 """The release a document must be, as ``as_type=`` and [as_version][idfkit.versioned.as_version] take it.
 
-A release's document type from [idfkit.versioned][], such as ``IDFDocumentV9_4``, or a tuple of
-them for any one of several releases. The document is typed as that release, or as the union of
-the tuple's releases.
+A release's document type from [idfkit.versioned][], such as ``IDFDocumentV9_4``, or a non-empty
+tuple of them for any one of several releases. The document is typed as that release, or as the
+union of the tuple's releases.
 """
 
-ReleaseBound: TypeAlias = "type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int]"
+ReleaseBound: TypeAlias = type["AnyIDFDocument"] | str | tuple[int, int] | tuple[int, int, int]
 """One end of a range of releases, as ``since=`` and ``before=`` take it.
 
 A release's document type (``IDFDocumentV9_6``), its number (``"9.6"``) or its version tuple
@@ -156,14 +161,14 @@ def is_type_form(value: object) -> TypeIs[type[Any]]:
 def release_for_new_document(document_type: object, strict: bool) -> tuple[tuple[int, int, int], bool]:
     """The release and strictness of the document [idfkit.new_document][idfkit.new_document] creates for *document_type*.
 
-    The release is the one [release_of][idfkit.migration.chain.release_of] resolves; the strictness the one the type argument states
-    (``IDFDocumentV9_4[Literal[False]]``), else *strict*. On top of [release_of][idfkit.migration.chain.release_of], ``IDFDocument`` is
+    The release is the one ``release_of`` resolves; the strictness the one the type argument states
+    (``IDFDocumentV9_4[Literal[False]]``), else *strict*. On top of ``release_of``, ``IDFDocument`` is
     refused: it is the run-time class of every document, so ``new_document(type(doc))`` would create a
     latest-release document typed as ``doc``'s release. So is a subclass of a release type, which
     ``new_document`` would type as the subclass while returning an ``IDFDocument``.
 
     Raises:
-        TypeError: As [release_of][idfkit.migration.chain.release_of] does, for ``IDFDocument`` or a subclass of a release type, and for a
+        TypeError: As ``release_of`` does, for ``IDFDocument`` or a subclass of a release type, and for a
             strictness that contradicts *strict*.
     """
     from .document import IDFDocument
@@ -243,7 +248,7 @@ def _stated_strictness(document_type: object) -> bool | None:
 
 
 def release_of(document_type: object) -> tuple[int, int, int]:
-    """The one release *document_type* stands for, as [as_version][idfkit.zoning.as_version] resolves it.
+    """The one release *document_type* stands for, as [as_version][idfkit.versioned.as_version] resolves it.
 
     Raises:
         TypeError: If *document_type* is not a document type, or names no single release:
@@ -425,7 +430,7 @@ def check_target(document_type: object, since: object, before: object) -> None:
 
     What the loaders (``load_idf(path, as_type=...)``, ``since=``, ``before=``) check up front, so a
     misspelt bound fails at once rather than after a parse. Whether the document meets the target
-    is [as_version][idfkit.zoning.as_version]'s check, made once it is read.
+    is [as_version][idfkit.versioned.as_version]'s check, made once it is read.
 
     Raises:
         TypeError: If both a document type and a range are given, or the document type is not one.
