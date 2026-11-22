@@ -29,8 +29,8 @@ from typing import Any
 
 import pytest
 
-from idfkit.exceptions import ResultLookupError
 import idfkit.simulation.parsers.sql as sql_module
+from idfkit.exceptions import ResultLookupError
 from idfkit.simulation.parsers.sql import Environment, EnvironmentInfo, SQLResult, TabularRow, VariableInfo
 
 
