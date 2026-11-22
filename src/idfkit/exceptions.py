@@ -632,7 +632,7 @@ class MissingRequiredFieldError(IdfKitError, AttributeError):
 
     The same holds for a key of an extensible group that every release requires
     (``vertex_x_coordinate``): reading it from a group that lacks it, or snapshotting that group with
-    ``as_dict()`` or ``as_list()``, raises this with :attr:`wrapper_key` and :attr:`group_index` set;
+    ``as_dict()`` or ``as_list()``, raises this with ``wrapper_key`` and ``group_index`` set;
     ``group.get(key)`` gives ``None`` instead.
 
     Attributes:
@@ -673,7 +673,7 @@ class MissingRequiredFieldError(IdfKitError, AttributeError):
 def _rebuild_missing_required_field_error(
     obj_type: str, obj_name: str, field_name: str, group: tuple[str, int] | None
 ) -> MissingRequiredFieldError:
-    """Unpickle a :class:`MissingRequiredFieldError` (see its ``__reduce__``)."""
+    """Unpickle a [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError] (see its ``__reduce__``)."""
     return MissingRequiredFieldError(obj_type, obj_name, field_name, group=group)
 
 
@@ -813,7 +813,7 @@ def _rebuild_energyplus_not_found_error(
     requested_version: tuple[int, int, int] | None,
     found: tuple[tuple[tuple[int, int, int], str], ...],
 ) -> EnergyPlusNotFoundError:
-    """Unpickle an :class:`EnergyPlusNotFoundError` (see its ``__reduce__``)."""
+    """Unpickle an [EnergyPlusNotFoundError][idfkit.exceptions.EnergyPlusNotFoundError] (see its ``__reduce__``)."""
     return EnergyPlusNotFoundError(searched_locations, requested_version=requested_version, found=found)
 
 

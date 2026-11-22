@@ -45,7 +45,7 @@ A city name alone can match several countries (London is also in Ontario). Quali
 
 `geocode` uses Nominatim (OpenStreetMap) — no API key, but rate-limited to 1 req/second. For batch geocoding, sleep between calls or pre-compute.
 
-`geocode` and `detect_location` raise `GeocodingError` on failure. Branch on `exc.kind`, never on the message: `"not-found"` (the service answered, no such place; retrying will not help), `"unreachable"`, `"http"` (with `exc.status`), or `"invalid-response"`.
+`geocode` and `detect_location` raise `GeocodingError` on failure. Branch on `exc.kind`, never on the message: `"not-found"` (the service answered, no such place; retrying will not help), `"unreachable"`, `"http"` (with `exc.status`), or `"invalid-response"`. The `Literal` of those four is `GeocodingErrorKind`, from `idfkit.weather`.
 
 ```python
 --8<-- "agent_references/snippets/weather-data.py:geocode-errors"

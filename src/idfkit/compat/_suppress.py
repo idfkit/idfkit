@@ -51,7 +51,7 @@ class Suppression:
 def parse_suppressions(source: str) -> dict[int, Suppression]:
     """Find every ``# idfkit: ignore`` comment in *source*, keyed by line.
 
-    Only real comments are read (through :mod:`tokenize`), so the text inside a string is never
+    Only real comments are read (through ``tokenize``), so the text inside a string is never
     taken for one. A source that does not tokenize yields no suppressions; the parse error is
     reported by the caller.
     """

@@ -421,6 +421,27 @@ class TestRangeAliases:
         alias: Any = versioned.IDFDocumentSince23_2  # to a type checker an alias is no class; it runs
         assert versioned.as_version(doc, alias) is doc
 
+    @pytest.mark.parametrize("alias", ["DocumentTypeTarget", "ReleaseBound"])
+    def test_a_target_alias_is_a_union_at_run_time(self, alias: str) -> None:
+        # A string would make ``alias | None`` raise TypeError in a module without
+        # ``from __future__ import annotations``.
+        optional = getattr(versioned, alias) | None
+        assert type(None) in get_args(optional)
+
+    def test_hints_using_the_target_aliases_resolve_in_the_callers_module(self) -> None:
+        # A quoted name inside the aliases would be resolved by ``get_type_hints`` in the caller's
+        # module (Python 3.11 and later), where ``AnyIDFDocument`` is not defined, and pydantic,
+        # typer and the rest would fail on any function that takes a release.
+        namespace: dict[str, Any] = {}
+        exec(  # noqa: S102 - a module without ``from __future__ import annotations``, as a user's may be
+            "from idfkit.versioned import DocumentTypeTarget, ReleaseBound\n"
+            "def load(path: str, as_type: DocumentTypeTarget | None = None, since: ReleaseBound | None = None): ...\n",
+            namespace,
+        )
+        hints = typing.get_type_hints(namespace["load"])
+        assert set(hints) == {"path", "as_type", "since"}
+        assert get_type_hints(load_idf)["since"] is not None
+
 
 # ---------------------------------------------------------------------------
 # Generated stubs
@@ -539,7 +560,7 @@ class TestCommittedStubs:
             # A release's document that no longer derives from IDFDocumentAllVersions.
             (
                 3,
-                r"(?m)^    IDFDocumentAllVersions\[Strict\],\n\):\n(    \"\"\"An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9\.4)",
+                r"(?m)^    IDFDocumentAllVersions\[Strict\],\n\):\n(    \"\"\"An \[IDFDocument\]\[idfkit\.document\.IDFDocument\] typed for EnergyPlus 9\.4)",
                 r"):\n\1",
                 "IDFDocumentV9_4: does not derive from IDFDocumentAllVersions",
                 ((9, 4, 0),),

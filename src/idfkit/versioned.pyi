@@ -137,6 +137,8 @@ from ._creation import _v124 as _cv124
 from ._creation import _v125 as _cv125
 from ._creation import _v126 as _cv126
 from ._creation import _v127 as _cv127
+from ._release_aliases import DocumentTypeTarget as DocumentTypeTarget
+from ._release_aliases import ReleaseBound as ReleaseBound
 from ._versioned.v8_9 import IDFDocumentV8_9 as IDFDocumentV8_9
 from ._versioned.v9_0 import IDFDocumentV9_0 as IDFDocumentV9_0
 from ._versioned.v9_1 import IDFDocumentV9_1 as IDFDocumentV9_1
@@ -23978,7 +23980,7 @@ ReleaseDocumentT = TypeVar(
 Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one
 release's type and refuses ``AnyIDFDocument``, which names no single release. A union of release
 types names none either: mypy refuses it, but pyright tries each member against the constraints
-and accepts it, so check at run time too. :func:`idfkit.migration.migrate` takes its target this
+and accepts it, so check at run time too. [idfkit.migration.migrate][idfkit.migration.migrate] takes its target this
 way, and raises ``TypeError`` for a union.
 """
 

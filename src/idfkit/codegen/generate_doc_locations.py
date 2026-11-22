@@ -5,7 +5,7 @@ EnergyPlus object types and produces a mapping of
 ``{object_type: "relative/path/#anchor"}``.
 
 The generated file is committed and shipped with the package so that
-:mod:`idfkit.docs` can generate accurate documentation URLs without any
+[idfkit.docs][idfkit.docs] can generate accurate documentation URLs without any
 runtime dependency on idfkit-docs.
 
 Usage::

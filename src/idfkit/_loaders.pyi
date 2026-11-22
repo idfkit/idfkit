@@ -96,7 +96,7 @@ def load_idf(
     document is typed as ``AnyIDFDocument``, which offers what every supported release has. Name
     the release with ``as_type=``, or a range of releases with ``since=`` and ``before=``, to type
     it for that release; the release is checked once the file is read, as
-    :func:`idfkit.versioned.as_version` checks it.
+    [idfkit.versioned.as_version][idfkit.versioned.as_version] checks it.
 
     Args:
         path: Path to the IDF file
@@ -104,7 +104,7 @@ def load_idf(
             file is read with. A ``Version`` object in the file still sets ``doc.version``, and
             that is what ``as_type=``, ``since=`` and ``before=`` are checked against.
         as_type: The document type of the release the file must be, such as ``IDFDocumentV9_4``
-            from :mod:`idfkit.versioned`, or a tuple of them. The document is returned typed as
+            from [idfkit.versioned][idfkit.versioned], or a tuple of them. The document is returned typed as
             it, or as the union of the tuple's types. A type argument states the strictness:
             ``IDFDocumentV9_4[Literal[False]]`` loads a non-strict document, as ``strict=False`` does.
         since: The first release of a range the file must be in: its document type,
@@ -113,11 +113,11 @@ def load_idf(
         before: The release that range stops before, the same way.
         strict_parsing: If True, fail fast on malformed IDF objects (default: True)
         strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            IDFObject raises [InvalidFieldError][idfkit.exceptions.InvalidFieldError] instead
             of returning ``None``, and assigning a value the schema refuses raises
-            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
+            [ValidationFailedError][idfkit.exceptions.ValidationFailedError], as ``add()`` does.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree
-            (CST) so that :func:`write_idf` and :func:`save_idf`
+            (CST) so that [write_idf][idfkit.writers.write_idf] and [save_idf][idfkit.writers.save_idf]
             reproduce the original
             formatting, comments, and whitespace for unmodified objects. Choice
             normalization does not affect this: an unmodified object is written as read.
@@ -130,10 +130,10 @@ def load_idf(
             exhaustive ``match`` holds on models you did not write. EnergyPlus reads choices
             case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
             a choice field's ``Literal`` type then does not hold; see
-            :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
+            [IDFDocument.normalize_choices][idfkit.document.IDFDocument.normalize_choices].
         encoding: The file's text encoding. ``None`` (the default) reads it as UTF-8 when its
             bytes are valid UTF-8 and as latin-1 otherwise, dropping a UTF-8 byte-order mark.
-            :func:`save_idf` writes the document back in the same encoding.
+            [save_idf][idfkit.writers.save_idf] writes the document back in the same encoding.
 
     Returns:
         The parsed document: an ``AnyIDFDocument``, or typed as ``as_type=`` or the
@@ -3437,36 +3437,37 @@ def load_idf_with_diagnostics(
     saw before.
 
     The document is typed as ``AnyIDFDocument`` unless ``as_type=``, ``since=`` or ``before=``
-    names its release, as for :func:`load_idf`.
+    names its release, as for [load_idf][idfkit.load_idf].
 
     Args:
         path: Path to the IDF file
         version: Optional version override (major, minor, patch)
         as_type: The document type of the release the file must be, or a tuple of them, as for
-            :func:`load_idf`.
-        since: The first release of a range the file must be in, as for :func:`load_idf`.
-        before: The release that range stops before, as for :func:`load_idf`.
+            [load_idf][idfkit.load_idf].
+        since: The first release of a range the file must be in, as for [load_idf][idfkit.load_idf].
+        before: The release that range stops before, as for [load_idf][idfkit.load_idf].
         strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            IDFObject raises [InvalidFieldError][idfkit.exceptions.InvalidFieldError] instead
             of returning ``None``, and assigning a value the schema refuses raises
-            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
+            [ValidationFailedError][idfkit.exceptions.ValidationFailedError], as ``add()`` does.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree (CST) so that
-            :func:`write_idf` and :func:`save_idf` reproduce the original formatting.
+            [write_idf][idfkit.writers.write_idf] and [save_idf][idfkit.writers.save_idf] reproduce the original
+            formatting.
         normalize_choices: When ``True`` (the default), each choice value is stored in the
             spelling its schema declares, whatever case the file used: a surface the file
             calls ``WALL`` has ``surface_type == "Wall"``, as its ``Literal`` type says, so an
             exhaustive ``match`` holds on models you did not write. EnergyPlus reads choices
             case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
             a choice field's ``Literal`` type then does not hold; see
-            :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
-        encoding: The file's text encoding, as for :func:`load_idf`.
+            [IDFDocument.normalize_choices][idfkit.document.IDFDocument.normalize_choices].
+        encoding: The file's text encoding, as for [load_idf][idfkit.load_idf].
 
     Returns:
-        A :class:`~idfkit.idf_parser.ParseResult`: the document, and the recoverable findings.
+        A [ParseResult][idfkit.idf_parser.ParseResult]: the document, and the recoverable findings.
 
     Raises:
-        TypeError: As :func:`load_idf` raises it.
-        ValueError: As :func:`load_idf` raises it.
+        TypeError: As [load_idf][idfkit.load_idf] raises it.
+        ValueError: As [load_idf][idfkit.load_idf] raises it.
 
     Examples:
         Read a model that may be imperfect, and show what was wrong with it:
@@ -6548,25 +6549,25 @@ def load_epjson(
     """Load an epJSON file and return its document.
 
     The document is typed as ``AnyIDFDocument`` unless ``as_type=``, ``since=`` or ``before=``
-    names its release, as for :func:`load_idf`.
+    names its release, as for [load_idf][idfkit.load_idf].
 
     Args:
         path: Path to the epJSON file
         version: Optional version override (major, minor, patch)
         as_type: The document type of the release the file must be, or a tuple of them, as for
-            :func:`load_idf`.
-        since: The first release of a range the file must be in, as for :func:`load_idf`.
-        before: The release that range stops before, as for :func:`load_idf`.
+            [load_idf][idfkit.load_idf].
+        since: The first release of a range the file must be in, as for [load_idf][idfkit.load_idf].
+        before: The release that range stops before, as for [load_idf][idfkit.load_idf].
         strict_parsing: When ``True`` (the default), an object type the schema does not
-            have raises :class:`~idfkit.exceptions.IDFParseError`, as :func:`load_idf` does,
+            have raises [IDFParseError][idfkit.exceptions.IDFParseError], as [load_idf][idfkit.load_idf] does,
             and the message suggests the closest type; EnergyPlus refuses such a file. ``False``
             skips it with a logged warning.
         strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            IDFObject raises [InvalidFieldError][idfkit.exceptions.InvalidFieldError] instead
             of returning ``None``, and assigning a value the schema refuses raises
-            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
+            [ValidationFailedError][idfkit.exceptions.ValidationFailedError], as ``add()`` does.
         preserve_formatting: When ``True``, store the raw JSON text so
-            that :func:`write_epjson` and :func:`save_epjson` can
+            that [write_epjson][idfkit.writers.write_epjson] and [save_epjson][idfkit.writers.save_epjson] can
             reproduce it byte-for-byte
             when no objects have been modified.
         normalize_choices: When ``True`` (the default), each choice value is stored in the
@@ -6575,7 +6576,7 @@ def load_epjson(
             exhaustive ``match`` holds on models you did not write. EnergyPlus reads choices
             case-insensitively, so no simulation changes. ``False`` keeps the file's text, and
             a choice field's ``Literal`` type then does not hold; see
-            :attr:`IDFDocument.normalize_choices <idfkit.document.IDFDocument.normalize_choices>`.
+            [IDFDocument.normalize_choices][idfkit.document.IDFDocument.normalize_choices].
 
     Returns:
         The parsed document: an ``AnyIDFDocument``, or typed as ``as_type=`` or the
@@ -6583,8 +6584,8 @@ def load_epjson(
 
     Raises:
         IDFParseError: For an object type the schema does not have, with *strict_parsing*.
-        TypeError: As :func:`load_idf` raises it.
-        ValueError: As :func:`load_idf` raises it.
+        TypeError: As [load_idf][idfkit.load_idf] raises it.
+        ValueError: As [load_idf][idfkit.load_idf] raises it.
 
     Examples:
         Load an epJSON model and iterate over zones:

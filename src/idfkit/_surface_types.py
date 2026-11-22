@@ -22,7 +22,7 @@ def is_fenestration_door(obj: IDFObject) -> bool:
     """Whether *obj* is a ``FenestrationSurface:Detailed`` of surface type ``Door`` (opaque).
 
     Every other fenestration surface, one with no surface type included, counts as glazed: this is
-    the rule both ``E013`` and :func:`~idfkit.geometry_builders.set_default_constructions` apply.
+    the rule both ``E013`` and [set_default_constructions][idfkit.geometry_builders.set_default_constructions] apply.
     """
     if obj.obj_type != "FenestrationSurface:Detailed":
         return False
