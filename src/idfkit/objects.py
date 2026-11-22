@@ -40,7 +40,7 @@ __all__ = [
 
 @lru_cache(maxsize=2)
 def _folded_required_reads(group: bool) -> dict[str, tuple[str, ...]]:
-    """:data:`READ_REQUIRED` (or the group table) keyed by upper-cased object type."""
+    """``READ_REQUIRED`` (or the group table) keyed by upper-cased object type."""
     table = GROUP_READ_REQUIRED if group else READ_REQUIRED
     return {obj_type.upper(): names for obj_type, names in table.items()}
 
@@ -194,7 +194,7 @@ def drop_blank_group_slots(fields: dict[str, Any], wrapper_key: str) -> dict[str
 class ExtensibleGroup:
     """One row of an extensible array (e.g. a single vertex inside ``vertices``).
 
-    Holds a back-reference to the owning :class:`IDFObject` and the group's
+    Holds a back-reference to the owning [IDFObject][idfkit.objects.IDFObject] and the group's
     1-based index so attribute reads/writes route into
     ``obj.data[wrapper_key][group_index - 1]``. Equality compares against
     plain dicts; ``as_dict()`` snapshots the underlying values.
@@ -229,7 +229,7 @@ class ExtensibleGroup:
         """Read one key of the group; unset, ``None``.
 
         A key every supported release requires (``vertex_x_coordinate``) is typed as always set, so
-        reading it unset raises :class:`~idfkit.exceptions.MissingRequiredFieldError`, an
+        reading it unset raises [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError], an
         ``AttributeError``; ``group.get(name)`` gives ``None`` for it instead.
         """
         if name.startswith("_"):
@@ -323,7 +323,7 @@ class ExtensibleGroup:
 
         The dict holds the keys that are set. A typed group gives its item ``TypedDict``, whose
         required keys (those every supported release requires) are always present: a group that
-        lacks one raises :class:`~idfkit.exceptions.MissingRequiredFieldError` rather than give a
+        lacks one raises [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError] rather than give a
         dict that contradicts its type.
         """
         snapshot = self._snapshot()
@@ -379,10 +379,10 @@ GroupT_co = TypeVar("GroupT_co", bound=ExtensibleGroup, covariant=True)
 class ExtensibleList(Generic[GroupT_co]):
     """List-like view over the canonical wrapper array ``obj.data[wrapper_key]``.
 
-    Holds a reference to the owning :class:`IDFObject` and the wrapper key;
+    Holds a reference to the owning [IDFObject][idfkit.objects.IDFObject] and the wrapper key;
     indexing, iteration, append, insert, delete, pop, clear, extend, equality,
     and bulk replace all operate on the canonical list of dicts. Items are
-    yielded as :class:`ExtensibleGroup` instances bound to the underlying dicts.
+    yielded as [ExtensibleGroup][idfkit.objects.ExtensibleGroup] instances bound to the underlying dicts.
 
     The ``Generic[GroupT_co]`` parameter lets generated stubs narrow the item
     type per object — e.g. ``surface.vertices`` is typed as
@@ -484,7 +484,7 @@ class ExtensibleList(Generic[GroupT_co]):
             )
 
     def append(self, item: Any = None, /, **kwargs: Any) -> GroupT_co:
-        """Append a new group. Accepts a dict, another :class:`ExtensibleGroup`, or kwargs."""
+        """Append a new group. Accepts a dict, another [ExtensibleGroup][idfkit.objects.ExtensibleGroup], or kwargs."""
         merged = self._coerce_item(item, kwargs, position=len(self))
         self._validate_inner(merged)
         items = self._items_for_write()
@@ -558,7 +558,7 @@ class ExtensibleList(Generic[GroupT_co]):
         """Snapshot the wrapper as a plain list of plain dicts.
 
         Each dict is the group's ``as_dict()``, so a group that lacks a key every supported release
-        requires raises :class:`~idfkit.exceptions.MissingRequiredFieldError`. ``obj.data`` holds
+        requires raises [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError]. ``obj.data`` holds
         the stored groups as they are.
         """
         return [g.as_dict() for g in self]
@@ -793,14 +793,14 @@ class IDFObject(EppyObjectMixin):
         return cast("list[dict[str, Any]]", items)
 
     def _field_key(self, key: str) -> str:
-        """Resolve an attribute or :meth:`update` key to the data key it names.
+        """Resolve an attribute or [update][idfkit.objects.IDFObject.update] key to the data key it names.
 
-        Normally this is :func:`to_python_name`. A field whose epJSON key ends in ``_``
+        Normally this is [to_python_name][idfkit.objects.to_python_name]. A field whose epJSON key ends in ``_``
         (``cond_flag_is_the_basement_conditioned_``) is reached by that key and by the spelling
-        without the underscore, which is what :func:`to_python_name` makes of either; both
+        without the underscore, which is what [to_python_name][idfkit.objects.to_python_name] makes of either; both
         resolve to the key, so the value is stored and written under the name EnergyPlus reads.
         The lookup is in a per-type map that is empty for nearly every type
-        (:func:`~idfkit.schema.trailing_underscore_aliases`).
+        ([trailing_underscore_aliases][idfkit.schema.trailing_underscore_aliases]).
         """
         aliases = self._aliases
         if not aliases:
@@ -833,13 +833,13 @@ class IDFObject(EppyObjectMixin):
     def _eppy_key(self, python_key: str) -> str | None:
         """The key eppy's spelling *python_key* (``vertex_1_xcoordinate``) names, or ``None``.
 
-        See :func:`~idfkit._eppy_names.resolve_eppy_key`; a numbered extensible field resolves to its
+        See ``resolve_eppy_key``; a numbered extensible field resolves to its
         flat spelling, which the legacy flat-extensible path then routes to its group.
         """
         return resolve_eppy_key(python_key, self._eppy_aliases(), self._extensibles)
 
     def _resolve_key(self, key: str) -> str:
-        """:meth:`_field_key`, then eppy's punctuation-free spelling of a field (``Vertex_1_Xcoordinate``)."""
+        """``_field_key``, then eppy's punctuation-free spelling of a field (``Vertex_1_Xcoordinate``)."""
         python_key = self._field_key(key)
         if python_key in self._data:
             return python_key
@@ -904,7 +904,7 @@ class IDFObject(EppyObjectMixin):
         An unset field reads ``None``, except a field that every supported release
         requires with no default (``Material.thickness``): its type says it always has
         a value, so reading it unset raises
-        :class:`~idfkit.exceptions.MissingRequiredFieldError`, an ``AttributeError``.
+        [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError], an ``AttributeError``.
         ``obj.get(field)`` and ``getattr(obj, field, None)`` give ``None`` for it instead.
 
         When the parent document has ``strict=True``, accessing a field
@@ -1000,13 +1000,13 @@ class IDFObject(EppyObjectMixin):
         """Set field value by attribute name.
 
         In a strict document, a value the schema refuses (wrong type, unlisted
-        choice, out of range) raises :class:`~idfkit.exceptions.ValidationFailedError`
+        choice, out of range) raises [ValidationFailedError][idfkit.exceptions.ValidationFailedError]
         and the field keeps its value, as ``add()`` refuses it.
 
         Assigning the schema's wrapper key (e.g. ``surface.vertices = [...]``)
         replaces the canonical extensible array. Legacy eppy-style flat
         extensible writes (``surface.vertex_3_x_coordinate = 5.0``) are
-        routed to the canonical slot with a :class:`DeprecationWarning`.
+        routed to the canonical slot with a ``DeprecationWarning``.
         """
         if key[:1] == "_":
             object.__setattr__(self, key, value)
@@ -1082,10 +1082,11 @@ class IDFObject(EppyObjectMixin):
         return [error for key, value in entries if (error := field_value_error(self, key, value, schema)) is not None]
 
     def _refuse_invalid_values(self, entries: Iterable[tuple[str, Any]]) -> None:
-        """Raise :class:`ValidationFailedError` if a strict document's schema refuses any of *entries*.
+        """Raise [ValidationFailedError][idfkit.exceptions.ValidationFailedError] if a strict document's schema refuses
+        any of *entries*.
 
-        NaN and infinity are refused first, with the :class:`InvalidFieldError` every document raises
-        for them, so a range check never reports one as merely out of range.
+        NaN and infinity are refused first, with the [InvalidFieldError][idfkit.exceptions.InvalidFieldError] every
+        document raises for them, so a range check never reports one as merely out of range.
         """
         entries = list(entries)
         for key, value in entries:
@@ -1099,7 +1100,7 @@ class IDFObject(EppyObjectMixin):
         """Get field value by name or index.
 
         For the schema's extensible wrapper key (``"vertices"``, ``"data"``,
-        ``"branches"``, …), returns an :class:`ExtensibleList` view of the
+        ``"branches"``, …), returns an [ExtensibleList][idfkit.objects.ExtensibleList] view of the
         wrapper. This is the only access path for types whose wrapper key
         collides with the ``data`` property (Schedule:Day:Interval,
         Schedule:Compact); for other types it is equivalent to attribute
@@ -1120,7 +1121,7 @@ class IDFObject(EppyObjectMixin):
         """Set field value by name or index.
 
         For the schema's extensible wrapper key, *value* must be a list of
-        dicts (or :class:`ExtensibleGroup` instances) and replaces the entire
+        dicts (or [ExtensibleGroup][idfkit.objects.ExtensibleGroup] instances) and replaces the entire
         wrapper contents.
         """
         if isinstance(key, int):
@@ -1203,7 +1204,8 @@ class IDFObject(EppyObjectMixin):
             doc.notify_name_change(self, old, value)
 
     def _refuse_blank_name(self, value: str) -> None:
-        """Raise :class:`ValidationFailedError` if a strict document's schema requires a name and *value* is blank."""
+        """Raise [ValidationFailedError][idfkit.exceptions.ValidationFailedError] if a strict document's schema requires
+        a name and *value* is blank."""
         if value.strip():
             return
         doc = self._document
@@ -1221,11 +1223,11 @@ class IDFObject(EppyObjectMixin):
     def _bump_version(self) -> None:
         """Mark the object as mutated.
 
-        Bumps :attr:`mutation_version` and invalidates the cached IDF source
+        Bumps [mutation_version][idfkit.objects.IDFObject.mutation_version] and invalidates the cached IDF source
         text so the writer regenerates output for this object. Used by
-        :class:`ExtensibleList`/:class:`ExtensibleGroup` after mutating the
-        canonical wrapper array directly (without going through
-        :meth:`_set_field`).
+        [ExtensibleList][idfkit.objects.ExtensibleList]/[ExtensibleGroup][idfkit.objects.ExtensibleGroup] after mutating
+        the canonical wrapper array directly (without going through
+        ``_set_field``).
         """
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)
@@ -1235,7 +1237,7 @@ class IDFObject(EppyObjectMixin):
         """Refresh the reference graph after an extensible group was mutated.
 
         ``ExtensibleGroup``/``ExtensibleList`` write into ``data[wrapper_key]`` directly
-        instead of going through :meth:`_set_field`, so the per-field hook that keeps
+        instead of going through ``_set_field``, so the per-field hook that keeps
         top-level reference edges current never fires for them. Re-indexing the wrapper is
         the equivalent for group edits; it is a no-op for the overwhelming majority of
         extensible types, whose inner fields (vertices, coefficients, ...) reference nothing.
@@ -1318,7 +1320,7 @@ class IDFObject(EppyObjectMixin):
 
         A blank value (``None`` or ``""``) clears the field rather than storing a
         placeholder, as the parser leaves a blank field absent (idfkit#183) and as
-        :func:`assign_slot` clears an extensible slot (idfkit#182). Writing a blank
+        [assign_slot][idfkit.objects.assign_slot] clears an extensible slot (idfkit#182). Writing a blank
         over a field that is already unset is therefore not a change either, so
         ``obj.f = obj.f`` on a blank field leaves the object untouched.
         """
@@ -1402,7 +1404,7 @@ class IDFObject(EppyObjectMixin):
         Every entry is examined before any is applied. If one is refused, no field changes and
         the error lists every refused entry, not only the first. An entry is refused when its
         name is not a field of the type, when it is ``name`` (use
-        :meth:`IDFDocument.rename <idfkit.document.IDFDocument.rename>`, which also updates the
+        [IDFDocument.rename][idfkit.document.IDFDocument.rename], which also updates the
         objects that refer to this one), when it is a legacy flat extensible name such as
         ``vertex_3_x_coordinate``, or when it gives the extensible wrapper key (such as
         ``vertices``) a value that single assignment would reject: something other than a list,
@@ -1470,7 +1472,7 @@ class IDFObject(EppyObjectMixin):
             """
 
     def _examine(self, key: str, value: Any) -> RefusedEntry | None:
-        """Classify one :meth:`update` entry with the tests ``__setattr__`` applies to it."""
+        """Classify one [update][idfkit.objects.IDFObject.update] entry with the tests ``__setattr__`` applies to it."""
         if key[:1] == "_":
             return RefusedEntry(key, "unknown", "private attribute, not a field")
         python_key = self._resolve_key(key)
@@ -1492,7 +1494,8 @@ class IDFObject(EppyObjectMixin):
         return None
 
     def _examine_wrapper(self, key: str, wrapper_key: str, value: Any) -> RefusedEntry | None:
-        """Classify an :meth:`update` entry for the extensible wrapper: its whole list of groups."""
+        """Classify an [update][idfkit.objects.IDFObject.update] entry for the extensible wrapper: its whole list of
+        groups."""
         if not isinstance(value, list):
             return RefusedEntry(key, "wrapper-value", f"expected a list, got {type(value).__name__}")
         view = ExtensibleList[ExtensibleGroup](self, wrapper_key, self._ext_inner_names)
@@ -1505,7 +1508,8 @@ class IDFObject(EppyObjectMixin):
         return None
 
     def _refuse(self, refused: list[RefusedEntry], operation: Literal["update", "add"] = "update") -> None:
-        """Raise the error for a refused :meth:`update` group or ``add()`` call, before anything is written."""
+        """Raise the error for a refused [update][idfkit.objects.IDFObject.update] group or ``add()`` call, before
+        anything is written."""
         named = [entry for entry in refused if entry.reason != "wrapper-value"]
         if not named:
             raise TypeError(format_refused(self._type, refused, operation))
@@ -1615,7 +1619,8 @@ _D = TypeVar("_D")
 
 
 def refuse_name_for_nameless_type(obj_type: str, name: object, obj_schema: Mapping[str, Any] | None) -> None:
-    """Raise :class:`InvalidFieldError` when *name* is given to a type without a Name field.
+    """Raise [InvalidFieldError][idfkit.exceptions.InvalidFieldError] when *name* is given to a type without a Name
+    field.
 
     165 of the 880 types in the 26.2 schema (``Output:Meter``, ``Output:SQLite``, ``Timestep``,
     ``SimulationControl``, ...) have no Name field: their first IDF field is an ordinary field.
@@ -1639,7 +1644,8 @@ def refuse_name_for_nameless_type(obj_type: str, name: object, obj_schema: Mappi
 
 
 def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache) -> None:
-    """Refuse what ``IDFDocument.add`` must not store, as :meth:`IDFObject.update` refuses it.
+    """Refuse what ``IDFDocument.add`` must not store, as [IDFObject.update][idfkit.objects.IDFObject.update] refuses
+    it.
 
     Runs on the new object before it joins the document, so a refusal leaves nothing behind.
 
@@ -1934,7 +1940,8 @@ class IDFCollection(Generic[_T_co]):
             return self._add(args, fields)
 
     def _add(self, args: tuple[object, ...], fields: dict[str, Any]) -> Any:
-        """The run-time body of :meth:`add`, here so that type checkers check it (see the note there)."""
+        """The run-time body of [add][idfkit.objects.IDFCollection.add], here so that type checkers check it (see the
+        note there)."""
         first = args[0] if args else None
         if isinstance(first, IDFObject):
             if len(args) > 1 or fields:

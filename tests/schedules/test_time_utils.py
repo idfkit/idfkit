@@ -95,3 +95,17 @@ class TestEvaluateTimeValues:
         # 13:00 is past the only interval
         result = evaluate_time_values(time_values, time(13, 0), Interpolation.NO)
         assert result == 0.5
+
+
+class TestEvaluateTimeValuesAverage:
+    """AVERAGE takes the mean of the step function over the timestep (#364)."""
+
+    def test_mean_over_interval(self) -> None:
+        """A 60-minute window straddling 08:00 is 15 minutes of 0.0 and 45 of 1.0."""
+        time_values = [TimeValue(until_time=time(8, 0), value=0.0), TimeValue(until_time=END_OF_DAY, value=1.0)]
+        assert evaluate_time_values(time_values, time(7, 45), Interpolation.AVERAGE, 60) == 0.75
+
+    def test_last_value_holds_past_the_last_until(self) -> None:
+        """Past the last Until: the last value holds, as in the step evaluation."""
+        time_values = [TimeValue(until_time=time(12, 0), value=2.0)]
+        assert evaluate_time_values(time_values, time(11, 30), Interpolation.AVERAGE, 60) == 2.0

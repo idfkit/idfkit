@@ -1,6 +1,6 @@
 """Resolve a model's geometry into one frame, without changing the model.
 
-``get_scene(doc)`` reads a document and returns a :class:`Scene`: every surface it could place, in
+``get_scene(doc)`` reads a document and returns a [Scene][idfkit.scene.Scene]: every surface it could place, in
 world coordinates with the building rotation applied, plus what it could not place and what it did
 not attempt. It modifies nothing.
 
@@ -54,8 +54,8 @@ adds it.
 
 The **simplified surface family** (``Wall:Exterior``, ``Window``, ``Roof`` and their siblings) is
 not read. Those types are keyed on origin, width, height and tilt rather than on vertices and need
-their own rule. They are reported in :attr:`Scene.unattempted` so that a model made of them looks
-different from a model with no geometry at all.
+their own rule. They are reported in [Scene.unattempted][idfkit.scene.Scene.unattempted] so that a model made of them
+looks different from a model with no geometry at all.
 
 The **zone multiplier is not expanded**. It is a simulation instruction, and the engine's own report
 does not repeat those surfaces either.
@@ -162,7 +162,7 @@ _UNREAD: Final = (
 
 #: What EnergyPlus assumes when ``GlobalGeometryRules`` does not say. The object is required in
 #: practice, so these are what a partial model is read as rather than a documented default, and
-#: every one of them is recorded in :attr:`AppliedRules.defaulted` when it is used.
+#: every one of them is recorded in [AppliedRules.defaulted][idfkit.scene.AppliedRules.defaulted] when it is used.
 _DEFAULT_RULES: Final = {
     "starting_vertex_position": "UpperLeftCorner",
     "vertex_entry_direction": "Counterclockwise",
@@ -193,8 +193,8 @@ class AppliedRules:
         return self.vertex_entry_direction.casefold().startswith("clockwise")
 
 
-#: What a model that declares nothing is read under, which is :data:`_DEFAULT_RULES` as a value. It
-#: is the default a :class:`Scene` carries when it was not built from a document.
+#: What a model that declares nothing is read under, which is ``_DEFAULT_RULES`` as a value. It
+#: is the default a [Scene][idfkit.scene.Scene] carries when it was not built from a document.
 _ASSUMED_RULES: Final = AppliedRules(
     coordinate_system=_DEFAULT_RULES["coordinate_system"],
     vertex_entry_direction=_DEFAULT_RULES["vertex_entry_direction"],
@@ -606,7 +606,7 @@ def get_scene(doc: AnyIDFDocument) -> Scene:
             yields identical bytes.
 
     Returns:
-        A :class:`Scene` in which every geometry object in the model appears exactly once, as a
+        A [Scene][idfkit.scene.Scene] in which every geometry object in the model appears exactly once, as a
         resolved surface, an unresolved object with a reason, or a count under an unattempted type.
 
     Examples:

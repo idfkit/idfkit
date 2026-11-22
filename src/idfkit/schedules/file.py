@@ -6,11 +6,12 @@ Handles Schedule:File objects which read values from external CSV files.
 from __future__ import annotations
 
 import warnings
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 from idfkit._forksafe import ForkSafeLock
+from idfkit.schedules.time_utils import MINUTES_PER_DAY, step_minute_values, time_to_minutes, timestep_value
 from idfkit.schedules.types import Interpolation
 from idfkit.simulation.fs import FileSystem, LocalFileSystem
 
@@ -233,23 +234,31 @@ def _read_schedule_file(
 
 
 def _get_interpolation_from_obj(obj: IDFObject, default: Interpolation) -> Interpolation:
-    """Get interpolation mode from Schedule:File object."""
+    """Get interpolation mode from Schedule:File object.
+
+    EnergyPlus reads ``Yes`` as ``Average``. It reads ``No`` as ``Linear``, which on a file's
+    stepped minutes reads the last minute of each timestep, as ``No`` does.
+    """
     interp_field = obj.get("Interpolate to Timestep")
     if not interp_field:
         return default
-    interp_str = str(interp_field).lower()
-    if interp_str in ("average", "linear", "yes"):
+    interp_str = str(interp_field).strip().lower()
+    if interp_str in ("average", "yes"):
         return Interpolation.AVERAGE
     return Interpolation.NO
 
 
-def _interpolate_value(values: list[float], index: int, fraction: float, interpolate: bool) -> float:
-    """Get value from list with optional interpolation."""
-    if index >= len(values):
-        return values[-1] if values else 0.0
-    if interpolate and index < len(values) - 1:
-        return values[index] + fraction * (values[index + 1] - values[index])
-    return values[index]
+def _file_day(d: date, rows: int, rows_per_day: int) -> int:
+    """The 0-based day of the file EnergyPlus reads for date ``d``.
+
+    EnergyPlus numbers schedule days on a leap-year calendar (Mar 1 is day 61 in every year). A
+    file with fewer than 366 days of rows has no Feb 29: EnergyPlus gives Feb 29 the Feb 28 row and
+    reads each later day one row-day earlier.
+    """
+    ordinal = (date(2024, d.month, d.day) - date(2024, 1, 1)).days + 1
+    if rows >= 366 * rows_per_day or ordinal <= 59:
+        return ordinal - 1
+    return 58 if ordinal == 60 else ordinal - 2
 
 
 def evaluate_schedule_file(
@@ -259,16 +268,24 @@ def evaluate_schedule_file(
     base_path: Path | str | None = None,
     cache: ScheduleFileCache | None = None,
     interpolation: Interpolation = Interpolation.NO,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a Schedule:File at a specific datetime.
 
+    Values are the doubles EnergyPlus reports. A file with 60 minutes per item gives each hour's row
+    to every timestep of the hour, as EnergyPlus does whatever ``Interpolate to Timestep`` says. A
+    sub-hourly file is spread over the day's minutes: ``Yes`` averages them over the timestep, ``No``
+    takes the timestep's last minute.
+
     Args:
         obj: The Schedule:File object.
-        dt: Datetime to evaluate.
+        dt: Datetime to evaluate, the start of the timestep.
         fs: FileSystem for reading the CSV (default: LocalFileSystem).
         base_path: Base directory for resolving relative paths.
         cache: Cache instance (default: global cache).
-        interpolation: Interpolation mode (overridden by object's setting if present).
+        interpolation: Interpolation mode, used when the object's ``Interpolate to Timestep`` is blank.
+        interval_minutes: Length of the timestep starting at ``dt``. 0 (the default) gives the value
+            of the minute containing ``dt``.
 
     Returns:
         The schedule value at the given time.
@@ -284,17 +301,19 @@ def evaluate_schedule_file(
     if not values:
         return 0.0
 
-    # Calculate position in the year
-    year_start = datetime(dt.year, 1, 1)
-    minutes_elapsed = (dt - year_start).total_seconds() / 60
-    index = int(minutes_elapsed / minutes_per_item)
+    rows_per_day = MINUTES_PER_DAY // minutes_per_item
+    first = _file_day(dt.date(), len(values), rows_per_day) * rows_per_day
+    if first >= len(values):
+        return values[-1]
+    day = tuple(values[first : first + rows_per_day])
+    minute = min(int(time_to_minutes(dt.time())), MINUTES_PER_DAY - 1)
 
-    # Calculate fractional position within interval
-    interval_start = index * minutes_per_item
-    fraction = (minutes_elapsed - interval_start) / minutes_per_item
-    interpolate = interpolation in (Interpolation.AVERAGE, Interpolation.LINEAR)
-
-    return _interpolate_value(values, index, fraction, interpolate)
+    if minutes_per_item >= 60:
+        return day[min(minute // minutes_per_item, len(day) - 1)]
+    minutes = step_minute_values(day, minutes_per_item)
+    if interval_minutes > 0:
+        return timestep_value(minutes, minute, int(interval_minutes), interpolation)
+    return minutes[minute]
 
 
 def get_schedule_file_values(

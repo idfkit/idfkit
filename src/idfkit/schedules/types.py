@@ -72,20 +72,26 @@ class DayType(Enum):
 
 
 class Interpolation(Enum):
-    """Interpolation mode for schedule values.
+    """Interpolation mode for schedule values, as EnergyPlus's ``Interpolate`` fields define it.
 
-    Controls how values are computed when the evaluation timestep
-    doesn't align with the schedule's native intervals.
+    EnergyPlus expands a day to one value per minute and gives each timestep a value from its
+    minutes; the modes differ in how.
     """
 
     NO = "no"
-    """Step function - value at each interval applies until next interval."""
+    """Step function: each value holds until the next ``Until:``. A timestep takes its last minute."""
 
     AVERAGE = "average"
-    """Linear interpolation when timestep doesn't align with intervals."""
+    """A timestep takes the mean of its minutes (EnergyPlus's ``Average``; idfkit also reads ``Yes`` as it).
+
+    Equal to the step value wherever the schedule's times fall on timestep boundaries.
+    """
 
     LINEAR = "linear"
-    """Alias for AVERAGE."""
+    """Minutes ramp from the previous ``Until:`` value to the next; a timestep takes its last minute.
+
+    The first interval is flat. A Schedule:Day:List or Schedule:File builds no ramp: it steps.
+    """
 
 
 # Literal types for string parameters - provides IDE autocompletion
@@ -182,6 +188,9 @@ class CompactDayRule:
 
     time_values: list[TimeValue]
     """Time-value pairs defining the schedule for these days."""
+
+    interpolation: Interpolation = Interpolation.NO
+    """The block's ``Interpolate:`` mode. EnergyPlus applies it to this ``For:`` block only."""
 
 
 @dataclass

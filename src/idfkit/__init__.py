@@ -240,13 +240,13 @@ def new_document(
     Args:
         version: The EnergyPlus release, as a version tuple (default: the latest
             supported release) or as a release's document type from
-            :mod:`idfkit.versioned`. Given a type, such as ``IDFDocumentV9_4``, the
+            [idfkit.versioned][idfkit.versioned]. Given a type, such as ``IDFDocumentV9_4``, the
             document is created for the release the type stands for and typed as
             that type; a non-strict one is asked for by the type,
             ``IDFDocumentV9_4[Literal[False]]``. Given a tuple, it is typed for the
             latest release whatever the version, since a type checker does not read
             the tuple. ``IDFDocument`` is refused, and so is the latest release's
-            type in :mod:`idfkit.versioned`, which is ``IDFDocument``: it is the
+            type in [idfkit.versioned][idfkit.versioned], which is ``IDFDocument``: it is the
             run-time class of every document, so ``new_document(type(doc))`` would
             create a document of the latest release whatever ``doc``'s. Call
             ``new_document()`` for the latest release. ``simulate()`` runs a model
@@ -254,9 +254,9 @@ def new_document(
             ``auto_migrate=True``), so to simulate on an older installed EnergyPlus,
             create the model at its release: ``new_document(version=idfkit.simulation.find_energyplus().version)``.
         strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            IDFObject raises [InvalidFieldError][idfkit.exceptions.InvalidFieldError] instead
             of returning ``None``, and assigning a value the schema refuses raises
-            :class:`~idfkit.exceptions.ValidationFailedError`, as ``add()`` does.
+            [ValidationFailedError][idfkit.exceptions.ValidationFailedError], as ``add()`` does.
         normalize_choices: When ``True`` (the default), a choice value passed to ``add()``
             or assigned to a field is stored in the spelling its schema declares:
             ``roughness="ROUGH"`` reads back ``"Rough"``. ``False`` stores it as given.

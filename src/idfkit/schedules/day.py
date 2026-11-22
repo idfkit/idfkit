@@ -10,7 +10,15 @@ import re
 from datetime import datetime, time
 from typing import TYPE_CHECKING, Any, cast
 
-from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values, time_to_minutes
+from idfkit.schedules.time_utils import (
+    END_OF_DAY,
+    MINUTES_PER_DAY,
+    evaluate_time_values,
+    parse_interpolate_keyword,
+    step_minute_values,
+    time_to_minutes,
+    timestep_value,
+)
 from idfkit.schedules.types import Interpolation, TimeValue
 
 if TYPE_CHECKING:
@@ -104,6 +112,7 @@ def evaluate_day_interval(
     obj: IDFObject,
     dt: datetime,
     interpolation: Interpolation = Interpolation.NO,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a Schedule:Day:Interval.
 
@@ -113,19 +122,24 @@ def evaluate_day_interval(
     Args:
         obj: The Schedule:Day:Interval object.
         dt: The datetime to evaluate.
-        interpolation: Interpolation mode.
+        interpolation: Interpolation mode, used when the object's ``Interpolate to Timestep``
+            is blank.
+        interval_minutes: Length of the timestep starting at ``dt``; the value is then EnergyPlus's
+            for that timestep. 0 (the default) gives the value of the minute containing ``dt``.
 
     Returns:
         The schedule value at the given time.
     """
     time_values = _parse_interval_time_values(obj)
-    return evaluate_time_values(time_values, dt.time(), interpolation)
+    interpolation = _own_interpolation(obj, interpolation)
+    return evaluate_time_values(time_values, dt.time(), interpolation, interval_minutes)
 
 
 def evaluate_day_list(
     obj: IDFObject,
     dt: datetime,
     interpolation: Interpolation = Interpolation.NO,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a Schedule:Day:List.
 
@@ -134,7 +148,10 @@ def evaluate_day_list(
     Args:
         obj: The Schedule:Day:List object.
         dt: The datetime to evaluate.
-        interpolation: Interpolation mode.
+        interpolation: Interpolation mode, used when the object's ``Interpolate to Timestep``
+            is blank.
+        interval_minutes: Length of the timestep starting at ``dt``; the value is then EnergyPlus's
+            for that timestep. 0 (the default) gives the value of the minute containing ``dt``.
 
     Returns:
         The schedule value at the given time.
@@ -143,43 +160,31 @@ def evaluate_day_list(
     minutes_per_item = obj.get("Minutes per Item")
     minutes_per_item = 60 if minutes_per_item is None else int(minutes_per_item)
 
-    # Get interpolate setting from the object
-    interpolate_field = obj.get("Interpolate to Timestep")
-    if interpolate_field:
-        interpolate_str = str(interpolate_field).lower()
-        if interpolate_str in ("average", "linear", "yes"):
-            interpolation = Interpolation.AVERAGE
+    interpolation = _own_interpolation(obj, interpolation)
 
-    # Build time-value pairs from the list
-    time_values: list[TimeValue] = []
-    current_minutes = 0
-    i = 1
-
-    while True:
-        field_name = f"Value {i}"
-        value = obj.get(field_name)
-        if value is None:
-            break
-
-        current_minutes += minutes_per_item
-        # Cap at end of day
-        if current_minutes >= 1440:
-            until_time = END_OF_DAY
-        else:
-            hours = current_minutes // 60
-            mins = current_minutes % 60
-            until_time = time(hours, mins)
-
-        time_values.append(TimeValue(until_time=until_time, value=float(value)))
-        i += 1
-
-        if current_minutes >= 1440:
-            break
-
-    if not time_values:
+    # Schedule:Day:List stores its items canonically as ``obj.data["extensions"]``, a list of
+    # ``{"value": ...}`` dicts.
+    items_raw: Any = obj.data.get("extensions") or []
+    if not isinstance(items_raw, list):
+        items_raw = []
+    items = tuple(
+        float(item["value"]) for item in cast("list[dict[str, Any]]", items_raw) if item.get("value") is not None
+    )
+    if not items or minutes_per_item <= 0:
         return 0.0
 
-    return evaluate_time_values(time_values, dt.time(), interpolation)
+    minutes = step_minute_values(items, minutes_per_item)
+    start = min(int(time_to_minutes(dt.time())), MINUTES_PER_DAY - 1)
+    # EnergyPlus fills a list's minutes as steps whatever the mode, so Linear builds no ramp here:
+    # it reads the last minute of each timestep, as No does.
+    if interval_minutes > 0:
+        return timestep_value(minutes, start, int(interval_minutes), interpolation)
+    return minutes[start]
+
+
+def _own_interpolation(obj: IDFObject, default: Interpolation) -> Interpolation:
+    """The day schedule's own ``Interpolate to Timestep``, or ``default`` when it sets none."""
+    return parse_interpolate_keyword(obj.get("Interpolate to Timestep")) or default
 
 
 def _parse_interval_time_values(obj: IDFObject) -> list[TimeValue]:
@@ -253,9 +258,9 @@ def get_day_values(
             elif obj_type == "Schedule:Day:Hourly":
                 value = evaluate_day_hourly(obj, dt)
             elif obj_type == "Schedule:Day:Interval":
-                value = evaluate_day_interval(obj, dt, interpolation)
+                value = evaluate_day_interval(obj, dt, interpolation, minutes_per_step)
             elif obj_type == "Schedule:Day:List":
-                value = evaluate_day_list(obj, dt, interpolation)
+                value = evaluate_day_list(obj, dt, interpolation, minutes_per_step)
             else:
                 msg = f"Unsupported day schedule type: {obj_type}"
                 raise ValueError(msg)

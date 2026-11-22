@@ -237,7 +237,7 @@ def _read(source: str, module: _Module | None = None) -> _Module:
 
 @functools.lru_cache(maxsize=8)
 def _read_source(source: str) -> _Module:
-    """One source read on its own; :func:`_read` merges it, later sources overriding earlier ones."""
+    """One source read on its own; ``_read`` merges it, later sources overriding earlier ones."""
     module = _Module()
     for node in ast.parse(source).body:
         if isinstance(node, ast.ImportFrom) and node.module == "_creation":
@@ -389,7 +389,7 @@ def _schema_fields(schema: EpJSONSchema, obj_type: str) -> dict[str, frozenset[s
     """Each attribute a typed object of *obj_type* has, with the values it may hold.
 
     The schema's identifier fields, then the spelling without the trailing underscore of each that
-    has one, as :class:`~idfkit.objects.IDFObject` resolves it at run time. Shared between calls:
+    has one, as [IDFObject][idfkit.objects.IDFObject] resolves it at run time. Shared between calls:
     not to be mutated.
     """
     return _schema_fields_reading(schema, obj_type, _REQUIRED_READS.get(obj_type, frozenset()))
@@ -400,7 +400,7 @@ def _schema_fields(schema: EpJSONSchema, obj_type: str) -> dict[str, frozenset[s
 # version on every call made up half of a call to verify().
 @functools.cache
 def _schema_fields_reading(schema: EpJSONSchema, obj_type: str, always: frozenset[str]) -> dict[str, frozenset[str]]:
-    """:func:`_schema_fields`, given the fields that read without ``None`` (*always*)."""
+    """``_schema_fields``, given the fields that read without ``None`` (*always*)."""
     from idfkit.schema import trailing_underscore_aliases
 
     inner = schema.get_inner_schema(obj_type)
@@ -427,10 +427,10 @@ def _schema_group(schema: EpJSONSchema, obj_type: str) -> tuple[str, dict[str, f
 def _schema_group_reading(
     schema: EpJSONSchema, obj_type: str, always: frozenset[str]
 ) -> tuple[str, dict[str, frozenset[str]]] | None:
-    """:func:`_schema_group`, given the keys that read without ``None`` (*always*).
+    """``_schema_group``, given the keys that read without ``None`` (*always*).
 
-    *always* is part of the cache key, as for :func:`_schema_fields_reading`: it depends on the
-    releases a call to :func:`verify` covers, so a later call over other releases must not reuse it.
+    *always* is part of the cache key, as for ``_schema_fields_reading``: it depends on the
+    releases a call to [verify][idfkit.codegen.verify_stubs.verify] covers, so a later call over other releases must not reuse it.
     """
     pc = schema.get_parsing_cache(obj_type)
     if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
@@ -673,7 +673,7 @@ def _item_name(group_cls: str) -> str:
     """``BuildingSurfaceDetailedVerticesItem``: the ``TypedDict`` of one group of *group_cls*.
 
     A naming convention, not something the schema says, so it is the generator's, as
-    :func:`_to_class_name` is.
+    ``_to_class_name`` is.
     """
     from idfkit.codegen.generate_stubs import _group_item_name  # pyright: ignore[reportPrivateUsage]
 

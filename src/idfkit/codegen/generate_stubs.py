@@ -3,7 +3,7 @@
 This module generates ``_generated_types.pyi`` containing typed subclasses of IDFObject for every
 EnergyPlus object type, and ``document.pyi``, ``versioned.pyi`` and ``_versioned/`` containing the
 document types: each types ``doc["Zone"]`` with one ``__getitem__`` overload per object type
-(:func:`_generate_getitem`) and carries typed attribute accessors.
+(``_generate_getitem``) and carries typed attribute accessors.
 
 The generated files are designed to be committed and shipped with the package.
 The ``.pyi`` files are stubs — they have zero runtime cost by design.
@@ -531,7 +531,7 @@ def _generate_object_class(
 ) -> list[str]:
     """Generate a typed IDFObject subclass for *obj_type*.
 
-    For extensible types, also generates a per-type :class:`ExtensibleGroup`
+    For extensible types, also generates a per-type ``ExtensibleGroup``
     subclass listing the inner field names with their schema-derived types,
     and exposes the wrapper attribute on the parent class typed as
     ``ExtensibleList[GroupClass]``. This gives IDEs full autocomplete on
@@ -555,15 +555,15 @@ def _generate_object_class(
         emit_update: Whether to type ``update`` on this class.
         undocumented: Fields declared without a docstring.
         properties: Fields declared as a property instead of an attribute, each with the value type
-            reading it gives and the one assigning to it accepts (see :func:`_generate_base_class`).
+            reading it gives and the one assigning to it accepts (see ``_generate_base_class``).
         inherited: The ``update`` keywords *fields_base* already holds, with their annotations; with
-            the class's own, they make its ``_creation_signature`` (:func:`_creation_lines`).
+            the class's own, they make its ``_creation_signature`` (``_creation_lines``).
         sink: Where the creation signature is filed; a throwaway one when ``None``.
-        creation: How the class creates its objects (:func:`_class_creation`); *schema*'s release's
+        creation: How the class creates its objects (``_class_creation``); *schema*'s release's
             own when ``None``.
         field_gate: The ``_NotAFieldOfThisObjectType`` name as reached from the module, to re-declare
             ``__getattr__``/``__setattr__`` with on a release's class whose *base* is
-            ``_TypedAnyReleaseIDFObject`` (see :data:`_TYPED_ANY_BASE`); ``None`` inherits them.
+            ``_TypedAnyReleaseIDFObject`` (see ``_TYPED_ANY_BASE``); ``None`` inherits them.
     """
     cls_name = cls_name or _to_class_name(obj_type) + suffix
     lines: list[str] = []
@@ -665,7 +665,7 @@ def _group_item_name(group_cls: str) -> str:
 def _group_items(group_cls: str, prefix: str = "") -> str:
     """The value of a group's wrapper keyword in ``update`` and ``add``: a sequence of its groups.
 
-    Each is a dict, typed by the group's item type (:func:`_group_item_class`), so a misspelled key
+    Each is a dict, typed by the group's item type (``_group_item_class``), so a misspelled key
     or a wrong value is a type error, or a group object (``list(wall.vertices)``), as the run time
     takes both. A ``Sequence``, not a ``list``: a ``list[<Item>]`` (what ``as_list()`` gives) or a
     list of groups is one, where an invariant ``list`` of the union would refuse both. *prefix*
@@ -681,7 +681,7 @@ def _group_item_class(
 
     It is public, so code that builds groups ahead of a call can annotate them
     (``points: list[BuildingSurfaceDetailedVerticesItem]``). *fields* are the group's fields with
-    the value type writing one accepts. A key in *required* (:func:`read_required_groups`) is
+    the value type writing one accepts. A key in *required* ([read_required_groups][idfkit.codegen.generate_stubs.read_required_groups]) is
     ``Required`` and takes its value type alone: ``as_list()`` never gives a group without it, and
     ``add()`` and ``update()`` refuse one. The others may be left out, or given ``None`` to leave
     them unset.
@@ -712,9 +712,9 @@ def _generate_group_class(
     group_base: str = _TYPED_GROUP_BASE,
     required: frozenset[str] = frozenset(),
 ) -> list[str]:
-    """Generate the :class:`ExtensibleGroup` subclass of one extensible group, with its inner fields.
+    """Generate the ``ExtensibleGroup`` subclass of one extensible group, with its inner fields.
 
-    A field in *required* (:func:`read_required_groups`) reads as its value type, without ``None``.
+    A field in *required* ([read_required_groups][idfkit.codegen.generate_stubs.read_required_groups]) reads as its value type, without ``None``.
     """
     lines = [
         f"{indent}class {group_cls_name}({group_base}):",
@@ -750,7 +750,7 @@ def _generate_update(
     names single assignment accepts, all of which the method accepts. The override narrows
     ``IDFObject.update``'s ``**kwargs: Any``, which mypy reports; pyright does not.
 
-    *creation* is the class's ``_creation_signature`` (:func:`_creation_lines`), emitted after it.
+    *creation* is the class's ``_creation_signature`` (``_creation_lines``), emitted after it.
     """
     fields_cls = f"_{cls_name}Fields"
     lines = [
@@ -832,7 +832,7 @@ def _generate_fields(
 def _property_lines(name: str, read: str, write: str, indent: str, required: bool = False) -> list[str]:
     """A field declared as a property: reading it gives *read* or ``None``, assigning to it accepts *write*.
 
-    A *required* field (:func:`read_required`) reads *read* alone and is not cleared by assignment.
+    A *required* field ([read_required][idfkit.codegen.generate_stubs.read_required]) reads *read* alone and is not cleared by assignment.
     """
     return [
         f"{indent}@property",
@@ -854,7 +854,7 @@ def _generate_field_aliases(
     The runtime reaches such a field by both spellings (``IDFObject._field_key``), so the typed
     class declares both, or it would reject the one without the underscore. Emitted in field
     order, because the alias map's own order is not stable between runs. An alias in
-    *as_properties* is declared as a property, as :func:`_generate_fields` declares a field.
+    *as_properties* is declared as a property, as ``_generate_fields`` declares a field.
     """
     as_properties = as_properties or {}
     alias_of = {
@@ -890,12 +890,12 @@ def _not_an_object_type(label: str) -> str:
 
 
 def _not_an_object_type_name(label: str) -> str:
-    """The class :func:`_not_an_object_type` is a ``Sequence`` of: never instantiated."""
+    """The class ``_not_an_object_type`` is a ``Sequence`` of: never instantiated."""
     return f"_NotAnObjectTypeNameOf{label}"
 
 
 def _generate_not_an_object_type(label: str, what: str) -> list[str]:
-    """The type behind :func:`_not_an_object_type`: no string matches it, so no object type name does.
+    """The type behind ``_not_an_object_type``: no string matches it, so no object type name does.
 
     It is a ``Sequence`` of a class that is never instantiated, not that class itself, for mypy.
     When no overload of a call matches, mypy looks for one whose parameter is roughly the argument's
@@ -933,12 +933,12 @@ def _generate_getitem(entries: Iterable[tuple[str, str]], label: str, doc: str |
     document does not have. An overload is resolved, never narrowed on.
 
     Overloads do not merge across base classes, so each document class lists all of its own. Each
-    older release's class lives in a module of its own (:func:`generate_versioned_documents`), so a
+    older release's class lives in a module of its own ([generate_versioned_documents][idfkit.codegen.generate_stubs.generate_versioned_documents]), so a
     file that does not name it does not pay to read its overloads.
 
     Args:
         entries: ``(object type, class)`` pairs, in schema order.
-        label: What :func:`_not_an_object_type` names the class of the last overload for.
+        label: What ``_not_an_object_type`` names the class of the last overload for.
         doc: The docstring of the first overload, which an editor shows on hover.
     """
     lines: list[str] = []
@@ -1036,7 +1036,7 @@ def _class_signature(schema: EpJSONSchema, obj_type: str) -> _Signature:
     as a set: some versions list a group's fields in another order (8.9's vertices), which changes
     nothing a type checker sees, so it does not make a second class. How an object is created is not
     part of it: releases that declare the fields alike but require different ones share the range's
-    class, and each gets a subclass with its own creation signature (:func:`_creation_pieces`), so
+    class, and each gets a subclass with its own creation signature (``_creation_pieces``), so
     a range's class keeps its name whatever its releases require.
     """
     return tuple(_field_decls(schema, obj_type).items()), _group_key(_group_decl(schema, obj_type))
@@ -1118,7 +1118,7 @@ def _name_kind(schema: EpJSONSchema, obj_type: str) -> str:
 
 
 def _creation_info(schema: EpJSONSchema, obj_type: str) -> _Creation:
-    """How *obj_type* is created in *schema*'s release (see :class:`_Creation`)."""
+    """How *obj_type* is created in *schema*'s release (see ``_Creation``)."""
     inner: dict[str, Any] = schema.get_inner_schema(obj_type) or {}
     properties: dict[str, dict[str, Any]] = inner.get("properties", {})
     listed: list[str] = inner.get("required", [])
@@ -1141,7 +1141,7 @@ def read_required() -> dict[str, frozenset[str]]:
     A field is in it when every supported release that has the field requires it and gives it no
     default (the set ``add()`` requires and the validator reports as ``E001``). Its read type drops
     ``| None`` in every class that declares it, whichever releases the class covers, and the run
-    time raises :class:`~idfkit.exceptions.MissingRequiredFieldError` instead of returning ``None``
+    time raises [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError] instead of returning ``None``
     when it is absent, so the two agree whatever static type the object is seen through.
     """
     required: dict[str, set[str]] = {}
@@ -1180,13 +1180,13 @@ def _release_group_required(schema: EpJSONSchema, obj_type: str) -> tuple[frozen
 
 @functools.cache
 def read_required_groups() -> dict[str, frozenset[str]]:
-    """The extensible group keys reading gives a value for, by object type, as :func:`read_required`.
+    """The extensible group keys reading gives a value for, by object type, as [read_required][idfkit.codegen.generate_stubs.read_required].
 
     A key is in it when every supported release whose group has the key requires it with no default
     (``vertex_x_coordinate`` of ``BuildingSurface:Detailed``). It reads as its value type on the
     group class, is ``Required`` in the group's item ``TypedDict`` (what ``as_list()`` gives and
     ``add()`` takes), and the run time raises
-    :class:`~idfkit.exceptions.MissingRequiredFieldError` for a group that lacks it.
+    [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError] for a group that lacks it.
     """
     required: dict[str, set[str]] = {}
     optional: dict[str, set[str]] = {}
@@ -1206,7 +1206,7 @@ def read_required_groups() -> dict[str, frozenset[str]]:
 
 @functools.cache
 def _release_creation(ver: Version, obj_type: str) -> _Creation:
-    """:func:`_creation_info` of *obj_type* in release *ver*, computed once per generation."""
+    """``_creation_info`` of *obj_type* in release *ver*, computed once per generation."""
     return _creation_info(get_schema(ver), obj_type)
 
 
@@ -1218,8 +1218,8 @@ def _creation_for(obj_type: str, versions: Iterable[Version]) -> _Creation:
     harmless. A default is shown only where every release has the same one. The name is refused
     where some release has no Name field and none requires one, required where any release requires
     it, and optional otherwise; where one release requires it and another refuses it, no call suits
-    them all (:attr:`_Creation.name_conflict`). For the
-    releases of one :func:`_creation_pieces` piece this is their own creation.
+    them all (``_Creation.name_conflict``). For the
+    releases of one ``_creation_pieces`` piece this is their own creation.
     """
     infos = [_release_creation(ver, obj_type) for ver in versions]
     first = infos[0]
@@ -1248,12 +1248,12 @@ _Piece: TypeAlias = tuple[tuple[Version, ...], tuple[Version, ...]]
 
 @functools.cache
 def _creation_pieces() -> dict[str, list[_Piece]]:
-    """Split each version range (:func:`_build_type_runs`) where its releases create the type differently.
+    """Split each version range (``_build_type_runs``) where its releases create the type differently.
 
     Returns:
         Object type -> its pieces, oldest first, each ``(run, piece)``: the range and the
         consecutive releases of it that take the same name and require the same fields
-        (:attr:`_Creation.key`). A range whose releases all create alike is one piece, itself.
+        (``_Creation.key``). A range whose releases all create alike is one piece, itself.
     """
     out: dict[str, list[_Piece]] = {}
     for obj_type, runs in _build_type_runs().items():
@@ -1274,7 +1274,7 @@ def _class_creation(obj_type: str, run: Iterable[Version]) -> _Creation:
     """The creation signature of the class of range *run*.
 
     The latest class creates as the latest release does (older releases of its range that require
-    other fields have classes of their own, :func:`_piece_classes`); an older range's class serves
+    other fields have classes of their own, ``_piece_classes``); an older range's class serves
     all its releases.
     """
     run = tuple(run)
@@ -1325,7 +1325,7 @@ class _CreationModules:
 
     A class does not declare its creation signature itself: it declares ``_creation_signature`` as
     an instance of a class whose ``__call__`` has that signature, defined in one of
-    :data:`_CREATION_BUCKETS` modules of ``idfkit/_creation`` chosen from the class name. A type
+    ``_CREATION_BUCKETS`` modules of ``idfkit/_creation`` chosen from the class name. A type
     checker reads such a module only when it resolves the signature, which it does to check an
     ``add()`` call on that type. The signatures repeat every field's annotation and are as large as
     the classes themselves: declared in the class, they would be parsed and bound in every file that
@@ -1354,7 +1354,7 @@ class _CreationModules:
     def qualify(self, annotation: str) -> str:
         """*annotation*, written in the classes' stub, as the creation modules reach its names.
 
-        Only a group wrapper's ``Sequence[<Item> | <Group>]`` (:func:`_group_items`) names classes
+        Only a group wrapper's ``Sequence[<Item> | <Group>]`` (``_group_items``) names classes
         of the stub; a name already qualified ``_g.`` (``versioned.pyi`` reaching
         ``_generated_types``) stays, and any other annotation is returned as it is.
         """
@@ -1388,7 +1388,7 @@ class _CreationModules:
     def imports(self) -> list[str]:
         """The import of every module, for the stub whose classes annotate with them.
 
-        Emitted before the classes are; :meth:`drop_unused_imports` then takes out those of the
+        Emitted before the classes are; ``drop_unused_imports`` then takes out those of the
         modules no class of the stub names.
         """
         return [f"from ._creation import {self.module}{k} as {self.alias}{k}" for k in range(_CREATION_BUCKETS)]
@@ -1492,7 +1492,7 @@ _HORIZONTAL_CORNERS = {
 }
 
 #: Choices an example takes, where the field offers them, over its default or first choice: those
-#: that agree with the wall :data:`_VERTEX_CORNERS` draws.
+#: that agree with the wall ``_VERTEX_CORNERS`` draws.
 _PREFERRED_CHOICES = {"surface_type": "Wall", "outside_boundary_condition": "Outdoors"}
 
 
@@ -1540,7 +1540,7 @@ def _bounds(spec: Mapping[str, Any]) -> tuple[float | None, float | None, float 
 def _example_number(spec: Mapping[str, Any], *, integer: bool) -> int | float:
     """A number *spec* (a field's schema) accepts: its default, else 0 moved inside its bounds.
 
-    0 is moved to the nearest bound (one past an exclusive one, :func:`_bounds`). When that leaves
+    0 is moved to the nearest bound (one past an exclusive one, ``_bounds``). When that leaves
     it outside the other bound, the midpoint of the two is taken; an integer field rounds toward
     the inside.
     """
@@ -1578,14 +1578,14 @@ def _example_number(spec: Mapping[str, Any], *, integer: bool) -> int | float:
 def _example_value(spec: Mapping[str, Any], label: str, index: int = 0, key: str = "") -> object:
     """A value for the field *spec* describes, *label* its IDD label, that the field accepts.
 
-    A choice field gets its :data:`_PREFERRED_CHOICES` entry (by its *key*) when it offers it, else
+    A choice field gets its ``_PREFERRED_CHOICES`` entry (by its *key*) when it offers it, else
     its default or its first choice; a number its default or 0 within its
     bounds (``anyOf`` number or ``Autosize`` gives the number); a reference a name made from its
     label (``Zone Name`` gives ``"Zone 1"``); any other text its default or a name made the same
     way. *index*, the
     group's position in an example, moves a choice field (without a default) and any text made from
     the label on, so that two groups do not name the same thing; a text field in ``hh:mm`` units
-    gets a time of :data:`_EXAMPLE_TIMES`.
+    gets a time of ``_EXAMPLE_TIMES``.
     """
     any_of: list[Any] = spec.get("anyOf") or []
     branches: list[Mapping[str, Any]] = [spec, *(cast("dict[str, Any]", b) for b in any_of if isinstance(b, dict))]
@@ -1621,10 +1621,10 @@ def _extensible_example(
     ``None`` for a type without one. The call goes through ``doc[obj_type].add``, as typed code
     does, and passes the name when the type has one (*name* is ``"required"``, ``"optional"`` or
     ``"none"``), the fields in *required* (the keywords the signature requires), the others
-    *schema*'s release requires, and the wrapper with :data:`_EXAMPLE_GROUPS` groups, the curated
-    groups of :data:`_CURATED_GROUP_VALUES`, the fields of :data:`_CURATED_FIELD_VALUES`, or the
-    wall of :data:`_VERTEX_CORNERS` (a square of :data:`_HORIZONTAL_CORNERS`). Each value is
-    one the field accepts (:func:`_example_value`), so the call runs as shown.
+    *schema*'s release requires, and the wrapper with ``_EXAMPLE_GROUPS`` groups, the curated
+    groups of ``_CURATED_GROUP_VALUES``, the fields of ``_CURATED_FIELD_VALUES``, or the
+    wall of ``_VERTEX_CORNERS`` (a square of ``_HORIZONTAL_CORNERS``). Each value is
+    one the field accepts (``_example_value``), so the call runs as shown.
     """
     pc = schema.get_parsing_cache(obj_type)
     if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
@@ -1695,7 +1695,7 @@ def _creation_docstring(
     pyright gives a call the docstring of the signature ``IDFCollection.add`` takes its parameters
     from, because ``add`` declares none for type checkers. It names the type, gives the schema's
     memo whole (the class docstring truncates it), for an extensible type a fenced example of the
-    call filling its group (:func:`_extensible_example`, given the signature's *name* kind and the
+    call filling its group (``_extensible_example``, given the signature's *name* kind and the
     keywords it *required*), and the type's page in the EnergyPlus I/O Reference on
     docs.idfkit.com. Field notes stay on the class's attributes, which hover shows:
     here they would double the size of the ``_creation`` modules, and pyright would not show them
@@ -1736,7 +1736,7 @@ def _creation_lines(
     """Declare *cls_name*'s ``_creation_signature``, the signature ``IDFCollection.add`` captures.
 
     The class body at *indent* gets the attribute; the signature itself goes to *sink*
-    (:class:`_CreationModules`). *fields* are the keywords with the annotations the class's
+    (``_CreationModules``). *fields* are the keywords with the annotations the class's
     ``update`` ``TypedDict`` gives them, in field order. The name comes first, positional-only, when
     the type has one; a type without one takes ``this_type_has_no_name_field`` there instead, typed
     with an alias of ``Never`` so that a name passed by mistake is reported as such. The fields follow, keyword-only: the required ones without a default and with
@@ -1754,7 +1754,7 @@ def _creation_lines(
     the way out (narrow the document with ``as_version``) instead of accepting a call some release
     refuses.
 
-    The signature carries the docstring an editor shows for the call (:func:`_creation_docstring`),
+    The signature carries the docstring an editor shows for the call (``_creation_docstring``),
     from *schema*, the release the class declares *obj_type* as.
     """
     params = ["self"]
@@ -1804,7 +1804,7 @@ def _build_type_runs() -> dict[str, list[list[Version]]]:
     """Group, for each object type, the versions that declare it identically.
 
     Two versions declare a type identically when its fields, value types, choice lists and
-    extensible group are the same (:func:`_class_signature`), docstrings and the order of a
+    extensible group are the same (``_class_signature``), docstrings and the order of a
     group's fields aside. Every such group is a
     contiguous range of releases, so it is fully described by its two endpoints; the function
     asserts that rather than assuming it.
@@ -1842,7 +1842,7 @@ def _field_decls(schema: EpJSONSchema, obj_type: str) -> dict[str, str]:
     """Each identifier field of *obj_type* with its generated value type.
 
     A field whose key ends in ``_`` is followed, after every key, by its spelling without the
-    underscore, with the same type, as :func:`_generate_field_aliases` declares it; the classes
+    underscore, with the same type, as ``_generate_field_aliases`` declares it; the classes
     that share fields between versions, and the check of them, then treat the alias as a field.
     """
     inner = schema.get_inner_schema(obj_type)
@@ -2042,7 +2042,7 @@ def _shared_class_name(obj_type: str) -> str:
 
     ``Any<Class>`` for a type some version declares differently; the latest class itself for one
     every version declares alike, which ``Any<Class>`` then names as an alias (see
-    :func:`_generate_any_aliases`).
+    ``_generate_any_aliases``).
     """
     if obj_type in _shared_layout():
         return _any_class_name(obj_type)
@@ -2099,9 +2099,9 @@ def _merged_groups() -> dict[str, _MergedGroup]:
 
 
 def _generate_merged_group(group: _MergedGroup, owner: str, required: frozenset[str] = frozenset()) -> list[str]:
-    """The group class of a :class:`_MergedGroup`: reads give the union, writes the intersection.
+    """The group class of a ``_MergedGroup``: reads give the union, writes the intersection.
 
-    A field in *required* (:func:`read_required_groups`) reads without ``None``, as in every version.
+    A field in *required* ([read_required_groups][idfkit.codegen.generate_stubs.read_required_groups]) reads without ``None``, as in every version.
     """
     lines = [
         f"class {group.cls_name}({_TYPED_GROUP_BASE}):",
@@ -2148,7 +2148,7 @@ def _generate_any_aliases(schema: EpJSONSchema) -> list[str]:
 
     So every object type has an ``Any<Class>`` to annotate code for any release with, and a caller
     need not know which types changed between releases. A type that did change has a class of that
-    name instead (:func:`_generate_base_class`).
+    name instead (``_generate_base_class``).
     """
     layout = _shared_layout()
     return [f"{_any_class_name(t)}: TypeAlias = {_to_class_name(t)}" for t in schema.object_types if t not in layout]
@@ -2340,8 +2340,8 @@ def _class_assignment() -> tuple[dict[tuple[str, Version], str], tuple[tuple[str
 def _piece_classes() -> tuple[tuple[str, tuple[Version, ...], tuple[Version, ...], str, str], ...]:
     """The classes of the releases of a range that create its type differently from its class.
 
-    A range's class (:func:`_class_assignment`) declares the fields; when its releases require
-    different fields or take the name differently (:func:`_creation_pieces`), each piece but the
+    A range's class (``_class_assignment``) declares the fields; when its releases require
+    different fields or take the name differently (``_creation_pieces``), each piece but the
     latest release's gets a class with its own creation signature, so each release's ``add()``
     requires what its validator does while the range's class keeps its name. An older range's class
     requires what any of its releases requires, so each of its pieces is a subclass of it that
@@ -2378,7 +2378,7 @@ def _generate_piece_class(
     base: str,
     sink: _CreationModules,
 ) -> list[str]:
-    """The class of releases of a range that create the type differently (:func:`_piece_classes`).
+    """The class of releases of a range that create the type differently (``_piece_classes``).
 
     A subclass of the range's class declares nothing but its creation signature: the fields are the
     range's, and so are the ``update`` keywords, which the signature names with the range's
@@ -2506,9 +2506,9 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
     * A version's typed attribute accessors are assembled from pieces each filed under the version
       range they hold over, so each entry is written once.
     * Each version's document type is defined in a module of its own under ``_versioned``
-      (:func:`generate_versioned_documents`) and re-exported here.
+      ([generate_versioned_documents][idfkit.codegen.generate_stubs.generate_versioned_documents]) and re-exported here.
     * The classes' creation signatures are filed in *sink*, the ``_v`` modules of ``_creation``
-      (:class:`_CreationModules`), so a file naming an older release reads only those it checks.
+      (``_CreationModules``), so a file naming an older release reads only those it checks.
     """
     sink = sink if sink is not None else _CreationModules("_v", "_cv")
     _check_version_tags()
@@ -2531,6 +2531,8 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         "",
         "from . import _generated_types as _g",
         *sink.imports(),
+        "from ._release_aliases import DocumentTypeTarget as DocumentTypeTarget",
+        "from ._release_aliases import ReleaseBound as ReleaseBound",
         *(
             f"from ._versioned.{_versioned_module(ver)} import {_document_class_name(ver)} as {_document_class_name(ver)}"
             for ver in older
@@ -2627,7 +2629,7 @@ _VERSIONED_PACKAGE_DOC = '''"""The document type of each older EnergyPlus releas
 DO NOT EDIT — regenerate with:
     python -m idfkit.codegen.generate_stubs
 
-Import them from :mod:`idfkit.versioned`. Each is kept apart so that a type checker reads a
+Import them from [idfkit.versioned][idfkit.versioned]. Each is kept apart so that a type checker reads a
 release's ``__getitem__`` overloads only in a file that names that release.
 """
 '''
@@ -2638,7 +2640,7 @@ def generate_versioned_documents() -> dict[str, str]:
 
     Each ``IDFDocumentV<major>_<minor>`` derives from its accessor pieces in ``versioned.pyi`` and
     from ``IDFDocumentAllVersions``, so it is assignable to ``AnyIDFDocument`` by name, and types
-    ``doc["Zone"]`` with overloads of its own (:func:`_generate_getitem`). Its own module, because the
+    ``doc["Zone"]`` with overloads of its own (``_generate_getitem``). Its own module, because the
     overloads of every release are as long as the rest of ``versioned.pyi``, and a type checker binds
     a whole module even to read one class of it.
 
@@ -2662,7 +2664,7 @@ def generate_versioned_documents() -> dict[str, str]:
             "DO NOT EDIT — regenerate with:",
             "    python -m idfkit.codegen.generate_stubs",
             "",
-            "Import it from :mod:`idfkit.versioned`.",
+            "Import it from [idfkit.versioned][idfkit.versioned].",
             '"""',
             "",
             "from __future__ import annotations",
@@ -2680,7 +2682,7 @@ def generate_versioned_documents() -> dict[str, str]:
             # The accessor pieces come first, so that each of their accessors, typed for this
             # release, wins over IDFDocumentAllVersions' accessor of the same name.
             f"class {name}({', '.join([*mixins, _ALL_VERSIONS_BASE])}):",
-            f'    """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus {version_string(ver)}."""',
+            f'    """An [IDFDocument][idfkit.document.IDFDocument] typed for EnergyPlus {version_string(ver)}."""',
             "",
             *_generate_getitem(entries, label),
             "",
@@ -2844,7 +2846,7 @@ def generate_loaders_pyi(docstrings: Mapping[str, str] | None = None) -> str:
     Each loader takes the targets ``as_version`` takes, so it carries the same range overloads,
     written out for the releases this idfkit supports. In order: no target (two overloads, for
     ``strict=True`` and ``strict=False``) returns ``AnyIDFDocument``; ``as_type=`` a document type
-    or a tuple of them returns that type; then every range, from :func:`_range_targets`. The
+    or a tuple of them returns that type; then every range, from ``_range_targets``. The
     no-target overloads take ``None`` for each target, as the run time does. A loader
     called with no target matches the first overloads, so a plain ``load_idf(path)`` costs a type
     checker no more than before.
@@ -2922,7 +2924,7 @@ def generate_versioned_py() -> str:
     """Generate ``versioned.py``, the run-time half of ``versioned.pyi``.
 
     At run time a per-version type is a stand-in: ``isinstance`` holds for a document of that
-    version, and :func:`idfkit.versioned.as_version` checks against it. The classes with fields
+    version, and [idfkit.versioned.as_version][idfkit.versioned.as_version] checks against it. The classes with fields
     exist only for type checkers.
 
     It describes every release idfkit bundles, whatever ``SUPPORTED`` says: the stand-ins are
@@ -2947,14 +2949,17 @@ def generate_versioned_py() -> str:
         "from __future__ import annotations",
         "",
         "from ._document_types import as_version, document_type, release_type_var, release_union",
+        "from ._release_aliases import DocumentTypeTarget, ReleaseBound",
         "from .document import AnyIDFDocument, IDFDocument",
         "",
         "__all__ = [",
         '    "AnyIDFDocument",',
+        '    "DocumentTypeTarget",',
         # In the order ruff's RUF022 sorts them: Before, Since, then the release types.
         *(f'    "{_range_alias("Before", ver)}",' for ver in versions[1:]),
         *(f'    "{_range_alias("Since", ver)}",' for ver in versions),
         *(f'    "{name}",' for name in names),
+        '    "ReleaseBound",',
         '    "ReleaseDocumentT",',
         '    "as_version",',
         "]",
@@ -2991,7 +2996,7 @@ _RELEASE_DOCUMENT_T_DOC = (
     "Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one",
     "release's type and refuses ``AnyIDFDocument``, which names no single release. A union of release",
     "types names none either: mypy refuses it, but pyright tries each member against the constraints",
-    "and accepts it, so check at run time too. :func:`idfkit.migration.migrate` takes its target this",
+    "and accepts it, so check at run time too. [idfkit.migration.migrate][idfkit.migration.migrate] takes its target this",
     "way, and raises ``TypeError`` for a union.",
     '"""',
 )
@@ -3082,7 +3087,7 @@ def generate_stubs(version: tuple[int, int, int] | None = None, sink: _CreationM
     Args:
         version: The release to type ``IDFDocument`` for, as if it were the newest supported;
             defaults to the latest release.
-        sink: Where the classes' creation signatures are filed (:class:`_CreationModules`); they
+        sink: Where the classes' creation signatures are filed (``_CreationModules``); they
             are dropped when ``None``.
 
     Returns:
@@ -3093,7 +3098,7 @@ def generate_stubs(version: tuple[int, int, int] | None = None, sink: _CreationM
 
 
 def _generate_types_module(sink: _CreationModules | None = None) -> str:
-    """``_generated_types.pyi``, filing its classes' creation signatures in *sink* (see :class:`_CreationModules`)."""
+    """``_generated_types.pyi``, filing its classes' creation signatures in *sink* (see ``_CreationModules``)."""
     sink = sink if sink is not None else _CreationModules()
     ver = SUPPORTED.latest
     schema = get_schema(ver)
@@ -3173,8 +3178,8 @@ def _generate_types_module(sink: _CreationModules | None = None) -> str:
 
 _ANY_DOCUMENT_DOC = """A document of any supported EnergyPlus version.
 
-:class:`IDFDocument`, typed for the latest release, and every older release's type in
-:mod:`idfkit.versioned` derive from it, so annotate with it to accept a document whatever its
+[IDFDocument][idfkit.document.IDFDocument], typed for the latest release, and every older release's type in
+[idfkit.versioned][idfkit.versioned] derive from it, so annotate with it to accept a document whatever its
 version. Through it, a document offers what every supported version has: the object types
 present in all of them, each typed as all of them declare it, so a field whose choices changed
 between releases reads as the union of them, accepts only their intersection, and a field some
@@ -3190,7 +3195,7 @@ _ANY_VERSION_DOCUMENT_DOC = """A document as every supported EnergyPlus version 
 
 Indexing it, or reaching an accessor, with an object type that some supported version lacks is a
 type error, as is a field some version lacks through ``update``. ``AnyIDFDocument`` is this class;
-annotate with that name. :class:`IDFDocument` and every document type in :mod:`idfkit.versioned`
+annotate with that name. [IDFDocument][idfkit.document.IDFDocument] and every document type in [idfkit.versioned][idfkit.versioned]
 derive from it. Narrow a document to its release with ``idfkit.versioned.as_version`` to reach what
 only that release has.
 """
@@ -3226,7 +3231,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     """Generate ``document.pyi`` — a type stub for ``document.py``.
 
     The stub types ``doc["Zone"]`` with one ``__getitem__`` overload per object type
-    (:func:`_generate_getitem`), on ``IDFDocument`` and on ``IDFDocumentAllVersions``,
+    (``_generate_getitem``), on ``IDFDocument`` and on ``IDFDocumentAllVersions``,
     which every document type derives from.
 
     Method and property docstrings are extracted from ``document.py`` via AST
@@ -3480,7 +3485,7 @@ checks an ``add()`` call on one of its classes.
 
 
 def generate_read_required_py() -> str:
-    """The run-time table of :func:`read_required`: ``_read_required.py``."""
+    """The run-time table of [read_required][idfkit.codegen.generate_stubs.read_required]: ``_read_required.py``."""
     lines = [
         '"""The fields and group keys reading gives a value for, by object type. GENERATED by idfkit.codegen.generate_stubs.',
         "",
@@ -3512,7 +3517,7 @@ def generate_read_required_py() -> str:
 def generate_object_types_py() -> str:
     """The run-time table of every object type any bundled release has: ``_object_types.py``.
 
-    Taken over every bundled schema, not :data:`SUPPORTED`, so generating stubs for an older
+    Taken over every bundled schema, not [SUPPORTED][idfkit.codegen.generate_stubs.SUPPORTED], so generating stubs for an older
     release does not shrink it: it answers whether a name exists in *any* release idfkit ships.
     A type spelt differently only in case across releases is listed once, in the newest release's
     spelling, so the name a misspelling is pointed at is the current one.

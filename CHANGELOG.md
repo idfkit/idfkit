@@ -7,17 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Added
 
-- IDF files of `Table:OneIndependentVariable` and `Table:TwoIndependentVariables` (EnergyPlus 8.9 to
-  9.1) labelled the second and later groups `!- X Value 1 2`; they read `!- X Value 2`
-  ([#368](https://github.com/idfkit/idfkit/pull/368)).
+- `idfkit.versioned.DocumentTypeTarget` and `ReleaseBound` named what `as_type=`, `since=` and `before=`
+  took, and `idfkit.weather.GeocodingErrorKind` named `GeocodingError.kind`, where signatures had used
+  private aliases ([#362](https://github.com/idfkit/idfkit/pull/362)).
 
 ### Changed
 
+- `SQLResult.get_timeseries_many()` read many series from a large results file faster, with the same
+  results, and `SQLResult` read a file's time steps once instead of at every call.
+  ([#366](https://github.com/idfkit/idfkit/pull/366))
 - The editor docstring of `add()` on a collection of an extensible type, such as
   `doc["Schedule:Compact"].add(...)`, showed a runnable Python example of filling its extensible
   group (`data=[{"field": "Through: 12/31"}, ...]`)
+  ([#368](https://github.com/idfkit/idfkit/pull/368)).
+
+### Fixed
+
+- Docstring cross-references, written as Sphinx roles that the API reference showed as raw text,
+  became links ([#362](https://github.com/idfkit/idfkit/pull/362)).
+- `values()` returned schedule values that differed from EnergyPlus's: `Interpolate: Average` ramped,
+  `No` and `Linear` read the start of each timestep rather than its end, and `Schedule:File`
+  interpolated between rows. They became EnergyPlus's `Schedule Value`, bit for bit.
+  ([#367](https://github.com/idfkit/idfkit/pull/367))
+- A holiday or custom day that a schedule gave no entry of its own took its weekday's value; it took
+  the `AllOtherDays` (or `AllDays`) value, as in EnergyPlus ([#367](https://github.com/idfkit/idfkit/pull/367)).
+- `values()` accepted a `timestep` that does not divide the hour and returned misaligned values; it
+  raised `ValueError` ([#367](https://github.com/idfkit/idfkit/pull/367)).
+- IDF files of `Table:OneIndependentVariable` and `Table:TwoIndependentVariables` (EnergyPlus 8.9 to
+  9.1) labelled the second and later groups `!- X Value 1 2`; they read `!- X Value 2`
   ([#368](https://github.com/idfkit/idfkit/pull/368)).
 
 ## [1.3.0-rc.2] - 2026-11-20

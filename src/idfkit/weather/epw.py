@@ -1,8 +1,8 @@
 """Read an EPW weather file: the eight header records, and the hourly table as columns.
 
-The text is what :meth:`WeatherDownloader.download` already puts on disk, so this is the step
-between retrieving a station's weather and computing anything from it. Nothing here touches the
-network, the clock or any global state, and :func:`parse_epw` touches no filesystem either.
+The text is what [WeatherDownloader.download][idfkit.weather.download.WeatherDownloader.download] already puts on disk,
+so this is the step between retrieving a station's weather and computing anything from it. Nothing here touches the
+network, the clock or any global state, and [parse_epw][idfkit.weather.epw.parse_epw] touches no filesystem either.
 
 The hour convention, stated once
 --------------------------------
@@ -15,7 +15,7 @@ here.
 The shape of a column
 ---------------------
 
-Every numeric field is one packed :class:`array.array` of doubles, and absence is ``nan``. Both
+Every numeric field is one packed ``array.array`` of doubles, and absence is ``nan``. Both
 halves of that are load-bearing and are settled in the feature's contract rather than here:
 
 * **Packed**, because thirty-five columns of 8,760 doubles is 2.45 MB, which is the arithmetic
@@ -36,7 +36,7 @@ What is exported
 
 Four names are registered for this capability in the naming register: ``parse_epw``,
 ``load_epw``, ``WeatherFile`` and ``monthly_means``, and those are what
-:mod:`idfkit.weather` re-exports. The record types below are named for readability and reachable
+[idfkit.weather][idfkit.weather] re-exports. The record types below are named for readability and reachable
 through this module; they are not a second set of registered concepts.
 """
 
@@ -285,7 +285,7 @@ class HourlyTable:
     #: How many records of each numeric column are present, meaning not absent.
     #:
     #: Carried rather than recomputed: a caller that needed it would otherwise rescan the column,
-    #: and :func:`monthly_means` needs it anyway.
+    #: and [monthly_means][idfkit.weather.epw.monthly_means] needs it anyway.
     present_count: Mapping[str, int]
 
 
@@ -293,7 +293,7 @@ class HourlyTable:
 class WeatherFile:
     """One station's typical year, as read from EPW text.
 
-    Not to be confused with :class:`~idfkit.weather.download.WeatherFiles`, plural, which is what
+    Not to be confused with [WeatherFiles][idfkit.weather.download.WeatherFiles], plural, which is what
     retrieval hands back: the EPW, DDY and STAT members of one archive. This is what reading ONE
     of those members produces. The two names are one character apart, which is a hazard worth
     naming here rather than discovering in review.
@@ -303,7 +303,7 @@ class WeatherFile:
     #: The ``DESIGN CONDITIONS`` record as it stands, uninterpreted.
     #:
     #: Retained rather than parsed. A caller who wants design conditions is sent to the DDY member
-    #: of the same archive, which :class:`DesignDayManager` already reads.
+    #: of the same archive, which [DesignDayManager][idfkit.weather.designday.DesignDayManager] already reads.
     design_conditions: str
     typical_periods: tuple[EpwPeriod, ...]
     ground_temperatures: tuple[EpwGroundTemperatures, ...]
@@ -570,7 +570,7 @@ def parse_epw(text: str) -> WeatherFile:
 
     Args:
         text: The file's decoded text. Decode it as the weather formats are written, which is
-            latin-1 and not UTF-8; :func:`load_epw` does.
+            latin-1 and not UTF-8; [load_epw][idfkit.weather.epw.load_epw] does.
 
     Returns:
         The header records and the hourly table as columns.
@@ -678,10 +678,10 @@ def _read_table(lines: Sequence[str], offset: int, row_count: int) -> HourlyTabl
 def load_epw(path: str | Path) -> WeatherFile:
     """Read an EPW weather file from a path.
 
-    A convenience over :func:`parse_epw` and nothing more: it reads the bytes, decodes them
+    A convenience over [parse_epw][idfkit.weather.epw.parse_epw] and nothing more: it reads the bytes, decodes them
     latin-1, which is how the weather formats are written and how the downloader stores them, and
     hands the text on. Every rule about what is read, what is absent and what fails belongs to
-    :func:`parse_epw`.
+    [parse_epw][idfkit.weather.epw.parse_epw].
 
     Args:
         path: The ``.epw`` file to read.
@@ -710,7 +710,7 @@ def monthly_means(file: WeatherFile, field: str) -> list[MonthlyMean]:
     tell a mean over 744 hours from a mean over three, and both look like numbers.
 
     Args:
-        file: A weather file, as :func:`parse_epw` returned it.
+        file: A weather file, as [parse_epw][idfkit.weather.epw.parse_epw] returned it.
         field: Which numeric column to aggregate, by its name on the hourly table.
 
     Returns:

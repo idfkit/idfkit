@@ -88,7 +88,8 @@ def reject_version_string(version: object) -> None:
 
 
 def _example_tuple(version: str) -> tuple[int, int, int]:
-    """The tuple a dotted string such as ``"26.1"`` means, else :data:`LATEST_VERSION`, for an error message."""
+    """The tuple a dotted string such as ``"26.1"`` means, else [LATEST_VERSION][idfkit.versions.LATEST_VERSION], for an
+    error message."""
     parts = version.strip().lstrip("vV").replace("-", ".").split(".")
     if len(parts) == 2:
         parts.append("0")
@@ -130,8 +131,8 @@ def version_string(version: tuple[int, int, int]) -> str:
 def format_releases(releases: Iterable[tuple[int, int, int]]) -> str:
     """*releases*, oldest first, with each run of three or more consecutive supported releases as a range.
 
-    Consecutive means adjacent in :data:`ENERGYPLUS_VERSIONS`, not in the list given, so a range
-    never covers a release that was not checked: ``8.9.0 to 9.5.0`` names seven releases, and
+    Consecutive means adjacent in [ENERGYPLUS_VERSIONS][idfkit.versions.ENERGYPLUS_VERSIONS], not in the list given, so
+    a range never covers a release that was not checked: ``8.9.0 to 9.5.0`` names seven releases, and
     ``8.9.0, 9.5.0`` the two of a run of targets that skipped the ones between.
 
     Examples:
@@ -270,11 +271,11 @@ def find_release(version: tuple[int, int, int]) -> tuple[int, int, int] | None:
     """
     Find the supported release a version names, without any fallback.
 
-    This is the release-line half of :func:`find_closest_version`: the version
+    This is the release-line half of [find_closest_version][idfkit.versions.find_closest_version]: the version
     itself when it is a supported release, else the highest supported release of
     the same major and minor (a file headed ``Version, 9.0;`` reads as
     ``(9, 0, 0)`` and names the 9.0.1 release). Unlike
-    :func:`find_closest_version`, a version newer than every supported release is
+    [find_closest_version][idfkit.versions.find_closest_version], a version newer than every supported release is
     not snapped to the latest one, which is what a migration source needs: a
     model of a release idfkit does not know cannot be migrated from a neighbour.
 
