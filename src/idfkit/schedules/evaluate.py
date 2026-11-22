@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from idfkit.schedules.compact import evaluate_compact
+from idfkit.schedules.compact import evaluate_compact, evaluate_compact_range
 from idfkit.schedules.day import (
     evaluate_constant,
     evaluate_day_hourly,
@@ -18,7 +18,7 @@ from idfkit.schedules.day import (
     evaluate_day_list,
 )
 from idfkit.schedules.file import ScheduleFileCache, evaluate_schedule_file
-from idfkit.schedules.holidays import get_holidays, get_special_days_by_type
+from idfkit.schedules.holidays import extract_special_days
 from idfkit.schedules.types import (
     DayType,
     DayTypeInput,
@@ -70,12 +70,22 @@ class MalformedScheduleError(ScheduleEvaluationError):
 
 
 def _get_special_days(document: AnyIDFDocument | None, year: int) -> tuple[set[date], set[date], set[date]]:
-    """Get holidays and custom days from document."""
+    """Get the Holiday, CustomDay1 and CustomDay2 dates of *document* for *year*.
+
+    The model's ``RunPeriodControl:SpecialDays`` are parsed once and split by type; the result is the
+    same as [get_holidays][idfkit.schedules.holidays.get_holidays] and two calls of
+    [get_special_days_by_type][idfkit.schedules.holidays.get_special_days_by_type].
+    """
+    holidays: set[date] = set()
+    custom_day_1: set[date] = set()
+    custom_day_2: set[date] = set()
     if document is None:
-        return set(), set(), set()
-    holidays = get_holidays(document, year)
-    custom_day_1 = get_special_days_by_type(document, year, "CustomDay1")
-    custom_day_2 = get_special_days_by_type(document, year, "CustomDay2")
+        return holidays, custom_day_1, custom_day_2
+    by_type = {"Holiday": holidays, "CustomDay1": custom_day_1, "CustomDay2": custom_day_2}
+    for sd in extract_special_days(document, year):
+        dates = by_type.get(sd.day_type)
+        if dates is not None:
+            dates.update(sd.start_date + timedelta(days=i) for i in range(sd.duration))
     return holidays, custom_day_1, custom_day_2
 
 
@@ -241,15 +251,8 @@ def values(
     day_type_enum = parse_day_type(day_type)
     interpolation_enum = parse_interpolation(interpolation)
 
-    # Get holidays and custom days
-    holidays: set[date] = set()
-    custom_day_1: set[date] = set()
-    custom_day_2: set[date] = set()
-
-    if document is not None:
-        holidays = get_holidays(document, year)
-        custom_day_1 = get_special_days_by_type(document, year, "CustomDay1")
-        custom_day_2 = get_special_days_by_type(document, year, "CustomDay2")
+    # Get holidays and custom days once for the whole range, not at every timestep
+    holidays, custom_day_1, custom_day_2 = _get_special_days(document, year)
 
     # Calculate time step in minutes
     minutes_per_step = 60 // timestep
@@ -267,6 +270,19 @@ def values(
     if schedule_type == "Schedule:File":
         file_cache = ScheduleFileCache()
 
+    step = timedelta(minutes=minutes_per_step)
+
+    # Schedule:Compact: parse once and resolve the day rule once per date (interpolation comes
+    # from the schedule's own Interpolate field, as in evaluate()).
+    if schedule_type == "Schedule:Compact":
+        try:
+            return evaluate_compact_range(
+                schedule, start, end, step, day_type_enum, holidays, custom_day_1, custom_day_2
+            )
+        except (ValueError, KeyError) as e:
+            msg = f"Error evaluating {schedule_type}: {e}"
+            raise MalformedScheduleError(msg) from e
+
     while current <= end:
         value = _evaluate_with_interpolation(
             schedule,
@@ -282,7 +298,7 @@ def values(
             file_cache,
         )
         result.append(value)
-        current += timedelta(minutes=minutes_per_step)
+        current += step
 
     return result
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 import weakref
 from dataclasses import dataclass
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING, Any, cast
 
 from idfkit.schedules.day_types import get_applicable_day_types
@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 __all__ = [
     "compact_problems",
     "evaluate_compact",
+    "evaluate_compact_range",
     "parse_compact",
 ]
 
@@ -347,33 +348,101 @@ def evaluate_compact(
             which EnergyPlus refuses as fatal. ``evaluate()`` raises it as
             ``MalformedScheduleError``.
     """
+    periods, interpolation = _checked_parse(obj)
+    rule = _rule_for_date(periods, dt.date(), day_type, holidays or set(), custom_day_1 or set(), custom_day_2 or set())
+    if rule is None:
+        return 0.0
+
+    # Evaluate the time-value pairs
+    return evaluate_time_values(rule.time_values, dt.time(), interpolation)
+
+
+def evaluate_compact_range(
+    obj: IDFObject,
+    start: datetime,
+    end: datetime,
+    step: timedelta,
+    day_type: DayType,
+    holidays: set[date],
+    custom_day_1: set[date],
+    custom_day_2: set[date],
+) -> list[float]:
+    """Evaluate a Schedule:Compact at every *step* from *start* through *end*.
+
+    Gives the same values as calling [evaluate_compact][idfkit.schedules.compact.evaluate_compact]
+    at each of those datetimes, but parses and checks the schedule once and finds the day rule
+    once per date instead of once per timestep.
+
+    Args:
+        obj: The Schedule:Compact object.
+        start: First datetime evaluated.
+        end: Last datetime that may be evaluated (inclusive).
+        step: Interval between evaluations.
+        day_type: Override day type.
+        holidays: Set of holiday dates.
+        custom_day_1: Set of CustomDay1 dates.
+        custom_day_2: Set of CustomDay2 dates.
+
+    Returns:
+        One value per timestep.
+
+    Raises:
+        ValueError: As [evaluate_compact][idfkit.schedules.compact.evaluate_compact] does.
+    """
+    periods, interpolation = _checked_parse(obj)
+    result: list[float] = []
+    append = result.append
+    current = start
+    current_date: date | None = None
+    rule: CompactDayRule | None = None
+    # A day rule gives the same value at the same time of day on every date it applies to.
+    memo: dict[tuple[int, time], float] = {}
+    while current <= end:
+        d = current.date()
+        if d != current_date:
+            current_date = d
+            rule = _rule_for_date(periods, d, day_type, holidays, custom_day_1, custom_day_2)
+        if rule is None:
+            append(0.0)
+        else:
+            t = current.time()
+            key = (id(rule), t)
+            value = memo.get(key)
+            if value is None:
+                value = memo[key] = evaluate_time_values(rule.time_values, t, interpolation)
+            append(value)
+        current += step
+    return result
+
+
+def _checked_parse(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
+    """Parse *obj*, raising ``ValueError`` if EnergyPlus would refuse it."""
     periods, interpolation = parse_compact(obj)
 
     problems = _cached_problems(obj)
     if problems:
         msg = f"schedule {obj.name!r} would stop EnergyPlus: " + "; ".join(problems)
         raise ValueError(msg)
+    return periods, interpolation
 
-    d = dt.date()
-    current_time = dt.time()
 
+def _rule_for_date(
+    periods: list[CompactPeriod],
+    d: date,
+    day_type: DayType,
+    holidays: set[date],
+    custom_day_1: set[date],
+    custom_day_2: set[date],
+) -> CompactDayRule | None:
+    """Return the day rule that applies on *d*, or None if no period or rule covers it."""
     # Find the period containing this date
     period = _find_period_for_date(periods, d)
     if period is None:
-        return 0.0
+        return None
 
-    # Get applicable day types for this date
-    applicable_types = get_applicable_day_types(
-        d, day_type, holidays or set(), custom_day_1 or set(), custom_day_2 or set()
-    )
-
-    # Find the matching day rule
-    rule = _find_matching_rule(period.day_rules, applicable_types)
-    if rule is None:
-        return 0.0
-
-    # Evaluate the time-value pairs
-    return evaluate_time_values(rule.time_values, current_time, interpolation)
+    # Get applicable day types for this date, then the matching day rule
+    applicable_types = get_applicable_day_types(d, day_type, holidays, custom_day_1, custom_day_2)
+    return _find_matching_rule(period.day_rules, applicable_types)
 
 
 def _find_period_for_date(periods: list[CompactPeriod], d: date) -> CompactPeriod | None:
