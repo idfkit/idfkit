@@ -37,7 +37,7 @@ _index_cache: dict[tuple[int, int, int], SchemaIndex] = {}
 
 
 def _get_index(version: tuple[int, int, int]) -> SchemaIndex:
-    """Load and cache a :class:`SchemaIndex` for *version*."""
+    """Load and cache a [SchemaIndex][idfkit.compat.SchemaIndex] for *version*."""
     if version not in _index_cache:
         schema: EpJSONSchema = get_schema(version)
         _index_cache[version] = build_schema_index(schema)
@@ -142,13 +142,13 @@ def check_compatibility(
 
     Parses *source* via the AST (no code execution) and compares extracted
     string literals against the bundled epJSON schemas for the given
-    *targets*, emitting a :class:`Diagnostic` for every object type or
+    *targets*, emitting a [Diagnostic][idfkit.compat.Diagnostic] for every object type or
     choice value that does not exist in all target versions, and (``C006``) for one passed to
     ``add()`` that exists in none of them.
 
     A literal is checked only against the targets its code can run on: a lookup on
     ``as_version(doc, ...)`` or inside ``if doc.version >= (9, 4, 0):`` is checked against the
-    targets that call or test admits (see :mod:`idfkit.compat._narrow` for exactly what is
+    targets that call or test admits (see ``idfkit.compat._narrow`` for exactly what is
     recognised). A ``# idfkit: ignore[C001]`` comment on the literal's line silences the listed
     rules there, and a comment that silences nothing is reported as ``C005``.
 
@@ -160,16 +160,16 @@ def check_compatibility(
         include_groups: If set, only lint object types belonging to these
             IDD groups (e.g. ``{"Thermal Zones and Surfaces"}``).
         exclude_groups: If set, skip object types belonging to these IDD groups.
-        select: Rule codes to check. ``None`` checks :data:`DEFAULT_RULES`, which leaves out
+        select: Rule codes to check. ``None`` checks [DEFAULT_RULES][idfkit.compat.DEFAULT_RULES], which leaves out
             the opt-in ``C004``.
         ignore: Rule codes not to check, removed from *select*.
         suppressions: Whether ``# idfkit: ignore`` comments are honoured (and unused ones
             reported as ``C005``).
         package: The dotted package *filename* belongs to, so that its relative imports can be
-            recognised as idfkit's (see :func:`~idfkit.compat.extract_literals`).
+            recognised as idfkit's (see [extract_literals][idfkit.compat.extract_literals]).
 
     Returns:
-        List of :class:`Diagnostic` instances, sorted by line then column.
+        List of [Diagnostic][idfkit.compat.Diagnostic] instances, sorted by line then column.
 
     Raises:
         ValueError: If fewer than two targets are given, or a rule code is unknown.
@@ -229,10 +229,10 @@ def check_compatibility(
 
 
 def enabled_rules(select: Collection[str] | None, ignore: Collection[str] | None) -> frozenset[str]:
-    """The rules a run checks: *select* (or :data:`DEFAULT_RULES`) less *ignore*.
+    """The rules a run checks: *select* (or [DEFAULT_RULES][idfkit.compat.DEFAULT_RULES]) less *ignore*.
 
     Raises:
-        ValueError: If a code is not a rule of :data:`DIAGNOSTIC_CODES`.
+        ValueError: If a code is not a rule of [DIAGNOSTIC_CODES][idfkit.compat.DIAGNOSTIC_CODES].
     """
     chosen: set[str] = {c.upper() for c in select} if select is not None else set(DEFAULT_RULES)
     dropped: set[str] = {c.upper() for c in ignore} if ignore is not None else set()

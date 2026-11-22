@@ -481,7 +481,7 @@ class Guard:
         document: The document the predicate tests.
         predicate: The test, applied to a ``doc.version`` value.
         points: The version tuples the test compares against, which decide the values
-            :meth:`narrow` tries for each release.
+            ``narrow`` tries for each release.
     """
 
     document: DocumentRef

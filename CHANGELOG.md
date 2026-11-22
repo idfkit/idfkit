@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `idfkit.versioned.DocumentTypeTarget` and `ReleaseBound` named what `as_type=`, `since=` and `before=`
+  took, and `idfkit.weather.GeocodingErrorKind` named `GeocodingError.kind`, where signatures had used
+  private aliases ([#362](https://github.com/idfkit/idfkit/pull/362)).
+
 ### Fixed
 
+- Docstring cross-references, written as Sphinx roles that the API reference showed as raw text,
+  became links ([#362](https://github.com/idfkit/idfkit/pull/362)).
 - `Interpolate: Average` (and `Yes`) gave a linear ramp in `Schedule:Compact`, `Schedule:Day:Interval`
   and `Schedule:Day:List`; `values()` averaged over each timestep instead, as EnergyPlus does, and
   applied each `For:` block's own `Interpolate:` mode. ([#367](https://github.com/idfkit/idfkit/pull/367))

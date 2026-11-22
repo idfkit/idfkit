@@ -230,7 +230,7 @@ def _run_chain(
 ) -> MigrationReport[AnyIDFDocument[bool]]:
     """Run every step in *chain*, returning a complete report.
 
-    On failure, raises :class:`~idfkit.exceptions.MigrationError` carrying the
+    On failure, raises [MigrationError][idfkit.exceptions.MigrationError] carrying the
     prefix of successfully-completed steps.
     """
     from .._idf_encoding import source_encoding
