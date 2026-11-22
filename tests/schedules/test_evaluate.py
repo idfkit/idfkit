@@ -1055,6 +1055,24 @@ class TestCompactValuesMatchPerTimestep:
             doc.removeidfobject(obj)
         assert with_specials != values(schedule, year=2024, timestep=4, document=doc)
 
+    @pytest.mark.parametrize("timestep", [1, 4])
+    def test_days_without_a_rule_read_zero(self, timestep: int) -> None:
+        """A day no For: block covers reads 0.0 at every timestep, as evaluate_compact() gives it."""
+        doc = _special_days_doc()
+        _compact(
+            doc,
+            "WeekdaysOnly",
+            ["Through: 12/31", "For: Weekdays", "Interpolate: Average", "Until: 07:30", "0.2", "Until: 24:00", "0.8"],
+        )
+        schedule = doc.get_collection("Schedule:Compact").get("WeekdaysOnly")
+        assert schedule is not None
+        fast = values(schedule, year=2024, timestep=timestep, start_date=(1, 1), end_date=(1, 14), document=doc)
+        slow = _per_timestep(schedule, doc, 2024, timestep, (1, 1), (1, 14), None)
+        assert fast == slow
+        per_day = 24 * timestep
+        saturday = (date(2024, 1, 6) - date(2024, 1, 1)).days * per_day
+        assert fast[saturday : saturday + per_day] == [0.0] * per_day
+
     def test_empty_range(self) -> None:
         """An end date before the start date gives no values, without evaluating the schedule."""
         doc = new_document()
