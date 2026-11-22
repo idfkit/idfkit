@@ -1138,7 +1138,7 @@ def create_block(
     a single function call.
 
     For setback buildings, create multiple blocks at different elevations
-    and link them with :func:`link_blocks`.
+    and link them with [link_blocks][idfkit.zoning.link_blocks].
 
     Args:
         doc: The document to add objects to.
@@ -1333,9 +1333,9 @@ def link_blocks(
     * ``link_blocks(doc, "Base", "Tower")`` — link only the named
       blocks (surfaces whose zone name starts with the given prefix).
 
-    Uses the lower-level :func:`~idfkit.geometry_builders.detect_horizontal_adjacencies`,
-    :func:`~idfkit.geometry_builders.split_horizontal_surface_by_regions`, and
-    :func:`~idfkit.geometry_builders.link_horizontal_surfaces` functions.
+    Uses the lower-level [detect_horizontal_adjacencies][idfkit.geometry_builders.detect_horizontal_adjacencies],
+    [split_horizontal_surface_by_regions][idfkit.geometry_builders.split_horizontal_surface_by_regions], and
+    [link_horizontal_surfaces][idfkit.geometry_builders.link_horizontal_surfaces] functions.
 
     Args:
         doc: The document containing the blocks.

@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "GeocodingError",
+    "GeocodingErrorKind",
     "detect_location",
     "geocode",
 ]
@@ -46,7 +47,7 @@ _IPAPI_URL = "https://ipapi.co/json/"
 _IPGEO_CACHE_FILENAME = "ipgeo.json"
 
 
-_GeocodingErrorKind = Literal["not-found", "unreachable", "http", "invalid-response"]
+GeocodingErrorKind = Literal["not-found", "unreachable", "http", "invalid-response"]
 """Why a geocoding call failed.
 
 - ``"not-found"``: the service answered and has no location for the query.
@@ -78,9 +79,9 @@ class GeocodingError(Exception):
         status: The HTTP status when ``kind`` is ``"http"``, otherwise ``None``.
     """
 
-    def __init__(self, message: str, *, kind: _GeocodingErrorKind = "unreachable", status: int | None = None) -> None:
+    def __init__(self, message: str, *, kind: GeocodingErrorKind = "unreachable", status: int | None = None) -> None:
         super().__init__(message)
-        self.kind: _GeocodingErrorKind = kind
+        self.kind: GeocodingErrorKind = kind
         self.status: int | None = status
 
 
@@ -315,7 +316,7 @@ def detect_location(
 
     Args:
         cache_dir: Directory for the cache file. Defaults to the platform
-            weather cache directory (same as :class:`WeatherDownloader`).
+            weather cache directory (same as [WeatherDownloader][idfkit.weather.download.WeatherDownloader]).
         max_age: Maximum cache age before re-fetching. ``timedelta`` or
             seconds; ``None`` means cache forever; ``0`` means always
             re-fetch.

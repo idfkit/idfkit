@@ -1,4 +1,4 @@
-"""Attribute-name resolution for :class:`~idfkit.document.IDFDocument` collection accessors.
+"""Attribute-name resolution for [IDFDocument][idfkit.document.IDFDocument] collection accessors.
 
 Lets every object type in a document's schema be reached as an attribute. A type a
 model can hold many of is named in the plural; a type it holds at most one of
@@ -45,7 +45,7 @@ _SPLIT_AFTER_LOWER = re.compile(r"([a-z0-9])([A-Z])")
 _COLLAPSE = re.compile(r"_+")
 
 MEMBER_CONFLICT = "<IDFDocument member>"
-"""Marker in :attr:`AccessorResolver.conflicts` for a name owned by a real member."""
+"""Marker in ``AccessorResolver.conflicts`` for a name owned by a real member."""
 
 
 def snake_case(obj_type: str) -> str:
@@ -174,7 +174,7 @@ class AccessorResolver:
     """Maps attribute names to object types for one schema.
 
     Build once per schema and cache it on the schema (see
-    :meth:`~idfkit.schema.EpJSONSchema.accessor_resolver`); construction is
+    [accessor_resolver][idfkit.schema.EpJSONSchema.accessor_resolver]); construction is
     O(number of object types) and lookup is at most two dict hits.
 
     Applied precedence:

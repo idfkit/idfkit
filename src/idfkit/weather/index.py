@@ -701,7 +701,7 @@ def _zone_code_of(label: str) -> str | None:
     """The ASHRAE zone code in a label, or ``None`` when there is none to have.
 
     ``None`` covers two different situations on purpose, and callers that need to tell
-    them apart use :func:`_zone_is_undetermined`: upstream could not determine the zone,
+    them apart use ``_zone_is_undetermined``: upstream could not determine the zone,
     or it determined one this library does not recognise.
 
     **The suffix is ``[ABC]``, not ``[AB]``.** Dropping C loses 3C, 4C and 5C, which is
@@ -1108,8 +1108,8 @@ class StationIndex:
             wmo_region: WMO region number, inferred from the download URL.
             climate_zone: ASHRAE climate zone code, e.g. ``"5A"``. Case-insensitive,
                 and matched against the code parsed out of
-                :attr:`WeatherStation.ashrae_climate_zone` rather than against that
-                label's text. The label is not a code: 2,162 records in the shipped
+                [WeatherStation.ashrae_climate_zone][idfkit.weather.station.WeatherStation.ashrae_climate_zone] rather
+                than against that label's text. The label is not a code: 2,162 records in the shipped
                 index read ``7A - ASHRAE Climate Zone could not be determined`` or
                 ``8A - ...``, and neither 7A nor 8A is an ASHRAE zone, since zones 7
                 and 8 carry no suffix. Matching the first token would invent two zones

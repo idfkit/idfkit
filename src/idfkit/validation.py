@@ -737,7 +737,7 @@ def _missing_group_keys(obj: IDFObject, wrapper: str, required: tuple[str, ...])
     """``E001`` for each required key an extensible group of *obj* does not give.
 
     The field is named as the group reads it, ``vertices[2].vertex_z_coordinate``. Reading such a
-    key raises :class:`~idfkit.exceptions.MissingRequiredFieldError` where every release requires it,
+    key raises [MissingRequiredFieldError][idfkit.exceptions.MissingRequiredFieldError] where every release requires it,
     so ``add()`` refuses the group as it refuses an object without a required field.
     """
     groups: Any = obj.data.get(wrapper)
@@ -1319,7 +1319,7 @@ def _validate_field_type(  # pyright: ignore[reportUnusedFunction]
 ) -> list[ValidationError]:
     """Report every type and enum violation of a field with a single schema (no ``anyOf``).
 
-    ``anyOf`` fields are handled by :func:`_any_of_failure`, which weighs type, enum and
+    ``anyOf`` fields are handled by ``_any_of_failure``, which weighs type, enum and
     bounds together per branch; routing them here would check the type of one branch
     against the constraints of another.
     """

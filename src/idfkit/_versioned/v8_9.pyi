@@ -3,7 +3,7 @@
 DO NOT EDIT — regenerate with:
     python -m idfkit.codegen.generate_stubs
 
-Import it from :mod:`idfkit.versioned`.
+Import it from [idfkit.versioned][idfkit.versioned].
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ class IDFDocumentV8_9(
     _v._Accessors_v8_9_to_v26_2,
     IDFDocumentAllVersions[Strict],
 ):
-    """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 8.9.0."""
+    """An [IDFDocument][idfkit.document.IDFDocument] typed for EnergyPlus 8.9.0."""
 
     @overload
     def __getitem__(

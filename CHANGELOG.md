@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `idfkit.versioned.DocumentTypeTarget` and `ReleaseBound` named what `as_type=`, `since=` and `before=`
+  took, and `idfkit.weather.GeocodingErrorKind` named `GeocodingError.kind`, where signatures had used
+  private aliases ([#362](https://github.com/idfkit/idfkit/pull/362)).
+
 ### Changed
 
 - `schedules.values()` evaluated a `Schedule:Compact` much faster, with identical results, in models
@@ -15,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Docstring cross-references, written as Sphinx roles that the API reference showed as raw text,
+  became links ([#362](https://github.com/idfkit/idfkit/pull/362)).
 - `schedules.values()` raised `ValueError` for a `timestep` that does not divide the hour, where it had
   looped forever above 60 and returned the wrong number of values for one such as 7.
   ([#363](https://github.com/idfkit/idfkit/pull/363))
