@@ -88,7 +88,8 @@ def reject_version_string(version: object) -> None:
 
 
 def _example_tuple(version: str) -> tuple[int, int, int]:
-    """The tuple a dotted string such as ``"26.1"`` means, else [LATEST_VERSION][idfkit.versions.LATEST_VERSION], for an error message."""
+    """The tuple a dotted string such as ``"26.1"`` means, else [LATEST_VERSION][idfkit.versions.LATEST_VERSION], for an
+    error message."""
     parts = version.strip().lstrip("vV").replace("-", ".").split(".")
     if len(parts) == 2:
         parts.append("0")
@@ -130,8 +131,8 @@ def version_string(version: tuple[int, int, int]) -> str:
 def format_releases(releases: Iterable[tuple[int, int, int]]) -> str:
     """*releases*, oldest first, with each run of three or more consecutive supported releases as a range.
 
-    Consecutive means adjacent in [ENERGYPLUS_VERSIONS][idfkit.versions.ENERGYPLUS_VERSIONS], not in the list given, so a range
-    never covers a release that was not checked: ``8.9.0 to 9.5.0`` names seven releases, and
+    Consecutive means adjacent in [ENERGYPLUS_VERSIONS][idfkit.versions.ENERGYPLUS_VERSIONS], not in the list given, so
+    a range never covers a release that was not checked: ``8.9.0 to 9.5.0`` names seven releases, and
     ``8.9.0, 9.5.0`` the two of a run of targets that skipped the ones between.
 
     Examples:

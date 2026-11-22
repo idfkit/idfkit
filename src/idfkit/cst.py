@@ -75,8 +75,8 @@ class CSTNode:
 class SourceSpan:
     """A half-open range of [IDFDocument.raw_text][idfkit.document.IDFDocument.raw_text], ``end`` exclusive.
 
-    What [IDFDocument.region_of][idfkit.document.IDFDocument.region_of] answers with. A frozen record rather than a tuple so that a
-    reader cannot transpose the two offsets, and so that anything added beside them later is not a
+    What [IDFDocument.region_of][idfkit.document.IDFDocument.region_of] answers with. A frozen record rather than a
+    tuple so that a reader cannot transpose the two offsets, and so that anything added beside them later is not a
     breaking change.
 
     Named a span rather than a region because in a building energy library "region" reads as a

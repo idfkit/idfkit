@@ -54,8 +54,8 @@ adds it.
 
 The **simplified surface family** (``Wall:Exterior``, ``Window``, ``Roof`` and their siblings) is
 not read. Those types are keyed on origin, width, height and tilt rather than on vertices and need
-their own rule. They are reported in [Scene.unattempted][idfkit.scene.Scene.unattempted] so that a model made of them looks
-different from a model with no geometry at all.
+their own rule. They are reported in [Scene.unattempted][idfkit.scene.Scene.unattempted] so that a model made of them
+looks different from a model with no geometry at all.
 
 The **zone multiplier is not expanded**. It is a simulation instruction, and the engine's own report
 does not repeat those surfaces either.

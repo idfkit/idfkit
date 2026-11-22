@@ -863,7 +863,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """Store a trailing-underscore field given without its underscore under the schema's key.
 
         ``cond_flag_is_the_basement_conditioned`` is stored as
-        ``cond_flag_is_the_basement_conditioned_`` ([ParsingCache.field_aliases][idfkit.schema.ParsingCache.field_aliases]). Two keys
+        ``cond_flag_is_the_basement_conditioned_``
+        ([ParsingCache.field_aliases][idfkit.schema.ParsingCache.field_aliases]). Two keys
         naming one field are refused, even when one of them is blank.
         """
         aliases = pc.field_aliases if pc is not None else None
@@ -1135,7 +1136,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         return result
 
     def _adopt(self, obj: IDFObject) -> IDFObject:
-        """File *obj* as [addidfobject][idfkit.document.IDFDocument.addidfobject] does, with its values taken as they are.
+        """File *obj* as [addidfobject][idfkit.document.IDFDocument.addidfobject] does, with its values taken as they
+        are.
 
         For objects already in this document's spelling: the parsers', which normalize while
         they read, and the twins [copy][idfkit.document.IDFDocument.copy] makes of a document with the same setting.
@@ -1604,8 +1606,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Empty for a document read with ``preserve_formatting=True`` and not edited since. Every
         object for a document read without it, because there is nothing to reproduce.
 
-        [raw_text][idfkit.document.IDFDocument.raw_text] answers whether a write will preserve at all. This answers how many
-        objects it will REWRITE, and it is the part a consumer cannot work out for itself: a rename
+        [raw_text][idfkit.document.IDFDocument.raw_text] answers whether a write will preserve at all. This answers how
+        many objects it will REWRITE, and it is the part a consumer cannot work out for itself: a rename
         clears the record on every object that referred to the renamed one, so counting from your
         own edit log reports one where the answer is nine.
 
@@ -1613,11 +1615,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         two.** An object removed from the document is no longer in it to be yielded, so this can
         return nothing for a write that changes the file. A consumer treating an empty result as
         "the file is unchanged" would be wrong on every removal. To ask whether the file will
-        differ at all, compare the write with [raw_text][idfkit.document.IDFDocument.raw_text]; ask this for how much of it is
-        being written afresh.
+        differ at all, compare the write with [raw_text][idfkit.document.IDFDocument.raw_text]; ask this for how much of
+        it is being written afresh.
 
-        [IDFObject.source_text][idfkit.objects.IDFObject.source_text] is the same record read one object at a time, and it is the
-        retained TEXT rather than a flag: a reader has to know that HAVING text means unchanged.
+        [IDFObject.source_text][idfkit.objects.IDFObject.source_text] is the same record read one object at a time, and
+        it is the retained TEXT rather than a flag: a reader has to know that HAVING text means unchanged.
         This asks the question directly.
 
         Examples:
@@ -1633,15 +1635,17 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 yield obj
 
     def region_of(self, obj: IDFObject) -> SourceSpan | None:
-        """Where *obj*'s characters sit in [raw_text][idfkit.document.IDFDocument.raw_text], or ``None`` if they sit nowhere.
+        """Where *obj*'s characters sit in [raw_text][idfkit.document.IDFDocument.raw_text], or ``None`` if they sit
+        nowhere.
 
         ``None`` for an object added since the read and for a document read without
         ``preserve_formatting=True``.
 
-        This is what makes [changed_objects][idfkit.document.IDFDocument.changed_objects] usable. Turning an edit into the smallest
-        possible change to a file takes three things: WHICH objects will be rewritten, WHAT text
+        This is what makes [changed_objects][idfkit.document.IDFDocument.changed_objects] usable. Turning an edit into
+        the smallest possible change to a file takes three things: WHICH objects will be rewritten, WHAT text
         each becomes, and WHERE the old one was. Without the third a consumer has to write the whole
-        file and compare, which is the work [changed_objects][idfkit.document.IDFDocument.changed_objects] exists to avoid.
+        file and compare, which is the work [changed_objects][idfkit.document.IDFDocument.changed_objects] exists to
+        avoid.
 
         The range is where the object WAS, and stays answerable after it changes. That is the case
         it is for: the objects worth locating are the ones being rewritten.
@@ -1666,9 +1670,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     def _anchored(self) -> dict[IDFObject, tuple[SourceSpan, CSTNode]]:
         """Every anchored object's span and its node, keyed by the object and built once.
 
-        One pass, because both accessors want the same walk: [region_of][idfkit.document.IDFDocument.region_of] wants the span and
-        [render_object][idfkit.document.IDFDocument.render_object] wants the node's text. Each doing its own scan made the loop both
-        their docstrings recommend, over every changed object, quadratic in the size of the file.
+        One pass, because both accessors want the same walk: [region_of][idfkit.document.IDFDocument.region_of] wants
+        the span and [render_object][idfkit.document.IDFDocument.render_object] wants the node's text. Each doing its
+        own scan made the loop both their docstrings recommend, over every changed object, quadratic in the size of the
+        file.
 
         Safe to keep, because the tree does not change after the read. An object added since is
         absent from it, which is the answer both accessors owe for one.
@@ -1694,8 +1699,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     def render_object(self, obj: IDFObject, *, field_comments: FieldComments = "preserve") -> str | None:
         """*obj*, rendered exactly as a preserving write would render it.
 
-        The text that belongs in the range [region_of][idfkit.document.IDFDocument.region_of] returns, so the two compose into an
-        edit that leaves the file where [write_idf][idfkit.writers.write_idf] would have left it.
+        The text that belongs in the range [region_of][idfkit.document.IDFDocument.region_of] returns, so the two
+        compose into an edit that leaves the file where [write_idf][idfkit.writers.write_idf] would have left it.
         ``None`` for an object the retained source does not hold, which is the same set
         [region_of][idfkit.document.IDFDocument.region_of] declines.
 
@@ -1895,7 +1900,8 @@ class AnyIDFDocument(IDFDocument[Strict], metaclass=DocumentTypeMeta):
     """A document of any supported EnergyPlus version.
 
     For a type checker (``document.pyi``) this is the type every version's document is assignable to.
-    At run time no document is created as one: ``isinstance`` holds for every [IDFDocument][idfkit.document.IDFDocument].
+    At run time no document is created as one: ``isinstance`` holds for every
+    [IDFDocument][idfkit.document.IDFDocument].
     """
 
     _energyplus_version = None

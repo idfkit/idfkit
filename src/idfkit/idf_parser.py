@@ -519,7 +519,8 @@ class IDFParser:
     _content: bytes | None
     _strict_parsing: bool
     _diagnostics: list[ParseDiagnostic]
-    #: Whether the parse in progress stores choices in their schema's spelling; set by [parse][idfkit.idf_parser.IDFParser.parse].
+    #: Whether the parse in progress stores choices in their schema's spelling; set by
+    #: [parse][idfkit.idf_parser.IDFParser.parse].
     _normalize_choices: bool
 
     def __init__(

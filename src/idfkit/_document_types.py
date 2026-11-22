@@ -31,7 +31,6 @@ from typing import (
     ForwardRef,
     Literal,
     NoReturn,
-    TypeAlias,
     TypeVar,
     Union,
     cast,
@@ -50,32 +49,13 @@ from .versions import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeIs, Unpack
+    from typing_extensions import TypeIs
 
+    from ._release_aliases import ReleaseBound
     from .document import AnyIDFDocument
 
 
 _D = TypeVar("_D", bound="AnyIDFDocument")
-
-# Each alias is a union at run time, not a string, so that ``DocumentTypeTarget | None`` evaluates in a
-# caller's own signature; only what this module cannot import at run time is quoted. The tuple is
-# non-empty, as the overloads of the loaders and ``as_version`` in the stubs take it.
-DocumentTypeTarget: TypeAlias = (
-    type["AnyIDFDocument"] | tuple["type[AnyIDFDocument]", "Unpack[tuple[type[AnyIDFDocument], ...]]"]
-)
-"""The release a document must be, as ``as_type=`` and [as_version][idfkit.versioned.as_version] take it.
-
-A release's document type from [idfkit.versioned][], such as ``IDFDocumentV9_4``, or a non-empty
-tuple of them for any one of several releases. The document is typed as that release, or as the
-union of the tuple's releases.
-"""
-
-ReleaseBound: TypeAlias = type["AnyIDFDocument"] | str | tuple[int, int] | tuple[int, int, int]
-"""One end of a range of releases, as ``since=`` and ``before=`` take it.
-
-A release's document type (``IDFDocumentV9_6``), its number (``"9.6"``) or its version tuple
-(``(9, 6)`` or ``(9, 6, 0)``). ``since=`` includes the release it names and ``before=`` excludes it.
-"""
 
 
 class DocumentTypeMeta(type):
@@ -151,7 +131,8 @@ def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
 
 def is_type_form(value: object) -> TypeIs[type[Any]]:
     """Whether *value* names a type (a class, a parametrized one such as ``IDFDocumentV9_4[bool]``, or a union)
-    rather than a version value, for the functions that take either: [idfkit.new_document][idfkit.new_document] and ``migrate``.
+    rather than a version value, for the functions that take either: [idfkit.new_document][idfkit.new_document] and
+    ``migrate``.
 
     A union is not itself a class; the narrowing serves the other branch, where the value is a version.
     """
@@ -159,7 +140,8 @@ def is_type_form(value: object) -> TypeIs[type[Any]]:
 
 
 def release_for_new_document(document_type: object, strict: bool) -> tuple[tuple[int, int, int], bool]:
-    """The release and strictness of the document [idfkit.new_document][idfkit.new_document] creates for *document_type*.
+    """The release and strictness of the document [idfkit.new_document][idfkit.new_document] creates for
+    *document_type*.
 
     The release is the one ``release_of`` resolves; the strictness the one the type argument states
     (``IDFDocumentV9_4[Literal[False]]``), else *strict*. On top of ``release_of``, ``IDFDocument`` is

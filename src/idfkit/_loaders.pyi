@@ -3451,7 +3451,8 @@ def load_idf_with_diagnostics(
             of returning ``None``, and assigning a value the schema refuses raises
             [ValidationFailedError][idfkit.exceptions.ValidationFailedError], as ``add()`` does.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree (CST) so that
-            [write_idf][idfkit.writers.write_idf] and [save_idf][idfkit.writers.save_idf] reproduce the original formatting.
+            [write_idf][idfkit.writers.write_idf] and [save_idf][idfkit.writers.save_idf] reproduce the original
+            formatting.
         normalize_choices: When ``True`` (the default), each choice value is stored in the
             spelling its schema declares, whatever case the file used: a surface the file
             calls ``WALL`` has ``surface_type == "Wall"``, as its ``Literal`` type says, so an

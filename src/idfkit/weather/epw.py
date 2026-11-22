@@ -1,7 +1,7 @@
 """Read an EPW weather file: the eight header records, and the hourly table as columns.
 
-The text is what [WeatherDownloader.download][idfkit.weather.download.WeatherDownloader.download] already puts on disk, so this is the step
-between retrieving a station's weather and computing anything from it. Nothing here touches the
+The text is what [WeatherDownloader.download][idfkit.weather.download.WeatherDownloader.download] already puts on disk,
+so this is the step between retrieving a station's weather and computing anything from it. Nothing here touches the
 network, the clock or any global state, and [parse_epw][idfkit.weather.epw.parse_epw] touches no filesystem either.
 
 The hour convention, stated once

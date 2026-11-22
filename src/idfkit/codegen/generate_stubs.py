@@ -2267,8 +2267,8 @@ def generate_versioned_pyi(sink: _CreationModules | None = None) -> str:
         "",
         "from . import _generated_types as _g",
         *sink.imports(),
-        "from ._document_types import DocumentTypeTarget as DocumentTypeTarget",
-        "from ._document_types import ReleaseBound as ReleaseBound",
+        "from ._release_aliases import DocumentTypeTarget as DocumentTypeTarget",
+        "from ._release_aliases import ReleaseBound as ReleaseBound",
         *(
             f"from ._versioned.{_versioned_module(ver)} import {_document_class_name(ver)} as {_document_class_name(ver)}"
             for ver in older
@@ -2684,14 +2684,8 @@ def generate_versioned_py() -> str:
         "",
         "from __future__ import annotations",
         "",
-        "from ._document_types import (",
-        "    DocumentTypeTarget,",
-        "    ReleaseBound,",
-        "    as_version,",
-        "    document_type,",
-        "    release_type_var,",
-        "    release_union,",
-        ")",
+        "from ._document_types import as_version, document_type, release_type_var, release_union",
+        "from ._release_aliases import DocumentTypeTarget, ReleaseBound",
         "from .document import AnyIDFDocument, IDFDocument",
         "",
         "__all__ = [",

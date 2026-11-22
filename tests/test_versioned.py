@@ -428,6 +428,20 @@ class TestRangeAliases:
         optional = getattr(versioned, alias) | None
         assert type(None) in get_args(optional)
 
+    def test_hints_using_the_target_aliases_resolve_in_the_callers_module(self) -> None:
+        # A quoted name inside the aliases would be resolved by ``get_type_hints`` in the caller's
+        # module (Python 3.11 and later), where ``AnyIDFDocument`` is not defined, and pydantic,
+        # typer and the rest would fail on any function that takes a release.
+        namespace: dict[str, Any] = {}
+        exec(  # noqa: S102 - a module without ``from __future__ import annotations``, as a user's may be
+            "from idfkit.versioned import DocumentTypeTarget, ReleaseBound\n"
+            "def load(path: str, as_type: DocumentTypeTarget | None = None, since: ReleaseBound | None = None): ...\n",
+            namespace,
+        )
+        hints = typing.get_type_hints(namespace["load"])
+        assert set(hints) == {"path", "as_type", "since"}
+        assert get_type_hints(load_idf)["since"] is not None
+
 
 # ---------------------------------------------------------------------------
 # Generated stubs

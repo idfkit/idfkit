@@ -223,7 +223,8 @@ class ParsingCache:
     #: Choice spellings of the positional fields and of one extensible group (idfkit#180).
     choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
     ext_choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
-    #: Trailing-underscore field spellings to their keys (see [trailing_underscore_aliases][idfkit.schema.trailing_underscore_aliases]).
+    #: Trailing-underscore field spellings to their keys (see
+    #: [trailing_underscore_aliases][idfkit.schema.trailing_underscore_aliases]).
     field_aliases: Mapping[str, str] = field(default_factory=dict[str, str])
     #: eppy's spellings of fields whose IDD name has punctuation inside a word, to their keys
     #: (``vertex_1_xcoordinate`` -> ``vertex_1_x_coordinate``; see ``eppy_field_aliases``).

@@ -1108,8 +1108,8 @@ class StationIndex:
             wmo_region: WMO region number, inferred from the download URL.
             climate_zone: ASHRAE climate zone code, e.g. ``"5A"``. Case-insensitive,
                 and matched against the code parsed out of
-                [WeatherStation.ashrae_climate_zone][idfkit.weather.station.WeatherStation.ashrae_climate_zone] rather than against that
-                label's text. The label is not a code: 2,162 records in the shipped
+                [WeatherStation.ashrae_climate_zone][idfkit.weather.station.WeatherStation.ashrae_climate_zone] rather
+                than against that label's text. The label is not a code: 2,162 records in the shipped
                 index read ``7A - ASHRAE Climate Zone could not be determined`` or
                 ``8A - ...``, and neither 7A nor 8A is an ASHRAE zone, since zones 7
                 and 8 carry no suffix. Matching the first token would invent two zones

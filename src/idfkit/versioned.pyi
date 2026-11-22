@@ -137,8 +137,8 @@ from ._creation import _v124 as _cv124
 from ._creation import _v125 as _cv125
 from ._creation import _v126 as _cv126
 from ._creation import _v127 as _cv127
-from ._document_types import DocumentTypeTarget as DocumentTypeTarget
-from ._document_types import ReleaseBound as ReleaseBound
+from ._release_aliases import DocumentTypeTarget as DocumentTypeTarget
+from ._release_aliases import ReleaseBound as ReleaseBound
 from ._versioned.v8_9 import IDFDocumentV8_9 as IDFDocumentV8_9
 from ._versioned.v9_0 import IDFDocumentV9_0 as IDFDocumentV9_0
 from ._versioned.v9_1 import IDFDocumentV9_1 as IDFDocumentV9_1

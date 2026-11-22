@@ -640,8 +640,8 @@ def render_cst_node(
     generating new ones, which is the whole reason a rewritten object keeps the author's units and
     notes.
 
-    Shared with [IDFDocument.render_object][idfkit.document.IDFDocument.render_object] so a consumer splicing one object into the range
-    it came from gets the bytes a whole write would have put there. Two constructions of the
+    Shared with [IDFDocument.render_object][idfkit.document.IDFDocument.render_object] so a consumer splicing one object
+    into the range it came from gets the bytes a whole write would have put there. Two constructions of the
     formatter would be two answers to that question, and `field_comments` already had to be threaded
     through this path by hand once.
 

@@ -1082,10 +1082,11 @@ class IDFObject(EppyObjectMixin):
         return [error for key, value in entries if (error := field_value_error(self, key, value, schema)) is not None]
 
     def _refuse_invalid_values(self, entries: Iterable[tuple[str, Any]]) -> None:
-        """Raise [ValidationFailedError][idfkit.exceptions.ValidationFailedError] if a strict document's schema refuses any of *entries*.
+        """Raise [ValidationFailedError][idfkit.exceptions.ValidationFailedError] if a strict document's schema refuses
+        any of *entries*.
 
-        NaN and infinity are refused first, with the [InvalidFieldError][idfkit.exceptions.InvalidFieldError] every document raises
-        for them, so a range check never reports one as merely out of range.
+        NaN and infinity are refused first, with the [InvalidFieldError][idfkit.exceptions.InvalidFieldError] every
+        document raises for them, so a range check never reports one as merely out of range.
         """
         entries = list(entries)
         for key, value in entries:
@@ -1203,7 +1204,8 @@ class IDFObject(EppyObjectMixin):
             doc.notify_name_change(self, old, value)
 
     def _refuse_blank_name(self, value: str) -> None:
-        """Raise [ValidationFailedError][idfkit.exceptions.ValidationFailedError] if a strict document's schema requires a name and *value* is blank."""
+        """Raise [ValidationFailedError][idfkit.exceptions.ValidationFailedError] if a strict document's schema requires
+        a name and *value* is blank."""
         if value.strip():
             return
         doc = self._document
@@ -1223,8 +1225,8 @@ class IDFObject(EppyObjectMixin):
 
         Bumps [mutation_version][idfkit.objects.IDFObject.mutation_version] and invalidates the cached IDF source
         text so the writer regenerates output for this object. Used by
-        [ExtensibleList][idfkit.objects.ExtensibleList]/[ExtensibleGroup][idfkit.objects.ExtensibleGroup] after mutating the
-        canonical wrapper array directly (without going through
+        [ExtensibleList][idfkit.objects.ExtensibleList]/[ExtensibleGroup][idfkit.objects.ExtensibleGroup] after mutating
+        the canonical wrapper array directly (without going through
         ``_set_field``).
         """
         object.__setattr__(self, "_version", self._version + 1)
@@ -1492,7 +1494,8 @@ class IDFObject(EppyObjectMixin):
         return None
 
     def _examine_wrapper(self, key: str, wrapper_key: str, value: Any) -> RefusedEntry | None:
-        """Classify an [update][idfkit.objects.IDFObject.update] entry for the extensible wrapper: its whole list of groups."""
+        """Classify an [update][idfkit.objects.IDFObject.update] entry for the extensible wrapper: its whole list of
+        groups."""
         if not isinstance(value, list):
             return RefusedEntry(key, "wrapper-value", f"expected a list, got {type(value).__name__}")
         view = ExtensibleList[ExtensibleGroup](self, wrapper_key, self._ext_inner_names)
@@ -1505,7 +1508,8 @@ class IDFObject(EppyObjectMixin):
         return None
 
     def _refuse(self, refused: list[RefusedEntry], operation: Literal["update", "add"] = "update") -> None:
-        """Raise the error for a refused [update][idfkit.objects.IDFObject.update] group or ``add()`` call, before anything is written."""
+        """Raise the error for a refused [update][idfkit.objects.IDFObject.update] group or ``add()`` call, before
+        anything is written."""
         named = [entry for entry in refused if entry.reason != "wrapper-value"]
         if not named:
             raise TypeError(format_refused(self._type, refused, operation))
@@ -1615,7 +1619,8 @@ _D = TypeVar("_D")
 
 
 def refuse_name_for_nameless_type(obj_type: str, name: object, obj_schema: Mapping[str, Any] | None) -> None:
-    """Raise [InvalidFieldError][idfkit.exceptions.InvalidFieldError] when *name* is given to a type without a Name field.
+    """Raise [InvalidFieldError][idfkit.exceptions.InvalidFieldError] when *name* is given to a type without a Name
+    field.
 
     165 of the 880 types in the 26.2 schema (``Output:Meter``, ``Output:SQLite``, ``Timestep``,
     ``SimulationControl``, ...) have no Name field: their first IDF field is an ordinary field.
@@ -1639,7 +1644,8 @@ def refuse_name_for_nameless_type(obj_type: str, name: object, obj_schema: Mappi
 
 
 def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache) -> None:
-    """Refuse what ``IDFDocument.add`` must not store, as [IDFObject.update][idfkit.objects.IDFObject.update] refuses it.
+    """Refuse what ``IDFDocument.add`` must not store, as [IDFObject.update][idfkit.objects.IDFObject.update] refuses
+    it.
 
     Runs on the new object before it joins the document, so a refusal leaves nothing behind.
 
@@ -1934,7 +1940,8 @@ class IDFCollection(Generic[_T_co]):
             return self._add(args, fields)
 
     def _add(self, args: tuple[object, ...], fields: dict[str, Any]) -> Any:
-        """The run-time body of [add][idfkit.objects.IDFCollection.add], here so that type checkers check it (see the note there)."""
+        """The run-time body of [add][idfkit.objects.IDFCollection.add], here so that type checkers check it (see the
+        note there)."""
         first = args[0] if args else None
         if isinstance(first, IDFObject):
             if len(args) > 1 or fields:

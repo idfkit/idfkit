@@ -9,14 +9,8 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
-from ._document_types import (
-    DocumentTypeTarget,
-    ReleaseBound,
-    as_version,
-    document_type,
-    release_type_var,
-    release_union,
-)
+from ._document_types import as_version, document_type, release_type_var, release_union
+from ._release_aliases import DocumentTypeTarget, ReleaseBound
 from .document import AnyIDFDocument, IDFDocument
 
 __all__ = [
