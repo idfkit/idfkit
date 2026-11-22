@@ -107,6 +107,7 @@ sub_hourly = values(sched, year=2024, timestep=4)  # 35,040 quarter-hourly value
 - EnergyPlus refuses `Interpolate: Yes`: no bundled schema (8.9 to 26.2) lists it. idfkit reads it as `Average`.
 - `values()` refuses a `timestep` that does not divide the hour, as EnergyPlus does.
 - `evaluate(sched, ts)` gives the value of the minute containing `ts`. Use `values()` with the model's `Timestep` to get what EnergyPlus reports.
+- For a range of timestamps, call `values()` rather than `evaluate()` in a loop. For a `Schedule:Compact` it finds each day's rule once and computes each rule's timestep values once, where each `evaluate()` call parses special days and resolves the day again.
 
 By default `values` returns a `list[float]`. For pandas:
 

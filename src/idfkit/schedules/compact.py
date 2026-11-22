@@ -9,11 +9,11 @@ from __future__ import annotations
 import re
 import weakref
 from dataclasses import dataclass
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING, Any, cast
 
 from idfkit.schedules.day_types import get_applicable_day_types
-from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values, parse_interpolate_keyword
+from idfkit.schedules.time_utils import END_OF_DAY, MINUTES_PER_DAY, evaluate_time_values, parse_interpolate_keyword
 from idfkit.schedules.types import (
     DAY_TYPE_ALL_OTHER_DAYS,
     DAY_TYPE_ALLDAYS,
@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 __all__ = [
     "compact_problems",
     "evaluate_compact",
+    "evaluate_compact_range",
     "parse_compact",
 ]
 
@@ -358,33 +359,107 @@ def evaluate_compact(
             which EnergyPlus refuses as fatal. ``evaluate()`` raises it as
             ``MalformedScheduleError``.
     """
-    periods, _ = parse_compact(obj)
-
-    problems = _cached_problems(obj)
-    if problems:
-        msg = f"schedule {obj.name!r} would stop EnergyPlus: " + "; ".join(problems)
-        raise ValueError(msg)
-
-    d = dt.date()
-    current_time = dt.time()
-
-    # Find the period containing this date
-    period = _find_period_for_date(periods, d)
-    if period is None:
-        return 0.0
-
-    # Get applicable day types for this date
-    applicable_types = get_applicable_day_types(
-        d, day_type, holidays or set(), custom_day_1 or set(), custom_day_2 or set()
-    )
-
-    # Find the matching day rule
-    rule = _find_matching_rule(period.day_rules, applicable_types)
+    periods = _checked_periods(obj)
+    rule = _rule_for_date(periods, dt.date(), day_type, holidays or set(), custom_day_1 or set(), custom_day_2 or set())
     if rule is None:
         return 0.0
 
     # Evaluate the time-value pairs
-    return evaluate_time_values(rule.time_values, current_time, rule.interpolation, interval_minutes)
+    return evaluate_time_values(rule.time_values, dt.time(), rule.interpolation, interval_minutes)
+
+
+def evaluate_compact_range(
+    obj: IDFObject,
+    start: date,
+    end: date,
+    minutes_per_step: int,
+    day_type: DayType = DayType.NORMAL,
+    holidays: set[date] | None = None,
+    custom_day_1: set[date] | None = None,
+    custom_day_2: set[date] | None = None,
+) -> list[float]:
+    """Evaluate a Schedule:Compact at every timestep of the days from *start* through *end*.
+
+    Gives the same values as calling [evaluate_compact][idfkit.schedules.compact.evaluate_compact]
+    with ``interval_minutes=minutes_per_step`` at each timestep, from 00:00 of *start* to the last
+    timestep of *end*, but parses and checks the schedule once, finds the day rule once per date,
+    and evaluates each day rule's timesteps once. A day's timestep values depend only on its rule
+    (its ``Until:`` pairs and its interpolation mode) and the timestep length: neither ``Average``
+    nor ``Linear`` reads a neighbouring day.
+
+    Args:
+        obj: The Schedule:Compact object.
+        start: First date evaluated.
+        end: Last date evaluated (inclusive).
+        minutes_per_step: Timestep length in minutes; it must divide the hour.
+        day_type: Override day type.
+        holidays: Set of holiday dates.
+        custom_day_1: Set of CustomDay1 dates.
+        custom_day_2: Set of CustomDay2 dates.
+
+    Returns:
+        ``1440 // minutes_per_step`` values per date, in order; empty when *end* is before *start*.
+
+    Raises:
+        ValueError: If *minutes_per_step* does not divide the hour, or as
+            [evaluate_compact][idfkit.schedules.compact.evaluate_compact] does.
+    """
+    if minutes_per_step <= 0 or 60 % minutes_per_step:
+        msg = f"minutes_per_step must divide the hour, got {minutes_per_step}"
+        raise ValueError(msg)
+    result: list[float] = []
+    if end < start:
+        return result
+    periods = _checked_periods(obj)
+    holidays = holidays or set()
+    custom_day_1 = custom_day_1 or set()
+    custom_day_2 = custom_day_2 or set()
+    starts = [time(minute // 60, minute % 60) for minute in range(0, MINUTES_PER_DAY, minutes_per_step)]
+    zeros = [0.0] * len(starts)
+    # The timestep values of each day rule, keyed by the rule's identity: the rules live in the
+    # parse cache, so an id stays unique for the whole call.
+    day_values: dict[int, list[float]] = {}
+    one_day = timedelta(days=1)
+    d = start
+    while d <= end:
+        rule = _rule_for_date(periods, d, day_type, holidays, custom_day_1, custom_day_2)
+        if rule is None:
+            result.extend(zeros)
+        else:
+            values = day_values.get(id(rule))
+            if values is None:
+                values = day_values[id(rule)] = [
+                    evaluate_time_values(rule.time_values, t, rule.interpolation, minutes_per_step) for t in starts
+                ]
+            result.extend(values)
+        d += one_day
+    return result
+
+
+def _checked_periods(obj: IDFObject) -> list[CompactPeriod]:
+    """Parse *obj*, raising ``ValueError`` if EnergyPlus would refuse it."""
+    periods, _ = parse_compact(obj)
+    problems = _cached_problems(obj)
+    if problems:
+        msg = f"schedule {obj.name!r} would stop EnergyPlus: " + "; ".join(problems)
+        raise ValueError(msg)
+    return periods
+
+
+def _rule_for_date(
+    periods: list[CompactPeriod],
+    d: date,
+    day_type: DayType,
+    holidays: set[date],
+    custom_day_1: set[date],
+    custom_day_2: set[date],
+) -> CompactDayRule | None:
+    """Return the day rule that applies on *d*, or None if no period or rule covers it."""
+    period = _find_period_for_date(periods, d)
+    if period is None:
+        return None
+    applicable_types = get_applicable_day_types(d, day_type, holidays, custom_day_1, custom_day_2)
+    return _find_matching_rule(period.day_rules, applicable_types)
 
 
 def _find_period_for_date(periods: list[CompactPeriod], d: date) -> CompactPeriod | None:

@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `doc["Schedule:Compact"].add(...)`, showed a runnable Python example of filling its extensible
   group (`data=[{"field": "Through: 12/31"}, ...]`)
   ([#368](https://github.com/idfkit/idfkit/pull/368)).
+- `schedules.values()` evaluated a `Schedule:Compact` many times faster, with identical results: it
+  finds each day's rule once and computes each rule's timestep values once per call.
+  ([#363](https://github.com/idfkit/idfkit/pull/363))
 
 ### Fixed
 
