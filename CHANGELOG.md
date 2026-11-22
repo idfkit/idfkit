@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SQLResult.get_timeseries_many()` read many series from a large results file faster, with the same
   results, and `SQLResult` read a file's time steps once instead of at every call.
   ([#366](https://github.com/idfkit/idfkit/pull/366))
+- `schedules.values()` evaluated a `Schedule:Compact` many times faster, with identical results: it
+  finds each day's rule once and computes each rule's timestep values once per call.
+  ([#363](https://github.com/idfkit/idfkit/pull/363))
 
 ### Fixed
 

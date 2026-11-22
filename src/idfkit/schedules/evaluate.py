@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from idfkit.schedules.compact import evaluate_compact
+from idfkit.schedules.compact import evaluate_compact, evaluate_compact_range
 from idfkit.schedules.day import (
     evaluate_constant,
     evaluate_day_hourly,
@@ -274,8 +274,26 @@ def values(
     result: list[float] = []
     current = start
 
-    # Pre-compute for Schedule:File
+    # Schedule:Compact: parse once, find the day rule once per date and evaluate each rule's
+    # timesteps once, rather than doing all three at every timestep.
     schedule_type = schedule.obj_type
+    if schedule_type == "Schedule:Compact":
+        try:
+            return evaluate_compact_range(
+                schedule,
+                start.date(),
+                end.date(),
+                minutes_per_step,
+                day_type_enum,
+                holidays,
+                custom_day_1,
+                custom_day_2,
+            )
+        except ValueError as e:
+            msg = f"Error evaluating {schedule_type}: {e}"
+            raise MalformedScheduleError(msg) from e
+
+    # Pre-compute for Schedule:File
     file_cache: ScheduleFileCache | None = None
     if schedule_type == "Schedule:File":
         file_cache = ScheduleFileCache()
