@@ -88,7 +88,7 @@ class DemandManagerAssignmentList_v8_9_to_v22_1:
         ```python
         doc["DemandManagerAssignmentList"].add(
             "DemandManagerAssignmentList 1",
-            meter_name="Meter Name",
+            meter_name="Meter 1",
             demand_limit_safety_fraction=0.0,
             demand_window_length=1.0,
             demand_manager_priority="All",

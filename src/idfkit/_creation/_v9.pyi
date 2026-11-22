@@ -190,8 +190,8 @@ class Space_v22_2_to_v26_1:
             "Space 1",
             zone_name="Zone 1",
             tags=[
-                {"tag": "Tag"},
-                {"tag": "Tag"},
+                {"tag": "Tag 1"},
+                {"tag": "Tag 2"},
             ],
         )
         ```

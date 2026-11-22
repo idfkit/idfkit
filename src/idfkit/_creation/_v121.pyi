@@ -91,8 +91,8 @@ class OutputTableSummaryReports_v8_9_to_v9_2:
         ```python
         doc["Output:Table:SummaryReports"].add(
             reports=[
-                {"report_name": "Report Name"},
-                {"report_name": "Report Name"},
+                {"report_name": "Report 1"},
+                {"report_name": "Report 2"},
             ],
         )
         ```

@@ -154,7 +154,7 @@ class AnyDemandManagerAssignmentList:
         ```python
         doc["DemandManagerAssignmentList"].add(
             "DemandManagerAssignmentList 1",
-            meter_name="Meter Name",
+            meter_name="Meter 1",
             demand_limit_safety_fraction=0.0,
             demand_window_length=1,
             demand_manager_priority="All",
@@ -259,7 +259,7 @@ class LifeCycleCostUsePriceEscalation:
 
         ```python
         doc["LifeCycleCost:UsePriceEscalation"].add(
-            lcc_price_escalation_name="LCC Price Escalation Name",
+            lcc_price_escalation_name="LCC Price Escalation 1",
             resource="Coal",
             escalations=[
                 {"year_escalation": 0.0},

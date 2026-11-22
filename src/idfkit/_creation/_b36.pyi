@@ -218,8 +218,8 @@ class AnyZoneHVACBaseboardRadiantConvectiveWater:
         ```python
         doc["ZoneHVAC:Baseboard:RadiantConvective:Water"].add(
             "ZoneHVAC Baseboard RadiantConvective Water 1",
-            inlet_node_name="Inlet Node Name",
-            outlet_node_name="Outlet Node Name",
+            inlet_node_name="Inlet Node 1",
+            outlet_node_name="Outlet Node 1",
             maximum_water_flow_rate=0.0,
             design_object="Design Object 1",
             surface_fractions=[

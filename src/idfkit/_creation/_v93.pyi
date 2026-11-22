@@ -206,12 +206,12 @@ class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1:
         ```python
         doc["ZoneHVAC:HybridUnitaryHVAC"].add(
             "ZoneHVAC HybridUnitaryHVAC 1",
-            return_air_node_name="Return Air Node Name",
-            outdoor_air_node_name="Outdoor Air Node Name",
-            supply_air_node_name="Supply Air Node Name",
+            return_air_node_name="Return Air Node 1",
+            outdoor_air_node_name="Outdoor Air Node 1",
+            supply_air_node_name="Supply Air Node 1",
             modes=[
                 {
-                    "mode_name": "Mode Name",
+                    "mode_name": "Mode 1",
                     "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 1",
                     "mode_supply_air_humidity_ratio_lookup_table_name": "Mode Supply Air Humidity Ratio Lookup Table 1",
                     "mode_system_electric_power_lookup_table_name": "Mode System Electric Power Lookup Table 1",
@@ -238,7 +238,7 @@ class ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1:
                     "mode_maximum_supply_air_mass_flow_rate_ratio": 1.0,
                 },
                 {
-                    "mode_name": "Mode Name",
+                    "mode_name": "Mode 2",
                     "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 2",
                     "mode_supply_air_humidity_ratio_lookup_table_name": "Mode Supply Air Humidity Ratio Lookup Table 2",
                     "mode_system_electric_power_lookup_table_name": "Mode System Electric Power Lookup Table 2",
@@ -529,12 +529,12 @@ class RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4:
             gains=[
                 {
                     "internal_gain_object_type": "AirTerminal:SingleDuct:UserDefined",
-                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "internal_gain_object_name": "Internal Gain Object 1",
                     "fraction_of_gains_to_node": 0.0,
                 },
                 {
                     "internal_gain_object_type": "Coil:UserDefined",
-                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "internal_gain_object_name": "Internal Gain Object 2",
                     "fraction_of_gains_to_node": 0.0,
                 },
             ],

@@ -328,7 +328,7 @@ class ZoneTerminalUnitList:
 
         ```python
         doc["ZoneTerminalUnitList"].add(
-            zone_terminal_unit_list_name="Zone Terminal Unit List Name",
+            zone_terminal_unit_list_name="Zone Terminal Unit List 1",
             terminal_units=[
                 {"zone_terminal_unit_name": "Zone Terminal Unit 1"},
                 {"zone_terminal_unit_name": "Zone Terminal Unit 2"},

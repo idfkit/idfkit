@@ -602,8 +602,8 @@ class ParametricSetValueForRun:
         doc["Parametric:SetValueForRun"].add(
             "Parametric SetValueForRun 1",
             values=[
-                {"value_for_run": "Value for Run"},
-                {"value_for_run": "Value for Run"},
+                {"value_for_run": "Value for Run 1"},
+                {"value_for_run": "Value for Run 2"},
             ],
         )
         ```

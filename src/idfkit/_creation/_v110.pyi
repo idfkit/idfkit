@@ -134,8 +134,8 @@ class PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1:
             pipe_inner_diameter=1.0,
             pipe_outer_diameter=1.0,
             design_flow_rate=1.0,
-            circuit_inlet_node="Circuit Inlet Node",
-            circuit_outlet_node="Circuit Outlet Node",
+            circuit_inlet_node="Circuit Inlet Node 1",
+            circuit_outlet_node="Circuit Outlet Node 1",
             radial_thickness_of_inner_radial_near_pipe_mesh_region=1.0,
             number_of_pipe_segments_entered_for_this_pipe_circuit=1.0,
             pipe_segments=[
@@ -249,8 +249,8 @@ class MeterCustom_v9_3:
         doc["Meter:Custom"].add(
             "Meter Custom 1",
             variable_details=[
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+                {"key_name": "Key 1", "output_variable_or_meter_name": "Output Variable or Meter 1"},
+                {"key_name": "Key 2", "output_variable_or_meter_name": "Output Variable or Meter 2"},
             ],
         )
         ```

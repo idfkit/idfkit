@@ -84,10 +84,10 @@ class SpaceHVACZoneEquipmentMixer:
         doc["SpaceHVAC:ZoneEquipmentMixer"].add(
             "SpaceHVAC ZoneEquipmentMixer 1",
             zone_name="Zone 1",
-            zone_equipment_inlet_node_name="Zone Equipment Inlet Node Name",
+            zone_equipment_inlet_node_name="Zone Equipment Inlet Node 1",
             spaces=[
-                {"space_name": "Space 1", "space_fraction": 0.0, "space_node_name": "Space Node Name"},
-                {"space_name": "Space 2", "space_fraction": 0.0, "space_node_name": "Space Node Name"},
+                {"space_name": "Space 1", "space_fraction": 0.0, "space_node_name": "Space Node 1"},
+                {"space_name": "Space 2", "space_fraction": 0.0, "space_node_name": "Space Node 2"},
             ],
         )
         ```
@@ -114,7 +114,7 @@ class AirLoopHVACSupplyPath:
         ```python
         doc["AirLoopHVAC:SupplyPath"].add(
             "AirLoopHVAC SupplyPath 1",
-            supply_air_path_inlet_node_name="Supply Air Path Inlet Node Name",
+            supply_air_path_inlet_node_name="Supply Air Path Inlet Node 1",
             components=[
                 {"component_object_type": "AirLoopHVAC:SupplyPlenum", "component_name": "Component 1"},
                 {"component_object_type": "AirLoopHVAC:ZoneSplitter", "component_name": "Component 2"},

@@ -59,12 +59,12 @@ class AnySurfacePropertySurroundingSurfaces:
             "SurfaceProperty SurroundingSurfaces 1",
             surfaces=[
                 {
-                    "surrounding_surface_name": "Surrounding Surface Name",
+                    "surrounding_surface_name": "Surrounding Surface 1",
                     "surrounding_surface_view_factor": 0.0,
                     "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 1",
                 },
                 {
-                    "surrounding_surface_name": "Surrounding Surface Name",
+                    "surrounding_surface_name": "Surrounding Surface 2",
                     "surrounding_surface_view_factor": 0.0,
                     "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 2",
                 },
@@ -332,8 +332,8 @@ class AnyZoneHVACCoolingPanelRadiantConvectiveWater:
         doc["ZoneHVAC:CoolingPanel:RadiantConvective:Water"].add(
             "ZoneHVAC CoolingPanel RadiantConvective Water 1",
             availability_schedule_name="Availability Schedule 1",
-            water_inlet_node_name="Water Inlet Node Name",
-            water_outlet_node_name="Water Outlet Node Name",
+            water_inlet_node_name="Water Inlet Node 1",
+            water_outlet_node_name="Water Outlet Node 1",
             maximum_chilled_water_flow_rate=0.0,
             fraction_radiant=0.0,
             surface_fractions=[

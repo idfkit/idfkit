@@ -239,12 +239,12 @@ class SpaceHVACZoneEquipmentSplitter:
                 {
                     "space_name": "Space 1",
                     "space_fraction": 0.0,
-                    "space_supply_node_name": "Space Supply Node Name",
+                    "space_supply_node_name": "Space Supply Node 1",
                 },
                 {
                     "space_name": "Space 2",
                     "space_fraction": 0.0,
-                    "space_supply_node_name": "Space Supply Node Name",
+                    "space_supply_node_name": "Space Supply Node 2",
                 },
             ],
         )

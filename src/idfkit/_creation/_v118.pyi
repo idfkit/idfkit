@@ -198,8 +198,8 @@ class PythonPluginSearchPaths_v9_4_to_v9_6:
         doc["PythonPlugin:SearchPaths"].add(
             "PythonPlugin SearchPaths 1",
             py_search_paths=[
-                {"search_path": "Search Path"},
-                {"search_path": "Search Path"},
+                {"search_path": "Search Path 1"},
+                {"search_path": "Search Path 2"},
             ],
         )
         ```

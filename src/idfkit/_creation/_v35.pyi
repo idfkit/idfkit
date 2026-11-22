@@ -287,8 +287,8 @@ class LifeCycleCostUsePriceEscalation_v8_9_to_v9_2:
 
         ```python
         doc["LifeCycleCost:UsePriceEscalation"].add(
-            lcc_price_escalation_name="LCC Price Escalation Name",
-            resource="Resource",
+            lcc_price_escalation_name="LCC Price Escalation 1",
+            resource="Resource 1",
             escalations=[
                 {"year_escalation": 0.0},
                 {"year_escalation": 0.0},

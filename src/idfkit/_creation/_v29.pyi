@@ -76,8 +76,8 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4:
         ```python
         doc["ZoneHVAC:Baseboard:RadiantConvective:Steam"].add(
             "ZoneHVAC Baseboard RadiantConvective Steam 1",
-            inlet_node_name="Inlet Node Name",
-            outlet_node_name="Outlet Node Name",
+            inlet_node_name="Inlet Node 1",
+            outlet_node_name="Outlet Node 1",
             maximum_steam_flow_rate=1.0,
             fraction_radiant=0.0,
             surface_fractions=[

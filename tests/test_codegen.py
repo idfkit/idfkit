@@ -1020,6 +1020,38 @@ class TestExtensibleExample:
         assert example is not None
         assert [line.strip() for line in example[1]].count(f'{key}="TRUE",') == 1
 
+    def test_schedule_fields_with_a_format_get_values_in_it(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Schedule:Day:Interval", sink=sink)
+        _generate_object_class(_LATEST, "Schedule:Week:Compact", sink=sink)
+        interval = _docstring_of(sink, "ScheduleDayInterval")
+        assert '{"time": "08:00", "value_until_time": 0.0},' in interval
+        assert '{"time": "24:00", "value_until_time": 0.0},' in interval
+        week = _docstring_of(sink, "ScheduleWeekCompact")
+        assert '{"daytype_list": "For: Weekdays", "schedule_day_name": "Schedule:Day 1"},' in week
+        assert '{"daytype_list": "For: AllOtherDays", "schedule_day_name": "Schedule:Day 2"},' in week
+
+    def test_text_made_from_a_label_differs_between_groups(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "AirLoopHVAC:ZoneSplitter", sink=sink)
+        doc = _docstring_of(sink, "AirLoopHVACZoneSplitter")
+        assert '{"outlet_node_name": "Outlet Node 1"},\n        {"outlet_node_name": "Outlet Node 2"},' in doc
+
+    @pytest.mark.parametrize(
+        ("obj_type", "cls_name", "heights"),
+        [("Floor:Detailed", "FloorDetailed", {0.0}), ("RoofCeiling:Detailed", "RoofCeilingDetailed", {3.0})],
+    )
+    def test_floors_and_roofs_are_horizontal(self, obj_type: str, cls_name: str, heights: set[float]) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, obj_type, sink=sink)
+        zs = {float(z) for z in re.findall(r'"vertex_z_coordinate": ([-0-9.]+)', _docstring_of(sink, cls_name))}
+        assert zs == heights
+
+    def test_three_double_quotes_never_reach_the_docstring_unescaped(self) -> None:
+        literal = gen._literal('a """b"""')  # pyright: ignore[reportPrivateUsage]
+        assert '"""' not in literal
+        assert eval(literal) == 'a """b"""'  # noqa: S307  (a literal this test built)
+
     @pytest.mark.parametrize(
         ("spec", "integer", "expected"),
         [
@@ -1045,6 +1077,7 @@ class TestExtensibleExample:
 
     @pytest.mark.slow
     def test_every_latest_release_example_type_checks(self, tmp_path: Path) -> None:
+        pytest.importorskip("pyright")
         # The examples are docstring text, which neither ruff nor pyright reads: run pyright on them.
         src = Path(gen.__file__).parents[2]
         lines = ["from __future__ import annotations", "", "from idfkit import new_document", ""]

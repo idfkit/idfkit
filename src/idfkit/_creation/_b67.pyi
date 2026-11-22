@@ -112,7 +112,7 @@ class AirLoopHVACReturnPath:
         ```python
         doc["AirLoopHVAC:ReturnPath"].add(
             "AirLoopHVAC ReturnPath 1",
-            return_air_path_outlet_node_name="Return Air Path Outlet Node Name",
+            return_air_path_outlet_node_name="Return Air Path Outlet Node 1",
             components=[
                 {"component_object_type": "AirLoopHVAC:ReturnPlenum", "component_name": "Component 1"},
                 {"component_object_type": "AirLoopHVAC:ZoneMixer", "component_name": "Component 2"},

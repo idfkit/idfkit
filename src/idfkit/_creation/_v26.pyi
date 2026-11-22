@@ -308,14 +308,14 @@ class ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2:
         ```python
         doc["ZoneHVAC:HybridUnitaryHVAC"].add(
             "ZoneHVAC HybridUnitaryHVAC 1",
-            return_air_node_name="Return Air Node Name",
-            outdoor_air_node_name="Outdoor Air Node Name",
-            supply_air_node_name="Supply Air Node Name",
+            return_air_node_name="Return Air Node 1",
+            outdoor_air_node_name="Outdoor Air Node 1",
+            supply_air_node_name="Supply Air Node 1",
             modes=[
                 {
                     "mode_minimum_outdoor_air_fraction": 0.1,
                     "mode_maximum_return_air_temperature": 0.0,
-                    "mode_name": "Mode Name",
+                    "mode_name": "Mode 1",
                     "mode_system_second_fuel_consumption_lookup_table_name": "Mode System Second Fuel Consumption Lookup Table 1",
                     "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 1",
                     "mode_maximum_return_air_relative_humidity": 100.0,
@@ -342,7 +342,7 @@ class ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2:
                 {
                     "mode_minimum_outdoor_air_fraction": 0.1,
                     "mode_maximum_return_air_temperature": 0.0,
-                    "mode_name": "Mode Name",
+                    "mode_name": "Mode 2",
                     "mode_system_second_fuel_consumption_lookup_table_name": "Mode System Second Fuel Consumption Lookup Table 2",
                     "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 2",
                     "mode_maximum_return_air_relative_humidity": 100.0,

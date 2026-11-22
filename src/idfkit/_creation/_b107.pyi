@@ -134,13 +134,13 @@ class SurfacePropertyGroundSurfaces:
             "SurfaceProperty GroundSurfaces 1",
             ground_surfaces=[
                 {
-                    "ground_surface_name": "Ground Surface Name",
+                    "ground_surface_name": "Ground Surface 1",
                     "ground_surface_view_factor": 0.0,
                     "ground_surface_temperature_schedule_name": "Ground Surface Temperature Schedule 1",
                     "ground_surface_reflectance_schedule_name": "Ground Surface Reflectance Schedule 1",
                 },
                 {
-                    "ground_surface_name": "Ground Surface Name",
+                    "ground_surface_name": "Ground Surface 2",
                     "ground_surface_view_factor": 0.0,
                     "ground_surface_temperature_schedule_name": "Ground Surface Temperature Schedule 2",
                     "ground_surface_reflectance_schedule_name": "Ground Surface Reflectance Schedule 2",
@@ -217,8 +217,8 @@ class ZoneHVACBaseboardRadiantConvectiveSteam:
         doc["ZoneHVAC:Baseboard:RadiantConvective:Steam"].add(
             "ZoneHVAC Baseboard RadiantConvective Steam 1",
             design_object="Design Object 1",
-            inlet_node_name="Inlet Node Name",
-            outlet_node_name="Outlet Node Name",
+            inlet_node_name="Inlet Node 1",
+            outlet_node_name="Outlet Node 1",
             maximum_steam_flow_rate=1.0,
             surface_fractions=[
                 {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},

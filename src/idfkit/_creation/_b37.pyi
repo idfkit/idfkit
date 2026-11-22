@@ -358,8 +358,8 @@ class OutdoorAirNodeList:
         ```python
         doc["OutdoorAir:NodeList"].add(
             nodes=[
-                {"node_or_nodelist_name": "Node or NodeList Name"},
-                {"node_or_nodelist_name": "Node or NodeList Name"},
+                {"node_or_nodelist_name": "Node or NodeList 1"},
+                {"node_or_nodelist_name": "Node or NodeList 2"},
             ],
         )
         ```

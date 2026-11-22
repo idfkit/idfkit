@@ -202,8 +202,8 @@ class NodeList:
         doc["NodeList"].add(
             "NodeList 1",
             nodes=[
-                {"node_name": "Node Name"},
-                {"node_name": "Node Name"},
+                {"node_name": "Node 1"},
+                {"node_name": "Node 2"},
             ],
         )
         ```

@@ -252,8 +252,8 @@ class ElectricLoadCenterTransformer:
         doc["ElectricLoadCenter:Transformer"].add(
             "ElectricLoadCenter Transformer 1",
             meters=[
-                {"meter_name": "Meter Name"},
-                {"meter_name": "Meter Name"},
+                {"meter_name": "Meter 1"},
+                {"meter_name": "Meter 2"},
             ],
         )
         ```

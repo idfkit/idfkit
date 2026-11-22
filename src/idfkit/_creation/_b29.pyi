@@ -114,8 +114,8 @@ class ZoneHVACVentilatedSlabSlabGroup:
                     "core_diameter_for_surface": 0.0,
                     "core_length_for_surface": 0.0,
                     "core_numbers_for_surface": 0.0,
-                    "slab_inlet_node_name_for_surface": "Slab Inlet Node Name for Surface",
-                    "slab_outlet_node_name_for_surface": "Slab Outlet Node Name for Surface",
+                    "slab_inlet_node_name_for_surface": "Slab Inlet Node Name for Surface 1",
+                    "slab_outlet_node_name_for_surface": "Slab Outlet Node Name for Surface 1",
                 },
                 {
                     "zone_name": "Zone 2",
@@ -123,8 +123,8 @@ class ZoneHVACVentilatedSlabSlabGroup:
                     "core_diameter_for_surface": 0.0,
                     "core_length_for_surface": 0.0,
                     "core_numbers_for_surface": 0.0,
-                    "slab_inlet_node_name_for_surface": "Slab Inlet Node Name for Surface",
-                    "slab_outlet_node_name_for_surface": "Slab Outlet Node Name for Surface",
+                    "slab_inlet_node_name_for_surface": "Slab Inlet Node Name for Surface 2",
+                    "slab_outlet_node_name_for_surface": "Slab Outlet Node Name for Surface 2",
                 },
             ],
         )
@@ -178,16 +178,16 @@ class SolarCollectorUnglazedTranspiredMultisystem:
             solar_collector_name="Solar Collector 1",
             systems=[
                 {
-                    "outdoor_air_system_collector_inlet_node": "Outdoor Air System Collector Inlet Node",
-                    "outdoor_air_system_collector_outlet_node": "Outdoor Air System Collector Outlet Node",
-                    "outdoor_air_system_mixed_air_node": "Outdoor Air System Mixed Air Node",
-                    "outdoor_air_system_zone_node": "Outdoor Air System Zone Node",
+                    "outdoor_air_system_collector_inlet_node": "Outdoor Air System Collector Inlet Node 1",
+                    "outdoor_air_system_collector_outlet_node": "Outdoor Air System Collector Outlet Node 1",
+                    "outdoor_air_system_mixed_air_node": "Outdoor Air System Mixed Air Node 1",
+                    "outdoor_air_system_zone_node": "Outdoor Air System Zone Node 1",
                 },
                 {
-                    "outdoor_air_system_collector_inlet_node": "Outdoor Air System Collector Inlet Node",
-                    "outdoor_air_system_collector_outlet_node": "Outdoor Air System Collector Outlet Node",
-                    "outdoor_air_system_mixed_air_node": "Outdoor Air System Mixed Air Node",
-                    "outdoor_air_system_zone_node": "Outdoor Air System Zone Node",
+                    "outdoor_air_system_collector_inlet_node": "Outdoor Air System Collector Inlet Node 2",
+                    "outdoor_air_system_collector_outlet_node": "Outdoor Air System Collector Outlet Node 2",
+                    "outdoor_air_system_mixed_air_node": "Outdoor Air System Mixed Air Node 2",
+                    "outdoor_air_system_zone_node": "Outdoor Air System Zone Node 2",
                 },
             ],
         )
@@ -215,8 +215,8 @@ class AnyMeterCustom:
         doc["Meter:Custom"].add(
             "Meter Custom 1",
             variable_details=[
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+                {"key_name": "Key 1", "output_variable_or_meter_name": "Output Variable or Meter 1"},
+                {"key_name": "Key 2", "output_variable_or_meter_name": "Output Variable or Meter 2"},
             ],
         )
         ```

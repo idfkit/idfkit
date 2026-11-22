@@ -67,8 +67,8 @@ class AnyFanSystemModel:
         ```python
         doc["Fan:SystemModel"].add(
             "Fan SystemModel 1",
-            air_inlet_node_name="Air Inlet Node Name",
-            air_outlet_node_name="Air Outlet Node Name",
+            air_inlet_node_name="Air Inlet Node 1",
+            air_outlet_node_name="Air Outlet Node 1",
             design_maximum_air_flow_rate=1.0,
             design_pressure_rise=1.0,
             speed_fractions=[
@@ -211,8 +211,8 @@ class GroundHeatExchangerSystem:
         ```python
         doc["GroundHeatExchanger:System"].add(
             "GroundHeatExchanger System 1",
-            inlet_node_name="Inlet Node Name",
-            outlet_node_name="Outlet Node Name",
+            inlet_node_name="Inlet Node 1",
+            outlet_node_name="Outlet Node 1",
             design_flow_rate=1.0,
             undisturbed_ground_temperature_model_type="Site:GroundTemperature:Undisturbed:FiniteDifference",
             undisturbed_ground_temperature_model_name="Undisturbed Ground Temperature Model 1",

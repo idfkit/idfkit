@@ -188,8 +188,8 @@ class FanSystemModel:
         ```python
         doc["Fan:SystemModel"].add(
             "Fan SystemModel 1",
-            air_inlet_node_name="Air Inlet Node Name",
-            air_outlet_node_name="Air Outlet Node Name",
+            air_inlet_node_name="Air Inlet Node 1",
+            air_outlet_node_name="Air Outlet Node 1",
             design_maximum_air_flow_rate=1.0,
             design_pressure_rise=1.0,
             speed_fractions=[

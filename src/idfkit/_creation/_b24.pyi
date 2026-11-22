@@ -89,12 +89,12 @@ class SurfacePropertySurroundingSurfaces:
             "SurfaceProperty SurroundingSurfaces 1",
             surfaces=[
                 {
-                    "surrounding_surface_name": "Surrounding Surface Name",
+                    "surrounding_surface_name": "Surrounding Surface 1",
                     "surrounding_surface_view_factor": 0.0,
                     "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 1",
                 },
                 {
-                    "surrounding_surface_name": "Surrounding Surface Name",
+                    "surrounding_surface_name": "Surrounding Surface 2",
                     "surrounding_surface_view_factor": 0.0,
                     "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 2",
                 },

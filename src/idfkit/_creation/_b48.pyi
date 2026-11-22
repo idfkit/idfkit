@@ -311,8 +311,8 @@ class ZoneHVACBaseboardRadiantConvectiveWater:
         doc["ZoneHVAC:Baseboard:RadiantConvective:Water"].add(
             "ZoneHVAC Baseboard RadiantConvective Water 1",
             design_object="Design Object 1",
-            inlet_node_name="Inlet Node Name",
-            outlet_node_name="Outlet Node Name",
+            inlet_node_name="Inlet Node 1",
+            outlet_node_name="Outlet Node 1",
             maximum_water_flow_rate=0.0,
             surface_fractions=[
                 {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
@@ -429,7 +429,7 @@ class DemandManagerAssignmentList:
         ```python
         doc["DemandManagerAssignmentList"].add(
             "DemandManagerAssignmentList 1",
-            meter_name="Meter Name",
+            meter_name="Meter 1",
             demand_limit_safety_fraction=0.0,
             demand_window_length=1,
             demand_manager_priority="All",

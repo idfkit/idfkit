@@ -1467,6 +1467,15 @@ _CURATED_GROUP_VALUES: dict[str, tuple[Any, ...]] = {
     ),
 }
 
+#: Values, one per group, for a group field whose format the schema gives only in a note, where a
+#: value made from its label would be one EnergyPlus refuses. Keyed by object type and field.
+_CURATED_FIELD_VALUES: dict[tuple[str, str], tuple[Any, ...]] = {
+    ("Schedule:Week:Compact", "daytype_list"): ("For: Weekdays", "For: AllOtherDays"),
+}
+
+#: Times, one per group, for a text field whose units are ``hh:mm`` (``Schedule:Day:Interval``).
+_EXAMPLE_TIMES = ("08:00", "24:00")
+
 #: How many groups a generated example shows: enough to show that the list repeats.
 _EXAMPLE_GROUPS = 2
 
@@ -1474,6 +1483,13 @@ _EXAMPLE_GROUPS = 2
 #: counterclockwise from the upper left seen from outside, as ``GlobalGeometryRules`` defaults to.
 _VERTEX_KEYS = ("vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate")
 _VERTEX_CORNERS = ((0.0, 0.0, 3.0), (0.0, 0.0, 0.0), (10.0, 0.0, 0.0), (10.0, 0.0, 3.0))
+
+#: The corners of a 10 m square for the types that are not walls, counterclockwise seen from
+#: outside: a floor at 0 m facing down, a roof or ceiling at 3 m facing up.
+_HORIZONTAL_CORNERS = {
+    "Floor:Detailed": ((0.0, 0.0, 0.0), (0.0, 10.0, 0.0), (10.0, 10.0, 0.0), (10.0, 0.0, 0.0)),
+    "RoofCeiling:Detailed": ((0.0, 10.0, 3.0), (0.0, 0.0, 3.0), (10.0, 0.0, 3.0), (10.0, 10.0, 3.0)),
+}
 
 #: Choices an example takes, where the field offers them, over its default or first choice: those
 #: that agree with the wall :data:`_VERTEX_CORNERS` draws.
@@ -1484,7 +1500,9 @@ def _literal(value: object) -> str:
     """*value* as Python source, quoted as ruff formats it: in double quotes, or in single quotes
     when it holds a double quote and no single one."""
     if isinstance(value, str):
-        if '"' in value and "'" not in value:
+        # Not with three double quotes in a row: in a single-quoted literal they would end the
+        # triple-quoted docstring the example sits in.
+        if '"' in value and "'" not in value and '"""' not in value:
             return repr(value)
         return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
     return repr(value)
@@ -1563,9 +1581,11 @@ def _example_value(spec: Mapping[str, Any], label: str, index: int = 0, key: str
     A choice field gets its :data:`_PREFERRED_CHOICES` entry (by its *key*) when it offers it, else
     its default or its first choice; a number its default or 0 within its
     bounds (``anyOf`` number or ``Autosize`` gives the number); a reference a name made from its
-    label (``Zone Name`` gives ``"Zone 1"``); any other text its default or its label. *index*, the
-    group's position in an example, moves a choice field (without a default) and a reference on,
-    so that two groups do not name the same thing.
+    label (``Zone Name`` gives ``"Zone 1"``); any other text its default or a name made the same
+    way. *index*, the
+    group's position in an example, moves a choice field (without a default) and any text made from
+    the label on, so that two groups do not name the same thing; a text field in ``hh:mm`` units
+    gets a time of :data:`_EXAMPLE_TIMES`.
     """
     any_of: list[Any] = spec.get("anyOf") or []
     branches: list[Mapping[str, Any]] = [spec, *(cast("dict[str, Any]", b) for b in any_of if isinstance(b, dict))]
@@ -1585,10 +1605,12 @@ def _example_value(spec: Mapping[str, Any], label: str, index: int = 0, key: str
         return default if default in choices else choices[index % len(choices)]
     if isinstance(spec.get("default"), str) and spec["default"]:
         return spec["default"]
-    if spec.get("object_list") or spec.get("data_type") == "object_list":
-        stem = label[: -len(" Name")] if label.endswith(" Name") else label
-        return f"{stem} {index + 1}"
-    return label
+    if spec.get("units") == "hh:mm":
+        return _EXAMPLE_TIMES[index % len(_EXAMPLE_TIMES)]
+    # A name made from the label, numbered so that two groups name two things: a reference
+    # (``Zone Name`` gives ``Zone 1``), a node or any other text.
+    stem = label[: -len(" Name")] if label.endswith(" Name") else label
+    return f"{stem} {index + 1}"
 
 
 def _extensible_example(
@@ -1600,7 +1622,8 @@ def _extensible_example(
     does, and passes the name when the type has one (*name* is ``"required"``, ``"optional"`` or
     ``"none"``), the fields in *required* (the keywords the signature requires), the others
     *schema*'s release requires, and the wrapper with :data:`_EXAMPLE_GROUPS` groups, the curated
-    groups of :data:`_CURATED_GROUP_VALUES` or the wall of :data:`_VERTEX_CORNERS`. Each value is
+    groups of :data:`_CURATED_GROUP_VALUES`, the fields of :data:`_CURATED_FIELD_VALUES`, or the
+    wall of :data:`_VERTEX_CORNERS` (a square of :data:`_HORIZONTAL_CORNERS`). Each value is
     one the field accepts (:func:`_example_value`), so the call runs as shown.
     """
     pc = schema.get_parsing_cache(obj_type)
@@ -1615,10 +1638,16 @@ def _extensible_example(
     if curated is not None and len(keys) == 1:
         groups = [{keys[0]: value} for value in curated]
     elif tuple(keys) == _VERTEX_KEYS:
-        groups = [dict(zip(keys, corner, strict=True)) for corner in _VERTEX_CORNERS]
+        corners = _HORIZONTAL_CORNERS.get(obj_type, _VERTEX_CORNERS)
+        groups = [dict(zip(keys, corner, strict=True)) for corner in corners]
     else:
         groups = [
-            {key: _example_value(pc.ext_inner_props[key], _field_label(pc.obj_schema, key), n, key) for key in keys}
+            {
+                key: _CURATED_FIELD_VALUES[obj_type, key][n]
+                if (obj_type, key) in _CURATED_FIELD_VALUES
+                else _example_value(pc.ext_inner_props[key], _field_label(pc.obj_schema, key), n, key)
+                for key in keys
+            }
             for n in range(_EXAMPLE_GROUPS)
         ]
     args: list[str] = []

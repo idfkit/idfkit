@@ -315,8 +315,8 @@ class PipingSystemUndergroundPipeCircuit:
             pipe_inner_diameter=1.0,
             pipe_outer_diameter=1.0,
             design_flow_rate=1.0,
-            circuit_inlet_node="Circuit Inlet Node",
-            circuit_outlet_node="Circuit Outlet Node",
+            circuit_inlet_node="Circuit Inlet Node 1",
+            circuit_outlet_node="Circuit Outlet Node 1",
             radial_thickness_of_inner_radial_near_pipe_mesh_region=1.0,
             number_of_pipe_segments_entered_for_this_pipe_circuit=1,
             pipe_segments=[

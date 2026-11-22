@@ -100,10 +100,10 @@ class MeterCustomDecrement_v8_9_to_v9_2:
         ```python
         doc["Meter:CustomDecrement"].add(
             "Meter CustomDecrement 1",
-            source_meter_name="Source Meter Name",
+            source_meter_name="Source Meter 1",
             variable_details=[
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+                {"key_name": "Key 1", "output_variable_or_meter_name": "Output Variable or Meter 1"},
+                {"key_name": "Key 2", "output_variable_or_meter_name": "Output Variable or Meter 2"},
             ],
         )
         ```

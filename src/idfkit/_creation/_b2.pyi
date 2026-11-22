@@ -180,12 +180,12 @@ class AnyZoneHVACHybridUnitaryHVAC:
         ```python
         doc["ZoneHVAC:HybridUnitaryHVAC"].add(
             "ZoneHVAC HybridUnitaryHVAC 1",
-            return_air_node_name="Return Air Node Name",
-            outdoor_air_node_name="Outdoor Air Node Name",
-            supply_air_node_name="Supply Air Node Name",
+            return_air_node_name="Return Air Node 1",
+            outdoor_air_node_name="Outdoor Air Node 1",
+            supply_air_node_name="Supply Air Node 1",
             modes=[
                 {
-                    "mode_name": "Mode Name",
+                    "mode_name": "Mode 1",
                     "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 1",
                     "mode_supply_air_humidity_ratio_lookup_table_name": "Mode Supply Air Humidity Ratio Lookup Table 1",
                     "mode_system_electric_power_lookup_table_name": "Mode System Electric Power Lookup Table 1",
@@ -212,7 +212,7 @@ class AnyZoneHVACHybridUnitaryHVAC:
                     "mode_maximum_supply_air_mass_flow_rate_ratio": 1.0,
                 },
                 {
-                    "mode_name": "Mode Name",
+                    "mode_name": "Mode 2",
                     "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 2",
                     "mode_supply_air_humidity_ratio_lookup_table_name": "Mode Supply Air Humidity Ratio Lookup Table 2",
                     "mode_system_electric_power_lookup_table_name": "Mode System Electric Power Lookup Table 2",
@@ -330,12 +330,12 @@ class OutputTableAnnual:
             "Output Table Annual 1",
             variable_details=[
                 {
-                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field Name",
+                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field 1",
                     "aggregation_type_for_variable_or_meter": "HourInTenBinsMinToMax",
                     "digits_after_decimal": 2,
                 },
                 {
-                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field Name",
+                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field 2",
                     "aggregation_type_for_variable_or_meter": "HourInTenBinsMinToZero",
                     "digits_after_decimal": 2,
                 },

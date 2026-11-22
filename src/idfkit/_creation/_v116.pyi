@@ -452,13 +452,13 @@ class RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2:
                     "fraction_of_output_or_supply_air_from_hvac_equipment": 0.0,
                     "fraction_of_input_or_return_air_to_hvac_equipment": 0.0,
                     "zonehvac_or_air_terminal_equipment_object_type": "AirLoopHVACReturnAir",
-                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object Name",
+                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object 1",
                 },
                 {
                     "fraction_of_output_or_supply_air_from_hvac_equipment": 0.0,
                     "fraction_of_input_or_return_air_to_hvac_equipment": 0.0,
                     "zonehvac_or_air_terminal_equipment_object_type": "AirTerminal:DualDuct:ConstantVolume",
-                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object Name",
+                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object 2",
                 },
             ],
         )

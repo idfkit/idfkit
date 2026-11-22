@@ -85,10 +85,10 @@ class AnyRoofCeilingDetailed:
             zone_name="Zone 1",
             outside_boundary_condition="Outdoors",
             vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 3.0},
                 {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
-                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
-                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
                 {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 3.0},
             ],
         )
         ```

@@ -143,8 +143,8 @@ class MeterCustom_v9_4_to_v23_1:
         doc["Meter:Custom"].add(
             "Meter Custom 1",
             variable_details=[
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+                {"key_name": "Key 1", "output_variable_or_meter_name": "Output Variable or Meter 1"},
+                {"key_name": "Key 2", "output_variable_or_meter_name": "Output Variable or Meter 2"},
             ],
         )
         ```

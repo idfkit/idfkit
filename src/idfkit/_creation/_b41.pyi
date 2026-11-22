@@ -280,14 +280,14 @@ class Branch:
                 {
                     "component_object_type": "Component Object Type 1",
                     "component_name": "Component 1",
-                    "component_inlet_node_name": "Component Inlet Node Name",
-                    "component_outlet_node_name": "Component Outlet Node Name",
+                    "component_inlet_node_name": "Component Inlet Node 1",
+                    "component_outlet_node_name": "Component Outlet Node 1",
                 },
                 {
                     "component_object_type": "Component Object Type 2",
                     "component_name": "Component 2",
-                    "component_inlet_node_name": "Component Inlet Node Name",
-                    "component_outlet_node_name": "Component Outlet Node Name",
+                    "component_inlet_node_name": "Component Inlet Node 2",
+                    "component_outlet_node_name": "Component Outlet Node 2",
                 },
             ],
         )
@@ -387,8 +387,8 @@ class AnyPythonPluginVariables:
         doc["PythonPlugin:Variables"].add(
             "PythonPlugin Variables 1",
             global_py_vars=[
-                {"variable_name": "Variable Name"},
-                {"variable_name": "Variable Name"},
+                {"variable_name": "Variable 1"},
+                {"variable_name": "Variable 2"},
             ],
         )
         ```

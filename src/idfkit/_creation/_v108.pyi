@@ -80,8 +80,8 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2:
         doc["ZoneHVAC:CoolingPanel:RadiantConvective:Water"].add(
             "ZoneHVAC CoolingPanel RadiantConvective Water 1",
             availability_schedule_name="Availability Schedule 1",
-            water_inlet_node_name="Water Inlet Node Name",
-            water_outlet_node_name="Water Outlet Node Name",
+            water_inlet_node_name="Water Inlet Node 1",
+            water_outlet_node_name="Water Outlet Node 1",
             maximum_chilled_water_flow_rate=0.0,
             fraction_radiant=0.0,
             surface_fractions=[
@@ -216,7 +216,7 @@ class LifeCycleCostUsePriceEscalation_v9_3_to_v22_1:
 
         ```python
         doc["LifeCycleCost:UsePriceEscalation"].add(
-            lcc_price_escalation_name="LCC Price Escalation Name",
+            lcc_price_escalation_name="LCC Price Escalation 1",
             resource="Coal",
             escalations=[
                 {"year_escalation": 0.0},

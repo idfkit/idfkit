@@ -54,8 +54,8 @@ class ScheduleDayInterval:
         doc["Schedule:Day:Interval"].add(
             "Schedule Day Interval 1",
             data=[
-                {"time": "Time", "value_until_time": 0.0},
-                {"time": "Time", "value_until_time": 0.0},
+                {"time": "08:00", "value_until_time": 0.0},
+                {"time": "24:00", "value_until_time": 0.0},
             ],
         )
         ```

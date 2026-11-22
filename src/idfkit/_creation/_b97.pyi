@@ -658,11 +658,11 @@ class OutputTableMonthly:
             "Output Table Monthly 1",
             variable_details=[
                 {
-                    "variable_or_meter_name": "Variable or Meter Name",
+                    "variable_or_meter_name": "Variable or Meter 1",
                     "aggregation_type_for_variable_or_meter": "HoursNegative",
                 },
                 {
-                    "variable_or_meter_name": "Variable or Meter Name",
+                    "variable_or_meter_name": "Variable or Meter 2",
                     "aggregation_type_for_variable_or_meter": "HoursNonNegative",
                 },
             ],
@@ -693,8 +693,8 @@ class PythonPluginVariables:
         doc["PythonPlugin:Variables"].add(
             "PythonPlugin Variables 1",
             global_py_vars=[
-                {"variable_name": "Variable Name"},
-                {"variable_name": "Variable Name"},
+                {"variable_name": "Variable 1"},
+                {"variable_name": "Variable 2"},
             ],
         )
         ```

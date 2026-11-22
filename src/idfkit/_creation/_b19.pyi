@@ -198,10 +198,10 @@ class AnyFloorDetailed:
             zone_name="Zone 1",
             outside_boundary_condition="Outdoors",
             vertices=[
-                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
                 {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 0.0},
                 {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
-                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
             ],
         )
         ```
@@ -254,12 +254,12 @@ class RoomAirNodeAirflowNetworkInternalGains:
             gains=[
                 {
                     "internal_gain_object_type": "AirTerminal:SingleDuct:UserDefined",
-                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "internal_gain_object_name": "Internal Gain Object 1",
                     "fraction_of_gains_to_node": 0.0,
                 },
                 {
                     "internal_gain_object_type": "Coil:UserDefined",
-                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "internal_gain_object_name": "Internal Gain Object 2",
                     "fraction_of_gains_to_node": 0.0,
                 },
             ],
@@ -587,10 +587,10 @@ class AnyMeterCustomDecrement:
         ```python
         doc["Meter:CustomDecrement"].add(
             "Meter CustomDecrement 1",
-            source_meter_name="Source Meter Name",
+            source_meter_name="Source Meter 1",
             variable_details=[
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
-                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+                {"key_name": "Key 1", "output_variable_or_meter_name": "Output Variable or Meter 1"},
+                {"key_name": "Key 2", "output_variable_or_meter_name": "Output Variable or Meter 2"},
             ],
         )
         ```

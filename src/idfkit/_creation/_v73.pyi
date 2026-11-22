@@ -73,7 +73,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1
 
         ```python
         doc["AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl"].add(
-            heat_pump_name="Heat Pump Name",
+            heat_pump_name="Heat Pump 1",
             zone_terminal_unit_list_name="Zone Terminal Unit List 1",
             outdoor_unit_evaporating_temperature_function_of_superheating_curve_name="Outdoor Unit Evaporating Temperature Function of Superheating Curve 1",
             outdoor_unit_condensing_temperature_function_of_subcooling_curve_name="Outdoor Unit Condensing Temperature Function of Subcooling Curve 1",

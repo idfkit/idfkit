@@ -381,10 +381,10 @@ class AirLoopHVACZoneMixer:
         ```python
         doc["AirLoopHVAC:ZoneMixer"].add(
             "AirLoopHVAC ZoneMixer 1",
-            outlet_node_name="Outlet Node Name",
+            outlet_node_name="Outlet Node 1",
             nodes=[
-                {"inlet_node_name": "Inlet Node Name"},
-                {"inlet_node_name": "Inlet Node Name"},
+                {"inlet_node_name": "Inlet Node 1"},
+                {"inlet_node_name": "Inlet Node 2"},
             ],
         )
         ```

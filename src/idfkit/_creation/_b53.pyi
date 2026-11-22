@@ -222,10 +222,10 @@ class SpaceHVACZoneReturnMixer:
         doc["SpaceHVAC:ZoneReturnMixer"].add(
             "SpaceHVAC ZoneReturnMixer 1",
             zone_name="Zone 1",
-            zone_return_air_node_name="Zone Return Air Node Name",
+            zone_return_air_node_name="Zone Return Air Node 1",
             spaces=[
-                {"space_name": "Space 1", "space_return_air_node_name": "Space Return Air Node Name"},
-                {"space_name": "Space 2", "space_return_air_node_name": "Space Return Air Node Name"},
+                {"space_name": "Space 1", "space_return_air_node_name": "Space Return Air Node 1"},
+                {"space_name": "Space 2", "space_return_air_node_name": "Space Return Air Node 2"},
             ],
         )
         ```

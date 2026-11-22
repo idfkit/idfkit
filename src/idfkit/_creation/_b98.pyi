@@ -35,12 +35,12 @@ class AnyRoomAirNodeAirflowNetworkInternalGains:
             gains=[
                 {
                     "internal_gain_object_type": "AirTerminal:SingleDuct:UserDefined",
-                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "internal_gain_object_name": "Internal Gain Object 1",
                     "fraction_of_gains_to_node": 0.0,
                 },
                 {
                     "internal_gain_object_type": "Coil:UserDefined",
-                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "internal_gain_object_name": "Internal Gain Object 2",
                     "fraction_of_gains_to_node": 0.0,
                 },
             ],

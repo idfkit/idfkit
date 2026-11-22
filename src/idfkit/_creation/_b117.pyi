@@ -115,11 +115,11 @@ class AirLoopHVACSupplyPlenum:
         doc["AirLoopHVAC:SupplyPlenum"].add(
             "AirLoopHVAC SupplyPlenum 1",
             zone_name="Zone 1",
-            zone_node_name="Zone Node Name",
-            inlet_node_name="Inlet Node Name",
+            zone_node_name="Zone Node 1",
+            inlet_node_name="Inlet Node 1",
             nodes=[
-                {"outlet_node_name": "Outlet Node Name"},
-                {"outlet_node_name": "Outlet Node Name"},
+                {"outlet_node_name": "Outlet Node 1"},
+                {"outlet_node_name": "Outlet Node 2"},
             ],
         )
         ```

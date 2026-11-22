@@ -144,10 +144,10 @@ class AirLoopHVACZoneSplitter:
         ```python
         doc["AirLoopHVAC:ZoneSplitter"].add(
             "AirLoopHVAC ZoneSplitter 1",
-            inlet_node_name="Inlet Node Name",
+            inlet_node_name="Inlet Node 1",
             nodes=[
-                {"outlet_node_name": "Outlet Node Name"},
-                {"outlet_node_name": "Outlet Node Name"},
+                {"outlet_node_name": "Outlet Node 1"},
+                {"outlet_node_name": "Outlet Node 2"},
             ],
         )
         ```
@@ -174,10 +174,10 @@ class AirLoopHVACSplitter:
         ```python
         doc["AirLoopHVAC:Splitter"].add(
             "AirLoopHVAC Splitter 1",
-            inlet_node_name="Inlet Node Name",
+            inlet_node_name="Inlet Node 1",
             nodes=[
-                {"outlet_node_name": "Outlet Node Name"},
-                {"outlet_node_name": "Outlet Node Name"},
+                {"outlet_node_name": "Outlet Node 1"},
+                {"outlet_node_name": "Outlet Node 2"},
             ],
         )
         ```

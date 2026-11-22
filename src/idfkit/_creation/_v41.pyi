@@ -36,12 +36,12 @@ class OutputTableAnnual_v8_9_to_v22_1:
             "Output Table Annual 1",
             variable_details=[
                 {
-                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field Name",
+                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field 1",
                     "aggregation_type_for_variable_or_meter": "HourInTenBinsMinToMax",
                     "digits_after_decimal": 2.0,
                 },
                 {
-                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field Name",
+                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field 2",
                     "aggregation_type_for_variable_or_meter": "HourInTenBinsMinToZero",
                     "digits_after_decimal": 2.0,
                 },

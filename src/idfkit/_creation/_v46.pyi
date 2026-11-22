@@ -137,7 +137,7 @@ class LifeCycleCostUsePriceEscalation_v22_2_to_v23_1:
 
         ```python
         doc["LifeCycleCost:UsePriceEscalation"].add(
-            lcc_price_escalation_name="LCC Price Escalation Name",
+            lcc_price_escalation_name="LCC Price Escalation 1",
             resource="Coal",
             escalations=[
                 {"year_escalation": 0.0},

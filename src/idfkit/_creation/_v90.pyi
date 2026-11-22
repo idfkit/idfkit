@@ -164,8 +164,8 @@ class GroundHeatExchangerSystem_v9_6_to_v25_1:
         ```python
         doc["GroundHeatExchanger:System"].add(
             "GroundHeatExchanger System 1",
-            inlet_node_name="Inlet Node Name",
-            outlet_node_name="Outlet Node Name",
+            inlet_node_name="Inlet Node 1",
+            outlet_node_name="Outlet Node 1",
             design_flow_rate=1.0,
             undisturbed_ground_temperature_model_type="Site:GroundTemperature:Undisturbed:FiniteDifference",
             undisturbed_ground_temperature_model_name="Undisturbed Ground Temperature Model 1",
