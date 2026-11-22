@@ -125,6 +125,7 @@ def evaluate_week_daily(
     custom_day_1: set[date] | None = None,
     custom_day_2: set[date] | None = None,
     interpolation: Interpolation = Interpolation.NO,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a Schedule:Week:Daily at a specific datetime.
 
@@ -137,6 +138,8 @@ def evaluate_week_daily(
         custom_day_1: Set of CustomDay1 dates.
         custom_day_2: Set of CustomDay2 dates.
         interpolation: Interpolation mode.
+        interval_minutes: Length of the timestep starting at ``dt``, over which ``AVERAGE``
+            averages the schedule. 0 (the default) gives the value at ``dt``.
 
     Returns:
         The schedule value.
@@ -177,9 +180,9 @@ def evaluate_week_daily(
     elif day_type_str == "Schedule:Day:Hourly":
         return evaluate_day_hourly(day_obj, dt)
     elif day_type_str == "Schedule:Day:Interval":
-        return evaluate_day_interval(day_obj, dt, interpolation)
+        return evaluate_day_interval(day_obj, dt, interpolation, interval_minutes)
     elif day_type_str == "Schedule:Day:List":
-        return evaluate_day_list(day_obj, dt, interpolation)
+        return evaluate_day_list(day_obj, dt, interpolation, interval_minutes)
     else:
         msg = f"Unsupported day schedule type: {day_type_str}"
         raise ValueError(msg)
@@ -222,6 +225,7 @@ def evaluate_week_compact(
     custom_day_1: set[date] | None = None,
     custom_day_2: set[date] | None = None,
     interpolation: Interpolation = Interpolation.NO,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a Schedule:Week:Compact at a specific datetime.
 
@@ -237,6 +241,8 @@ def evaluate_week_compact(
         custom_day_1: Set of CustomDay1 dates.
         custom_day_2: Set of CustomDay2 dates.
         interpolation: Interpolation mode.
+        interval_minutes: Length of the timestep starting at ``dt``, over which ``AVERAGE``
+            averages the schedule. 0 (the default) gives the value at ``dt``.
 
     Returns:
         The schedule value.
@@ -273,9 +279,9 @@ def evaluate_week_compact(
     elif day_type_str == "Schedule:Day:Hourly":
         return evaluate_day_hourly(day_obj, dt)
     elif day_type_str == "Schedule:Day:Interval":
-        return evaluate_day_interval(day_obj, dt, interpolation)
+        return evaluate_day_interval(day_obj, dt, interpolation, interval_minutes)
     elif day_type_str == "Schedule:Day:List":
-        return evaluate_day_list(day_obj, dt, interpolation)
+        return evaluate_day_list(day_obj, dt, interpolation, interval_minutes)
     else:
         msg = f"Unsupported day schedule type: {day_type_str}"
         raise ValueError(msg)

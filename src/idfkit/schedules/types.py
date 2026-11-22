@@ -82,10 +82,13 @@ class Interpolation(Enum):
     """Step function - value at each interval applies until next interval."""
 
     AVERAGE = "average"
-    """Linear interpolation when timestep doesn't align with intervals."""
+    """Mean of the step function over each timestep, as EnergyPlus's ``Average`` (and ``Yes``).
+
+    Equal to the step value wherever the schedule's times fall on timestep boundaries.
+    """
 
     LINEAR = "linear"
-    """Alias for AVERAGE."""
+    """Linear interpolation from the previous ``Until:`` value to the next."""
 
 
 # Literal types for string parameters - provides IDE autocompletion

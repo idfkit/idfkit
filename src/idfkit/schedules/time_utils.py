@@ -50,13 +50,18 @@ def evaluate_time_values(
     time_values: list[TimeValue],
     current_time: time,
     interpolation: Interpolation,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a list of time-value pairs at a given time.
 
     Args:
         time_values: List of TimeValue pairs (must be sorted by time).
-        current_time: Time to evaluate.
-        interpolation: Interpolation mode.
+        current_time: Time to evaluate, the start of the timestep.
+        interpolation: Interpolation mode. ``AVERAGE`` returns the mean of the step function
+            over ``[current_time, current_time + interval_minutes)``, as EnergyPlus does for
+            ``Average``; ``LINEAR`` interpolates linearly between ``Until:`` values.
+        interval_minutes: Length of the timestep the value stands for. With the default of 0
+            (a point evaluation) ``AVERAGE`` gives the step value.
 
     Returns:
         The schedule value at the given time.
@@ -65,6 +70,9 @@ def evaluate_time_values(
         return 0.0
 
     current_minutes = time_to_minutes(current_time)
+
+    if interpolation is Interpolation.AVERAGE and interval_minutes > 0:
+        return _step_mean(time_values, current_minutes, interval_minutes)
 
     # Find the interval containing current_time
     prev_value = 0.0
@@ -76,11 +84,7 @@ def evaluate_time_values(
         # "Until: HH:MM" means value applies for times < HH:MM
         # At exactly HH:MM, we transition to the next interval
         if current_minutes < until_minutes:
-            # Linear interpolation when enabled and interval is valid
-            should_interpolate = (
-                interpolation in (Interpolation.AVERAGE, Interpolation.LINEAR) and until_minutes > prev_minutes
-            )
-            if should_interpolate:
+            if interpolation is Interpolation.LINEAR and until_minutes > prev_minutes:
                 fraction = (current_minutes - prev_minutes) / (until_minutes - prev_minutes)
                 return prev_value + fraction * (tv.value - prev_value)
             # Step function: return the value for this interval
@@ -91,3 +95,22 @@ def evaluate_time_values(
 
     # Past all intervals, return last value
     return time_values[-1].value
+
+
+def _step_mean(time_values: list[TimeValue], start: float, length: float) -> float:
+    """Mean of the step function defined by ``time_values`` over ``[start, start + length)``."""
+    end = start + length
+    total = 0.0
+    prev_minutes = 0.0
+    for tv in time_values:
+        until_minutes = time_to_minutes(tv.until_time)
+        overlap = min(end, until_minutes) - max(start, prev_minutes)
+        if overlap > 0:
+            total += overlap * tv.value
+        prev_minutes = until_minutes
+        if prev_minutes >= end:
+            break
+    else:
+        # Past the last Until: the last value holds, as in the step evaluation.
+        total += (end - max(start, prev_minutes)) * time_values[-1].value
+    return total / length

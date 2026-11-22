@@ -18,6 +18,7 @@ from idfkit.schedules.compact import (  # pyright: ignore[reportPrivateUsage]
     parse_compact,
 )
 from idfkit.schedules.day_types import get_applicable_day_types
+from idfkit.schedules.evaluate import values
 from idfkit.schedules.types import (
     DAY_TYPE_ALLDAYS,
     DAY_TYPE_HOLIDAY,
@@ -509,8 +510,8 @@ class TestInterpolateKeyword:
         _, interp = parse_compact(sched)
         assert interp == Interpolation.AVERAGE
 
-    def test_interpolate_linear_sets_average(self) -> None:
-        """Interpolate: Linear sets interpolation mode."""
+    def test_interpolate_linear_sets_linear(self) -> None:
+        """Interpolate: Linear sets the LINEAR mode, distinct from AVERAGE."""
         sched = _make_compact(
             "Through: 12/31",
             "For: AllDays",
@@ -519,7 +520,7 @@ class TestInterpolateKeyword:
             "1.0",
         )
         _, interp = parse_compact(sched)
-        assert interp == Interpolation.AVERAGE
+        assert interp == Interpolation.LINEAR
 
     def test_interpolate_no_keeps_no(self) -> None:
         """Interpolate: No does not change to AVERAGE."""
@@ -532,6 +533,42 @@ class TestInterpolateKeyword:
         )
         _, interp = parse_compact(sched)
         assert interp == Interpolation.NO
+
+
+def _ramp(mode: str, noon: str = "12:00") -> IDFObject:
+    return _make_compact(
+        "Through: 12/31", "For: AllDays", f"Interpolate: {mode}", f"Until: {noon}", "0", "Until: 24:00", "1"
+    )
+
+
+class TestInterpolatedValues:
+    """values() for Interpolate: Average/Yes averages the step over each timestep (#364)."""
+
+    @pytest.mark.parametrize("mode", ["Average", "Yes"])
+    def test_average_on_timestep_boundaries_is_the_step(self, mode: str) -> None:
+        """Until: times on timestep boundaries give the plain step, not a ramp."""
+        result = values(_ramp(mode), year=2024, end_date=(1, 1))
+        assert result == [0.0] * 12 + [1.0] * 12
+
+    def test_average_is_mean_over_the_timestep(self) -> None:
+        """An Until: inside a timestep gives the mean of the step over that timestep."""
+        result = values(_ramp("Average", noon="12:15"), year=2024, end_date=(1, 1))
+        assert result == [0.0] * 12 + [0.75] + [1.0] * 11
+
+    def test_average_at_sub_hourly_timestep(self) -> None:
+        """The average is taken over the requested timestep, not over the hour."""
+        result = values(_ramp("Average", noon="12:10"), year=2024, end_date=(1, 1), timestep=4)
+        assert result[47:51] == [0.0, pytest.approx(1 / 3), 1.0, 1.0]
+
+    def test_linear_still_ramps(self) -> None:
+        """Interpolate: Linear keeps the linear interpolation between Until: values."""
+        result = values(_ramp("Linear"), year=2024, end_date=(1, 1))
+        assert result[12] == 0.0
+        assert result[18] == pytest.approx(0.5)
+
+    def test_point_evaluation_of_average_is_the_step(self) -> None:
+        """evaluate_compact without a timestep returns the step value."""
+        assert evaluate_compact(_ramp("Average"), datetime(2024, 1, 1, 18, 0)) == 1.0
 
 
 class TestCacheStaleness:

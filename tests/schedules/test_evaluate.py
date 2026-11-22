@@ -675,6 +675,60 @@ class TestEvaluateWithInterpolation:
         assert len(result) == 24
         assert all(isinstance(v, float) for v in result)
 
+    def test_average_in_values_is_mean_over_each_timestep(self) -> None:
+        """values(interpolation="average") on a day schedule averages each timestep (#364)."""
+        doc = new_document()
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "12:15", "value_until_time": "0"}, {"time": "24:00", "value_until_time": "1"}],
+        )
+        day_obj = doc.get_collection("Schedule:Day:Interval").get("DaySched")
+        result = values(day_obj, year=2024, end_date=(1, 1), interpolation="average")
+        assert result == [0.0] * 12 + [0.75] + [1.0] * 11
+
+    def test_average_in_values_through_year_schedule(self) -> None:
+        """The timestep length reaches a day schedule referenced through Year and Week."""
+        doc = new_document()
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "12:15", "value_until_time": "0"}, {"time": "24:00", "value_until_time": "1"}],
+        )
+        day_fields = (
+            "sunday",
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "holiday",
+            "summerdesignday",
+            "winterdesignday",
+            "customday1",
+            "customday2",
+        )
+        doc.add(
+            "Schedule:Week:Daily",
+            "WeekSched",
+            validate=False,
+            **{f"{d}_schedule_day_name": "DaySched" for d in day_fields},
+        )
+        doc.add(
+            "Schedule:Year",
+            "YearSched",
+            validate=False,
+            schedule_weeks=[
+                {"schedule_week_name": "WeekSched", "start_month": 1, "start_day": 1, "end_month": 12, "end_day": 31}
+            ],
+        )
+        year_obj = doc.get_collection("Schedule:Year").get("YearSched")
+        result = values(year_obj, year=2024, end_date=(1, 1), interpolation="average", document=doc)
+        assert result[12] == pytest.approx(0.75)
+
     def test_eval_document_with_interp_not_document_schedule_raises(self) -> None:
         """_eval_document_with_interp with unknown type raises ValueError (line 343)."""
         from idfkit.schedules.evaluate import _eval_document_with_interp  # pyright: ignore[reportPrivateUsage]

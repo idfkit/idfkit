@@ -220,8 +220,8 @@ def values(
         document: Required for schedules that reference others.
         day_type: Override day type for all days.
                   Accepts "normal", "summer", "winter", "holiday", "customday1", "customday2".
-        interpolation: Interpolation mode for sub-hourly values.
-                       Accepts "no", "step", "average", "linear".
+        interpolation: Interpolation mode for day schedules that do not set their own.
+                       Accepts "no", "step", "average" (mean over each timestep), "linear".
         fs: FileSystem for Schedule:File.
         base_path: Base directory for Schedule:File relative paths.
 
@@ -280,6 +280,7 @@ def values(
             fs,
             base_path,
             file_cache,
+            minutes_per_step,
         )
         result.append(value)
         current += timedelta(minutes=minutes_per_step)
@@ -299,15 +300,25 @@ def _evaluate_with_interpolation(
     fs: FileSystem | None,
     base_path: Path | str | None,
     file_cache: ScheduleFileCache | None,
+    interval_minutes: float = 0.0,
 ) -> float:
-    """Evaluate with interpolation support."""
+    """Evaluate with interpolation support, averaging over ``interval_minutes`` where asked to."""
     schedule_type = schedule.obj_type
+
+    if schedule_type == "Schedule:Compact":
+        try:
+            return evaluate_compact(
+                schedule, dt, day_type, holidays, custom_day_1, custom_day_2, interval_minutes=interval_minutes
+            )
+        except ValueError as e:
+            msg = f"Error evaluating {schedule_type}: {e}"
+            raise MalformedScheduleError(msg) from e
 
     # Day schedules with native interpolation support
     if schedule_type == "Schedule:Day:Interval":
-        return evaluate_day_interval(schedule, dt, interpolation)
+        return evaluate_day_interval(schedule, dt, interpolation, interval_minutes)
     if schedule_type == "Schedule:Day:List":
-        return evaluate_day_list(schedule, dt, interpolation)
+        return evaluate_day_list(schedule, dt, interpolation, interval_minutes)
 
     # Schedule:File with interpolation
     if schedule_type == "Schedule:File":
@@ -319,7 +330,7 @@ def _evaluate_with_interpolation(
             msg = f"Document required for {schedule_type} evaluation"
             raise ScheduleReferenceError(msg)
         return _eval_document_with_interp(
-            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation
+            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation, interval_minutes
         )
 
     # For other types, use simple evaluation
@@ -335,18 +346,21 @@ def _eval_document_with_interp(
     custom_day_1: set[date],
     custom_day_2: set[date],
     interpolation: Interpolation,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate document-dependent schedules with interpolation."""
     schedule_type = schedule.obj_type
     if schedule_type == "Schedule:Week:Daily":
         return evaluate_week_daily(
-            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation
+            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation, interval_minutes
         )
     if schedule_type == "Schedule:Week:Compact":
         return evaluate_week_compact(
-            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation
+            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation, interval_minutes
         )
     if schedule_type == "Schedule:Year":
-        return evaluate_year(schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation)
+        return evaluate_year(
+            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation, interval_minutes
+        )
     msg = f"Not a document schedule: {schedule_type}"
     raise ValueError(msg)

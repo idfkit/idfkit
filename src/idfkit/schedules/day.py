@@ -104,6 +104,7 @@ def evaluate_day_interval(
     obj: IDFObject,
     dt: datetime,
     interpolation: Interpolation = Interpolation.NO,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a Schedule:Day:Interval.
 
@@ -114,18 +115,21 @@ def evaluate_day_interval(
         obj: The Schedule:Day:Interval object.
         dt: The datetime to evaluate.
         interpolation: Interpolation mode.
+        interval_minutes: Length of the timestep starting at ``dt``, over which ``AVERAGE``
+            averages the schedule. 0 (the default) gives the value at ``dt``.
 
     Returns:
         The schedule value at the given time.
     """
     time_values = _parse_interval_time_values(obj)
-    return evaluate_time_values(time_values, dt.time(), interpolation)
+    return evaluate_time_values(time_values, dt.time(), interpolation, interval_minutes)
 
 
 def evaluate_day_list(
     obj: IDFObject,
     dt: datetime,
     interpolation: Interpolation = Interpolation.NO,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a Schedule:Day:List.
 
@@ -135,6 +139,8 @@ def evaluate_day_list(
         obj: The Schedule:Day:List object.
         dt: The datetime to evaluate.
         interpolation: Interpolation mode.
+        interval_minutes: Length of the timestep starting at ``dt``, over which ``AVERAGE``
+            averages the schedule. 0 (the default) gives the value at ``dt``.
 
     Returns:
         The schedule value at the given time.
@@ -147,8 +153,10 @@ def evaluate_day_list(
     interpolate_field = obj.get("Interpolate to Timestep")
     if interpolate_field:
         interpolate_str = str(interpolate_field).lower()
-        if interpolate_str in ("average", "linear", "yes"):
+        if interpolate_str in ("average", "yes"):
             interpolation = Interpolation.AVERAGE
+        elif interpolate_str == "linear":
+            interpolation = Interpolation.LINEAR
 
     # Build time-value pairs from the list
     time_values: list[TimeValue] = []
@@ -179,7 +187,7 @@ def evaluate_day_list(
     if not time_values:
         return 0.0
 
-    return evaluate_time_values(time_values, dt.time(), interpolation)
+    return evaluate_time_values(time_values, dt.time(), interpolation, interval_minutes)
 
 
 def _parse_interval_time_values(obj: IDFObject) -> list[TimeValue]:
@@ -253,9 +261,9 @@ def get_day_values(
             elif obj_type == "Schedule:Day:Hourly":
                 value = evaluate_day_hourly(obj, dt)
             elif obj_type == "Schedule:Day:Interval":
-                value = evaluate_day_interval(obj, dt, interpolation)
+                value = evaluate_day_interval(obj, dt, interpolation, minutes_per_step)
             elif obj_type == "Schedule:Day:List":
-                value = evaluate_day_list(obj, dt, interpolation)
+                value = evaluate_day_list(obj, dt, interpolation, minutes_per_step)
             else:
                 msg = f"Unsupported day schedule type: {obj_type}"
                 raise ValueError(msg)

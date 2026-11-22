@@ -81,6 +81,13 @@ _DAY_TYPE_MAP = {
 # IDFObject.__hash__ uses id(self) so WeakKeyDictionary works correctly.
 # Each entry stores (result_tuple, mutation_version) so that stale
 # results are discarded when the object is mutated.
+_INTERPOLATE_MODES = {
+    "no": Interpolation.NO,
+    "yes": Interpolation.AVERAGE,
+    "average": Interpolation.AVERAGE,
+    "linear": Interpolation.LINEAR,
+}
+
 _ParseResult = tuple[list[CompactPeriod], Interpolation]
 _parse_cache: weakref.WeakKeyDictionary[IDFObject, tuple[_ParseResult, int]] = weakref.WeakKeyDictionary()
 # compact_problems results, cached the same way: evaluate_compact checks them on every call.
@@ -147,8 +154,8 @@ def _process_field(state: _ParseState, value_str: str, ext_fields: list[str]) ->
         _process_for(state, match)
     elif match := _UNTIL_PATTERN.match(value_str):
         _process_until(state, match, ext_fields)
-    elif (match := _INTERPOLATE_PATTERN.match(value_str)) and match.group(1).lower() in ("yes", "average", "linear"):
-        state.interpolation = Interpolation.AVERAGE
+    elif match := _INTERPOLATE_PATTERN.match(value_str):
+        state.interpolation = _INTERPOLATE_MODES[match.group(1).lower()]
 
 
 def _finalize_parse_state(state: _ParseState) -> None:
@@ -327,6 +334,7 @@ def evaluate_compact(
     holidays: set[date] | None = None,
     custom_day_1: set[date] | None = None,
     custom_day_2: set[date] | None = None,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a Schedule:Compact at a specific datetime.
 
@@ -337,6 +345,8 @@ def evaluate_compact(
         holidays: Set of holiday dates.
         custom_day_1: Set of CustomDay1 dates.
         custom_day_2: Set of CustomDay2 dates.
+        interval_minutes: Length of the timestep starting at ``dt``. ``Interpolate: Average``
+            averages the schedule over it; 0 (the default) gives the value at ``dt``.
 
     Returns:
         The schedule value.
@@ -373,7 +383,7 @@ def evaluate_compact(
         return 0.0
 
     # Evaluate the time-value pairs
-    return evaluate_time_values(rule.time_values, current_time, interpolation)
+    return evaluate_time_values(rule.time_values, current_time, interpolation, interval_minutes)
 
 
 def _find_period_for_date(periods: list[CompactPeriod], d: date) -> CompactPeriod | None:

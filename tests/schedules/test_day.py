@@ -153,18 +153,23 @@ class TestEvaluateDayInterval:
         result = evaluate_day_interval(interval_schedule, datetime(2024, 1, 1, 20, 0))
         assert result == 0.0
 
-    def test_interpolation(self, interval_schedule: MagicMock) -> None:
-        """Test interpolation at the 08:00 boundary.
+    def test_linear_interpolation(self, interval_schedule: MagicMock) -> None:
+        """LINEAR ramps from the previous Until: value: 0.0 at 08:00, 0.5 at 13:00."""
+        assert evaluate_day_interval(interval_schedule, datetime(2024, 1, 1, 8, 0), Interpolation.LINEAR) == 0.0
+        assert evaluate_day_interval(
+            interval_schedule, datetime(2024, 1, 1, 13, 0), Interpolation.LINEAR
+        ) == pytest.approx(0.5)
 
-        At exactly 08:00 the first interval (until 08:00, value=0.0) is closed
-        (boundary is exclusive: current < until is False at equality).  We fall
-        into the second interval [08:00, 18:00) with prev_value=0.0.
-        fraction = (480-480)/(1080-480) = 0.0, so interpolation returns 0.0.
-        Without interpolation the step function would return 1.0 (the second
-        interval's value), confirming interpolation is active.
-        """
-        result = evaluate_day_interval(interval_schedule, datetime(2024, 1, 1, 8, 0), Interpolation.AVERAGE)
-        assert result == 0.0
+    def test_average_point_evaluation_is_the_step(self, interval_schedule: MagicMock) -> None:
+        """AVERAGE with no timestep length gives the step value, not a ramp (#364)."""
+        assert evaluate_day_interval(interval_schedule, datetime(2024, 1, 1, 8, 0), Interpolation.AVERAGE) == 1.0
+
+    def test_average_over_the_timestep(self, interval_schedule: MagicMock) -> None:
+        """AVERAGE over [07:30, 08:30) is half 0.0 and half 1.0."""
+        result = evaluate_day_interval(
+            interval_schedule, datetime(2024, 1, 1, 7, 30), Interpolation.AVERAGE, interval_minutes=60
+        )
+        assert result == pytest.approx(0.5)
 
 
 class TestEvaluateDayList:
@@ -343,7 +348,7 @@ class TestEvaluateDayListInterpolation:
     """Tests for interpolation handling in evaluate_day_list (lines 141-143)."""
 
     def test_interpolate_to_timestep_average(self) -> None:
-        """Interpolate to Timestep = Average enables interpolation."""
+        """Interpolate to Timestep = Average averages the step over the timestep (#364)."""
         obj = MagicMock()
 
         def get_field(field: str) -> object:
@@ -357,11 +362,10 @@ class TestEvaluateDayListInterpolation:
             return fields.get(field)
 
         obj.get.side_effect = get_field
-        # At 1:30 (halfway through the second interval [1:00→2:00]), interpolation
-        # blends prev_value=0.0 (end of first interval) with tv.value=1.0 → 0.5.
-        # Without interpolation the step function would return 1.0.
-        result = evaluate_day_list(obj, datetime(2024, 1, 1, 1, 30))
-        assert result == pytest.approx(0.5)
+        # [0:30, 1:30) is half Value 1 (0.0) and half Value 2 (1.0).
+        assert evaluate_day_list(obj, datetime(2024, 1, 1, 0, 30), interval_minutes=60) == pytest.approx(0.5)
+        # On the hour the average over the hour is the step value, not a ramp.
+        assert evaluate_day_list(obj, datetime(2024, 1, 1, 1, 0), interval_minutes=60) == 1.0
 
     def test_interpolate_to_timestep_yes(self) -> None:
         """Interpolate to Timestep = Yes enables interpolation."""
@@ -381,22 +385,22 @@ class TestEvaluateDayListInterpolation:
         assert result == 0.0
 
     def test_interpolate_to_timestep_linear(self) -> None:
-        """Interpolate to Timestep = Linear enables interpolation (sets AVERAGE mode)."""
+        """Interpolate to Timestep = Linear ramps between the list values."""
         obj = MagicMock()
 
         def get_field(field: str) -> object:
             fields: dict[str, object] = {
                 "Minutes per Item": 60,
                 "Interpolate to Timestep": "Linear",
-                "Value 1": 0.5,
-                "Value 2": None,
+                "Value 1": 0.0,
+                "Value 2": 1.0,
+                "Value 3": None,
             }
             return fields.get(field)
 
         obj.get.side_effect = get_field
-        # The key point is that "Linear" sets interpolation to AVERAGE; the function executes the branch
-        result = evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0))
-        assert isinstance(result, float)
+        # Halfway through [1:00, 2:00) the ramp from 0.0 to 1.0 is at 0.5.
+        assert evaluate_day_list(obj, datetime(2024, 1, 1, 1, 30)) == pytest.approx(0.5)
 
 
 class TestEvaluateDayListInterpolateOther:
