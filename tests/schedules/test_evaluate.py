@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -19,6 +20,11 @@ from idfkit.schedules.evaluate import (
     values,
 )
 from idfkit.schedules.types import DayType, Interpolation
+
+
+def _list_items(get: Callable[[str], object]) -> list[dict[str, object]]:
+    """Canonical Schedule:Day:List items for a mock whose ``get`` answers ``Value N``."""
+    return [{"value": v} for n in range(1, 1441) if (v := get(f"Value {n}")) is not None]
 
 
 class TestExceptions:
@@ -318,6 +324,7 @@ class TestEvalSimpleDay:
             return fields.get(field)
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         del obj._document
 
         result = evaluate(obj, datetime(2024, 1, 1, 0, 0))
@@ -540,6 +547,7 @@ class TestEvaluateWithInterpolation:
             return fields.get(field)
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         del obj._document
 
         result = values(

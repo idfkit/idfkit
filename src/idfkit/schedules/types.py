@@ -72,23 +72,26 @@ class DayType(Enum):
 
 
 class Interpolation(Enum):
-    """Interpolation mode for schedule values.
+    """Interpolation mode for schedule values, as EnergyPlus's ``Interpolate`` fields define it.
 
-    Controls how values are computed when the evaluation timestep
-    doesn't align with the schedule's native intervals.
+    EnergyPlus expands a day to one value per minute and gives each timestep a value from its
+    minutes; the modes differ in how.
     """
 
     NO = "no"
-    """Step function - value at each interval applies until next interval."""
+    """Step function: each value holds until the next ``Until:``. A timestep takes its last minute."""
 
     AVERAGE = "average"
-    """Mean of the step function over each timestep, as EnergyPlus's ``Average`` (and ``Yes``).
+    """A timestep takes the mean of its minutes (EnergyPlus's ``Average``; ``Yes`` in older versions).
 
     Equal to the step value wherever the schedule's times fall on timestep boundaries.
     """
 
     LINEAR = "linear"
-    """Linear interpolation from the previous ``Until:`` value to the next."""
+    """Minutes ramp from the previous ``Until:`` value to the next; a timestep takes its last minute.
+
+    The first interval is flat. A Schedule:Day:List or Schedule:File builds no ramp: it steps.
+    """
 
 
 # Literal types for string parameters - provides IDE autocompletion

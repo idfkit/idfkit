@@ -346,8 +346,8 @@ def evaluate_compact(
         holidays: Set of holiday dates.
         custom_day_1: Set of CustomDay1 dates.
         custom_day_2: Set of CustomDay2 dates.
-        interval_minutes: Length of the timestep starting at ``dt``. ``Interpolate: Average``
-            averages the schedule over it; 0 (the default) gives the value at ``dt``.
+        interval_minutes: Length of the timestep starting at ``dt``; the value is then EnergyPlus's
+            for that timestep. 0 (the default) gives the value of the minute containing ``dt``.
 
     Returns:
         The schedule value.

@@ -560,11 +560,15 @@ class TestInterpolatedValues:
         result = values(_ramp("Average", noon="12:10"), year=2024, end_date=(1, 1), timestep=4)
         assert result[47:51] == [0.0, pytest.approx(1 / 3), 1.0, 1.0]
 
-    def test_linear_still_ramps(self) -> None:
-        """Interpolate: Linear keeps the linear interpolation between Until: values."""
+    def test_linear_ramps_to_the_end_of_each_timestep(self) -> None:
+        """Interpolate: Linear reads the ramp at the end of each timestep, as EnergyPlus does.
+
+        EnergyPlus 26.1 gives 0.0833 for 12:00-13:00 and 1.0 for 23:00-24:00 on this schedule.
+        """
         result = values(_ramp("Linear"), year=2024, end_date=(1, 1))
-        assert result[12] == 0.0
-        assert result[18] == pytest.approx(0.5)
+        assert result[11] == 0.0
+        assert result[12] == pytest.approx(1 / 12)
+        assert result[23] == pytest.approx(1.0)
 
     def test_point_evaluation_of_average_is_the_step(self) -> None:
         """evaluate_compact without a timestep returns the step value."""

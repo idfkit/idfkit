@@ -69,6 +69,7 @@ def _make_day_schedule(name: str, obj_type: str, hourly_value: float = 1.0) -> M
             fields[f"Value {i}"] = hourly_value
         fields["Value 25"] = None
         obj.get.side_effect = lambda f: fields.get(f)
+        obj.data = {"extensions": [{"value": hourly_value}] * 24}
     return obj
 
 

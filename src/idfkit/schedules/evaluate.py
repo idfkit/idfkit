@@ -211,6 +211,10 @@ def values(
 ) -> list[float]:
     """Generate schedule values for a date range.
 
+    Each value is the one EnergyPlus reports as ``Schedule Value`` for that timestep when it
+    simulates at ``timestep`` steps per hour, to the bit: see
+    [Interpolation][idfkit.schedules.types.Interpolation] for how a timestep's value is taken.
+
     Args:
         schedule: An IDF schedule object.
         year: Year for the date range.
@@ -220,10 +224,9 @@ def values(
         document: Required for schedules that reference others.
         day_type: Override day type for all days.
                   Accepts "normal", "summer", "winter", "holiday", "customday1", "customday2".
-        interpolation: Interpolation mode for day schedules that do not set their own.
-                       Accepts "no", "step", "average" (mean over each timestep), "linear".
-                       Schedule:File still interpolates linearly between file values under
-                       "average".
+        interpolation: Interpolation mode for day schedules and Schedule:File objects whose
+                       ``Interpolate to Timestep`` is blank. Accepts "no", "step", "average",
+                       "linear".
         fs: FileSystem for Schedule:File.
         base_path: Base directory for Schedule:File relative paths.
 
@@ -324,7 +327,9 @@ def _evaluate_with_interpolation(
 
     # Schedule:File with interpolation
     if schedule_type == "Schedule:File":
-        return evaluate_schedule_file(schedule, dt, fs or LocalFileSystem(), base_path, file_cache, interpolation)
+        return evaluate_schedule_file(
+            schedule, dt, fs or LocalFileSystem(), base_path, file_cache, interpolation, interval_minutes
+        )
 
     # Week/Year schedules need document and pass interpolation through
     if schedule_type in _DOCUMENT_REQUIRED_TYPES:
