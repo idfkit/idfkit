@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - IDF files of `Table:OneIndependentVariable` and `Table:TwoIndependentVariables` (EnergyPlus 8.9 to
-  9.1) labelled the second and later groups `!- X Value 1 2`; they read `!- X Value 2`.
+  9.1) labelled the second and later groups `!- X Value 1 2`; they read `!- X Value 2`
+  ([72d6ee3](https://github.com/idfkit/idfkit/commit/72d6ee3)).
 
 ### Changed
 
