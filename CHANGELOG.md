@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `idfkit.versioned.DocumentTypeTarget` and `ReleaseBound` named what `as_type=`, `since=` and `before=`
   took, and `idfkit.weather.GeocodingErrorKind` named `GeocodingError.kind`, where signatures had used
   private aliases ([#362](https://github.com/idfkit/idfkit/pull/362)).
-  
+
 ### Changed
 
 - `SQLResult.get_timeseries_many()` read many series from a large results file faster, with the same
