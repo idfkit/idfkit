@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `SQLResult.get_timeseries()` and `get_timeseries_many()` read series about twice as fast from
-  large results files, with the same results. ([c0bbd74](https://github.com/idfkit/idfkit/commit/c0bbd74))
+  large results files, with the same results. ([#366](https://github.com/idfkit/idfkit/pull/366))
 
 ## [1.3.0-rc.2] - 2026-11-20
 
