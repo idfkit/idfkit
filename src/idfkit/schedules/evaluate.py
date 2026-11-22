@@ -238,11 +238,22 @@ def values(
     Returns:
         List of values, one per timestep for the entire period.
 
+    Raises:
+        ValueError: If *timestep* does not divide an hour into whole minutes (EnergyPlus allows 1, 2,
+            3, 4, 5, 6, 10, 12, 15, 20, 30 and 60).
+        ScheduleEvaluationError: If the schedule is unsupported or malformed.
+
     Examples:
         >>> values(schedule, year=2024)  # Hourly values for full year
         >>> values(schedule, year=2024, timestep=4)  # 15-minute intervals
         >>> values(schedule, year=2024, day_type="summer")  # Summer design day
     """
+    # A timestep that does not divide the hour would give a step of 0 (an endless loop) or of a
+    # rounded-down number of minutes (the wrong number of values per hour).
+    if timestep < 1 or 60 % timestep:
+        msg = f"timestep must divide 60 (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30 or 60), got {timestep}"
+        raise ValueError(msg)
+
     # Get document from schedule if not provided
     if document is None:
         document = getattr(schedule, "_document", None)

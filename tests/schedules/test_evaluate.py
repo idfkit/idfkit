@@ -22,6 +22,7 @@ from idfkit.schedules.evaluate import (
     evaluate,
     values,
 )
+from idfkit.schedules.compact import evaluate_compact_range
 from idfkit.schedules.holidays import get_holidays, get_special_days_by_type
 from idfkit.schedules.types import DayType, DayTypeInput, Interpolation, SpecialDay
 
@@ -851,7 +852,7 @@ class TestCompactValuesMatchEvaluate:
             (2024, 1, (1, 1), (12, 31), None),
             (2023, 1, (1, 1), (12, 31), None),
             (2009, 4, (1, 1), (12, 31), None),
-            (2024, 7, (5, 20), (7, 5), None),
+            (2024, 12, (5, 20), (7, 5), None),
             (2024, 60, (11, 25), (11, 30), None),
             (2024, 2, (1, 1), (1, 31), "summer"),
             (2024, 1, (1, 1), (1, 31), "holiday"),
@@ -923,6 +924,27 @@ class TestCompactValuesMatchEvaluate:
         assert custom_day_1 == get_special_days_by_type(doc, 2024, "CustomDay1")
         assert custom_day_2 == get_special_days_by_type(doc, 2024, "CustomDay2")
         assert _get_special_days(None, 2024) == (set(), set(), set())
+
+    @pytest.mark.parametrize("timestep", [0, -1, 7, 61, 120])
+    def test_values_rejects_timestep_that_does_not_divide_the_hour(self, timestep: int) -> None:
+        """A timestep that is not a divisor of 60 raises instead of looping forever or miscounting."""
+        doc = _special_days_doc()
+        schedule = doc.get_collection("Schedule:Compact").get("Mixed")
+        assert schedule is not None
+        with pytest.raises(ValueError, match="timestep must divide 60"):
+            values(schedule, year=2024, timestep=timestep, document=doc)
+
+    @pytest.mark.parametrize("step", [timedelta(0), timedelta(minutes=-15)])
+    def test_compact_range_rejects_non_positive_step(self, step: timedelta) -> None:
+        """evaluate_compact_range() raises on a step that would never reach the end."""
+        doc = _special_days_doc()
+        schedule = doc.get_collection("Schedule:Compact").get("Mixed")
+        assert schedule is not None
+        start = datetime(2024, 1, 1)
+        with pytest.raises(ValueError, match="step must be positive"):
+            evaluate_compact_range(
+                schedule, start, start + timedelta(days=1), step, DayType.NORMAL, set(), set(), set()
+            )
 
     def test_malformed_compact_raises_in_values(self) -> None:
         """A schedule EnergyPlus would refuse still raises MalformedScheduleError from values()."""

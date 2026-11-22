@@ -387,8 +387,12 @@ def evaluate_compact_range(
         One value per timestep.
 
     Raises:
-        ValueError: As [evaluate_compact][idfkit.schedules.compact.evaluate_compact] does.
+        ValueError: If *step* is not positive, or as
+            [evaluate_compact][idfkit.schedules.compact.evaluate_compact] does.
     """
+    if step <= timedelta(0):
+        msg = f"step must be positive, got {step}"
+        raise ValueError(msg)
     periods, interpolation = _checked_parse(obj)
     result: list[float] = []
     append = result.append

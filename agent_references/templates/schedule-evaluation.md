@@ -49,6 +49,8 @@ A `Schedule:Compact` that EnergyPlus refuses as fatal raises `MalformedScheduleE
 --8<-- "agent_references/snippets/schedule-evaluation.py:annual-values"
 ```
 
+For a range of timestamps, call `values` rather than `evaluate` in a loop: it reads the model's `RunPeriodControl:SpecialDays` once and, for a `Schedule:Compact`, resolves the day rule once per date, where each `evaluate` call does both again. `timestep` must divide the hour (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30 or 60); any other value raises `ValueError`.
+
 By default `values` returns a `list[float]`. For pandas:
 
 ```python
