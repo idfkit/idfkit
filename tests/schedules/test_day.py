@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import datetime, time
 from unittest.mock import MagicMock
 
@@ -17,6 +18,11 @@ from idfkit.schedules.day import (
 )
 from idfkit.schedules.time_utils import time_to_minutes
 from idfkit.schedules.types import Interpolation
+
+
+def _list_items(get: Callable[[str], object]) -> list[dict[str, object]]:
+    """Canonical Schedule:Day:List items for a mock whose ``get`` answers ``Value N``."""
+    return [{"value": v} for n in range(1, 1441) if (v := get(f"Value {n}")) is not None]
 
 
 class TestParseTime:
@@ -153,18 +159,28 @@ class TestEvaluateDayInterval:
         result = evaluate_day_interval(interval_schedule, datetime(2024, 1, 1, 20, 0))
         assert result == 0.0
 
-    def test_interpolation(self, interval_schedule: MagicMock) -> None:
-        """Test interpolation at the 08:00 boundary.
+    def test_linear_interpolation(self, interval_schedule: MagicMock) -> None:
+        """LINEAR ramps over the 600 minutes 08:00-18:00: minute k from 08:00 holds (k + 1) / 600.
 
-        At exactly 08:00 the first interval (until 08:00, value=0.0) is closed
-        (boundary is exclusive: current < until is False at equality).  We fall
-        into the second interval [08:00, 18:00) with prev_value=0.0.
-        fraction = (480-480)/(1080-480) = 0.0, so interpolation returns 0.0.
-        Without interpolation the step function would return 1.0 (the second
-        interval's value), confirming interpolation is active.
+        The first interval stays flat, as in EnergyPlus.
         """
-        result = evaluate_day_interval(interval_schedule, datetime(2024, 1, 1, 8, 0), Interpolation.AVERAGE)
-        assert result == 0.0
+        at = datetime(2024, 1, 1, 7, 0)
+        assert evaluate_day_interval(interval_schedule, at, Interpolation.LINEAR) == 0.0
+        assert evaluate_day_interval(interval_schedule, datetime(2024, 1, 1, 8, 0), Interpolation.LINEAR) == 1 / 600
+        assert evaluate_day_interval(
+            interval_schedule, datetime(2024, 1, 1, 13, 0), Interpolation.LINEAR
+        ) == pytest.approx(301 / 600)
+
+    def test_average_point_evaluation_is_the_step(self, interval_schedule: MagicMock) -> None:
+        """AVERAGE with no timestep length gives the step value, not a ramp (#364)."""
+        assert evaluate_day_interval(interval_schedule, datetime(2024, 1, 1, 8, 0), Interpolation.AVERAGE) == 1.0
+
+    def test_average_over_the_timestep(self, interval_schedule: MagicMock) -> None:
+        """AVERAGE over [07:30, 08:30) is half 0.0 and half 1.0."""
+        result = evaluate_day_interval(
+            interval_schedule, datetime(2024, 1, 1, 7, 30), Interpolation.AVERAGE, interval_minutes=60
+        )
+        assert result == pytest.approx(0.5)
 
 
 class TestEvaluateDayList:
@@ -194,6 +210,7 @@ class TestEvaluateDayList:
             return None
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         return obj
 
     def test_evaluate(self, list_schedule: MagicMock) -> None:
@@ -343,7 +360,7 @@ class TestEvaluateDayListInterpolation:
     """Tests for interpolation handling in evaluate_day_list (lines 141-143)."""
 
     def test_interpolate_to_timestep_average(self) -> None:
-        """Interpolate to Timestep = Average enables interpolation."""
+        """Interpolate to Timestep = Average averages the step over the timestep (#364)."""
         obj = MagicMock()
 
         def get_field(field: str) -> object:
@@ -357,11 +374,11 @@ class TestEvaluateDayListInterpolation:
             return fields.get(field)
 
         obj.get.side_effect = get_field
-        # At 1:30 (halfway through the second interval [1:00→2:00]), interpolation
-        # blends prev_value=0.0 (end of first interval) with tv.value=1.0 → 0.5.
-        # Without interpolation the step function would return 1.0.
-        result = evaluate_day_list(obj, datetime(2024, 1, 1, 1, 30))
-        assert result == pytest.approx(0.5)
+        obj.data = {"extensions": _list_items(get_field)}
+        # [0:30, 1:30) is half Value 1 (0.0) and half Value 2 (1.0).
+        assert evaluate_day_list(obj, datetime(2024, 1, 1, 0, 30), interval_minutes=60) == pytest.approx(0.5)
+        # On the hour the average over the hour is the step value, not a ramp.
+        assert evaluate_day_list(obj, datetime(2024, 1, 1, 1, 0), interval_minutes=60) == 1.0
 
     def test_interpolate_to_timestep_yes(self) -> None:
         """Interpolate to Timestep = Yes enables interpolation."""
@@ -377,26 +394,50 @@ class TestEvaluateDayListInterpolation:
             return fields.get(field)
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         result = evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0))
         assert result == 0.0
 
     def test_interpolate_to_timestep_linear(self) -> None:
-        """Interpolate to Timestep = Linear enables interpolation (sets AVERAGE mode)."""
+        """Interpolate to Timestep = Linear steps on a list: EnergyPlus builds no ramp for one."""
         obj = MagicMock()
 
         def get_field(field: str) -> object:
             fields: dict[str, object] = {
                 "Minutes per Item": 60,
                 "Interpolate to Timestep": "Linear",
-                "Value 1": 0.5,
-                "Value 2": None,
+                "Value 1": 0.0,
+                "Value 2": 1.0,
+                "Value 3": None,
             }
             return fields.get(field)
 
         obj.get.side_effect = get_field
-        # The key point is that "Linear" sets interpolation to AVERAGE; the function executes the branch
-        result = evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0))
-        assert isinstance(result, float)
+        obj.data = {"extensions": _list_items(get_field)}
+        assert evaluate_day_list(obj, datetime(2024, 1, 1, 1, 30)) == 1.0
+        assert evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0), interval_minutes=60) == 0.0
+
+
+class TestEvaluateDayListExplicitNo:
+    """An explicit Interpolate to Timestep = No wins over the interpolation argument."""
+
+    def test_no_field_overrides_average_argument(self) -> None:
+        obj = MagicMock()
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Minutes per Item": 30,
+                "Interpolate to Timestep": "No",
+                "Value 1": 0.0,
+                "Value 2": 1.0,
+                "Value 3": None,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
+        # Averaging [0:00, 1:00) would give 0.5; the object asks for No, which reads the last minute.
+        assert evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0), Interpolation.AVERAGE, 60) == 1.0
 
 
 class TestEvaluateDayListInterpolateOther:
@@ -416,6 +457,7 @@ class TestEvaluateDayListInterpolateOther:
             return fields.get(field)
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         # With "Other" as the interpolate value, interpolation stays NO
         result = evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0))
         assert isinstance(result, float)
@@ -436,6 +478,7 @@ class TestEvaluateDayListEmpty:
             return None
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         result = evaluate_day_list(obj, datetime(2024, 1, 1, 10, 0))
         assert result == 0.0
 
@@ -460,6 +503,7 @@ class TestEvaluateDayListEndOfDay:
             return None
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         result = evaluate_day_list(obj, datetime(2024, 1, 1, 23, 0))
         assert result == 1.0
 
@@ -504,6 +548,7 @@ class TestGetDayValuesAllTypes:
             return None
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         result = get_day_values(obj, timestep=1)
         assert len(result) == 24
         assert all(v == 0.9 for v in result)

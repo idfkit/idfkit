@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import warnings
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -218,8 +218,8 @@ class TestEvaluateScheduleFile:
         )
         assert result == 0.0
 
-    def test_evaluate_with_interpolation(self) -> None:
-        """Test evaluating with interpolation."""
+    def test_hourly_file_ignores_average(self) -> None:
+        """An hourly file gives every timestep its hour's row, as EnergyPlus does under Average."""
         obj = MagicMock()
         obj.get.side_effect = lambda f: {
             "File Name": "test.csv",
@@ -229,23 +229,29 @@ class TestEvaluateScheduleFile:
             "Minutes per Item": 60,
             "Interpolate to Timestep": "Average",
         }.get(f)
-
-        # Two values: 0.0 and 1.0
         fs = MagicMock()
         fs.read_text.return_value = "0.0\n1.0" + "\n1.0" * 8782
 
-        cache = ScheduleFileCache()
-
-        # At 0:30 (halfway through first hour), should interpolate
         result = evaluate_schedule_file(
-            obj,
-            datetime(2024, 1, 1, 0, 30),
-            fs,
-            Path("/base"),
-            cache,
+            obj, datetime(2024, 1, 1, 0, 30), fs, Path("/base"), ScheduleFileCache(), interval_minutes=15
         )
-        # With interpolation, should be between 0.0 and 1.0
-        assert 0.0 < result < 1.0
+        assert result == 0.0
+
+    def test_half_hourly_file_averages_each_timestep(self) -> None:
+        """A sub-hourly file under Average gives the mean of its minutes over the timestep."""
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {
+            "File Name": "test.csv",
+            "Minutes per Item": 30,
+            "Interpolate to Timestep": "Yes",
+        }.get(f)
+        fs = MagicMock()
+        fs.read_text.return_value = "0.0\n1.0" + "\n1.0" * 17518
+
+        result = evaluate_schedule_file(
+            obj, datetime(2023, 1, 1, 0, 0), fs, Path("/base"), ScheduleFileCache(), interval_minutes=60
+        )
+        assert result == 0.5
 
 
 class TestGetScheduleFileValues:
@@ -422,22 +428,35 @@ class TestGetInterpolationFromObj:
         assert result == Interpolation.NO
 
 
-class TestInterpolateValueBoundary:
-    """Tests for _interpolate_value out-of-bounds (line 195)."""
+class TestFileDay:
+    """Which day of the file EnergyPlus reads for a date."""
 
-    def test_index_beyond_list_returns_last(self) -> None:
-        """Index beyond list length returns last element."""
-        from idfkit.schedules.file import _interpolate_value  # pyright: ignore[reportPrivateUsage]
+    def test_feb_29_reads_feb_28_of_a_365_day_file(self) -> None:
+        """A 365-day file has no Feb 29: EnergyPlus reuses Feb 28 and shifts later days by one."""
+        from idfkit.schedules.file import _file_day  # pyright: ignore[reportPrivateUsage]
 
-        result = _interpolate_value([1.0, 2.0, 3.0], index=10, fraction=0.5, interpolate=False)
-        assert result == 3.0
+        assert _file_day(date(2024, 2, 28), 8760, 24) == 58
+        assert _file_day(date(2024, 2, 29), 8760, 24) == 58
+        assert _file_day(date(2024, 3, 1), 8760, 24) == 59
+        assert _file_day(date(2023, 3, 1), 8760, 24) == 59
+        assert _file_day(date(2023, 12, 31), 8760, 24) == 364
 
-    def test_empty_list_returns_zero(self) -> None:
-        """Empty list returns 0.0."""
-        from idfkit.schedules.file import _interpolate_value  # pyright: ignore[reportPrivateUsage]
+    def test_366_day_file_keeps_feb_29(self) -> None:
+        """A 366-day file is read on the leap-year calendar, in leap and common years alike."""
+        from idfkit.schedules.file import _file_day  # pyright: ignore[reportPrivateUsage]
 
-        result = _interpolate_value([], index=0, fraction=0.0, interpolate=False)
-        assert result == 0.0
+        assert _file_day(date(2024, 2, 29), 8784, 24) == 59
+        assert _file_day(date(2024, 3, 1), 8784, 24) == 60
+        assert _file_day(date(2023, 3, 1), 8784, 24) == 60
+
+    def test_past_the_last_row_returns_the_last_value(self) -> None:
+        """A date past the file's rows gives its last value."""
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {"File Name": "test.csv", "Minutes per Item": 60}.get(f)
+        fs = MagicMock()
+        fs.read_text.return_value = "1.0\n2.0\n3.0"
+
+        assert evaluate_schedule_file(obj, datetime(2023, 6, 1), fs, Path("/base"), ScheduleFileCache()) == 3.0
 
 
 class TestEvaluateScheduleFileEmpty:

@@ -61,6 +61,7 @@ def evaluate_year(
     custom_day_1: set[date] | None = None,
     custom_day_2: set[date] | None = None,
     interpolation: Interpolation = Interpolation.NO,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate a Schedule:Year at a specific datetime.
 
@@ -75,6 +76,8 @@ def evaluate_year(
         custom_day_1: Set of CustomDay1 dates.
         custom_day_2: Set of CustomDay2 dates.
         interpolation: Interpolation mode.
+        interval_minutes: Length of the timestep starting at ``dt``; the value is then EnergyPlus's
+            for that timestep. 0 (the default) gives the value of the minute containing ``dt``.
 
     Returns:
         The schedule value.
@@ -106,6 +109,7 @@ def evaluate_year(
             custom_day_1,
             custom_day_2,
             interpolation,
+            interval_minutes,
         )
     elif week_type == "Schedule:Week:Compact":
         return evaluate_week_compact(
@@ -117,6 +121,7 @@ def evaluate_year(
             custom_day_1,
             custom_day_2,
             interpolation,
+            interval_minutes,
         )
     else:
         msg = f"Unsupported week schedule type: {week_type}"
