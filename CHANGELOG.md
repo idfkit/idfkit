@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Interpolate: Average` (and `Yes`) in `Schedule:Compact`, `Schedule:Day:Interval` and
   `Schedule:Day:List` gave a linear ramp between values; `values()` now averages the schedule over
-  each timestep as EnergyPlus does, and only `Linear` ramps. ([#364](https://github.com/idfkit/idfkit/issues/364))
+  each timestep as EnergyPlus does, and only `Linear` ramps. ([#367](https://github.com/idfkit/idfkit/pull/367))
 
 ## [1.3.0-rc.2] - 2026-11-20
 
