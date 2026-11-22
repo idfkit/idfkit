@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-22
+
 ### Added
 
 - `idfkit.versioned.DocumentTypeTarget` and `ReleaseBound` named what `as_type=`, `since=` and `before=`
@@ -1707,7 +1709,8 @@ Initial public release.
 - Performance benchmarks comparing idfkit against eppy and opyplus. ([#5](https://github.com/idfkit/idfkit/pull/5))
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
-[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.3.0-rc.2...HEAD
+[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/idfkit/idfkit/compare/v1.3.0-rc.2...v1.3.0
 [1.3.0-rc.2]: https://github.com/idfkit/idfkit/compare/v1.3.0-rc.1...v1.3.0-rc.2
 [1.3.0-rc.1]: https://github.com/idfkit/idfkit/compare/v1.2.0...v1.3.0-rc.1
 [1.2.0]: https://github.com/idfkit/idfkit/compare/v1.1.1...v1.2.0
