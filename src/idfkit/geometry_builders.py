@@ -469,7 +469,7 @@ def detect_horizontal_adjacencies(
         doc: The document to scan.
 
     Returns:
-        List of :class:`HorizontalAdjacency` records for each detected
+        List of [HorizontalAdjacency][idfkit.geometry_builders.HorizontalAdjacency] records for each detected
         overlap.
     """
     roofs, floors = _collect_outdoor_horizontal_surfaces(doc)

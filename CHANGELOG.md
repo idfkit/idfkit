@@ -7,11 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `idfkit.versioned.DocumentTypeTarget` and `ReleaseBound` named what `as_type=`, `since=` and `before=`
+  took, and `idfkit.weather.GeocodingErrorKind` named `GeocodingError.kind`, where signatures had used
+  private aliases ([#362](https://github.com/idfkit/idfkit/pull/362)).
+  
 ### Changed
 
 - `SQLResult.get_timeseries_many()` read many series from a large results file faster, with the same
   results, and `SQLResult` read a file's time steps once instead of at every call.
   ([#366](https://github.com/idfkit/idfkit/pull/366))
+
+### Fixed
+
+- Docstring cross-references, written as Sphinx roles that the API reference showed as raw text,
+  became links ([#362](https://github.com/idfkit/idfkit/pull/362)).
 
 ## [1.3.0-rc.2] - 2026-11-20
 

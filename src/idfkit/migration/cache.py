@@ -27,6 +27,7 @@ from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager, contextmanager
 from dataclasses import dataclass
 
+from .chain import TransitionStep
 from .progress import MigrationProgress
 from .report import MigrationStep
 
@@ -37,8 +38,7 @@ __all__ = [
 #: How many finished migrations are kept (least recently used are dropped first).
 MAX_ENTRIES = 32
 
-_Chain = tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...]
-CacheKey = tuple[str, _Chain, str]
+CacheKey = tuple[str, tuple[TransitionStep, ...], str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,7 +56,7 @@ _thread_locks: dict[CacheKey, tuple[threading.Lock, list[int]]] = {}
 _async_locks: dict[tuple[int, CacheKey], tuple[asyncio.Lock, list[int]]] = {}
 
 
-def cache_key(idf_text: str, chain: _Chain, migrator: object) -> CacheKey | None:
+def cache_key(idf_text: str, chain: tuple[TransitionStep, ...], migrator: object) -> CacheKey | None:
     """The memo key for migrating *idf_text* along *chain* with *migrator*, or ``None``.
 
     ``None`` when *migrator* has no ``cache_key``: its output cannot be assumed
@@ -132,7 +132,7 @@ async def in_flight_async(key: CacheKey) -> AsyncIterator[None]:
 
 
 def cached_progress_event(
-    chain: _Chain,
+    chain: tuple[TransitionStep, ...],
 ) -> MigrationProgress:
     """The ``transitioning`` event of a migration whose result is reused from the cache."""
     n = len(chain)
