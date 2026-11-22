@@ -318,6 +318,9 @@ class SQLResult:
         self._db_path = Path(db_path)
         self._owns_file = _owns_file
         self._closed = False
+        # The non-warmup Time rows, each TimeIndex's environment type and its timestamps, read on
+        # the first time-series call and kept: the file is opened read-only.
+        self._time_cache: tuple[dict[int, _TimeRow], dict[int, int | None], _Timestamps] | None = None
         self._conn = sqlite3.connect(f"file:{self._db_path}?mode=ro", uri=True)
 
     def close(self) -> None:
@@ -430,9 +433,7 @@ class SQLResult:
         resolved = [self._find_variable(*_series_args(spec)) for spec in series]
         if not resolved:
             return []
-        times = self._time_rows()
-        stamps = _Timestamps(times)
-        environment_of = {index: row[-1] for index, row in times.items()}
+        times, environment_of, stamps = self._times()
         columns = self._read_report_data(sorted({r[0] for r in resolved}), times)
         has_environments: bool | None = None
         results: list[TimeSeriesResult] = []
@@ -460,6 +461,18 @@ class SQLResult:
                 )
             )
         return results
+
+    def _times(self) -> tuple[dict[int, _TimeRow], dict[int, int | None], _Timestamps]:
+        """The non-warmup ``Time`` rows, their environment types and timestamps, read once per file.
+
+        A file with sub-hourly reporting holds hundreds of thousands of ``Time`` rows, so a loop of
+        ``get_timeseries`` calls would otherwise read them all at every call.
+        """
+        if self._time_cache is None:
+            times = self._time_rows()
+            environment_of = {index: row[-1] for index, row in times.items()}
+            self._time_cache = (times, environment_of, _Timestamps(times))
+        return self._time_cache
 
     def _time_rows(self) -> dict[int, _TimeRow]:
         """The non-warmup ``Time`` rows by ``TimeIndex``, each with its environment type."""

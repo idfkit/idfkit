@@ -30,7 +30,8 @@ from typing import Any
 import pytest
 
 from idfkit.exceptions import ResultLookupError
-from idfkit.simulation.parsers.sql import EnvironmentInfo, SQLResult, TabularRow, VariableInfo
+import idfkit.simulation.parsers.sql as sql_module
+from idfkit.simulation.parsers.sql import Environment, EnvironmentInfo, SQLResult, TabularRow, VariableInfo
 
 
 @pytest.fixture()
@@ -326,6 +327,35 @@ class TestSQLResultTimeSeriesMany:
     def test_empty(self, sql_db: Path) -> None:
         with SQLResult(sql_db) as sql:
             assert sql.get_timeseries_many([]) == []
+
+    @pytest.mark.parametrize("environment", [None, "annual", "sizing", "all"])
+    def test_chunked_reads_match(
+        self, sql_db: Path, monkeypatch: pytest.MonkeyPatch, environment: Environment | None
+    ) -> None:
+        """Reading one series per statement gives the same series as one statement for all."""
+        with SQLResult(sql_db) as sql:
+            variables = [
+                v
+                for v in sql.list_variables()
+                if environment in (None, "all") or v.name == "Site Outdoor Air Drybulb Temperature"
+            ]
+            whole = sql.get_timeseries_many(variables, environment)
+        monkeypatch.setattr(sql_module, "_MAX_PARAMS", 1)
+        with SQLResult(sql_db) as sql:
+            statements: list[str] = []
+            sql._conn.set_trace_callback(statements.append)
+            assert sql.get_timeseries_many(variables, environment) == whole
+            assert sum("FROM ReportData rd" in s for s in statements) == len(variables)
+
+    def test_time_table_read_once(self, sql_db: Path) -> None:
+        """Later calls reuse the Time rows the first call read."""
+        with SQLResult(sql_db) as sql:
+            statements: list[str] = []
+            sql._conn.set_trace_callback(statements.append)
+            first = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+            second = sql.get_timeseries("Site Outdoor Air Drybulb Temperature", environment="all")
+            assert sum("FROM Time t" in s for s in statements) == 1
+            assert first.timestamps[0] is second.timestamps[1]
 
     def test_lookup_errors_as_get_timeseries(self, sql_db: Path) -> None:
         with SQLResult(sql_db) as sql:
