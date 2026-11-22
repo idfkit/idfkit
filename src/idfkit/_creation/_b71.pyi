@@ -222,5 +222,19 @@ class MatrixTwoDimension:
 
         matrix data in row-major order list each row keeping the columns in order number of values must equal N1 x N2
 
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Matrix:TwoDimension"].add(
+            "Matrix TwoDimension 1",
+            number_of_rows=0,
+            number_of_columns=0,
+            values=[
+                {"value": 0.0},
+                {"value": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#matrixtwodimension
         """

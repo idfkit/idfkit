@@ -27,6 +27,30 @@ class AnyScheduleYear:
 
         A Schedule:Year contains from 1 to 52 week schedules
 
+        ``schedule_weeks`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Schedule:Year"].add(
+            "Schedule Year 1",
+            schedule_weeks=[
+                {
+                    "schedule_week_name": "Schedule:Week 1",
+                    "start_month": 1,
+                    "start_day": 1,
+                    "end_month": 1,
+                    "end_day": 1,
+                },
+                {
+                    "schedule_week_name": "Schedule:Week 2",
+                    "start_month": 1,
+                    "start_day": 1,
+                    "end_month": 1,
+                    "end_day": 1,
+                },
+            ],
+        )
+        ```
+
         No call suits every release: narrow the document with ``as_version`` first.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduleyear
@@ -304,6 +328,24 @@ class AnyOutputTableMonthly:
         """Create a new ``Output:Table:Monthly`` and add it to the document.
 
         Provides a generic method of setting up tables of monthly results. The report has multiple columns that are each defined using a repeated group of fields for any number of columns. A single Output:Table:Monthly object often produces multiple tables in the output. A table is produced for every instance of a particular output variable. For example, a table defined with zone variables will be produced once for every zone.
+
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:Monthly"].add(
+            "Output Table Monthly 1",
+            variable_details=[
+                {
+                    "variable_or_meter_name": "Variable or Meter 1",
+                    "aggregation_type_for_variable_or_meter": "HoursNegative",
+                },
+                {
+                    "variable_or_meter_name": "Variable or Meter 2",
+                    "aggregation_type_for_variable_or_meter": "HoursNonNegative",
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/standard-output-reports/output-table-monthly/#outputtablemonthly
         """

@@ -54,6 +54,18 @@ class AnyMaterialPropertyVariableThermalConductivity:
 
         Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity function. Name is followed by up to 100 sets of temperature-conductivity pairs. HeatBalanceAlgorithm = CondFD(ConductionFiniteDifference) solution algorithm only. Has no effect with other HeatBalanceAlgorithm solution algorithms
 
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["MaterialProperty:VariableThermalConductivity"].add(
+            "MaterialProperty VariableThermalConductivity 1",
+            values=[
+                {"temperature": 0.0, "thermal_conductivity": 0.0},
+                {"temperature": 0.0, "thermal_conductivity": 0.0},
+            ],
+        )
+        ```
+
         No call suits every release: narrow the document with ``as_version`` first.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#materialpropertyvariablethermalconductivity
@@ -293,6 +305,22 @@ class ZoneHVACBaseboardRadiantConvectiveWater:
 
         The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list
 
+        ``surface_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:Baseboard:RadiantConvective:Water"].add(
+            "ZoneHVAC Baseboard RadiantConvective Water 1",
+            design_object="Design Object 1",
+            inlet_node_name="Inlet Node 1",
+            outlet_node_name="Outlet Node 1",
+            maximum_water_flow_rate=0.0,
+            surface_fractions=[
+                {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
+                {"surface_name": "Surface 2", "fraction_of_radiant_energy_to_surface": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-radiative-convective-units/#zonehvacbaseboardradiantconvectivewater
         """
 
@@ -395,6 +423,28 @@ class DemandManagerAssignmentList:
         """Create a new ``DemandManagerAssignmentList`` and add it to the document.
 
         A high level control that makes demand limiting decisions based on a list of possible demand limiting strategies.
+
+        ``manager_data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManagerAssignmentList"].add(
+            "DemandManagerAssignmentList 1",
+            meter_name="Meter 1",
+            demand_limit_safety_fraction=0.0,
+            demand_window_length=1,
+            demand_manager_priority="All",
+            manager_data=[
+                {
+                    "demandmanager_object_type": "DemandManager:ElectricEquipment",
+                    "demandmanager_name": "DemandManager 1",
+                },
+                {
+                    "demandmanager_object_type": "DemandManager:ExteriorLights",
+                    "demandmanager_name": "DemandManager 2",
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerassignmentlist
         """

@@ -271,6 +271,28 @@ class Branch:
 
         List components on the branch in simulation and connection order Note: this should NOT include splitters or mixers which define endpoints of branches
 
+        ``components`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Branch"].add(
+            "Branch 1",
+            components=[
+                {
+                    "component_object_type": "Component Object Type 1",
+                    "component_name": "Component 1",
+                    "component_inlet_node_name": "Component Inlet Node 1",
+                    "component_outlet_node_name": "Component Outlet Node 1",
+                },
+                {
+                    "component_object_type": "Component Object Type 2",
+                    "component_name": "Component 2",
+                    "component_inlet_node_name": "Component Inlet Node 2",
+                    "component_outlet_node_name": "Component Outlet Node 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-node-branch-management/#branch
         """
 
@@ -358,6 +380,18 @@ class AnyPythonPluginVariables:
         """Create a new ``PythonPlugin:Variables`` and add it to the document.
 
         This object defines name identifiers for custom Python Plugin variable data that should be shared among all running Python Plugins.
+
+        ``global_py_vars`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PythonPlugin:Variables"].add(
+            "PythonPlugin Variables 1",
+            global_py_vars=[
+                {"variable_name": "Variable 1"},
+                {"variable_name": "Variable 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-python-plugins/#pythonpluginvariables
         """

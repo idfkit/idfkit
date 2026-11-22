@@ -48,6 +48,18 @@ class EnergyManagementSystemProgramCallingManager_v9_1_to_v9_3:
 
         Input EMS program. a program needs a name a description of when it should be called and then lines of program code for EMS Runtime language
 
+        ``programs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["EnergyManagementSystem:ProgramCallingManager"].add(
+            "EnergyManagementSystem ProgramCallingManager 1",
+            programs=[
+                {"program_name": "Program 1"},
+                {"program_name": "Program 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemprogramcallingmanager
         """
 
@@ -244,6 +256,19 @@ class TableOneIndependentVariable_v8_9:
         """Create a new ``Table:OneIndependentVariable`` and add it to the document.
 
         Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be created using these inputs. Linear Table Equation: Output = a + bX Linear solution requires a minimum of 2 data pairs Quadratic Table Equation: Output = a + b*X + c*X**2 Quadratic solution requires a minimum of 3 data pairs Cubic Table Equation: Output = a + b*X + c* X**2 + d*X**3 Cubic solution requires a minimum of 4 data pairs Quartic Table Equation: Output = a + b*X + c* X**2 + d*X**3 + e*X**4 Quartic solution requires a minimum of 5 data pairs Exponent Table Equation: Output = a + b*X**c Exponent solution requires a minimum of 4 data pairs
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:OneIndependentVariable"].add(
+            "Table OneIndependentVariable 1",
+            curve_type="Cubic",
+            values=[
+                {"output_value_1": 0.0, "x_value_1": 0.0},
+                {"output_value_1": 0.0, "x_value_1": 0.0},
+            ],
+        )
+        ```
         """
 
 class GlazedDoor_v8_9:

@@ -182,5 +182,17 @@ class AnyPythonPluginSearchPaths:
 
         Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file is automatically added so that the Python interpreter can find the packaged up pyenergyplus Python package. By default, the current working directory and input file directory are also added to the search path. However, this object allows modifying this behavior. With this object, searching these directories can be disabled, and users can add supplemental search paths that point to libraries of plugin scripts.
 
+        ``py_search_paths`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PythonPlugin:SearchPaths"].add(
+            "PythonPlugin SearchPaths 1",
+            py_search_paths=[
+                {"search_path": "Search Path 1"},
+                {"search_path": "Search Path 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-python-plugins/#pythonpluginsearchpaths
         """

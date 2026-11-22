@@ -174,6 +174,73 @@ class ZoneHVACHybridUnitaryHVAC_v9_3:
 
         Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include outdoor air conditions and indoor air conditions. Controlled inputs include operating mode, supply air flow rate, and outdoor air faction. Emperical lookup tables are required to map supply air temperature supply air humidity, electricity use, fuel uses, water use, fan electricity use, and external static pressure as a function of each indpednent varaible and each controlled input. In each timestep the model will choose one or more combinations of settings for mode, supply air flow rate, outdoor air faction, and part runtime fraction so as to satisfy zone requests for sensible cooling, heating, ventilation, and/or dehumidification with the least resource consumption. Equipment in this class may consume electricity, water, and up to two additional fuel types.
 
+        ``modes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:HybridUnitaryHVAC"].add(
+            "ZoneHVAC HybridUnitaryHVAC 1",
+            return_air_node_name="Return Air Node 1",
+            outdoor_air_node_name="Outdoor Air Node 1",
+            supply_air_node_name="Supply Air Node 1",
+            modes=[
+                {
+                    "mode_name": "Mode 1",
+                    "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 1",
+                    "mode_supply_air_humidity_ratio_lookup_table_name": "Mode Supply Air Humidity Ratio Lookup Table 1",
+                    "mode_system_electric_power_lookup_table_name": "Mode System Electric Power Lookup Table 1",
+                    "mode_supply_fan_electric_power_lookup_table_name": "Mode Supply Fan Electric Power Lookup Table 1",
+                    "mode_external_static_pressure_lookup_table_name": "Mode External Static Pressure Lookup Table 1",
+                    "mode_system_second_fuel_consumption_lookup_table_name": "Mode System Second Fuel Consumption Lookup Table 1",
+                    "mode_system_third_fuel_consumption_lookup_table_name": "Mode System Third Fuel Consumption Lookup Table 1",
+                    "mode_system_water_use_lookup_table_name": "Mode System Water Use Lookup Table 1",
+                    "mode_minimum_outdoor_air_temperature": 0.0,
+                    "mode_maximum_outdoor_air_temperature": 0.0,
+                    "mode_minimum_outdoor_air_humidity_ratio": 0.0,
+                    "mode_maximum_outdoor_air_humidity_ratio": 0.1,
+                    "mode_minimum_outdoor_air_relative_humidity": 0.0,
+                    "mode_maximum_outdoor_air_relative_humidity": 100.0,
+                    "mode_minimum_return_air_temperature": 0.0,
+                    "mode_maximum_return_air_temperature": 0.0,
+                    "mode_minimum_return_air_humidity_ratio": 0.0,
+                    "mode_maximum_return_air_humidity_ratio": 0.1,
+                    "mode_minimum_return_air_relative_humidity": 0.0,
+                    "mode_maximum_return_air_relative_humidity": 100.0,
+                    "mode_minimum_outdoor_air_fraction": 0.1,
+                    "mode_maximum_outdoor_air_fraction": 1.0,
+                    "mode_minimum_supply_air_mass_flow_rate_ratio": 0.1,
+                    "mode_maximum_supply_air_mass_flow_rate_ratio": 1.0,
+                },
+                {
+                    "mode_name": "Mode 2",
+                    "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 2",
+                    "mode_supply_air_humidity_ratio_lookup_table_name": "Mode Supply Air Humidity Ratio Lookup Table 2",
+                    "mode_system_electric_power_lookup_table_name": "Mode System Electric Power Lookup Table 2",
+                    "mode_supply_fan_electric_power_lookup_table_name": "Mode Supply Fan Electric Power Lookup Table 2",
+                    "mode_external_static_pressure_lookup_table_name": "Mode External Static Pressure Lookup Table 2",
+                    "mode_system_second_fuel_consumption_lookup_table_name": "Mode System Second Fuel Consumption Lookup Table 2",
+                    "mode_system_third_fuel_consumption_lookup_table_name": "Mode System Third Fuel Consumption Lookup Table 2",
+                    "mode_system_water_use_lookup_table_name": "Mode System Water Use Lookup Table 2",
+                    "mode_minimum_outdoor_air_temperature": 0.0,
+                    "mode_maximum_outdoor_air_temperature": 0.0,
+                    "mode_minimum_outdoor_air_humidity_ratio": 0.0,
+                    "mode_maximum_outdoor_air_humidity_ratio": 0.1,
+                    "mode_minimum_outdoor_air_relative_humidity": 0.0,
+                    "mode_maximum_outdoor_air_relative_humidity": 100.0,
+                    "mode_minimum_return_air_temperature": 0.0,
+                    "mode_maximum_return_air_temperature": 0.0,
+                    "mode_minimum_return_air_humidity_ratio": 0.0,
+                    "mode_maximum_return_air_humidity_ratio": 0.1,
+                    "mode_minimum_return_air_relative_humidity": 0.0,
+                    "mode_maximum_return_air_relative_humidity": 100.0,
+                    "mode_minimum_outdoor_air_fraction": 0.1,
+                    "mode_maximum_outdoor_air_fraction": 1.0,
+                    "mode_minimum_supply_air_mass_flow_rate_ratio": 0.1,
+                    "mode_maximum_supply_air_mass_flow_rate_ratio": 1.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-zone-forced-air-units/#zonehvachybridunitaryhvac
         """
 
@@ -191,6 +258,17 @@ class OutputTableSummaryReports_v9_4:
         """Create a new ``Output:Table:SummaryReports`` and add it to the document.
 
         This object allows the user to call report types that are predefined and will appear with the other tabular reports. These predefined reports are sensitive to the OutputControl:Table:Style object and appear in the same files as the tabular reports. The entries for this object is a list of the predefined reports that should appear in the tabular report output file. There should be as many fields (A) in this object as there are keys in the following (minus AllSummary+AllMonthly+AllSummaryAndMonthly)
+
+        ``reports`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:SummaryReports"].add(
+            reports=[
+                {"report_name": "AdaptiveComfortSummary"},
+                {"report_name": "AirLoopComponentLoadSummary"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.4/io-reference/standard-output-reports/output-table-summaryreports/#outputtablesummaryreports
         """

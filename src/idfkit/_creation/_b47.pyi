@@ -46,6 +46,18 @@ class SpaceList:
 
         Defines a list of Spaces which can be referenced as a group. The SpaceList name may be used elsewhere in the input to apply a parameter to all Spaces in the list. SpaceLists can be used effectively with the following objects: InternalMass, People, Lights, ElectricEquipment, GasEquipment, HotWaterEquipment, and others.
 
+        ``spaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SpaceList"].add(
+            "SpaceList 1",
+            spaces=[
+                {"space_name": "Space 1"},
+                {"space_name": "Space 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#spacelist
         """
 
@@ -291,6 +303,19 @@ class AirLoopHVACMixer:
 
         Mix N inlet air streams from Relief Air Stream Node in OutdoorAir:Mixer objects served by AirLoopHVAC objects listed in AirLoopHVAC:DedicatedOutdoorAirSystem into one (currently 10 as default, but extensible). Node names cannot be duplicated within a single mixer list.
 
+        ``nodes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:Mixer"].add(
+            "AirLoopHVAC Mixer 1",
+            outlet_node_name="Outlet Node 1",
+            nodes=[
+                {"inlet_node_name": "Inlet Node 1"},
+                {"inlet_node_name": "Inlet Node 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvacmixer
         """
 
@@ -329,6 +354,21 @@ class GeneratorFuelCellAirSupply:
         """Create a new ``Generator:FuelCell:AirSupply`` and add it to the document.
 
         Used to define details of the air supply subsystem for a fuel cell power generator.
+
+        ``constituent_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Generator:FuelCell:AirSupply"].add(
+            "Generator FuelCell AirSupply 1",
+            air_supply_rate_calculation_mode="AirRatiobyStoics",
+            air_intake_heat_recovery_mode="NoRecovery",
+            air_supply_constituent_mode="AmbientAir",
+            constituent_fractions=[
+                {"constituent_name": "Argon", "molar_fraction": 0.0},
+                {"constituent_name": "CarbonDioxide", "molar_fraction": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-electric-load-center-generator/#generatorfuelcellairsupply
         """

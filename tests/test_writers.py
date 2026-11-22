@@ -1394,3 +1394,30 @@ class TestWriteRefusesAPath:
     def test_swapped_arguments_name_the_order(self, empty_doc: IDFDocument) -> None:
         with pytest.raises(TypeError, match="the document comes first"):
             write_idf("out.idf", empty_doc)  # pyright: ignore[reportArgumentType]
+
+
+class TestExtensibleGroupComments:
+    """Each extensible group's ``!-`` comments carry the group's number once."""
+
+    def test_keys_numbered_by_the_schema_take_the_group_number_in_its_place(self) -> None:
+        # The 8.9 to 9.1 schemas name the group's keys after the IDD's first group (X Value #1).
+        doc = new_document(version=(9, 1, 0))
+        obj = doc.add(
+            "Table:TwoIndependentVariables",
+            "T",
+            curve_type="BiQuadratic",
+            values=[
+                {"x_value_1": 0.0, "y_value_1": 1.0, "output_value_1": 2.0},
+                {"x_value_1": 3.0, "y_value_1": 4.0, "output_value_1": 5.0},
+            ],
+        )
+        comments = [line.split("!- ")[1] for line in IDFWriter(doc).format_object(obj).splitlines()[-6:]]
+        assert comments == ["X Value 1", "Y Value 1", "Output Value 1", "X Value 2", "Y Value 2", "Output Value 2"]
+
+    def test_unnumbered_keys_keep_their_label_and_the_group_number(self) -> None:
+        doc = new_document()
+        obj = doc.add(
+            "ZoneList", "L", zones=[{"zone_name": "A"}, {"zone_name": "B"}, {"zone_name": "C"}], validate=False
+        )
+        comments = [line.split("!- ")[1] for line in IDFWriter(doc).format_object(obj).splitlines()[-3:]]
+        assert comments == ["Zone Name", "Zone Name 2", "Zone Name 3"]

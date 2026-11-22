@@ -27,6 +27,18 @@ class ScheduleDayList:
 
         Schedule:Day:List will allow the user to list 24 hours worth of values, which can be sub-hourly in nature.
 
+        ``extensions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Schedule:Day:List"].add(
+            "Schedule Day List 1",
+            extensions=[
+                {"value": 0.0},
+                {"value": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduledaylist
         """
 
@@ -210,6 +222,26 @@ class AnyOutputTableAnnual:
         """Create a new ``Output:Table:Annual`` and add it to the document.
 
         Provides a generic method of setting up tables of annual results with one row per object. The report has multiple columns that are each defined using a repeated group of fields for any number of columns. A single Output:Table:Annual produces a single table in the output.
+
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:Annual"].add(
+            "Output Table Annual 1",
+            variable_details=[
+                {
+                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field 1",
+                    "aggregation_type_for_variable_or_meter": "HourInTenBinsMinToMax",
+                    "digits_after_decimal": 2,
+                },
+                {
+                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field 2",
+                    "aggregation_type_for_variable_or_meter": "HourInTenBinsMinToZero",
+                    "digits_after_decimal": 2,
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/standard-output-reports/output-table-annual/#outputtableannual
         """

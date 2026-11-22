@@ -246,6 +246,18 @@ class ElectricLoadCenterTransformer:
 
         This object is used to model the energy losses of transformers when they are used to transfer electricity from the grid to a building (as distribution transformers) or transfer electricity from onsite generators to the grid.
 
+        ``meters`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ElectricLoadCenter:Transformer"].add(
+            "ElectricLoadCenter Transformer 1",
+            meters=[
+                {"meter_name": "Meter 1"},
+                {"meter_name": "Meter 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-electric-load-center-generator/#electricloadcentertransformer
         """
 

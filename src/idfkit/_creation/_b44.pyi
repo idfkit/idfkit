@@ -41,6 +41,28 @@ class AnyFoundationKiva:
 
         Refined definition of the foundation surface construction used to inform two-dimensional heat transfer calculated using the Kiva ground heat transfer methodology.
 
+        ``blocks`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Foundation:Kiva"].add(
+            "Foundation Kiva 1",
+            blocks=[
+                {
+                    "custom_block_material_name": "Custom Block Material 1",
+                    "custom_block_depth": 1.0,
+                    "custom_block_x_position": 0.0,
+                    "custom_block_z_position": 0.0,
+                },
+                {
+                    "custom_block_material_name": "Custom Block Material 2",
+                    "custom_block_depth": 1.0,
+                    "custom_block_x_position": 0.0,
+                    "custom_block_z_position": 0.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#foundationkiva
         """
 
@@ -59,6 +81,17 @@ class AnyZonePropertyUserViewFactorsBySurfaceName:
         """Create a new ``ZoneProperty:UserViewFactors:BySurfaceName`` and add it to the document.
 
         View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will be assumed to have a view factor of zero.
+
+        ``view_factors`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneProperty:UserViewFactors:BySurfaceName"].add(
+            view_factors=[
+                {"from_surface": "From Surface 1", "to_surface": "To Surface 1", "view_factor": 0.0},
+                {"from_surface": "From Surface 2", "to_surface": "To Surface 2", "view_factor": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#zonepropertyuserviewfactorsbysurfacename
         """
@@ -161,6 +194,21 @@ class ZoneHVACHighTemperatureRadiant:
         """Create a new ``ZoneHVAC:HighTemperatureRadiant`` and add it to the document.
 
         The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list
+
+        ``surface_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:HighTemperatureRadiant"].add(
+            "ZoneHVAC HighTemperatureRadiant 1",
+            zone_name="Zone 1",
+            fuel_type="Electricity",
+            heating_setpoint_temperature_schedule_name="Heating Setpoint Temperature Schedule 1",
+            surface_fractions=[
+                {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
+                {"surface_name": "Surface 2", "fraction_of_radiant_energy_to_surface": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-radiative-convective-units/#zonehvachightemperatureradiant
         """

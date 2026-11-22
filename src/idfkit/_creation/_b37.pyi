@@ -353,6 +353,17 @@ class OutdoorAirNodeList:
 
         This object sets the temperature and humidity conditions for an outdoor air node using the weather data values. to vary outdoor air node conditions with height above ground use OutdoorAir:Node instead of this object. This object may be used more than once. The same node name may not appear in both an OutdoorAir:Node object and an OutdoorAir:NodeList object.
 
+        ``nodes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["OutdoorAir:NodeList"].add(
+            nodes=[
+                {"node_or_nodelist_name": "Node or NodeList 1"},
+                {"node_or_nodelist_name": "Node or NodeList 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-distribution/#outdoorairnodelist
         """
 
@@ -487,6 +498,51 @@ class RefrigerationWalkIn:
         """Create a new ``Refrigeration:WalkIn`` and add it to the document.
 
         Works in conjunction with a compressor rack, a refrigeration system, or a refrigeration secondary system to simulate the performance of a walk-in cooler. The walk-in cooler model uses information at rated conditions along with input descriptions for heat transfer surfaces facing multiple zones to determine performance.
+
+        ``zone_data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Refrigeration:WalkIn"].add(
+            "Refrigeration WalkIn 1",
+            rated_coil_cooling_capacity=0.0,
+            operating_temperature=0.0,
+            rated_cooling_source_temperature=0.0,
+            rated_total_heating_power=0.0,
+            rated_total_lighting_power=0.0,
+            defrost_schedule_name="Defrost Schedule 1",
+            insulated_floor_surface_area=1.0,
+            zone_data=[
+                {
+                    "zone_name": "Zone 1",
+                    "total_insulated_surface_area_facing_zone": 1.0,
+                    "insulated_surface_u_value_facing_zone": 0.3154,
+                    "area_of_glass_reach_in_doors_facing_zone": 0.0,
+                    "height_of_glass_reach_in_doors_facing_zone": 1.5,
+                    "glass_reach_in_door_u_value_facing_zone": 1.136,
+                    "glass_reach_in_door_opening_schedule_name_facing_zone": "Glass Reach In Door Opening Schedule Name Facing Zone 1",
+                    "area_of_stocking_doors_facing_zone": 0.0,
+                    "height_of_stocking_doors_facing_zone": 3.0,
+                    "stocking_door_u_value_facing_zone": 0.3785,
+                    "stocking_door_opening_schedule_name_facing_zone": "Stocking Door Opening Schedule Name Facing Zone 1",
+                    "stocking_door_opening_protection_type_facing_zone": "AirCurtain",
+                },
+                {
+                    "zone_name": "Zone 2",
+                    "total_insulated_surface_area_facing_zone": 1.0,
+                    "insulated_surface_u_value_facing_zone": 0.3154,
+                    "area_of_glass_reach_in_doors_facing_zone": 0.0,
+                    "height_of_glass_reach_in_doors_facing_zone": 1.5,
+                    "glass_reach_in_door_u_value_facing_zone": 1.136,
+                    "glass_reach_in_door_opening_schedule_name_facing_zone": "Glass Reach In Door Opening Schedule Name Facing Zone 2",
+                    "area_of_stocking_doors_facing_zone": 0.0,
+                    "height_of_stocking_doors_facing_zone": 3.0,
+                    "stocking_door_u_value_facing_zone": 0.3785,
+                    "stocking_door_opening_schedule_name_facing_zone": "Stocking Door Opening Schedule Name Facing Zone 2",
+                    "stocking_door_opening_protection_type_facing_zone": "AirCurtain",
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-refrigeration/#refrigerationwalkin
         """

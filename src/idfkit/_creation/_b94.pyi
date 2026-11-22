@@ -114,5 +114,19 @@ class AnyGroundHeatExchangerResponseFactors:
 
         Response factor definitions from third-party tool, commonly referred to a 'g-functions'
 
+        ``g_functions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["GroundHeatExchanger:ResponseFactors"].add(
+            "GroundHeatExchanger ResponseFactors 1",
+            ghe_vertical_properties_object_name="GHE:Vertical:Properties Object 1",
+            number_of_boreholes=0,
+            g_functions=[
+                {"g_function_ln_t_ts_value": 0.0, "g_function_g_value": 0.0},
+                {"g_function_ln_t_ts_value": 0.0, "g_function_g_value": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-condenser-equipment/#groundheatexchangerresponsefactors
         """

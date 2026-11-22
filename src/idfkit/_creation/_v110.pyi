@@ -78,6 +78,19 @@ class LifeCycleCostUseAdjustment_v9_3_to_v23_1:
 
         Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensating for inflation but should only be used to increase the costs of energy or water based on assumed changes to the actual usage, such as anticipated changes in the future function of the building. The adjustments begin at the start of the service period.
 
+        ``multipliers`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["LifeCycleCost:UseAdjustment"].add(
+            "LifeCycleCost UseAdjustment 1",
+            resource="Coal",
+            multipliers=[
+                {"year_multiplier": 0.0},
+                {"year_multiplier": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/energyplus-economics/lifecyclecost-useadjustment/#lifecyclecostuseadjustment
         """
 
@@ -109,6 +122,28 @@ class PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1:
         """Create a new ``PipingSystem:Underground:PipeCircuit`` and add it to the document.
 
         The pipe circuit object in an underground piping system. This object is simulated within an underground piping domain object and connected on a branch on a plant loop.
+
+        ``pipe_segments`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PipingSystem:Underground:PipeCircuit"].add(
+            "PipingSystem Underground PipeCircuit 1",
+            pipe_thermal_conductivity=1.0,
+            pipe_density=1.0,
+            pipe_specific_heat=1.0,
+            pipe_inner_diameter=1.0,
+            pipe_outer_diameter=1.0,
+            design_flow_rate=1.0,
+            circuit_inlet_node="Circuit Inlet Node 1",
+            circuit_outlet_node="Circuit Outlet Node 1",
+            radial_thickness_of_inner_radial_near_pipe_mesh_region=1.0,
+            number_of_pipe_segments_entered_for_this_pipe_circuit=1.0,
+            pipe_segments=[
+                {"pipe_segment": "Pipe Segment 1"},
+                {"pipe_segment": "Pipe Segment 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-node-branch-management/#pipingsystemundergroundpipecircuit
         """
@@ -207,6 +242,18 @@ class MeterCustom_v9_3:
         """Create a new ``Meter:Custom`` and add it to the document.
 
         Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names. A Meter:Custom cannot reference another Meter:Custom.
+
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Meter:Custom"].add(
+            "Meter Custom 1",
+            variable_details=[
+                {"key_name": "Key 1", "output_variable_or_meter_name": "Output Variable or Meter 1"},
+                {"key_name": "Key 2", "output_variable_or_meter_name": "Output Variable or Meter 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-simulation-parameters/#metercustom
         """

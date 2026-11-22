@@ -311,6 +311,19 @@ class DemandManagerVentilation:
 
         used for demand limiting Controller:OutdoorAir objects.
 
+        ``controllers`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:Ventilation"].add(
+            "DemandManager Ventilation 1",
+            limit_control="FixedRate",
+            controllers=[
+                {"controller_outdoor_air_name": "Controller Outdoor Air 1"},
+                {"controller_outdoor_air_name": "Controller Outdoor Air 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerventilation
         """
 

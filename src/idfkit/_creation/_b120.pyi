@@ -47,6 +47,18 @@ class ZoneHVACLowTemperatureRadiantSurfaceGroup:
 
         This is used to allow the coordinate control of several radiant system surfaces. Note that the following flow fractions must sum up to 1.0 The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list
 
+        ``surface_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:LowTemperatureRadiant:SurfaceGroup"].add(
+            "ZoneHVAC LowTemperatureRadiant SurfaceGroup 1",
+            surface_fractions=[
+                {"surface_name": "Surface 1", "flow_fraction_for_surface": 0.0},
+                {"surface_name": "Surface 2", "flow_fraction_for_surface": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-radiative-convective-units/#zonehvaclowtemperatureradiantsurfacegroup
         """
 

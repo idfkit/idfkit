@@ -76,6 +76,18 @@ class SurfacePropertyHeatTransferAlgorithmSurfaceList:
 
         Determines which Heat Balance Algorithm will be used for a list of surfaces Allows selectively overriding the global setting in HeatBalanceAlgorithm CTF (Conduction Transfer Functions), EMPD (Effective Moisture Penetration Depth with Conduction Transfer Functions). Advanced/Research Usage: CondFD (Conduction Finite Difference) Advanced/Research Usage: HAMT (Combined Heat And Moisture Finite Element)
 
+        ``surface`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SurfaceProperty:HeatTransferAlgorithm:SurfaceList"].add(
+            "SurfaceProperty HeatTransferAlgorithm SurfaceList 1",
+            surface=[
+                {"surface_name": "Surface 1"},
+                {"surface_name": "Surface 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertyheattransferalgorithmsurfacelist
         """
 
@@ -297,6 +309,20 @@ class DemandManagerElectricEquipment:
 
         used for demand limiting ElectricEquipment objects.
 
+        ``equipment`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:ElectricEquipment"].add(
+            "DemandManager ElectricEquipment 1",
+            limit_control="Fixed",
+            selection_control="All",
+            equipment=[
+                {"electric_equipment_name": "Electric Equipment 1"},
+                {"electric_equipment_name": "Electric Equipment 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerelectricequipment
         """
 
@@ -384,6 +410,19 @@ class TableLookup:
         """Create a new ``Table:Lookup`` and add it to the document.
 
         Lookup tables are used in place of curves and can represent any number of independent variables (defined as Table:IndependentVariable objects in a Table:IndependentVariableList). Output values are interpolated within the bounds defined by each independent variable and extrapolated beyond the bounds according to the interpolation/extrapolation methods defined by each independent variable.
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:Lookup"].add(
+            "Table Lookup 1",
+            independent_variable_list_name="Independent Variable List 1",
+            values=[
+                {"output_value": 0.0},
+                {"output_value": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-performance-tables/#tablelookup
         """

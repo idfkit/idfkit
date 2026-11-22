@@ -25,6 +25,18 @@ class MaterialPropertyPhaseChange:
 
         Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) Name and temperature coefficient are followed by up to 100 sets of temperature-enthalpy pairs. HeatBalanceAlgorithm = CondFD(ConductionFiniteDifference) solution algorithm only. Constructions with this should use the detailed CondFD process. Has no effect with other HeatBalanceAlgorithm solution algorithms
 
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["MaterialProperty:PhaseChange"].add(
+            "MaterialProperty PhaseChange 1",
+            values=[
+                {"temperature": 0.0, "enthalpy": 0.0},
+                {"temperature": 0.0, "enthalpy": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#materialpropertyphasechange
         """
 
@@ -90,6 +102,21 @@ class AirLoopHVACReturnPlenum:
         """Create a new ``AirLoopHVAC:ReturnPlenum`` and add it to the document.
 
         Connects N zone inlet air streams, through zone return plenum, to outlet (currently 500 per air loop) Node names cannot be duplicated within a single plenum list.
+
+        ``nodes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:ReturnPlenum"].add(
+            "AirLoopHVAC ReturnPlenum 1",
+            zone_name="Zone 1",
+            zone_node_name="Zone Node 1",
+            outlet_node_name="Outlet Node 1",
+            nodes=[
+                {"inlet_node_name": "Inlet Node 1"},
+                {"inlet_node_name": "Inlet Node 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvacreturnplenum
         """

@@ -52,6 +52,26 @@ class AnySurfacePropertySurroundingSurfaces:
 
         This object defines a list of surrounding surfaces for an exterior surface.
 
+        ``surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SurfaceProperty:SurroundingSurfaces"].add(
+            "SurfaceProperty SurroundingSurfaces 1",
+            surfaces=[
+                {
+                    "surrounding_surface_name": "Surrounding Surface 1",
+                    "surrounding_surface_view_factor": 0.0,
+                    "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 1",
+                },
+                {
+                    "surrounding_surface_name": "Surrounding Surface 2",
+                    "surrounding_surface_view_factor": 0.0,
+                    "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertysurroundingsurfaces
         """
 
@@ -305,6 +325,23 @@ class AnyZoneHVACCoolingPanelRadiantConvectiveWater:
         """Create a new ``ZoneHVAC:CoolingPanel:RadiantConvective:Water`` and add it to the document.
 
         The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list
+
+        ``surface_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:CoolingPanel:RadiantConvective:Water"].add(
+            "ZoneHVAC CoolingPanel RadiantConvective Water 1",
+            availability_schedule_name="Availability Schedule 1",
+            water_inlet_node_name="Water Inlet Node 1",
+            water_outlet_node_name="Water Outlet Node 1",
+            maximum_chilled_water_flow_rate=0.0,
+            fraction_radiant=0.0,
+            surface_fractions=[
+                {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
+                {"surface_name": "Surface 2", "fraction_of_radiant_energy_to_surface": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-radiative-convective-units/#zonehvaccoolingpanelradiantconvectivewater
         """

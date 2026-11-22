@@ -106,6 +106,19 @@ class DemandManagerVentilation_v8_9_to_v22_1:
 
         used for demand limiting Controller:OutdoorAir objects.
 
+        ``controllers`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:Ventilation"].add(
+            "DemandManager Ventilation 1",
+            limit_control="FixedRate",
+            controllers=[
+                {"controller_outdoor_air_name": "Controller Outdoor Air 1"},
+                {"controller_outdoor_air_name": "Controller Outdoor Air 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-demand-limiting-controls/#demandmanagerventilation
         """
 
@@ -121,6 +134,20 @@ class EnergyManagementSystemProgram_v8_9:
         """Create a new ``EnergyManagementSystem:Program`` and add it to the document.
 
         This input defines an Erl program Each field after the name is a line of EMS Runtime Language
+
+        ``lines`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["EnergyManagementSystem:Program"].add(
+            "EnergyManagementSystem Program 1",
+            lines=[
+                {"program_line": "SET Fraction = 0.5"},
+                {"program_line": "IF Hour >= 18"},
+                {"program_line": "SET Fraction = 0.0"},
+                {"program_line": "ENDIF"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v8.9/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemprogram
         """
@@ -148,6 +175,21 @@ class ZoneHVACBaseboardRadiantConvectiveWater_v9_5_to_v25_1:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Water`` and add it to the document.
 
         The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list
+
+        ``surface_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:Baseboard:RadiantConvective:Water"].add(
+            "ZoneHVAC Baseboard RadiantConvective Water 1",
+            inlet_node_name="Inlet Node 1",
+            outlet_node_name="Outlet Node 1",
+            maximum_water_flow_rate=0.0,
+            surface_fractions=[
+                {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
+                {"surface_name": "Surface 2", "fraction_of_radiant_energy_to_surface": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-radiative-convective-units/#zonehvacbaseboardradiantconvectivewater
         """

@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import ast
 import json
+import os
+import re
+import subprocess
 import sys
+import textwrap
+import warnings
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -12,6 +18,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from conftest import generated_document_pyi, generated_stubs
 
+from idfkit import new_document
 from idfkit.codegen import generate_stubs as gen
 from idfkit.codegen.generate_doc_locations import (
     _ANCHOR_RE,  # pyright: ignore[reportPrivateUsage]
@@ -936,6 +943,7 @@ class TestCreationDocstring:
         schema.version = LATEST_VERSION
         schema.get_object_memo.return_value = 'A "quoted" C:\\path memo'
         schema.get_group.return_value = None
+        schema.get_parsing_cache.return_value = None
         doc = gen._creation_docstring(schema, "Not:AType", narrow_first=False)  # pyright: ignore[reportPrivateUsage]
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         sink.add("Cls", "self, /", doc)
@@ -943,6 +951,173 @@ class TestCreationDocstring:
             _docstring_of(sink, "Cls")
             == "Create a new ``Not:AType`` and add it to the document.\n\nA 'quoted' C:\\path memo"
         )
+
+
+def _examples_of(source: str) -> Iterator[tuple[str, str, str]]:
+    """Each creation signature in *source* whose docstring has an example: class, docstring, code."""
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.ClassDef) and isinstance(call := node.body[0], ast.FunctionDef):
+            doc = ast.get_docstring(call) or ""
+            match = re.search(r"```python\n(.*?)\n```", doc, re.DOTALL)
+            if match is not None:
+                yield node.name, doc, match[1]
+
+
+class TestExtensibleExample:
+    """``add()``'s docstring shows, as a fenced Python block, how to fill the type's extensible group."""
+
+    def test_schedule_compact_shows_through_for_and_until_lines(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Schedule:Compact", sink=sink)
+        doc = _docstring_of(sink, "ScheduleCompact")
+        assert "``data`` takes the extensible groups in order, one dict per group:" in doc
+        assert '```python\ndoc["Schedule:Compact"].add(\n    "Schedule Compact 1",\n    data=[\n' in doc
+        assert '        {"field": "Through: 12/31"},\n        {"field": "For: Weekdays"},\n' in doc
+        assert doc.index("```python") < doc.index("EnergyPlus I/O Reference")
+
+    def test_passes_the_required_fields_and_vertices_of_a_wall(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "BuildingSurface:Detailed", sink=sink)
+        doc = _docstring_of(sink, "BuildingSurfaceDetailed")
+        assert '    zone_name="Zone 1",\n' in doc
+        # The choices agree with the vertical wall the vertices draw.
+        assert '    surface_type="Wall",\n' in doc
+        assert '    outside_boundary_condition="Outdoors",\n' in doc
+        assert doc.count('{"vertex_x_coordinate": ') == 4
+
+    def test_references_in_two_groups_name_two_objects(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "ZoneList", sink=sink)
+        doc = _docstring_of(sink, "ZoneList")
+        assert '{"zone_name": "Zone 1"},\n        {"zone_name": "Zone 2"},' in doc
+
+    def test_a_type_without_a_name_is_added_without_one(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Output:Table:SummaryReports", sink=sink)
+        assert ".add(\n    reports=[" in _docstring_of(sink, "OutputTableSummaryReports")
+
+    def test_a_type_without_an_extensible_group_has_no_example(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Zone", sink=sink)
+        assert "```" not in _docstring_of(sink, "Zone")
+
+    def test_parametric_logic_uses_the_statements_its_reference_lists(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Parametric:Logic", sink=sink)
+        doc = _docstring_of(sink, "ParametricLogic")
+        assert '{"parametric_logic_line": "PARAMETER $THICKNESS"},' in doc
+        assert '{"parametric_logic_line": \'DISABLE "Overhang"\'},' in doc
+        assert "SET " not in doc
+
+    def test_a_trailing_underscore_key_is_passed_once_with_its_own_value(self) -> None:
+        # No extensible type requires such a field today; one that did must not be passed twice.
+        key = "cond_flag_is_the_basement_conditioned_"
+        with (
+            patch.object(EpJSONSchema, "get_required_fields", return_value=[key]),
+            patch.object(EpJSONSchema, "get_field_schema", return_value={"type": "string", "enum": ["TRUE", "FALSE"]}),
+        ):
+            example = gen._extensible_example(_LATEST, "ZoneList", required=[key])  # pyright: ignore[reportPrivateUsage]
+        assert example is not None
+        assert [line.strip() for line in example[1]].count(f'{key}="TRUE",') == 1
+
+    def test_schedule_fields_with_a_format_get_values_in_it(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Schedule:Day:Interval", sink=sink)
+        _generate_object_class(_LATEST, "Schedule:Week:Compact", sink=sink)
+        interval = _docstring_of(sink, "ScheduleDayInterval")
+        assert '{"time": "08:00", "value_until_time": 0.0},' in interval
+        assert '{"time": "24:00", "value_until_time": 0.0},' in interval
+        week = _docstring_of(sink, "ScheduleWeekCompact")
+        assert '{"daytype_list": "For: Weekdays", "schedule_day_name": "Schedule:Day 1"},' in week
+        assert '{"daytype_list": "For: AllOtherDays", "schedule_day_name": "Schedule:Day 2"},' in week
+
+    def test_text_made_from_a_label_differs_between_groups(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "AirLoopHVAC:ZoneSplitter", sink=sink)
+        doc = _docstring_of(sink, "AirLoopHVACZoneSplitter")
+        assert '{"outlet_node_name": "Outlet Node 1"},\n        {"outlet_node_name": "Outlet Node 2"},' in doc
+
+    @pytest.mark.parametrize(
+        ("obj_type", "cls_name", "heights"),
+        [("Floor:Detailed", "FloorDetailed", {0.0}), ("RoofCeiling:Detailed", "RoofCeilingDetailed", {3.0})],
+    )
+    def test_floors_and_roofs_are_horizontal(self, obj_type: str, cls_name: str, heights: set[float]) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, obj_type, sink=sink)
+        zs = {float(z) for z in re.findall(r'"vertex_z_coordinate": ([-0-9.]+)', _docstring_of(sink, cls_name))}
+        assert zs == heights
+
+    def test_three_double_quotes_never_reach_the_docstring_unescaped(self) -> None:
+        literal = gen._literal('a """b"""')  # pyright: ignore[reportPrivateUsage]
+        assert '"""' not in literal
+        assert eval(literal) == 'a """b"""'  # noqa: S307  (a literal this test built)
+
+    @pytest.mark.parametrize(
+        ("spec", "integer", "expected"),
+        [
+            ({"exclusiveMinimum": 0.0, "exclusiveMaximum": 1.0}, False, 0.5),
+            ({"minimum": 0.0, "exclusiveMinimum": True}, False, 1.0),  # draft-04: minimum is exclusive
+            ({"minimum": 5.0, "exclusiveMinimum": True}, False, 6.0),
+            ({"maximum": 0.0, "exclusiveMaximum": True}, False, -1.0),
+            ({"minimum": 0.5}, True, 1),
+            ({"minimum": 0.0, "maximum": 1.0}, False, 0.0),
+            ({"default": "Autosize", "exclusiveMinimum": 0.0}, False, 1.0),
+        ],
+    )
+    def test_a_number_falls_inside_its_bounds(self, spec: dict[str, Any], integer: bool, expected: float) -> None:
+        value = gen._example_number(spec, integer=integer)  # pyright: ignore[reportPrivateUsage]
+        assert value == expected
+        assert isinstance(value, int) if integer else isinstance(value, float)
+
+    def test_a_string_holding_a_double_quote_is_single_quoted(self) -> None:
+        literal = gen._literal  # pyright: ignore[reportPrivateUsage]
+        assert literal('DISABLE "Overhang"') == "'DISABLE \"Overhang\"'"
+        assert literal('it\'s "x"') == '"it\'s \\"x\\""'
+        assert literal("C:\\dir") == '"C:\\\\dir"'
+
+    @pytest.mark.slow
+    def test_every_latest_release_example_type_checks(self, tmp_path: Path) -> None:
+        pytest.importorskip("pyright")
+        # The examples are docstring text, which neither ruff nor pyright reads: run pyright on them.
+        src = Path(gen.__file__).parents[2]
+        lines = ["from __future__ import annotations", "", "from idfkit import new_document", ""]
+        count = 0
+        for module in sorted((src / "idfkit" / "_creation").glob("_b*.pyi")):
+            for cls_name, doc, code in _examples_of(module.read_text()):
+                if "narrow the document" in doc:  # no call suits every release, by design
+                    continue
+                count += 1
+                body = textwrap.indent(code, "    ")
+                lines += [f"def example_{count}() -> None:  # {cls_name}", "    doc = new_document()", body, ""]
+        assert count > 150
+        (tmp_path / "examples.py").write_text("\n".join(lines))
+        (tmp_path / "pyrightconfig.json").write_text(json.dumps({"extraPaths": [str(src)]}))
+        result = subprocess.run(  # noqa: S603  (the interpreter running the tests, on a file it wrote)
+            [sys.executable, "-m", "pyright", "--pythonpath", sys.executable, "-p", str(tmp_path)],
+            capture_output=True,
+            text=True,
+            check=False,
+            env={**os.environ, "PYRIGHT_PYTHON_IGNORE_WARNINGS": "1"},
+        )
+        assert result.returncode == 0, result.stdout[-4000:]
+
+    @pytest.mark.slow
+    def test_every_committed_example_runs_on_a_document_of_its_release(self) -> None:
+        # The committed stubs are the generated ones (the stub sync tests), so this covers every
+        # example an editor shows: each must run as shown, validation and warnings included.
+        creation = Path(gen.__file__).parents[1] / "_creation"
+        by_suffix = {f"_v{v[0]}_{v[1]}": v for v in ENERGYPLUS_VERSIONS}
+        count = 0
+        for module in sorted(creation.glob("*.pyi")):
+            for cls_name, doc, code in _examples_of(module.read_text()):
+                # A range class runs on its last release; any other, on the latest.
+                version = next((v for s, v in by_suffix.items() if cls_name.endswith(s)), LATEST_VERSION)
+                with warnings.catch_warnings():
+                    warnings.simplefilter("error")
+                    exec(code, {"doc": new_document(version=version)})  # noqa: S102
+                count += 1
+                assert doc.count("```") == 2, cls_name
+        assert count > 200
 
 
 class TestCreationAcrossReleases:

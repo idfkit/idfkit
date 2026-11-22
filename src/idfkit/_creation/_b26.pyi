@@ -41,6 +41,17 @@ class ShadowCalculation:
 
         This object is used to control details of the solar, shading, and daylighting models
 
+        ``shading_zone_groups`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ShadowCalculation"].add(
+            shading_zone_groups=[
+                {"shading_zone_group_zonelist_name": "Shading Zone Group ZoneList 1"},
+                {"shading_zone_group_zonelist_name": "Shading Zone Group ZoneList 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-simulation-parameters/#shadowcalculation
         """
 
@@ -93,6 +104,18 @@ class MaterialPropertyVariableThermalConductivity:
         """Create a new ``MaterialProperty:VariableThermalConductivity`` and add it to the document.
 
         Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity function. Name is followed by up to 100 sets of temperature-conductivity pairs. HeatBalanceAlgorithm = CondFD(ConductionFiniteDifference) solution algorithm only. Has no effect with other HeatBalanceAlgorithm solution algorithms
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["MaterialProperty:VariableThermalConductivity"].add(
+            "MaterialProperty VariableThermalConductivity 1",
+            values=[
+                {"temperature": 0.0, "thermal_conductivity": 0.0},
+                {"temperature": 0.0, "thermal_conductivity": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#materialpropertyvariablethermalconductivity
         """

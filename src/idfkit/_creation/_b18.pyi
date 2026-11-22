@@ -139,6 +139,19 @@ class AirLoopHVACZoneSplitter:
 
         Split one air stream into N outlet streams (currently 500 per air loop, but extensible). Node names cannot be duplicated within a single zone splitter (AirLoopHVAC:ZoneSplitter) list.
 
+        ``nodes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:ZoneSplitter"].add(
+            "AirLoopHVAC ZoneSplitter 1",
+            inlet_node_name="Inlet Node 1",
+            nodes=[
+                {"outlet_node_name": "Outlet Node 1"},
+                {"outlet_node_name": "Outlet Node 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvaczonesplitter
         """
 
@@ -155,6 +168,19 @@ class AirLoopHVACSplitter:
         """Create a new ``AirLoopHVAC:Splitter`` and add it to the document.
 
         Split one air stream from AirLoopHVAC:DedicatedOutdoorAirSystem outlet node into N outlet streams (currently 10 as default, but extensible). Node names should be Outdoor Air Stream Node Name in OutdoorAir:Mixer objects served by AirLoopHVAC objects listed in AirLoopHVAC:DedicatedOutdoorAirSystem.
+
+        ``nodes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:Splitter"].add(
+            "AirLoopHVAC Splitter 1",
+            inlet_node_name="Inlet Node 1",
+            nodes=[
+                {"outlet_node_name": "Outlet Node 1"},
+                {"outlet_node_name": "Outlet Node 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvacsplitter
         """

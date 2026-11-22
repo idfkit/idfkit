@@ -26,6 +26,20 @@ class ShadingSiteDetailed:
 
         used for shading elements such as trees these items are fixed in space and would not move with relative geometry
 
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Shading:Site:Detailed"].add(
+            "Shading Site Detailed 1",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zones-and-surfaces/#shadingsitedetailed
         """
 

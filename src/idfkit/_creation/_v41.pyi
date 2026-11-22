@@ -29,6 +29,26 @@ class OutputTableAnnual_v8_9_to_v22_1:
 
         Provides a generic method of setting up tables of annual results with one row per object. The report has multiple columns that are each defined using a repeated group of fields for any number of columns. A single Output:Table:Annual produces a single table in the output.
 
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:Annual"].add(
+            "Output Table Annual 1",
+            variable_details=[
+                {
+                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field 1",
+                    "aggregation_type_for_variable_or_meter": "HourInTenBinsMinToMax",
+                    "digits_after_decimal": 2.0,
+                },
+                {
+                    "variable_or_meter_or_ems_variable_or_field_name": "Variable or Meter or EMS Variable or Field 2",
+                    "aggregation_type_for_variable_or_meter": "HourInTenBinsMinToZero",
+                    "digits_after_decimal": 2.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/standard-output-reports/output-table-annual/#outputtableannual
         """
 

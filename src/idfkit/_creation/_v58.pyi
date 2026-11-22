@@ -130,6 +130,26 @@ class SurfacePropertySurroundingSurfaces_v8_9_to_v26_1:
 
         This object defines a list of surrounding surfaces for an exterior surface.
 
+        ``surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SurfaceProperty:SurroundingSurfaces"].add(
+            "SurfaceProperty SurroundingSurfaces 1",
+            surfaces=[
+                {
+                    "surrounding_surface_name": "Surrounding Surface 1",
+                    "surrounding_surface_view_factor": 0.0,
+                    "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 1",
+                },
+                {
+                    "surrounding_surface_name": "Surrounding Surface 2",
+                    "surrounding_surface_view_factor": 0.0,
+                    "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.1/io-reference/overview/group-advanced-surface-concepts/#surfacepropertysurroundingsurfaces
         """
 

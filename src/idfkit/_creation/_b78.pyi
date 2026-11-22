@@ -596,6 +596,18 @@ class ParametricSetValueForRun:
 
         Parametric objects allow a set of multiple simulations to be defined in a single idf file. The parametric preprocessor scans the idf for Parametric:* objects then creates and runs multiple idf files, one for each defined simulation. The core parametric object is Parametric:SetValueForRun which defines the name of a parameter and sets the parameter to different values depending on which run is being simulated.
 
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Parametric:SetValueForRun"].add(
+            "Parametric SetValueForRun 1",
+            values=[
+                {"value_for_run": "Value for Run 1"},
+                {"value_for_run": "Value for Run 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/parametric-objects/#parametricsetvalueforrun
         """
 
@@ -613,6 +625,17 @@ class AnyOutputTableSummaryReports:
         """Create a new ``Output:Table:SummaryReports`` and add it to the document.
 
         This object allows the user to call report types that are predefined and will appear with the other tabular reports. These predefined reports are sensitive to the OutputControl:Table:Style object and appear in the same files as the tabular reports. The entries for this object is a list of the predefined reports that should appear in the tabular report output file.
+
+        ``reports`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:SummaryReports"].add(
+            reports=[
+                {"report_name": "AdaptiveComfortSummary"},
+                {"report_name": "AirLoopComponentLoadSummary"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/standard-output-reports/output-table-summaryreports/#outputtablesummaryreports
         """

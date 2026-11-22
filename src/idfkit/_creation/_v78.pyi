@@ -75,6 +75,19 @@ class MeterCustomDecrement_v9_3:
 
         Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names.
 
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Meter:CustomDecrement"].add(
+            "Meter CustomDecrement 1",
+            source_meter_name="Source Meter 1",
+            variable_details=[
+                {"key_name": "Key 1", "output_variable_or_meter_name": "Output Variable or Meter 1"},
+                {"key_name": "Key 2", "output_variable_or_meter_name": "Output Variable or Meter 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/overview/group-simulation-parameters/#metercustomdecrement
         """
 
@@ -152,6 +165,29 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_v8_9_to_v22
         """Create a new ``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR`` and add it to the document.
 
         This is a key object in the new physics based VRF Heat Recovery (HR) model applicable for Fluid Temperature Control. It describes the VRF HR system excluding the performance of indoor units. Indoor units are modeled separately in the ZoneHVAC:TerminalUnit:VariableRefrigerantFlow object
+
+        ``loading_indices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR"].add(
+            "AirConditioner VariableRefrigerantFlow FluidTemperatureControl HR 1",
+            zone_terminal_unit_list_name="Zone Terminal Unit List 1",
+            outdoor_unit_evaporating_temperature_function_of_superheating_curve_name="Outdoor Unit Evaporating Temperature Function of Superheating Curve 1",
+            outdoor_unit_condensing_temperature_function_of_subcooling_curve_name="Outdoor Unit Condensing Temperature Function of Subcooling Curve 1",
+            loading_indices=[
+                {
+                    "compressor_speed_at_loading_index": 1.0,
+                    "loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name": "Loading Index Evaporative Capacity Multiplier Function of Temperature Curve 1",
+                    "loading_index_compressor_power_multiplier_function_of_temperature_curve_name": "Loading Index Compressor Power Multiplier Function of Temperature Curve 1",
+                },
+                {
+                    "compressor_speed_at_loading_index": 1.0,
+                    "loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name": "Loading Index Evaporative Capacity Multiplier Function of Temperature Curve 2",
+                    "loading_index_compressor_power_multiplier_function_of_temperature_curve_name": "Loading Index Compressor Power Multiplier Function of Temperature Curve 2",
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-variable-refrigerant-flow-equipment/#airconditionervariablerefrigerantflowfluidtemperaturecontrolhr
         """

@@ -45,6 +45,19 @@ class LifeCycleCostUseAdjustment_v8_9_to_v9_2:
 
         Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensating for inflation but should only be used to increase the costs of energy or water based on assumed changes to the actual usage, such as anticipated changes in the future function of the building. The adjustments begin at the start of the service period.
 
+        ``multipliers`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["LifeCycleCost:UseAdjustment"].add(
+            "LifeCycleCost UseAdjustment 1",
+            resource="Coal",
+            multipliers=[
+                {"year_multiplier": 0.0},
+                {"year_multiplier": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/energyplus-economics/lifecyclecost-useadjustment/#lifecyclecostuseadjustment
         """
 
@@ -178,6 +191,18 @@ class PythonPluginSearchPaths_v9_4_to_v9_6:
         """Create a new ``PythonPlugin:SearchPaths`` and add it to the document.
 
         Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file is automatically added so that the Python interpreter can find the packaged up pyenergyplus Python package. By default, the current working directory and input file directory are also added to the search path. However, this object allows modifying this behavior. With this object, searching these directories can be disabled, and users can add supplemental search paths that point to libraries of plugin scripts.
+
+        ``py_search_paths`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PythonPlugin:SearchPaths"].add(
+            "PythonPlugin SearchPaths 1",
+            py_search_paths=[
+                {"search_path": "Search Path 1"},
+                {"search_path": "Search Path 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.6/io-reference/overview/group-python-plugins/#pythonpluginsearchpaths
         """

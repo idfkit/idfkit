@@ -99,6 +99,21 @@ class AnyWindowShadingControl:
 
         Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the surface objects for exterior windows and glass doors (ref: FenestrationSurface:Detailed, Window, and GlazedDoor).
 
+        ``fenestration_surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["WindowShadingControl"].add(
+            "WindowShadingControl 1",
+            zone_name="Zone 1",
+            shading_type="BetweenGlassBlind",
+            shading_control_type="AlwaysOff",
+            fenestration_surfaces=[
+                {"fenestration_surface_name": "Fenestration Surface 1"},
+                {"fenestration_surface_name": "Fenestration Surface 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#windowshadingcontrol
         """
 
@@ -121,6 +136,19 @@ class AnyRoomAirTemperaturePatternSurfaceMapping:
         """Create a new ``RoomAir:TemperaturePattern:SurfaceMapping`` and add it to the document.
 
         Defines a distribution pattern for the air temperatures adjacent to individual surfaces. This allows controlling the adjacent air temperature on a surface-by-surface basis rather than by height. This allows modeling different adjacent air temperatures on the opposite sides of the zone. Used in combination with RoomAir:TemperaturePattern:UserDefined.
+
+        ``surface_deltas`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:TemperaturePattern:SurfaceMapping"].add(
+            "RoomAir TemperaturePattern SurfaceMapping 1",
+            control_integer_for_pattern_control_schedule_name=0,
+            surface_deltas=[
+                {"surface_name_pair": "Surface Name Pair 1", "delta_adjacent_air_temperature_pair": 0.0},
+                {"surface_name_pair": "Surface Name Pair 2", "delta_adjacent_air_temperature_pair": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-room-air-models/#roomairtemperaturepatternsurfacemapping
         """

@@ -103,6 +103,22 @@ class AnyZoneHVACBaseboardRadiantConvectiveSteam:
 
         The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list.
 
+        ``surface_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:Baseboard:RadiantConvective:Steam"].add(
+            "ZoneHVAC Baseboard RadiantConvective Steam 1",
+            inlet_node_name="Inlet Node 1",
+            outlet_node_name="Outlet Node 1",
+            maximum_steam_flow_rate=1.0,
+            design_object="Design Object 1",
+            surface_fractions=[
+                {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
+                {"surface_name": "Surface 2", "fraction_of_radiant_energy_to_surface": 0.0},
+            ],
+        )
+        ```
+
         No call suits every release: narrow the document with ``as_version`` first.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-radiative-convective-units/#zonehvacbaseboardradiantconvectivesteam
@@ -244,6 +260,20 @@ class AnyMatrixTwoDimension:
         """Create a new ``Matrix:TwoDimension`` and add it to the document.
 
         matrix data in row-major order list each row keeping the columns in order number of values must equal N1 x N2
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Matrix:TwoDimension"].add(
+            "Matrix TwoDimension 1",
+            number_of_rows=0,
+            number_of_columns=0,
+            values=[
+                {"value": 0.0},
+                {"value": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#matrixtwodimension
         """

@@ -304,6 +304,28 @@ class PipingSystemUndergroundPipeCircuit:
 
         The pipe circuit object in an underground piping system. This object is simulated within an underground piping domain object and connected on a branch on a plant loop.
 
+        ``pipe_segments`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PipingSystem:Underground:PipeCircuit"].add(
+            "PipingSystem Underground PipeCircuit 1",
+            pipe_thermal_conductivity=1.0,
+            pipe_density=1.0,
+            pipe_specific_heat=1.0,
+            pipe_inner_diameter=1.0,
+            pipe_outer_diameter=1.0,
+            design_flow_rate=1.0,
+            circuit_inlet_node="Circuit Inlet Node 1",
+            circuit_outlet_node="Circuit Outlet Node 1",
+            radial_thickness_of_inner_radial_near_pipe_mesh_region=1.0,
+            number_of_pipe_segments_entered_for_this_pipe_circuit=1,
+            pipe_segments=[
+                {"pipe_segment": "Pipe Segment 1"},
+                {"pipe_segment": "Pipe Segment 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-node-branch-management/#pipingsystemundergroundpipecircuit
         """
 

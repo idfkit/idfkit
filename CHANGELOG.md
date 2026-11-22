@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SQLResult.get_timeseries_many()` read many series from a large results file faster, with the same
   results, and `SQLResult` read a file's time steps once instead of at every call.
   ([#366](https://github.com/idfkit/idfkit/pull/366))
+- The editor docstring of `add()` on a collection of an extensible type, such as
+  `doc["Schedule:Compact"].add(...)`, showed a runnable Python example of filling its extensible
+  group (`data=[{"field": "Through: 12/31"}, ...]`)
+  ([#368](https://github.com/idfkit/idfkit/pull/368)).
 - `schedules.values()` evaluated a `Schedule:Compact` many times faster, with identical results: it
   finds each day's rule once and computes each rule's timestep values once per call.
   ([#363](https://github.com/idfkit/idfkit/pull/363))
@@ -34,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the `AllOtherDays` (or `AllDays`) value, as in EnergyPlus ([#367](https://github.com/idfkit/idfkit/pull/367)).
 - `values()` accepted a `timestep` that does not divide the hour and returned misaligned values; it
   raised `ValueError` ([#367](https://github.com/idfkit/idfkit/pull/367)).
+- IDF files of `Table:OneIndependentVariable` and `Table:TwoIndependentVariables` (EnergyPlus 8.9 to
+  9.1) labelled the second and later groups `!- X Value 1 2`; they read `!- X Value 2`
+  ([#368](https://github.com/idfkit/idfkit/pull/368)).
 
 ## [1.3.0-rc.2] - 2026-11-20
 

@@ -60,6 +60,23 @@ class DaylightingDeviceTubular:
 
         Defines a tubular daylighting device (TDD) consisting of three components: a dome, a pipe, and a diffuser. The dome and diffuser are defined separately using the FenestrationSurface:Detailed object.
 
+        ``transition_lengths`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DaylightingDevice:Tubular"].add(
+            "DaylightingDevice Tubular 1",
+            dome_name="Dome 1",
+            diffuser_name="Diffuser 1",
+            construction_name="Construction 1",
+            diameter=1.0,
+            total_length=1.0,
+            transition_lengths=[
+                {"transition_zone_name": "Transition Zone 1", "transition_zone_length": 0.0},
+                {"transition_zone_name": "Transition Zone 2", "transition_zone_length": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-daylighting/#daylightingdevicetubular
         """
 

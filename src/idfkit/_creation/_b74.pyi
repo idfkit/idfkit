@@ -261,6 +261,20 @@ class UnitarySystemPerformanceMultispeed:
 
         The UnitarySystemPerformance object is used to specify the air flow ratio at each operating speed. This object is primarily used for multispeed DX and water coils to allow operation at alternate flow rates different from those specified in the coil object.
 
+        ``flow_ratios`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["UnitarySystemPerformance:Multispeed"].add(
+            "UnitarySystemPerformance Multispeed 1",
+            number_of_speeds_for_heating=0,
+            number_of_speeds_for_cooling=0,
+            flow_ratios=[
+                {"heating_speed_supply_air_flow_ratio": 1.0, "cooling_speed_supply_air_flow_ratio": 1.0},
+                {"heating_speed_supply_air_flow_ratio": 1.0, "cooling_speed_supply_air_flow_ratio": 1.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-unitary-equipment/#unitarysystemperformancemultispeed
         """
 
@@ -305,6 +319,18 @@ class CondenserEquipmentList:
         """Create a new ``CondenserEquipmentList`` and add it to the document.
 
         List condenser equipment in order of operating priority, 1st in list will be used 1st, etc Use only condenser equipment in this list. If no equipment object types and equipment names are specified, then the corresponding PlantEquipmentOperation:* object will assume all available condenser equipment for the loop should be OFF (not operate) within the specified lower/upper limit.
+
+        ``equipment`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["CondenserEquipmentList"].add(
+            "CondenserEquipmentList 1",
+            equipment=[
+                {"equipment_object_type": "Equipment Object Type 1", "equipment_name": "Equipment 1"},
+                {"equipment_object_type": "Equipment Object Type 2", "equipment_name": "Equipment 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-condenser-control/#condenserequipmentlist
         """

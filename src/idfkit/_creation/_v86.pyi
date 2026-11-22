@@ -151,6 +151,17 @@ class ShadowCalculation_v9_3_to_v22_1:
 
         This object is used to control details of the solar, shading, and daylighting models
 
+        ``shading_zone_groups`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ShadowCalculation"].add(
+            shading_zone_groups=[
+                {"shading_zone_group_zonelist_name": "Shading Zone Group ZoneList 1"},
+                {"shading_zone_group_zonelist_name": "Shading Zone Group ZoneList 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-simulation-parameters/#shadowcalculation
         """
 
@@ -192,6 +203,23 @@ class FloorDetailed_v9_6_to_v24_2:
         """Create a new ``Floor:Detailed`` and add it to the document.
 
         Allows for detailed entry of floor heat transfer surfaces.
+
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Floor:Detailed"].add(
+            "Floor Detailed 1",
+            construction_name="Construction 1",
+            zone_name="Zone 1",
+            outside_boundary_condition="Outdoors",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v24.2/io-reference/overview/group-thermal-zone-description-geometry/#floordetailed
         """

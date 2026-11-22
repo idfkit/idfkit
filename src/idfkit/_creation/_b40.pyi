@@ -78,6 +78,20 @@ class SpaceHVACZoneEquipmentMixer:
 
         Mixes the airflow from one or more Spaces into a piece of zone equipment. All spaces in the zone must also have a SpaceHVAC:EquipmentConnections object. Used only when ZoneAirHeatBalanceAlgorithm 'Do Space Heat Balance for Simulation' is Yes.
 
+        ``spaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SpaceHVAC:ZoneEquipmentMixer"].add(
+            "SpaceHVAC ZoneEquipmentMixer 1",
+            zone_name="Zone 1",
+            zone_equipment_inlet_node_name="Zone Equipment Inlet Node 1",
+            spaces=[
+                {"space_name": "Space 1", "space_fraction": 0.0, "space_node_name": "Space Node 1"},
+                {"space_name": "Space 2", "space_fraction": 0.0, "space_node_name": "Space Node 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-equipment/#spacehvaczoneequipmentmixer
         """
 
@@ -94,6 +108,19 @@ class AirLoopHVACSupplyPath:
         """Create a new ``AirLoopHVAC:SupplyPath`` and add it to the document.
 
         A supply path can only contain AirLoopHVAC:ZoneSplitter and AirLoopHVAC:SupplyPlenum objects which may be in series or parallel.
+
+        ``components`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:SupplyPath"].add(
+            "AirLoopHVAC SupplyPath 1",
+            supply_air_path_inlet_node_name="Supply Air Path Inlet Node 1",
+            components=[
+                {"component_object_type": "AirLoopHVAC:SupplyPlenum", "component_name": "Component 1"},
+                {"component_object_type": "AirLoopHVAC:ZoneSplitter", "component_name": "Component 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvacsupplypath
         """

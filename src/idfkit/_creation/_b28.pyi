@@ -76,6 +76,23 @@ class AnyRoofCeilingDetailed:
 
         Allows for detailed entry of roof/ceiling heat transfer surfaces.
 
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoofCeiling:Detailed"].add(
+            "RoofCeiling Detailed 1",
+            construction_name="Construction 1",
+            zone_name="Zone 1",
+            outside_boundary_condition="Outdoors",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#roofceilingdetailed
         """
 
@@ -221,6 +238,18 @@ class AnyTableIndependentVariable:
         """Create a new ``Table:IndependentVariable`` and add it to the document.
 
         An independent variable representing a single dimension of a Table:Lookup object.
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:IndependentVariable"].add(
+            "Table IndependentVariable 1",
+            values=[
+                {"value": 0.0},
+                {"value": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-performance-tables/#tableindependentvariable
         """

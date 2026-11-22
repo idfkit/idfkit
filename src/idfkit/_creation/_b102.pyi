@@ -110,6 +110,27 @@ class AnyDaylightingControls:
 
         Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calculated.
 
+        ``control_data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Daylighting:Controls"].add(
+            "Daylighting Controls 1",
+            zone_or_space_name="Zone or Space 1",
+            control_data=[
+                {
+                    "daylighting_reference_point_name": "Daylighting Reference Point 1",
+                    "fraction_of_lights_controlled_by_reference_point": 1.0,
+                    "illuminance_setpoint_at_reference_point": 500.0,
+                },
+                {
+                    "daylighting_reference_point_name": "Daylighting Reference Point 2",
+                    "fraction_of_lights_controlled_by_reference_point": 1.0,
+                    "illuminance_setpoint_at_reference_point": 500.0,
+                },
+            ],
+        )
+        ```
+
         No call suits every release: narrow the document with ``as_version`` first.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/cost-estimating/#daylightingcontrols
@@ -130,6 +151,24 @@ class DesignSpecificationOutdoorAirSpaceList:
         """Create a new ``DesignSpecification:OutdoorAir:SpaceList`` and add it to the document.
 
         Defines a list of DesignSpecification:OutdoorAir names which can be referenced as a group. The DesignSpecification:OutdoorAir:SpaceList name may be used in Sizing:Zone and Controller:MechanicalVentilation to specify space-by-space OA requirements and anywhere else that accepts a DesignSpecification:OutdoorAir object name.
+
+        ``space_specs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DesignSpecification:OutdoorAir:SpaceList"].add(
+            "DesignSpecification OutdoorAir SpaceList 1",
+            space_specs=[
+                {
+                    "space_name": "Space 1",
+                    "space_design_specification_outdoor_air_object_name": "Space Design Specification Outdoor Air Object 1",
+                },
+                {
+                    "space_name": "Space 2",
+                    "space_design_specification_outdoor_air_object_name": "Space Design Specification Outdoor Air Object 2",
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-design-objects/#designspecificationoutdoorairspacelist
         """
@@ -209,6 +248,29 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR:
 
         This is a key object in the new physics based VRF Heat Recovery (HR) model applicable for Fluid Temperature Control. It describes the VRF HR system excluding the performance of indoor units. Indoor units are modeled separately in the ZoneHVAC:TerminalUnit:VariableRefrigerantFlow object
 
+        ``loading_indices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR"].add(
+            "AirConditioner VariableRefrigerantFlow FluidTemperatureControl HR 1",
+            zone_terminal_unit_list_name="Zone Terminal Unit List 1",
+            outdoor_unit_evaporating_temperature_function_of_superheating_curve_name="Outdoor Unit Evaporating Temperature Function of Superheating Curve 1",
+            outdoor_unit_condensing_temperature_function_of_subcooling_curve_name="Outdoor Unit Condensing Temperature Function of Subcooling Curve 1",
+            loading_indices=[
+                {
+                    "compressor_speed_at_loading_index": 1.0,
+                    "loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name": "Loading Index Evaporative Capacity Multiplier Function of Temperature Curve 1",
+                    "loading_index_compressor_power_multiplier_function_of_temperature_curve_name": "Loading Index Compressor Power Multiplier Function of Temperature Curve 1",
+                },
+                {
+                    "compressor_speed_at_loading_index": 1.0,
+                    "loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name": "Loading Index Evaporative Capacity Multiplier Function of Temperature Curve 2",
+                    "loading_index_compressor_power_multiplier_function_of_temperature_curve_name": "Loading Index Compressor Power Multiplier Function of Temperature Curve 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-variable-refrigerant-flow-equipment/#airconditionervariablerefrigerantflowfluidtemperaturecontrolhr
         """
 
@@ -248,6 +310,18 @@ class EnergyManagementSystemProgramCallingManager:
         """Create a new ``EnergyManagementSystem:ProgramCallingManager`` and add it to the document.
 
         Input EMS program. a program needs a name a description of when it should be called and then lines of program code for EMS Runtime language
+
+        ``programs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["EnergyManagementSystem:ProgramCallingManager"].add(
+            "EnergyManagementSystem ProgramCallingManager 1",
+            programs=[
+                {"program_name": "Program 1"},
+                {"program_name": "Program 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemprogramcallingmanager
         """

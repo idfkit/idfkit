@@ -48,6 +48,18 @@ class ScheduleDayInterval:
 
         A Schedule:Day:Interval contains a full day of values with specified end times for each value Currently, is set up to allow for 10 minute intervals for an entire day.
 
+        ``data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Schedule:Day:Interval"].add(
+            "Schedule Day Interval 1",
+            data=[
+                {"time": "08:00", "value_until_time": 0.0},
+                {"time": "24:00", "value_until_time": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduledayinterval
         """
 
@@ -86,6 +98,18 @@ class AnyComfortViewFactorAngles:
         """Create a new ``ComfortViewFactorAngles`` and add it to the document.
 
         Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions must sum up to 1.0 All surfaces must be in the same enclosure.
+
+        ``angles`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ComfortViewFactorAngles"].add(
+            "ComfortViewFactorAngles 1",
+            angles=[
+                {"surface_name": "Surface 1", "angle_factor": 0.0},
+                {"surface_name": "Surface 2", "angle_factor": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains-people-lights-other/#comfortviewfactorangles
         """

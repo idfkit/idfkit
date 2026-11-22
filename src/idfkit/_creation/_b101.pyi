@@ -324,6 +324,18 @@ class AnyCondenserEquipmentList:
 
         List condenser equipment in order of operating priority, 1st in list will be used 1st, etc Use only condenser equipment in this list. If no equipment object types and equipment names are specified, then the corresponding PlantEquipmentOperation:* object will assume all available condenser equipment for the loop should be OFF (not operate) within the specified lower/upper limit.
 
+        ``equipment`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["CondenserEquipmentList"].add(
+            "CondenserEquipmentList 1",
+            equipment=[
+                {"equipment_object_type": "Equipment Object Type 1", "equipment_name": "Equipment 1"},
+                {"equipment_object_type": "Equipment Object Type 2", "equipment_name": "Equipment 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-condenser-control/#condenserequipmentlist
         """
 
@@ -339,6 +351,20 @@ class EnergyManagementSystemProgram:
         """Create a new ``EnergyManagementSystem:Program`` and add it to the document.
 
         This input defines an Erl program Each field after the name is a line of EMS Runtime Language
+
+        ``lines`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["EnergyManagementSystem:Program"].add(
+            "EnergyManagementSystem Program 1",
+            lines=[
+                {"program_line": "SET Fraction = 0.5"},
+                {"program_line": "IF Hour >= 18"},
+                {"program_line": "SET Fraction = 0.0"},
+                {"program_line": "ENDIF"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemprogram
         """
@@ -357,6 +383,18 @@ class RefrigerationCompressorList:
         """Create a new ``Refrigeration:CompressorList`` and add it to the document.
 
         List of all the compressors included within a single refrigeration system (Refrigeration:System). Each list must contain at least one compressor. The order in which the individual compressors are listed here will be the order in which the compressors are dispatched to meet the system load. IMPORTANT: List compressor names in the order in which the compressors will be loaded Data is available for many compressors in the RefrigerationCompressor.idf dataset
+
+        ``compressors`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Refrigeration:CompressorList"].add(
+            "Refrigeration CompressorList 1",
+            compressors=[
+                {"refrigeration_compressor_name": "Refrigeration Compressor 1"},
+                {"refrigeration_compressor_name": "Refrigeration Compressor 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-refrigeration/#refrigerationcompressorlist
         """
@@ -383,6 +421,22 @@ class DemandManagerThermostats:
         """Create a new ``DemandManager:Thermostats`` and add it to the document.
 
         used for demand limiting ZoneControl:Thermostat objects.
+
+        ``thermostats`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:Thermostats"].add(
+            "DemandManager Thermostats 1",
+            reset_control="Fixed",
+            maximum_heating_setpoint_reset=0.0,
+            maximum_cooling_setpoint_reset=0.0,
+            selection_control="All",
+            thermostats=[
+                {"thermostat_name": "Thermostat 1"},
+                {"thermostat_name": "Thermostat 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerthermostats
         """

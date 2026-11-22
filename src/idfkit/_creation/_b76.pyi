@@ -69,5 +69,17 @@ class AnyEnergyManagementSystemProgramCallingManager:
 
         Input EMS program. a program needs a name a description of when it should be called and then lines of program code for EMS Runtime language
 
+        ``programs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["EnergyManagementSystem:ProgramCallingManager"].add(
+            "EnergyManagementSystem ProgramCallingManager 1",
+            programs=[
+                {"program_name": "Program 1"},
+                {"program_name": "Program 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemprogramcallingmanager
         """

@@ -225,5 +225,16 @@ class OutputDiagnostics:
 
         Special keys to produce certain warning messages or effect certain simulation characteristics.
 
+        ``diagnostics`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Diagnostics"].add(
+            diagnostics=[
+                {"key": "DisplayAdvancedReportVariables"},
+                {"key": "DisplayAllWarnings"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-simulation-parameters/#outputdiagnostics
         """

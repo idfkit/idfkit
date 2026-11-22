@@ -242,5 +242,18 @@ class TableLookup_v9_2_to_v22_1:
 
         Lookup tables are used in place of curves and can represent any number of independent variables (defined as Table:IndependentVariable objects in a Table:IndependentVariableList). Output values are interpolated within the bounds defined by each independent variable and extrapolated beyond the bounds according to the interpolation/extrapolation methods defined by each independent variable.
 
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:Lookup"].add(
+            "Table Lookup 1",
+            independent_variable_list_name="Independent Variable List 1",
+            values=[
+                {"output_value": 0.0},
+                {"output_value": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-performance-tables/#tablelookup
         """

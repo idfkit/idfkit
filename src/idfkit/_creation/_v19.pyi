@@ -81,6 +81,27 @@ class DaylightingControls_v8_9_to_v9_5:
 
         Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calculated.
 
+        ``control_data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Daylighting:Controls"].add(
+            "Daylighting Controls 1",
+            zone_name="Zone 1",
+            control_data=[
+                {
+                    "daylighting_reference_point_name": "Daylighting Reference Point 1",
+                    "fraction_of_zone_controlled_by_reference_point": 1.0,
+                    "illuminance_setpoint_at_reference_point": 500.0,
+                },
+                {
+                    "daylighting_reference_point_name": "Daylighting Reference Point 2",
+                    "fraction_of_zone_controlled_by_reference_point": 1.0,
+                    "illuminance_setpoint_at_reference_point": 500.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/energyplus-economics/cost-estimating/#daylightingcontrols
         """
 
@@ -287,6 +308,28 @@ class RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1:
         """Create a new ``RoomAir:Node:AirflowNetwork:HVACEquipment`` and add it to the document.
 
         define the zone equipment associated with one particular RoomAir:Node
+
+        ``equipment_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:Node:AirflowNetwork:HVACEquipment"].add(
+            "RoomAir Node AirflowNetwork HVACEquipment 1",
+            equipment_fractions=[
+                {
+                    "zonehvac_or_air_terminal_equipment_object_type": "AirLoopHVACReturnAir",
+                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object 1",
+                    "fraction_of_output_or_supply_air_from_hvac_equipment": 0.0,
+                    "fraction_of_input_or_return_air_to_hvac_equipment": 0.0,
+                },
+                {
+                    "zonehvac_or_air_terminal_equipment_object_type": "AirTerminal:DualDuct:ConstantVolume",
+                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object 2",
+                    "fraction_of_output_or_supply_air_from_hvac_equipment": 0.0,
+                    "fraction_of_input_or_return_air_to_hvac_equipment": 0.0,
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v24.1/io-reference/overview/group-room-air-models/#roomairnodeairflownetworkhvacequipment
         """

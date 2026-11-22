@@ -83,5 +83,27 @@ class DemandManagerAssignmentList_v8_9_to_v22_1:
 
         a list of meters that can be reported are available after a run on the meter dictionary file (.mdd) if the Output:VariableDictionary has been requested.
 
+        ``manager_data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManagerAssignmentList"].add(
+            "DemandManagerAssignmentList 1",
+            meter_name="Meter 1",
+            demand_limit_safety_fraction=0.0,
+            demand_window_length=1.0,
+            demand_manager_priority="All",
+            manager_data=[
+                {
+                    "demandmanager_object_type": "DemandManager:ElectricEquipment",
+                    "demandmanager_name": "DemandManager 1",
+                },
+                {
+                    "demandmanager_object_type": "DemandManager:ExteriorLights",
+                    "demandmanager_name": "DemandManager 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-demand-limiting-controls/#demandmanagerassignmentlist
         """

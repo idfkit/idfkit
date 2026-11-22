@@ -86,6 +86,32 @@ class ZoneHVACEquipmentList_v9_2:
 
         List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit or AirTerminal:SingleDuct:Uncontrolled object must be listed in this statement if there is a forced air system serving the zone from the air loop. Equipment is simulated in the order specified by Zone Equipment Cooling Sequence and Zone Equipment Heating or No-Load Sequence, depending on the thermostat request. For equipment of similar type, assign sequence 1 to the first system intended to serve that type of load. For situations where one or more equipment types has limited capacity or limited control, order the sequence so that the most controllable piece of equipment runs last. For example, with a dedicated outdoor air system (DOAS), the air terminal for the DOAS should be assigned Heating Sequence = 1 and Cooling Sequence = 1. Any other equipment should be assigned sequence 2 or higher so that it will see the net load after the DOAS air is added to the zone.
 
+        ``equipment`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:EquipmentList"].add(
+            "ZoneHVAC EquipmentList 1",
+            equipment=[
+                {
+                    "zone_equipment_cooling_sequence": 0.0,
+                    "zone_equipment_sequential_cooling_fraction_schedule_name": "Zone Equipment Sequential Cooling Fraction Schedule 1",
+                    "zone_equipment_sequential_heating_fraction_schedule_name": "Zone Equipment Sequential Heating Fraction Schedule 1",
+                    "zone_equipment_name": "Zone Equipment 1",
+                    "zone_equipment_object_type": "AirLoopHVAC:UnitarySystem",
+                    "zone_equipment_heating_or_no_load_sequence": 0.0,
+                },
+                {
+                    "zone_equipment_cooling_sequence": 0.0,
+                    "zone_equipment_sequential_cooling_fraction_schedule_name": "Zone Equipment Sequential Cooling Fraction Schedule 2",
+                    "zone_equipment_sequential_heating_fraction_schedule_name": "Zone Equipment Sequential Heating Fraction Schedule 2",
+                    "zone_equipment_name": "Zone Equipment 2",
+                    "zone_equipment_object_type": "AirTerminal:SingleDuct:Uncontrolled",
+                    "zone_equipment_heating_or_no_load_sequence": 0.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-zone-equipment/#zonehvacequipmentlist
         """
 
@@ -150,6 +176,21 @@ class WindowShadingControl_v9_2_to_v22_1:
         """Create a new ``WindowShadingControl`` and add it to the document.
 
         Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the surface objects for exterior windows and glass doors (ref: FenestrationSurface:Detailed, Window, and GlazedDoor).
+
+        ``fenestration_surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["WindowShadingControl"].add(
+            "WindowShadingControl 1",
+            zone_name="Zone 1",
+            shading_type="BetweenGlassBlind",
+            shading_control_type="AlwaysOff",
+            fenestration_surfaces=[
+                {"fenestration_surface_name": "Fenestration Surface 1"},
+                {"fenestration_surface_name": "Fenestration Surface 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-thermal-zone-description-geometry/#windowshadingcontrol
         """

@@ -216,6 +216,20 @@ class SpaceHVACZoneReturnMixer:
 
         Mixes the return airflow from one or more Spaces into a zone return node. All spaces in the zone must also have a SpaceHVAC:EquipmentConnections object. Used only when ZoneAirHeatBalanceAlgorithm 'Do Space Heat Balance for Simulation' is Yes.
 
+        ``spaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SpaceHVAC:ZoneReturnMixer"].add(
+            "SpaceHVAC ZoneReturnMixer 1",
+            zone_name="Zone 1",
+            zone_return_air_node_name="Zone Return Air Node 1",
+            spaces=[
+                {"space_name": "Space 1", "space_return_air_node_name": "Space Return Air Node 1"},
+                {"space_name": "Space 2", "space_return_air_node_name": "Space Return Air Node 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-equipment/#spacehvaczonereturnmixer
         """
 
@@ -399,6 +413,18 @@ class ZoneHVACRefrigerationChillerSet:
         """Create a new ``ZoneHVAC:RefrigerationChillerSet`` and add it to the document.
 
         Works in conjunction with one or multiple air chillers, compressor racks, refrigeration systems, or refrigeration secondary system objects to simulate the performance of a group of air chillers cooling a single zone. The chiller set model passes information about the zone conditions to determine the performance of individual chiller coils within the set, thus providing the sensible and latent heat exchange with the zone environment.
+
+        ``chillers`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:RefrigerationChillerSet"].add(
+            "ZoneHVAC RefrigerationChillerSet 1",
+            chillers=[
+                {"air_chiller_name": "Air Chiller 1"},
+                {"air_chiller_name": "Air Chiller 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-forced-air-units/#zonehvacrefrigerationchillerset
         """

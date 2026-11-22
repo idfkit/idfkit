@@ -27,6 +27,24 @@ class OutputTableMonthly_v8_9_to_v22_1:
 
         Provides a generic method of setting up tables of monthly results. The report has multiple columns that are each defined using a repeated group of fields for any number of columns. A single Output:Table:Monthly object often produces multiple tables in the output. A table is produced for every instance of a particular output variable. For example, a table defined with zone variables will be produced once for every zone.
 
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:Monthly"].add(
+            "Output Table Monthly 1",
+            variable_details=[
+                {
+                    "variable_or_meter_name": "Variable or Meter 1",
+                    "aggregation_type_for_variable_or_meter": "HoursNegative",
+                },
+                {
+                    "variable_or_meter_name": "Variable or Meter 2",
+                    "aggregation_type_for_variable_or_meter": "HoursNonNegative",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/standard-output-reports/output-table-monthly/#outputtablemonthly
         """
 
