@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 import sys
+import warnings
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -12,6 +15,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from conftest import generated_document_pyi, generated_stubs
 
+from idfkit import new_document
 from idfkit.codegen import generate_stubs as gen
 from idfkit.codegen.generate_doc_locations import (
     _ANCHOR_RE,  # pyright: ignore[reportPrivateUsage]
@@ -936,6 +940,7 @@ class TestCreationDocstring:
         schema.version = LATEST_VERSION
         schema.get_object_memo.return_value = 'A "quoted" C:\\path memo'
         schema.get_group.return_value = None
+        schema.get_parsing_cache.return_value = None
         doc = gen._creation_docstring(schema, "Not:AType", narrow_first=False)  # pyright: ignore[reportPrivateUsage]
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         sink.add("Cls", "self, /", doc)
@@ -943,6 +948,70 @@ class TestCreationDocstring:
             _docstring_of(sink, "Cls")
             == "Create a new ``Not:AType`` and add it to the document.\n\nA 'quoted' C:\\path memo"
         )
+
+
+def _examples_of(source: str) -> Iterator[tuple[str, str, str]]:
+    """Each creation signature in *source* whose docstring has an example: class, docstring, code."""
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.ClassDef) and isinstance(call := node.body[0], ast.FunctionDef):
+            doc = ast.get_docstring(call) or ""
+            match = re.search(r"```python\n(.*?)\n```", doc, re.DOTALL)
+            if match is not None:
+                yield node.name, doc, match[1]
+
+
+class TestExtensibleExample:
+    """``add()``'s docstring shows, as a fenced Python block, how to fill the type's extensible group."""
+
+    def test_schedule_compact_shows_through_for_and_until_lines(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Schedule:Compact", sink=sink)
+        doc = _docstring_of(sink, "ScheduleCompact")
+        assert "``data`` takes the extensible groups in order, one dict per group:" in doc
+        assert '```python\ndoc["Schedule:Compact"].add(\n    "Schedule Compact 1",\n    data=[\n' in doc
+        assert '        {"field": "Through: 12/31"},\n        {"field": "For: Weekdays"},\n' in doc
+        assert doc.index("```python") < doc.index("EnergyPlus I/O Reference")
+
+    def test_passes_the_required_fields_and_vertices_of_a_wall(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "BuildingSurface:Detailed", sink=sink)
+        doc = _docstring_of(sink, "BuildingSurfaceDetailed")
+        assert '    zone_name="Zone 1",\n' in doc
+        assert doc.count('{"vertex_x_coordinate": ') == 4
+
+    def test_references_in_two_groups_name_two_objects(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "ZoneList", sink=sink)
+        doc = _docstring_of(sink, "ZoneList")
+        assert '{"zone_name": "Zone 1"},\n        {"zone_name": "Zone 2"},' in doc
+
+    def test_a_type_without_a_name_is_added_without_one(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Output:Table:SummaryReports", sink=sink)
+        assert ".add(\n    reports=[" in _docstring_of(sink, "OutputTableSummaryReports")
+
+    def test_a_type_without_an_extensible_group_has_no_example(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Zone", sink=sink)
+        assert "```" not in _docstring_of(sink, "Zone")
+
+    @pytest.mark.slow
+    def test_every_committed_example_runs_on_a_document_of_its_release(self) -> None:
+        # The committed stubs are the generated ones (the stub sync tests), so this covers every
+        # example an editor shows: each must run as shown, validation and warnings included.
+        creation = Path(gen.__file__).parents[1] / "_creation"
+        by_suffix = {f"_v{v[0]}_{v[1]}": v for v in ENERGYPLUS_VERSIONS}
+        count = 0
+        for module in sorted(creation.glob("*.pyi")):
+            for cls_name, doc, code in _examples_of(module.read_text()):
+                # A range class runs on its last release; any other, on the latest.
+                version = next((v for s, v in by_suffix.items() if cls_name.endswith(s)), LATEST_VERSION)
+                with warnings.catch_warnings():
+                    warnings.simplefilter("error")
+                    exec(code, {"doc": new_document(version=version)})  # noqa: S102
+                count += 1
+                assert doc.count("```") == 2, cls_name
+        assert count > 200
 
 
 class TestCreationAcrossReleases:

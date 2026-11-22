@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The editor docstring of `add()` on a collection of an extensible type, such as
+  `doc["Schedule:Compact"].add(...)`, showed a runnable Python example of filling its extensible
+  group (`data=[{"field": "Through: 12/31"}, ...]`).
+
 ## [1.3.0-rc.2] - 2026-11-20
 
 ### Added

@@ -58,6 +58,17 @@ class ShadowCalculation_v8_9_to_v9_2:
 
         This object is used to control details of the solar, shading, and daylighting models
 
+        ``shading_zone_groups`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ShadowCalculation"].add(
+            shading_zone_groups=[
+                {"shading_zone_group_zonelist_name": "Shading Zone Group ZoneList 1"},
+                {"shading_zone_group_zonelist_name": "Shading Zone Group ZoneList 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-simulation-parameters/#shadowcalculation
         """
 

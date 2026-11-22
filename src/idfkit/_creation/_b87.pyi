@@ -168,5 +168,29 @@ class ElectricLoadCenterGenerators:
 
         List of electric power generators to include in the simulation including the name and type of each generators along with availability schedule, rated power output, and thermal-to-electrical power ratio.
 
+        ``generator_outputs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ElectricLoadCenter:Generators"].add(
+            "ElectricLoadCenter Generators 1",
+            generator_outputs=[
+                {
+                    "generator_name": "Generator 1",
+                    "generator_object_type": "Generator:CombustionTurbine",
+                    "generator_rated_electric_power_output": 0.0,
+                    "generator_availability_schedule_name": "Generator Availability Schedule 1",
+                    "generator_rated_thermal_to_electrical_power_ratio": 0.0,
+                },
+                {
+                    "generator_name": "Generator 2",
+                    "generator_object_type": "Generator:FuelCell",
+                    "generator_rated_electric_power_output": 0.0,
+                    "generator_availability_schedule_name": "Generator Availability Schedule 2",
+                    "generator_rated_thermal_to_electrical_power_ratio": 0.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-electric-load-center-generator/#electricloadcentergenerators
         """

@@ -54,6 +54,18 @@ class RoomAirNodeAirflowNetworkAdjacentSurfaceList:
     ) -> None:
         """Create a new ``RoomAir:Node:AirflowNetwork:AdjacentSurfaceList`` and add it to the document.
 
+        ``surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:Node:AirflowNetwork:AdjacentSurfaceList"].add(
+            "RoomAir Node AirflowNetwork AdjacentSurfaceList 1",
+            surfaces=[
+                {"surface_name": "Surface 1"},
+                {"surface_name": "Surface 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-room-air-models/#roomairnodeairflownetworkadjacentsurfacelist
         """
 
@@ -639,6 +651,24 @@ class OutputTableMonthly:
 
         Provides a generic method of setting up tables of monthly results. The report has multiple columns that are each defined using a repeated group of fields for any number of columns. A single Output:Table:Monthly object often produces multiple tables in the output. A table is produced for every instance of a particular output variable. For example, a table defined with zone variables will be produced once for every zone.
 
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:Monthly"].add(
+            "Output Table Monthly 1",
+            variable_details=[
+                {
+                    "variable_or_meter_name": "Variable or Meter Name",
+                    "aggregation_type_for_variable_or_meter": "HoursNegative",
+                },
+                {
+                    "variable_or_meter_name": "Variable or Meter Name",
+                    "aggregation_type_for_variable_or_meter": "HoursNonNegative",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/standard-output-reports/output-table-monthly/#outputtablemonthly
         """
 
@@ -656,6 +686,18 @@ class PythonPluginVariables:
         """Create a new ``PythonPlugin:Variables`` and add it to the document.
 
         This object defines name identifiers for custom Python Plugin variable data that should be shared among all running Python Plugins.
+
+        ``global_py_vars`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PythonPlugin:Variables"].add(
+            "PythonPlugin Variables 1",
+            global_py_vars=[
+                {"variable_name": "Variable Name"},
+                {"variable_name": "Variable Name"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-python-plugins/#pythonpluginvariables
         """

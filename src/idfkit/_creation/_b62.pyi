@@ -49,6 +49,19 @@ class Space:
 
         Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space is an optional input. If a Zone has no Space(s) specified in input then a default Space named <Zone Name> will be created. If some surfaces in a Zone are assigned to a space and some are not, then a default Space named <Zone Name>-Remainder will be created. Input references to Space Names must have a matching Space object (default space names may not be referenced except in output variable keys).
 
+        ``tags`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Space"].add(
+            "Space 1",
+            zone_name="Zone 1",
+            tags=[
+                {"tag": "Tag"},
+                {"tag": "Tag"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#space
         """
 
@@ -91,6 +104,28 @@ class RoomAirNodeAirflowNetworkHVACEquipment:
         """Create a new ``RoomAir:Node:AirflowNetwork:HVACEquipment`` and add it to the document.
 
         define the zone equipment associated with one particular RoomAir:Node
+
+        ``equipment_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:Node:AirflowNetwork:HVACEquipment"].add(
+            "RoomAir Node AirflowNetwork HVACEquipment 1",
+            equipment_fractions=[
+                {
+                    "zonehvac_or_air_terminal_equipment_object_type": "AirLoopHVACReturnAir",
+                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object Name",
+                    "fraction_of_output_or_supply_air_from_hvac_equipment": 0.0,
+                    "fraction_of_input_or_return_air_to_hvac_equipment": 0.0,
+                },
+                {
+                    "zonehvac_or_air_terminal_equipment_object_type": "AirTerminal:DualDuct:ConstantVolume",
+                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object Name",
+                    "fraction_of_output_or_supply_air_from_hvac_equipment": 0.0,
+                    "fraction_of_input_or_return_air_to_hvac_equipment": 0.0,
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-room-air-models/#roomairnodeairflownetworkhvacequipment
         """

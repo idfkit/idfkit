@@ -51,6 +51,23 @@ class FloorDetailed:
 
         Allows for detailed entry of floor heat transfer surfaces.
 
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Floor:Detailed"].add(
+            "Floor Detailed 1",
+            construction_name="Construction 1",
+            zone_name="Zone 1",
+            outside_boundary_condition="Adiabatic",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#floordetailed
         """
 
@@ -418,6 +435,19 @@ class ConnectorMixer:
 
         Mix N inlet air/water streams into one. Branch names cannot be duplicated within a single mixer list.
 
+        ``branches`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Connector:Mixer"].add(
+            "Connector Mixer 1",
+            outlet_branch_name="Outlet Branch 1",
+            branches=[
+                {"inlet_branch_name": "Inlet Branch 1"},
+                {"inlet_branch_name": "Inlet Branch 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-node-branch-management/#connectormixer
         """
 
@@ -578,6 +608,18 @@ class ParametricFileNameSuffix:
         """Create a new ``Parametric:FileNameSuffix`` and add it to the document.
 
         Defines the suffixes to be appended to the idf and output file names for each parametric run. If this object is omitted, the suffix will default to the run number.
+
+        ``suffixes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Parametric:FileNameSuffix"].add(
+            "Parametric FileNameSuffix 1",
+            suffixes=[
+                {"suffix_for_file_name_in_run": "Suffix for File Name in Run"},
+                {"suffix_for_file_name_in_run": "Suffix for File Name in Run"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/parametric-objects/#parametricfilenamesuffix
         """

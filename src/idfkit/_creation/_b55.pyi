@@ -376,6 +376,19 @@ class AirLoopHVACZoneMixer:
 
         Mix N inlet air streams into one (currently 500 per air loop, but extensible). Node names cannot be duplicated within a single zone mixer (AirLoopHVAC:ZoneMixer) list.
 
+        ``nodes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:ZoneMixer"].add(
+            "AirLoopHVAC ZoneMixer 1",
+            outlet_node_name="Outlet Node Name",
+            nodes=[
+                {"inlet_node_name": "Inlet Node Name"},
+                {"inlet_node_name": "Inlet Node Name"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvaczonemixer
         """
 

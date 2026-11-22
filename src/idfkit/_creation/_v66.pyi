@@ -26,6 +26,17 @@ class OutputTableSummaryReports_v9_3:
 
         This object allows the user to call report types that are predefined and will appear with the other tabular reports. These predefined reports are sensitive to the OutputControl:Table:Style object and appear in the same files as the tabular reports. The entries for this object is a list of the predefined reports that should appear in the tabular report output file. There should be as many fields (A) in this object as there are keys in the following (minus AllSummary+AllMonthly+AllSummaryAndMonthly)
 
+        ``reports`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:SummaryReports"].add(
+            reports=[
+                {"report_name": "AdaptiveComfortSummary"},
+                {"report_name": "AirLoopComponentLoadSummary"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.3/io-reference/standard-output-reports/output-table-summaryreports/#outputtablesummaryreports
         """
 
@@ -43,6 +54,20 @@ class MatrixTwoDimension_v8_9_to_v22_1:
         """Create a new ``Matrix:TwoDimension`` and add it to the document.
 
         matrix data in row-major order list each row keeping the columns in order number of values must equal N1 x N2
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Matrix:TwoDimension"].add(
+            "Matrix TwoDimension 1",
+            number_of_rows=0.0,
+            number_of_columns=0.0,
+            values=[
+                {"value": 0.0},
+                {"value": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-surface-construction-elements/#matrixtwodimension
         """

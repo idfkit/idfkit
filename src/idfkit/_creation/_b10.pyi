@@ -51,6 +51,18 @@ class ScheduleWeekCompact:
 
         Compact definition for Schedule:Day:List
 
+        ``data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Schedule:Week:Compact"].add(
+            "Schedule Week Compact 1",
+            data=[
+                {"daytype_list": "DayType List", "schedule_day_name": "Schedule:Day 1"},
+                {"daytype_list": "DayType List", "schedule_day_name": "Schedule:Day 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduleweekcompact
         """
 
@@ -250,6 +262,73 @@ class ZoneHVACHybridUnitaryHVAC:
 
         Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include outdoor air conditions and indoor air conditions. Controlled inputs include operating mode, supply air flow rate, and outdoor air faction. Empirical lookup tables are required to map supply air temperature supply air humidity, electricity use, fuel uses, water use, fan electricity use, and external static pressure as a function of each independent variable and each controlled input. In each timestep the model will choose one or more combinations of settings for mode, supply air flow rate, outdoor air faction, and part runtime fraction so as to satisfy zone requests for sensible cooling, heating, ventilation, and/or dehumidification with the least resource consumption. Equipment in this class may consume electricity, water, and up to two additional fuel types.
 
+        ``modes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:HybridUnitaryHVAC"].add(
+            "ZoneHVAC HybridUnitaryHVAC 1",
+            return_air_node_name="Return Air Node Name",
+            outdoor_air_node_name="Outdoor Air Node Name",
+            supply_air_node_name="Supply Air Node Name",
+            modes=[
+                {
+                    "mode_name": "Mode Name",
+                    "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 1",
+                    "mode_supply_air_humidity_ratio_lookup_table_name": "Mode Supply Air Humidity Ratio Lookup Table 1",
+                    "mode_system_electric_power_lookup_table_name": "Mode System Electric Power Lookup Table 1",
+                    "mode_supply_fan_electric_power_lookup_table_name": "Mode Supply Fan Electric Power Lookup Table 1",
+                    "mode_external_static_pressure_lookup_table_name": "Mode External Static Pressure Lookup Table 1",
+                    "mode_system_second_fuel_consumption_lookup_table_name": "Mode System Second Fuel Consumption Lookup Table 1",
+                    "mode_system_third_fuel_consumption_lookup_table_name": "Mode System Third Fuel Consumption Lookup Table 1",
+                    "mode_system_water_use_lookup_table_name": "Mode System Water Use Lookup Table 1",
+                    "mode_minimum_outdoor_air_temperature": 0.0,
+                    "mode_maximum_outdoor_air_temperature": 0.0,
+                    "mode_minimum_outdoor_air_humidity_ratio": 0.0,
+                    "mode_maximum_outdoor_air_humidity_ratio": 0.1,
+                    "mode_minimum_outdoor_air_relative_humidity": 0.0,
+                    "mode_maximum_outdoor_air_relative_humidity": 100.0,
+                    "mode_minimum_return_air_temperature": 0.0,
+                    "mode_maximum_return_air_temperature": 0.0,
+                    "mode_minimum_return_air_humidity_ratio": 0.0,
+                    "mode_maximum_return_air_humidity_ratio": 0.1,
+                    "mode_minimum_return_air_relative_humidity": 0.0,
+                    "mode_maximum_return_air_relative_humidity": 100.0,
+                    "mode_minimum_outdoor_air_fraction": 0.1,
+                    "mode_maximum_outdoor_air_fraction": 1.0,
+                    "mode_minimum_supply_air_mass_flow_rate_ratio": 0.1,
+                    "mode_maximum_supply_air_mass_flow_rate_ratio": 1.0,
+                },
+                {
+                    "mode_name": "Mode Name",
+                    "mode_supply_air_temperature_lookup_table_name": "Mode Supply Air Temperature Lookup Table 2",
+                    "mode_supply_air_humidity_ratio_lookup_table_name": "Mode Supply Air Humidity Ratio Lookup Table 2",
+                    "mode_system_electric_power_lookup_table_name": "Mode System Electric Power Lookup Table 2",
+                    "mode_supply_fan_electric_power_lookup_table_name": "Mode Supply Fan Electric Power Lookup Table 2",
+                    "mode_external_static_pressure_lookup_table_name": "Mode External Static Pressure Lookup Table 2",
+                    "mode_system_second_fuel_consumption_lookup_table_name": "Mode System Second Fuel Consumption Lookup Table 2",
+                    "mode_system_third_fuel_consumption_lookup_table_name": "Mode System Third Fuel Consumption Lookup Table 2",
+                    "mode_system_water_use_lookup_table_name": "Mode System Water Use Lookup Table 2",
+                    "mode_minimum_outdoor_air_temperature": 0.0,
+                    "mode_maximum_outdoor_air_temperature": 0.0,
+                    "mode_minimum_outdoor_air_humidity_ratio": 0.0,
+                    "mode_maximum_outdoor_air_humidity_ratio": 0.1,
+                    "mode_minimum_outdoor_air_relative_humidity": 0.0,
+                    "mode_maximum_outdoor_air_relative_humidity": 100.0,
+                    "mode_minimum_return_air_temperature": 0.0,
+                    "mode_maximum_return_air_temperature": 0.0,
+                    "mode_minimum_return_air_humidity_ratio": 0.0,
+                    "mode_maximum_return_air_humidity_ratio": 0.1,
+                    "mode_minimum_return_air_relative_humidity": 0.0,
+                    "mode_maximum_return_air_relative_humidity": 100.0,
+                    "mode_minimum_outdoor_air_fraction": 0.1,
+                    "mode_maximum_outdoor_air_fraction": 1.0,
+                    "mode_minimum_supply_air_mass_flow_rate_ratio": 0.1,
+                    "mode_maximum_supply_air_mass_flow_rate_ratio": 1.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-forced-air-units/#zonehvachybridunitaryhvac
         """
 
@@ -271,6 +350,20 @@ class AnyUnitarySystemPerformanceMultispeed:
         """Create a new ``UnitarySystemPerformance:Multispeed`` and add it to the document.
 
         The UnitarySystemPerformance object is used to specify the air flow ratio at each operating speed. This object is primarily used for multispeed DX and water coils to allow operation at alternate flow rates different from those specified in the coil object.
+
+        ``flow_ratios`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["UnitarySystemPerformance:Multispeed"].add(
+            "UnitarySystemPerformance Multispeed 1",
+            number_of_speeds_for_heating=0,
+            number_of_speeds_for_cooling=0,
+            flow_ratios=[
+                {"heating_speed_supply_air_flow_ratio": 1.0, "cooling_speed_supply_air_flow_ratio": 1.0},
+                {"heating_speed_supply_air_flow_ratio": 1.0, "cooling_speed_supply_air_flow_ratio": 1.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-unitary-equipment/#unitarysystemperformancemultispeed
         """

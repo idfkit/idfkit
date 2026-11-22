@@ -46,6 +46,22 @@ class FanSystemModel_v8_9_to_v22_1:
 
         Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-speed applications. Performance at different flow rates, or speed levels, is determined using separate performance curve or table or prescribed power fractions at discrete speed levels for two-speed or multi-speed fans.
 
+        ``speed_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Fan:SystemModel"].add(
+            "Fan SystemModel 1",
+            air_inlet_node_name="Air Inlet Node Name",
+            air_outlet_node_name="Air Outlet Node Name",
+            design_maximum_air_flow_rate=1.0,
+            design_pressure_rise=1.0,
+            speed_fractions=[
+                {"speed_flow_fraction": 0.0, "speed_electric_power_fraction": 0.0},
+                {"speed_flow_fraction": 0.0, "speed_electric_power_fraction": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-fans/#fansystemmodel
         """
 

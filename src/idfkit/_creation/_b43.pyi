@@ -376,6 +376,18 @@ class WaterUseConnections:
 
         A subsystem that groups together multiple WaterUse:Equipment components. As its name suggests, the object provides connections that are shared by these components, including: 1. Inlet node and outlet node connections to a plant loop 2. Connections to WaterUse:Storage objects to store and draw reclaimed water 3. Internal connections to simulate drainwater heat recovery.
 
+        ``connections`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["WaterUse:Connections"].add(
+            "WaterUse Connections 1",
+            connections=[
+                {"water_use_equipment_name": "Water Use Equipment 1"},
+                {"water_use_equipment_name": "Water Use Equipment 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-water-systems/#wateruseconnections
         """
 

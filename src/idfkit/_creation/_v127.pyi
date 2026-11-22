@@ -39,6 +39,28 @@ class FoundationKiva_v8_9_to_v9_1:
 
         Refined definition of the foundation surface construction used to inform two-dimensional heat transfer calculated using the Kiva ground heat transfer methodology.
 
+        ``blocks`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Foundation:Kiva"].add(
+            "Foundation Kiva 1",
+            blocks=[
+                {
+                    "custom_block_x_position": 0.0,
+                    "custom_block_depth": 2.0,
+                    "custom_block_z_position": 0.0,
+                    "custom_block_material_name": "Custom Block Material 1",
+                },
+                {
+                    "custom_block_x_position": 0.0,
+                    "custom_block_depth": 2.0,
+                    "custom_block_z_position": 0.0,
+                    "custom_block_material_name": "Custom Block Material 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.1/io-reference/overview/group-advanced-surface-concepts/#foundationkiva
         """
 
@@ -265,6 +287,18 @@ class TableIndependentVariable_v9_2_to_v22_1:
         """Create a new ``Table:IndependentVariable`` and add it to the document.
 
         An independent variable representing a single dimension of a Table:Lookup object.
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:IndependentVariable"].add(
+            "Table IndependentVariable 1",
+            values=[
+                {"value": 0.0},
+                {"value": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-performance-tables/#tableindependentvariable
         """

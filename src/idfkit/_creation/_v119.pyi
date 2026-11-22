@@ -199,5 +199,19 @@ class UnitarySystemPerformanceMultispeed_v8_9_to_v22_1:
 
         The UnitarySystemPerformance object is used to specify the air flow ratio at each operating speed. This object is primarily used for multispeed DX and water coils to allow operation at alternate flow rates different from those specified in the coil object.
 
+        ``flow_ratios`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["UnitarySystemPerformance:Multispeed"].add(
+            "UnitarySystemPerformance Multispeed 1",
+            number_of_speeds_for_heating=0.0,
+            number_of_speeds_for_cooling=0.0,
+            flow_ratios=[
+                {"heating_speed_supply_air_flow_ratio": 1.0, "cooling_speed_supply_air_flow_ratio": 1.0},
+                {"heating_speed_supply_air_flow_ratio": 1.0, "cooling_speed_supply_air_flow_ratio": 1.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-unitary-equipment/#unitarysystemperformancemultispeed
         """

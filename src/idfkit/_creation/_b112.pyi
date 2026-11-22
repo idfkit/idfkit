@@ -76,6 +76,21 @@ class WindowShadingControl:
 
         Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the surface objects for exterior windows and glass doors (ref: FenestrationSurface:Detailed, Window, and GlazedDoor).
 
+        ``fenestration_surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["WindowShadingControl"].add(
+            "WindowShadingControl 1",
+            zone_name="Zone 1",
+            shading_type="BetweenGlassBlind",
+            shading_control_type="AlwaysOff",
+            fenestration_surfaces=[
+                {"fenestration_surface_name": "Fenestration Surface 1"},
+                {"fenestration_surface_name": "Fenestration Surface 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#windowshadingcontrol
         """
 

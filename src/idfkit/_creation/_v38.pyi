@@ -30,5 +30,18 @@ class RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1:
 
         Defines a distribution pattern for the air temperatures adjacent to individual surfaces. This allows controlling the adjacent air temperature on a surface-by-surface basis rather than by height. This allows modeling different adjacent air temperatures on the opposite sides of the zone. Used in combination with RoomAir:TemperaturePattern:UserDefined.
 
+        ``surface_deltas`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:TemperaturePattern:SurfaceMapping"].add(
+            "RoomAir TemperaturePattern SurfaceMapping 1",
+            control_integer_for_pattern_control_schedule_name=0.0,
+            surface_deltas=[
+                {"surface_name_pair": "Surface Name Pair 1", "delta_adjacent_air_temperature_pair": 0.0},
+                {"surface_name_pair": "Surface Name Pair 2", "delta_adjacent_air_temperature_pair": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-room-air-models/#roomairtemperaturepatternsurfacemapping
         """

@@ -69,6 +69,29 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_v8_9_to_v22_1
 
         This is a key object in the new physics based VRF model applicable for Fluid Temperature Control It describes the Variable Refrigerant Flow system excluding the performance of indoor units Indoor units are modeled separately, see ZoneHVAC:TerminalUnit:VariableRefrigerantFlow
 
+        ``loading_indices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl"].add(
+            heat_pump_name="Heat Pump Name",
+            zone_terminal_unit_list_name="Zone Terminal Unit List 1",
+            outdoor_unit_evaporating_temperature_function_of_superheating_curve_name="Outdoor Unit Evaporating Temperature Function of Superheating Curve 1",
+            outdoor_unit_condensing_temperature_function_of_subcooling_curve_name="Outdoor Unit Condensing Temperature Function of Subcooling Curve 1",
+            loading_indices=[
+                {
+                    "compressor_speed_at_loading_index": 1.0,
+                    "loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name": "Loading Index Evaporative Capacity Multiplier Function of Temperature Curve 1",
+                    "loading_index_compressor_power_multiplier_function_of_temperature_curve_name": "Loading Index Compressor Power Multiplier Function of Temperature Curve 1",
+                },
+                {
+                    "compressor_speed_at_loading_index": 1.0,
+                    "loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name": "Loading Index Evaporative Capacity Multiplier Function of Temperature Curve 2",
+                    "loading_index_compressor_power_multiplier_function_of_temperature_curve_name": "Loading Index Compressor Power Multiplier Function of Temperature Curve 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-variable-refrigerant-flow-equipment/#airconditionervariablerefrigerantflowfluidtemperaturecontrol
         """
 

@@ -43,6 +43,18 @@ class ZoneList:
 
         Defines a list of thermal zones which can be referenced as a group. The ZoneList name may be used elsewhere in the input to apply a parameter to all zones in the list. ZoneLists can be used effectively with the following objects: People, Lights, ElectricEquipment, GasEquipment, HotWaterEquipment, ZoneInfiltration:DesignFlowRate, ZoneVentilation:DesignFlowRate, Sizing:Zone, ZoneControl:Thermostat, and others.
 
+        ``zones`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneList"].add(
+            "ZoneList 1",
+            zones=[
+                {"zone_name": "Zone 1"},
+                {"zone_name": "Zone 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#zonelist
         """
 
@@ -171,6 +183,22 @@ class FanSystemModel:
 
         Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-speed applications. Performance at different flow rates, or speed levels, is determined using separate performance curve or table or prescribed power fractions at discrete speed levels for two-speed or multi-speed fans.
 
+        ``speed_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Fan:SystemModel"].add(
+            "Fan SystemModel 1",
+            air_inlet_node_name="Air Inlet Node Name",
+            air_outlet_node_name="Air Outlet Node Name",
+            design_maximum_air_flow_rate=1.0,
+            design_pressure_rise=1.0,
+            speed_fractions=[
+                {"speed_flow_fraction": 0.0, "speed_electric_power_fraction": 0.0},
+                {"speed_flow_fraction": 0.0, "speed_electric_power_fraction": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-fans/#fansystemmodel
         """
 
@@ -214,6 +242,18 @@ class AnyPlantEquipmentList:
 
         List plant equipment in order of operating priority, 1st in list will be used 1st, etc Use only plant equipment in this list. If no equipment object types and equipment names are specified, then the corresponding PlantEquipmentOperation:* object will assume all available plant equipment for the loop should be OFF (not operate) within the specified lower/upper limit.
 
+        ``equipment`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PlantEquipmentList"].add(
+            "PlantEquipmentList 1",
+            equipment=[
+                {"equipment_object_type": "Equipment Object Type 1", "equipment_name": "Equipment 1"},
+                {"equipment_object_type": "Equipment Object Type 2", "equipment_name": "Equipment 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-condenser-control/#plantequipmentlist
         """
 
@@ -247,6 +287,17 @@ class OutputTableSummaryReports:
         """Create a new ``Output:Table:SummaryReports`` and add it to the document.
 
         This object allows the user to call report types that are predefined and will appear with the other tabular reports. These predefined reports are sensitive to the OutputControl:Table:Style object and appear in the same files as the tabular reports. The entries for this object is a list of the predefined reports that should appear in the tabular report output file.
+
+        ``reports`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:SummaryReports"].add(
+            reports=[
+                {"report_name": "AdaptiveComfortSummary"},
+                {"report_name": "AirLoopComponentLoadSummary"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/standard-output-reports/output-table-summaryreports/#outputtablesummaryreports
         """

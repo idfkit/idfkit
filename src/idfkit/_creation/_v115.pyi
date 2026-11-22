@@ -121,4 +121,16 @@ class TableTwoIndependentVariables_v9_0_to_v9_1:
         """Create a new ``Table:TwoIndependentVariables`` and add it to the document.
 
         Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be created using these inputs. BiQuadratic Table Equation: Output = a + bX + cX**2 + dY + eY**2 + fXY BiQuadratic solution requires a minimum of 6 data pairs QuadraticLinear Table Equation: Output = a + bX + cX**2 + dY + eXY + fX**2Y QuadraticLinear solution requires a minimum of 6 data pairs
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:TwoIndependentVariables"].add(
+            "Table TwoIndependentVariables 1",
+            values=[
+                {"output_value_1": 0.0, "y_value_1": 0.0, "x_value_1": 0.0},
+                {"output_value_1": 0.0, "y_value_1": 0.0, "x_value_1": 0.0},
+            ],
+        )
+        ```
         """

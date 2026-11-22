@@ -142,6 +142,26 @@ class AnyControllerMechanicalVentilation:
 
         This object is used in conjunction with Controller:OutdoorAir to specify outdoor ventilation air based on outdoor air specified in the DesignSpecification:OutdoorAir object The Controller:OutdoorAir object is associated with a specific air loop, so the outdoor air flow rates specified in Controller:MechanicalVentilation correspond to the zones attached to that specific air loop. Duplicate groups of Zone name, Design Specification Outdoor Air Object Name, and Design Specification Zone Air Distribution Object Name to increase allowable number of entries
 
+        ``zone_specifications`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Controller:MechanicalVentilation"].add(
+            "Controller MechanicalVentilation 1",
+            zone_specifications=[
+                {
+                    "zone_or_zonelist_name": "Zone or ZoneList 1",
+                    "design_specification_outdoor_air_object_name": "Design Specification Outdoor Air Object 1",
+                    "design_specification_zone_air_distribution_object_name": "Design Specification Zone Air Distribution Object 1",
+                },
+                {
+                    "zone_or_zonelist_name": "Zone or ZoneList 2",
+                    "design_specification_outdoor_air_object_name": "Design Specification Outdoor Air Object 2",
+                    "design_specification_zone_air_distribution_object_name": "Design Specification Zone Air Distribution Object 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-controllers/#controllermechanicalventilation
         """
 

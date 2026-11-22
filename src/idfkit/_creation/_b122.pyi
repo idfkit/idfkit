@@ -93,5 +93,19 @@ class DemandManagerExteriorLights:
 
         used for demand limiting Exterior:Lights objects.
 
+        ``lights`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:ExteriorLights"].add(
+            "DemandManager ExteriorLights 1",
+            limit_control="Fixed",
+            selection_control="All",
+            lights=[
+                {"exterior_lights_name": "Exterior Lights 1"},
+                {"exterior_lights_name": "Exterior Lights 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerexteriorlights
         """

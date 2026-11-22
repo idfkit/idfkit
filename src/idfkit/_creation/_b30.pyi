@@ -34,6 +34,21 @@ class ScheduleWeekRule:
 
         A Schedule:Week:Rule defines one override rule for a Schedule:Year:Rules. Rules are evaluated in ascending Rule Priority Order; the first matching rule wins. A rule matches a day if: (a) the day falls within the specified date ranges, AND (b) the corresponding Apply <DayOfWeek> field is Yes.
 
+        ``date_ranges`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Schedule:Week:Rule"].add(
+            "Schedule Week Rule 1",
+            schedule_year_rules_name="Schedule Year Rules 1",
+            rule_priority_order=0,
+            day_schedule_name="Day Schedule 1",
+            date_ranges=[
+                {"start_month": 1, "start_day": 1, "end_month": 12, "end_day": 31},
+                {"start_month": 1, "start_day": 1, "end_month": 12, "end_day": 31},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduleweekrule
         """
 
@@ -214,6 +229,20 @@ class GroundHeatExchangerResponseFactors:
         """Create a new ``GroundHeatExchanger:ResponseFactors`` and add it to the document.
 
         Response factor definitions from third-party tool, commonly referred to a 'g-functions'
+
+        ``g_functions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["GroundHeatExchanger:ResponseFactors"].add(
+            "GroundHeatExchanger ResponseFactors 1",
+            ghe_vertical_properties_object_name="GHE:Vertical:Properties Object 1",
+            number_of_boreholes=0,
+            g_functions=[
+                {"g_function_ln_t_ts_value": 0.0, "g_function_g_value": 0.0},
+                {"g_function_ln_t_ts_value": 0.0, "g_function_g_value": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-condenser-equipment/#groundheatexchangerresponsefactors
         """

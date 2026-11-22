@@ -394,5 +394,17 @@ class TableIndependentVariable:
 
         An independent variable representing a single dimension of a Table:Lookup object.
 
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:IndependentVariable"].add(
+            "Table IndependentVariable 1",
+            values=[
+                {"value": 0.0},
+                {"value": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-performance-tables/#tableindependentvariable
         """

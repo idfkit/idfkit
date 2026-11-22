@@ -227,5 +227,28 @@ class SpaceHVACZoneEquipmentSplitter:
 
         Distributes the output from a piece of zone equipment to one or more Spaces in the Zone. If any equipment in a zone has a SpaceHVAC:ZoneEquipmentSplitter, then all equipment in the zone must have one. except Fan:ZoneExhaust. All spaces in the zone must also have a SpaceHVAC:EquipmentConnections object. Used only when ZoneAirHeatBalanceAlgorithm 'Do Space Heat Balance for Simulation' is Yes.
 
+        ``spaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SpaceHVAC:ZoneEquipmentSplitter"].add(
+            "SpaceHVAC ZoneEquipmentSplitter 1",
+            zone_name="Zone 1",
+            zone_equipment_object_type="AirLoopHVAC:UnitarySystem",
+            zone_equipment_name="Zone Equipment 1",
+            spaces=[
+                {
+                    "space_name": "Space 1",
+                    "space_fraction": 0.0,
+                    "space_supply_node_name": "Space Supply Node Name",
+                },
+                {
+                    "space_name": "Space 2",
+                    "space_fraction": 0.0,
+                    "space_supply_node_name": "Space Supply Node Name",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-equipment/#spacehvaczoneequipmentsplitter
         """

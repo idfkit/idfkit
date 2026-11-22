@@ -149,6 +149,28 @@ class AnyDemandManagerAssignmentList:
 
         A high level control that makes demand limiting decisions based on a list of possible demand limiting strategies.
 
+        ``manager_data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManagerAssignmentList"].add(
+            "DemandManagerAssignmentList 1",
+            meter_name="Meter Name",
+            demand_limit_safety_fraction=0.0,
+            demand_window_length=1,
+            demand_manager_priority="All",
+            manager_data=[
+                {
+                    "demandmanager_object_type": "DemandManager:ElectricEquipment",
+                    "demandmanager_name": "DemandManager 1",
+                },
+                {
+                    "demandmanager_object_type": "DemandManager:ExteriorLights",
+                    "demandmanager_name": "DemandManager 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerassignmentlist
         """
 
@@ -232,6 +254,19 @@ class LifeCycleCostUsePriceEscalation:
         """Create a new ``LifeCycleCost:UsePriceEscalation`` and add it to the document.
 
         Life cycle cost escalation factors. The values for this object may be found in the annual supplement to NIST Handbook 135 in Tables Ca-1 to Ca-5 and are included in an EnergyPlus dataset file.
+
+        ``escalations`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["LifeCycleCost:UsePriceEscalation"].add(
+            lcc_price_escalation_name="LCC Price Escalation Name",
+            resource="Coal",
+            escalations=[
+                {"year_escalation": 0.0},
+                {"year_escalation": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/lifecyclecost-usepriceescalation/#lifecyclecostusepriceescalation
         """

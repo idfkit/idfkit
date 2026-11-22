@@ -73,6 +73,23 @@ class BuildingSurfaceDetailed:
 
         Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors.
 
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["BuildingSurface:Detailed"].add(
+            "BuildingSurface Detailed 1",
+            surface_type="Ceiling",
+            zone_name="Zone 1",
+            outside_boundary_condition="Adiabatic",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#buildingsurfacedetailed
         """
 
@@ -113,6 +130,23 @@ class AnyWallDetailed:
         """Create a new ``Wall:Detailed`` and add it to the document.
 
         Allows for detailed entry of wall heat transfer surfaces.
+
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Wall:Detailed"].add(
+            "Wall Detailed 1",
+            construction_name="Construction 1",
+            zone_name="Zone 1",
+            outside_boundary_condition="Adiabatic",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#walldetailed
         """
@@ -155,6 +189,23 @@ class AnyFloorDetailed:
 
         Allows for detailed entry of floor heat transfer surfaces.
 
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Floor:Detailed"].add(
+            "Floor Detailed 1",
+            construction_name="Construction 1",
+            zone_name="Zone 1",
+            outside_boundary_condition="Adiabatic",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#floordetailed
         """
 
@@ -194,6 +245,26 @@ class RoomAirNodeAirflowNetworkInternalGains:
         """Create a new ``RoomAir:Node:AirflowNetwork:InternalGains`` and add it to the document.
 
         define the internal gains that are associated with one particular RoomAir:Node
+
+        ``gains`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:Node:AirflowNetwork:InternalGains"].add(
+            "RoomAir Node AirflowNetwork InternalGains 1",
+            gains=[
+                {
+                    "internal_gain_object_type": "AirTerminal:SingleDuct:UserDefined",
+                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "fraction_of_gains_to_node": 0.0,
+                },
+                {
+                    "internal_gain_object_type": "Coil:UserDefined",
+                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "fraction_of_gains_to_node": 0.0,
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-room-air-models/#roomairnodeairflownetworkinternalgains
         """
@@ -510,6 +581,19 @@ class AnyMeterCustomDecrement:
         """Create a new ``Meter:CustomDecrement`` and add it to the document.
 
         Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names. A Meter:CustomDecrement cannot reference another Meter:CustomDecrement, either as the Source Meter Name or in the Key Name/Output Variable or Meter Name pairs, though it may reference a Meter:Custom.
+
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Meter:CustomDecrement"].add(
+            "Meter CustomDecrement 1",
+            source_meter_name="Source Meter Name",
+            variable_details=[
+                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-simulation-parameters/#metercustomdecrement
         """

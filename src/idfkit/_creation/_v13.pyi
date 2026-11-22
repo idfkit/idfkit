@@ -223,6 +223,19 @@ class RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1:
 
         Defines a distribution pattern for air temperatures relative to the current mean air temperature as a function of height. The height, referred to as Zeta, is nondimensional by normalizing with the zone ceiling height. Used in combination with RoomAir:TemperaturePattern:UserDefined.
 
+        ``pairs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:TemperaturePattern:NondimensionalHeight"].add(
+            "RoomAir TemperaturePattern NondimensionalHeight 1",
+            control_integer_for_pattern_control_schedule_name=0.0,
+            pairs=[
+                {"pair_zeta_nondimensional_height": 0.0, "pair_delta_adjacent_air_temperature": 0.0},
+                {"pair_zeta_nondimensional_height": 0.0, "pair_delta_adjacent_air_temperature": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-room-air-models/#roomairtemperaturepatternnondimensionalheight
         """
 

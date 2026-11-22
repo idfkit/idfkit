@@ -236,6 +236,18 @@ class PlantEquipmentList:
 
         List plant equipment in order of operating priority, 1st in list will be used 1st, etc Use only plant equipment in this list. If no equipment object types and equipment names are specified, then the corresponding PlantEquipmentOperation:* object will assume all available plant equipment for the loop should be OFF (not operate) within the specified lower/upper limit.
 
+        ``equipment`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PlantEquipmentList"].add(
+            "PlantEquipmentList 1",
+            equipment=[
+                {"equipment_object_type": "Equipment Object Type 1", "equipment_name": "Equipment 1"},
+                {"equipment_object_type": "Equipment Object Type 2", "equipment_name": "Equipment 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-plant-condenser-control/#plantequipmentlist
         """
 

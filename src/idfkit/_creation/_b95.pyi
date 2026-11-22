@@ -152,6 +152,25 @@ class AnyAirLoopHVACDedicatedOutdoorAirSystem:
 
         Defines a central forced air system to provide dedicated outdoor air to multiple AirLoopHVACs.
 
+        ``airloophvacs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:DedicatedOutdoorAirSystem"].add(
+            "AirLoopHVAC DedicatedOutdoorAirSystem 1",
+            airloophvac_mixer_name="AirLoopHVAC:Mixer 1",
+            airloophvac_splitter_name="AirLoopHVAC:Splitter 1",
+            preheat_design_temperature=0.0,
+            preheat_design_humidity_ratio=0.0,
+            precool_design_temperature=0.0,
+            precool_design_humidity_ratio=0.0,
+            number_of_airloophvac=0,
+            airloophvacs=[
+                {"airloophvac_name": "AirLoopHVAC 1"},
+                {"airloophvac_name": "AirLoopHVAC 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvacdedicatedoutdoorairsystem
         """
 
@@ -231,6 +250,20 @@ class AnyDemandManagerExteriorLights:
         """Create a new ``DemandManager:ExteriorLights`` and add it to the document.
 
         used for demand limiting Exterior:Lights objects.
+
+        ``lights`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:ExteriorLights"].add(
+            "DemandManager ExteriorLights 1",
+            limit_control="Fixed",
+            selection_control="All",
+            lights=[
+                {"exterior_lights_name": "Exterior Lights 1"},
+                {"exterior_lights_name": "Exterior Lights 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerexteriorlights
         """

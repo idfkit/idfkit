@@ -46,6 +46,18 @@ class AnyMaterialPropertyPhaseChange:
 
         Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) Name and temperature coefficient are followed by up to 100 sets of temperature-enthalpy pairs. HeatBalanceAlgorithm = CondFD(ConductionFiniteDifference) solution algorithm only. Constructions with this should use the detailed CondFD process. Has no effect with other HeatBalanceAlgorithm solution algorithms
 
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["MaterialProperty:PhaseChange"].add(
+            "MaterialProperty PhaseChange 1",
+            values=[
+                {"temperature": 0.0, "enthalpy": 0.0},
+                {"temperature": 0.0, "enthalpy": 0.0},
+            ],
+        )
+        ```
+
         No call suits every release: narrow the document with ``as_version`` first.
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#materialpropertyphasechange
@@ -69,6 +81,26 @@ class SurfacePropertySurroundingSurfaces:
         """Create a new ``SurfaceProperty:SurroundingSurfaces`` and add it to the document.
 
         This object defines a list of surrounding surfaces for an exterior surface.
+
+        ``surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SurfaceProperty:SurroundingSurfaces"].add(
+            "SurfaceProperty SurroundingSurfaces 1",
+            surfaces=[
+                {
+                    "surrounding_surface_name": "Surrounding Surface Name",
+                    "surrounding_surface_view_factor": 0.0,
+                    "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 1",
+                },
+                {
+                    "surrounding_surface_name": "Surrounding Surface Name",
+                    "surrounding_surface_view_factor": 0.0,
+                    "surrounding_surface_temperature_schedule_name": "Surrounding Surface Temperature Schedule 2",
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertysurroundingsurfaces
         """
@@ -223,6 +255,18 @@ class EnergyManagementSystemSubroutine:
         """Create a new ``EnergyManagementSystem:Subroutine`` and add it to the document.
 
         This input defines an Erl program subroutine Each field after the name is a line of EMS Runtime Language
+
+        ``lines`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["EnergyManagementSystem:Subroutine"].add(
+            "EnergyManagementSystem Subroutine 1",
+            lines=[
+                {"program_line": "SET Fraction = 0.5"},
+                {"program_line": "RETURN"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemsubroutine
         """

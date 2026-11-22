@@ -78,6 +78,18 @@ class AirflowNetworkDistributionDuctViewFactors:
 
         This object is used to allow user-defined view factors to be used for duct-surface radiation calculations. All surfaces must be in the same enclosure.
 
+        ``surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirflowNetwork:Distribution:DuctViewFactors"].add(
+            linkage_name="Linkage 1",
+            surfaces=[
+                {"surface_name": "Surface 1", "surface_view_factor": 0.0},
+                {"surface_name": "Surface 2", "surface_view_factor": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-airflow-network/#airflownetworkdistributionductviewfactors
         """
 
@@ -94,6 +106,19 @@ class AirLoopHVACReturnPath:
         """Create a new ``AirLoopHVAC:ReturnPath`` and add it to the document.
 
         A return air path can only contain one AirLoopHVAC:ZoneMixer and one or more AirLoopHVAC:ReturnPlenum objects.
+
+        ``components`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:ReturnPath"].add(
+            "AirLoopHVAC ReturnPath 1",
+            return_air_path_outlet_node_name="Return Air Path Outlet Node Name",
+            components=[
+                {"component_object_type": "AirLoopHVAC:ReturnPlenum", "component_name": "Component 1"},
+                {"component_object_type": "AirLoopHVAC:ZoneMixer", "component_name": "Component 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvacreturnpath
         """
@@ -115,6 +140,19 @@ class WaterUseRainCollector:
         """Create a new ``WaterUse:RainCollector`` and add it to the document.
 
         Used for harvesting rainwater falling on building surfaces. The rainwater is sent to a WaterUse:Storage object. In versions up till Version 9.6, it is necessary to also include a Site:Precipitation object to describe the rates of rainfall, in order to use this object. In later versions, if the Site:Precipitation is not present, precipitation depth in the weather input .epw will be used instead. When this is the case, please make sure the precipitation in the .epw is accurate.
+
+        ``surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["WaterUse:RainCollector"].add(
+            "WaterUse RainCollector 1",
+            storage_tank_name="Storage Tank 1",
+            surfaces=[
+                {"collection_surface_name": "Collection Surface 1"},
+                {"collection_surface_name": "Collection Surface 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-water-systems/#wateruseraincollector
         """

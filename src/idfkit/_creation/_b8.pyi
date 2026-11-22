@@ -73,6 +73,18 @@ class MaterialPropertyGlazingSpectralData:
 
         Name is followed by up to 800 sets of normal-incidence measured values of [wavelength, transmittance, front reflectance, back reflectance] for wavelengths covering the solar spectrum (from about 0.25 to 2.5 microns)
 
+        ``extensions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["MaterialProperty:GlazingSpectralData"].add(
+            "MaterialProperty GlazingSpectralData 1",
+            extensions=[
+                {"wavelength": 0.0, "transmittance": 0.0, "front_reflectance": 0.0, "back_reflectance": 0.0},
+                {"wavelength": 0.0, "transmittance": 0.0, "front_reflectance": 0.0, "back_reflectance": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#materialpropertyglazingspectraldata
         """
 
@@ -92,6 +104,19 @@ class AnySpace:
 
         Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space is an optional input. If a Zone has no Space(s) specified in input then a default Space named <Zone Name> will be created. If some surfaces in a Zone are assigned to a space and some are not, then a default Space named <Zone Name>-Remainder will be created. Input references to Space Names must have a matching Space object (default space names may not be referenced except in output variable keys).
 
+        ``tags`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Space"].add(
+            "Space 1",
+            zone_name="Zone 1",
+            tags=[
+                {"tag": "Tag"},
+                {"tag": "Tag"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#space
         """
 
@@ -109,6 +134,20 @@ class ShadingBuildingDetailed:
         """Create a new ``Shading:Building:Detailed`` and add it to the document.
 
         used for shading elements such as trees, other buildings, parts of this building not being modeled these items are relative to the current building and would move with relative geometry
+
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Shading:Building:Detailed"].add(
+            "Shading Building Detailed 1",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zones-and-surfaces/#shadingbuildingdetailed
         """

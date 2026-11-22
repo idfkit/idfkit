@@ -52,6 +52,24 @@ class AnyBuildingSurfaceDetailed:
 
         Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors.
 
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["BuildingSurface:Detailed"].add(
+            "BuildingSurface Detailed 1",
+            surface_type="Ceiling",
+            construction_name="Construction 1",
+            zone_name="Zone 1",
+            outside_boundary_condition="Adiabatic",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-thermal-zone-description-geometry/#buildingsurfacedetailed
         """
 
@@ -106,6 +124,28 @@ class FoundationKiva:
         """Create a new ``Foundation:Kiva`` and add it to the document.
 
         Refined definition of the foundation surface construction used to inform two-dimensional heat transfer calculated using the Kiva ground heat transfer methodology.
+
+        ``blocks`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Foundation:Kiva"].add(
+            "Foundation Kiva 1",
+            blocks=[
+                {
+                    "custom_block_material_name": "Custom Block Material 1",
+                    "custom_block_depth": 1.0,
+                    "custom_block_x_position": 0.0,
+                    "custom_block_z_position": 0.0,
+                },
+                {
+                    "custom_block_material_name": "Custom Block Material 2",
+                    "custom_block_depth": 1.0,
+                    "custom_block_x_position": 0.0,
+                    "custom_block_z_position": 0.0,
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#foundationkiva
         """
@@ -284,6 +324,18 @@ class ZoneTerminalUnitList:
 
         List of variable refrigerant flow (VRF) terminal units served by a given VRF condensing unit. See ZoneHVAC:TerminalUnit:VariableRefrigerantFlow and AirConditioner:VariableRefrigerantFlow.
 
+        ``terminal_units`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneTerminalUnitList"].add(
+            zone_terminal_unit_list_name="Zone Terminal Unit List Name",
+            terminal_units=[
+                {"zone_terminal_unit_name": "Zone Terminal Unit 1"},
+                {"zone_terminal_unit_name": "Zone Terminal Unit 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-variable-refrigerant-flow-equipment/#zoneterminalunitlist
         """
 
@@ -301,6 +353,24 @@ class AvailabilityManagerAssignmentList:
         """Create a new ``AvailabilityManagerAssignmentList`` and add it to the document.
 
         Defines the applicable managers used for an AirLoopHVAC or PlantLoop. The priority of availability managers is based on a set of rules and are specific to the type of loop. The output from each availability manager is an availability status flag: NoAction, ForceOff, CycleOn, or CycleOnZoneFansOnly (used only for air loops).
+
+        ``managers`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AvailabilityManagerAssignmentList"].add(
+            "AvailabilityManagerAssignmentList 1",
+            managers=[
+                {
+                    "availability_manager_object_type": "AvailabilityManager:DifferentialThermostat",
+                    "availability_manager_name": "Availability Manager 1",
+                },
+                {
+                    "availability_manager_object_type": "AvailabilityManager:HighTemperatureTurnOff",
+                    "availability_manager_name": "Availability Manager 2",
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-distribution/#availabilitymanagerassignmentlist
         """

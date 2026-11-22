@@ -183,5 +183,18 @@ class Space_v22_2_to_v26_1:
 
         Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space is an optional input. If a Zone has no Space(s) specified in input then a default Space named <Zone Name> will be created. If some surfaces in a Zone are assigned to a space and some are not, then a default Space named <Zone Name>-Remainder will be created. Input references to Space Names must have a matching Space object (default space names may not be referenced except in output variable keys).
 
+        ``tags`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Space"].add(
+            "Space 1",
+            zone_name="Zone 1",
+            tags=[
+                {"tag": "Tag"},
+                {"tag": "Tag"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.1/io-reference/overview/group-thermal-zone-description-geometry/#space
         """

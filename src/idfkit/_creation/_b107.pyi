@@ -127,6 +127,28 @@ class SurfacePropertyGroundSurfaces:
 
         This object defines a list of ground surfaces for use with an exterior surface.
 
+        ``ground_surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SurfaceProperty:GroundSurfaces"].add(
+            "SurfaceProperty GroundSurfaces 1",
+            ground_surfaces=[
+                {
+                    "ground_surface_name": "Ground Surface Name",
+                    "ground_surface_view_factor": 0.0,
+                    "ground_surface_temperature_schedule_name": "Ground Surface Temperature Schedule 1",
+                    "ground_surface_reflectance_schedule_name": "Ground Surface Reflectance Schedule 1",
+                },
+                {
+                    "ground_surface_name": "Ground Surface Name",
+                    "ground_surface_view_factor": 0.0,
+                    "ground_surface_temperature_schedule_name": "Ground Surface Temperature Schedule 2",
+                    "ground_surface_reflectance_schedule_name": "Ground Surface Reflectance Schedule 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertygroundsurfaces
         """
 
@@ -149,6 +171,19 @@ class RoomAirTemperaturePatternNondimensionalHeight:
         """Create a new ``RoomAir:TemperaturePattern:NondimensionalHeight`` and add it to the document.
 
         Defines a distribution pattern for air temperatures relative to the current mean air temperature as a function of height. The height, referred to as Zeta, is nondimensional by normalizing with the zone ceiling height. Used in combination with RoomAir:TemperaturePattern:UserDefined.
+
+        ``pairs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:TemperaturePattern:NondimensionalHeight"].add(
+            "RoomAir TemperaturePattern NondimensionalHeight 1",
+            control_integer_for_pattern_control_schedule_name=0,
+            pairs=[
+                {"pair_zeta_nondimensional_height": 0.0, "pair_delta_adjacent_air_temperature": 0.0},
+                {"pair_zeta_nondimensional_height": 0.0, "pair_delta_adjacent_air_temperature": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-room-air-models/#roomairtemperaturepatternnondimensionalheight
         """
@@ -175,6 +210,22 @@ class ZoneHVACBaseboardRadiantConvectiveSteam:
         """Create a new ``ZoneHVAC:Baseboard:RadiantConvective:Steam`` and add it to the document.
 
         The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list.
+
+        ``surface_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:Baseboard:RadiantConvective:Steam"].add(
+            "ZoneHVAC Baseboard RadiantConvective Steam 1",
+            design_object="Design Object 1",
+            inlet_node_name="Inlet Node Name",
+            outlet_node_name="Outlet Node Name",
+            maximum_steam_flow_rate=1.0,
+            surface_fractions=[
+                {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
+                {"surface_name": "Surface 2", "fraction_of_radiant_energy_to_surface": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-radiative-convective-units/#zonehvacbaseboardradiantconvectivesteam
         """
@@ -219,6 +270,32 @@ class AnyZoneHVACEquipmentList:
         """Create a new ``ZoneHVAC:EquipmentList`` and add it to the document.
 
         List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit object must be listed in this statement if there is a forced air system serving the zone from the air loop. Equipment is simulated in the order specified by Zone Equipment Cooling Sequence and Zone Equipment Heating or No-Load Sequence, depending on the thermostat request. For equipment of similar type, assign sequence 1 to the first system intended to serve that type of load. For situations where one or more equipment types has limited capacity or limited control, order the sequence so that the most controllable piece of equipment runs last. For example, with a dedicated outdoor air system (DOAS), the air terminal for the DOAS should be assigned Heating Sequence = 1 and Cooling Sequence = 1. Any other equipment should be assigned sequence 2 or higher so that it will see the net load after the DOAS air is added to the zone.
+
+        ``equipment`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:EquipmentList"].add(
+            "ZoneHVAC EquipmentList 1",
+            equipment=[
+                {
+                    "zone_equipment_object_type": "AirLoopHVAC:UnitarySystem",
+                    "zone_equipment_name": "Zone Equipment 1",
+                    "zone_equipment_cooling_sequence": 0,
+                    "zone_equipment_heating_or_no_load_sequence": 0,
+                    "zone_equipment_sequential_cooling_fraction_schedule_name": "Zone Equipment Sequential Cooling Fraction Schedule 1",
+                    "zone_equipment_sequential_heating_fraction_schedule_name": "Zone Equipment Sequential Heating Fraction Schedule 1",
+                },
+                {
+                    "zone_equipment_object_type": "Fan:ZoneExhaust",
+                    "zone_equipment_name": "Zone Equipment 2",
+                    "zone_equipment_cooling_sequence": 0,
+                    "zone_equipment_heating_or_no_load_sequence": 0,
+                    "zone_equipment_sequential_cooling_fraction_schedule_name": "Zone Equipment Sequential Cooling Fraction Schedule 2",
+                    "zone_equipment_sequential_heating_fraction_schedule_name": "Zone Equipment Sequential Heating Fraction Schedule 2",
+                },
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-zone-equipment/#zonehvacequipmentlist
         """
@@ -361,6 +438,19 @@ class ParametricLogic:
         """Create a new ``Parametric:Logic`` and add it to the document.
 
         This object allows some types of objects to be included for some parametric cases and not for others. For example, you might want an overhang on a window in some parametric runs and not others. A single Parametric:Logic object is allowed per file. Consult the Input Output Reference for available commands and syntax.
+
+        ``lines`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Parametric:Logic"].add(
+            "Parametric Logic 1",
+            lines=[
+                {"parametric_logic_line": "IF RunIndex == 1"},
+                {"parametric_logic_line": "SET Thickness = 0.05"},
+                {"parametric_logic_line": "ENDIF"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/parametric-objects/#parametriclogic
         """

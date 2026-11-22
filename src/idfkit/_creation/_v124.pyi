@@ -339,6 +339,18 @@ class TableMultiVariableLookup_v9_0_to_v9_1:
         """Create a new ``Table:MultiVariableLookup`` and add it to the document.
 
         The multi-variable lookup table can represent from 1 to 6 independent variables and can interpolate these independent variables up to a 4th order polynomial. The polynomial order is assumed to be the number of interpolation points (n) minus 1. When any independent variable value is outside the table limits, linear extrapolation is used to predict the table result and is based on the two nearest data points in the table for that particular independent variable.
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:MultiVariableLookup"].add(
+            "Table MultiVariableLookup 1",
+            values=[
+                {"field_determined_by_the_number_of_independent_variables": 0.0},
+                {"field_determined_by_the_number_of_independent_variables": 0.0},
+            ],
+        )
+        ```
         """
 
 class RoofCeilingDetailed_v8_9_to_v9_5:
@@ -376,6 +388,23 @@ class RoofCeilingDetailed_v8_9_to_v9_5:
         """Create a new ``RoofCeiling:Detailed`` and add it to the document.
 
         Allows for detailed entry of roof/ceiling heat transfer surfaces.
+
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoofCeiling:Detailed"].add(
+            "RoofCeiling Detailed 1",
+            construction_name="Construction 1",
+            zone_name="Zone 1",
+            outside_boundary_condition="Adiabatic",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-thermal-zone-description-geometry/#roofceilingdetailed
         """

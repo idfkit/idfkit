@@ -27,6 +27,18 @@ class ScheduleDayList_v8_9_to_v22_1:
 
         Schedule:Day:List will allow the user to list 24 hours worth of values, which can be sub-hourly in nature.
 
+        ``extensions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Schedule:Day:List"].add(
+            "Schedule Day List 1",
+            extensions=[
+                {"value": 0.0},
+                {"value": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-schedules/#scheduledaylist
         """
 

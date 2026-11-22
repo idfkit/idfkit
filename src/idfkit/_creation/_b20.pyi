@@ -346,5 +346,17 @@ class ParametricRunControl:
 
         Controls which parametric runs are simulated. This object is optional. If it is not included, then all parametric runs are performed.
 
+        ``runs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Parametric:RunControl"].add(
+            "Parametric RunControl 1",
+            runs=[
+                {"perform_run": "Yes"},
+                {"perform_run": "Yes"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/parametric-objects/#parametricruncontrol
         """

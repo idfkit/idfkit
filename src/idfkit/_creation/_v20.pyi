@@ -151,6 +151,22 @@ class DemandManagerThermostats_v8_9_to_v22_1:
 
         used for demand limiting ZoneControl:Thermostat objects.
 
+        ``thermostats`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:Thermostats"].add(
+            "DemandManager Thermostats 1",
+            reset_control="Fixed",
+            maximum_heating_setpoint_reset=0.0,
+            maximum_cooling_setpoint_reset=0.0,
+            selection_control="All",
+            thermostats=[
+                {"thermostat_name": "Thermostat 1"},
+                {"thermostat_name": "Thermostat 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-demand-limiting-controls/#demandmanagerthermostats
         """
 

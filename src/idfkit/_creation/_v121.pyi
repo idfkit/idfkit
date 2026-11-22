@@ -57,6 +57,17 @@ class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1:
         """Create a new ``ZoneProperty:UserViewFactors:bySurfaceName`` and add it to the document.
 
         View factors for Surface to Surface in a zone. (Number of Surfaces)**2 must be entered.
+
+        ``view_factors`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneProperty:UserViewFactors:bySurfaceName"].add(
+            view_factors=[
+                {"from_surface": "From Surface 1", "to_surface": "To Surface 1", "view_factor": 0.0},
+                {"from_surface": "From Surface 2", "to_surface": "To Surface 2", "view_factor": 0.0},
+            ],
+        )
+        ```
         """
 
 class OutputTableSummaryReports_v8_9_to_v9_2:
@@ -74,6 +85,17 @@ class OutputTableSummaryReports_v8_9_to_v9_2:
         """Create a new ``Output:Table:SummaryReports`` and add it to the document.
 
         This object allows the user to call report types that are predefined and will appear with the other tabular reports. These predefined reports are sensitive to the OutputControl:Table:Style object and appear in the same files as the tabular reports. The entries for this object is a list of the predefined reports that should appear in the tabular report output file. There should be as many fields (A) in this object as there are keys in the following (minus AllSummary+AllMonthly+AllSummaryAndMonthly)
+
+        ``reports`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Output:Table:SummaryReports"].add(
+            reports=[
+                {"report_name": "Report Name"},
+                {"report_name": "Report Name"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/standard-output-reports/output-table-summaryreports/#outputtablesummaryreports
         """

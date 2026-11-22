@@ -57,6 +57,23 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater:
 
         The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list
 
+        ``surface_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:CoolingPanel:RadiantConvective:Water"].add(
+            "ZoneHVAC CoolingPanel RadiantConvective Water 1",
+            availability_schedule_name="Availability Schedule 1",
+            water_inlet_node_name="Water Inlet Node Name",
+            water_outlet_node_name="Water Outlet Node Name",
+            maximum_chilled_water_flow_rate=0.0,
+            fraction_radiant=0.0,
+            surface_fractions=[
+                {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
+                {"surface_name": "Surface 2", "fraction_of_radiant_energy_to_surface": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-radiative-convective-units/#zonehvaccoolingpanelradiantconvectivewater
         """
 

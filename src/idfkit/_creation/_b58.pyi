@@ -274,5 +274,17 @@ class MeterCustom:
 
         Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names. A Meter:Custom cannot reference another Meter:Custom or a Meter:CustomDecrement.
 
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Meter:Custom"].add(
+            "Meter Custom 1",
+            variable_details=[
+                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-simulation-parameters/#metercustom
         """

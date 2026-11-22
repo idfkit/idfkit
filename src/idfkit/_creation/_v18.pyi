@@ -102,6 +102,20 @@ class GroundHeatExchangerResponseFactors_v8_9_to_v22_1:
 
         Response factor definitions from third-party tool, commonly referred to a 'g-functions'
 
+        ``g_functions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["GroundHeatExchanger:ResponseFactors"].add(
+            "GroundHeatExchanger ResponseFactors 1",
+            ghe_vertical_properties_object_name="GHE:Vertical:Properties Object 1",
+            number_of_boreholes=0.0,
+            g_functions=[
+                {"g_function_ln_t_ts_value": 0.0, "g_function_g_value": 0.0},
+                {"g_function_ln_t_ts_value": 0.0, "g_function_g_value": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-condenser-equipment/#groundheatexchangerresponsefactors
         """
 
@@ -184,6 +198,30 @@ class PipingSystemUndergroundDomain_v8_9_to_v22_1:
         """Create a new ``PipingSystem:Underground:Domain`` and add it to the document.
 
         The ground domain object for underground piping system simulation.
+
+        ``pipe_circuits`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PipingSystem:Underground:Domain"].add(
+            "PipingSystem Underground Domain 1",
+            xmax=1.0,
+            ymax=1.0,
+            zmax=1.0,
+            x_direction_mesh_type="SymmetricGeometric",
+            y_direction_mesh_type="SymmetricGeometric",
+            z_direction_mesh_type="SymmetricGeometric",
+            soil_thermal_conductivity=1.0,
+            soil_density=1.0,
+            soil_specific_heat=1.0,
+            undisturbed_ground_temperature_model_type="Site:GroundTemperature:Undisturbed:FiniteDifference",
+            undisturbed_ground_temperature_model_name="Undisturbed Ground Temperature Model 1",
+            number_of_pipe_circuits_entered_for_this_domain=1.0,
+            pipe_circuits=[
+                {"pipe_circuit": "Pipe Circuit 1"},
+                {"pipe_circuit": "Pipe Circuit 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-node-branch-management/#pipingsystemundergrounddomain
         """

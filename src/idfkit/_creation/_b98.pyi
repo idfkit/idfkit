@@ -27,6 +27,26 @@ class AnyRoomAirNodeAirflowNetworkInternalGains:
 
         define the internal gains that are associated with one particular RoomAir:Node
 
+        ``gains`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:Node:AirflowNetwork:InternalGains"].add(
+            "RoomAir Node AirflowNetwork InternalGains 1",
+            gains=[
+                {
+                    "internal_gain_object_type": "AirTerminal:SingleDuct:UserDefined",
+                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "fraction_of_gains_to_node": 0.0,
+                },
+                {
+                    "internal_gain_object_type": "Coil:UserDefined",
+                    "internal_gain_object_name": "Internal Gain Object Name",
+                    "fraction_of_gains_to_node": 0.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-room-air-models/#roomairnodeairflownetworkinternalgains
         """
 

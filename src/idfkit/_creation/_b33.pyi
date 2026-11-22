@@ -31,6 +31,19 @@ class SiteSpectrumData:
 
         Spectrum Data Type is followed by up to 107 sets of normal-incidence measured values of [wavelength, spectrum] for wavelengths covering the solar (0.25 to 2.5 microns) or visible spectrum (0.38 to 0.78 microns)
 
+        ``extensions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Site:SpectrumData"].add(
+            "Site SpectrumData 1",
+            spectrum_data_type="Solar",
+            extensions=[
+                {"wavelength": 0.0, "spectrum": 0.0},
+                {"wavelength": 0.0, "spectrum": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-location-climate-weather-file-access/#sitespectrumdata
         """
 
@@ -47,6 +60,27 @@ class ScheduleCompact:
         """Create a new ``Schedule:Compact`` and add it to the document.
 
         Irregular object. Does not follow the usual definition for fields. Fields A3... are: Through: Date For: Applicable days (ref: Schedule:Week:Compact) Interpolate: Average/Linear/No (ref: Schedule:Day:Interval) -- optional, if not used will be 'No' Until: <Time> (ref: Schedule:Day:Interval) <numeric value> words 'Through','For','Interpolate','Until' must be included.
+
+        ``data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Schedule:Compact"].add(
+            "Schedule Compact 1",
+            data=[
+                {"field": "Through: 12/31"},
+                {"field": "For: Weekdays"},
+                {"field": "Until: 08:00"},
+                {"field": 0.0},
+                {"field": "Until: 18:00"},
+                {"field": 1.0},
+                {"field": "Until: 24:00"},
+                {"field": 0.0},
+                {"field": "For: AllOtherDays"},
+                {"field": "Until: 24:00"},
+                {"field": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#schedulecompact
         """

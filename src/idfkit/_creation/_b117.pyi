@@ -33,6 +33,17 @@ class AnyShadowCalculation:
 
         This object is used to control details of the solar, shading, and daylighting models
 
+        ``shading_zone_groups`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ShadowCalculation"].add(
+            shading_zone_groups=[
+                {"shading_zone_group_zonelist_name": "Shading Zone Group ZoneList 1"},
+                {"shading_zone_group_zonelist_name": "Shading Zone Group ZoneList 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-simulation-parameters/#shadowcalculation
         """
 
@@ -97,6 +108,21 @@ class AirLoopHVACSupplyPlenum:
         """Create a new ``AirLoopHVAC:SupplyPlenum`` and add it to the document.
 
         Connects 1 zone inlet air stream, through zone supply plenum, to one or more outlets. Node names cannot be duplicated within a single supply plenum list.
+
+        ``nodes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:SupplyPlenum"].add(
+            "AirLoopHVAC SupplyPlenum 1",
+            zone_name="Zone 1",
+            zone_node_name="Zone Node Name",
+            inlet_node_name="Inlet Node Name",
+            nodes=[
+                {"outlet_node_name": "Outlet Node Name"},
+                {"outlet_node_name": "Outlet Node Name"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvacsupplyplenum
         """

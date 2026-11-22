@@ -39,6 +39,20 @@ class SurfacePropertyExteriorNaturalVentedCavity:
 
         Used to describe the decoupled layer, or baffle, and the characteristics of the cavity and openings for naturally ventilated exterior surfaces. This object is also used in conjunction with the OtherSideConditionsModel.
 
+        ``surface`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SurfaceProperty:ExteriorNaturalVentedCavity"].add(
+            "SurfaceProperty ExteriorNaturalVentedCavity 1",
+            boundary_conditions_model_name="Boundary Conditions Model 1",
+            roughness_of_exterior_surface="MediumRough",
+            surface=[
+                {"surface_name": "Surface 1"},
+                {"surface_name": "Surface 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertyexteriornaturalventedcavity
         """
 
@@ -232,6 +246,28 @@ class AnyPipingSystemUndergroundPipeCircuit:
 
         The pipe circuit object in an underground piping system. This object is simulated within an underground piping domain object and connected on a branch on a plant loop.
 
+        ``pipe_segments`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["PipingSystem:Underground:PipeCircuit"].add(
+            "PipingSystem Underground PipeCircuit 1",
+            pipe_thermal_conductivity=1.0,
+            pipe_density=1.0,
+            pipe_specific_heat=1.0,
+            pipe_inner_diameter=1.0,
+            pipe_outer_diameter=1.0,
+            design_flow_rate=1.0,
+            circuit_inlet_node="Circuit Inlet Node",
+            circuit_outlet_node="Circuit Outlet Node",
+            radial_thickness_of_inner_radial_near_pipe_mesh_region=1.0,
+            number_of_pipe_segments_entered_for_this_pipe_circuit=1,
+            pipe_segments=[
+                {"pipe_segment": "Pipe Segment 1"},
+                {"pipe_segment": "Pipe Segment 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-node-branch-management/#pipingsystemundergroundpipecircuit
         """
 
@@ -267,6 +303,17 @@ class EnergyManagementSystemGlobalVariable:
         """Create a new ``EnergyManagementSystem:GlobalVariable`` and add it to the document.
 
         Declares Erl variable as having global scope No spaces allowed in names used for Erl variables
+
+        ``variables`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["EnergyManagementSystem:GlobalVariable"].add(
+            variables=[
+                {"erl_variable_name": "Erl Variable Name"},
+                {"erl_variable_name": "Erl Variable Name"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-energy-management-system-ems/#energymanagementsystemglobalvariable
         """

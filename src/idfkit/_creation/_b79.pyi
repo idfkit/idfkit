@@ -66,6 +66,28 @@ class AnyRoomAirNodeAirflowNetworkHVACEquipment:
 
         define the zone equipment associated with one particular RoomAir:Node
 
+        ``equipment_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["RoomAir:Node:AirflowNetwork:HVACEquipment"].add(
+            "RoomAir Node AirflowNetwork HVACEquipment 1",
+            equipment_fractions=[
+                {
+                    "zonehvac_or_air_terminal_equipment_object_type": "AirLoopHVACReturnAir",
+                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object Name",
+                    "fraction_of_output_or_supply_air_from_hvac_equipment": 0.0,
+                    "fraction_of_input_or_return_air_to_hvac_equipment": 0.0,
+                },
+                {
+                    "zonehvac_or_air_terminal_equipment_object_type": "AirTerminal:DualDuct:ConstantVolume",
+                    "zonehvac_or_air_terminal_equipment_object_name": "ZoneHVAC or Air Terminal Equipment Object Name",
+                    "fraction_of_output_or_supply_air_from_hvac_equipment": 0.0,
+                    "fraction_of_input_or_return_air_to_hvac_equipment": 0.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-room-air-models/#roomairnodeairflownetworkhvacequipment
         """
 
@@ -271,6 +293,27 @@ class SolarCollectorUnglazedTranspired:
 
         Unglazed transpired solar collector (UTSC) used to condition outdoor air. This type of collector is generally used to heat air drawn through perforated absorbers and also recover heat conducted out through the underlying surface. This object represents a single collector attached to one or more building or shading surfaces and to one or more outdoor air systems.
 
+        ``surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SolarCollector:UnglazedTranspired"].add(
+            "SolarCollector UnglazedTranspired 1",
+            boundary_conditions_model_name="Boundary Conditions Model 1",
+            diameter_of_perforations_in_collector=1.0,
+            distance_between_perforations_in_collector=1.0,
+            thermal_emissivity_of_collector_surface=0.0,
+            solar_absorbtivity_of_collector_surface=0.0,
+            effective_overall_height_of_collector=1.0,
+            effective_gap_thickness_of_plenum_behind_collector=1.0,
+            effective_cross_section_area_of_plenum_behind_collector=1.0,
+            roughness_of_collector="MediumRough",
+            surfaces=[
+                {"surface_name": "Surface 1"},
+                {"surface_name": "Surface 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-solar-collectors/#solarcollectorunglazedtranspired
         """
 
@@ -315,6 +358,22 @@ class AnyDemandManagerThermostats:
         """Create a new ``DemandManager:Thermostats`` and add it to the document.
 
         used for demand limiting ZoneControl:Thermostat objects.
+
+        ``thermostats`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:Thermostats"].add(
+            "DemandManager Thermostats 1",
+            reset_control="Fixed",
+            maximum_heating_setpoint_reset=0.0,
+            maximum_cooling_setpoint_reset=0.0,
+            selection_control="All",
+            thermostats=[
+                {"thermostat_name": "Thermostat 1"},
+                {"thermostat_name": "Thermostat 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerthermostats
         """

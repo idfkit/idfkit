@@ -196,6 +196,18 @@ class NodeList:
 
         This object is used in places where lists of nodes may be needed, e.g. ZoneHVAC:EquipmentConnections field Zone Air Inlet Node or NodeList Name
 
+        ``nodes`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["NodeList"].add(
+            "NodeList 1",
+            nodes=[
+                {"node_name": "Node Name"},
+                {"node_name": "Node Name"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-node-branch-management/#nodelist
         """
 

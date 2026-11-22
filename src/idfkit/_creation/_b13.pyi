@@ -53,6 +53,18 @@ class ZoneMRTCalculation:
 
         Blends MRT values calculated for People instances into one Zone MRT. The weighting factors must sum to a value from 0.0 through 1.0. Only one ZoneMRTCalculation object is allowed for each Zone. All referenced People instances must be in the named Zone and must select at least one Thermal Comfort Model Type.
 
+        ``people_names`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneMRTCalculation"].add(
+            zone_name="Zone 1",
+            people_names=[
+                {"people_name": "People 1", "mrt_weighting_factor": 0.0},
+                {"people_name": "People 2", "mrt_weighting_factor": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-construction,-surface,-zone-concepts/#zonemrtcalculation
         """
 

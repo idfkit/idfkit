@@ -69,5 +69,19 @@ class DemandManagerElectricEquipment_v8_9_to_v22_1:
 
         used for demand limiting ElectricEquipment objects.
 
+        ``equipment`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:ElectricEquipment"].add(
+            "DemandManager ElectricEquipment 1",
+            limit_control="Fixed",
+            selection_control="All",
+            equipment=[
+                {"electric_equipment_name": "Electric Equipment 1"},
+                {"electric_equipment_name": "Electric Equipment 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-demand-limiting-controls/#demandmanagerelectricequipment
         """

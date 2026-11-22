@@ -190,6 +190,20 @@ class AnyDemandManagerLights:
 
         used for demand limiting Lights objects.
 
+        ``lights`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:Lights"].add(
+            "DemandManager Lights 1",
+            limit_control="Fixed",
+            selection_control="All",
+            lights=[
+                {"lights_name": "Lights 1"},
+                {"lights_name": "Lights 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerlights
         """
 

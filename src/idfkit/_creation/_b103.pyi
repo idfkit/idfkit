@@ -228,6 +228,18 @@ class BranchList:
 
         Branches MUST be listed in Flow order: Inlet branch, then parallel branches, then Outlet branch. Branches are simulated in the order listed. Branch names cannot be duplicated within a single branch list.
 
+        ``branches`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["BranchList"].add(
+            "BranchList 1",
+            branches=[
+                {"branch_name": "Branch 1"},
+                {"branch_name": "Branch 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-node-branch-management/#branchlist
         """
 

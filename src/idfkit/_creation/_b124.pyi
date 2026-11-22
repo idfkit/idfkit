@@ -79,6 +79,21 @@ class ShadingZoneDetailed:
 
         used For fins, overhangs, elements that shade the building, are attached to the building but are not part of the heat transfer calculations
 
+        ``vertices`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Shading:Zone:Detailed"].add(
+            "Shading Zone Detailed 1",
+            base_surface_name="Base Surface 1",
+            vertices=[
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/cost-estimating/#shadingzonedetailed
         """
 
@@ -483,6 +498,25 @@ class AirLoopHVACDedicatedOutdoorAirSystem:
         """Create a new ``AirLoopHVAC:DedicatedOutdoorAirSystem`` and add it to the document.
 
         Defines a central forced air system to provide dedicated outdoor air to multiple AirLoopHVACs.
+
+        ``airloophvacs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:DedicatedOutdoorAirSystem"].add(
+            "AirLoopHVAC DedicatedOutdoorAirSystem 1",
+            airloophvac_mixer_name="AirLoopHVAC:Mixer 1",
+            airloophvac_splitter_name="AirLoopHVAC:Splitter 1",
+            preheat_design_temperature=0.0,
+            preheat_design_humidity_ratio=0.0,
+            precool_design_temperature=0.0,
+            precool_design_humidity_ratio=0.0,
+            number_of_airloophvac=0,
+            airloophvacs=[
+                {"airloophvac_name": "AirLoopHVAC 1"},
+                {"airloophvac_name": "AirLoopHVAC 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-air-path/#airloophvacdedicatedoutdoorairsystem
         """

@@ -79,6 +79,27 @@ class DaylightingControls:
 
         Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calculated.
 
+        ``control_data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Daylighting:Controls"].add(
+            "Daylighting Controls 1",
+            zone_or_space_name="Zone or Space 1",
+            control_data=[
+                {
+                    "daylighting_reference_point_name": "Daylighting Reference Point 1",
+                    "fraction_of_lights_controlled_by_reference_point": 1.0,
+                    "illuminance_setpoint_at_reference_point": 500.0,
+                },
+                {
+                    "daylighting_reference_point_name": "Daylighting Reference Point 2",
+                    "fraction_of_lights_controlled_by_reference_point": 1.0,
+                    "illuminance_setpoint_at_reference_point": 500.0,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/cost-estimating/#daylightingcontrols
         """
 

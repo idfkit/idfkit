@@ -102,6 +102,34 @@ class ZoneHVACVentilatedSlabSlabGroup:
 
         This is used to allow the coordinate control of several ventilated slab system surfaces. Note that the flow fractions must sum up to 1.0. The number of surfaces can be expanded beyond 10, if necessary, by adding more groups to the end of the list
 
+        ``data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:VentilatedSlab:SlabGroup"].add(
+            "ZoneHVAC VentilatedSlab SlabGroup 1",
+            data=[
+                {
+                    "zone_name": "Zone 1",
+                    "surface_name": "Surface 1",
+                    "core_diameter_for_surface": 0.0,
+                    "core_length_for_surface": 0.0,
+                    "core_numbers_for_surface": 0.0,
+                    "slab_inlet_node_name_for_surface": "Slab Inlet Node Name for Surface",
+                    "slab_outlet_node_name_for_surface": "Slab Outlet Node Name for Surface",
+                },
+                {
+                    "zone_name": "Zone 2",
+                    "surface_name": "Surface 2",
+                    "core_diameter_for_surface": 0.0,
+                    "core_length_for_surface": 0.0,
+                    "core_numbers_for_surface": 0.0,
+                    "slab_inlet_node_name_for_surface": "Slab Inlet Node Name for Surface",
+                    "slab_outlet_node_name_for_surface": "Slab Outlet Node Name for Surface",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-radiative-convective-units/#zonehvacventilatedslabslabgroup
         """
 
@@ -143,6 +171,28 @@ class SolarCollectorUnglazedTranspiredMultisystem:
 
         quad-tuples of inlet, outlet, control, and zone nodes for multiple different outdoor air systems attached to same collector
 
+        ``systems`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SolarCollector:UnglazedTranspired:Multisystem"].add(
+            solar_collector_name="Solar Collector 1",
+            systems=[
+                {
+                    "outdoor_air_system_collector_inlet_node": "Outdoor Air System Collector Inlet Node",
+                    "outdoor_air_system_collector_outlet_node": "Outdoor Air System Collector Outlet Node",
+                    "outdoor_air_system_mixed_air_node": "Outdoor Air System Mixed Air Node",
+                    "outdoor_air_system_zone_node": "Outdoor Air System Zone Node",
+                },
+                {
+                    "outdoor_air_system_collector_inlet_node": "Outdoor Air System Collector Inlet Node",
+                    "outdoor_air_system_collector_outlet_node": "Outdoor Air System Collector Outlet Node",
+                    "outdoor_air_system_mixed_air_node": "Outdoor Air System Mixed Air Node",
+                    "outdoor_air_system_zone_node": "Outdoor Air System Zone Node",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-solar-collectors/#solarcollectorunglazedtranspiredmultisystem
         """
 
@@ -158,6 +208,18 @@ class AnyMeterCustom:
         """Create a new ``Meter:Custom`` and add it to the document.
 
         Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names. A Meter:Custom cannot reference another Meter:Custom or a Meter:CustomDecrement.
+
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Meter:Custom"].add(
+            "Meter Custom 1",
+            variable_details=[
+                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-simulation-parameters/#metercustom
         """

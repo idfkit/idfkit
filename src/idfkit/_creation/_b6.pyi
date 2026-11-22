@@ -29,6 +29,24 @@ class WindowMaterialGlazingGroupThermochromic:
 
         thermochromic glass at different temperatures
 
+        ``temperature_data`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["WindowMaterial:GlazingGroup:Thermochromic"].add(
+            "WindowMaterial GlazingGroup Thermochromic 1",
+            temperature_data=[
+                {
+                    "optical_data_temperature": 0.0,
+                    "window_material_glazing_name": "Window Material Glazing 1",
+                },
+                {
+                    "optical_data_temperature": 0.0,
+                    "window_material_glazing_name": "Window Material Glazing 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-surface-construction-elements/#windowmaterialglazinggroupthermochromic
         """
 
@@ -72,6 +90,18 @@ class ComfortViewFactorAngles:
         """Create a new ``ComfortViewFactorAngles`` and add it to the document.
 
         Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions must sum up to 1.0 All surfaces must be in the same enclosure.
+
+        ``angles`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ComfortViewFactorAngles"].add(
+            "ComfortViewFactorAngles 1",
+            angles=[
+                {"surface_name": "Surface 1", "angle_factor": 0.0},
+                {"surface_name": "Surface 2", "angle_factor": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-internal-gains-people-lights-other/#comfortviewfactorangles
         """

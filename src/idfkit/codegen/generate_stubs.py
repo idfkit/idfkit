@@ -26,7 +26,7 @@ import textwrap
 import zlib
 from collections.abc import Hashable, Iterable, Iterator, Mapping
 from pathlib import Path
-from typing import Any, NamedTuple, TypeAlias, TypeVar
+from typing import Any, NamedTuple, TypeAlias, TypeVar, cast
 
 from idfkit._accessors import deprecated_plural_message
 from idfkit.docs import io_reference_url
@@ -1437,7 +1437,168 @@ class _CreationModules:
         return out
 
 
-def _creation_docstring(schema: EpJSONSchema, obj_type: str, *, narrow_first: bool) -> str:
+#: Groups for the types whose generated example would teach nothing: their group's only field takes
+#: free text the schema does not describe (``field`` of ``Schedule:Compact``), so a value made from
+#: its label would be a value EnergyPlus refuses. Each entry is the groups' values, in order.
+_CURATED_GROUP_VALUES: dict[str, tuple[Any, ...]] = {
+    "Schedule:Compact": (
+        "Through: 12/31",
+        "For: Weekdays",
+        "Until: 08:00",
+        0.0,
+        "Until: 18:00",
+        1.0,
+        "Until: 24:00",
+        0.0,
+        "For: AllOtherDays",
+        "Until: 24:00",
+        0.0,
+    ),
+    "EnergyManagementSystem:Program": ("SET Fraction = 0.5", "IF Hour >= 18", "SET Fraction = 0.0", "ENDIF"),
+    "EnergyManagementSystem:Subroutine": ("SET Fraction = 0.5", "RETURN"),
+    "Parametric:Logic": ("IF RunIndex == 1", "SET Thickness = 0.05", "ENDIF"),
+}
+
+#: How many groups a generated example shows: enough to show that the list repeats.
+_EXAMPLE_GROUPS = 2
+
+#: The keys of a vertex group, and the four corners of a 10 m by 3 m wall a vertex example lists,
+#: counterclockwise from the upper left seen from outside, as ``GlobalGeometryRules`` defaults to.
+_VERTEX_KEYS = ("vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate")
+_VERTEX_CORNERS = ((0.0, 0.0, 3.0), (0.0, 0.0, 0.0), (10.0, 0.0, 0.0), (10.0, 0.0, 3.0))
+
+
+def _literal(value: object) -> str:
+    """*value* as Python source, a string in double quotes as ruff formats it."""
+    if isinstance(value, str):
+        return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    return repr(value)
+
+
+def _field_label(schema_obj: Mapping[str, Any], key: str) -> str:
+    """The IDD label of the field *key* (``Vertex X-coordinate``), or *key* spelled out."""
+    legacy: Mapping[str, Any] = schema_obj.get("legacy_idd") or {}
+    field_info: Mapping[str, Any] = legacy.get("field_info") or {}
+    info: Any = field_info.get(key)
+    label: Any = cast("dict[str, Any]", info).get("field_name") if isinstance(info, dict) else None
+    return _sanitize_docstring(label if isinstance(label, str) and label else key.replace("_", " ").title())
+
+
+def _example_number(spec: Mapping[str, Any], *, integer: bool) -> int | float:
+    """A number *spec* (a field's schema) accepts: its default, else 0 moved inside its bounds."""
+    default = spec.get("default")
+    if isinstance(default, (int, float)) and not isinstance(default, bool):
+        return int(default) if integer else float(default)
+    value: float = 0
+    if isinstance(spec.get("minimum"), (int, float)):
+        value = max(value, spec["minimum"])
+    if isinstance(spec.get("exclusiveMinimum"), (int, float)) and value <= spec["exclusiveMinimum"]:
+        value = spec["exclusiveMinimum"] + 1
+    if isinstance(spec.get("maximum"), (int, float)):
+        value = min(value, spec["maximum"])
+    if isinstance(spec.get("exclusiveMaximum"), (int, float)) and value >= spec["exclusiveMaximum"]:
+        value = spec["exclusiveMaximum"] - 1
+    return int(value) if integer else float(value)
+
+
+def _example_value(spec: Mapping[str, Any], label: str, index: int = 0) -> object:
+    """A value for the field *spec* describes, *label* its IDD label, that the field accepts.
+
+    A choice field gets its default or its first choice; a number its default or 0 within its
+    bounds (``anyOf`` number or ``Autosize`` gives the number); a reference a name made from its
+    label (``Zone Name`` gives ``"Zone 1"``); any other text its default or its label. *index*, the
+    group's position in an example, moves a choice field (without a default) and a reference on,
+    so that two groups do not name the same thing.
+    """
+    any_of: list[Any] = spec.get("anyOf") or []
+    branches: list[Mapping[str, Any]] = [spec, *(cast("dict[str, Any]", b) for b in any_of if isinstance(b, dict))]
+    for branch in branches:
+        if branch.get("type") in ("number", "integer"):
+            # The default sits beside anyOf, not in the number branch; a text one is ignored.
+            bounded = {**branch, "default": spec.get("default")}
+            return _example_number(bounded, integer=branch.get("type") == "integer")
+    choices: list[str] = []
+    for branch in branches:
+        enum: list[Any] = branch.get("enum") or []
+        choices += [c for c in enum if isinstance(c, str) and c]
+    if choices:
+        default = spec.get("default")
+        return default if default in choices else choices[index % len(choices)]
+    if isinstance(spec.get("default"), str) and spec["default"]:
+        return spec["default"]
+    if spec.get("object_list") or spec.get("data_type") == "object_list":
+        stem = label[: -len(" Name")] if label.endswith(" Name") else label
+        return f"{stem} {index + 1}"
+    return label
+
+
+def _extensible_example(
+    schema: EpJSONSchema, obj_type: str, *, name: str = "required", required: Iterable[str] = ()
+) -> tuple[str, list[str]] | None:
+    """The wrapper key of *obj_type*'s extensible group and a fenced Python example of an ``add()`` call that fills *obj_type*'s extensible group.
+
+    ``None`` for a type without one. The call goes through ``doc[obj_type].add``, as typed code
+    does, and passes the name when the type has one (*name* is ``"required"``, ``"optional"`` or
+    ``"none"``), the fields in *required* (the keywords the signature requires) and the others
+    *schema*'s release requires, and the group's
+    wrapper with :data:`_EXAMPLE_GROUPS` groups, or the curated groups of
+    :data:`_CURATED_GROUP_VALUES`. Each value is one the field accepts (:func:`_example_value`), so
+    the call runs as shown.
+    """
+    pc = schema.get_parsing_cache(obj_type)
+    if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
+        return None
+    wrapper = pc.ext_wrapper_key
+    keys = [key for key in pc.ext_inner_props if key.isidentifier()]
+    if not keys:
+        return None
+    curated = _CURATED_GROUP_VALUES.get(obj_type)
+    groups: list[dict[str, object]]
+    if curated is not None and len(keys) == 1:
+        groups = [{keys[0]: value} for value in curated]
+    elif tuple(keys) == _VERTEX_KEYS:
+        groups = [dict(zip(keys, corner, strict=True)) for corner in _VERTEX_CORNERS]
+    else:
+        groups = [
+            {key: _example_value(pc.ext_inner_props[key], _field_label(pc.obj_schema, key), n) for key in keys}
+            for n in range(_EXAMPLE_GROUPS)
+        ]
+    args: list[str] = []
+    if name != "none":
+        args.append(_literal(f"{obj_type.replace(':', ' ')} 1"))
+    # What the signature requires, then what this release requires that the signature cannot
+    # (a field another release names differently), so the call runs once the document is narrowed.
+    required = list(required)
+    taken = {field_name.rstrip("_") for field_name in required}
+    required += [f for f in schema.get_required_fields(obj_type) if f not in taken and f.isidentifier()]
+    for field_name in required:
+        if field_name in (wrapper, "name"):
+            continue
+        spec = schema.get_field_schema(obj_type, field_name.rstrip("_")) or {}
+        args.append(f"{field_name}={_literal(_example_value(spec, _field_label(pc.obj_schema, field_name)))}")
+    lines = ["```python", f"doc[{_literal(obj_type)}].add("]
+    lines += [f"    {arg}," for arg in args]
+    lines.append(f"    {wrapper}=[")
+    for values in groups:
+        item = "{" + ", ".join(f"{_literal(k)}: {_literal(v)}" for k, v in values.items()) + "}"
+        if len(item) + 8 > 100:  # one key per line once the dict no longer fits beside its indent
+            lines.append("        {")
+            lines += [f"            {_literal(k)}: {_literal(v)}," for k, v in values.items()]
+            lines.append("        },")
+        else:
+            lines.append(f"        {item},")
+    lines += ["    ],", ")", "```"]
+    return wrapper, lines
+
+
+def _creation_docstring(
+    schema: EpJSONSchema,
+    obj_type: str,
+    *,
+    narrow_first: bool,
+    name: str = "required",
+    required: Iterable[str] = (),
+) -> str:
     """The docstring of *obj_type*'s creation signature in *schema*'s release.
 
     An editor shows it for ``add()`` on a collection of the type, in hover and signature help:
@@ -1454,6 +1615,15 @@ def _creation_docstring(schema: EpJSONSchema, obj_type: str, *, narrow_first: bo
     memo = schema.get_object_memo(obj_type)
     if memo:
         lines += ["", _sanitize_docstring(" ".join(memo.split())).replace("\\", "\\\\")]
+    example = _extensible_example(schema, obj_type, name=name, required=required)
+    if example is not None:
+        wrapper, example = example
+        lines += [
+            "",
+            f"``{wrapper}`` takes the extensible groups in order, one dict per group:",
+            "",
+            *(line.replace("\\", "\\\\") for line in example),
+        ]
     if narrow_first:
         lines += ["", "No call suits every release: narrow the document with ``as_version`` first."]
     url = io_reference_url(obj_type, schema.version, schema)
@@ -1505,6 +1675,7 @@ def _creation_lines(
     params.append("/")
     defaults = dict(creation.defaults)
     required: list[str] = []
+    required_names: list[str] = []
     optional: list[str] = []
     fields = list(fields)
     settable = {name for name, annotation in fields if _strip_none(annotation) != "None"}
@@ -1518,6 +1689,7 @@ def _creation_lines(
             continue
         if name in creation.required and value_type != "None":
             required.append(f"{name}: {value_type}")
+            required_names.append(name)
             continue
         default = defaults.get(name)
         shown = default if default is not None and _admits(_split_union(value_type), default) else "..."
@@ -1528,7 +1700,7 @@ def _creation_lines(
         raise ValueError(msg)
     params.append("*")
     params += [*required, *optional, _VALIDATE_PARAM]
-    doc = _creation_docstring(schema, obj_type, narrow_first=narrow_first)
+    doc = _creation_docstring(schema, obj_type, narrow_first=narrow_first, name=creation.name, required=required_names)
     # Each class's signature is its own, unrelated to its base's: an override mypy reports as an
     # incompatible assignment (pyright does not), as the generated update and as_dict overrides are.
     annotation = sink.add(cls_name, ", ".join(params), doc)

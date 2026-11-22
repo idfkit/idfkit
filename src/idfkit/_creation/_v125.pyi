@@ -72,6 +72,25 @@ class GroundHeatExchangerSystem_v8_9_to_v9_5:
 
         Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response factors are calculated using a finite line source model assuming uniform heat flux at the borehole wall.
 
+        ``vertical_well_locations`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["GroundHeatExchanger:System"].add(
+            "GroundHeatExchanger System 1",
+            inlet_node_name="Inlet Node Name",
+            outlet_node_name="Outlet Node Name",
+            design_flow_rate=2.0,
+            undisturbed_ground_temperature_model_type="Site:GroundTemperature:Undisturbed:FiniteDifference",
+            undisturbed_ground_temperature_model_name="Undisturbed Ground Temperature Model 1",
+            ground_thermal_conductivity=2.0,
+            ground_thermal_heat_capacity=2.0,
+            vertical_well_locations=[
+                {"ghe_vertical_single_object_name": "GHE:Vertical:Single Object 1"},
+                {"ghe_vertical_single_object_name": "GHE:Vertical:Single Object 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-condenser-equipment/#groundheatexchangersystem
         """
 
@@ -200,6 +219,18 @@ class TableOneIndependentVariable_v9_0_to_v9_1:
         """Create a new ``Table:OneIndependentVariable`` and add it to the document.
 
         Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be created using these inputs. Linear Table Equation: Output = a + bX Linear solution requires a minimum of 2 data pairs Quadratic Table Equation: Output = a + b*X + c*X**2 Quadratic solution requires a minimum of 3 data pairs Cubic Table Equation: Output = a + b*X + c* X**2 + d*X**3 Cubic solution requires a minimum of 4 data pairs Quartic Table Equation: Output = a + b*X + c* X**2 + d*X**3 + e*X**4 Quartic solution requires a minimum of 5 data pairs Exponent Table Equation: Output = a + b*X**c Exponent solution requires a minimum of 4 data pairs
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:OneIndependentVariable"].add(
+            "Table OneIndependentVariable 1",
+            values=[
+                {"output_value_1": 0.0, "x_value_1": 0.0},
+                {"output_value_1": 0.0, "x_value_1": 0.0},
+            ],
+        )
+        ```
         """
 
 class AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9:

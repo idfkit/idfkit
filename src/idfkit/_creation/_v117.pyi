@@ -230,6 +230,19 @@ class MeterCustomDecrement_v9_4_to_v23_1:
 
         Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these meters by name, one must first run a simulation to generate the RDD/MDD files and names.
 
+        ``variable_details`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Meter:CustomDecrement"].add(
+            "Meter CustomDecrement 1",
+            source_meter_name="Source Meter Name",
+            variable_details=[
+                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+                {"key_name": "Key Name", "output_variable_or_meter_name": "Output Variable or Meter Name"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v23.1/io-reference/overview/group-simulation-parameters/#metercustomdecrement
         """
 

@@ -257,6 +257,25 @@ class AnyGroundHeatExchangerSystem:
 
         Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response factors are calculated using a finite line source model assuming uniform heat flux at the borehole wall if UHFcalc is specified, or uniform borehole wall temperature if UBHWTcalc is specified.
 
+        ``vertical_well_locations`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["GroundHeatExchanger:System"].add(
+            "GroundHeatExchanger System 1",
+            inlet_node_name="Inlet Node Name",
+            outlet_node_name="Outlet Node Name",
+            design_flow_rate=1.0,
+            undisturbed_ground_temperature_model_type="Site:GroundTemperature:Undisturbed:FiniteDifference",
+            undisturbed_ground_temperature_model_name="Undisturbed Ground Temperature Model 1",
+            ground_thermal_conductivity=1.0,
+            ground_thermal_heat_capacity=1.0,
+            vertical_well_locations=[
+                {"ghe_vertical_single_object_name": "GHE:Vertical:Single Object 1"},
+                {"ghe_vertical_single_object_name": "GHE:Vertical:Single Object 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-condenser-equipment/#groundheatexchangersystem
         """
 

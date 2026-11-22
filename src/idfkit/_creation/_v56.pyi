@@ -32,6 +32,20 @@ class DemandManagerExteriorLights_v8_9_to_v22_1:
 
         used for demand limiting Exterior:Lights objects.
 
+        ``lights`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:ExteriorLights"].add(
+            "DemandManager ExteriorLights 1",
+            limit_control="Fixed",
+            selection_control="All",
+            lights=[
+                {"exterior_lights_name": "Exterior Lights 1"},
+                {"exterior_lights_name": "Exterior Lights 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-demand-limiting-controls/#demandmanagerexteriorlights
         """
 
@@ -117,6 +131,18 @@ class TableMultiVariableLookup_v8_9:
         """Create a new ``Table:MultiVariableLookup`` and add it to the document.
 
         The multi-variable lookup table can represent from 1 to 6 independent variables and can interpolate these independent variables up to a 4th order polynomial. The polynomial order is assumed to be the number of interpolation points (n) minus 1. When any independent variable value is outside the table limits, linear extrapolation is used to predict the table result and is based on the two nearest data points in the table for that particular independent variable.
+
+        ``values`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:MultiVariableLookup"].add(
+            "Table MultiVariableLookup 1",
+            values=[
+                {"field_determined_by_the_number_of_independent_variables": 0.0},
+                {"field_determined_by_the_number_of_independent_variables": 0.0},
+            ],
+        )
+        ```
         """
 
 class CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5:

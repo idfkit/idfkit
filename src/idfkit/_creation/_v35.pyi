@@ -283,6 +283,19 @@ class LifeCycleCostUsePriceEscalation_v8_9_to_v9_2:
 
         Life cycle cost escalation factors. The values for this object may be found in the annual supplement to NIST Handbook 135 in Tables Ca-1 to Ca-5 and are included in an EnergyPlus dataset file.
 
+        ``escalations`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["LifeCycleCost:UsePriceEscalation"].add(
+            lcc_price_escalation_name="LCC Price Escalation Name",
+            resource="Resource",
+            escalations=[
+                {"year_escalation": 0.0},
+                {"year_escalation": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/energyplus-economics/lifecyclecost-usepriceescalation/#lifecyclecostusepriceescalation
         """
 

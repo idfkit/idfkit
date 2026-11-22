@@ -62,6 +62,26 @@ class ControllerMechanicalVentilation_v8_9_to_v9_2:
 
         This object is used in conjunction with Controller:OutdoorAir to specify outdoor ventilation air based on outdoor air specified in the DesignSpecification:OutdoorAir object The Controller:OutdoorAir object is associated with a specific air loop, so the outdoor air flow rates specified in Controller:MechanicalVentilation correspond to the zones attached to that specific air loop. Duplicate groups of Zone name, Design Specification Outdoor Air Object Name, and Design Specification Zone Air Distribution Object Name to increase allowable number of entries
 
+        ``zone_specifications`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Controller:MechanicalVentilation"].add(
+            "Controller MechanicalVentilation 1",
+            zone_specifications=[
+                {
+                    "design_specification_outdoor_air_object_name": "Design Specification Outdoor Air Object 1",
+                    "zone_name": "Zone 1",
+                    "design_specification_zone_air_distribution_object_name": "Design Specification Zone Air Distribution Object 1",
+                },
+                {
+                    "design_specification_outdoor_air_object_name": "Design Specification Outdoor Air Object 2",
+                    "zone_name": "Zone 2",
+                    "design_specification_zone_air_distribution_object_name": "Design Specification Zone Air Distribution Object 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.2/io-reference/overview/group-controllers/#controllermechanicalventilation
         """
 
@@ -95,6 +115,26 @@ class ControllerMechanicalVentilation_v9_5:
 
         This object is used in conjunction with Controller:OutdoorAir to specify outdoor ventilation air based on outdoor air specified in the DesignSpecification:OutdoorAir object The Controller:OutdoorAir object is associated with a specific air loop, so the outdoor air flow rates specified in Controller:MechanicalVentilation correspond to the zones attached to that specific air loop. Duplicate groups of Zone name, Design Specification Outdoor Air Object Name, and Design Specification Zone Air Distribution Object Name to increase allowable number of entries
 
+        ``zone_specifications`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Controller:MechanicalVentilation"].add(
+            "Controller MechanicalVentilation 1",
+            zone_specifications=[
+                {
+                    "zone_or_zonelist_name": "Zone or ZoneList 1",
+                    "design_specification_outdoor_air_object_name": "Design Specification Outdoor Air Object 1",
+                    "design_specification_zone_air_distribution_object_name": "Design Specification Zone Air Distribution Object 1",
+                },
+                {
+                    "zone_or_zonelist_name": "Zone or ZoneList 2",
+                    "design_specification_outdoor_air_object_name": "Design Specification Outdoor Air Object 2",
+                    "design_specification_zone_air_distribution_object_name": "Design Specification Zone Air Distribution Object 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-controllers/#controllermechanicalventilation
         """
 
@@ -113,6 +153,19 @@ class Space_v9_6_to_v22_1:
         """Create a new ``Space`` and add it to the document.
 
         Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space is an optional input. If a Zone has no Space(s) specified in input then a default Space named <Zone Name> will be created. If some surfaces in a Zone are assigned to a space and some are not, then a default Space named <Zone Name>-Remainder will be created. Input references to Space Names must have a matching Space object (default space names may not be referenced except in output variable keys).
+
+        ``tags`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Space"].add(
+            "Space 1",
+            zone_name="Zone 1",
+            tags=[
+                {"tag": "Tag"},
+                {"tag": "Tag"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-thermal-zone-description-geometry/#space
         """

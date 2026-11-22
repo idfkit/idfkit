@@ -143,5 +143,16 @@ class ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5:
 
         View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will be assumed to have a view factor of zero.
 
+        ``view_factors`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneProperty:UserViewFactors:BySurfaceName"].add(
+            view_factors=[
+                {"from_surface": "From Surface 1", "to_surface": "To Surface 1", "view_factor": 0.0},
+                {"from_surface": "From Surface 2", "to_surface": "To Surface 2", "view_factor": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v9.5/io-reference/overview/group-advanced-surface-concepts/#zonepropertyuserviewfactorsbysurfacename
         """

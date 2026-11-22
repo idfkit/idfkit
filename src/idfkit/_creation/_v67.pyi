@@ -216,5 +216,24 @@ class AirLoopHVACDedicatedOutdoorAirSystem_v9_2_to_v22_1:
 
         Defines a central forced air system to provide dedicated outdoor air to multiple AirLoopHVACs.
 
+        ``airloophvacs`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["AirLoopHVAC:DedicatedOutdoorAirSystem"].add(
+            "AirLoopHVAC DedicatedOutdoorAirSystem 1",
+            airloophvac_mixer_name="AirLoopHVAC:Mixer 1",
+            airloophvac_splitter_name="AirLoopHVAC:Splitter 1",
+            preheat_design_temperature=0.0,
+            preheat_design_humidity_ratio=0.0,
+            precool_design_temperature=0.0,
+            precool_design_humidity_ratio=0.0,
+            number_of_airloophvac=0.0,
+            airloophvacs=[
+                {"airloophvac_name": "AirLoopHVAC 1"},
+                {"airloophvac_name": "AirLoopHVAC 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v22.1/io-reference/overview/group-air-path/#airloophvacdedicatedoutdoorairsystem
         """

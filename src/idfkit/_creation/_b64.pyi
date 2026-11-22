@@ -192,6 +192,22 @@ class RefrigerationTransferLoadList:
 
         A refrigeration system may provide cooling to other, secondary, systems through either a secondary loop or a cascade condenser. If multiple transfer loads are served by a single primary system, use this list to group them together for reference by the primary system (see the field 'Refrigeration Transfer Load or TransferLoad List Name' in the Refrigeration:System object).
 
+        ``transfer_loads`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Refrigeration:TransferLoadList"].add(
+            "Refrigeration TransferLoadList 1",
+            transfer_loads=[
+                {
+                    "cascade_condenser_name_or_secondary_system_name": "Cascade Condenser Name or Secondary System 1",
+                },
+                {
+                    "cascade_condenser_name_or_secondary_system_name": "Cascade Condenser Name or Secondary System 2",
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-refrigeration/#refrigerationtransferloadlist
         """
 
@@ -217,6 +233,19 @@ class AnyDemandManagerVentilation:
         """Create a new ``DemandManager:Ventilation`` and add it to the document.
 
         used for demand limiting Controller:OutdoorAir objects.
+
+        ``controllers`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["DemandManager:Ventilation"].add(
+            "DemandManager Ventilation 1",
+            limit_control="FixedRate",
+            controllers=[
+                {"controller_outdoor_air_name": "Controller Outdoor Air 1"},
+                {"controller_outdoor_air_name": "Controller Outdoor Air 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-demand-limiting-controls/#demandmanagerventilation
         """

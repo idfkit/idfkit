@@ -27,6 +27,30 @@ class ScheduleYear:
 
         A Schedule:Year contains from 1 to 52 week schedules
 
+        ``schedule_weeks`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Schedule:Year"].add(
+            "Schedule Year 1",
+            schedule_weeks=[
+                {
+                    "schedule_week_name": "Schedule:Week 1",
+                    "start_month": 1,
+                    "start_day": 1,
+                    "end_month": 1,
+                    "end_day": 1,
+                },
+                {
+                    "schedule_week_name": "Schedule:Week 2",
+                    "start_month": 1,
+                    "start_day": 1,
+                    "end_month": 1,
+                    "end_day": 1,
+                },
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-schedules/#scheduleyear
         """
 

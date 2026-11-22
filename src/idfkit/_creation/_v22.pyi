@@ -105,5 +105,20 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v9_5_to_v25_1:
 
         The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list.
 
+        ``surface_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["ZoneHVAC:Baseboard:RadiantConvective:Steam"].add(
+            "ZoneHVAC Baseboard RadiantConvective Steam 1",
+            inlet_node_name="Inlet Node Name",
+            outlet_node_name="Outlet Node Name",
+            maximum_steam_flow_rate=1.0,
+            surface_fractions=[
+                {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
+                {"surface_name": "Surface 2", "fraction_of_radiant_energy_to_surface": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v25.1/io-reference/overview/group-radiative-convective-units/#zonehvacbaseboardradiantconvectivesteam
         """

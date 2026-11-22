@@ -62,6 +62,22 @@ class AnyFanSystemModel:
 
         Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-speed applications. Performance at different flow rates, or speed levels, is determined using separate performance curve or table or prescribed power fractions at discrete speed levels for two-speed or multi-speed fans.
 
+        ``speed_fractions`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Fan:SystemModel"].add(
+            "Fan SystemModel 1",
+            air_inlet_node_name="Air Inlet Node Name",
+            air_outlet_node_name="Air Outlet Node Name",
+            design_maximum_air_flow_rate=1.0,
+            design_pressure_rise=1.0,
+            speed_fractions=[
+                {"speed_flow_fraction": 0.0, "speed_electric_power_fraction": 0.0},
+                {"speed_flow_fraction": 0.0, "speed_electric_power_fraction": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-fans/#fansystemmodel
         """
 
@@ -190,6 +206,25 @@ class GroundHeatExchangerSystem:
 
         Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response factors are calculated using a finite line source model assuming uniform heat flux at the borehole wall if UHFcalc is specified, or uniform borehole wall temperature if UBHWTcalc is specified.
 
+        ``vertical_well_locations`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["GroundHeatExchanger:System"].add(
+            "GroundHeatExchanger System 1",
+            inlet_node_name="Inlet Node Name",
+            outlet_node_name="Outlet Node Name",
+            design_flow_rate=1.0,
+            undisturbed_ground_temperature_model_type="Site:GroundTemperature:Undisturbed:FiniteDifference",
+            undisturbed_ground_temperature_model_name="Undisturbed Ground Temperature Model 1",
+            ground_thermal_conductivity=1.0,
+            ground_thermal_heat_capacity=1.0,
+            vertical_well_locations=[
+                {"ghe_vertical_single_object_name": "GHE:Vertical:Single Object 1"},
+                {"ghe_vertical_single_object_name": "GHE:Vertical:Single Object 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-condenser-equipment/#groundheatexchangersystem
         """
 
@@ -267,6 +302,19 @@ class AnyLifeCycleCostUseAdjustment:
 
         Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensating for inflation but should only be used to increase the costs of energy or water based on assumed changes to the actual usage, such as anticipated changes in the future function of the building. The adjustments begin at the start of the service period.
 
+        ``multipliers`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["LifeCycleCost:UseAdjustment"].add(
+            "LifeCycleCost UseAdjustment 1",
+            resource="Coal",
+            multipliers=[
+                {"year_multiplier": 0.0},
+                {"year_multiplier": 0.0},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/lifecyclecost-useadjustment/#lifecyclecostuseadjustment
         """
 
@@ -304,6 +352,19 @@ class LifeCycleCostUseAdjustment:
         """Create a new ``LifeCycleCost:UseAdjustment`` and add it to the document.
 
         Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensating for inflation but should only be used to increase the costs of energy or water based on assumed changes to the actual usage, such as anticipated changes in the future function of the building. The adjustments begin at the start of the service period.
+
+        ``multipliers`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["LifeCycleCost:UseAdjustment"].add(
+            "LifeCycleCost UseAdjustment 1",
+            resource="Coal",
+            multipliers=[
+                {"year_multiplier": 0.0},
+                {"year_multiplier": 0.0},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/energyplus-economics/lifecyclecost-useadjustment/#lifecyclecostuseadjustment
         """

@@ -52,6 +52,19 @@ class SurfacePropertyExposedFoundationPerimeter:
 
         Defines the perimeter of a foundation floor that is exposed to the exterior environment through the floor. User may either define the total exposed perimeter, fraction of perimeter exposed or individually define which segments of the floor surface perimeter are exposed.
 
+        ``surfaces`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["SurfaceProperty:ExposedFoundationPerimeter"].add(
+            surface_name="Surface 1",
+            exposed_perimeter_calculation_method="BySegment",
+            surfaces=[
+                {"surface_segment_exposed": "Yes"},
+                {"surface_segment_exposed": "Yes"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-advanced-surface-concepts/#surfacepropertyexposedfoundationperimeter
         """
 
@@ -212,6 +225,18 @@ class RefrigerationCaseAndWalkInList:
 
         Provides a list of all the refrigerated cases, walk in coolers, or air chillers cooled by a single refrigeration system. Note that the names of all cases, walk-ins ,air chillers, and CaseAndWalkInLists must be unique. That is, you cannot give a list the same name as one of list items. This list may contain a combination of case and walk-in names OR a list of air chiller names. Air chillers may not be included in any list that also includes cases or walk-ins.
 
+        ``cases_and_walkins`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Refrigeration:CaseAndWalkInList"].add(
+            "Refrigeration CaseAndWalkInList 1",
+            cases_and_walkins=[
+                {"case_or_walkin_name": "Case or WalkIn 1"},
+                {"case_or_walkin_name": "Case or WalkIn 2"},
+            ],
+        )
+        ```
+
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-refrigeration/#refrigerationcaseandwalkinlist
         """
 
@@ -230,6 +255,18 @@ class TableIndependentVariableList:
         """Create a new ``Table:IndependentVariableList`` and add it to the document.
 
         A sorted list of independent variables used by one or more Table:Lookup objects.
+
+        ``independent_variables`` takes the extensible groups in order, one dict per group:
+
+        ```python
+        doc["Table:IndependentVariableList"].add(
+            "Table IndependentVariableList 1",
+            independent_variables=[
+                {"independent_variable_name": "Independent Variable 1"},
+                {"independent_variable_name": "Independent Variable 2"},
+            ],
+        )
+        ```
 
         EnergyPlus I/O Reference: https://docs.idfkit.com/v26.2/io-reference/overview/group-performance-tables/#tableindependentvariablelist
         """
