@@ -14,6 +14,7 @@ import pytest
 from idfkit import new_document
 from idfkit.document import AnyIDFDocument, IDFDocument
 from idfkit.objects import IDFObject
+from idfkit.schedules.compact import evaluate_compact_range
 from idfkit.schedules.evaluate import (
     MalformedScheduleError,
     ScheduleEvaluationError,
@@ -22,7 +23,6 @@ from idfkit.schedules.evaluate import (
     evaluate,
     values,
 )
-from idfkit.schedules.compact import evaluate_compact_range
 from idfkit.schedules.holidays import get_holidays, get_special_days_by_type
 from idfkit.schedules.types import DayType, DayTypeInput, Interpolation, SpecialDay
 
