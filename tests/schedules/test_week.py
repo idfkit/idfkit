@@ -69,6 +69,7 @@ def _make_day_schedule(name: str, obj_type: str, hourly_value: float = 1.0) -> M
             fields[f"Value {i}"] = hourly_value
         fields["Value 25"] = None
         obj.get.side_effect = lambda f: fields.get(f)
+        obj.data = {"extensions": [{"value": hourly_value}] * 24}
     return obj
 
 
@@ -455,7 +456,7 @@ class TestGetApplicableDayTypes:
         d = date(2024, 12, 25)  # Wednesday
         types = get_applicable_day_types(d, DayType.NORMAL, {d}, set(), set())
         assert DAY_TYPE_HOLIDAY in types
-        assert DAY_TYPE_WEDNESDAY in types  # Also includes weekday
+        assert DAY_TYPE_WEDNESDAY not in types  # A holiday replaces its weekday, as in EnergyPlus
 
     def test_custom_day_1_in_set(self) -> None:
         d = date(2024, 3, 1)

@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from idfkit.schedules.compact import evaluate_compact, evaluate_compact_range
+from idfkit.schedules.compact import evaluate_compact
 from idfkit.schedules.day import (
     evaluate_constant,
     evaluate_day_hourly,
@@ -18,7 +18,7 @@ from idfkit.schedules.day import (
     evaluate_day_list,
 )
 from idfkit.schedules.file import ScheduleFileCache, evaluate_schedule_file
-from idfkit.schedules.holidays import extract_special_days
+from idfkit.schedules.holidays import get_holidays, get_special_days_by_type
 from idfkit.schedules.types import (
     DayType,
     DayTypeInput,
@@ -70,22 +70,12 @@ class MalformedScheduleError(ScheduleEvaluationError):
 
 
 def _get_special_days(document: AnyIDFDocument | None, year: int) -> tuple[set[date], set[date], set[date]]:
-    """Get the Holiday, CustomDay1 and CustomDay2 dates of *document* for *year*.
-
-    The model's ``RunPeriodControl:SpecialDays`` are parsed once and split by type; the result is the
-    same as [get_holidays][idfkit.schedules.holidays.get_holidays] and two calls of
-    [get_special_days_by_type][idfkit.schedules.holidays.get_special_days_by_type].
-    """
-    holidays: set[date] = set()
-    custom_day_1: set[date] = set()
-    custom_day_2: set[date] = set()
+    """Get holidays and custom days from document."""
     if document is None:
-        return holidays, custom_day_1, custom_day_2
-    by_type = {"Holiday": holidays, "CustomDay1": custom_day_1, "CustomDay2": custom_day_2}
-    for sd in extract_special_days(document, year):
-        dates = by_type.get(sd.day_type)
-        if dates is not None:
-            dates.update(sd.start_date + timedelta(days=i) for i in range(sd.duration))
+        return set(), set(), set()
+    holidays = get_holidays(document, year)
+    custom_day_1 = get_special_days_by_type(document, year, "CustomDay1")
+    custom_day_2 = get_special_days_by_type(document, year, "CustomDay2")
     return holidays, custom_day_1, custom_day_2
 
 
@@ -221,17 +211,23 @@ def values(
 ) -> list[float]:
     """Generate schedule values for a date range.
 
+    Each value is the one EnergyPlus reports as ``Schedule Value`` for that timestep when it
+    simulates at ``timestep`` steps per hour, to the bit: see
+    [Interpolation][idfkit.schedules.types.Interpolation] for how a timestep's value is taken.
+
     Args:
         schedule: An IDF schedule object.
         year: Year for the date range.
-        timestep: Values per hour (1, 2, 4, 6, 12, or 60).
+        timestep: Values per hour: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30 or 60, the timesteps
+                  EnergyPlus runs.
         start_date: Start date as (month, day).
         end_date: End date as (month, day).
         document: Required for schedules that reference others.
         day_type: Override day type for all days.
                   Accepts "normal", "summer", "winter", "holiday", "customday1", "customday2".
-        interpolation: Interpolation mode for sub-hourly values.
-                       Accepts "no", "step", "average", "linear".
+        interpolation: Interpolation mode for day schedules and Schedule:File objects whose
+                       ``Interpolate to Timestep`` is blank. Accepts "no", "step", "average",
+                       "linear".
         fs: FileSystem for Schedule:File.
         base_path: Base directory for Schedule:File relative paths.
 
@@ -239,19 +235,15 @@ def values(
         List of values, one per timestep for the entire period.
 
     Raises:
-        ValueError: If *timestep* does not divide an hour into whole minutes (EnergyPlus allows 1, 2,
-            3, 4, 5, 6, 10, 12, 15, 20, 30 and 60).
-        ScheduleEvaluationError: If the schedule is unsupported or malformed.
+        ValueError: If ``timestep`` does not divide the hour.
 
     Examples:
         >>> values(schedule, year=2024)  # Hourly values for full year
         >>> values(schedule, year=2024, timestep=4)  # 15-minute intervals
         >>> values(schedule, year=2024, day_type="summer")  # Summer design day
     """
-    # A timestep that does not divide the hour would give a step of 0 (an endless loop) or of a
-    # rounded-down number of minutes (the wrong number of values per hour).
-    if timestep < 1 or 60 % timestep:
-        msg = f"timestep must divide 60 (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30 or 60), got {timestep}"
+    if timestep <= 0 or 60 % timestep:
+        msg = f"timestep must divide the hour, as in EnergyPlus: got {timestep}"
         raise ValueError(msg)
 
     # Get document from schedule if not provided
@@ -262,8 +254,15 @@ def values(
     day_type_enum = parse_day_type(day_type)
     interpolation_enum = parse_interpolation(interpolation)
 
-    # Get holidays and custom days once for the whole range, not at every timestep
-    holidays, custom_day_1, custom_day_2 = _get_special_days(document, year)
+    # Get holidays and custom days
+    holidays: set[date] = set()
+    custom_day_1: set[date] = set()
+    custom_day_2: set[date] = set()
+
+    if document is not None:
+        holidays = get_holidays(document, year)
+        custom_day_1 = get_special_days_by_type(document, year, "CustomDay1")
+        custom_day_2 = get_special_days_by_type(document, year, "CustomDay2")
 
     # Calculate time step in minutes
     minutes_per_step = 60 // timestep
@@ -281,19 +280,6 @@ def values(
     if schedule_type == "Schedule:File":
         file_cache = ScheduleFileCache()
 
-    step = timedelta(minutes=minutes_per_step)
-
-    # Schedule:Compact: parse once and resolve the day rule once per date (interpolation comes
-    # from the schedule's own Interpolate field, as in evaluate()).
-    if schedule_type == "Schedule:Compact":
-        try:
-            return evaluate_compact_range(
-                schedule, start, end, step, day_type_enum, holidays, custom_day_1, custom_day_2
-            )
-        except (ValueError, KeyError) as e:
-            msg = f"Error evaluating {schedule_type}: {e}"
-            raise MalformedScheduleError(msg) from e
-
     while current <= end:
         value = _evaluate_with_interpolation(
             schedule,
@@ -307,9 +293,10 @@ def values(
             fs,
             base_path,
             file_cache,
+            minutes_per_step,
         )
         result.append(value)
-        current += step
+        current += timedelta(minutes=minutes_per_step)
 
     return result
 
@@ -326,19 +313,31 @@ def _evaluate_with_interpolation(
     fs: FileSystem | None,
     base_path: Path | str | None,
     file_cache: ScheduleFileCache | None,
+    interval_minutes: float = 0.0,
 ) -> float:
-    """Evaluate with interpolation support."""
+    """Evaluate with interpolation support, averaging over ``interval_minutes`` where asked to."""
     schedule_type = schedule.obj_type
+
+    if schedule_type == "Schedule:Compact":
+        try:
+            return evaluate_compact(
+                schedule, dt, day_type, holidays, custom_day_1, custom_day_2, interval_minutes=interval_minutes
+            )
+        except ValueError as e:
+            msg = f"Error evaluating {schedule_type}: {e}"
+            raise MalformedScheduleError(msg) from e
 
     # Day schedules with native interpolation support
     if schedule_type == "Schedule:Day:Interval":
-        return evaluate_day_interval(schedule, dt, interpolation)
+        return evaluate_day_interval(schedule, dt, interpolation, interval_minutes)
     if schedule_type == "Schedule:Day:List":
-        return evaluate_day_list(schedule, dt, interpolation)
+        return evaluate_day_list(schedule, dt, interpolation, interval_minutes)
 
     # Schedule:File with interpolation
     if schedule_type == "Schedule:File":
-        return evaluate_schedule_file(schedule, dt, fs or LocalFileSystem(), base_path, file_cache, interpolation)
+        return evaluate_schedule_file(
+            schedule, dt, fs or LocalFileSystem(), base_path, file_cache, interpolation, interval_minutes
+        )
 
     # Week/Year schedules need document and pass interpolation through
     if schedule_type in _DOCUMENT_REQUIRED_TYPES:
@@ -346,7 +345,7 @@ def _evaluate_with_interpolation(
             msg = f"Document required for {schedule_type} evaluation"
             raise ScheduleReferenceError(msg)
         return _eval_document_with_interp(
-            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation
+            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation, interval_minutes
         )
 
     # For other types, use simple evaluation
@@ -362,18 +361,21 @@ def _eval_document_with_interp(
     custom_day_1: set[date],
     custom_day_2: set[date],
     interpolation: Interpolation,
+    interval_minutes: float = 0.0,
 ) -> float:
     """Evaluate document-dependent schedules with interpolation."""
     schedule_type = schedule.obj_type
     if schedule_type == "Schedule:Week:Daily":
         return evaluate_week_daily(
-            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation
+            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation, interval_minutes
         )
     if schedule_type == "Schedule:Week:Compact":
         return evaluate_week_compact(
-            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation
+            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation, interval_minutes
         )
     if schedule_type == "Schedule:Year":
-        return evaluate_year(schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation)
+        return evaluate_year(
+            schedule, dt, document, day_type, holidays, custom_day_1, custom_day_2, interpolation, interval_minutes
+        )
     msg = f"Not a document schedule: {schedule_type}"
     raise ValueError(msg)

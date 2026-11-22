@@ -18,6 +18,7 @@ from idfkit.schedules.compact import (  # pyright: ignore[reportPrivateUsage]
     parse_compact,
 )
 from idfkit.schedules.day_types import get_applicable_day_types
+from idfkit.schedules.evaluate import values
 from idfkit.schedules.types import (
     DAY_TYPE_ALLDAYS,
     DAY_TYPE_HOLIDAY,
@@ -509,8 +510,8 @@ class TestInterpolateKeyword:
         _, interp = parse_compact(sched)
         assert interp == Interpolation.AVERAGE
 
-    def test_interpolate_linear_sets_average(self) -> None:
-        """Interpolate: Linear sets interpolation mode."""
+    def test_interpolate_linear_sets_linear(self) -> None:
+        """Interpolate: Linear sets the LINEAR mode, distinct from AVERAGE."""
         sched = _make_compact(
             "Through: 12/31",
             "For: AllDays",
@@ -519,7 +520,7 @@ class TestInterpolateKeyword:
             "1.0",
         )
         _, interp = parse_compact(sched)
-        assert interp == Interpolation.AVERAGE
+        assert interp == Interpolation.LINEAR
 
     def test_interpolate_no_keeps_no(self) -> None:
         """Interpolate: No does not change to AVERAGE."""
@@ -532,6 +533,96 @@ class TestInterpolateKeyword:
         )
         _, interp = parse_compact(sched)
         assert interp == Interpolation.NO
+
+
+def _ramp(mode: str, noon: str = "12:00") -> IDFObject:
+    return _make_compact(
+        "Through: 12/31", "For: AllDays", f"Interpolate: {mode}", f"Until: {noon}", "0", "Until: 24:00", "1"
+    )
+
+
+class TestInterpolatedValues:
+    """values() for Interpolate: Average/Yes averages the step over each timestep (#364)."""
+
+    @pytest.mark.parametrize("mode", ["Average", "Yes"])
+    def test_average_on_timestep_boundaries_is_the_step(self, mode: str) -> None:
+        """Until: times on timestep boundaries give the plain step, not a ramp."""
+        result = values(_ramp(mode), year=2024, end_date=(1, 1))
+        assert result == [0.0] * 12 + [1.0] * 12
+
+    def test_average_is_mean_over_the_timestep(self) -> None:
+        """An Until: inside a timestep gives the mean of the step over that timestep."""
+        result = values(_ramp("Average", noon="12:15"), year=2024, end_date=(1, 1))
+        assert result == [0.0] * 12 + [0.75] + [1.0] * 11
+
+    def test_average_at_sub_hourly_timestep(self) -> None:
+        """The average is taken over the requested timestep, not over the hour."""
+        result = values(_ramp("Average", noon="12:10"), year=2024, end_date=(1, 1), timestep=4)
+        assert result[47:51] == [0.0, pytest.approx(1 / 3), 1.0, 1.0]
+
+    def test_linear_ramps_to_the_end_of_each_timestep(self) -> None:
+        """Interpolate: Linear reads the ramp at the end of each timestep, as EnergyPlus does.
+
+        EnergyPlus 26.1 gives 0.0833 for 12:00-13:00 and 1.0 for 23:00-24:00 on this schedule.
+        """
+        result = values(_ramp("Linear"), year=2024, end_date=(1, 1))
+        assert result[11] == 0.0
+        assert result[12] == pytest.approx(1 / 12)
+        assert result[23] == pytest.approx(1.0)
+
+    def test_point_evaluation_of_average_is_the_step(self) -> None:
+        """evaluate_compact without a timestep returns the step value."""
+        assert evaluate_compact(_ramp("Average"), datetime(2024, 1, 1, 18, 0)) == 1.0
+
+
+class TestInterpolatePerForBlock:
+    """Interpolate: applies to its own For: block, as in EnergyPlus."""
+
+    def test_each_rule_keeps_its_own_mode(self) -> None:
+        """A block without Interpolate: steps even when another block averages."""
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: WinterDesignDay",
+            "Until: 24:00",
+            "1",
+            "For: AllOtherDays",
+            "Interpolate: Average",
+            "Until: 24:00",
+            "1",
+        )
+        periods, _ = parse_compact(sched)
+        assert [rule.interpolation for rule in periods[0].day_rules] == [Interpolation.NO, Interpolation.AVERAGE]
+
+    def test_later_no_does_not_cancel_earlier_average(self) -> None:
+        """A later block's Interpolate: No leaves an earlier block's Average in force."""
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: WinterDesignDay",
+            "Interpolate: Average",
+            "Until: 12:30",
+            "0",
+            "Until: 24:00",
+            "1",
+            "For: AllOtherDays",
+            "Interpolate: No",
+            "Until: 24:00",
+            "0",
+        )
+        result = values(sched, year=2024, start_date=(12, 21), end_date=(12, 21), day_type="winter")
+        assert result[12] == pytest.approx(0.5)
+
+
+class TestSpecialDayReplacesWeekday:
+    """A holiday or custom day is its own day type in EnergyPlus, not also its weekday."""
+
+    def test_holiday_monday_uses_all_other_days(self) -> None:
+        """A Monday holiday falls to AllOtherDays when no block names Holiday, not to Weekdays."""
+        sched = _make_compact(
+            "Through: 12/31", "For: Weekdays", "Until: 24:00", "1", "For: AllOtherDays", "Until: 24:00", "0"
+        )
+        monday_holiday = date(2024, 12, 23)
+        assert evaluate_compact(sched, datetime(2024, 12, 23, 10, 0), holidays={monday_holiday}) == 0.0
+        assert evaluate_compact(sched, datetime(2024, 12, 30, 10, 0), holidays={monday_holiday}) == 1.0
 
 
 class TestCacheStaleness:

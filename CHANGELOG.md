@@ -15,17 +15,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `schedules.values()` evaluated a `Schedule:Compact` much faster, with identical results, in models
-  with `RunPeriodControl:SpecialDays`, which it had re-read at every timestep.
-  ([#363](https://github.com/idfkit/idfkit/pull/363))
+- `SQLResult.get_timeseries_many()` read many series from a large results file faster, with the same
+  results, and `SQLResult` read a file's time steps once instead of at every call.
+  ([#366](https://github.com/idfkit/idfkit/pull/366))
 
 ### Fixed
 
 - Docstring cross-references, written as Sphinx roles that the API reference showed as raw text,
   became links ([#362](https://github.com/idfkit/idfkit/pull/362)).
-- `schedules.values()` raised `ValueError` for a `timestep` that does not divide the hour, where it had
-  looped forever above 60 and returned the wrong number of values for one such as 7.
-  ([#363](https://github.com/idfkit/idfkit/pull/363))
+- `values()` returned schedule values that differed from EnergyPlus's: `Interpolate: Average` ramped,
+  `No` and `Linear` read the start of each timestep rather than its end, and `Schedule:File`
+  interpolated between rows. They became EnergyPlus's `Schedule Value`, bit for bit.
+  ([#367](https://github.com/idfkit/idfkit/pull/367))
+- A holiday or custom day that a schedule gave no entry of its own took its weekday's value; it took
+  the `AllOtherDays` (or `AllDays`) value, as in EnergyPlus ([#367](https://github.com/idfkit/idfkit/pull/367)).
+- `values()` accepted a `timestep` that does not divide the hour and returned misaligned values; it
+  raised `ValueError` ([#367](https://github.com/idfkit/idfkit/pull/367)).
 
 ## [1.3.0-rc.2] - 2026-11-20
 

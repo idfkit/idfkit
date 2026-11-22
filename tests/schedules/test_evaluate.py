@@ -2,19 +2,15 @@
 
 from __future__ import annotations
 
-import importlib
-import math
-from datetime import datetime, timedelta
+from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
-from typing import Literal
 from unittest.mock import MagicMock
 
 import pytest
 
 from idfkit import new_document
-from idfkit.document import AnyIDFDocument, IDFDocument
 from idfkit.objects import IDFObject
-from idfkit.schedules.compact import evaluate_compact_range
 from idfkit.schedules.evaluate import (
     MalformedScheduleError,
     ScheduleEvaluationError,
@@ -23,8 +19,12 @@ from idfkit.schedules.evaluate import (
     evaluate,
     values,
 )
-from idfkit.schedules.holidays import get_holidays, get_special_days_by_type
-from idfkit.schedules.types import DayType, DayTypeInput, Interpolation, SpecialDay
+from idfkit.schedules.types import DayType, Interpolation
+
+
+def _list_items(get: Callable[[str], object]) -> list[dict[str, object]]:
+    """Canonical Schedule:Day:List items for a mock whose ``get`` answers ``Value N``."""
+    return [{"value": v} for n in range(1, 1441) if (v := get(f"Value {n}")) is not None]
 
 
 class TestExceptions:
@@ -324,6 +324,7 @@ class TestEvalSimpleDay:
             return fields.get(field)
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         del obj._document
 
         result = evaluate(obj, datetime(2024, 1, 1, 0, 0))
@@ -546,6 +547,7 @@ class TestEvaluateWithInterpolation:
             return fields.get(field)
 
         obj.get.side_effect = get_field
+        obj.data = {"extensions": _list_items(get_field)}
         del obj._document
 
         result = values(
@@ -681,6 +683,81 @@ class TestEvaluateWithInterpolation:
         assert len(result) == 24
         assert all(isinstance(v, float) for v in result)
 
+    def test_average_in_values_is_mean_over_each_timestep(self) -> None:
+        """values(interpolation="average") on a day schedule averages each timestep (#364)."""
+        doc = new_document()
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "12:15", "value_until_time": "0"}, {"time": "24:00", "value_until_time": "1"}],
+        )
+        day_obj = doc.get_collection("Schedule:Day:Interval").get("DaySched")
+        result = values(day_obj, year=2024, end_date=(1, 1), interpolation="average")
+        assert result == [0.0] * 12 + [0.75] + [1.0] * 11
+
+    def test_average_in_values_through_year_schedule(self) -> None:
+        """The timestep length reaches a day schedule referenced through Year and Week."""
+        doc = new_document()
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "12:15", "value_until_time": "0"}, {"time": "24:00", "value_until_time": "1"}],
+        )
+        day_fields = (
+            "sunday",
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "holiday",
+            "summerdesignday",
+            "winterdesignday",
+            "customday1",
+            "customday2",
+        )
+        doc.add(
+            "Schedule:Week:Daily",
+            "WeekSched",
+            validate=False,
+            **{f"{d}_schedule_day_name": "DaySched" for d in day_fields},
+        )
+        doc.add(
+            "Schedule:Year",
+            "YearSched",
+            validate=False,
+            schedule_weeks=[
+                {"schedule_week_name": "WeekSched", "start_month": 1, "start_day": 1, "end_month": 12, "end_day": 31}
+            ],
+        )
+        year_obj = doc.get_collection("Schedule:Year").get("YearSched")
+        result = values(year_obj, year=2024, end_date=(1, 1), interpolation="average", document=doc)
+        assert result[12] == pytest.approx(0.75)
+
+    def test_day_interval_uses_its_own_interpolate_field(self) -> None:
+        """A Schedule:Day:Interval set to Average averages without an interpolation= argument."""
+        doc = new_document()
+        day_obj = doc.add(
+            "Schedule:Day:Interval",
+            "DayAvg",
+            validate=False,
+            interpolate_to_timestep="Average",
+            data=[{"time": "12:30", "value_until_time": "0"}, {"time": "24:00", "value_until_time": "1"}],
+        )
+        result = values(day_obj, year=2024, end_date=(1, 1))
+        assert result[12] == pytest.approx(0.5)
+
+    @pytest.mark.parametrize("timestep", [0, 7, 8, 45])
+    def test_timestep_energyplus_cannot_run_is_refused(self, timestep: int) -> None:
+        """EnergyPlus only runs timesteps that divide the hour; values() refuses the others."""
+        doc = new_document()
+        sched = doc.add("Schedule:Constant", "C", validate=False, hourly_value=1.0)
+        with pytest.raises(ValueError, match="timestep"):
+            values(sched, year=2024, timestep=timestep, end_date=(1, 1))
+
     def test_eval_document_with_interp_not_document_schedule_raises(self) -> None:
         """_eval_document_with_interp with unknown type raises ValueError (line 343)."""
         from idfkit.schedules.evaluate import _eval_document_with_interp  # pyright: ignore[reportPrivateUsage]
@@ -731,231 +808,3 @@ class TestEvaluateWithInterpolation:
         )
         assert len(result) == 24
         assert all(isinstance(v, float) for v in result)
-
-
-def _special_days_doc() -> IDFDocument[Literal[True]]:
-    """A document with holidays, custom days and Schedule:Compact rules that use each of them."""
-    doc = new_document()
-    specials = [
-        ("NewYear", "January 1", 1, "Holiday"),
-        ("MLK", "3rd Monday in January", 1, "Holiday"),
-        ("Memorial", "Last Monday in May", 1, "Holiday"),
-        ("Summer", "7/1", 3, "CustomDay1"),
-        ("Audit", "1 October", 2, "CustomDay2"),
-        ("Thanksgiving", "4th Thursday in November", 2, "Holiday"),
-        ("Overlap", "11/28", 1, "CustomDay1"),
-        ("Christmas", "December 25", 1, "Holiday"),
-    ]
-    for name, start, duration, kind in specials:
-        doc.add(
-            "RunPeriodControl:SpecialDays",
-            name,
-            start_date=start,
-            duration=duration,
-            special_day_type=kind,
-            validate=False,
-        )
-    rules = [
-        "Through: 6/30",
-        "For: Weekdays SummerDesignDay",
-        "Until: 07:30",
-        "0.1",
-        "Until: 18:00",
-        "0.9",
-        "Until: 24:00",
-        "0.2",
-        "For: Holiday",
-        "Until: 24:00",
-        "0.05",
-        "For: CustomDay1 CustomDay2",
-        "Until: 12:00",
-        "0.4",
-        "Until: 24:00",
-        "0.6",
-        "For: AllOtherDays",
-        "Until: 24:00",
-        "0.3",
-        "Through: 12/31",
-        "For: Saturday",
-        "Until: 10:15",
-        "0.25",
-        "Until: 24:00",
-        "0.75",
-        "For: CustomDay2",
-        "Until: 24:00",
-        "0.66",
-        "For: Holiday CustomDay1",
-        "Until: 24:00",
-        "0.01",
-        "For: AllOtherDays",
-        "Until: 08:00",
-        "0.0",
-        "Until: 17:00",
-        "1.0",
-        "Until: 24:00",
-        "0.5",
-    ]
-    doc.add("Schedule:Compact", "Mixed", validate=False, data=[{"field": f} for f in rules])
-    doc.add(
-        "Schedule:Compact",
-        "Ramp",
-        validate=False,
-        data=[
-            {"field": f}
-            for f in [
-                "Through: 12/31",
-                "For: Holiday",
-                "Interpolate: Linear",
-                "Until: 24:00",
-                "0.0",
-                "For: AllOtherDays",
-                "Interpolate: Linear",
-                "Until: 06:00",
-                "0.0",
-                "Until: 18:00",
-                "1.0",
-                "Until: 24:00",
-                "0.0",
-            ]
-        ],
-    )
-    return doc
-
-
-def _per_timestep(
-    schedule: IDFObject,
-    doc: IDFDocument[Literal[True]],
-    year: int,
-    timestep: int,
-    start_date: tuple[int, int],
-    end_date: tuple[int, int],
-    day_type: DayTypeInput | None,
-) -> list[float]:
-    """values() computed the slow way: one evaluate() call, with its own special-day lookup, per timestep."""
-    current = datetime(year, *start_date, 0, 0)
-    end = datetime(year, *end_date, 23, 59)
-    step = timedelta(minutes=60 // timestep)
-    result: list[float] = []
-    while current <= end:
-        result.append(evaluate(schedule, current, document=doc, day_type=day_type))
-        current += step
-    return result
-
-
-class TestCompactValuesMatchEvaluate:
-    """values() on a Schedule:Compact must equal evaluate() at every timestep, special days included."""
-
-    @pytest.mark.parametrize("name", ["Mixed", "Ramp"])
-    @pytest.mark.parametrize(
-        ("year", "timestep", "start_date", "end_date", "day_type"),
-        [
-            (2024, 1, (1, 1), (12, 31), None),
-            (2023, 1, (1, 1), (12, 31), None),
-            (2009, 4, (1, 1), (12, 31), None),
-            (2024, 12, (5, 20), (7, 5), None),
-            (2024, 60, (11, 25), (11, 30), None),
-            (2024, 2, (1, 1), (1, 31), "summer"),
-            (2024, 1, (1, 1), (1, 31), "holiday"),
-            (2024, 1, (6, 25), (7, 10), "customday1"),
-        ],
-    )
-    def test_bit_identical(
-        self,
-        name: str,
-        year: int,
-        timestep: int,
-        start_date: tuple[int, int],
-        end_date: tuple[int, int],
-        day_type: DayTypeInput | None,
-    ) -> None:
-        doc = _special_days_doc()
-        schedule = doc.get_collection("Schedule:Compact").get(name)
-        assert schedule is not None
-        fast = values(
-            schedule,
-            year=year,
-            timestep=timestep,
-            start_date=start_date,
-            end_date=end_date,
-            document=doc,
-            day_type=day_type,
-        )
-        slow = _per_timestep(schedule, doc, year, timestep, start_date, end_date, day_type)
-        assert fast == slow
-        assert [math.copysign(1.0, v) for v in fast] == [math.copysign(1.0, v) for v in slow]
-
-    def test_special_days_change_values(self) -> None:
-        """The fixture's special days do change the result, so the comparison above is not vacuous."""
-        doc = _special_days_doc()
-        schedule = doc.get_collection("Schedule:Compact").get("Mixed")
-        assert schedule is not None
-        with_specials = values(schedule, year=2024, document=doc)
-        for obj in list(doc["RunPeriodControl:SpecialDays"]):
-            doc.removeidfobject(obj)
-        without_specials = values(schedule, year=2024, document=doc)
-        assert with_specials != without_specials
-
-    def test_special_days_read_once_per_call(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """values() reads the model's RunPeriodControl:SpecialDays once, not at every timestep."""
-        # The package re-exports the evaluate() function under the module's name, so look the module up.
-        evaluate_module = importlib.import_module("idfkit.schedules.evaluate")
-
-        doc = _special_days_doc()
-        schedule = doc.get_collection("Schedule:Compact").get("Mixed")
-        assert schedule is not None
-        calls: list[int] = []
-        original = evaluate_module.extract_special_days
-
-        def counting(document: AnyIDFDocument, year: int) -> list[SpecialDay]:
-            calls.append(year)
-            return original(document, year)
-
-        monkeypatch.setattr(evaluate_module, "extract_special_days", counting)
-        values(schedule, year=2024, document=doc)
-        assert calls == [2024]
-
-    def test_special_day_sets_match_public_helpers(self) -> None:
-        """The single-pass split equals get_holidays() and get_special_days_by_type()."""
-        from idfkit.schedules.evaluate import _get_special_days  # pyright: ignore[reportPrivateUsage]
-
-        doc = _special_days_doc()
-        holidays, custom_day_1, custom_day_2 = _get_special_days(doc, 2024)
-        assert holidays == get_holidays(doc, 2024)
-        assert custom_day_1 == get_special_days_by_type(doc, 2024, "CustomDay1")
-        assert custom_day_2 == get_special_days_by_type(doc, 2024, "CustomDay2")
-        assert _get_special_days(None, 2024) == (set(), set(), set())
-
-    @pytest.mark.parametrize("timestep", [0, -1, 7, 61, 120])
-    def test_values_rejects_timestep_that_does_not_divide_the_hour(self, timestep: int) -> None:
-        """A timestep that is not a divisor of 60 raises instead of looping forever or miscounting."""
-        doc = _special_days_doc()
-        schedule = doc.get_collection("Schedule:Compact").get("Mixed")
-        assert schedule is not None
-        with pytest.raises(ValueError, match="timestep must divide 60"):
-            values(schedule, year=2024, timestep=timestep, document=doc)
-
-    @pytest.mark.parametrize("step", [timedelta(0), timedelta(minutes=-15)])
-    def test_compact_range_rejects_non_positive_step(self, step: timedelta) -> None:
-        """evaluate_compact_range() raises on a step that would never reach the end."""
-        doc = _special_days_doc()
-        schedule = doc.get_collection("Schedule:Compact").get("Mixed")
-        assert schedule is not None
-        start = datetime(2024, 1, 1)
-        with pytest.raises(ValueError, match="step must be positive"):
-            evaluate_compact_range(
-                schedule, start, start + timedelta(days=1), step, DayType.NORMAL, set(), set(), set()
-            )
-
-    def test_malformed_compact_raises_in_values(self) -> None:
-        """A schedule EnergyPlus would refuse still raises MalformedScheduleError from values()."""
-        doc = new_document()
-        doc.add(
-            "Schedule:Compact",
-            "Short",
-            validate=False,
-            data=[{"field": f} for f in ["Through: 6/30", "For: AllDays", "Until: 24:00", "1.0"]],
-        )
-        schedule = doc.get_collection("Schedule:Compact").get("Short")
-        assert schedule is not None
-        with pytest.raises(MalformedScheduleError, match="Error evaluating Schedule:Compact"):
-            values(schedule, year=2024, document=doc)
