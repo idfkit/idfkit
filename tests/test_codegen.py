@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
+import subprocess
 import sys
+import textwrap
 import warnings
 from collections.abc import Iterator
 from pathlib import Path
@@ -977,6 +980,9 @@ class TestExtensibleExample:
         _generate_object_class(_LATEST, "BuildingSurface:Detailed", sink=sink)
         doc = _docstring_of(sink, "BuildingSurfaceDetailed")
         assert '    zone_name="Zone 1",\n' in doc
+        # The choices agree with the vertical wall the vertices draw.
+        assert '    surface_type="Wall",\n' in doc
+        assert '    outside_boundary_condition="Outdoors",\n' in doc
         assert doc.count('{"vertex_x_coordinate": ') == 4
 
     def test_references_in_two_groups_name_two_objects(self) -> None:
@@ -994,6 +1000,73 @@ class TestExtensibleExample:
         sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
         _generate_object_class(_LATEST, "Zone", sink=sink)
         assert "```" not in _docstring_of(sink, "Zone")
+
+    def test_parametric_logic_uses_the_statements_its_reference_lists(self) -> None:
+        sink = gen._CreationModules()  # pyright: ignore[reportPrivateUsage]
+        _generate_object_class(_LATEST, "Parametric:Logic", sink=sink)
+        doc = _docstring_of(sink, "ParametricLogic")
+        assert '{"parametric_logic_line": "PARAMETER $THICKNESS"},' in doc
+        assert '{"parametric_logic_line": \'DISABLE "Overhang"\'},' in doc
+        assert "SET " not in doc
+
+    def test_a_trailing_underscore_key_is_passed_once_with_its_own_value(self) -> None:
+        # No extensible type requires such a field today; one that did must not be passed twice.
+        key = "cond_flag_is_the_basement_conditioned_"
+        with (
+            patch.object(EpJSONSchema, "get_required_fields", return_value=[key]),
+            patch.object(EpJSONSchema, "get_field_schema", return_value={"type": "string", "enum": ["TRUE", "FALSE"]}),
+        ):
+            example = gen._extensible_example(_LATEST, "ZoneList", required=[key])  # pyright: ignore[reportPrivateUsage]
+        assert example is not None
+        assert [line.strip() for line in example[1]].count(f'{key}="TRUE",') == 1
+
+    @pytest.mark.parametrize(
+        ("spec", "integer", "expected"),
+        [
+            ({"exclusiveMinimum": 0.0, "exclusiveMaximum": 1.0}, False, 0.5),
+            ({"minimum": 0.0, "exclusiveMinimum": True}, False, 1.0),  # draft-04: minimum is exclusive
+            ({"minimum": 5.0, "exclusiveMinimum": True}, False, 6.0),
+            ({"maximum": 0.0, "exclusiveMaximum": True}, False, -1.0),
+            ({"minimum": 0.5}, True, 1),
+            ({"minimum": 0.0, "maximum": 1.0}, False, 0.0),
+            ({"default": "Autosize", "exclusiveMinimum": 0.0}, False, 1.0),
+        ],
+    )
+    def test_a_number_falls_inside_its_bounds(self, spec: dict[str, Any], integer: bool, expected: float) -> None:
+        value = gen._example_number(spec, integer=integer)  # pyright: ignore[reportPrivateUsage]
+        assert value == expected
+        assert isinstance(value, int) if integer else isinstance(value, float)
+
+    def test_a_string_holding_a_double_quote_is_single_quoted(self) -> None:
+        literal = gen._literal  # pyright: ignore[reportPrivateUsage]
+        assert literal('DISABLE "Overhang"') == "'DISABLE \"Overhang\"'"
+        assert literal('it\'s "x"') == '"it\'s \\"x\\""'
+        assert literal("C:\\dir") == '"C:\\\\dir"'
+
+    @pytest.mark.slow
+    def test_every_latest_release_example_type_checks(self, tmp_path: Path) -> None:
+        # The examples are docstring text, which neither ruff nor pyright reads: run pyright on them.
+        src = Path(gen.__file__).parents[2]
+        lines = ["from __future__ import annotations", "", "from idfkit import new_document", ""]
+        count = 0
+        for module in sorted((src / "idfkit" / "_creation").glob("_b*.pyi")):
+            for cls_name, doc, code in _examples_of(module.read_text()):
+                if "narrow the document" in doc:  # no call suits every release, by design
+                    continue
+                count += 1
+                body = textwrap.indent(code, "    ")
+                lines += [f"def example_{count}() -> None:  # {cls_name}", "    doc = new_document()", body, ""]
+        assert count > 150
+        (tmp_path / "examples.py").write_text("\n".join(lines))
+        (tmp_path / "pyrightconfig.json").write_text(json.dumps({"extraPaths": [str(src)]}))
+        result = subprocess.run(  # noqa: S603  (the interpreter running the tests, on a file it wrote)
+            [sys.executable, "-m", "pyright", "--pythonpath", sys.executable, "-p", str(tmp_path)],
+            capture_output=True,
+            text=True,
+            check=False,
+            env={**os.environ, "PYRIGHT_PYTHON_IGNORE_WARNINGS": "1"},
+        )
+        assert result.returncode == 0, result.stdout[-4000:]
 
     @pytest.mark.slow
     def test_every_committed_example_runs_on_a_document_of_its_release(self) -> None:

@@ -445,8 +445,10 @@ class ParametricLogic:
         doc["Parametric:Logic"].add(
             "Parametric Logic 1",
             lines=[
-                {"parametric_logic_line": "IF RunIndex == 1"},
-                {"parametric_logic_line": "SET Thickness = 0.05"},
+                {"parametric_logic_line": "PARAMETER $THICKNESS"},
+                {"parametric_logic_line": "$THICKNESS = 0.05"},
+                {"parametric_logic_line": "IF $THICKNESS < 0.1"},
+                {"parametric_logic_line": 'DISABLE "Overhang"'},
                 {"parametric_logic_line": "ENDIF"},
             ],
         )

@@ -47,13 +47,13 @@ class FoundationKiva_v8_9_to_v9_1:
             blocks=[
                 {
                     "custom_block_x_position": 0.0,
-                    "custom_block_depth": 2.0,
+                    "custom_block_depth": 1.0,
                     "custom_block_z_position": 0.0,
                     "custom_block_material_name": "Custom Block Material 1",
                 },
                 {
                     "custom_block_x_position": 0.0,
-                    "custom_block_depth": 2.0,
+                    "custom_block_depth": 1.0,
                     "custom_block_z_position": 0.0,
                     "custom_block_material_name": "Custom Block Material 2",
                 },

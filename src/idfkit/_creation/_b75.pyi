@@ -60,7 +60,7 @@ class WallDetailed:
             "Wall Detailed 1",
             construction_name="Construction 1",
             zone_name="Zone 1",
-            outside_boundary_condition="Adiabatic",
+            outside_boundary_condition="Outdoors",
             vertices=[
                 {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
                 {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},

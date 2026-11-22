@@ -20,6 +20,7 @@ import ast
 import contextlib
 import dataclasses
 import functools
+import math
 import re
 import sys
 import textwrap
@@ -1456,7 +1457,14 @@ _CURATED_GROUP_VALUES: dict[str, tuple[Any, ...]] = {
     ),
     "EnergyManagementSystem:Program": ("SET Fraction = 0.5", "IF Hour >= 18", "SET Fraction = 0.0", "ENDIF"),
     "EnergyManagementSystem:Subroutine": ("SET Fraction = 0.5", "RETURN"),
-    "Parametric:Logic": ("IF RunIndex == 1", "SET Thickness = 0.05", "ENDIF"),
+    # The statements the I/O Reference lists: PARAMETER, assignment, IF, ENABLE, DISABLE, ENDIF.
+    "Parametric:Logic": (
+        "PARAMETER $THICKNESS",
+        "$THICKNESS = 0.05",
+        "IF $THICKNESS < 0.1",
+        'DISABLE "Overhang"',
+        "ENDIF",
+    ),
 }
 
 #: How many groups a generated example shows: enough to show that the list repeats.
@@ -1467,10 +1475,17 @@ _EXAMPLE_GROUPS = 2
 _VERTEX_KEYS = ("vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate")
 _VERTEX_CORNERS = ((0.0, 0.0, 3.0), (0.0, 0.0, 0.0), (10.0, 0.0, 0.0), (10.0, 0.0, 3.0))
 
+#: Choices an example takes, where the field offers them, over its default or first choice: those
+#: that agree with the wall :data:`_VERTEX_CORNERS` draws.
+_PREFERRED_CHOICES = {"surface_type": "Wall", "outside_boundary_condition": "Outdoors"}
+
 
 def _literal(value: object) -> str:
-    """*value* as Python source, a string in double quotes as ruff formats it."""
+    """*value* as Python source, quoted as ruff formats it: in double quotes, or in single quotes
+    when it holds a double quote and no single one."""
     if isinstance(value, str):
+        if '"' in value and "'" not in value:
+            return repr(value)
         return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
     return repr(value)
 
@@ -1484,27 +1499,69 @@ def _field_label(schema_obj: Mapping[str, Any], key: str) -> str:
     return _sanitize_docstring(label if isinstance(label, str) and label else key.replace("_", " ").title())
 
 
+def _bound(value: object) -> float | None:
+    """*value* as a numeric bound, or ``None`` when it is none (absent, or a draft-04 flag)."""
+    return float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+
+
+def _bounds(spec: Mapping[str, Any]) -> tuple[float | None, float | None, float | None, float | None]:
+    """The bounds of the number *spec*: inclusive minimum, exclusive minimum, inclusive maximum, exclusive maximum.
+
+    The schemas up to 9.5 are draft-04, where ``exclusiveMinimum: true`` makes ``minimum``
+    exclusive; the later ones give ``exclusiveMinimum`` the bound itself.
+    """
+    minimum, maximum = _bound(spec.get("minimum")), _bound(spec.get("maximum"))
+    above, below = _bound(spec.get("exclusiveMinimum")), _bound(spec.get("exclusiveMaximum"))
+    if spec.get("exclusiveMinimum") is True:
+        minimum, above = None, minimum
+    if spec.get("exclusiveMaximum") is True:
+        maximum, below = None, maximum
+    return minimum, above, maximum, below
+
+
 def _example_number(spec: Mapping[str, Any], *, integer: bool) -> int | float:
-    """A number *spec* (a field's schema) accepts: its default, else 0 moved inside its bounds."""
+    """A number *spec* (a field's schema) accepts: its default, else 0 moved inside its bounds.
+
+    0 is moved to the nearest bound (one past an exclusive one, :func:`_bounds`). When that leaves
+    it outside the other bound, the midpoint of the two is taken; an integer field rounds toward
+    the inside.
+    """
     default = spec.get("default")
     if isinstance(default, (int, float)) and not isinstance(default, bool):
         return int(default) if integer else float(default)
-    value: float = 0
-    if isinstance(spec.get("minimum"), (int, float)):
-        value = max(value, spec["minimum"])
-    if isinstance(spec.get("exclusiveMinimum"), (int, float)) and value <= spec["exclusiveMinimum"]:
-        value = spec["exclusiveMinimum"] + 1
-    if isinstance(spec.get("maximum"), (int, float)):
-        value = min(value, spec["maximum"])
-    if isinstance(spec.get("exclusiveMaximum"), (int, float)) and value >= spec["exclusiveMaximum"]:
-        value = spec["exclusiveMaximum"] - 1
-    return int(value) if integer else float(value)
+    minimum, above, maximum, below = _bounds(spec)
+
+    def inside(x: float) -> bool:
+        return (
+            (minimum is None or x >= minimum)
+            and (above is None or x > above)
+            and (maximum is None or x <= maximum)
+            and (below is None or x < below)
+        )
+
+    value = 0.0
+    if minimum is not None:
+        value = max(value, minimum)
+    if above is not None and value <= above:
+        value = above + 1
+    if maximum is not None:
+        value = min(value, maximum)
+    if below is not None and value >= below:
+        value = below - 1
+    low = minimum if minimum is not None else above
+    high = maximum if maximum is not None else below
+    if not inside(value) and low is not None and high is not None:
+        value = (low + high) / 2
+    if integer:
+        return next((n for n in (round(value), math.ceil(value), math.floor(value)) if inside(n)), round(value))
+    return value
 
 
-def _example_value(spec: Mapping[str, Any], label: str, index: int = 0) -> object:
+def _example_value(spec: Mapping[str, Any], label: str, index: int = 0, key: str = "") -> object:
     """A value for the field *spec* describes, *label* its IDD label, that the field accepts.
 
-    A choice field gets its default or its first choice; a number its default or 0 within its
+    A choice field gets its :data:`_PREFERRED_CHOICES` entry (by its *key*) when it offers it, else
+    its default or its first choice; a number its default or 0 within its
     bounds (``anyOf`` number or ``Autosize`` gives the number); a reference a name made from its
     label (``Zone Name`` gives ``"Zone 1"``); any other text its default or its label. *index*, the
     group's position in an example, moves a choice field (without a default) and a reference on,
@@ -1522,7 +1579,9 @@ def _example_value(spec: Mapping[str, Any], label: str, index: int = 0) -> objec
         enum: list[Any] = branch.get("enum") or []
         choices += [c for c in enum if isinstance(c, str) and c]
     if choices:
-        default = spec.get("default")
+        default = _PREFERRED_CHOICES.get(key, spec.get("default"))
+        if default not in choices:
+            default = spec.get("default")
         return default if default in choices else choices[index % len(choices)]
     if isinstance(spec.get("default"), str) and spec["default"]:
         return spec["default"]
@@ -1535,15 +1594,14 @@ def _example_value(spec: Mapping[str, Any], label: str, index: int = 0) -> objec
 def _extensible_example(
     schema: EpJSONSchema, obj_type: str, *, name: str = "required", required: Iterable[str] = ()
 ) -> tuple[str, list[str]] | None:
-    """The wrapper key of *obj_type*'s extensible group and a fenced Python example of an ``add()`` call that fills *obj_type*'s extensible group.
+    """The wrapper key of *obj_type*'s extensible group and a fenced example of an ``add()`` filling it.
 
     ``None`` for a type without one. The call goes through ``doc[obj_type].add``, as typed code
     does, and passes the name when the type has one (*name* is ``"required"``, ``"optional"`` or
-    ``"none"``), the fields in *required* (the keywords the signature requires) and the others
-    *schema*'s release requires, and the group's
-    wrapper with :data:`_EXAMPLE_GROUPS` groups, or the curated groups of
-    :data:`_CURATED_GROUP_VALUES`. Each value is one the field accepts (:func:`_example_value`), so
-    the call runs as shown.
+    ``"none"``), the fields in *required* (the keywords the signature requires), the others
+    *schema*'s release requires, and the wrapper with :data:`_EXAMPLE_GROUPS` groups, the curated
+    groups of :data:`_CURATED_GROUP_VALUES` or the wall of :data:`_VERTEX_CORNERS`. Each value is
+    one the field accepts (:func:`_example_value`), so the call runs as shown.
     """
     pc = schema.get_parsing_cache(obj_type)
     if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
@@ -1560,7 +1618,7 @@ def _extensible_example(
         groups = [dict(zip(keys, corner, strict=True)) for corner in _VERTEX_CORNERS]
     else:
         groups = [
-            {key: _example_value(pc.ext_inner_props[key], _field_label(pc.obj_schema, key), n) for key in keys}
+            {key: _example_value(pc.ext_inner_props[key], _field_label(pc.obj_schema, key), n, key) for key in keys}
             for n in range(_EXAMPLE_GROUPS)
         ]
     args: list[str] = []
@@ -1568,14 +1626,17 @@ def _extensible_example(
         args.append(_literal(f"{obj_type.replace(':', ' ')} 1"))
     # What the signature requires, then what this release requires that the signature cannot
     # (a field another release names differently), so the call runs once the document is narrowed.
+    # Both name a field by its epJSON key, a trailing ``_`` included (the signature hides the
+    # spelling without it), so the two lists compare as they are.
     required = list(required)
-    taken = {field_name.rstrip("_") for field_name in required}
+    taken = set(required)
     required += [f for f in schema.get_required_fields(obj_type) if f not in taken and f.isidentifier()]
     for field_name in required:
         if field_name in (wrapper, "name"):
             continue
-        spec = schema.get_field_schema(obj_type, field_name.rstrip("_")) or {}
-        args.append(f"{field_name}={_literal(_example_value(spec, _field_label(pc.obj_schema, field_name)))}")
+        spec = schema.get_field_schema(obj_type, field_name) or {}
+        value = _example_value(spec, _field_label(pc.obj_schema, field_name), key=field_name)
+        args.append(f"{field_name}={_literal(value)}")
     lines = ["```python", f"doc[{_literal(obj_type)}].add("]
     lines += [f"    {arg}," for arg in args]
     lines.append(f"    {wrapper}=[")
@@ -1604,8 +1665,10 @@ def _creation_docstring(
     An editor shows it for ``add()`` on a collection of the type, in hover and signature help:
     pyright gives a call the docstring of the signature ``IDFCollection.add`` takes its parameters
     from, because ``add`` declares none for type checkers. It names the type, gives the schema's
-    memo whole (the class docstring truncates it) and the type's page in the EnergyPlus I/O
-    Reference on docs.idfkit.com. Field notes stay on the class's attributes, which hover shows:
+    memo whole (the class docstring truncates it), for an extensible type a fenced example of the
+    call filling its group (:func:`_extensible_example`, given the signature's *name* kind and the
+    keywords it *required*), and the type's page in the EnergyPlus I/O Reference on
+    docs.idfkit.com. Field notes stay on the class's attributes, which hover shows:
     here they would double the size of the ``_creation`` modules, and pyright would not show them
     beside the parameter, only in the block. What a shown default means is said once, on
     ``IDFCollection.add``, not in each of 1,700 signatures. *narrow_first* says why the signature

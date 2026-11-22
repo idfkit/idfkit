@@ -78,7 +78,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4:
             "ZoneHVAC Baseboard RadiantConvective Steam 1",
             inlet_node_name="Inlet Node Name",
             outlet_node_name="Outlet Node Name",
-            maximum_steam_flow_rate=2.0,
+            maximum_steam_flow_rate=1.0,
             fraction_radiant=0.0,
             surface_fractions=[
                 {"surface_name": "Surface 1", "fraction_of_radiant_energy_to_surface": 0.0},
