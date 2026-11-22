@@ -222,6 +222,8 @@ def values(
                   Accepts "normal", "summer", "winter", "holiday", "customday1", "customday2".
         interpolation: Interpolation mode for day schedules that do not set their own.
                        Accepts "no", "step", "average" (mean over each timestep), "linear".
+                       Schedule:File still interpolates linearly between file values under
+                       "average".
         fs: FileSystem for Schedule:File.
         base_path: Base directory for Schedule:File relative paths.
 

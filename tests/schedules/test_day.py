@@ -403,6 +403,27 @@ class TestEvaluateDayListInterpolation:
         assert evaluate_day_list(obj, datetime(2024, 1, 1, 1, 30)) == pytest.approx(0.5)
 
 
+class TestEvaluateDayListExplicitNo:
+    """An explicit Interpolate to Timestep = No wins over the interpolation argument."""
+
+    def test_no_field_overrides_average_argument(self) -> None:
+        obj = MagicMock()
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Minutes per Item": 30,
+                "Interpolate to Timestep": "No",
+                "Value 1": 0.0,
+                "Value 2": 1.0,
+                "Value 3": None,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        # Averaging [0:00, 1:00) would give 0.5; the object asks for the step.
+        assert evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0), Interpolation.AVERAGE, 60) == 0.0
+
+
 class TestEvaluateDayListInterpolateOther:
     """Test when Interpolate to Timestep is non-standard (line 142->146)."""
 

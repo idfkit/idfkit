@@ -13,7 +13,7 @@ from datetime import date, datetime, time
 from typing import TYPE_CHECKING, Any, cast
 
 from idfkit.schedules.day_types import get_applicable_day_types
-from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values
+from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values, parse_interpolate_keyword
 from idfkit.schedules.types import (
     DAY_TYPE_ALL_OTHER_DAYS,
     DAY_TYPE_ALLDAYS,
@@ -81,13 +81,6 @@ _DAY_TYPE_MAP = {
 # IDFObject.__hash__ uses id(self) so WeakKeyDictionary works correctly.
 # Each entry stores (result_tuple, mutation_version) so that stale
 # results are discarded when the object is mutated.
-_INTERPOLATE_MODES = {
-    "no": Interpolation.NO,
-    "yes": Interpolation.AVERAGE,
-    "average": Interpolation.AVERAGE,
-    "linear": Interpolation.LINEAR,
-}
-
 _ParseResult = tuple[list[CompactPeriod], Interpolation]
 _parse_cache: weakref.WeakKeyDictionary[IDFObject, tuple[_ParseResult, int]] = weakref.WeakKeyDictionary()
 # compact_problems results, cached the same way: evaluate_compact checks them on every call.
@@ -104,6 +97,8 @@ class _ParseState:
     current_rule: CompactDayRule | None
     field_index: int
     consecutive_none: int
+    pending_interpolation: Interpolation = Interpolation.NO
+    """An ``Interpolate:`` read before the first ``For:``, applied to the next block."""
 
 
 def _process_through(state: _ParseState, match: re.Match[str]) -> None:
@@ -126,7 +121,8 @@ def _process_for(state: _ParseState, match: re.Match[str]) -> None:
 
     day_types_str = match.group(1)
     day_types = _parse_day_types(day_types_str)
-    state.current_rule = CompactDayRule(day_types=day_types, time_values=[])
+    state.current_rule = CompactDayRule(day_types=day_types, time_values=[], interpolation=state.pending_interpolation)
+    state.pending_interpolation = Interpolation.NO
 
 
 def _process_until(state: _ParseState, match: re.Match[str], ext_fields: list[str]) -> None:
@@ -154,8 +150,12 @@ def _process_field(state: _ParseState, value_str: str, ext_fields: list[str]) ->
         _process_for(state, match)
     elif match := _UNTIL_PATTERN.match(value_str):
         _process_until(state, match, ext_fields)
-    elif match := _INTERPOLATE_PATTERN.match(value_str):
-        state.interpolation = _INTERPOLATE_MODES[match.group(1).lower()]
+    elif (match := _INTERPOLATE_PATTERN.match(value_str)) and (mode := parse_interpolate_keyword(match.group(1))):
+        state.interpolation = mode
+        if state.current_rule is not None:
+            state.current_rule.interpolation = mode
+        else:
+            state.pending_interpolation = mode
 
 
 def _finalize_parse_state(state: _ParseState) -> None:
@@ -179,7 +179,8 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
         obj: The Schedule:Compact object.
 
     Returns:
-        Tuple of (list of CompactPeriod, interpolation mode).
+        Tuple of (list of CompactPeriod, the last ``Interpolate:`` mode read). Each
+        CompactDayRule carries its own block's mode, which is what evaluation uses.
 
     Raises:
         ValueError: If the schedule syntax is invalid.
@@ -357,7 +358,7 @@ def evaluate_compact(
             which EnergyPlus refuses as fatal. ``evaluate()`` raises it as
             ``MalformedScheduleError``.
     """
-    periods, interpolation = parse_compact(obj)
+    periods, _ = parse_compact(obj)
 
     problems = _cached_problems(obj)
     if problems:
@@ -383,7 +384,7 @@ def evaluate_compact(
         return 0.0
 
     # Evaluate the time-value pairs
-    return evaluate_time_values(rule.time_values, current_time, interpolation, interval_minutes)
+    return evaluate_time_values(rule.time_values, current_time, rule.interpolation, interval_minutes)
 
 
 def _find_period_for_date(periods: list[CompactPeriod], d: date) -> CompactPeriod | None:

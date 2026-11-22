@@ -571,6 +571,43 @@ class TestInterpolatedValues:
         assert evaluate_compact(_ramp("Average"), datetime(2024, 1, 1, 18, 0)) == 1.0
 
 
+class TestInterpolatePerForBlock:
+    """Interpolate: applies to its own For: block, as in EnergyPlus."""
+
+    def test_each_rule_keeps_its_own_mode(self) -> None:
+        """A block without Interpolate: steps even when another block averages."""
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: WinterDesignDay",
+            "Until: 24:00",
+            "1",
+            "For: AllOtherDays",
+            "Interpolate: Average",
+            "Until: 24:00",
+            "1",
+        )
+        periods, _ = parse_compact(sched)
+        assert [rule.interpolation for rule in periods[0].day_rules] == [Interpolation.NO, Interpolation.AVERAGE]
+
+    def test_later_no_does_not_cancel_earlier_average(self) -> None:
+        """A later block's Interpolate: No leaves an earlier block's Average in force."""
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: WinterDesignDay",
+            "Interpolate: Average",
+            "Until: 12:30",
+            "0",
+            "Until: 24:00",
+            "1",
+            "For: AllOtherDays",
+            "Interpolate: No",
+            "Until: 24:00",
+            "0",
+        )
+        result = values(sched, year=2024, start_date=(12, 21), end_date=(12, 21), day_type="winter")
+        assert result[12] == pytest.approx(0.5)
+
+
 class TestCacheStaleness:
     """Tests that a mutated object invalidates the parse cache (lines 173-179)."""
 

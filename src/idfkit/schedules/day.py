@@ -10,7 +10,7 @@ import re
 from datetime import datetime, time
 from typing import TYPE_CHECKING, Any, cast
 
-from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values, time_to_minutes
+from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values, parse_interpolate_keyword, time_to_minutes
 from idfkit.schedules.types import Interpolation, TimeValue
 
 if TYPE_CHECKING:
@@ -114,7 +114,8 @@ def evaluate_day_interval(
     Args:
         obj: The Schedule:Day:Interval object.
         dt: The datetime to evaluate.
-        interpolation: Interpolation mode.
+        interpolation: Interpolation mode, used when the object's ``Interpolate to Timestep``
+            is blank.
         interval_minutes: Length of the timestep starting at ``dt``, over which ``AVERAGE``
             averages the schedule. 0 (the default) gives the value at ``dt``.
 
@@ -122,6 +123,7 @@ def evaluate_day_interval(
         The schedule value at the given time.
     """
     time_values = _parse_interval_time_values(obj)
+    interpolation = _own_interpolation(obj, interpolation)
     return evaluate_time_values(time_values, dt.time(), interpolation, interval_minutes)
 
 
@@ -138,7 +140,8 @@ def evaluate_day_list(
     Args:
         obj: The Schedule:Day:List object.
         dt: The datetime to evaluate.
-        interpolation: Interpolation mode.
+        interpolation: Interpolation mode, used when the object's ``Interpolate to Timestep``
+            is blank.
         interval_minutes: Length of the timestep starting at ``dt``, over which ``AVERAGE``
             averages the schedule. 0 (the default) gives the value at ``dt``.
 
@@ -149,14 +152,7 @@ def evaluate_day_list(
     minutes_per_item = obj.get("Minutes per Item")
     minutes_per_item = 60 if minutes_per_item is None else int(minutes_per_item)
 
-    # Get interpolate setting from the object
-    interpolate_field = obj.get("Interpolate to Timestep")
-    if interpolate_field:
-        interpolate_str = str(interpolate_field).lower()
-        if interpolate_str in ("average", "yes"):
-            interpolation = Interpolation.AVERAGE
-        elif interpolate_str == "linear":
-            interpolation = Interpolation.LINEAR
+    interpolation = _own_interpolation(obj, interpolation)
 
     # Build time-value pairs from the list
     time_values: list[TimeValue] = []
@@ -188,6 +184,11 @@ def evaluate_day_list(
         return 0.0
 
     return evaluate_time_values(time_values, dt.time(), interpolation, interval_minutes)
+
+
+def _own_interpolation(obj: IDFObject, default: Interpolation) -> Interpolation:
+    """The day schedule's own ``Interpolate to Timestep``, or ``default`` when it sets none."""
+    return parse_interpolate_keyword(obj.get("Interpolate to Timestep")) or default
 
 
 def _parse_interval_time_values(obj: IDFObject) -> list[TimeValue]:

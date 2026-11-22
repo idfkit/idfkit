@@ -18,6 +18,7 @@ __all__ = [
     "END_OF_DAY",
     "END_OF_DAY_MINUTES",
     "evaluate_time_values",
+    "parse_interpolate_keyword",
     "time_to_minutes",
 ]
 
@@ -26,6 +27,29 @@ END_OF_DAY = time(23, 59, 59, 999999)
 
 #: Exact minutes corresponding to end-of-day (24 hours).
 END_OF_DAY_MINUTES = 1440.0
+
+
+_INTERPOLATE_KEYWORDS = {
+    "no": Interpolation.NO,
+    "yes": Interpolation.AVERAGE,
+    "average": Interpolation.AVERAGE,
+    "linear": Interpolation.LINEAR,
+}
+
+
+def parse_interpolate_keyword(value: object) -> Interpolation | None:
+    """Read an EnergyPlus interpolation keyword (``No``, ``Yes``, ``Average``, ``Linear``).
+
+    Args:
+        value: The field value, such as a Schedule:Compact ``Interpolate:`` argument or a day
+            schedule's ``Interpolate to Timestep``.
+
+    Returns:
+        The interpolation mode, or None when the value is blank or not a keyword.
+    """
+    if value is None:
+        return None
+    return _INTERPOLATE_KEYWORDS.get(str(value).strip().lower())
 
 
 def time_to_minutes(t: time) -> float:

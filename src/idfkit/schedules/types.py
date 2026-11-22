@@ -186,6 +186,9 @@ class CompactDayRule:
     time_values: list[TimeValue]
     """Time-value pairs defining the schedule for these days."""
 
+    interpolation: Interpolation = Interpolation.NO
+    """The block's ``Interpolate:`` mode. EnergyPlus applies it to this ``For:`` block only."""
+
 
 @dataclass
 class CompactPeriod:

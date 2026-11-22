@@ -729,6 +729,19 @@ class TestEvaluateWithInterpolation:
         result = values(year_obj, year=2024, end_date=(1, 1), interpolation="average", document=doc)
         assert result[12] == pytest.approx(0.75)
 
+    def test_day_interval_uses_its_own_interpolate_field(self) -> None:
+        """A Schedule:Day:Interval set to Average averages without an interpolation= argument."""
+        doc = new_document()
+        day_obj = doc.add(
+            "Schedule:Day:Interval",
+            "DayAvg",
+            validate=False,
+            interpolate_to_timestep="Average",
+            data=[{"time": "12:30", "value_until_time": "0"}, {"time": "24:00", "value_until_time": "1"}],
+        )
+        result = values(day_obj, year=2024, end_date=(1, 1))
+        assert result[12] == pytest.approx(0.5)
+
     def test_eval_document_with_interp_not_document_schedule_raises(self) -> None:
         """_eval_document_with_interp with unknown type raises ValueError (line 343)."""
         from idfkit.schedules.evaluate import _eval_document_with_interp  # pyright: ignore[reportPrivateUsage]
