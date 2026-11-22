@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import contextlib
 import sqlite3
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
+from itertools import groupby
+from operator import itemgetter
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, NoReturn, TypeAlias
 
@@ -224,8 +226,8 @@ _ENVIRONMENT_TYPES["all"] = _ENVIRONMENT_TYPES["annual"] | _ENVIRONMENT_TYPES["s
 #: One series to read: a ``VariableInfo``, a variable name, or ``(name, key)`` / ``(name, key, frequency)``.
 SeriesSpec: TypeAlias = VariableInfo | str | tuple[str, str] | tuple[str, str, str | None]
 
-# One ReportData row: Year, Month, Day, Hour, Minute, Value, EnvironmentType.
-_DataRow: TypeAlias = tuple[int, int, int, int, int, float, int | None]
+# One non-warmup Time row: Year, Month, Day, Hour, Minute, EnvironmentType.
+_TimeRow: TypeAlias = tuple[int | None, int, int, int, int, int | None]
 
 # Series per ReportData query, under SQLite's oldest bound-parameter limit (999).
 _MAX_PARAMS = 900
@@ -249,10 +251,8 @@ def _series_args(spec: SeriesSpec) -> tuple[str, str, str | None]:
     return spec[0], spec[1], spec[2]
 
 
-def _environment_types(
-    rows: Sequence[tuple[object, ...]], name: str, environment: Environment | None
-) -> frozenset[int] | None:
-    """The environment types to keep from *rows* (type last), or ``None`` to keep every row.
+def _environment_types(present: set[int | None], name: str, environment: Environment | None) -> frozenset[int] | None:
+    """The environment types to keep of a variable with data in the *present* ones, or ``None`` to keep every row.
 
     ``None`` picks the weather-file run periods when the variable has data there, and
     otherwise the design days, so an annual run never mixes the two.
@@ -260,7 +260,6 @@ def _environment_types(
     Raises:
         ResultLookupError: If *environment* names a kind the variable has no data for.
     """
-    present = {row[-1] for row in rows}
     if environment == "all":
         return None
     if environment is None:
@@ -269,7 +268,7 @@ def _environment_types(
                 return _ENVIRONMENT_TYPES[choice]
         return None
     wanted = _ENVIRONMENT_TYPES[environment]
-    if rows and not present & wanted:
+    if present and not present & wanted:
         kinds = [choice for choice in ("annual", "sizing") if present & _ENVIRONMENT_TYPES[choice]]
         label = "run-period ('annual')" if environment == "annual" else "design-day ('sizing')"
         msg = f"Variable '{name}' has no {label} data in this run."
@@ -277,6 +276,20 @@ def _environment_types(
             msg += f" It has data for environment={' and '.join(repr(k) for k in kinds)}."
         raise ResultLookupError(msg, available=kinds)
     return wanted
+
+
+class _Timestamps(dict[int, datetime]):
+    """Each ``TimeIndex``'s timestamp, built on first use and then shared by every series."""
+
+    def __init__(self, times: Mapping[int, _TimeRow]) -> None:
+        super().__init__()
+        self._times = times
+
+    def __missing__(self, time_index: int) -> datetime:
+        year, month, day, hour, minute, _ = self._times[time_index]
+        ref_year = year if year and year > 0 else REFERENCE_YEAR
+        stamp = self[time_index] = make_timestamp(ref_year, month, day, hour, minute)
+        return stamp
 
 
 class SQLResult:
@@ -305,6 +318,9 @@ class SQLResult:
         self._db_path = Path(db_path)
         self._owns_file = _owns_file
         self._closed = False
+        # The non-warmup Time rows, each TimeIndex's environment type and its timestamps, read on
+        # the first time-series call and kept: the file is opened read-only.
+        self._time_cache: tuple[dict[int, _TimeRow], dict[int, int | None], _Timestamps] | None = None
         self._conn = sqlite3.connect(f"file:{self._db_path}?mode=ro", uri=True)
 
     def close(self) -> None:
@@ -415,60 +431,92 @@ class SQLResult:
             msg = f"environment must be 'annual', 'sizing', 'all', or None, got {environment!r}"
             raise ValueError(msg)
         resolved = [self._find_variable(*_series_args(spec)) for spec in series]
-        rows_by_index = self._read_report_data(sorted({r[0] for r in resolved}))
+        if not resolved:
+            return []
+        times, environment_of, stamps = self._times()
+        columns = self._read_report_data(sorted({r[0] for r in resolved}), times)
         has_environments: bool | None = None
         results: list[TimeSeriesResult] = []
         for rdd_index, name, key_val, units, raw_freq in resolved:
-            rows = rows_by_index[rdd_index]
-            if not rows:
+            time_indexes, raw_values = columns.get(rdd_index, ((), ()))
+            if not time_indexes:
                 if has_environments is None:
                     has_environments = bool(self.list_environments())
                 if not has_environments:
                     raise ResultLookupError(self._no_environment_message(name))
-            wanted = _environment_types(rows, name, environment)
-            timestamps: list[datetime] = []
-            values: list[float] = []
-            for year, month, day, hour, minute, value, env_type in rows:
-                if wanted is not None and env_type not in wanted:
-                    continue
-                ref_year = year if year and year > 0 else REFERENCE_YEAR
-                timestamps.append(make_timestamp(ref_year, month, day, hour, minute))
-                values.append(float(value))
+            present = set(map(environment_of.__getitem__, time_indexes))
+            wanted = _environment_types(present, name, environment)
+            if wanted is not None and not present <= wanted:
+                kept = [(t, v) for t, v in zip(time_indexes, raw_values, strict=True) if environment_of[t] in wanted]
+                time_indexes = tuple(t for t, _ in kept)
+                raw_values = tuple(v for _, v in kept)
             results.append(
                 TimeSeriesResult(
                     variable_name=name,
                     key_value=key_val,
                     units=units,
                     frequency=FREQUENCY_MAP.get(raw_freq, raw_freq) if raw_freq else "Unknown",
-                    timestamps=tuple(timestamps),
-                    values=tuple(values),
+                    timestamps=tuple(map(stamps.__getitem__, time_indexes)),
+                    values=tuple(map(float, raw_values)),
                 )
             )
         return results
 
-    def _read_report_data(self, indexes: Sequence[int]) -> dict[int, list[_DataRow]]:
-        """Read the non-warmup ``ReportData`` rows of *indexes*, each with its environment type, in time order."""
-        rows_by_index: dict[int, list[_DataRow]] = {index: [] for index in indexes}
+    def _times(self) -> tuple[dict[int, _TimeRow], dict[int, int | None], _Timestamps]:
+        """The non-warmup ``Time`` rows, their environment types and timestamps, read once per file.
+
+        A file with sub-hourly reporting holds hundreds of thousands of ``Time`` rows, so a loop of
+        ``get_timeseries`` calls would otherwise read them all at every call.
+        """
+        if self._time_cache is None:
+            times = self._time_rows()
+            environment_of = {index: row[-1] for index, row in times.items()}
+            self._time_cache = (times, environment_of, _Timestamps(times))
+        return self._time_cache
+
+    def _time_rows(self) -> dict[int, _TimeRow]:
+        """The non-warmup ``Time`` rows by ``TimeIndex``, each with its environment type."""
+        cur = self._conn.cursor()
+        # COALESCE handles EnergyPlus versions where WarmupFlag is NULL; the LEFT JOIN keeps
+        # rows with no environment.
+        cur.execute(
+            "SELECT t.TimeIndex, t.Year, t.Month, t.Day, t.Hour, t.Minute, ep.EnvironmentType "
+            "FROM Time t "
+            "LEFT JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex "
+            "WHERE COALESCE(t.WarmupFlag, 0) = 0"
+        )
+        return {row[0]: row[1:] for row in cur}
+
+    def _read_report_data(
+        self, indexes: Sequence[int], times: Mapping[int, object]
+    ) -> dict[int, tuple[tuple[int, ...], tuple[float, ...]]]:
+        """Read the ``ReportData`` rows of *indexes* at *times*: each one's time indexes and values, in time order.
+
+        An index with no rows is absent.
+        """
+        columns: dict[int, tuple[tuple[int, ...], tuple[float, ...]]] = {}
         cur = self._conn.cursor()
         # Each statement scans ReportData once; chunks keep under SQLite's bound-parameter limit.
+        # Rows come grouped by series, so each series is split off whole, without a Python
+        # step per row: an annual hourly series has 8760 of them.
         for start in range(0, len(indexes), _MAX_PARAMS):
             chunk = indexes[start : start + _MAX_PARAMS]
             placeholders = ",".join("?" * len(chunk))
-            # COALESCE handles EnergyPlus versions where WarmupFlag is NULL; the
-            # LEFT JOIN keeps rows with no environment.
             cur.execute(
-                "SELECT rd.ReportDataDictionaryIndex, t.Year, t.Month, t.Day, t.Hour, t.Minute, rd.Value, "  # noqa: S608
-                "ep.EnvironmentType "
-                "FROM ReportData rd "
-                "JOIN Time t ON rd.TimeIndex = t.TimeIndex "
-                "LEFT JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex "
-                f"WHERE rd.ReportDataDictionaryIndex IN ({placeholders}) AND COALESCE(t.WarmupFlag, 0) = 0 "
-                "ORDER BY t.TimeIndex",
+                "SELECT rd.ReportDataDictionaryIndex, rd.TimeIndex, rd.Value FROM ReportData rd "  # noqa: S608
+                f"WHERE rd.ReportDataDictionaryIndex IN ({placeholders}) "
+                "ORDER BY rd.ReportDataDictionaryIndex, rd.TimeIndex",
                 chunk,
             )
-            for row in cur:
-                rows_by_index[row[0]].append(row[1:])
-        return rows_by_index
+            for index, rows in groupby(cur, key=itemgetter(0)):
+                _, time_indexes, values = zip(*rows, strict=True)
+                if not times.keys() >= set(time_indexes):
+                    # Warmup rows, or rows without a Time row: skip them as a join would.
+                    kept = [(t, v) for t, v in zip(time_indexes, values, strict=True) if t in times]
+                    time_indexes = tuple(t for t, _ in kept)
+                    values = tuple(v for _, v in kept)
+                columns[index] = (time_indexes, values)
+        return columns
 
     @staticmethod
     def _no_environment_message(name: str) -> str:
