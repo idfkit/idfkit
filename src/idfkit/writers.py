@@ -1045,7 +1045,13 @@ class IDFWriter:
                         slot = item.get(inner)
                         _check_finite(obj, inner, slot)
                         values.append(_idf_text(obj, inner, self._format_value(slot)))
-                        comments.append(f"{_field_label(inner)}{suffix}")
+                        if inner.endswith("_1"):
+                            # A key the schema numbered after the IDD's first group (``x_value_1``,
+                            # from ``X Value #1``): the group's number replaces it, or every group
+                            # after the first would read ``X Value 1 2``.
+                            comments.append(f"{_field_label(inner[:-2])} {group_idx}")
+                        else:
+                            comments.append(f"{_field_label(inner)}{suffix}")
 
         # Trim trailing empty fields, but never below what the author actually wrote.
         #

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- IDF files of `Table:OneIndependentVariable` and `Table:TwoIndependentVariables` (EnergyPlus 8.9 to
+  9.1) labelled the second and later groups `!- X Value 1 2`; they read `!- X Value 2`.
+
 ### Changed
 
 - The editor docstring of `add()` on a collection of an extensible type, such as
