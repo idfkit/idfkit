@@ -218,7 +218,8 @@ def values(
     Args:
         schedule: An IDF schedule object.
         year: Year for the date range.
-        timestep: Values per hour (1, 2, 4, 6, 12, or 60).
+        timestep: Values per hour: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30 or 60, the timesteps
+                  EnergyPlus runs.
         start_date: Start date as (month, day).
         end_date: End date as (month, day).
         document: Required for schedules that reference others.
@@ -233,11 +234,18 @@ def values(
     Returns:
         List of values, one per timestep for the entire period.
 
+    Raises:
+        ValueError: If ``timestep`` does not divide the hour.
+
     Examples:
         >>> values(schedule, year=2024)  # Hourly values for full year
         >>> values(schedule, year=2024, timestep=4)  # 15-minute intervals
         >>> values(schedule, year=2024, day_type="summer")  # Summer design day
     """
+    if timestep <= 0 or 60 % timestep:
+        msg = f"timestep must divide the hour, as in EnergyPlus: got {timestep}"
+        raise ValueError(msg)
+
     # Get document from schedule if not provided
     if document is None:
         document = getattr(schedule, "_document", None)

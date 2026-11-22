@@ -82,7 +82,7 @@ class Interpolation(Enum):
     """Step function: each value holds until the next ``Until:``. A timestep takes its last minute."""
 
     AVERAGE = "average"
-    """A timestep takes the mean of its minutes (EnergyPlus's ``Average``; ``Yes`` in older versions).
+    """A timestep takes the mean of its minutes (EnergyPlus's ``Average``; idfkit also reads ``Yes`` as it).
 
     Equal to the step value wherever the schedule's times fall on timestep boundaries.
     """

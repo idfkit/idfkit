@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `No` and `Linear` read the start of each timestep rather than its end, and `Schedule:File`
   interpolated between rows. They became EnergyPlus's `Schedule Value`, bit for bit.
   ([#367](https://github.com/idfkit/idfkit/pull/367))
+- A holiday or custom day that a schedule gave no entry of its own took its weekday's value; it took
+  the `AllOtherDays` (or `AllDays`) value, as in EnergyPlus ([#367](https://github.com/idfkit/idfkit/pull/367)).
+- `values()` accepted a `timestep` that does not divide the hour and returned misaligned values; it
+  raised `ValueError` ([#367](https://github.com/idfkit/idfkit/pull/367)).
 
 ## [1.3.0-rc.2] - 2026-11-20
 

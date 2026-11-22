@@ -103,7 +103,9 @@ sub_hourly = values(sched, year=2024, timestep=4)  # 35,040 quarter-hourly value
 
 - `Interpolate:` applies to its own `For:` block. A day schedule's `Interpolate to Timestep` wins over the `interpolation=` argument, which only fills a blank field.
 - A `Schedule:Day:List` and a `Schedule:File` build no ramp: under `Linear` they step, as under `No`. An hourly `Schedule:File` gives every timestep its hour's row, even under `Average`.
-- EnergyPlus 26.1 refuses `Interpolate: Yes` in a `Schedule:Compact`; idfkit reads it as `Average`, its meaning in older versions.
+- A holiday, `CustomDay1` or `CustomDay2` replaces its weekday: with no `Holiday` entry, a holiday Monday takes the `AllOtherDays` (or `AllDays`) value, not the `Weekdays` one.
+- EnergyPlus refuses `Interpolate: Yes`: no bundled schema (8.9 to 26.2) lists it. idfkit reads it as `Average`.
+- `values()` refuses a `timestep` that does not divide the hour, as EnergyPlus does.
 - `evaluate(sched, ts)` gives the value of the minute containing `ts`. Use `values()` with the model's `Timestep` to get what EnergyPlus reports.
 
 By default `values` returns a `list[float]`. For pandas:

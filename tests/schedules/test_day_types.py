@@ -102,7 +102,7 @@ class TestGetApplicableDayTypes:
         assert DAY_TYPE_WEEKENDS in types
 
     def test_holiday(self) -> None:
-        """Test applicable types for a holiday."""
+        """A holiday replaces its weekday, as in EnergyPlus: Weekdays no longer applies to it."""
         types = get_applicable_day_types(
             date(2024, 12, 25),
             DayType.NORMAL,
@@ -111,10 +111,7 @@ class TestGetApplicableDayTypes:
             set(),
         )
 
-        assert DAY_TYPE_HOLIDAY in types
-        assert DAY_TYPE_ALLDAYS in types
-        # Weekday type should still be present
-        assert DAY_TYPE_WEEKDAYS in types or DAY_TYPE_WEEKENDS in types
+        assert types == {DAY_TYPE_HOLIDAY, DAY_TYPE_ALLDAYS, DAY_TYPE_ALL_OTHER_DAYS}
 
     def test_summer_design_day_override(self) -> None:
         """Test summer design day override returns only design + AllDays."""

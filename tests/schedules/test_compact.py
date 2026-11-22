@@ -612,6 +612,19 @@ class TestInterpolatePerForBlock:
         assert result[12] == pytest.approx(0.5)
 
 
+class TestSpecialDayReplacesWeekday:
+    """A holiday or custom day is its own day type in EnergyPlus, not also its weekday."""
+
+    def test_holiday_monday_uses_all_other_days(self) -> None:
+        """A Monday holiday falls to AllOtherDays when no block names Holiday, not to Weekdays."""
+        sched = _make_compact(
+            "Through: 12/31", "For: Weekdays", "Until: 24:00", "1", "For: AllOtherDays", "Until: 24:00", "0"
+        )
+        monday_holiday = date(2024, 12, 23)
+        assert evaluate_compact(sched, datetime(2024, 12, 23, 10, 0), holidays={monday_holiday}) == 0.0
+        assert evaluate_compact(sched, datetime(2024, 12, 30, 10, 0), holidays={monday_holiday}) == 1.0
+
+
 class TestCacheStaleness:
     """Tests that a mutated object invalidates the parse cache (lines 173-179)."""
 

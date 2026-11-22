@@ -750,6 +750,14 @@ class TestEvaluateWithInterpolation:
         result = values(day_obj, year=2024, end_date=(1, 1))
         assert result[12] == pytest.approx(0.5)
 
+    @pytest.mark.parametrize("timestep", [0, 7, 8, 45])
+    def test_timestep_energyplus_cannot_run_is_refused(self, timestep: int) -> None:
+        """EnergyPlus only runs timesteps that divide the hour; values() refuses the others."""
+        doc = new_document()
+        sched = doc.add("Schedule:Constant", "C", validate=False, hourly_value=1.0)
+        with pytest.raises(ValueError, match="timestep"):
+            values(sched, year=2024, timestep=timestep, end_date=(1, 1))
+
     def test_eval_document_with_interp_not_document_schedule_raises(self) -> None:
         """_eval_document_with_interp with unknown type raises ValueError (line 343)."""
         from idfkit.schedules.evaluate import _eval_document_with_interp  # pyright: ignore[reportPrivateUsage]

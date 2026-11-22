@@ -1,8 +1,8 @@
 """idfkit's schedule values must equal EnergyPlus's, bit for bit.
 
 `tests/fixtures/schedules/energyplus/expected.json.gz` holds the `Schedule Value` EnergyPlus reported for
-every schedule in `model.idf`: on both design days at several timesteps per hour, and on ordinary days
-of a weather-file run across the end of February. It was read from EnergyPlus's SQLite output, which
+every schedule in `model.idf`: on both design days at several timesteps per hour, and on the days of a
+weather-file run across the end of February, which include a holiday and a CustomDay1. It was read from EnergyPlus's SQLite output, which
 keeps the full double. Regenerate it with `scripts/generate_schedule_fixture.py`; this test needs no
 EnergyPlus.
 """

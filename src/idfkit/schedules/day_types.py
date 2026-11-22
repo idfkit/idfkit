@@ -55,6 +55,16 @@ DAY_TYPE_PRIORITY: list[str] = [
 ]
 
 
+#: The day type a ``day_type`` override evaluates every date as.
+_OVERRIDE_DAY_TYPES: dict[DayType, str] = {
+    DayType.SUMMER_DESIGN: DAY_TYPE_SUMMER_DESIGN,
+    DayType.WINTER_DESIGN: DAY_TYPE_WINTER_DESIGN,
+    DayType.HOLIDAY: DAY_TYPE_HOLIDAY,
+    DayType.CUSTOM_DAY_1: DAY_TYPE_CUSTOM_DAY_1,
+    DayType.CUSTOM_DAY_2: DAY_TYPE_CUSTOM_DAY_2,
+}
+
+
 def get_applicable_day_types(
     d: date,
     day_type: DayType,
@@ -77,34 +87,22 @@ def get_applicable_day_types(
     types: set[str] = set()
 
     # Handle explicit override
-    if day_type == DayType.SUMMER_DESIGN:
-        types.add(DAY_TYPE_SUMMER_DESIGN)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
-    if day_type == DayType.WINTER_DESIGN:
-        types.add(DAY_TYPE_WINTER_DESIGN)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
-    if day_type == DayType.HOLIDAY:
-        types.add(DAY_TYPE_HOLIDAY)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
-    if day_type == DayType.CUSTOM_DAY_1:
-        types.add(DAY_TYPE_CUSTOM_DAY_1)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
-    if day_type == DayType.CUSTOM_DAY_2:
-        types.add(DAY_TYPE_CUSTOM_DAY_2)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
+    override = _OVERRIDE_DAY_TYPES.get(day_type)
+    if override is not None:
+        return {override, DAY_TYPE_ALLDAYS}
 
-    # Check special days
+    # A special day replaces its weekday, as in EnergyPlus: a holiday Monday is a Holiday, not also a
+    # Monday or a weekday, so a schedule without a Holiday entry gives it its AllOtherDays (or
+    # AllDays) value.
     if d in custom_day_2:
         types.add(DAY_TYPE_CUSTOM_DAY_2)
     if d in custom_day_1:
         types.add(DAY_TYPE_CUSTOM_DAY_1)
     if d in holidays:
         types.add(DAY_TYPE_HOLIDAY)
+    if types:
+        types.update((DAY_TYPE_ALLDAYS, DAY_TYPE_ALL_OTHER_DAYS))
+        return types
 
     # Add weekday type
     weekday = d.weekday()

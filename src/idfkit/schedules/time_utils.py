@@ -114,7 +114,7 @@ def evaluate_time_values(
     return minutes[start]
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=64)
 def day_minute_values(pairs: tuple[tuple[time, float], ...], interpolation: Interpolation) -> tuple[float, ...]:
     """Expand ``Until:`` time-value pairs to one value per minute, as EnergyPlus does.
 
@@ -153,7 +153,7 @@ def day_minute_values(pairs: tuple[tuple[time, float], ...], interpolation: Inte
     return tuple(minutes)
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=64)
 def step_minute_values(items: tuple[float, ...], minutes_per_item: int) -> tuple[float, ...]:
     """Minute values for evenly spaced items, as EnergyPlus fills a Day:List or Schedule:File day.
 

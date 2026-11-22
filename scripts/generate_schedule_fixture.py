@@ -67,6 +67,21 @@ def _day_list(name: str, interpolate: str, minutes: int) -> str:
     return _day_chain(name, f"Schedule:Day:List, {name}_DAY, , {interpolate}, {minutes}, {items};")
 
 
+def _week_compact(name: str) -> str:
+    """A Schedule:Year -> Schedule:Week:Compact chain whose weekdays, holidays and other days differ."""
+    odd = ", ".join(f"{t}, {v}" for t, v in zip(_ODD_TIMES, _ODD_VALUES, strict=True))
+    items = ", ".join(str(((i * 29) % 100) / 100) for i in range(48))
+    hourly = ", ".join(str(((h * 7) % 24) / 24) for h in range(24))
+    return (
+        f"Schedule:Day:Interval, {name}_WEEKDAY, , Average, {odd};\n"
+        f"Schedule:Day:List, {name}_HOLIDAY, , No, 30, {items};\n"
+        f"Schedule:Day:Hourly, {name}_OTHER, , {hourly};\n"
+        f"Schedule:Week:Compact, {name}_WEEK, For: Weekdays, {name}_WEEKDAY, For: Holiday, {name}_HOLIDAY, "
+        f"For: AllOtherDays, {name}_OTHER;\n"
+        f"Schedule:Year, {name}, , {name}_WEEK, 1, 1, 12, 31;\n"
+    )
+
+
 def _file(name: str, csv: str, interpolate: str, minutes: int) -> str:
     return f"Schedule:File, {name}, , {csv}, 1, 0, , Comma, {interpolate}, {minutes};\n"
 
@@ -97,12 +112,21 @@ def schedules() -> str:
         _day_list("DL_AVERAGE", "Average", 10),
         _day_list("DL_LINEAR", "Linear", 10),
         _day_list("DL_AVERAGE_30", "Average", 30),
+        _compact(
+            "C_SPECIAL_DAYS",
+            f"For: Holiday, {_until(per_block)}, For: CustomDay1, Interpolate: Average, {_until(per_block)}, "
+            f"For: AllOtherDays, Interpolate: Linear, {_until(per_block)}",
+        ),
         _day_chain("DH", f"Schedule:Day:Hourly, DH_DAY, , {hourly};"),
+        _week_compact("WC"),
         _file("F_HOURLY_YES", "hourly.csv", "Yes", 60),
         _file("F_HALF_HOURLY_YES", "half_hourly.csv", "Yes", 30),
         _file("F_HALF_HOURLY_NO", "half_hourly.csv", "No", 30),
         _file("F_HALF_HOURLY_BLANK", "half_hourly.csv", "", 30),
         "Schedule:Constant, CONSTANT, , 0.37;\n",
+        # Special days inside the weather run: a fixed date and a rule.
+        "RunPeriodControl:SpecialDays, Fixture Holiday, 3/1, 1, Holiday;\n",
+        "RunPeriodControl:SpecialDays, Fixture Custom Day, 1st Thursday in March, 1, CustomDay1;\n",
     ])
 
 
@@ -111,28 +135,37 @@ def _write_csvs(directory: Path) -> None:
     (directory / "half_hourly.csv").write_text("".join(f"{((i * 53) % 100) / 100}\n" for i in range(8760 * 2)))
 
 
+def _replace(text: str, old: str, new: str, *, pattern: bool = False) -> str:
+    """``text`` with its one match of ``old`` replaced; refuses an example file that no longer has it."""
+    result, count = re.subn(old if pattern else re.escape(old), lambda _: new, text, count=1, flags=re.DOTALL)
+    if count != 1:
+        msg = f"the example model no longer contains {old!r}; update scripts/generate_schedule_fixture.py"
+        raise RuntimeError(msg)
+    return result
+
+
 def _model(example: Path, timestep: int, *, weather: bool = False) -> str:
     """The example model with the fixture's schedules, on its design days or on ``WEATHER_DAYS``."""
-    text = example.read_text()
-    text = text.replace("  Timestep,4;", f"  Timestep,{timestep};")
+    text = _replace(example.read_text(), "  Timestep,4;", f"  Timestep,{timestep};")
     sizing, weather_run = ("No", "Yes") if weather else ("Yes", "No")
-    text = text.replace(
+    text = _replace(
+        text,
         "    Yes,                     !- Run Simulation for Sizing Periods",
         f"    {sizing + ',':<25}!- Run Simulation for Sizing Periods",
     )
-    text = text.replace(
+    text = _replace(
+        text,
         "    Yes,                     !- Run Simulation for Weather File Run Periods",
         f"    {weather_run + ',':<25}!- Run Simulation for Weather File Run Periods",
     )
     if weather:
         (m1, d1), (m2, d2) = WEATHER_DAYS
         y = WEATHER_YEAR
-        text = re.sub(
+        text = _replace(
+            text,
             r"  RunPeriod,.*?;[^\n]*\n",
             f"  RunPeriod, Fixture, {m1}, {d1}, {y}, {m2}, {d2}, {y}, , Yes, Yes, No, Yes, Yes;\n",
-            text,
-            count=1,
-            flags=re.DOTALL,
+            pattern=True,
         )
     return text + "\n" + schedules() + "Output:SQLite, Simple;\nOutput:Variable, *, Schedule Value, Timestep;\n"
 
