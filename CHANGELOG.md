@@ -11,14 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - IDF files of `Table:OneIndependentVariable` and `Table:TwoIndependentVariables` (EnergyPlus 8.9 to
   9.1) labelled the second and later groups `!- X Value 1 2`; they read `!- X Value 2`
-  ([72d6ee3](https://github.com/idfkit/idfkit/commit/72d6ee3)).
+  ([#368](https://github.com/idfkit/idfkit/pull/368)).
 
 ### Changed
 
 - The editor docstring of `add()` on a collection of an extensible type, such as
   `doc["Schedule:Compact"].add(...)`, showed a runnable Python example of filling its extensible
   group (`data=[{"field": "Through: 12/31"}, ...]`)
-  ([dca65f8](https://github.com/idfkit/idfkit/commit/dca65f8)).
+  ([#368](https://github.com/idfkit/idfkit/pull/368)).
 
 ## [1.3.0-rc.2] - 2026-11-20
 
