@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `schedules.values()` evaluated a `Schedule:Compact` much faster in models with
   `RunPeriodControl:SpecialDays`, which it had re-read at every timestep; a year of hourly values for
-  a large model's schedules took seconds instead of minutes, with identical results. (PRLINK)
+  a large model's schedules took seconds instead of minutes, with identical results.
+  ([#363](https://github.com/idfkit/idfkit/pull/363))
 
 ## [1.3.0-rc.2] - 2026-11-20
 
